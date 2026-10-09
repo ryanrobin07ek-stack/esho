@@ -1,0 +1,40 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "eshop-storefront",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-04",
+  "workers_dev": true,
+  "vars": {
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFPA2kxSnlxxwR-D",
+    "VAPID_SUBJECT": "mailto:admin@rrobin.co.ke"
+  },
+  "routes": [
+    { "pattern": "rrobin.co.ke/*", "zone_name": "rrobin.co.ke" },
+    { "pattern": "*.rrobin.co.ke/*", "zone_name": "rrobin.co.ke" }
+  ],
+  "assets": {
+    "directory": "../www",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "eshop-catalog",
+      "database_id": "adc00ef6-d93e-4f6a-b685-933479ef9334",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "TENANTS",
+      "id": "2a96ffc4dd7d42788c567e237f2a3ff6"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUSINESS_ARCHIVE",
+      "bucket_name": "eshop-business-archive"
+    }
+  ]
+}

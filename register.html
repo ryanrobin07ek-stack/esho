@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#111827">
+    <meta name="description" content="E-Shop browser point of sale">
+    <title>E-Shop Register</title>
+  </head>
+  <body>
+    <section class="browser-sync-banner" aria-live="polite">
+      <div>
+        <strong id="browser-sync-state">Checking this register’s cloud connection…</strong>
+        <span id="browser-sync-detail">Products appear here after this browser downloads them from the same shop.</span>
+      </div>
+      <button id="browser-sync-action" type="button" hidden></button>
+      <div class="browser-register-data-actions">
+        <button id="browser-use-shop-action" type="button" hidden>Use this shop’s POS</button>
+        <button id="browser-disconnect-action" type="button" hidden>Disconnect shop</button>
+        <button id="browser-reset-action" type="button">Reset browser POS data</button>
+      </div>
+    </section>
+    <p id="browser-data-status" class="browser-data-status" role="status" hidden></p>
+    <p class="browser-register-data-note">“Use this shop’s POS” replaces this browser’s local POS records with the selected shop’s cloud records and enables sync. It does not erase cloud records or data on other devices. Disconnecting keeps local records; Reset erases them.</p>
+    <details class="browser-register-connect" id="browser-register-connect">
+      <summary>Connect this register to your shop’s Cloudflare sync</summary>
+      <p>Sign in with the E-Shop account that owns this shop. You can also use its private <strong>shop owner key</strong> (not a Paystack key). The connection is sent only to your Cloudflare Worker; you can choose whether to save it on this computer.</p>
+      <form id="browser-cloud-form" method="post" action="/register" autocomplete="off">
+        <label>E-Shop account username
+          <input name="username" autocomplete="username">
+        </label>
+        <label>E-Shop account password
+          <input name="password" type="password" autocomplete="current-password">
+        </label>
+        <label>Shop
+          <select name="tenant"><option value="main">Main shop</option></select>
+        </label>
+        <details class="browser-register-owner-key">
+          <summary>Use a shop owner key instead</summary>
+          <label>Shop ID
+            <input name="manualTenant" value="main" pattern="[a-z0-9\-]+">
+          </label>
+          <label>Private shop owner key
+            <input name="token" type="password" autocomplete="off">
+          </label>
+        </details>
+        <label class="browser-register-remember">
+          <input name="remember" type="checkbox" checked>
+          Keep this connection on this computer
+        </label>
+        <button type="submit">Verify and connect</button>
+      </form>
+      <p id="browser-cloud-status" role="status">Sign in with the E-Shop account that owns your shop. Data stays on this computer until sync is enabled.</p>
+    </details>
+    <div id="app" aria-live="polite">Opening the register…</div>
+    <script type="module" src="/src/browser-register.js"></script>
+  </body>
+</html>
