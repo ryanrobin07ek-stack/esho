@@ -1224,6 +1224,15 @@ button {
   transform: translateY(-1px);
 }
 
+.btn-primary:disabled,
+.btn-primary:disabled:hover {
+  background: var(--surface-hover);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 1;
+  transform: none;
+}
+
 .btn-secondary {
   flex: 1;
   height: 52px;
@@ -2355,8 +2364,8 @@ const storeInfo = {
   location: "Zurich & New York",
   email: "concierge@eshop-atelier.com",
   phone: "+1 (800) 482-9102",
-  currency: "USD",
-  currency_symbol: "$",
+  currency: "KES",
+  currency_symbol: "KSh",
   announcement: "Complimentary Carbon-Neutral Worldwide Shipping on Orders Over $150",
   announcement_active: 1,
   theme_mode: "light",
@@ -4733,6 +4742,8 @@ const StoreRenderers = {
   renderNavbar(activePath = "/") {
     const store = SQLiteEngine.getStore();
     const publishedPages = SQLiteEngine.getPages(true);
+    const categories = SQLiteEngine.getCategories();
+    const categoryRoute = category => `/category/${encodeURIComponent(category.slug || String(category.name || category.id).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""))}`;
     const cart = SQLiteEngine.getCart();
     const cartCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
     const favs = SQLiteEngine.getFavorites();
@@ -4752,15 +4763,15 @@ const StoreRenderers = {
             </button>
             <a href="/" class="brand-logo" data-route="/">
               <span class="brand-dot"></span>
-              <span>E-SHOP</span>
+              <span>${AppUtils.escapeHTML(store.name || store.title || "E-Shop")}</span>
             </a>
             <nav class="nav-menu">
               <a href="/" class="nav-link ${activePath === '/' ? 'active' : ''}" data-route="/">Home</a>
               <a href="/categories" class="nav-link ${activePath === '/categories' ? 'active' : ''}" data-route="/categories">Collections</a>
-              <a href="/category/men" class="nav-link ${activePath === '/category/men' ? 'active' : ''}" data-route="/category/men">Men</a>
-              <a href="/category/women" class="nav-link ${activePath === '/category/women' ? 'active' : ''}" data-route="/category/women">Women</a>
-              <a href="/category/shoes" class="nav-link ${activePath === '/category/shoes' ? 'active' : ''}" data-route="/category/shoes">Shoes</a>
-              <a href="/category/watches" class="nav-link ${activePath === '/category/watches' ? 'active' : ''}" data-route="/category/watches">Watches</a>
+              ${categories.slice(0, 4).map(category => {
+                const route = categoryRoute(category);
+                return `<a href="${AppUtils.escapeHTML(route)}" class="nav-link ${activePath === route ? 'active' : ''}" data-route="${AppUtils.escapeHTML(route)}">${AppUtils.escapeHTML(category.name)}</a>`;
+              }).join("")}
               ${publishedPages.map(page => `<a href="/pages/${encodeURIComponent(page.slug)}" class="nav-link ${activePath === `/pages/${page.slug}` ? "active" : ""}" data-route="/pages/${encodeURIComponent(page.slug)}">${AppUtils.escapeHTML(page.title)}</a>`).join("")}
             </nav>
           </div>
@@ -4786,10 +4797,6 @@ const StoreRenderers = {
               ${cartCount > 0 ? `<span class="nav-badge" id="nav-cart-badge">${cartCount}</span>` : ""}
             </a>
 
-            <a href="/account" class="btn-studio-pill" data-route="/account">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              <span>Studio & Account</span>
-            </a>
           </div>
         </div>
       </header>
@@ -4798,7 +4805,7 @@ const StoreRenderers = {
       <div id="mobile-nav-drawer" class="mobile-drawer-overlay">
         <div class="mobile-drawer">
           <div class="mobile-drawer-header">
-            <span class="brand-logo"><span class="brand-dot"></span>E-SHOP</span>
+            <span class="brand-logo"><span class="brand-dot"></span>${AppUtils.escapeHTML(store.name || store.title || "E-Shop")}</span>
             <button id="mobile-drawer-close" aria-label="Close Navigation">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
@@ -4808,22 +4815,12 @@ const StoreRenderers = {
           </div>
           <ul class="mobile-nav-list">
             <li><a href="/" class="mobile-nav-link" data-route="/">Home</a></li>
-            <li><a href="/categories" class="mobile-nav-link" data-route="/categories">All Collections (11)</a></li>
-            <li><a href="/category/men" class="mobile-nav-link" data-route="/category/men">Men's Sartorial</a></li>
-            <li><a href="/category/women" class="mobile-nav-link" data-route="/category/women">Women's Luxury</a></li>
-            <li><a href="/category/shoes" class="mobile-nav-link" data-route="/category/shoes">Artisanal Shoes</a></li>
-            <li><a href="/category/bags" class="mobile-nav-link" data-route="/category/bags">Tuscan Leather Bags</a></li>
-            <li><a href="/category/watches" class="mobile-nav-link" data-route="/category/watches">Swiss Watches</a></li>
+            <li><a href="/categories" class="mobile-nav-link" data-route="/categories">All Collections</a></li>
+            ${categories.map(category => {
+              const route = categoryRoute(category);
+              return `<li><a href="${AppUtils.escapeHTML(route)}" class="mobile-nav-link" data-route="${AppUtils.escapeHTML(route)}">${AppUtils.escapeHTML(category.name)}</a></li>`;
+            }).join("")}
             ${publishedPages.map(page => `<li><a href="/pages/${encodeURIComponent(page.slug)}" class="mobile-nav-link" data-route="/pages/${encodeURIComponent(page.slug)}">${AppUtils.escapeHTML(page.title)}</a></li>`).join("")}
-            <li><a href="/category/accessories" class="mobile-nav-link" data-route="/category/accessories">Accessories</a></li>
-            <li><a href="/category/electronics" class="mobile-nav-link" data-route="/category/electronics">Audio & Electronics</a></li>
-            <li><a href="/category/home" class="mobile-nav-link" data-route="/category/home">Architectural Living</a></li>
-            <li><a href="/category/beauty" class="mobile-nav-link" data-route="/category/beauty">Botanical Beauty</a></li>
-            <li><a href="/category/sports" class="mobile-nav-link" data-route="/category/sports">Performance Sports</a></li>
-            <li><a href="/category/hiking" class="mobile-nav-link" data-route="/category/hiking">Alpine & Hiking</a></li>
-            <li style="border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px;">
-              <a href="/account" class="mobile-nav-link" data-route="/account" style="font-weight: 600;">Account & Store Studio</a>
-            </li>
           </ul>
         </div>
       </div>
@@ -4873,6 +4870,55 @@ const StoreRenderers = {
   },
 
   renderFooter() {
+    const store = SQLiteEngine.getStore();
+    const categories = SQLiteEngine.getCategories();
+    const publishedPages = SQLiteEngine.getPages(true);
+    const categoryRoute = category => `/category/${encodeURIComponent(category.slug || String(category.name || category.id).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""))}`;
+    const safeExternalUrl = value => {
+      try {
+        const url = new URL(String(value || ""));
+        return url.protocol === "https:" ? url.href : "";
+      } catch {
+        return "";
+      }
+    };
+    const iconMarkup = {
+      WhatsApp: '<path d="M20.5 11.8a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.4-4.7a8.5 8.5 0 1 1 16.1-4Zm-8.5-7a7 7 0 0 0-6 10.6l.3.5-.8 2.5 2.6-.8.5.3a7 7 0 1 0 3.4-13.1Zm3.9 10.1c-.2-.1-1.2-.6-1.4-.6s-.3-.1-.5.1-.5.6-.7.7-.2.2-.5.1a5.7 5.7 0 0 1-1.7-1.1 6.3 6.3 0 0 1-1.2-1.5c-.1-.2 0-.3.1-.4l.3-.4.2-.3v-.3l-.6-1.4c-.2-.4-.4-.3-.5-.3h-.4c-.1 0-.3 0-.5.2s-.7.7-.7 1.7.7 2 .8 2.2a8 8 0 0 0 3.1 2.8c.4.2.8.3 1 .4.4.1.8.1 1.1.1.4-.1 1.2-.5 1.4-1s.2-.9.2-1-.1-.2-.3-.3Z"/>',
+      "Chat with us": '<path d="M12 3a9 9 0 0 0-7.6 13.8L3 21l4.4-1.4A9 9 0 1 0 12 3Zm0 16a7 7 0 0 1-3.6-1l-.5-.3-2.3.7.7-2.3-.3-.5A7 7 0 1 1 12 19Zm-3.5-7h7a1 1 0 0 0 0-2h-7a1 1 0 0 0 0 2Zm0 3h4a1 1 0 0 0 0-2h-4a1 1 0 0 0 0 2Z"/>',
+      Facebook: '<path d="M13.5 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.5 1.6-1.5h1.6V3.9c-.3 0-1.3-.1-2.4-.1-2.4 0-4.1 1.5-4.1 4.2V10H7.5v3h2.7v8h3.3Z"/>',
+      Instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.8" r=".8" fill="currentColor" stroke="none"/>',
+      TikTok: '<path d="M14 3v11.1a4 4 0 1 1-3.5-4V6.8a7 7 0 1 0 6.5 7V9.5a8 8 0 0 0 4 1.1V7.5A5.5 5.5 0 0 1 14 3Z"/>',
+      YouTube: '<path d="M21 7.2a2.5 2.5 0 0 0-1.8-1.8C17.6 5 12 5 12 5s-5.6 0-7.2.4A2.5 2.5 0 0 0 3 7.2 26 26 0 0 0 2.6 12 26 26 0 0 0 3 16.8a2.5 2.5 0 0 0 1.8 1.8C6.4 19 12 19 12 19s5.6 0 7.2-.4a2.5 2.5 0 0 0 1.8-1.8 26 26 0 0 0 .4-4.8 26 26 0 0 0-.4-4.8ZM10 15.2V8.8l5.5 3.2-5.5 3.2Z"/>',
+      X: '<path d="M18.9 3h2.8l-6.2 7.1L22.8 21h-5.7l-4.5-6-5.2 6H4.6l6.6-7.6L4.2 3h5.8l4 5.5L18.9 3Zm-1 16h1.6L9.1 4.9H7.4L17.9 19Z"/>',
+      Location: '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>'
+    };
+    const iconLink = (label, value, floating = false) => {
+      const href = safeExternalUrl(value);
+      const glyph = iconMarkup[label];
+      if (!href || !glyph) return "";
+      const background = label === "WhatsApp" ? "#25D366" : label === "Chat with us" ? "#202124" : "transparent";
+      const color = label === "WhatsApp" ? "#fff" : "inherit";
+      const size = floating ? 52 : 42;
+      const iconSize = floating ? 27 : 22;
+      const fill = label === "Instagram" || label === "Location" ? "none" : "currentColor";
+      return `<a href="${AppUtils.escapeHTML(href)}" target="_blank" rel="noopener noreferrer" aria-label="${AppUtils.escapeHTML(label)}" title="${AppUtils.escapeHTML(label)}" data-eshop-contact-icon="${label.toLowerCase().replace(/\s+/g, "-")}"${floating ? ' data-eshop-floating-contact' : ""} style="width:${size}px;height:${size}px;display:grid;place-items:center;flex:none;border-radius:50%;background:${background};color:${color};border:${label === "WhatsApp" || label === "Chat with us" ? "0" : "1px solid currentColor"};box-shadow:${floating ? "0 3px 14px #0004" : "none"};text-decoration:none"><svg viewBox="0 0 24 24" aria-hidden="true" style="display:block;width:${iconSize}px;height:${iconSize}px;fill:${fill};stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round">${glyph}</svg></a>`;
+    };
+    const contactLinks = [
+      ["Instagram", store.instagram_url], ["Facebook", store.facebook_url],
+      ["TikTok", store.tiktok_url], ["YouTube", store.youtube_url], ["X", store.x_url]
+    ].map(([label, value]) => {
+      return iconLink(label, value);
+    }).join("");
+    const phoneDigits = String(store.phone || "").replace(/[^\d]/g, "");
+    const whatsappHref = safeExternalUrl(store.whatsapp_url) ||
+      (phoneDigits ? `https://wa.me/${phoneDigits}` : "");
+    const chatHref = safeExternalUrl(store.chatbot_url);
+    const address = String(store.location_address || store.location || "").trim();
+    const locationQuery = encodeURIComponent([store.location_name, address].filter(Boolean).join(", "));
+    const mapEmbed = safeExternalUrl(store.location_map_embed_url) ||
+      (locationQuery ? `https://www.google.com/maps?q=${locationQuery}&output=embed` : "");
+    const mapLink = safeExternalUrl(store.location_map_link) ||
+      (locationQuery ? `https://www.google.com/maps/search/?api=1&query=${locationQuery}` : "");
     return `
       <footer class="footer">
         <div class="container">
@@ -4880,69 +4926,45 @@ const StoreRenderers = {
             <div>
               <div class="brand-logo" style="margin-bottom: 16px;">
                 <span class="brand-dot" style="background-color: #FFFFFF;"></span>
-                <span>E-SHOP ATELIER</span>
+                <span>${AppUtils.escapeHTML(store.name || store.title || "E-Shop")}</span>
               </div>
-              <p style="font-size: 0.875rem; color: #A3A39D; line-height: 1.6; max-width: 320px; margin-bottom: 24px;">
-                A curated retail house celebrating archival tailoring, Swiss horology, fine Tuscan leather goods, and architectural living artifacts.
-              </p>
-              <div style="font-size: 0.8125rem; color: #73736C;">
-                Zurich, Switzerland &bull; New York, USA
-              </div>
+              ${store.tagline || store.description ? `<p style="font-size:0.875rem;color:var(--text-muted,#A3A39D);line-height:1.6;max-width:320px;margin-bottom:16px;">${AppUtils.escapeHTML(store.tagline || store.description)}</p>` : ""}
             </div>
 
             <div>
               <h4 class="footer-col-title">Collections</h4>
               <ul class="footer-links-list">
                 <li><a href="/categories" class="footer-link" data-route="/categories">All Collections</a></li>
-                <li><a href="/category/men" class="footer-link" data-route="/category/men">Men's Sartorial</a></li>
-                <li><a href="/category/women" class="footer-link" data-route="/category/women">Women's Contemporary</a></li>
-                <li><a href="/category/shoes" class="footer-link" data-route="/category/shoes">Artisanal Shoes</a></li>
-                <li><a href="/category/watches" class="footer-link" data-route="/category/watches">Precision Horology</a></li>
-                <li><a href="/category/bags" class="footer-link" data-route="/category/bags">Leather Goods</a></li>
+                ${categories.map(category => {
+                  const route = categoryRoute(category);
+                  return `<li><a href="${AppUtils.escapeHTML(route)}" class="footer-link" data-route="${AppUtils.escapeHTML(route)}">${AppUtils.escapeHTML(category.name)}</a></li>`;
+                }).join("")}
               </ul>
             </div>
 
-            <div>
-              <h4 class="footer-col-title">Client Concierge</h4>
-              <ul class="footer-links-list">
-                <li><a href="/contact" class="footer-link" data-route="/contact">Contact Atelier</a></li>
-                <li><a href="/shipping" class="footer-link" data-route="/shipping">Shipping & Delivery</a></li>
-                <li><a href="/returns" class="footer-link" data-route="/returns">Returns & Exchanges</a></li>
-                <li><a href="/help" class="footer-link" data-route="/help">Client Help Center</a></li>
-                <li><a href="/faq" class="footer-link" data-route="/faq">Frequently Asked Questions</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 class="footer-col-title">The House</h4>
-              <ul class="footer-links-list">
-                <li><a href="/about" class="footer-link" data-route="/about">About E-Shop</a></li>
-                <li><a href="/account" class="footer-link" data-route="/account">Account Portal</a></li>
-                <li><a href="/account/store" class="footer-link" data-route="/account/store">Storefront Viewer</a></li>
-                <li><a href="/account/dashboard" class="footer-link" data-route="/account/dashboard">Studio Analytics</a></li>
-                <li><a href="/account/plans" class="footer-link" data-route="/account/plans">Atelier Plans</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 class="footer-col-title">Legal & Privacy</h4>
-              <ul class="footer-links-list">
-                <li><a href="/privacy" class="footer-link" data-route="/privacy">Privacy Policy</a></li>
-                <li><a href="/terms" class="footer-link" data-route="/terms">Terms & Conditions</a></li>
-                <li><a href="/cookies" class="footer-link" data-route="/cookies">Cookie Governance</a></li>
-              </ul>
-            </div>
+            ${publishedPages.length ? `<div><h4 class="footer-col-title">Pages</h4><ul class="footer-links-list">${publishedPages.map(page => `<li><a href="/pages/${encodeURIComponent(page.slug)}" class="footer-link" data-route="/pages/${encodeURIComponent(page.slug)}">${AppUtils.escapeHTML(page.title)}</a></li>`).join("")}</ul></div>` : ""}
           </div>
 
+          ${(contactLinks || (store.whatsapp_enabled && whatsappHref) || (store.chatbot_enabled && chatHref) || address || store.location_name) ? `
+          <section aria-label="Store contact information" style="display:grid;gap:12px;padding:20px 0;border-top:1px solid #333;">
+            <div style="display:flex;flex-wrap:wrap;gap:14px;">
+              ${store.whatsapp_enabled && whatsappHref ? iconLink("WhatsApp", whatsappHref) : ""}
+              ${store.chatbot_enabled && chatHref ? iconLink("Chat with us", chatHref) : ""}
+              ${contactLinks}
+              ${mapLink ? iconLink("Location", mapLink) : ""}
+            </div>
+            ${(address || store.location_name) ? `<div><strong>${AppUtils.escapeHTML(store.location_name || "Find us")}</strong>${address ? `<p>${AppUtils.escapeHTML(address)}</p>` : ""}${mapEmbed ? `<iframe src="${AppUtils.escapeHTML(mapEmbed)}" title="${AppUtils.escapeHTML(store.location_name || "Store")} location map" loading="lazy" style="width:100%;max-width:640px;height:220px;border:0;"></iframe>` : ""}</div>` : ""}
+          </section>` : ""}
+
           <div class="footer-bottom">
-            <div>&copy; 2026 E-Shop Atelier Inc. All rights reserved. Built with pure browser SQLite data layer.</div>
+            <div>&copy; ${new Date().getFullYear()} ${AppUtils.escapeHTML(store.name || store.title || "E-Shop")}. All rights reserved.</div>
             <div style="display: flex; gap: 20px;">
-              <span>Carbon-Neutral Certified</span>
-              <span>Encrypted 256-bit Checkout</span>
+              ${store.email ? `<a href="mailto:${AppUtils.escapeHTML(store.email)}">${AppUtils.escapeHTML(store.email)}</a>` : ""}
             </div>
           </div>
         </div>
       </footer>
+      ${(store.whatsapp_enabled && whatsappHref) || (store.chatbot_enabled && chatHref) ? `<aside aria-label="Quick contact" data-eshop-floating-contacts style="position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));z-index:2147483000;display:flex;flex-direction:column;gap:11px;align-items:center;">${store.whatsapp_enabled && whatsappHref ? iconLink("WhatsApp", whatsappHref, true) : ""}${store.chatbot_enabled && chatHref ? iconLink("Chat with us", chatHref, true) : ""}</aside>` : ""}
     `;
   },
 
@@ -5411,7 +5433,7 @@ const PageRenderers = {
         "offers": {
           "@type": "Offer",
           "url": `${window.location.origin}/product/${product.slug}`,
-          "priceCurrency": "USD",
+          "priceCurrency": String(SQLiteEngine.getStore().currency || "KES").toUpperCase(),
           "price": product.price,
           "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
           "itemCondition": "https://schema.org/NewCondition"
@@ -5850,17 +5872,19 @@ const PageRenderers = {
                 <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #FFF; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">2</span>
                 <span>Secure Payment</span>
               </h2>
-              <p class="studio-panel-note">${builderPreviewMode
+              <p class="studio-panel-note" ${!checkoutAvailable ? 'role="alert"' : ""}>${builderPreviewMode
                 ? "Payment is disabled in website preview."
                 : currency === "KES"
                   ? "After you submit your order, Paystack will open its secure checkout so you can choose an available payment method. This shop never asks for or stores your card PIN, CVV, or full card number."
-                  : `Online payment is not available: this shop uses ${AppUtils.escapeHTML(currency)}, but Paystack checkout is currently configured for KES. Change the shop currency and prices before taking payments.`}</p>
+                  : `Online payment is unavailable because this shop uses ${AppUtils.escapeHTML(currency)} and Paystack checkout is configured for KES. The shop owner must change the website currency to KES in the E-Shop mobile app under Payments, review product prices (they are not converted automatically), then publish the catalog.`}</p>
             </div>
 
-            <button type="submit" class="btn-primary" style="height: 56px; font-size: 1rem;" ${checkoutAvailable ? "" : "disabled"}>
-              <span>${builderPreviewMode ? "Preview Checkout" : "Continue to Paystack"} (${AppUtils.formatMoney(total)})</span>
+            <button type="submit" class="btn-primary" style="height: 56px; font-size: 1rem;" ${checkoutAvailable ? "" : 'disabled aria-describedby="checkout-status"'}>
+              <span>${checkoutAvailable
+                ? `${builderPreviewMode ? "Preview Checkout" : "Continue to Paystack"} (${AppUtils.formatMoney(total)})`
+                : `Paystack unavailable for ${AppUtils.escapeHTML(currency)}`}</span>
             </button>
-            <p role="status" data-checkout-status style="color:var(--text-muted);">${!checkoutAvailable ? `Payments are disabled for ${AppUtils.escapeHTML(currency)} orders.` : ""}</p>
+            <p id="checkout-status" role="${checkoutAvailable ? "status" : "alert"}" data-checkout-status style="color:var(--text-muted);">${!checkoutAvailable ? `Payments are disabled for ${AppUtils.escapeHTML(currency)} orders.` : ""}</p>
           </form>
 
           <!-- Order Summary Sidebar -->
@@ -6984,6 +7008,8 @@ const AppController = {
     const store = { ...SQLiteEngine.getStore(), ...(appearance || {}) };
     const root = document.documentElement;
     const validHex = value => /^#[0-9a-f]{6}$/i.test(value || "");
+    const accent2 = validHex(store.accent2_color) ? store.accent2_color : store.primary_color || "#18181b";
+    const accent3 = validHex(store.accent3_color) ? store.accent3_color : accent2;
     if (store.primary_color && /^#[0-9a-f]{6}$/i.test(store.primary_color)) {
       const channels = store.primary_color.slice(1).match(/.{2}/g).map(channel => parseInt(channel, 16));
       const toHex = values => `#${values.map(channel => Math.round(channel).toString(16).padStart(2, "0")).join("")}`;
@@ -6996,16 +7022,20 @@ const AppController = {
         })
         .reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
       root.style.setProperty("--accent", store.primary_color);
+      root.style.setProperty("--eshop-accent-secondary", accent2);
+      root.style.setProperty("--eshop-accent-tertiary", accent3);
+      root.style.setProperty("--eshop-accent-gradient", `linear-gradient(110deg, ${store.primary_color}, ${accent2}, ${accent3})`);
       root.style.setProperty("--accent-hover", hoverColor);
       root.style.setProperty("--accent-light", lightColor);
       root.style.setProperty("--accent-contrast", luminance > 0.179 ? "#18181B" : "#FFFFFF");
     }
     const background = validHex(store.background_color) ? store.background_color : "#FAFAF8";
     const text = validHex(store.text_color) ? store.text_color : "#141413";
+    const surface = validHex(store.surface_color) ? store.surface_color : "";
     root.style.setProperty("--bg", background);
-    root.style.setProperty("--surface", `color-mix(in srgb, ${background} 96%, ${text})`);
-    root.style.setProperty("--surface-subtle", `color-mix(in srgb, ${background} 90%, ${text})`);
-    root.style.setProperty("--surface-hover", `color-mix(in srgb, ${background} 84%, ${text})`);
+    root.style.setProperty("--surface", surface || `color-mix(in srgb, ${background} 96%, ${text})`);
+    root.style.setProperty("--surface-subtle", surface || `color-mix(in srgb, ${background} 90%, ${text})`);
+    root.style.setProperty("--surface-hover", surface || `color-mix(in srgb, ${background} 84%, ${text})`);
     root.style.setProperty("--border", `color-mix(in srgb, ${background} 84%, ${text})`);
     root.style.setProperty("--border-subtle", `color-mix(in srgb, ${background} 90%, ${text})`);
     root.style.setProperty("--text-main", text);
@@ -7023,17 +7053,69 @@ const AppController = {
     root.style.setProperty("--radius", radius);
     root.style.setProperty("--radius-sm", smallRadius);
     root.style.setProperty("--radius-lg", largeRadius);
-    const fonts = {
-      sans: ['-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', 'Georgia, "Times New Roman", serif'],
-      serif: ['Georgia, "Times New Roman", serif', 'Georgia, "Times New Roman", serif'],
-      humanist: ['"Trebuchet MS", Arial, sans-serif', 'Georgia, "Times New Roman", serif'],
-      geometric: ['"Century Gothic", Futura, sans-serif', 'Georgia, "Times New Roman", serif'],
-      classic: ['Georgia, "Times New Roman", serif', 'Georgia, "Times New Roman", serif'],
-      mono: ['"SFMono-Regular", Consolas, "Liberation Mono", monospace', 'Georgia, "Times New Roman", serif']
+    const safeFont = value => {
+      const font = ({ sans: "DM Sans", serif: "Playfair Display", humanist: "Lato", geometric: "Inter", classic: "Playfair Display", mono: "JetBrains Mono" })[value] || value;
+      return /^[a-z0-9 ]{1,50}$/i.test(font || "") ? `"${font}", sans-serif` : "";
     };
-    const [mainFont, displayFont] = fonts[store.font_family] || fonts.sans;
+    const mainFont = safeFont(store.font_family) || '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    const displayFont = safeFont(store.display_font_family) || mainFont;
     root.style.setProperty("--font-main", mainFont);
     root.style.setProperty("--font-serif", displayFont);
+    const monoFont = safeFont(store.mono_font_family) || mainFont;
+    root.style.setProperty("--font-mono", monoFont);
+    const allFonts = [store.font_family, store.display_font_family, store.mono_font_family]
+      .filter(value => /^[a-z0-9 ]{1,50}$/i.test(value || ""));
+    if (allFonts.length) {
+      let fontLink = document.getElementById("eshop-preview-google-fonts");
+      if (!fontLink) {
+        fontLink = document.createElement("link");
+        fontLink.id = "eshop-preview-google-fonts";
+        fontLink.rel = "stylesheet";
+        document.head.append(fontLink);
+      }
+      fontLink.href = `https://fonts.googleapis.com/css2?${[...new Set(allFonts)].map(font => `family=${encodeURIComponent(font).replace(/%20/g, "+")}:wght@400;500;600;700`).join("&")}&display=swap`;
+    }
+    const shape = store.card_shape || "edgy";
+    const cardRadiusValue = { edgy: "4px", rounded: "16px", pill: "999px", squircle: "28px", elevated: "14px" }[shape] || "0px";
+    root.style.setProperty("--eshop-card-radius", cardRadiusValue);
+    let shapeStyle = document.getElementById("eshop-preview-card-shape");
+    if (!shapeStyle) {
+      shapeStyle = document.createElement("style");
+      shapeStyle.id = "eshop-preview-card-shape";
+      document.head.append(shapeStyle);
+    }
+    const cardSelector = ".product-card,.product-item,.product-tile,[data-eshop-product-id]";
+    const shapeRules = {
+      rugged: "clip-path:polygon(0 0,92% 0,96% 8%,100% 0,100% 92%,92% 96%,100% 100%,8% 100%,4% 92%,0 100%);",
+      slant: "clip-path:polygon(0 0,100% 0,100% 100%,8% 100%);",
+      outlined: "border:2px solid currentColor!important;",
+      terminal: "border:1px dashed currentColor!important;",
+      elevated: "border-color:transparent!important;box-shadow:0 8px 24px #0002!important;",
+      stacked: "box-shadow:4px 4px 0 currentColor!important;",
+      inset: "box-shadow:inset 0 2px 8px #0002!important;"
+    };
+    const primaryActions = "button[type='submit'],.btn-primary,[class*='button-primary'],[class*='primary-button']";
+    const colorMixRules = validHex(store.accent2_color) || validHex(store.accent3_color)
+      ? `${primaryActions}{background-image:linear-gradient(110deg,${store.primary_color},${accent2},${accent3})!important;}.product-card,.product-item,.product-tile,[data-eshop-product-id]{${surface ? `background-color:${surface}!important;` : ""}}[class*='price'],[data-price]{color:${store.primary_color}!important;}`
+      : "";
+    shapeStyle.textContent = `${cardSelector}{border-radius:${cardRadiusValue}!important;${shapeRules[shape] || ""}}${colorMixRules}`;
+    const filterSelected = Boolean(store.color_theme);
+    if (filterSelected) root.dataset.eshopColorFilter = store.color_theme;
+    else delete root.dataset.eshopColorFilter;
+    let filterStyle = document.getElementById("eshop-preview-color-filter");
+    if (!filterStyle) {
+      filterStyle = document.createElement("style");
+      filterStyle.id = "eshop-preview-color-filter";
+      document.head.append(filterStyle);
+    }
+    filterStyle.textContent = filterSelected
+      ? `:root{--background:${background};--foreground:${text};--surface:${surface || background};--surface-2:${surface || background};--accent:${store.primary_color};--signal:${store.primary_color};--eshop-accent-secondary:${accent2};--eshop-accent-tertiary:${accent3};--eshop-accent-gradient:linear-gradient(110deg,${store.primary_color},${accent2},${accent3});color-scheme:${text.toLowerCase() === "#f7f9e9" || background.toLowerCase() === "#151a13" || background.toLowerCase() === "#131124" ? "dark" : "light"};}` +
+        `body{background:${background}!important;color:${text}!important;}#main-navbar,header,footer,.footer{background-color:${surface || background}!important;color:${text}!important;border-color:${store.primary_color}55!important;}` +
+        `${cardSelector}{background-color:${surface || background}!important;color:${text}!important;border-color:${store.primary_color}44!important;}` +
+        `${primaryActions}{background:${store.primary_color}!important;background-image:linear-gradient(110deg,${store.primary_color},${accent2},${accent3})!important;color:${text}!important;border-color:transparent!important;}` +
+        `[class*='price'],[data-price]{color:${store.primary_color}!important;}a:not([class*='button']):not([class*='btn']){color:${accent2};}` +
+        `[class*='badge'],[class*='pill'],[class*='tag'],[class*='category']{border-color:${accent2}77!important;}input,select,textarea{background-color:${surface || background}!important;color:${text}!important;border-color:${store.primary_color}66!important;}`
+      : "";
   },
 
   currentRoute() {
@@ -7974,7 +8056,9 @@ const AppController = {
           productId: node.getAttribute("data-product-id") || "",
           slide: node.getAttribute("data-slide") || "",
           action: node.getAttribute("data-action") || "",
-          label: node.getAttribute("aria-label") || ""
+          label: node.getAttribute("aria-label") || "",
+          href: node.getAttribute("href") || "",
+          text: node.children.length ? "" : (node.textContent || "").trim().slice(0, 160)
         });
         node = node.parentElement;
       }
@@ -7993,9 +8077,12 @@ const AppController = {
     const findByLineage = lineage => {
       if (!Array.isArray(lineage) || !lineage.length) return null;
       const candidates = appRoot.querySelectorAll(lineage[0].tag);
-      return [...candidates].find(element =>
-        JSON.stringify(lineageFor(element)) === JSON.stringify(lineage)
-      ) || null;
+      return [...candidates].find(element => {
+        const currentLineage = lineageFor(element);
+        return currentLineage.length === lineage.length && lineage.every((step, index) =>
+          Object.entries(step).every(([key, value]) => currentLineage[index][key] === value)
+        );
+      }) || null;
     };
     const resolveElement = (edit, lineage = edit.lineage) => {
       let candidate = null;
@@ -8005,7 +8092,7 @@ const AppController = {
         console.error("Saved website element selector is invalid.", error);
       }
       if ((!Array.isArray(lineage) || !lineage.length) && candidate) return candidate;
-      if (candidate && JSON.stringify(lineageFor(candidate)) === JSON.stringify(lineage)) {
+      if (candidate && findByLineage(lineage) === candidate) {
         const textMatches = edit.kind !== "text" ||
           candidate.textContent === edit.originalText || candidate.textContent === edit.text;
         const imageMatches = edit.kind !== "image" ||
@@ -8026,7 +8113,7 @@ const AppController = {
     };
     const validEdits = edits.filter(edit =>
       edit && typeof edit.selector === "string" && edit.selector.startsWith("#app > ") &&
-      ["text", "image", "icon", "link"].includes(edit.kind)
+      ["text", "image", "icon", "link", "group"].includes(edit.kind)
     );
     const orderedEdits = [
       ...validEdits.filter(edit => !edit.deleted),
@@ -8050,14 +8137,22 @@ const AppController = {
           if (link.hasAttribute("data-route")) link.setAttribute("data-route", edit.href);
         }
       }
+      const offsetX = Number(edit.offsetX);
+      const offsetY = Number(edit.offsetY);
+      if (Number.isFinite(offsetX) || Number.isFinite(offsetY)) {
+        element.style.setProperty("--eshop-builder-offset-x", `${Math.max(-240, Math.min(240, Number.isFinite(offsetX) ? offsetX : 0))}px`);
+        element.style.setProperty("--eshop-builder-offset-y", `${Math.max(-240, Math.min(240, Number.isFinite(offsetY) ? offsetY : 0))}px`);
+        element.style.translate = "var(--eshop-builder-offset-x) var(--eshop-builder-offset-y)";
+      }
       const rotation = Number(edit.rotation);
       if (Number.isFinite(rotation) && rotation !== 0) {
         const existingTransform = element.style.transform;
         element.style.transform = `${existingTransform && !existingTransform.includes("rotate(") ? `${existingTransform} ` : ""}rotate(${rotation}deg)`;
       }
+      if (edit.linkDeleted && edit.linkLineage) findByLineage(edit.linkLineage)?.remove();
     }
     for (const edit of validEdits) {
-      if (!edit.linkLineage || edit.deleted || typeof edit.href !== "string") continue;
+      if (!edit.linkLineage || edit.deleted || edit.linkDeleted || typeof edit.href !== "string") continue;
       const link = findByLineage(edit.linkLineage);
       if (link?.matches("a[href]")) {
         link.setAttribute("href", edit.href);

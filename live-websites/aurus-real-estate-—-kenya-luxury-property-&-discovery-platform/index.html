@@ -1,0 +1,3659 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AURUS Real Estate — Kenya Luxury Property & Discovery Platform</title>
+  <meta name="description" content="Discover premier luxury residences, penthouses, modern townhouses, commercial spaces, and prime land across Nairobi, Mombasa, and Kenya." />
+  
+  <!-- Open Graph / Meta -->
+  <meta property="og:title" content="AURUS Real Estate — Kenya Luxury Property & Discovery Platform" />
+  <meta property="og:description" content="Discover premier luxury residences, penthouses, modern townhouses, commercial spaces, and prime land across Nairobi, Mombasa, and Kenya." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Syne -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#0B132B',
+              slate: '#1C2541',
+              dark: '#070C1B',
+              orange: '#E05A2B',
+              'orange-hover': '#C84B1F',
+              'orange-light': '#FFF3EE',
+              stone: '#F8F9FA',
+              border: '#E2E8F0',
+              muted: '#64748B'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Syne"', '"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet CSS for Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Custom CSS for luxury real estate aesthetics -->
+  <style>
+    :root {
+      --brand-navy: #0B132B;
+      --brand-orange: #E05A2B;
+      --brand-stone: #F8F9FA;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: #1E293B;
+      background-color: #FFFFFF;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, .font-display {
+      font-family: 'Syne', 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.02em;
+    }
+    /* Hide scrollbar for clean horizontal rails */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Leaflet popup styling override */
+    .leaflet-popup-content-wrapper {
+      padding: 0;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+    .leaflet-popup-content {
+      margin: 0;
+      line-height: 1.4;
+    }
+    /* Graceful image fallbacks */
+    img {
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+    /* Safe motion defaults */
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+    /* Watermark text styling */
+    .watermark-text {
+      font-size: clamp(4rem, 15vw, 14rem);
+      line-height: 0.8;
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+
+  <!-- Lucide Icons & GSAP + Leaflet via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+<body class="bg-white text-slate-800 antialiased selection:bg-orange-500 selection:text-white">
+
+  <!-- ================= TOP ANNOUNCEMENT / CONTACT TICKER ================= -->
+  <div class="bg-brand-dark text-slate-300 text-xs py-2 px-4 border-b border-white/10 z-50 relative">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-4 text-[11px] sm:text-xs">
+        <span class="inline-flex items-center gap-1.5 text-orange-400 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+          KENYA LUXURY REAL ESTATE ADVISORY
+        </span>
+        <span class="hidden md:inline text-slate-600">|</span>
+        <span class="hidden md:flex items-center gap-1 text-slate-400">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+          Nairobi HQ: Delta Corner, Westlands & Nyali Centre, Mombasa
+        </span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] sm:text-xs">
+        <a href="tel:+254700000000" class="hover:text-white flex items-center gap-1 transition-colors">
+          <i data-lucide="phone" class="w-3 h-3 text-orange-400"></i>
+          +254 (0) 700 892 400
+        </a>
+        <a href="https://wa.me/254700892400" target="_blank" rel="noopener noreferrer" class="hover:text-white flex items-center gap-1 transition-colors">
+          <i data-lucide="message-circle" class="w-3 h-3 text-emerald-400"></i>
+          WhatsApp Desk
+        </a>
+        <span class="text-slate-600">|</span>
+        <!-- Currency Toggle -->
+        <button id="currency-toggle-btn" onclick="toggleCurrency()" class="text-slate-300 hover:text-white font-semibold transition-colors flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded text-[11px]">
+          <span>CURRENCY:</span>
+          <span id="current-currency-label" class="text-orange-400 font-bold">KES</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PRIMARY NAVIGATION HEADER ================= -->
+  <header id="main-header" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Brand Logo -->
+        <a href="#home" class="flex items-center gap-2 group">
+          <div class="flex flex-col">
+            <span class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-navy group-hover:text-brand-orange transition-colors">
+              AURUS<span class="text-brand-orange">.</span>
+            </span>
+            <span class="text-[9px] tracking-[0.28em] uppercase text-slate-400 font-semibold -mt-1">
+              REAL ESTATE KENYA
+            </span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden lg:flex items-center gap-7 text-[13px] font-semibold text-slate-700 uppercase tracking-wider">
+          <a href="#properties" onclick="applyCategoryFilter('all')" class="hover:text-brand-orange transition-colors">Properties</a>
+          <a href="#properties" onclick="applyCategoryFilter('sale')" class="hover:text-brand-orange transition-colors">Buy</a>
+          <a href="#properties" onclick="applyCategoryFilter('rent')" class="hover:text-brand-orange transition-colors">Rent</a>
+          <a href="#properties" onclick="applyCategoryFilter('commercial')" class="hover:text-brand-orange transition-colors">Commercial</a>
+          <a href="#properties" onclick="applyCategoryFilter('land')" class="hover:text-brand-orange transition-colors">Land & Plots</a>
+          <a href="#neighbourhoods" class="hover:text-brand-orange transition-colors">Neighbourhoods</a>
+          <a href="#agents" class="hover:text-brand-orange transition-colors">Agents</a>
+          <a href="#mortgage-calculator" class="hover:text-brand-orange transition-colors">Calculator</a>
+        </nav>
+
+        <!-- Header Actions: Saved Wishlist, Sell CTA & Mobile Toggle -->
+        <div class="flex items-center gap-3">
+          <!-- Saved Properties Shortcut Button -->
+          <a href="#saved" class="relative p-2.5 text-slate-700 hover:text-brand-orange rounded-full hover:bg-slate-50 transition-colors" title="Saved Properties" aria-label="View Saved Properties">
+            <i data-lucide="bookmark" class="w-5 h-5"></i>
+            <span id="saved-count-badge" class="absolute -top-0.5 -right-0.5 bg-brand-orange text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+          </a>
+
+          <!-- Quick Search Icon -->
+          <a href="#properties" class="p-2.5 text-slate-700 hover:text-brand-orange rounded-full hover:bg-slate-50 transition-colors" title="Search Inventory" aria-label="Search Inventory">
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </a>
+
+          <!-- List With Us CTA Button -->
+          <a href="#sell" class="hidden sm:inline-flex items-center justify-center px-5 py-2.5 bg-brand-navy hover:bg-brand-slate text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm hover:shadow">
+            List With Us
+          </a>
+
+          <!-- Mobile Hamburger Toggle -->
+          <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="lg:hidden p-2 text-slate-700 hover:text-brand-orange rounded-lg focus:outline-none" aria-label="Toggle mobile menu">
+            <i data-lucide="menu" id="menu-icon" class="w-6 h-6"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Slide-down Drawer -->
+    <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-slate-200 px-5 pt-3 pb-6 shadow-xl">
+      <div class="flex flex-col gap-3 text-sm font-semibold text-slate-800 uppercase tracking-wide">
+        <a href="#home" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span>Home</span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('all'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span>All Properties</span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('sale'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span>Buy Residential</span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('rent'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span>Rent Homes</span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('commercial'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span>Commercial & Offices</span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('land'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span>Land & Plots</span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#neighbourhoods" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span>Neighbourhood Guides</span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#agents" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span>Our Agents</span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#mortgage-calculator" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span>Mortgage Calculator</span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#sell" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 text-brand-orange flex items-center justify-between">
+          <span>Sell / Rent Out Your Property</span> <i data-lucide="chevron-right" class="w-4 h-4 text-brand-orange"></i>
+        </a>
+        <a href="#saved" onclick="closeMobileMenu()" class="py-2 flex items-center justify-between">
+          <span>Saved Properties</span> <span id="mobile-saved-badge" class="bg-brand-orange text-white text-xs px-2 py-0.5 rounded-full">0</span>
+        </a>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-2">
+        <a href="#sell" onclick="closeMobileMenu()" class="w-full text-center py-3 bg-brand-navy text-white text-xs font-bold uppercase rounded-lg">
+          List Your Property
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT APP CONTAINER (DYNAMIC VIEWS) ================= -->
+  <main id="app-root" class="min-h-screen">
+    <!-- Views rendered dynamically via JavaScript based on URL hash:
+         - #home (Reference image layout)
+         - #properties (Catalogue with full filters & map)
+         - #property/:id (Detailed individual listing)
+         - #agents & #agent/:id (Directory & profiles)
+         - #neighbourhoods & #neighbourhood/:id (Area guides)
+         - #mortgage-calculator (Amortisation tool)
+         - #sell & #rent-out (Owner lead gen)
+         - #saved (Shortlist wishlist & comparison)
+         - #about, #contact, #faq, #guides (Informational)
+    -->
+  </main>
+
+  <!-- ================= GLOBAL MODAL: SCHEDULE VIEWING / INQUIRY ================= -->
+  <div id="viewing-modal" class="fixed inset-0 z-50 hidden bg-brand-dark/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl p-6 relative">
+      <button onclick="closeViewingModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition-colors" aria-label="Close modal">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="mb-5">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-brand-orange">Private Viewing Request</span>
+        <h3 id="modal-property-title" class="font-display text-xl font-bold text-slate-900 mt-1">Schedule a Property Consultation</h3>
+        <p class="text-xs text-slate-500 mt-1">Experience this property in person or via high-definition live video walkthrough with an Aurus senior advisor.</p>
+      </div>
+
+      <!-- Demo Disclaimer Notice -->
+      <div class="bg-orange-50 border border-orange-200/80 rounded-xl p-3 mb-5 text-[11px] text-amber-900 flex items-start gap-2">
+        <i data-lucide="info" class="w-4 h-4 text-orange-600 shrink-0 mt-0.5"></i>
+        <span><strong>Client Notice:</strong> This interactive form stores your viewing reservation in your session. In production, this dispatches real-time SMS and calendar invites to the dedicated agent.</span>
+      </div>
+
+      <form id="viewing-form" onsubmit="handleViewingSubmit(event)" class="space-y-4">
+        <input type="hidden" id="modal-property-id" value="" />
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+          <input type="text" id="v-name" required placeholder="e.g. Cynthia Mwende" class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
+            <input type="email" id="v-email" required placeholder="cynthia@example.co.ke" class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Phone / WhatsApp *</label>
+            <input type="tel" id="v-phone" required placeholder="+254 7..." class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Preferred Date *</label>
+            <input type="date" id="v-date" required class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Preferred Time Window *</label>
+            <select id="v-time" class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange">
+              <option>Morning (09:00 - 12:00)</option>
+              <option selected>Afternoon (13:00 - 16:00)</option>
+              <option>Late Afternoon (16:30 - 18:30)</option>
+              <option>Saturday Morning Private Slot</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Viewing Format</label>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <label class="border border-slate-200 rounded-lg p-2.5 flex items-center gap-2 cursor-pointer hover:bg-slate-50">
+              <input type="radio" name="v-type" value="in-person" checked class="text-brand-orange focus:ring-brand-orange" />
+              <span>In-Person Walkthrough</span>
+            </label>
+            <label class="border border-slate-200 rounded-lg p-2.5 flex items-center gap-2 cursor-pointer hover:bg-slate-50">
+              <input type="radio" name="v-type" value="virtual" class="text-brand-orange focus:ring-brand-orange" />
+              <span>Virtual Live Video Tour</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Special Notes or Questions</label>
+          <textarea id="v-notes" rows="2" placeholder="e.g. Need to review parking space, title deed documentation, or service charges..." class="w-full text-xs px-3.5 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange"></textarea>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow">
+            Confirm Private Viewing Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= GLOBAL ENLARGED PHOTO LIGHTBOX ================= -->
+  <div id="lightbox-modal" class="fixed inset-0 z-50 hidden bg-black/95 flex items-center justify-center p-4">
+    <button onclick="closeLightbox()" class="absolute top-5 right-5 text-white/80 hover:text-white p-2 text-2xl z-50" aria-label="Close lightbox">
+      <i data-lucide="x" class="w-8 h-8"></i>
+    </button>
+    <div class="max-w-5xl w-full flex flex-col items-center">
+      <img id="lightbox-img" src="" alt="Enlarged property view" class="max-h-[82vh] w-auto max-w-full rounded-lg object-contain shadow-2xl" />
+      <p id="lightbox-caption" class="text-white text-sm font-medium mt-3 text-center"></p>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-brand-dark text-slate-300 pt-16 pb-12 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Top Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-white/10">
+        
+        <!-- Brand Summary -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex flex-col">
+            <span class="font-display text-3xl font-extrabold tracking-tight text-white">
+              AURUS<span class="text-brand-orange">.</span>
+            </span>
+            <span class="text-[10px] tracking-[0.3em] uppercase text-slate-400 font-semibold -mt-1">
+              REAL ESTATE KENYA
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed max-w-sm">
+            Aurus is Kenya’s bespoke real estate agency, curating premier residential homes, penthouses, off-plan developments, commercial grade-A properties, and pristine land parcels across Nairobi and the Kenyan Coast.
+          </p>
+          <div class="pt-2 flex items-center gap-3 text-xs text-slate-400">
+            <span class="inline-flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+              Registered Estate Agency No. RE/KE/2026
+            </span>
+          </div>
+        </div>
+
+        <!-- Property Categories -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">Properties</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400 font-medium">
+            <li><a href="#properties" onclick="applyCategoryFilter('sale')" class="hover:text-brand-orange transition-colors">Residential For Sale</a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('rent')" class="hover:text-brand-orange transition-colors">Luxury Rentals</a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('commercial')" class="hover:text-brand-orange transition-colors">Commercial & Offices</a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('land')" class="hover:text-brand-orange transition-colors">Land & Gated Plots</a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('off-plan')" class="hover:text-brand-orange transition-colors">Off-Plan Developments</a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('penthouses')" class="hover:text-brand-orange transition-colors">Penthouses</a></li>
+          </ul>
+        </div>
+
+        <!-- Prime Locations -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">Prime Areas</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400 font-medium">
+            <li><a href="#neighbourhood/westlands" class="hover:text-brand-orange transition-colors">Westlands, Nairobi</a></li>
+            <li><a href="#neighbourhood/karen" class="hover:text-brand-orange transition-colors">Karen & Lang'ata</a></li>
+            <li><a href="#neighbourhood/kilimani" class="hover:text-brand-orange transition-colors">Kilimani & Kileleshwa</a></li>
+            <li><a href="#neighbourhood/lavington" class="hover:text-brand-orange transition-colors">Lavington & Riverside</a></li>
+            <li><a href="#neighbourhood/runda" class="hover:text-brand-orange transition-colors">Runda & Gigiri</a></li>
+            <li><a href="#neighbourhood/diani" class="hover:text-brand-orange transition-colors">Diani & Nyali, Coast</a></li>
+          </ul>
+        </div>
+
+        <!-- Agency & Advisory -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">Advisory & Client Desk</h4>
+          <ul class="space-y-2.5 text-xs text-slate-400 font-medium">
+            <li><a href="#sell" class="hover:text-brand-orange transition-colors">Sell With Aurus</a></li>
+            <li><a href="#rent-out" class="hover:text-brand-orange transition-colors">Landlord Management</a></li>
+            <li><a href="#valuation" class="hover:text-brand-orange transition-colors">Valuation Consultation</a></li>
+            <li><a href="#mortgage-calculator" class="hover:text-brand-orange transition-colors">Mortgage Calculator (KES)</a></li>
+            <li><a href="#agents" class="hover:text-brand-orange transition-colors">Senior Real Estate Advisors</a></li>
+            <li><a href="#guides" class="hover:text-brand-orange transition-colors">Buyer & Investor Guide</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar & Disclaimers -->
+      <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+        <div>
+          &copy; 2026 AURUS Real Estate Limited. All rights reserved. Registered in Kenya.
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="#about" class="hover:text-slate-400 transition-colors">About Us</a>
+          <a href="#faq" class="hover:text-slate-400 transition-colors">FAQs</a>
+          <a href="#contact" class="hover:text-slate-400 transition-colors">Contact</a>
+          <span class="text-slate-700">·</span>
+          <span class="text-slate-500">Illustrative Portfolio & Live Architectural Discovery</span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ================= EMBEDDED JAVASCRIPT APPLICATION CODE ================= -->
+  <script>
+    /* ========================================================================
+       AURUS REAL ESTATE PLATFORM — KENYAN LUXURY REAL ESTATE SYSTEM
+       Single-File Vanilla SPA Architecture with GSAP & Leaflet Integration
+       ======================================================================== */
+
+    // --- Global State ---
+    const STATE = {
+      currentRoute: 'home',
+      currentPropertyId: null,
+      currentAgentId: null,
+      currentNeighbourhoodId: null,
+      currency: 'KES', // KES or USD
+      kesToUsdRate: 130, // 1 USD = ~130 KES
+      savedProperties: JSON.parse(localStorage.getItem('aurus_saved_properties') || '[]'),
+      filterCriteria: {
+        category: 'all', // 'all', 'sale', 'rent', 'commercial', 'land', 'off-plan', 'penthouses'
+        location: 'all',
+        type: 'all',
+        minPrice: 0,
+        maxPrice: 500000000,
+        bedrooms: 'all',
+        furnishing: 'all',
+        searchQuery: '',
+        sortBy: 'featured'
+      },
+      mapInstance: null,
+      markers: []
+    };
+
+    // --- Property Inventory Catalogue (Realistic Kenya Portfolio) ---
+    const PROPERTIES_DATA = [
+      {
+        id: 'prop-1',
+        title: 'Azure Palms Residence',
+        tag: 'EXCLUSIVE',
+        purpose: 'sale',
+        category: 'Residential',
+        type: 'Penthouse',
+        priceKes: 85000000,
+        rentPeriod: null,
+        location: 'Westlands, Nairobi',
+        neighbourhood: 'westlands',
+        address: 'Riverside Drive enclave, Westlands, Nairobi',
+        lat: -1.2642,
+        lng: 36.8045,
+        beds: 4,
+        baths: 5,
+        sqm: 520,
+        parking: 3,
+        yearBuilt: 2024,
+        furnishing: 'Unfurnished',
+        images: [
+          'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'A triumphant architectural penthouse crowning Riverside with 360-degree skyline views, private plunge pool, and floor-to-ceiling glass facades.',
+        fullDesc: 'Rising majestically above the leafy tree canopies of Riverside Drive in Westlands, the Azure Palms Residence represents the zenith of contemporary Kenyan architectural ambition. Engineered with European double-glazed acoustic curtain walls, Italian porcelain slabs, and an expansive 140 sqm wraparound terrace, this duplex penthouse commands uninterrupted views over the Nairobi skyline and Karura Forest ridgeline. Features include a dedicated chef’s preparation scullery, dual staff quarters (DSQ), private high-speed biometric elevator access, and a climate-controlled master suite with marble spa finishes.',
+        amenities: [
+          'Private Heated Plunge Pool',
+          'Biometric High-Speed Lift',
+          'Dual Staff Quarters (DSQ)',
+          'Borehole & 100kL Storage',
+          'Full Generator Backup',
+          'Smart Home Automation',
+          'Solar Water Heating',
+          '24/7 CCTV & Armed Patrol',
+          'Private 3-Bay Parking'
+        ],
+        agentId: 'agent-1',
+        isFeatured: true
+      },
+      {
+        id: 'prop-2',
+        title: 'Sereniti Ridge Villa',
+        tag: 'FOR SALE',
+        purpose: 'sale',
+        category: 'Residential',
+        type: 'Luxury Villa',
+        priceKes: 125000000,
+        rentPeriod: null,
+        location: 'Karen, Nairobi',
+        neighbourhood: 'karen',
+        address: 'Mbagathi Ridge, Karen, Nairobi',
+        lat: -1.3320,
+        lng: 36.7088,
+        beds: 5,
+        baths: 6,
+        sqm: 780,
+        parking: 4,
+        yearBuilt: 2023,
+        furnishing: 'Unfurnished',
+        images: [
+          'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Set on 0.5 acre of mature indigenous woodland in prime Karen, featuring soaring double-height timber ceilings, heated pool, and bespoke wine cellar.',
+        fullDesc: 'Situated in the most coveted diplomatic quadrant of Karen on Mbagathi Ridge, Sereniti Ridge Villa blends organic African hardwood accents with crisp Scandinavian minimalism. The estate enjoys a serene half-acre landscaped sanctuary bordered by indigenous podo trees and stone perimeter walls with laser perimeter alarms. The expansive living hall boasts a double-sided volcanic stone hearth, leading seamlessly to an outdoor cedar pergola and infinity heated swimming pool.',
+        amenities: [
+          '0.5 Acre Private Garden',
+          'Heated Infinity Pool',
+          'Subterranean Wine Cellar',
+          'Dedicated Study / Library',
+          'Solar Inverter 15kVA',
+          '2-Bed Detached DSQ',
+          'Electric Perimeter Fence',
+          'Deep Borehole Water',
+          'Carport for 4 Vehicles'
+        ],
+        agentId: 'agent-1',
+        isFeatured: true
+      },
+      {
+        id: 'prop-3',
+        title: 'The Sianna Penthouse',
+        tag: 'EXCLUSIVE',
+        purpose: 'sale',
+        category: 'Residential',
+        type: 'Penthouse',
+        priceKes: 68000000,
+        rentPeriod: null,
+        location: 'Kileleshwa, Nairobi',
+        neighbourhood: 'kilimani',
+        address: 'Gatundu Road, Kileleshwa, Nairobi',
+        lat: -1.2789,
+        lng: 36.7865,
+        beds: 3,
+        baths: 4,
+        sqm: 390,
+        parking: 2,
+        yearBuilt: 2024,
+        furnishing: 'Furnished',
+        images: [
+          'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Curated Scandinavian-inspired designer penthouse offering sunlit dual lounges, designer German kitchen, and private rooftop sky deck.',
+        fullDesc: 'A masterclass in spatial proportion, The Sianna Penthouse occupies the top two tiers of a boutique nine-unit development in tranquil Kileleshwa. Fitted out with integrated Miele appliances, custom quartz surfaces, and floor-to-ceiling double-laminated glazing, this home maximizes natural cross-ventilation while eliminating urban acoustic interference. Fully furnished with custom teak woodwork and designer European lighting fixtures.',
+        amenities: [
+          'Private Sky Deck Lounge',
+          'Designer German Kitchen',
+          'Rooftop Residents Clubhouse',
+          'High-Speed Elevators',
+          'Full Power Generator',
+          'Dedicated Security Post',
+          'Borehole & Water Purifier'
+        ],
+        agentId: 'agent-4',
+        isFeatured: true
+      },
+      {
+        id: 'prop-4',
+        title: 'Zamani Grand Manor',
+        tag: 'FOR SALE',
+        purpose: 'sale',
+        category: 'Residential',
+        type: 'Detached House',
+        priceKes: 155000000,
+        rentPeriod: null,
+        location: 'Runda, Nairobi',
+        neighbourhood: 'runda',
+        address: 'Pan Africa Insurance Avenue, Runda, Nairobi',
+        lat: -1.2185,
+        lng: 36.8188,
+        beds: 5,
+        baths: 6,
+        sqm: 850,
+        parking: 6,
+        yearBuilt: 2022,
+        furnishing: 'Unfurnished',
+        images: [
+          'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1512915922686-57c11dde9b6b?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'UN-cleared ambassadorial residence set on 0.75 acre in elite Runda with heated pool, private squash court, and detached diplomatic guard lodge.',
+        fullDesc: 'Positioned within Runda’s ultra-secure diplomatic buffer minutes from the UN Headquarters at Gigiri, Zamani Grand Manor provides an imposing residence designed for high-profile entertaining and uncompromised privacy. Featuring a double-volume foyer with dual sweeping staircases, grand banquet dining hall, soundproof private cinema, separate guest wing, and mature tropical gardens with computerized irrigation.',
+        amenities: [
+          '0.75 Acre Landscaped Grounds',
+          'Private Squash Court',
+          'Private Cinema Screening Room',
+          'Diplomatic Guard Lodge',
+          'Heated Olympic-Grade Lap Pool',
+          '3-Unit Staff Quarters',
+          'Commercial Grade Generator',
+          'High-Yield Borehole'
+        ],
+        agentId: 'agent-1',
+        isFeatured: true
+      },
+      {
+        id: 'prop-5',
+        title: 'Modern Haven Loft',
+        tag: 'FOR SALE',
+        purpose: 'sale',
+        category: 'Residential',
+        type: 'Apartment',
+        priceKes: 28500000,
+        rentPeriod: null,
+        location: 'Kilimani, Nairobi',
+        neighbourhood: 'kilimani',
+        address: 'Dennis Pritt Road, Kilimani, Nairobi',
+        lat: -1.2891,
+        lng: 36.7932,
+        beds: 2,
+        baths: 2,
+        sqm: 145,
+        parking: 2,
+        yearBuilt: 2024,
+        furnishing: 'Unfurnished',
+        images: [
+          'https://images.unsplash.com/photo-1502005229762-ee10234b7214?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1560184897-ae75f418493e?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Sophisticated open-concept urban loft in prime Kilimani. High rental yield potential (10.2% p.a.), rooftop infinity pool, and concierge services.',
+        fullDesc: 'Targeted at discerning executive investors and urban professionals, Modern Haven Loft offers an effortless blend of industrial-chic concrete textures and warm walnut woodwork. Dennis Pritt Road provides seamless access to Yaya Centre, State House Road, and Westlands via the Ring Road bypass. Includes residents gym, heated rooftop lap pool, and co-working lounge.',
+        amenities: [
+          'Rooftop Infinity Pool',
+          'Equipped Technogym Center',
+          'Co-working Lounge & Café',
+          'Card Access Control',
+          'Backup Power Generator',
+          'High Return Short-Stay Friendly',
+          'Covered Parking'
+        ],
+        agentId: 'agent-4',
+        isFeatured: true
+      },
+      {
+        id: 'prop-6',
+        title: 'Vistana Lake View Manor',
+        tag: 'FOR SALE',
+        purpose: 'sale',
+        category: 'Residential',
+        type: 'Luxury Villa',
+        priceKes: 95000000,
+        rentPeriod: null,
+        location: 'Lake Naivasha, Rift Valley',
+        neighbourhood: 'upcountry',
+        address: 'South Lake Road, Moi South, Naivasha',
+        lat: -0.7410,
+        lng: 36.3850,
+        beds: 4,
+        baths: 4,
+        sqm: 600,
+        parking: 4,
+        yearBuilt: 2021,
+        furnishing: 'Furnished',
+        images: [
+          'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Country retreat on 1.2 acres touching Lake Naivasha wildlife sanctuary. Spectacular acacia canopy with zebras and giraffes roaming the frontage.',
+        fullDesc: 'A rare freehold lifestyle sanctuary just 80 minutes from Nairobi via the scenic escarpment highway. Vistana Lake View Manor provides an authentic country lifestyle with all contemporary luxuries: vaulted cedar timber trusses, open fireplace, solar microgrid, private boat dock, and guest cottage.',
+        amenities: [
+          '1.2 Acres Waterfront Land',
+          'Private Boat Mooring Dock',
+          'Detached Guest Cottage',
+          'Full Off-Grid Solar & Tesla Battery',
+          'Fireplace & Wrap Verandah',
+          'Game-Proof Electric Fence',
+          'Pure Spring Water Supply'
+        ],
+        agentId: 'agent-3',
+        isFeatured: true
+      },
+      {
+        id: 'prop-7',
+        title: 'Coral Bay Oceanfront Villa',
+        tag: 'EXCLUSIVE',
+        purpose: 'sale',
+        category: 'Residential',
+        type: 'Luxury Villa',
+        priceKes: 115000000,
+        rentPeriod: null,
+        location: 'Diani Beach, South Coast',
+        neighbourhood: 'diani',
+        address: 'Galu Beach Road, Diani Beach, Kwale',
+        lat: -4.3450,
+        lng: 39.5760,
+        beds: 4,
+        baths: 5,
+        sqm: 550,
+        parking: 3,
+        yearBuilt: 2023,
+        furnishing: 'Furnished',
+        images: [
+          'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Direct powder-white beachfront property on Galu Beach, Diani. Swahili architecture fused with modern Italian terrazzo and private saltwater pool.',
+        fullDesc: 'Award-winning coastal residence with direct barefoot access to Africa’s most celebrated white sand beach. High ceilings framed with ancient mangrove beams allow cooling Indian Ocean trade winds to flow naturally through the open-air pavilions. Comes with licensed private security, desalinated water plant, staff quarters, and high rental track record as a luxury holiday retreat.',
+        amenities: [
+          'Direct Powder Sand Beachfront',
+          'Private Saltwater Pool',
+          'Desalination Reverse Osmosis Plant',
+          'Solar Power Backup',
+          'Swahili Coral Stone Finish',
+          'Staff Quarters for 3',
+          'CCTV & Night Guard Dog Patrol'
+        ],
+        agentId: 'agent-3',
+        isFeatured: false
+      },
+      {
+        id: 'prop-8',
+        title: 'The Mirage Signature Suite',
+        tag: 'FOR RENT',
+        purpose: 'rent',
+        category: 'Residential',
+        type: 'Apartment',
+        priceKes: 350000,
+        rentPeriod: 'month',
+        location: 'Westlands, Nairobi',
+        neighbourhood: 'westlands',
+        address: 'Chiromo Road, Westlands, Nairobi',
+        lat: -1.2655,
+        lng: 36.8080,
+        beds: 3,
+        baths: 3,
+        sqm: 240,
+        parking: 2,
+        yearBuilt: 2024,
+        furnishing: 'Furnished',
+        images: [
+          'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Fully serviced executive residence in the commercial beating heart of Westlands. Includes twice-weekly housekeeping and full club amenities.',
+        fullDesc: 'Designed specifically for multinational expatriates and visiting corporate directors, this turnkey 3-bedroom suite comes furnished with plush custom pieces, imported Egyptian cotton linens, smart entertainment systems, and high-speed fiber connection. Rent is fully inclusive of building service charge, high-speed internet, and gym access.',
+        amenities: [
+          'Turnkey Luxury Furnishings',
+          'Twice-Weekly Housekeeping',
+          'Heated Swimming Pool',
+          'Wellness Spa & Sauna',
+          'On-site Executive Café',
+          'High Speed Elevators',
+          '24/7 Concierge Desk'
+        ],
+        agentId: 'agent-4',
+        isFeatured: true
+      },
+      {
+        id: 'prop-9',
+        title: 'Lavington Garden Courtyard',
+        tag: 'FOR RENT',
+        purpose: 'rent',
+        category: 'Residential',
+        type: 'Townhouse',
+        priceKes: 280000,
+        rentPeriod: 'month',
+        location: 'Lavington, Nairobi',
+        neighbourhood: 'lavington',
+        address: 'James Gichuru Road enclave, Lavington, Nairobi',
+        lat: -1.2820,
+        lng: 36.7710,
+        beds: 4,
+        baths: 4,
+        sqm: 380,
+        parking: 3,
+        yearBuilt: 2022,
+        furnishing: 'Unfurnished',
+        images: [
+          'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Warm family townhouse in a quiet gated court of only 6 residences. Mature garden, domestic staff quarters, and walk to top international schools.',
+        fullDesc: 'Located off James Gichuru Road within minutes of Strathmore School, Braeburn, and St. Austin’s Academy, this spacious 4-bedroom all ensuite townhouse offers a safe haven for growing families. The family lounge opens onto a sun-dappled patio and manicured private lawn.',
+        amenities: [
+          'Gated Community of 6 Units',
+          'Private Manicured Garden',
+          'Family TV Room / Study',
+          'Full Generator Backup',
+          'Staff Quarters (DSQ)',
+          'Electric Perimeter Fence',
+          'Solar Heated Water'
+        ],
+        agentId: 'agent-1',
+        isFeatured: false
+      },
+      {
+        id: 'prop-10',
+        title: 'Gigiri Diplomatic Residence',
+        tag: 'FOR RENT',
+        purpose: 'rent',
+        category: 'Residential',
+        type: 'Detached House',
+        priceKes: 650000,
+        rentPeriod: 'month',
+        location: 'Gigiri, Nairobi',
+        neighbourhood: 'gigiri',
+        address: 'United Nations Crescent, Gigiri, Nairobi',
+        lat: -1.2310,
+        lng: 36.8120,
+        beds: 5,
+        baths: 6,
+        sqm: 700,
+        parking: 5,
+        yearBuilt: 2021,
+        furnishing: 'Unfurnished',
+        images: [
+          'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Official UN security-certified diplomatic residence on 1.0 acre in Gigiri. Safe haven blast room, perimeter guard lodge, and heated pool.',
+        fullDesc: 'Pre-certified to meet the highest multilateral diplomatic security criteria (MOSS compliant). Situated on UN Crescent with reinforced concrete boundary walls, electronic anti-ram gate barriers, perimeter beam detectors, and a dedicated bullet-resistant safe haven chamber. Features five spacious suites, chef kitchen, and lush rolling grounds.',
+        amenities: [
+          '1.0 Acre Land Area',
+          'UN Security Certified (MOSS)',
+          'Reinforced Safe Haven Room',
+          'Heated Swimming Pool',
+          'Dual Guard Lodges',
+          'Heavy Commercial Generator',
+          'Staff Housing for 4'
+        ],
+        agentId: 'agent-1',
+        isFeatured: false
+      },
+      {
+        id: 'prop-11',
+        title: 'The Delta Corporate Tower Floor',
+        tag: 'COMMERCIAL',
+        purpose: 'commercial',
+        category: 'Commercial',
+        type: 'Commercial Office',
+        priceKes: 185000000,
+        rentPeriod: null,
+        location: 'Upper Hill, Nairobi',
+        neighbourhood: 'upper-hill',
+        address: 'Hospital Road, Upper Hill, Nairobi',
+        lat: -1.2980,
+        lng: 36.8150,
+        beds: 0,
+        baths: 8,
+        sqm: 1200,
+        parking: 15,
+        yearBuilt: 2023,
+        furnishing: 'Shell & Core',
+        images: [
+          'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Full floor plate (1,200 sqm) Grade-A corporate office in Nairobi’s financial district. Ideal for regional headquarters, banks, or law firms.',
+        fullDesc: 'Offering unrivaled corporate prestige in Upper Hill, this expansive 1,200 sqm floor plate features 3.8m finished ceiling clearance, raised access flooring provisions, and uninterrupted views across Nairobi National Park to the south. Served by six high-speed destination-controlled Schindler elevators and redundant fiber feeds.',
+        amenities: [
+          '15 Dedicated Basement Parking Bays',
+          'Six High-Speed Schindler Lifts',
+          'N+1 Dual Generator Redundancy',
+          'LEED Certified Green Architecture',
+          'Borehole & Municipal Connections',
+          'Fiber Optic Backbone',
+          '24/7 Armed Building Security'
+        ],
+        agentId: 'agent-2',
+        isFeatured: true
+      },
+      {
+        id: 'prop-12',
+        title: 'Karen Miotoni Estate Plot',
+        tag: 'LAND & PLOTS',
+        purpose: 'land',
+        category: 'Land',
+        type: 'Residential Plot',
+        priceKes: 65000000,
+        rentPeriod: null,
+        location: 'Karen, Nairobi',
+        neighbourhood: 'karen',
+        address: 'Miotoni West Road, Karen, Nairobi',
+        lat: -1.3190,
+        lng: 36.7210,
+        beds: 0,
+        baths: 0,
+        sqm: 2023, // 0.50 Acre
+        parking: 0,
+        yearBuilt: 0,
+        furnishing: 'Bare Land',
+        images: [
+          'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Prime 0.50 Acre red soil parcel in elite Miotoni West. Clean freehold title deed, mature indigenous trees, and ready water/power connections.',
+        fullDesc: 'A pristine half-acre development plot located inside the prestigious Miotoni gated homeowners association in Karen. The land is gently sloping, perfectly drained, with fertile red volcanic soil and a perimeter already secured by electric boundary fencing. Clean individual title deed verified and ready for seamless transfer.',
+        amenities: [
+          '0.50 Acre (0.202 Ha) Verified Size',
+          'Clean Freehold Title Deed',
+          'Gated Residents Association',
+          'Tarmac Access Road to Gate',
+          'KPLC Mains Connected at Site',
+          'Karen Water & Borehole Hookup',
+          'Pre-Approved Single Dwelling Zoning'
+        ],
+        agentId: 'agent-2',
+        isFeatured: true
+      },
+      {
+        id: 'prop-13',
+        title: 'The Apex Residences (Off-Plan)',
+        tag: 'NEW DEVELOPMENT',
+        purpose: 'off-plan',
+        category: 'Residential',
+        type: 'Apartment',
+        priceKes: 42000000,
+        rentPeriod: null,
+        location: 'Parklands, Nairobi',
+        neighbourhood: 'westlands',
+        address: '4th Parklands Avenue, Nairobi',
+        lat: -1.2610,
+        lng: 36.8190,
+        beds: 3,
+        baths: 3,
+        sqm: 220,
+        parking: 2,
+        yearBuilt: 2027,
+        furnishing: 'Unfurnished',
+        images: [
+          'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Contemporary off-plan development with completion scheduled for Q4 2027. 20% deposit with tailored 36-month construction milestones.',
+        fullDesc: 'The Apex represents the next chapter in Parklands luxury living, situated within walking distance of Aga Khan University Hospital and Diamond Plaza. Featuring ultra-wide open layouts, heated indoor swimming pool, private prayer hall provisions, rooftop running track, and high-spec solar integration.',
+        amenities: [
+          'Flexible 36-Month Milestone Plan',
+          'Rooftop Running Track',
+          'Heated Indoor Pool',
+          'High Rental Yield Projection (11%)',
+          'Full Standby Generators',
+          'Dedicated Visitor Parking',
+          'Children Play Sanctuary'
+        ],
+        agentId: 'agent-4',
+        isFeatured: true
+      },
+      {
+        id: 'prop-14',
+        title: 'Nyali Breeze Ocean Villa',
+        tag: 'FOR SALE',
+        purpose: 'sale',
+        category: 'Residential',
+        type: 'Luxury Villa',
+        priceKes: 78000000,
+        rentPeriod: null,
+        location: 'Nyali, Mombasa',
+        neighbourhood: 'nyali',
+        address: 'Links Road, Nyali, Mombasa',
+        lat: -4.0320,
+        lng: 39.7040,
+        beds: 4,
+        baths: 4,
+        sqm: 490,
+        parking: 3,
+        yearBuilt: 2023,
+        furnishing: 'Furnished',
+        images: [
+          'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Coastal manor in old Nyali with private pool, sea-view balconies, and landscaped palms just 400m from Nyali Beach and Golf Club.',
+        fullDesc: 'Situated in the quietest residential pocket of Old Nyali, this modern coastal villa features generous breezy verandas, coral stone feature walls, an outdoor barbecue bar, and a private 12m lap pool. Close to Nyali Golf & Country Club, Premier Hospital, and international schools.',
+        amenities: [
+          'Private 12m Swimming Pool',
+          '400m to Ocean Beach Access',
+          'Mature Palm Tree Garden',
+          'Borehole & Desalination Unit',
+          'Solar Inverter Backup',
+          'Staff Quarters (DSQ)',
+          'Secure Perimeter Security'
+        ],
+        agentId: 'agent-3',
+        isFeatured: false
+      },
+      {
+        id: 'prop-15',
+        title: 'Syokimau Gateway Logistics Park',
+        tag: 'COMMERCIAL',
+        purpose: 'commercial',
+        category: 'Commercial',
+        type: 'Warehouse',
+        priceKes: 95000000,
+        rentPeriod: null,
+        location: 'Syokimau / Mombasa Road',
+        neighbourhood: 'commercial',
+        address: 'Airport Road enclave, Syokimau, Machakos/Nairobi',
+        lat: -1.3650,
+        lng: 36.9320,
+        beds: 0,
+        baths: 4,
+        sqm: 1800,
+        parking: 10,
+        yearBuilt: 2023,
+        furnishing: 'Industrial',
+        images: [
+          'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Modern 1,800 sqm high-clearance warehouse (11m eaves) adjacent to SGR Nairobi Terminus and JKIA Air Cargo terminal. Heavy power connected.',
+        fullDesc: 'Specifically engineered for regional FMCG distribution and pharmaceutical cold storage logistics. Features a 1,800 sqm clear-span warehouse floor, 3-phase heavy industrial 315 kVA transformer on-site, dedicated container truck turning circle, and 250 sqm mezzanine executive offices.',
+        amenities: [
+          '11m Clear Eaves Height',
+          'Direct SGR & JKIA Freight Access',
+          '3-Phase 315 kVA Transformer',
+          'Wide Container Turning Bay',
+          'Mezzanine Administration Suite',
+          'Fire Suppression Sprinklers',
+          'Weighbridge Provision'
+        ],
+        agentId: 'agent-2',
+        isFeatured: false
+      },
+      {
+        id: 'prop-16',
+        title: 'Diani Palms Beachfront Plot',
+        tag: 'LAND & PLOTS',
+        purpose: 'land',
+        category: 'Land',
+        type: 'Beachfront Plot',
+        priceKes: 48000000,
+        rentPeriod: null,
+        location: 'Diani Beach, Kwale',
+        neighbourhood: 'diani',
+        address: 'Beachfront strip, Diani Beach, Kwale',
+        lat: -4.3120,
+        lng: 39.5820,
+        beds: 0,
+        baths: 0,
+        sqm: 3035, // 0.75 Acre
+        parking: 0,
+        yearBuilt: 0,
+        furnishing: 'Bare Land',
+        images: [
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+          'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'
+        ],
+        shortDesc: 'Rare 0.75 Acre direct beachfront land in Diani. Majestic baobab trees, white coral sands, and ready approvals for boutique resort or luxury private villa.',
+        fullDesc: 'Positioned on the pristine coastal corridor of Diani, this flat rectangular parcel commands 35 meters of frontage to the warm Indian Ocean. Clean commercial/residential zoning with clean title and clear beacon coordinates.',
+        amenities: [
+          '0.75 Acre (35m Ocean Frontage)',
+          'Freehold Beach Title',
+          'Ancient Baobabs & Palms',
+          'Paved Access Lane',
+          'Boutique Hospitality Ready'
+        ],
+        agentId: 'agent-3',
+        isFeatured: false
+      }
+    ];
+
+    // --- Agent Profiles Directory ---
+    const AGENTS_DATA = [
+      {
+        id: 'agent-1',
+        name: 'Faith Mwangi',
+        role: 'Senior Director — Luxury Residential',
+        specialty: 'Karen, Runda & Lavington Estates',
+        phone: '+254 700 892 401',
+        whatsapp: '254700892401',
+        email: 'faith.mwangi@aurusproperties.co.ke',
+        image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
+        bio: 'With over 14 years specializing in high-value diplomatic enclaves, Faith orchestrates acquisitions for international ambassadors, institutional investors, and premier Kenyan family offices.',
+        activeListingsCount: 8
+      },
+      {
+        id: 'agent-2',
+        name: 'David Kiprop',
+        role: 'Head of Commercial Advisory & Land',
+        specialty: 'Upper Hill, Westlands & Industrial Corridors',
+        phone: '+254 700 892 402',
+        whatsapp: '254700892402',
+        email: 'david.kiprop@aurusproperties.co.ke',
+        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+        bio: 'David leads Aurus’s corporate transactions desk, advising multinational corporations on Grade-A office leases, development site syndications, and industrial distribution parks.',
+        activeListingsCount: 6
+      },
+      {
+        id: 'agent-3',
+        name: 'Amina Hassan',
+        role: 'Director — Coast & Holiday Residences',
+        specialty: 'Diani Beach, Nyali & Watamu',
+        phone: '+254 700 892 403',
+        whatsapp: '254700892403',
+        email: 'amina.hassan@aurusproperties.co.ke',
+        image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80',
+        bio: 'A native of the Kenyan coast, Amina brings unparalleled local insight into beachfront titles, luxury boutique hospitality developments, and private oceanfront sanctuaries.',
+        activeListingsCount: 5
+      },
+      {
+        id: 'agent-4',
+        name: 'Kenneth Otieno',
+        role: 'Director — Urban Developments & Rentals',
+        specialty: 'Westlands, Kilimani & Off-Plan Projects',
+        phone: '+254 700 892 404',
+        whatsapp: '254700892404',
+        email: 'kenneth.otieno@aurusproperties.co.ke',
+        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
+        bio: 'Kenneth combines rigorous financial modeling with deep property market insights to advise buy-to-let investors on high-yield apartments and upcoming off-plan schemes.',
+        activeListingsCount: 7
+      }
+    ];
+
+    // --- Neighbourhood Area Profiles ---
+    const NEIGHBOURHOODS_DATA = [
+      {
+        id: 'westlands',
+        name: 'Westlands',
+        subtitle: 'The Cosmopolitan Commercial & Nightlife Epicenter',
+        avgPrice: 'KES 24,000,000 – 140,000,000',
+        pricePerSqm: 'KES 145,000 / sqm',
+        lifestyle: 'Urban Luxury, Fine Dining, Commercial Grade A Hubs',
+        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
+        highlights: ['Sarit Centre & Westgate', 'Delta Corner Corporate Hub', 'Expressway Direct Access', 'Karura Forest Proximity'],
+        description: 'Westlands has evolved into Nairobi’s undisputed commercial capital, offering a vibrant mix of Michelin-grade culinary destinations, luxury high-rise penthouses, and premier multinational headquarters.'
+      },
+      {
+        id: 'karen',
+        name: 'Karen',
+        subtitle: 'Equestrian Grandeur & Lush Half-Acre Sanctuaries',
+        avgPrice: 'KES 75,000,000 – 250,000,000',
+        pricePerSqm: 'KES 130,000 / sqm',
+        lifestyle: 'Wooded Estates, Country Clubs, Elite International Schools',
+        image: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80',
+        highlights: ['Karen Country Club', 'The Hub Karen Shopping Mall', 'Hillcrest & Banda Schools', 'Giraffe Sanctuary'],
+        description: 'Characterized by strict zoning laws preserving minimum half-acre plots, Karen offers a tranquil woodland sanctuary favored by dignitaries, senior executives, and established dynasties.'
+      },
+      {
+        id: 'kilimani',
+        name: 'Kilimani & Kileleshwa',
+        subtitle: 'High-Yield Urban Living & Tech-Savvy Convenience',
+        avgPrice: 'KES 16,000,000 – 75,000,000',
+        pricePerSqm: 'KES 120,000 / sqm',
+        lifestyle: 'Boutique Cafes, Short-Stay Investments, Central Access',
+        image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80',
+        highlights: ['Yaya Centre', 'French School of Nairobi', 'Dennis Pritt Dining Corridor', 'Kilimani Innovation Hubs'],
+        description: 'Kilimani and neighboring Kileleshwa deliver exceptional rental yields driven by expatriates, digital nomads, and young professionals seeking proximity to both Upper Hill and Westlands.'
+      },
+      {
+        id: 'runda',
+        name: 'Runda & Gigiri',
+        subtitle: 'The Diplomatic Enclave of East Africa',
+        avgPrice: 'KES 110,000,000 – 350,000,000',
+        pricePerSqm: 'KES 160,000 / sqm',
+        lifestyle: 'Embassies, Fortified Compounds, Pristine Serenity',
+        image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80',
+        highlights: ['United Nations HQ Gigiri', 'US Embassy Enclave', 'Village Market Complex', 'Rosslyn Riviera'],
+        description: 'Home to the UN Complex and over 80 foreign missions, Runda and Gigiri represent East Africa’s highest concentration of diplomatic housing, boasting premier private security frameworks.'
+      },
+      {
+        id: 'diani',
+        name: 'Diani Beach',
+        subtitle: 'Africa’s Leading Coastal Beach Destination',
+        avgPrice: 'KES 35,000,000 – 180,000,000',
+        pricePerSqm: 'KES 95,000 / sqm',
+        lifestyle: 'Kitesurfing, Barefoot Oceanfront Luxury, Coral Reefs',
+        image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+        highlights: ['Galu Beach Powders', 'Ukunda Airstrip Direct Flights', 'Shimba Hills National Reserve', 'World-Class Diving'],
+        description: 'Voted Africa’s leading beach destination multiple consecutive years, Diani combines warm azure ocean waters, towering baobabs, and lucrative year-round holiday rental yields.'
+      }
+    ];
+
+    // --- Helper Utilities ---
+    function formatCurrency(amountKes, rentPeriod = null) {
+      if (!amountKes || amountKes === 0) return 'Price on Inquiry';
+
+      let displayVal = '';
+      if (STATE.currency === 'USD') {
+        const usdVal = Math.round(amountKes / STATE.kesToUsdRate);
+        displayVal = '$' + usdVal.toLocaleString('en-US');
+      } else {
+        displayVal = 'KES ' + amountKes.toLocaleString('en-KE');
+      }
+
+      if (rentPeriod) {
+        displayVal += ` / ${rentPeriod}`;
+      }
+      return displayVal;
+    }
+
+    function toggleCurrency() {
+      STATE.currency = STATE.currency === 'KES' ? 'USD' : 'KES';
+      document.getElementById('current-currency-label').innerText = STATE.currency;
+      renderCurrentRoute();
+      showToast(`Currency converted to ${STATE.currency}`);
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto bg-brand-navy text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-white/10 transition-all duration-300 transform translate-y-4 opacity-0`;
+      
+      const icon = type === 'success' ? 'check-circle' : 'info';
+      toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 text-brand-orange"></i><span>${message}</span>`;
+      
+      container.appendChild(toast);
+      if (window.lucide) lucide.createIcons();
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 350);
+      }, 3500);
+    }
+
+    // --- Wishlist / Saved Properties Functionality ---
+    function isPropertySaved(id) {
+      return STATE.savedProperties.includes(id);
+    }
+
+    function toggleSaveProperty(id, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      const index = STATE.savedProperties.indexOf(id);
+      if (index > -1) {
+        STATE.savedProperties.splice(index, 1);
+        showToast('Property removed from shortlist');
+      } else {
+        STATE.savedProperties.push(id);
+        showToast('Property saved to shortlist');
+      }
+      localStorage.setItem('aurus_saved_properties', JSON.stringify(STATE.savedProperties));
+      updateSavedBadges();
+      
+      // Update heart icon if on screen
+      const heartBtns = document.querySelectorAll(`[data-save-id="${id}"]`);
+      heartBtns.forEach(btn => {
+        const icon = btn.querySelector('i');
+        if (icon) {
+          if (isPropertySaved(id)) {
+            btn.classList.add('text-brand-orange');
+            btn.classList.remove('text-slate-400');
+            icon.setAttribute('fill', 'currentColor');
+          } else {
+            btn.classList.remove('text-brand-orange');
+            btn.classList.add('text-slate-400');
+            icon.removeAttribute('fill');
+          }
+        }
+      });
+
+      // If currently on saved view, re-render
+      if (STATE.currentRoute === 'saved') {
+        renderSavedView();
+      }
+    }
+
+    function updateSavedBadges() {
+      const count = STATE.savedProperties.length;
+      const b1 = document.getElementById('saved-count-badge');
+      const b2 = document.getElementById('mobile-saved-badge');
+      if (b1) b1.innerText = count;
+      if (b2) b2.innerText = count;
+    }
+
+    // --- Mobile Menu Toggle ---
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    function closeMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      if (!menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+      }
+    }
+
+    // --- Lightbox Functions ---
+    function openLightbox(imageUrl, caption) {
+      const modal = document.getElementById('lightbox-modal');
+      const img = document.getElementById('lightbox-img');
+      const cap = document.getElementById('lightbox-caption');
+      img.src = imageUrl;
+      cap.innerText = caption || 'Aurus Luxury Property Portfolio';
+      modal.classList.remove('hidden');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox-modal').classList.add('hidden');
+    }
+
+    // --- Viewing Modal Form Handler ---
+    function openViewingModal(propertyId = '') {
+      const modal = document.getElementById('viewing-modal');
+      const propInput = document.getElementById('modal-property-id');
+      const titleElem = document.getElementById('modal-property-title');
+      
+      if (propertyId) {
+        propInput.value = propertyId;
+        const prop = PROPERTIES_DATA.find(p => p.id === propertyId);
+        if (prop) {
+          titleElem.innerText = `Viewing: ${prop.title} (${prop.location})`;
+        }
+      } else {
+        propInput.value = '';
+        titleElem.innerText = 'Schedule a Private Property Consultation';
+      }
+
+      // Set min date to today
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('v-date');
+      if (dateInput) {
+        dateInput.min = today;
+        dateInput.value = today;
+      }
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeViewingModal() {
+      document.getElementById('viewing-modal').classList.add('hidden');
+    }
+
+    function handleViewingSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('v-name').value;
+      const date = document.getElementById('v-date').value;
+      const time = document.getElementById('v-time').value;
+      const propId = document.getElementById('modal-property-id').value;
+      
+      let propName = 'General Portfolio';
+      if (propId) {
+        const p = PROPERTIES_DATA.find(x => x.id === propId);
+        if (p) propName = p.title;
+      }
+
+      closeViewingModal();
+      showToast(`Thank you, ${name}! Your viewing request for "${propName}" on ${date} (${time}) has been registered with our advisory desk.`);
+      document.getElementById('viewing-form').reset();
+    }
+
+    // ========================================================================
+    // VIEW RENDERING ENGINES
+    // ========================================================================
+
+    // --- 1. HOMEPAGE VIEW (FAITHFUL TO REFERENCE IMAGE) ---
+    function renderHomeView() {
+      const featuredProps = PROPERTIES_DATA.filter(p => p.isFeatured).slice(0, 6);
+      const heroFeaturedProp = PROPERTIES_DATA[0]; // Azure Palms
+
+      return `
+        <!-- HERO SECTION: Masterpiece Architecture Headline & Lead Card -->
+        <section class="relative bg-brand-dark text-white overflow-hidden pt-12 pb-24 lg:pt-20 lg:pb-32">
+          
+          <!-- Background Architectural Image with Overlay -->
+          <div class="absolute inset-0 z-0">
+            <img 
+              src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=2000&q=85" 
+              alt="Luxury modern villa in Nairobi" 
+              class="w-full h-full object-cover object-center brightness-[0.45] scale-105"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/40 to-transparent"></div>
+          </div>
+
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <!-- Left Column: Bold Headline & Copy -->
+              <div class="lg:col-span-7 space-y-6">
+                
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-orange-400 text-xs font-semibold tracking-wider uppercase">
+                  <span class="w-2 h-2 rounded-full bg-brand-orange animate-ping"></span>
+                  Kenya's Signature Real Estate Agency
+                </div>
+
+                <h1 class="text-5xl sm:text-7xl lg:text-8xl font-black font-display tracking-tight text-white uppercase leading-[0.95]">
+                  YOUR<br />
+                  DREAM<br />
+                  <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-orange-300">HOUSE</span>
+                </h1>
+
+                <p class="text-slate-300 text-sm sm:text-base max-w-xl font-normal leading-relaxed">
+                  Discover peerless residential villas, signature penthouses, Grade-A commercial spaces, and verified titled land across Nairobi and the Kenyan Coast.
+                </p>
+
+                <div class="pt-4 flex flex-wrap items-center gap-4">
+                  <a href="#properties" onclick="applyCategoryFilter('all')" class="px-7 py-3.5 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-lg hover:shadow-orange-500/20 flex items-center gap-2">
+                    <span>EXPLORE PORTFOLIO</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                  </a>
+                  <button onclick="openViewingModal()" class="px-7 py-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all border border-white/20">
+                    BOOK PRIVATE VIEWING
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Right Column: Floating Signature Property Card (From Reference Image) -->
+              <div class="lg:col-span-5 flex justify-center lg:justify-end">
+                <div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 sm:p-5 max-w-sm w-full shadow-2xl text-white transform hover:-translate-y-1 transition-transform">
+                  
+                  <div class="relative rounded-xl overflow-hidden mb-4 aspect-[4/3]">
+                    <img 
+                      src="${heroFeaturedProp.images[0]}" 
+                      alt="${heroFeaturedProp.title}" 
+                      class="w-full h-full object-cover"
+                    />
+                    <div class="absolute top-3 left-3 bg-brand-orange text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded">
+                      FEATURED
+                    </div>
+                    <button onclick="toggleSaveProperty('${heroFeaturedProp.id}', event)" data-save-id="${heroFeaturedProp.id}" class="absolute top-3 right-3 p-2 bg-brand-navy/60 backdrop-blur-md rounded-full text-white hover:text-brand-orange transition-colors" aria-label="Bookmark featured property">
+                      <i data-lucide="bookmark" class="w-4 h-4 ${isPropertySaved(heroFeaturedProp.id) ? 'fill-current text-brand-orange' : ''}"></i>
+                    </button>
+                  </div>
+
+                  <div class="space-y-2">
+                    <div class="flex items-baseline justify-between">
+                      <span class="text-xs uppercase text-orange-400 font-bold tracking-wider">${heroFeaturedProp.location}</span>
+                      <span class="text-base font-extrabold text-white">${formatCurrency(heroFeaturedProp.priceKes)}</span>
+                    </div>
+                    <h3 class="font-display text-lg font-bold text-white">${heroFeaturedProp.title}</h3>
+                    <p class="text-xs text-slate-300 line-clamp-2">${heroFeaturedProp.shortDesc}</p>
+                    
+                    <div class="pt-3 border-t border-white/15 flex items-center justify-between text-xs text-slate-300">
+                      <span class="flex items-center gap-1"><i data-lucide="bed" class="w-3.5 h-3.5 text-orange-400"></i> ${heroFeaturedProp.beds} Beds</span>
+                      <span class="flex items-center gap-1"><i data-lucide="bath" class="w-3.5 h-3.5 text-orange-400"></i> ${heroFeaturedProp.baths} Baths</span>
+                      <span class="flex items-center gap-1"><i data-lucide="maximize" class="w-3.5 h-3.5 text-orange-400"></i> ${heroFeaturedProp.sqm} sqm</span>
+                    </div>
+
+                    <a href="#property/${heroFeaturedProp.id}" class="block w-full text-center py-2.5 mt-3 bg-white text-brand-navy hover:bg-orange-50 text-xs font-bold uppercase rounded-lg transition-colors">
+                      VIEW SPECIFICATIONS
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- CATEGORY MARQUEE TICKER (Matching Reference Image) -->
+        <div class="bg-brand-navy text-slate-200 py-3.5 border-y border-white/10 overflow-hidden">
+          <div class="max-w-7xl mx-auto px-4 flex items-center justify-between gap-6 text-[11px] sm:text-xs font-bold uppercase tracking-widest no-scrollbar overflow-x-auto whitespace-nowrap">
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span> PENTHOUSES</span>
+            <span class="text-slate-600">/</span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span> WATERFRONT HOMES</span>
+            <span class="text-slate-600">/</span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span> OFF-PLAN DEVELOPMENTS</span>
+            <span class="text-slate-600">/</span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span> GRADE A COMMERCIAL</span>
+            <span class="text-slate-600">/</span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span> PRIME KAREN ACREAGE</span>
+            <span class="text-slate-600">/</span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span> DIPLOMATIC SANCTUARIES</span>
+          </div>
+        </div>
+
+        <!-- STATS BAR (Matching Reference Image) -->
+        <section class="bg-white py-10 border-b border-slate-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div class="space-y-1">
+                <span class="font-display text-3xl sm:text-4xl font-extrabold text-brand-navy">1,200+</span>
+                <p class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Curated Properties</p>
+              </div>
+              <div class="space-y-1">
+                <span class="font-display text-3xl sm:text-4xl font-extrabold text-brand-orange">KES 12.4B</span>
+                <p class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Total Sales Portfolio</p>
+              </div>
+              <div class="space-y-1">
+                <span class="font-display text-3xl sm:text-4xl font-extrabold text-brand-navy">98%</span>
+                <p class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Client Satisfaction</p>
+              </div>
+              <div class="space-y-1">
+                <span class="font-display text-3xl sm:text-4xl font-extrabold text-brand-navy">18</span>
+                <p class="text-xs uppercase tracking-wider text-slate-500 font-semibold">Years of Distinction</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MULTI-FIELD SEARCH CONSOLE BAR -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-7 relative z-20">
+          <div class="bg-white rounded-2xl shadow-xl border border-slate-200/80 p-4 sm:p-5">
+            <form id="hero-search-form" onsubmit="handleHeroSearch(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-center">
+              
+              <!-- Location Selection -->
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Location</label>
+                <div class="relative">
+                  <select id="hero-location" class="w-full text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/30">
+                    <option value="all">All Prime Areas (Kenya)</option>
+                    <option value="westlands">Westlands, Nairobi</option>
+                    <option value="karen">Karen, Nairobi</option>
+                    <option value="kilimani">Kilimani / Kileleshwa</option>
+                    <option value="lavington">Lavington / Riverside</option>
+                    <option value="runda">Runda / Gigiri</option>
+                    <option value="diani">Diani Beach, Coast</option>
+                    <option value="nyali">Nyali, Mombasa</option>
+                    <option value="upcountry">Naivasha / Upcountry</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Property Category -->
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Category</label>
+                <select id="hero-category" class="w-full text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/30">
+                  <option value="all">All Categories</option>
+                  <option value="sale">Residential Sale</option>
+                  <option value="rent">Residential Rent</option>
+                  <option value="commercial">Commercial & Offices</option>
+                  <option value="land">Land & Plots</option>
+                  <option value="off-plan">Off-Plan Projects</option>
+                </select>
+              </div>
+
+              <!-- Property Type -->
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Property Type</label>
+                <select id="hero-type" class="w-full text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/30">
+                  <option value="all">Any Type</option>
+                  <option value="Penthouse">Penthouses</option>
+                  <option value="Luxury Villa">Villas & Mansions</option>
+                  <option value="Apartment">Modern Apartments</option>
+                  <option value="Townhouse">Townhouses</option>
+                  <option value="Commercial Office">Commercial Offices</option>
+                  <option value="Residential Plot">Plots & Acreage</option>
+                </select>
+              </div>
+
+              <!-- Price Bracket -->
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Price Range</label>
+                <select id="hero-price" class="w-full text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/30">
+                  <option value="all">Any Price</option>
+                  <option value="under-30m">Under KES 30 Million</option>
+                  <option value="30m-80m">KES 30M – 80 Million</option>
+                  <option value="80m-150m">KES 80M – 150 Million</option>
+                  <option value="above-150m">KES 150M+ (Ultra Luxury)</option>
+                </select>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="sm:col-span-2 lg:col-span-1 pt-2 sm:pt-4">
+                <button type="submit" class="w-full py-3 bg-brand-navy hover:bg-brand-slate text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md">
+                  <i data-lucide="search" class="w-4 h-4"></i>
+                  <span>SEARCH</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </section>
+
+        <!-- CURATED LISTINGS SECTION (Matching Reference Image Grid) -->
+        <section class="py-20 bg-slate-50">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Section Header & Filter Tabs -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">HANDPICKED SELECTION</span>
+                <h2 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                  Curated Listings
+                </h2>
+              </div>
+
+              <!-- Tabs: All, For Sale, For Rent, Commercial -->
+              <div class="inline-flex p-1 bg-white border border-slate-200 rounded-xl shadow-sm text-xs font-bold">
+                <button onclick="filterCuratedGrid('all', this)" class="curated-tab-btn active px-4 py-2 rounded-lg bg-brand-navy text-white transition-colors">
+                  ALL
+                </button>
+                <button onclick="filterCuratedGrid('sale', this)" class="curated-tab-btn px-4 py-2 rounded-lg text-slate-600 hover:text-brand-navy transition-colors">
+                  FOR SALE
+                </button>
+                <button onclick="filterCuratedGrid('rent', this)" class="curated-tab-btn px-4 py-2 rounded-lg text-slate-600 hover:text-brand-navy transition-colors">
+                  FOR RENT
+                </button>
+                <button onclick="filterCuratedGrid('commercial', this)" class="curated-tab-btn px-4 py-2 rounded-lg text-slate-600 hover:text-brand-navy transition-colors">
+                  COMMERCIAL
+                </button>
+              </div>
+            </div>
+
+            <!-- Property Cards Grid (6 Cards, Matching Reference Layout) -->
+            <div id="curated-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              ${renderPropertyCardBatch(featuredProps)}
+            </div>
+
+            <!-- View All Properties Button -->
+            <div class="mt-14 text-center">
+              <a href="#properties" onclick="applyCategoryFilter('all')" class="inline-flex items-center gap-2 px-9 py-4 bg-brand-navy hover:bg-brand-slate text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-md hover:shadow-lg">
+                <span>VIEW ALL PROPERTIES</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </a>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- DARK EDITORIAL SECTION: "Where Vision Finds Home" (Matching Reference Image) -->
+        <section class="relative bg-brand-navy text-white py-24 overflow-hidden">
+          
+          <!-- Large Background Watermark -->
+          <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+            <span class="watermark-text font-black font-display text-white">LUXURY</span>
+          </div>
+
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <!-- Left: Editorial Architectural Image with Orange Badge -->
+              <div class="lg:col-span-6 relative">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 aspect-[4/3]">
+                  <img 
+                    src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1200&q=80" 
+                    alt="Luxury architectural residence in Nairobi" 
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <!-- Orange Badge in Bottom Corner -->
+                <div class="absolute -bottom-6 -right-3 sm:right-6 bg-brand-orange text-white p-6 rounded-2xl shadow-xl max-w-[210px] space-y-1">
+                  <span class="font-display text-3xl font-extrabold block">18+</span>
+                  <span class="text-xs font-semibold leading-tight block">Years Advising Discerning Clients Across East Africa</span>
+                </div>
+              </div>
+
+              <!-- Right: Editorial Content -->
+              <div class="lg:col-span-6 space-y-6 lg:pl-6">
+                
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">ABOUT AURUS ADVISORY</span>
+                
+                <h2 class="text-3xl sm:text-5xl font-black font-display tracking-tight text-white leading-tight">
+                  Where Vision<br />Finds Home
+                </h2>
+
+                <p class="text-slate-300 text-sm leading-relaxed">
+                  Founded in Nairobi with an uncompromising dedication to architectural distinction and transactional integrity, Aurus has guided premier families, embassies, and institutional funds through the acquisition and leasing of landmark properties across Kenya.
+                </p>
+
+                <p class="text-slate-400 text-xs leading-relaxed">
+                  We maintain strict off-market confidentiality for ambassadorial sales and offer meticulous valuation modeling rooted in empirical Kenyan market intelligence.
+                </p>
+
+                <div class="pt-4 flex flex-wrap items-center gap-4">
+                  <a href="#about" class="px-6 py-3.5 bg-white text-brand-navy hover:bg-orange-50 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors">
+                    OUR STORY
+                  </a>
+                  <a href="#agents" class="px-6 py-3.5 border border-white/30 hover:border-white text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors">
+                    MEET THE TEAM
+                  </a>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- "HOW WE SERVE YOU" SECTION: Numbered Editorial Grid (Matching Reference Image) -->
+        <section class="py-24 bg-white">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">COMPREHENSIVE ADVISORY</span>
+                <h2 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                  How We Serve You
+                </h2>
+              </div>
+              <p class="text-xs text-slate-500 max-w-sm">
+                From confidential acquisitions to end-to-end portfolio management, Aurus delivers institutional rigor at every touchpoint.
+              </p>
+            </div>
+
+            <!-- Numbered Rows with Expandable Action -->
+            <div class="space-y-4">
+              
+              <div class="border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-brand-orange/40 hover:shadow-md transition-all group flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="flex items-start gap-6">
+                  <span class="font-display text-3xl sm:text-4xl font-extrabold text-slate-300 group-hover:text-brand-orange transition-colors">01</span>
+                  <div>
+                    <h3 class="font-display text-xl font-bold text-brand-navy">Property Acquisition</h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-xl">
+                      Off-market identification, legal title verification with the Ministry of Lands, contract negotiation, and escrow coordination for buyers.
+                    </p>
+                  </div>
+                </div>
+                <a href="#properties" onclick="applyCategoryFilter('sale')" class="p-3 rounded-full bg-slate-50 group-hover:bg-brand-navy group-hover:text-white text-slate-700 transition-colors">
+                  <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+              </div>
+
+              <div class="border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-brand-orange/40 hover:shadow-md transition-all group flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="flex items-start gap-6">
+                  <span class="font-display text-3xl sm:text-4xl font-extrabold text-slate-300 group-hover:text-brand-orange transition-colors">02</span>
+                  <div>
+                    <h3 class="font-display text-xl font-bold text-brand-navy">Portfolio Consulting & Off-Plan Syndication</h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-xl">
+                      Strategic asset allocation, rental yield forecasting, bulk unit procurement in emerging Nairobi corridors, and exit structuring.
+                    </p>
+                  </div>
+                </div>
+                <a href="#properties" onclick="applyCategoryFilter('off-plan')" class="p-3 rounded-full bg-slate-50 group-hover:bg-brand-navy group-hover:text-white text-slate-700 transition-colors">
+                  <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+              </div>
+
+              <div class="border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-brand-orange/40 hover:shadow-md transition-all group flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="flex items-start gap-6">
+                  <span class="font-display text-3xl sm:text-4xl font-extrabold text-slate-300 group-hover:text-brand-orange transition-colors">03</span>
+                  <div>
+                    <h3 class="font-display text-xl font-bold text-brand-navy">Precision Valuation & Comparative Analysis</h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-xl">
+                      Empirical valuation based on verified historical neighborhood transactions, cap rates, replacement costs, and land zoning.
+                    </p>
+                  </div>
+                </div>
+                <a href="#valuation" class="p-3 rounded-full bg-slate-50 group-hover:bg-brand-navy group-hover:text-white text-slate-700 transition-colors">
+                  <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+              </div>
+
+              <div class="border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-brand-orange/40 hover:shadow-md transition-all group flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="flex items-start gap-6">
+                  <span class="font-display text-3xl sm:text-4xl font-extrabold text-slate-300 group-hover:text-brand-orange transition-colors">04</span>
+                  <div>
+                    <h3 class="font-display text-xl font-bold text-brand-navy">Private Leasing & Landlord Management</h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-xl">
+                      Vetted corporate tenant placement (diplomats, multinational executives), routine property maintenance, and seamless rent collection.
+                    </p>
+                  </div>
+                </div>
+                <a href="#rent-out" class="p-3 rounded-full bg-slate-50 group-hover:bg-brand-navy group-hover:text-white text-slate-700 transition-colors">
+                  <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- COASTAL PROMOTIONAL CAMPAIGN BANNER (Matching Reference Image) -->
+        <section class="py-12 bg-white">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative rounded-3xl overflow-hidden shadow-2xl min-h-[440px] flex items-center">
+              
+              <!-- Background Coastal Image -->
+              <img 
+                src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1600&q=80" 
+                alt="Coastal beachfront villa in Kenya" 
+                class="absolute inset-0 w-full h-full object-cover"
+              />
+              <div class="absolute inset-0 bg-gradient-to-r from-brand-navy/90 via-brand-navy/60 to-transparent"></div>
+
+              <div class="relative z-10 p-8 sm:p-14 max-w-xl space-y-5 text-white">
+                <span class="text-xs font-bold uppercase tracking-widest text-orange-400">BEGIN YOUR DISCOVERY</span>
+                <h2 class="text-3xl sm:text-5xl font-black font-display tracking-tight leading-tight">
+                  Your Dream Property Awaits
+                </h2>
+                <p class="text-slate-200 text-xs sm:text-sm leading-relaxed">
+                  Whether acquiring a tranquil haven on Diani’s white coral sands or a modern diplomatic residence in Karen, our senior partners are at your service.
+                </p>
+                <div class="pt-2 flex flex-wrap gap-4">
+                  <button onclick="openViewingModal()" class="px-6 py-3.5 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors">
+                    BOOK CONSULTATION
+                  </button>
+                  <a href="#properties" onclick="applyCategoryFilter('all')" class="px-6 py-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border border-white/20">
+                    EXPLORE PROPERTIES
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- "CLIENT VOICES" TESTIMONIALS (Matching Reference Image) -->
+        <section class="py-20 bg-slate-50">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="mb-12">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">TESTIMONIALS</span>
+              <h2 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                Client Voices
+              </h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              
+              <!-- Review 1 -->
+              <div class="bg-white rounded-2xl p-7 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="flex text-amber-400 gap-1 text-sm">
+                  ★★★★★
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed italic">
+                  "Aurus handled the acquisition of our family estate in Karen with impeccable discretion. Their legal due diligence saved us months of title verification headaches."
+                </p>
+                <div class="flex items-center gap-3 pt-2 border-t border-slate-100">
+                  <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Client" class="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900">Alexander Robertson</h4>
+                    <span class="text-[11px] text-slate-500">Managing Director, Horizon Capital</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Review 2 -->
+              <div class="bg-white rounded-2xl p-7 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="flex text-amber-400 gap-1 text-sm">
+                  ★★★★★
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed italic">
+                  "Finding an official MOSS-compliant diplomatic residence in Gigiri is notoriously stressful. Faith Mwangi at Aurus delivered three verified options within 48 hours."
+                </p>
+                <div class="flex items-center gap-3 pt-2 border-t border-slate-100">
+                  <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80" alt="Client" class="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900">Dr. Lisbeth Franklin</h4>
+                    <span class="text-[11px] text-slate-500">Head of Mission, EU Delegation</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Review 3 -->
+              <div class="bg-white rounded-2xl p-7 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="flex text-amber-400 gap-1 text-sm">
+                  ★★★★★
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed italic">
+                  "As a diaspora investor living in London, their rental management team places premier corporate tenants reliably and handles all service charge administration."
+                </p>
+                <div class="flex items-center gap-3 pt-2 border-t border-slate-100">
+                  <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" alt="Client" class="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900">Samuel Ndung'u</h4>
+                    <span class="text-[11px] text-slate-500">Tech Founder & Property Investor</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ORANGE CTA CALLOUT STRIP (Matching Reference Image) -->
+        <section class="bg-brand-orange text-white py-6">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-center md:text-left">
+              <h3 class="font-display text-lg font-bold">Ready for your next landmark?</h3>
+              <p class="text-xs text-orange-100">Schedule an advisory call with our senior real estate desk today.</p>
+            </div>
+            <div class="flex items-center gap-6 text-xs font-bold">
+              <a href="tel:+254700892400" class="flex items-center gap-2 hover:text-orange-100 transition-colors">
+                <i data-lucide="phone" class="w-4 h-4"></i>
+                +254 (0) 700 892 400
+              </a>
+              <a href="mailto:advisory@aurusproperties.co.ke" class="flex items-center gap-2 hover:text-orange-100 transition-colors">
+                <i data-lucide="mail" class="w-4 h-4"></i>
+                advisory@aurusproperties.co.ke
+              </a>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // Helper: render a batch of property cards
+    function renderPropertyCardBatch(properties) {
+      if (properties.length === 0) {
+        return `
+          <div class="col-span-full py-16 text-center">
+            <i data-lucide="home" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
+            <h3 class="font-display text-lg font-bold text-slate-700">No properties match your filter criteria</h3>
+            <p class="text-xs text-slate-500 mt-1">Try broadening your search area, price range, or category filter.</p>
+            <button onclick="resetFilters()" class="mt-4 px-5 py-2.5 bg-brand-navy text-white text-xs font-bold uppercase rounded-lg">
+              Reset Filters
+            </button>
+          </div>
+        `;
+      }
+
+      return properties.map(p => {
+        const isSaved = isPropertySaved(p.id);
+        const tagBg = p.tag === 'EXCLUSIVE' ? 'bg-brand-orange' : (p.tag === 'FOR RENT' ? 'bg-indigo-600' : 'bg-brand-navy');
+
+        return `
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
+            
+            <!-- Card Image Container -->
+            <div class="relative aspect-[4/3] overflow-hidden bg-slate-100">
+              <img 
+                src="${p.images[0]}" 
+                alt="${p.title}" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                loading="lazy"
+                onerror="this.src='https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80'"
+              />
+              
+              <!-- Tag Badge -->
+              <span class="absolute top-3 left-3 ${tagBg} text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded shadow-sm">
+                ${p.tag}
+              </span>
+
+              <!-- Save / Bookmark Button -->
+              <button 
+                onclick="toggleSaveProperty('${p.id}', event)" 
+                data-save-id="${p.id}"
+                class="absolute top-3 right-3 p-2 rounded-full bg-white/90 backdrop-blur-md shadow-md text-slate-600 hover:text-brand-orange transition-colors"
+                title="Save Property"
+                aria-label="Save Property"
+              >
+                <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-current text-brand-orange' : ''}"></i>
+              </button>
+
+              <!-- Category Pill in Bottom Corner -->
+              <span class="absolute bottom-3 left-3 bg-brand-dark/70 backdrop-blur-sm text-slate-200 text-[10px] font-semibold px-2 py-0.5 rounded">
+                ${p.type}
+              </span>
+            </div>
+
+            <!-- Card Content Body -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              
+              <div>
+                <!-- Price Display (Prominent as in reference) -->
+                <div class="text-xl font-black font-display text-brand-navy mb-1">
+                  ${formatCurrency(p.priceKes, p.rentPeriod)}
+                </div>
+
+                <!-- Title & Location -->
+                <h3 class="font-display text-base font-bold text-slate-900 group-hover:text-brand-orange transition-colors leading-snug">
+                  <a href="#property/${p.id}">${p.title}</a>
+                </h3>
+                
+                <p class="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-orange shrink-0"></i>
+                  <span>${p.location}</span>
+                </p>
+              </div>
+
+              <!-- Specifications Bar (Beds, Baths, Sqm) -->
+              <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                ${p.beds > 0 ? `
+                  <span class="flex items-center gap-1 font-medium">
+                    <i data-lucide="bed" class="w-3.5 h-3.5 text-slate-400"></i>
+                    ${p.beds} Beds
+                  </span>
+                ` : `
+                  <span class="flex items-center gap-1 font-medium text-slate-400">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                    Commercial / Land
+                  </span>
+                `}
+
+                ${p.baths > 0 ? `
+                  <span class="flex items-center gap-1 font-medium">
+                    <i data-lucide="bath" class="w-3.5 h-3.5 text-slate-400"></i>
+                    ${p.baths} Baths
+                  </span>
+                ` : ''}
+
+                ${p.sqm > 0 ? `
+                  <span class="flex items-center gap-1 font-medium">
+                    <i data-lucide="maximize" class="w-3.5 h-3.5 text-slate-400"></i>
+                    ${p.sqm} sqm
+                  </span>
+                ` : ''}
+              </div>
+
+              <!-- View Details Action Button -->
+              <div class="pt-1">
+                <a href="#property/${p.id}" class="block w-full text-center py-2.5 bg-slate-100 hover:bg-brand-navy hover:text-white text-brand-navy text-xs font-bold uppercase rounded-lg transition-colors">
+                  View Property Details
+                </a>
+              </div>
+
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- 2. PROPERTIES CATALOGUE VIEW (ADVANCED SEARCH & DISCOVERY) ---
+    function renderPropertiesCatalogueView() {
+      const filtered = getFilteredProperties();
+
+      return `
+        <div class="bg-slate-50 min-h-screen py-10">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Breadcrumbs -->
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange">Home</a>
+              <span>/</span>
+              <span class="text-slate-900 font-bold">Property Catalogue</span>
+            </nav>
+
+            <!-- Page Title -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">VERIFIED INVENTORY</span>
+                <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                  Discover Properties in Kenya
+                </h1>
+              </div>
+              <p class="text-xs text-slate-500 max-w-sm">
+                Explore luxury residences, residential rentals, commercial grade-A office spaces, and verified titled acreage.
+              </p>
+            </div>
+
+            <!-- Master Filter Console -->
+            <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 mb-8 space-y-5">
+              
+              <!-- Search query + Quick Category Switcher -->
+              <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+                
+                <!-- Keyword input -->
+                <div class="relative flex-1">
+                  <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                  <input 
+                    type="text" 
+                    id="cat-search-input"
+                    value="${STATE.filterCriteria.searchQuery}"
+                    oninput="handleKeywordSearch(this.value)"
+                    placeholder="Search by development, street, or neighborhood (e.g. Karen, Westlands, Penthouse)..."
+                    class="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange"
+                  />
+                </div>
+
+                <!-- Category Segmented Buttons -->
+                <div class="inline-flex p-1 bg-slate-100 rounded-xl text-xs font-bold overflow-x-auto whitespace-nowrap">
+                  <button onclick="setFilterCategory('all')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'all' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}">
+                    All
+                  </button>
+                  <button onclick="setFilterCategory('sale')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'sale' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}">
+                    For Sale
+                  </button>
+                  <button onclick="setFilterCategory('rent')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'rent' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}">
+                    To Rent
+                  </button>
+                  <button onclick="setFilterCategory('commercial')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'commercial' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}">
+                    Commercial
+                  </button>
+                  <button onclick="setFilterCategory('land')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'land' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}">
+                    Land & Plots
+                  </button>
+                  <button onclick="setFilterCategory('off-plan')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'off-plan' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}">
+                    Off-Plan
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Secondary Filters Row (Location, Type, Beds, Sort) -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-slate-100 text-xs">
+                
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 mb-1">Prime Area</label>
+                  <select id="filter-location-select" onchange="handleLocationFilter(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/40">
+                    <option value="all" ${STATE.filterCriteria.location === 'all' ? 'selected' : ''}>All Locations</option>
+                    <option value="westlands" ${STATE.filterCriteria.location === 'westlands' ? 'selected' : ''}>Westlands</option>
+                    <option value="karen" ${STATE.filterCriteria.location === 'karen' ? 'selected' : ''}>Karen</option>
+                    <option value="kilimani" ${STATE.filterCriteria.location === 'kilimani' ? 'selected' : ''}>Kilimani & Kileleshwa</option>
+                    <option value="lavington" ${STATE.filterCriteria.location === 'lavington' ? 'selected' : ''}>Lavington & Riverside</option>
+                    <option value="runda" ${STATE.filterCriteria.location === 'runda' ? 'selected' : ''}>Runda & Gigiri</option>
+                    <option value="diani" ${STATE.filterCriteria.location === 'diani' ? 'selected' : ''}>Diani Beach</option>
+                    <option value="nyali" ${STATE.filterCriteria.location === 'nyali' ? 'selected' : ''}>Nyali Mombasa</option>
+                    <option value="upcountry" ${STATE.filterCriteria.location === 'upcountry' ? 'selected' : ''}>Naivasha / Upcountry</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 mb-1">Property Type</label>
+                  <select id="filter-type-select" onchange="handleTypeFilter(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/40">
+                    <option value="all">All Types</option>
+                    <option value="Penthouse" ${STATE.filterCriteria.type === 'Penthouse' ? 'selected' : ''}>Penthouses</option>
+                    <option value="Luxury Villa" ${STATE.filterCriteria.type === 'Luxury Villa' ? 'selected' : ''}>Villas</option>
+                    <option value="Apartment" ${STATE.filterCriteria.type === 'Apartment' ? 'selected' : ''}>Apartments</option>
+                    <option value="Townhouse" ${STATE.filterCriteria.type === 'Townhouse' ? 'selected' : ''}>Townhouses</option>
+                    <option value="Detached House" ${STATE.filterCriteria.type === 'Detached House' ? 'selected' : ''}>Detached Houses</option>
+                    <option value="Commercial Office" ${STATE.filterCriteria.type === 'Commercial Office' ? 'selected' : ''}>Commercial Offices</option>
+                    <option value="Residential Plot" ${STATE.filterCriteria.type === 'Residential Plot' ? 'selected' : ''}>Land & Plots</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 mb-1">Bedrooms</label>
+                  <select id="filter-beds-select" onchange="handleBedsFilter(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/40">
+                    <option value="all" ${STATE.filterCriteria.bedrooms === 'all' ? 'selected' : ''}>Any Bedrooms</option>
+                    <option value="1" ${STATE.filterCriteria.bedrooms === '1' ? 'selected' : ''}>1+ Bedroom</option>
+                    <option value="2" ${STATE.filterCriteria.bedrooms === '2' ? 'selected' : ''}>2+ Bedrooms</option>
+                    <option value="3" ${STATE.filterCriteria.bedrooms === '3' ? 'selected' : ''}>3+ Bedrooms</option>
+                    <option value="4" ${STATE.filterCriteria.bedrooms === '4' ? 'selected' : ''}>4+ Bedrooms</option>
+                    <option value="5" ${STATE.filterCriteria.bedrooms === '5' ? 'selected' : ''}>5+ Bedrooms</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 mb-1">Sort By</label>
+                  <select id="filter-sort-select" onchange="handleSortFilter(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/40">
+                    <option value="featured" ${STATE.filterCriteria.sortBy === 'featured' ? 'selected' : ''}>Featured First</option>
+                    <option value="price-asc" ${STATE.filterCriteria.sortBy === 'price-asc' ? 'selected' : ''}>Price: Low to High</option>
+                    <option value="price-desc" ${STATE.filterCriteria.sortBy === 'price-desc' ? 'selected' : ''}>Price: High to Low</option>
+                    <option value="sqm-desc" ${STATE.filterCriteria.sortBy === 'sqm-desc' ? 'selected' : ''}>Largest Size (sqm)</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <!-- Active Filter Chips / Clear Controls -->
+              <div class="flex items-center justify-between text-xs pt-2">
+                <div class="text-slate-500 font-semibold">
+                  Showing <span class="text-brand-navy font-bold">${filtered.length}</span> properties in portfolio
+                </div>
+                <button onclick="resetFilters()" class="text-brand-orange hover:text-brand-orange-hover font-bold flex items-center gap-1">
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  <span>Clear All Filters</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- View Switcher Tabs: Grid vs Interactive Map -->
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-2">
+                <button id="view-mode-grid-btn" onclick="toggleCatalogueViewMode('grid')" class="px-4 py-2 rounded-lg bg-brand-navy text-white text-xs font-bold flex items-center gap-2">
+                  <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                  <span>Grid View</span>
+                </button>
+                <button id="view-mode-map-btn" onclick="toggleCatalogueViewMode('map')" class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-brand-navy text-xs font-bold flex items-center gap-2">
+                  <i data-lucide="map" class="w-4 h-4"></i>
+                  <span>Kenya Map Explorer</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Catalogue Grid Container -->
+            <div id="catalogue-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              ${renderPropertyCardBatch(filtered)}
+            </div>
+
+            <!-- Leaflet Interactive Map Explorer Container (Initially Hidden) -->
+            <div id="catalogue-map-container" class="hidden bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-lg mb-8">
+              <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+                <div>
+                  <h3 class="font-display text-sm font-bold">Interactive Kenya Property Geolocation Map</h3>
+                  <p class="text-[11px] text-slate-400">Click any map pin to view property specifications and photos.</p>
+                </div>
+                <span class="text-xs bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded font-mono">
+                  ${filtered.length} Pins Plotted
+                </span>
+              </div>
+              <div id="catalogue-leaflet-map" style="height: 540px; width: 100%; z-index: 10;"></div>
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 3. DETAILED PROPERTY PAGE VIEW ---
+    function renderPropertyDetailView(id) {
+      const prop = PROPERTIES_DATA.find(p => p.id === id);
+      if (!prop) {
+        return `
+          <div class="max-w-4xl mx-auto px-4 py-20 text-center">
+            <h2 class="font-display text-2xl font-bold text-slate-900">Property Not Found</h2>
+            <p class="text-slate-500 text-sm mt-2">The property listing you are seeking may have been leased or archived.</p>
+            <a href="#properties" class="inline-block mt-4 px-6 py-2.5 bg-brand-navy text-white text-xs font-bold uppercase rounded-lg">
+              Return to Catalogue
+            </a>
+          </div>
+        `;
+      }
+
+      const agent = AGENTS_DATA.find(a => a.id === prop.agentId) || AGENTS_DATA[0];
+      const isSaved = isPropertySaved(prop.id);
+      const similar = PROPERTIES_DATA.filter(p => p.id !== prop.id && (p.neighbourhood === prop.neighbourhood || p.purpose === prop.purpose)).slice(0, 3);
+
+      return `
+        <div class="bg-slate-50 min-h-screen py-10">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Breadcrumbs -->
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange">Home</a>
+              <span>/</span>
+              <a href="#properties" class="hover:text-brand-orange">Properties</a>
+              <span>/</span>
+              <span class="text-slate-900 font-bold truncate">${prop.title}</span>
+            </nav>
+
+            <!-- Property Title & Action Header -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="bg-brand-orange text-white text-[10px] font-extrabold uppercase px-2 py-0.5 rounded">
+                    ${prop.tag}
+                  </span>
+                  <span class="text-xs text-slate-400 font-semibold">Ref: AUR-${prop.id.toUpperCase()}</span>
+                </div>
+                <h1 class="text-2xl sm:text-4xl font-black font-display text-brand-navy tracking-tight">
+                  ${prop.title}
+                </h1>
+                <p class="text-xs text-slate-500 flex items-center gap-1.5 mt-1.5">
+                  <i data-lucide="map-pin" class="w-4 h-4 text-brand-orange"></i>
+                  <span>${prop.address}</span>
+                </p>
+              </div>
+
+              <!-- Price & CTA Column -->
+              <div class="flex flex-col sm:flex-row md:flex-col items-start md:items-end justify-between gap-3">
+                <div class="text-left md:text-right">
+                  <div class="text-2xl sm:text-3xl font-black font-display text-brand-navy">
+                    ${formatCurrency(prop.priceKes, prop.rentPeriod)}
+                  </div>
+                  <span class="text-[11px] text-slate-400 font-semibold">
+                    ${prop.purpose === 'rent' ? 'Inclusive of Service Charge' : 'Guide Asking Price (Excl. Stamp Duty)'}
+                  </span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <button onclick="toggleSaveProperty('${prop.id}', event)" data-save-id="${prop.id}" class="px-4 py-2.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:text-brand-orange flex items-center gap-1.5 bg-slate-50">
+                    <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-current text-brand-orange' : ''}"></i>
+                    <span>${isSaved ? 'Saved' : 'Save'}</span>
+                  </button>
+                  <button onclick="openViewingModal('${prop.id}')" class="px-6 py-2.5 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase rounded-lg transition-colors shadow">
+                    Book Private Viewing
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- High-Res Photo Gallery (Main Image + Thumbnail Matrix) -->
+            <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-sm mb-8">
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                
+                <!-- Main Featured Photo -->
+                <div class="lg:col-span-8 relative aspect-[16/10] rounded-xl overflow-hidden cursor-pointer group" onclick="openLightbox('${prop.images[0]}', '${prop.title} - Main Gallery')">
+                  <img id="detail-main-img" src="${prop.images[0]}" alt="${prop.title}" class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300" />
+                  <div class="absolute bottom-4 right-4 bg-brand-dark/80 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-2">
+                    <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                    <span>Click to Enlarge</span>
+                  </div>
+                </div>
+
+                <!-- Thumbnail Column -->
+                <div class="lg:col-span-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3">
+                  ${prop.images.slice(0, 4).map((imgUrl, idx) => `
+                    <div class="aspect-[16/10] rounded-lg overflow-hidden border-2 ${idx === 0 ? 'border-brand-orange' : 'border-transparent'} hover:border-brand-orange cursor-pointer transition-all" onclick="setMainDetailImage('${imgUrl}', this)">
+                      <img src="${imgUrl}" alt="${prop.title} view ${idx + 1}" class="w-full h-full object-cover" />
+                    </div>
+                  `).join('')}
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Two-Column Layout: Details Left, Agent & Mortgage Right -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left Column: Specs, Description, Amenities, Location Map -->
+              <div class="lg:col-span-8 space-y-8">
+                
+                <!-- Key Specifications Bar -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm">
+                  <h3 class="font-display text-base font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100">
+                    Property Specifications
+                  </h3>
+                  
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs">
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block">Bedrooms</span>
+                      <span class="font-display text-base font-bold text-brand-navy">${prop.beds > 0 ? prop.beds : 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block">Bathrooms</span>
+                      <span class="font-display text-base font-bold text-brand-navy">${prop.baths > 0 ? prop.baths : 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block">Floor Area</span>
+                      <span class="font-display text-base font-bold text-brand-navy">${prop.sqm > 0 ? prop.sqm + ' sqm' : 'Custom'}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block">Covered Parking</span>
+                      <span class="font-display text-base font-bold text-brand-navy">${prop.parking > 0 ? prop.parking + ' Bays' : 'Dedicated'}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block">Year Built</span>
+                      <span class="font-display text-base font-bold text-brand-navy">${prop.yearBuilt > 0 ? prop.yearBuilt : 'New-Build'}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block">Furnishing</span>
+                      <span class="font-display text-base font-bold text-brand-navy">${prop.furnishing}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block">Property Category</span>
+                      <span class="font-display text-base font-bold text-brand-navy">${prop.category}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block">Tenure Status</span>
+                      <span class="font-display text-base font-bold text-brand-navy">Clean Title / Lease</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Editorial Overview & Architectural Narrative -->
+                <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
+                  <h3 class="font-display text-lg font-bold text-slate-900">
+                    Architectural Overview
+                  </h3>
+                  <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                    ${prop.fullDesc}
+                  </p>
+                </div>
+
+                <!-- Amenities & Infrastructure Checklist -->
+                <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-sm">
+                  <h3 class="font-display text-lg font-bold text-slate-900 mb-5">
+                    Features & Security Infrastructure
+                  </h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    ${prop.amenities.map(item => `
+                      <div class="flex items-center gap-2.5 text-xs text-slate-700 font-medium">
+                        <span class="w-5 h-5 rounded-full bg-orange-100 text-brand-orange flex items-center justify-center shrink-0">
+                          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                        </span>
+                        <span>${item}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Interactive Location Map (Leaflet) -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h3 class="font-display text-base font-bold text-slate-900">Location & Area Map</h3>
+                      <p class="text-xs text-slate-500">${prop.address}</p>
+                    </div>
+                    <span class="text-[11px] text-slate-400 font-mono">GPS: ${prop.lat.toFixed(4)}, ${prop.lng.toFixed(4)}</span>
+                  </div>
+                  <div id="property-detail-map" class="rounded-xl overflow-hidden border border-slate-200" style="height: 320px; width: 100%;"></div>
+                </div>
+
+              </div>
+
+              <!-- Right Column: Dedicated Agent Card & Pre-filled Mortgage Widget -->
+              <div class="lg:col-span-4 space-y-6">
+                
+                <!-- Dedicated Senior Agent Card -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-brand-orange">LISTING ADVISOR</span>
+                  
+                  <div class="flex items-center gap-4">
+                    <img src="${agent.image}" alt="${agent.name}" class="w-16 h-16 rounded-full object-cover border-2 border-brand-orange shrink-0" />
+                    <div>
+                      <h4 class="font-display text-base font-bold text-brand-navy">${agent.name}</h4>
+                      <p class="text-[11px] text-slate-500 font-medium">${agent.role}</p>
+                      <p class="text-[11px] text-brand-orange font-semibold mt-0.5">${agent.specialty}</p>
+                    </div>
+                  </div>
+
+                  <p class="text-xs text-slate-600 leading-relaxed">
+                    ${agent.bio}
+                  </p>
+
+                  <div class="pt-2 space-y-2 text-xs">
+                    <a href="tel:${agent.phone}" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg flex items-center justify-center gap-2 transition-colors">
+                      <i data-lucide="phone" class="w-4 h-4 text-brand-orange"></i>
+                      <span>${agent.phone}</span>
+                    </a>
+                    
+                    <a href="https://wa.me/${agent.whatsapp}?text=Hello%20${encodeURIComponent(agent.name)},%20I%20am%20inquiring%20about%20${encodeURIComponent(prop.title)}%20(Ref:%20AUR-${prop.id})" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-colors">
+                      <i data-lucide="message-circle" class="w-4 h-4"></i>
+                      <span>Chat on WhatsApp</span>
+                    </a>
+
+                    <button onclick="openViewingModal('${prop.id}')" class="w-full py-2.5 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold rounded-lg transition-colors">
+                      Request Private Viewing
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Inline Quick Mortgage Repayment Widget -->
+                ${prop.purpose === 'sale' ? `
+                  <div class="bg-brand-navy text-white rounded-2xl p-6 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-bold uppercase tracking-wider text-orange-400">FINANCING CALCULATOR</span>
+                      <i data-lucide="calculator" class="w-4 h-4 text-orange-400"></i>
+                    </div>
+
+                    <h4 class="font-display text-base font-bold">Estimated Monthly Repayment</h4>
+
+                    <div class="space-y-3 text-xs">
+                      <div>
+                        <div class="flex justify-between text-slate-300 mb-1">
+                          <span>Deposit: <strong id="widget-dep-pct">20%</strong></span>
+                          <span id="widget-dep-val">${formatCurrency(Math.round(prop.priceKes * 0.2))}</span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="10" 
+                          max="50" 
+                          value="20" 
+                          step="5"
+                          oninput="updateQuickMortgage(${prop.priceKes}, this.value)"
+                          class="w-full accent-brand-orange cursor-pointer"
+                        />
+                      </div>
+
+                      <div class="pt-2 border-t border-white/10 flex justify-between items-baseline">
+                        <span class="text-slate-300">Est. Repayment:</span>
+                        <span id="widget-repay-val" class="text-xl font-black font-display text-orange-400">
+                          ${calculateMonthlyRepayment(prop.priceKes * 0.8, 13.5, 20)}
+                        </span>
+                      </div>
+                      
+                      <p class="text-[10px] text-slate-400">
+                        Based on 13.5% p.a. standard Kenyan benchmark rate over 20 years.
+                      </p>
+
+                      <a href="#mortgage-calculator" class="block text-center text-xs text-orange-300 hover:text-white underline pt-1">
+                        Open Full Amortisation Calculator &rarr;
+                      </a>
+                    </div>
+                  </div>
+                ` : ''}
+
+              </div>
+
+            </div>
+
+            <!-- Similar Properties Carousel / Grid -->
+            ${similar.length > 0 ? `
+              <div class="mt-16 pt-12 border-t border-slate-200">
+                <div class="flex items-end justify-between mb-8">
+                  <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">RECOMMENDED</span>
+                    <h3 class="text-2xl font-black font-display text-brand-navy mt-1">Similar Handpicked Properties</h3>
+                  </div>
+                  <a href="#properties" class="text-xs font-bold text-brand-navy hover:text-brand-orange">View All &rarr;</a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  ${renderPropertyCardBatch(similar)}
+                </div>
+              </div>
+            ` : ''}
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 4. AGENTS DIRECTORY & PROFILES VIEW ---
+    function renderAgentsView() {
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange">Home</a>
+              <span>/</span>
+              <span class="text-slate-900 font-bold">Senior Real Estate Advisors</span>
+            </nav>
+
+            <div class="max-w-2xl mb-12">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">ADVISORY BOARD</span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                Our Senior Real Estate Advisors
+              </h1>
+              <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                Meet Aurus’s trusted specialists. Each partner holds deep expertise within their respective geographical corridor—from Karen diplomacy to coastal luxury and Upper Hill corporate transactions.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              ${AGENTS_DATA.map(a => `
+                <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row gap-6 items-start">
+                  <img src="${a.image}" alt="${a.name}" class="w-28 h-28 rounded-2xl object-cover shrink-0 border-2 border-brand-orange/30 shadow-md" />
+                  <div class="space-y-3 flex-1">
+                    <div>
+                      <span class="text-[10px] font-bold uppercase tracking-wider text-brand-orange">${a.specialty}</span>
+                      <h3 class="font-display text-xl font-bold text-brand-navy">${a.name}</h3>
+                      <p class="text-xs text-slate-500 font-medium">${a.role}</p>
+                    </div>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                      ${a.bio}
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-2 text-xs">
+                      <a href="tel:${a.phone}" class="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold flex items-center gap-1.5 transition-colors">
+                        <i data-lucide="phone" class="w-3.5 h-3.5 text-brand-orange"></i>
+                        <span>Call</span>
+                      </a>
+                      <a href="https://wa.me/${a.whatsapp}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold flex items-center gap-1.5 transition-colors">
+                        <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+                        <span>WhatsApp</span>
+                      </a>
+                      <button onclick="openViewingModal()" class="px-3.5 py-1.5 rounded-lg bg-brand-navy text-white hover:bg-brand-slate font-bold transition-colors">
+                        Inquire Directly
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 5. NEIGHBOURHOOD GUIDES VIEW ---
+    function renderNeighbourhoodsView() {
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange">Home</a>
+              <span>/</span>
+              <span class="text-slate-900 font-bold">Neighbourhood Guides</span>
+            </nav>
+
+            <div class="max-w-2xl mb-12">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">LOCATION TAXONOMY</span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                Kenya Prime Neighborhood Guides
+              </h1>
+              <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                Empirical price benchmarks, lifestyle indicators, and curated listings across Nairobi’s premier residential quadrants and coastal retreats.
+              </p>
+            </div>
+
+            <div class="space-y-12">
+              ${NEIGHBOURHOODS_DATA.map((n, idx) => `
+                <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-sm grid grid-cols-1 lg:grid-cols-12">
+                  
+                  <div class="lg:col-span-5 relative aspect-[4/3] lg:aspect-auto">
+                    <img src="${n.image}" alt="${n.name}" class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent lg:hidden"></div>
+                    <span class="absolute top-4 left-4 bg-brand-navy text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded">
+                      AREA GUIDE 0${idx + 1}
+                    </span>
+                  </div>
+
+                  <div class="lg:col-span-7 p-6 sm:p-10 space-y-5 flex flex-col justify-between">
+                    <div>
+                      <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">${n.subtitle}</span>
+                      <h2 class="text-2xl sm:text-3xl font-black font-display text-brand-navy mt-1">${n.name}</h2>
+                      <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2">${n.description}</p>
+                      
+                      <!-- Metrics -->
+                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-xs">
+                        <div>
+                          <span class="text-slate-400 font-semibold uppercase text-[10px] block">Avg. Price Bracket</span>
+                          <span class="font-bold text-slate-900">${n.avgPrice}</span>
+                        </div>
+                        <div>
+                          <span class="text-slate-400 font-semibold uppercase text-[10px] block">Estimated Rate / Sqm</span>
+                          <span class="font-bold text-brand-orange">${n.pricePerSqm}</span>
+                        </div>
+                        <div>
+                          <span class="text-slate-400 font-semibold uppercase text-[10px] block">Lifestyle Vibe</span>
+                          <span class="font-bold text-slate-900">${n.lifestyle}</span>
+                        </div>
+                      </div>
+
+                      <!-- Key Highlights -->
+                      <div class="pt-4">
+                        <span class="text-[11px] font-bold uppercase text-slate-400 block mb-2">Area Landmarks</span>
+                        <div class="flex flex-wrap gap-2 text-[11px]">
+                          ${n.highlights.map(h => `
+                            <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md font-medium">${h}</span>
+                          `).join('')}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                      <button onclick="filterByNeighbourhood('${n.id}')" class="px-5 py-2.5 bg-brand-navy hover:bg-brand-slate text-white text-xs font-bold uppercase rounded-lg transition-colors">
+                        View Active Listings in ${n.name}
+                      </button>
+                    </div>
+
+                  </div>
+
+                </div>
+              `).join('')}
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 6. MORTGAGE CALCULATOR & FINANCIAL PLANNER ---
+    function renderMortgageCalculatorView() {
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange">Home</a>
+              <span>/</span>
+              <span class="text-slate-900 font-bold">Mortgage & Financing Calculator</span>
+            </nav>
+
+            <div class="mb-10 text-center max-w-2xl mx-auto">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">FINANCIAL ADVISORY</span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                Kenya Mortgage Calculator
+              </h1>
+              <p class="text-xs sm:text-sm text-slate-600 mt-2">
+                Calculate estimated monthly amortisation, principal splits, and lifetime interest based on current Central Bank of Kenya (CBK) lending benchmarks.
+              </p>
+            </div>
+
+            <!-- Main Interactive Calculator Card -->
+            <div class="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Form Inputs (Left) -->
+              <div class="lg:col-span-7 space-y-6">
+                
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-bold text-slate-700">Property Asking Price (KES)</label>
+                    <span id="calc-price-display" class="font-display font-extrabold text-brand-navy text-sm">KES 45,000,000</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    id="calc-price-input" 
+                    min="5000000" 
+                    max="200000000" 
+                    step="1000000" 
+                    value="45000000" 
+                    oninput="recalculateMortgage()"
+                    class="w-full accent-brand-orange cursor-pointer"
+                  />
+                  <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                    <span>KES 5M</span>
+                    <span>KES 100M</span>
+                    <span>KES 200M</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-bold text-slate-700">Cash Deposit (%)</label>
+                    <span id="calc-deposit-display" class="font-display font-extrabold text-brand-navy text-sm">20% (KES 9,000,000)</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    id="calc-deposit-input" 
+                    min="10" 
+                    max="50" 
+                    step="5" 
+                    value="20" 
+                    oninput="recalculateMortgage()"
+                    class="w-full accent-brand-orange cursor-pointer"
+                  />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Interest Rate (% p.a.)</label>
+                    <input 
+                      type="number" 
+                      id="calc-rate-input" 
+                      value="13.5" 
+                      step="0.25" 
+                      min="8" 
+                      max="24"
+                      oninput="recalculateMortgage()"
+                      class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
+                    />
+                    <span class="text-[10px] text-slate-400 mt-1 block">CBK Benchmark: ~13% – 15%</span>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Loan Tenure (Years)</label>
+                    <select 
+                      id="calc-tenure-input" 
+                      onchange="recalculateMortgage()"
+                      class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 bg-white"
+                    >
+                      <option value="5">5 Years (60 Months)</option>
+                      <option value="10">10 Years (120 Months)</option>
+                      <option value="15">15 Years (180 Months)</option>
+                      <option value="20" selected>20 Years (240 Months)</option>
+                      <option value="25">25 Years (300 Months)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Rent vs Buy Insight -->
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 text-xs text-slate-600 space-y-1">
+                  <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                    <i data-lucide="info" class="w-4 h-4 text-brand-orange"></i>
+                    Rent vs Buy Comparison Metric
+                  </span>
+                  <p class="text-[11px] leading-relaxed">
+                    Equivalent rental for a property of this tier in Westlands or Kilimani averages ~KES 220,000/month. Owning locks in capital appreciation in Nairobi’s high-demand corridors.
+                  </p>
+                </div>
+
+              </div>
+
+              <!-- Output Box (Right) -->
+              <div class="lg:col-span-5 bg-brand-navy text-white rounded-2xl p-6 sm:p-8 space-y-6">
+                
+                <span class="text-[10px] font-bold uppercase tracking-wider text-orange-400">AMORTISATION SUMMARY</span>
+
+                <div>
+                  <span class="text-xs text-slate-300 block">Estimated Monthly Payment</span>
+                  <div id="res-monthly" class="text-3xl sm:text-4xl font-black font-display text-orange-400 mt-1">
+                    KES 434,812
+                  </div>
+                </div>
+
+                <div class="space-y-3 pt-4 border-t border-white/10 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-slate-300">Loan Principal:</span>
+                    <span id="res-principal" class="font-bold text-white">KES 36,000,000</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-300">Total Interest (Lifetime):</span>
+                    <span id="res-interest" class="font-bold text-white">KES 68,354,880</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-300">Total Capital Outlay:</span>
+                    <span id="res-total" class="font-bold text-white">KES 104,354,880</span>
+                  </div>
+                </div>
+
+                <!-- Visual Bar Breakdown -->
+                <div>
+                  <div class="flex justify-between text-[11px] text-slate-300 mb-1">
+                    <span>Principal Ratio</span>
+                    <span>Interest Ratio</span>
+                  </div>
+                  <div class="h-3 w-full bg-white/20 rounded-full overflow-hidden flex">
+                    <div id="bar-principal" class="bg-brand-orange h-full" style="width: 35%;"></div>
+                    <div id="bar-interest" class="bg-indigo-400 h-full" style="width: 65%;"></div>
+                  </div>
+                </div>
+
+                <div class="pt-2">
+                  <button onclick="openViewingModal()" class="w-full py-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors">
+                    Speak With a Financial Advisor
+                  </button>
+                  <p class="text-[10px] text-slate-400 text-center mt-2">
+                    *Estimates for preliminary planning only. Excludes stamp duty (4%), legal fees, and bank valuation charges.
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 7. SAVED PROPERTIES & SHORTLIST VIEW ---
+    function renderSavedView() {
+      const savedList = PROPERTIES_DATA.filter(p => STATE.savedProperties.includes(p.id));
+
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange">Home</a>
+              <span>/</span>
+              <span class="text-slate-900 font-bold">Saved Shortlist</span>
+            </nav>
+
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">YOUR WISHLIST</span>
+                <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                  Saved Properties (${savedList.length})
+                </h1>
+              </div>
+
+              ${savedList.length > 0 ? `
+                <button onclick="clearSavedProperties()" class="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1.5">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  <span>Clear Wishlist</span>
+                </button>
+              ` : ''}
+            </div>
+
+            ${savedList.length === 0 ? `
+              <div class="bg-white rounded-3xl p-16 text-center border border-slate-200/90 shadow-sm max-w-lg mx-auto">
+                <i data-lucide="bookmark" class="w-16 h-16 text-slate-300 mx-auto mb-4"></i>
+                <h3 class="font-display text-xl font-bold text-slate-800">Your shortlist is currently empty</h3>
+                <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                  Click the bookmark icon on any property card or detail view to save residences here for instant comparison.
+                </p>
+                <a href="#properties" class="inline-block mt-6 px-7 py-3 bg-brand-navy text-white text-xs font-bold uppercase tracking-wider rounded-xl">
+                  Explore Curated Properties
+                </a>
+              </div>
+            ` : `
+              <!-- Cards Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                ${renderPropertyCardBatch(savedList)}
+              </div>
+
+              <!-- Side-by-Side Comparison Matrix Table -->
+              <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+                <h3 class="font-display text-xl font-bold text-brand-navy mb-4">Shortlist Comparison Matrix</h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-xs text-left border-collapse">
+                    <thead>
+                      <tr class="border-b border-slate-200 text-slate-400 uppercase text-[10px]">
+                        <th class="py-3 px-4">Property</th>
+                        <th class="py-3 px-4">Asking Price</th>
+                        <th class="py-3 px-4">Location</th>
+                        <th class="py-3 px-4">Bed / Bath</th>
+                        <th class="py-3 px-4">Area (sqm)</th>
+                        <th class="py-3 px-4">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
+                      ${savedList.map(p => `
+                        <tr>
+                          <td class="py-3 px-4 font-bold text-brand-navy">
+                            <a href="#property/${p.id}" class="hover:text-brand-orange">${p.title}</a>
+                          </td>
+                          <td class="py-3 px-4 font-bold">${formatCurrency(p.priceKes, p.rentPeriod)}</td>
+                          <td class="py-3 px-4 text-slate-600">${p.location}</td>
+                          <td class="py-3 px-4">${p.beds} Beds / ${p.baths} Baths</td>
+                          <td class="py-3 px-4">${p.sqm > 0 ? p.sqm + ' sqm' : 'N/A'}</td>
+                          <td class="py-3 px-4">
+                            <button onclick="toggleSaveProperty('${p.id}', event)" class="text-red-500 hover:text-red-700 text-[11px] font-bold">
+                              Remove
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `}
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 8. SELL / RENT OUT / VALUATION INTAKE SCREENS ---
+    function renderOwnerLeadGenView(mode = 'sell') {
+      const isValuation = mode === 'valuation';
+      const isRentOut = mode === 'rent-out';
+      
+      const title = isValuation 
+        ? 'Request Professional Property Valuation' 
+        : (isRentOut ? 'List Your Property for Executive Rental' : 'Sell Your Property With Aurus');
+
+      const subtitle = isValuation
+        ? 'Our valuation team provides empirical comparative market appraisals across Nairobi and the Coast.'
+        : 'Connect with qualified corporate expatriates, diplomatic missions, and vetted high-net-worth buyers.';
+
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange">Home</a>
+              <span>/</span>
+              <span class="text-slate-900 font-bold">${title}</span>
+            </nav>
+
+            <div class="bg-white rounded-3xl p-6 sm:p-12 border border-slate-200/90 shadow-xl space-y-8">
+              
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">OWNER & LANDLORD SERVICES</span>
+                <h1 class="text-2xl sm:text-4xl font-black font-display text-brand-navy tracking-tight mt-1">
+                  ${title}
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                  ${subtitle}
+                </p>
+              </div>
+
+              <!-- Notice -->
+              <div class="bg-orange-50 border border-orange-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
+                <i data-lucide="shield-check" class="w-4 h-4 text-brand-orange shrink-0 mt-0.5"></i>
+                <span><strong>Integrity Guarantee:</strong> Aurus maintains strict confidentiality. No property details or images are published until legal title verification is conducted with the owner.</span>
+              </div>
+
+              <form onsubmit="handleLeadGenSubmit(event, '${mode}')" class="space-y-5 text-xs">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Owner / Authorized Representative Name *</label>
+                    <input type="text" required placeholder="e.g. Eng. George Ruto" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Email Address *</label>
+                    <input type="email" required placeholder="owner@domain.co.ke" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Phone Number / WhatsApp *</label>
+                    <input type="tel" required placeholder="+254 7..." class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Property Location (Neighborhood / Estate) *</label>
+                    <input type="text" required placeholder="e.g. Karen, Miotoni or Riverside, Westlands" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Property Type *</label>
+                    <select class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white">
+                      <option>Detached Luxury Villa</option>
+                      <option>Penthouse / Duplex</option>
+                      <option>Townhouse (Gated Court)</option>
+                      <option>Modern Apartment</option>
+                      <option>Commercial Office Space</option>
+                      <option>Residential / Commercial Plot</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Bedrooms (If Applicable)</label>
+                    <select class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white">
+                      <option>1 Bedroom</option>
+                      <option>2 Bedrooms</option>
+                      <option>3 Bedrooms</option>
+                      <option selected>4 Bedrooms</option>
+                      <option>5+ Bedrooms</option>
+                      <option>N/A (Plot/Commercial)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Expected Price / Rent (KES)</label>
+                    <input type="text" placeholder="e.g. KES 85,000,000" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200" />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Property Features & Condition Summary</label>
+                  <textarea rows="3" placeholder="Briefly describe the key attributes: pool, borehole, size in acres/sqm, year built..." class="w-full px-3.5 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"></textarea>
+                </div>
+
+                <div class="pt-2">
+                  <button type="submit" class="w-full py-3.5 bg-brand-navy hover:bg-brand-slate text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors shadow">
+                    Submit Listing for Senior Partner Review
+                  </button>
+                </div>
+
+              </form>
+
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 9. INFORMATIONAL PAGES (ABOUT, GUIDES, FAQ, CONTACT) ---
+    function renderAboutView() {
+      return `
+        <div class="bg-white min-h-screen py-16">
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">OUR ETHOS</span>
+              <h1 class="text-4xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                About Aurus Real Estate
+              </h1>
+              <p class="text-sm text-slate-600 mt-4 leading-relaxed">
+                Founded with a vision to redefine real estate advisory in East Africa, Aurus operates as a private client agency catering to high-net-worth individuals, institutional investors, and multinational diplomatic bodies.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
+              <div class="space-y-2">
+                <h3 class="font-display font-bold text-lg text-brand-navy">Discreet Acquisitions</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                  Protecting privacy through structured SPVs, non-disclosure agreements, and off-market representations.
+                </p>
+              </div>
+              <div class="space-y-2">
+                <h3 class="font-display font-bold text-lg text-brand-navy">Title Due Diligence</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                  Rigorous scrutiny at the Ministry of Lands, Ardhi House, confirming beacon certificates and clean histories.
+                </p>
+              </div>
+              <div class="space-y-2">
+                <h3 class="font-display font-bold text-lg text-brand-navy">Design Mastery</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                  Representing homes that marry bioclimatic sustainability with international architectural standards.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderContactView() {
+      return `
+        <div class="bg-slate-50 min-h-screen py-16">
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-xl">
+              <div class="space-y-6">
+                <div>
+                  <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">GET IN TOUCH</span>
+                  <h1 class="text-3xl font-black font-display text-brand-navy tracking-tight mt-1">Contact Our Advisory Desk</h1>
+                  <p class="text-xs text-slate-500 mt-2">Visit our offices in Westlands or Nyali, or schedule a virtual discovery consultation.</p>
+                </div>
+
+                <div class="space-y-4 text-xs text-slate-700">
+                  <div class="flex items-start gap-3">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-brand-orange shrink-0 mt-0.5"></i>
+                    <div>
+                      <strong>Nairobi Headquarters:</strong><br />
+                      Suite 11B, Delta Corner Tower, Chiromo Road, Westlands, Nairobi
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-brand-orange shrink-0 mt-0.5"></i>
+                    <div>
+                      <strong>Coastal Bureau:</strong><br />
+                      Floor 3, Nyali Centre, Links Road, Nyali, Mombasa
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i data-lucide="phone" class="w-4 h-4 text-brand-orange"></i>
+                    <span>+254 (0) 700 892 400</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i data-lucide="mail" class="w-4 h-4 text-brand-orange"></i>
+                    <span>advisory@aurusproperties.co.ke</span>
+                  </div>
+                </div>
+              </div>
+
+              <form onsubmit="handleContactSubmit(event)" class="space-y-4 text-xs">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Your Full Name</label>
+                  <input type="text" required placeholder="Cynthia Wanjiku" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200" />
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Email Address</label>
+                  <input type="email" required placeholder="cynthia@domain.co.ke" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200" />
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Inquiry Topic</label>
+                  <select class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white">
+                    <option>Property Acquisition Consultation</option>
+                    <option>Selling / Listing Inquiries</option>
+                    <option>Executive Rental Desk</option>
+                    <option>Commercial Leasing & Land</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Message</label>
+                  <textarea rows="3" required placeholder="How may our advisors assist your search?" class="w-full px-3.5 py-2 rounded-lg border border-slate-200"></textarea>
+                </div>
+                <button type="submit" class="w-full py-3 bg-brand-navy hover:bg-brand-slate text-white font-bold uppercase rounded-lg transition-colors">
+                  Send Message
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderFaqView() {
+      return `
+        <div class="bg-white min-h-screen py-16">
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">FREQUENTLY ASKED QUESTIONS</span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                Property Transaction FAQs
+              </h1>
+            </div>
+
+            <div class="space-y-4 text-xs">
+              <div class="border border-slate-200 rounded-xl p-5">
+                <h3 class="font-bold text-sm text-slate-900 mb-1">What are the statutory transaction costs when buying property in Kenya?</h3>
+                <p class="text-slate-600 leading-relaxed">
+                  Buyers typically budget for 4% Stamp Duty on urban properties (2% in rural/agricultural areas), ~1% to 1.5% legal conveyancing fees, and registration search charges. Capital Gains Tax (CGT) at 5% is the liability of the vendor.
+                </p>
+              </div>
+              <div class="border border-slate-200 rounded-xl p-5">
+                <h3 class="font-bold text-sm text-slate-900 mb-1">Can non-citizens purchase property in Kenya?</h3>
+                <p class="text-slate-600 leading-relaxed">
+                  Foreign nationals can acquire residential and commercial properties under leasehold tenure (typically 99 years). Under the Kenyan Constitution, foreigners cannot hold freehold agricultural land directly.
+                </p>
+              </div>
+              <div class="border border-slate-200 rounded-xl p-5">
+                <h3 class="font-bold text-sm text-slate-900 mb-1">How does Aurus verify land and property title deeds?</h3>
+                <p class="text-slate-600 leading-relaxed">
+                  Our legal conveyancing team conducts official search certificates through the ArdhiSasa digital lands platform and regional registries, cross-referencing survey maps, deed plans, and mutation records.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGuidesView() {
+      return `
+        <div class="bg-white min-h-screen py-16">
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange">INVESTMENT RESEARCH</span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1">
+                Kenya Property Investor Guide (2026 Edition)
+              </h1>
+              <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
+                An executive summary on rental yields, infrastructure corridors (Nairobi Expressway, SGR), and emerging gated community developments.
+              </p>
+            </div>
+
+            <div class="space-y-6 text-xs text-slate-700 leading-relaxed">
+              <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                <h3 class="font-display font-bold text-base text-brand-navy mb-2">1. High-Yield Residential Corridors</h3>
+                <p>
+                  Westlands, Kilimani, and Kileleshwa continue to generate steady 9% – 11% gross rental yields driven by expatriates and short-stay tourism. Ensure properties have borehole water and full backup generator infrastructure.
+                </p>
+              </div>
+              <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                <h3 class="font-display font-bold text-base text-brand-navy mb-2">2. Diplomatic Enclave Capital Preservation</h3>
+                <p>
+                  Karen, Runda, and Gigiri boast the lowest vacancy rates for standalone villas, commanding lease terms in USD from bilateral embassies and international non-governmental bodies.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ========================================================================
+    // ROUTING & CONTROLLER LOGIC
+    // ========================================================================
+
+    function handleHashChange() {
+      const hash = window.location.hash.replace('#', '') || 'home';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (hash.startsWith('property/')) {
+        const id = hash.replace('property/', '');
+        STATE.currentRoute = 'property-detail';
+        STATE.currentPropertyId = id;
+      } else if (hash.startsWith('neighbourhood/')) {
+        const nId = hash.replace('neighbourhood/', '');
+        // Filter properties by this neighbourhood and jump to catalogue
+        STATE.filterCriteria.location = nId;
+        STATE.currentRoute = 'properties';
+      } else {
+        STATE.currentRoute = hash;
+        STATE.currentPropertyId = null;
+      }
+
+      renderCurrentRoute();
+    }
+
+    function renderCurrentRoute() {
+      const root = document.getElementById('app-root');
+      if (!root) return;
+
+      let html = '';
+      switch (STATE.currentRoute) {
+        case 'home':
+          html = renderHomeView();
+          break;
+        case 'properties':
+          html = renderPropertiesCatalogueView();
+          break;
+        case 'property-detail':
+          html = renderPropertyDetailView(STATE.currentPropertyId);
+          break;
+        case 'agents':
+          html = renderAgentsView();
+          break;
+        case 'neighbourhoods':
+          html = renderNeighbourhoodsView();
+          break;
+        case 'mortgage-calculator':
+          html = renderMortgageCalculatorView();
+          break;
+        case 'saved':
+          html = renderSavedView();
+          break;
+        case 'sell':
+          html = renderOwnerLeadGenView('sell');
+          break;
+        case 'rent-out':
+          html = renderOwnerLeadGenView('rent-out');
+          break;
+        case 'valuation':
+          html = renderOwnerLeadGenView('valuation');
+          break;
+        case 'about':
+          html = renderAboutView();
+          break;
+        case 'contact':
+          html = renderContactView();
+          break;
+        case 'faq':
+          html = renderFaqView();
+          break;
+        case 'guides':
+          html = renderGuidesView();
+          break;
+        default:
+          html = renderHomeView();
+      }
+
+      root.innerHTML = html;
+
+      // Re-initialize Lucide Icons
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      // Re-initialize Maps if needed
+      if (STATE.currentRoute === 'property-detail' && STATE.currentPropertyId) {
+        initPropertyDetailMap(STATE.currentPropertyId);
+      }
+
+      // Re-trigger subtle GSAP text animations if GSAP is loaded
+      initGsapAnimations();
+    }
+
+    // --- Filter Application Functions ---
+    function getFilteredProperties() {
+      return PROPERTIES_DATA.filter(p => {
+        // Purpose / Category
+        if (STATE.filterCriteria.category !== 'all') {
+          if (STATE.filterCriteria.category === 'sale' && p.purpose !== 'sale') return false;
+          if (STATE.filterCriteria.category === 'rent' && p.purpose !== 'rent') return false;
+          if (STATE.filterCriteria.category === 'commercial' && p.purpose !== 'commercial') return false;
+          if (STATE.filterCriteria.category === 'land' && p.purpose !== 'land') return false;
+          if (STATE.filterCriteria.category === 'off-plan' && p.purpose !== 'off-plan') return false;
+          if (STATE.filterCriteria.category === 'penthouses' && p.type !== 'Penthouse') return false;
+        }
+
+        // Location
+        if (STATE.filterCriteria.location !== 'all') {
+          if (p.neighbourhood !== STATE.filterCriteria.location) return false;
+        }
+
+        // Property Type
+        if (STATE.filterCriteria.type !== 'all') {
+          if (p.type !== STATE.filterCriteria.type) return false;
+        }
+
+        // Bedrooms
+        if (STATE.filterCriteria.bedrooms !== 'all') {
+          const minBeds = parseInt(STATE.filterCriteria.bedrooms, 10);
+          if (p.beds < minBeds) return false;
+        }
+
+        // Search Query
+        if (STATE.filterCriteria.searchQuery.trim() !== '') {
+          const q = STATE.filterCriteria.searchQuery.toLowerCase();
+          const matches = p.title.toLowerCase().includes(q) ||
+                          p.location.toLowerCase().includes(q) ||
+                          p.address.toLowerCase().includes(q) ||
+                          p.type.toLowerCase().includes(q) ||
+                          p.shortDesc.toLowerCase().includes(q);
+          if (!matches) return false;
+        }
+
+        return true;
+      }).sort((a, b) => {
+        if (STATE.filterCriteria.sortBy === 'price-asc') return a.priceKes - b.priceKes;
+        if (STATE.filterCriteria.sortBy === 'price-desc') return b.priceKes - a.priceKes;
+        if (STATE.filterCriteria.sortBy === 'sqm-desc') return (b.sqm || 0) - (a.sqm || 0);
+        return 0; // default featured
+      });
+    }
+
+    function applyCategoryFilter(cat) {
+      STATE.filterCriteria.category = cat;
+      if (STATE.currentRoute === 'properties') {
+        renderCurrentRoute();
+      }
+    }
+
+    function setFilterCategory(cat) {
+      STATE.filterCriteria.category = cat;
+      renderCurrentRoute();
+    }
+
+    function handleLocationFilter(loc) {
+      STATE.filterCriteria.location = loc;
+      renderCurrentRoute();
+    }
+
+    function handleTypeFilter(t) {
+      STATE.filterCriteria.type = t;
+      renderCurrentRoute();
+    }
+
+    function handleBedsFilter(b) {
+      STATE.filterCriteria.bedrooms = b;
+      renderCurrentRoute();
+    }
+
+    function handleSortFilter(s) {
+      STATE.filterCriteria.sortBy = s;
+      renderCurrentRoute();
+    }
+
+    function handleKeywordSearch(query) {
+      STATE.filterCriteria.searchQuery = query;
+      const filtered = getFilteredProperties();
+      const grid = document.getElementById('catalogue-grid-container');
+      if (grid) {
+        grid.innerHTML = renderPropertyCardBatch(filtered);
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    function resetFilters() {
+      STATE.filterCriteria = {
+        category: 'all',
+        location: 'all',
+        type: 'all',
+        minPrice: 0,
+        maxPrice: 500000000,
+        bedrooms: 'all',
+        furnishing: 'all',
+        searchQuery: '',
+        sortBy: 'featured'
+      };
+      renderCurrentRoute();
+      showToast('Filters reset to show all properties');
+    }
+
+    function filterCuratedGrid(cat, btn) {
+      // Toggle button visual state
+      document.querySelectorAll('.curated-tab-btn').forEach(b => {
+        b.classList.remove('bg-brand-navy', 'text-white');
+        b.classList.add('text-slate-600');
+      });
+      btn.classList.add('bg-brand-navy', 'text-white');
+      btn.classList.remove('text-slate-600');
+
+      let list = PROPERTIES_DATA;
+      if (cat === 'sale') list = PROPERTIES_DATA.filter(p => p.purpose === 'sale');
+      else if (cat === 'rent') list = PROPERTIES_DATA.filter(p => p.purpose === 'rent');
+      else if (cat === 'commercial') list = PROPERTIES_DATA.filter(p => p.purpose === 'commercial' || p.purpose === 'land');
+
+      const grid = document.getElementById('curated-cards-grid');
+      if (grid) {
+        grid.innerHTML = renderPropertyCardBatch(list.slice(0, 6));
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    function handleHeroSearch(e) {
+      e.preventDefault();
+      const loc = document.getElementById('hero-location').value;
+      const cat = document.getElementById('hero-category').value;
+      const type = document.getElementById('hero-type').value;
+
+      STATE.filterCriteria.location = loc;
+      STATE.filterCriteria.category = cat;
+      STATE.filterCriteria.type = type;
+
+      window.location.hash = '#properties';
+    }
+
+    function filterByNeighbourhood(nId) {
+      STATE.filterCriteria.location = nId;
+      window.location.hash = '#properties';
+    }
+
+    function clearSavedProperties() {
+      STATE.savedProperties = [];
+      localStorage.setItem('aurus_saved_properties', '[]');
+      updateSavedBadges();
+      renderCurrentRoute();
+      showToast('Saved properties cleared');
+    }
+
+    function setMainDetailImage(url, elem) {
+      const main = document.getElementById('detail-main-img');
+      if (main) main.src = url;
+      // Border highlight
+      elem.parentElement.querySelectorAll('div').forEach(d => d.classList.remove('border-brand-orange'));
+      elem.classList.add('border-brand-orange');
+    }
+
+    // --- Interactive Map Toggles & Initializers ---
+    function toggleCatalogueViewMode(mode) {
+      const grid = document.getElementById('catalogue-grid-container');
+      const map = document.getElementById('catalogue-map-container');
+      const gridBtn = document.getElementById('view-mode-grid-btn');
+      const mapBtn = document.getElementById('view-mode-map-btn');
+
+      if (mode === 'map') {
+        grid.classList.add('hidden');
+        map.classList.remove('hidden');
+        mapBtn.classList.add('bg-brand-navy', 'text-white');
+        mapBtn.classList.remove('bg-white', 'text-slate-700');
+        gridBtn.classList.remove('bg-brand-navy', 'text-white');
+        gridBtn.classList.add('bg-white', 'text-slate-700');
+        initCatalogueMap();
+      } else {
+        map.classList.add('hidden');
+        grid.classList.remove('hidden');
+        gridBtn.classList.add('bg-brand-navy', 'text-white');
+        gridBtn.classList.remove('bg-white', 'text-slate-700');
+        mapBtn.classList.remove('bg-brand-navy', 'text-white');
+        mapBtn.classList.add('bg-white', 'text-slate-700');
+      }
+    }
+
+    function initCatalogueMap() {
+      if (!window.L) return;
+      const container = document.getElementById('catalogue-leaflet-map');
+      if (!container) return;
+
+      // Clean old instance
+      if (STATE.mapInstance) {
+        STATE.mapInstance.remove();
+        STATE.mapInstance = null;
+      }
+
+      // Center around Nairobi
+      const map = L.map('catalogue-leaflet-map').setView([-1.286389, 36.817223], 12);
+      STATE.mapInstance = map;
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      // Plot all filtered properties
+      const filtered = getFilteredProperties();
+      filtered.forEach(p => {
+        if (p.lat && p.lng) {
+          const marker = L.marker([p.lat, p.lng]).addTo(map);
+          marker.bindPopup(`
+            <div style="font-family:'Plus Jakarta Sans',sans-serif; width: 220px;">
+              <img src="${p.images[0]}" style="width:100%; height:110px; object-fit:cover; border-radius:6px 6px 0 0;" />
+              <div style="padding:10px;">
+                <div style="font-size:11px; font-weight:800; color:#E05A2B;">${formatCurrency(p.priceKes, p.rentPeriod)}</div>
+                <div style="font-size:12px; font-weight:700; color:#0B132B; margin-top:2px;">${p.title}</div>
+                <div style="font-size:10px; color:#64748B; margin-top:2px;">${p.location}</div>
+                <a href="#property/${p.id}" style="display:block; text-align:center; padding:5px 0; margin-top:8px; background:#0B132B; color:#ffffff; font-size:10px; font-weight:700; text-transform:uppercase; border-radius:4px; text-decoration:none;">View Property</a>
+              </div>
+            </div>
+          `);
+        }
+      });
+
+      setTimeout(() => map.invalidateSize(), 200);
+    }
+
+    function initPropertyDetailMap(propertyId) {
+      if (!window.L) return;
+      const container = document.getElementById('property-detail-map');
+      if (!container) return;
+
+      const p = PROPERTIES_DATA.find(x => x.id === propertyId);
+      if (!p || !p.lat) return;
+
+      const map = L.map('property-detail-map').setView([p.lat, p.lng], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      const marker = L.marker([p.lat, p.lng]).addTo(map);
+      marker.bindPopup(`<strong>${p.title}</strong><br />${p.address}`).openPopup();
+      setTimeout(() => map.invalidateSize(), 200);
+    }
+
+    // --- Mortgage Formula Calculations ---
+    function calculateMonthlyRepayment(principal, annualRatePct, years) {
+      const monthlyRate = (annualRatePct / 100) / 12;
+      const numMonths = years * 12;
+      if (monthlyRate === 0) return 'KES ' + Math.round(principal / numMonths).toLocaleString('en-KE');
+      
+      const factor = Math.pow(1 + monthlyRate, numMonths);
+      const monthlyPayment = principal * ((monthlyRate * factor) / (factor - 1));
+      return 'KES ' + Math.round(monthlyPayment).toLocaleString('en-KE');
+    }
+
+    function updateQuickMortgage(totalPrice, depositPct) {
+      const depVal = Math.round(totalPrice * (depositPct / 100));
+      const loanAmount = totalPrice - depVal;
+      const repay = calculateMonthlyRepayment(loanAmount, 13.5, 20);
+
+      document.getElementById('widget-dep-pct').innerText = depositPct + '%';
+      document.getElementById('widget-dep-val').innerText = formatCurrency(depVal);
+      document.getElementById('widget-repay-val').innerText = repay;
+    }
+
+    function recalculateMortgage() {
+      const price = parseFloat(document.getElementById('calc-price-input').value) || 45000000;
+      const depPct = parseFloat(document.getElementById('calc-deposit-input').value) || 20;
+      const rate = parseFloat(document.getElementById('calc-rate-input').value) || 13.5;
+      const years = parseInt(document.getElementById('calc-tenure-input').value, 10) || 20;
+
+      const depAmount = price * (depPct / 100);
+      const loanPrincipal = price - depAmount;
+
+      const monthlyRate = (rate / 100) / 12;
+      const numMonths = years * 12;
+      const factor = Math.pow(1 + monthlyRate, numMonths);
+      const monthlyPayment = loanPrincipal * ((monthlyRate * factor) / (factor - 1));
+      const totalLifetime = monthlyPayment * numMonths;
+      const totalInterest = totalLifetime - loanPrincipal;
+
+      // Update UI elements
+      document.getElementById('calc-price-display').innerText = 'KES ' + price.toLocaleString('en-KE');
+      document.getElementById('calc-deposit-display').innerText = `${depPct}% (KES ${depAmount.toLocaleString('en-KE')})`;
+      
+      document.getElementById('res-monthly').innerText = 'KES ' + Math.round(monthlyPayment).toLocaleString('en-KE');
+      document.getElementById('res-principal').innerText = 'KES ' + Math.round(loanPrincipal).toLocaleString('en-KE');
+      document.getElementById('res-interest').innerText = 'KES ' + Math.round(totalInterest).toLocaleString('en-KE');
+      document.getElementById('res-total').innerText = 'KES ' + Math.round(totalLifetime).toLocaleString('en-KE');
+
+      // Visual ratios
+      const pRatio = Math.round((loanPrincipal / totalLifetime) * 100);
+      const iRatio = 100 - pRatio;
+      document.getElementById('bar-principal').style.width = pRatio + '%';
+      document.getElementById('bar-interest').style.width = iRatio + '%';
+    }
+
+    // --- Lead Gen Form Submissions ---
+    function handleLeadGenSubmit(e, mode) {
+      e.preventDefault();
+      showToast('Thank you! Your property intake has been dispatched to our senior valuation partner. We will contact you within 24 hours.');
+      e.target.reset();
+    }
+
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      showToast('Your message has been received by our client desk. A senior advisor will follow up promptly.');
+      e.target.reset();
+    }
+
+    // --- GSAP Animation Initializer (With Full Defensive Fallbacks) ---
+    function initGsapAnimations() {
+      if (!window.gsap) return;
+      
+      // Respect user's motion preferences
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      try {
+        // Register ScrollTrigger if available
+        if (window.ScrollTrigger) {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Subtly animate headlines in view
+        gsap.fromTo("h1, h2", 
+          { opacity: 0.85, y: 8 }, 
+          { opacity: 1, y: 0, duration: 0.6, ease: "power2.out", stagger: 0.05 }
+        );
+      } catch (err) {
+        // Safe silent fail
+        console.warn("GSAP subtle animation skipped", err);
+      }
+    }
+
+    // --- Application Bootstrapping ---
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSavedBadges();
+      handleHashChange();
+    });
+
+    window.addEventListener('hashchange', handleHashChange);
+  </script>
+</body>
+</html>

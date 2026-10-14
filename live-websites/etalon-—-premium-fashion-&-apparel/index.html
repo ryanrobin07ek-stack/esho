@@ -1,0 +1,4275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ETALON — Premium Fashion & Apparel</title>
+  <meta name="description" content="High-end fashion e-commerce destination featuring curated collections for women, men, and kids, luxury outerwear, footwear, and accessories." />
+  <meta property="og:title" content="ETALON — Premium Fashion & Apparel" />
+  <meta property="og:description" content="High-end fashion e-commerce destination featuring curated collections for women, men, and kids, luxury outerwear, footwear, and accessories." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Fonts: Outfit (modern display), Plus Jakarta Sans (body), Instrument Serif (editorial accents) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- GSAP & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       ETALON DESIGN SYSTEM — DERIVED FROM INSPIRATION REFERENCE
+       ========================================================================== */
+    :root {
+      /* Colors strictly derived from screenshot */
+      --c-forest: #203A2F;
+      --c-forest-dark: #162921;
+      --c-forest-light: #2A4C3E;
+      --c-forest-subtle: #EDF3F0;
+      --c-yellow: #F6CF46;
+      --c-yellow-hover: #E7C036;
+      --c-yellow-light: #FEF9E6;
+      --c-dark: #121316;
+      --c-dark-surface: #1B1E22;
+      --c-dark-elevated: #24282E;
+      --c-bg: #FFFFFF;
+      --c-card: #ECEEF1;
+      --c-card-light: #F4F5F7;
+      --c-border: #E2E5E9;
+      --c-border-subtle: #EDEDF0;
+      --c-text-main: #14171A;
+      --c-text-muted: #64748B;
+      --c-text-light: #94A3B8;
+      --c-danger: #E11D48;
+      --c-success: #10B981;
+
+      /* Typography */
+      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-editorial: 'Instrument Serif', Georgia, serif;
+
+      /* Geometry & Spacing */
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --radius-pill: 9999px;
+      --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.12), 0 10px 15px -5px rgba(0, 0, 0, 0.05);
+      --max-w: 1380px;
+      --header-h: 76px;
+    }
+
+    /* CSS Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--c-text-main);
+      background-color: var(--c-bg);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      border: none;
+      outline: none;
+      background: none;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Utilities */
+    .container {
+      width: 100%;
+      max-width: var(--max-w);
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+    }
+
+    /* Typography Utilities */
+    .font-display { font-family: var(--font-display); }
+    .font-editorial { font-family: var(--font-editorial); }
+    .font-body { font-family: var(--font-body); }
+
+    /* ==========================================================================
+       TOP ANNOUNCEMENT BAR
+       ========================================================================== */
+    .announcement-bar {
+      background-color: var(--c-forest-dark);
+      color: #E2E8F0;
+      font-size: 0.8125rem;
+      letter-spacing: 0.03em;
+      padding: 9px 16px;
+      text-align: center;
+      position: relative;
+      z-index: 60;
+      font-weight: 500;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+    }
+    .announcement-bar strong {
+      color: var(--c-yellow);
+      font-weight: 600;
+    }
+    .announcement-bar .badge-currency {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    /* ==========================================================================
+       MAIN GLOBAL HEADER
+       ========================================================================== */
+    .site-header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: var(--header-h);
+      background-color: var(--c-forest);
+      color: #FFFFFF;
+      z-index: 50;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      align-items: center;
+    }
+    .site-header.scrolled {
+      background-color: rgba(26, 48, 39, 0.96);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    /* Brand Logo (from screenshot: yellow circle emblem + clean lowercase 'etalon') */
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #FFFFFF;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.55rem;
+      letter-spacing: -0.02em;
+    }
+    .brand-logo-icon {
+      width: 30px;
+      height: 30px;
+      background-color: var(--c-yellow);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-dark);
+      font-weight: 800;
+      font-size: 1.1rem;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(246, 207, 70, 0.4);
+    }
+    .brand-logo-icon::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: var(--c-forest);
+      border-radius: 50%;
+      top: 6px;
+      right: 6px;
+    }
+
+    /* Navigation Links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-item {
+      position: relative;
+    }
+    .nav-link {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: #D1D9D4;
+      transition: color 0.2s ease;
+      padding: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: #FFFFFF;
+    }
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: var(--c-yellow);
+      border-radius: 2px;
+    }
+
+    /* Header Actions: Search, Wishlist, Account, Cart */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .action-btn {
+      color: #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .action-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #FFFFFF;
+    }
+
+    /* Cart Button: Circular Yellow Badge with counter as seen in screenshot */
+    .cart-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px 6px 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-pill);
+      color: #FFFFFF;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: background 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .cart-trigger:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+    .cart-badge {
+      width: 26px;
+      height: 26px;
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      color: #FFFFFF;
+      padding: 8px;
+    }
+
+    /* ==========================================================================
+       HERO CAMPAIGN SECTION (FROM SCREENSHOT)
+       Deep green background, editorial italic year, huge headline, circular model cutout,
+       floating price tag & discount bubble, slider controls
+       ========================================================================== */
+    .hero-section {
+      background-color: var(--c-forest);
+      color: #FFFFFF;
+      position: relative;
+      padding: 60px 0 80px;
+      overflow: hidden;
+      min-height: 560px;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      align-items: center;
+      gap: 40px;
+      position: relative;
+      z-index: 2;
+    }
+    .hero-content {
+      max-width: 580px;
+    }
+    .hero-year {
+      font-family: var(--font-editorial);
+      font-size: 2.8rem;
+      font-style: italic;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: 4.5rem;
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+      color: #FFFFFF;
+    }
+    .hero-tagline {
+      font-size: 1.15rem;
+      color: #B2C4BC;
+      margin-bottom: 32px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+
+    /* Yellow CTA Button */
+    .btn-yellow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+      padding: 14px 32px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 20px rgba(246, 207, 70, 0.25);
+    }
+    .btn-yellow:hover {
+      background-color: var(--c-yellow-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(246, 207, 70, 0.35);
+    }
+
+    /* Hero Visual & Organic Circular Frame */
+    .hero-visual {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .hero-circle-backdrop {
+      width: 440px;
+      height: 440px;
+      background: radial-gradient(circle, #2B4E3F 0%, #172D24 100%);
+      border-radius: 50%;
+      position: absolute;
+      z-index: 1;
+      box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3), 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .hero-image-wrapper {
+      position: relative;
+      z-index: 2;
+      width: 380px;
+      height: 480px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .hero-model-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 200px 200px 30px 30px;
+      filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4));
+    }
+
+    /* Floating price & discount tag as in screenshot */
+    .hero-price-tag {
+      position: absolute;
+      top: 40px;
+      right: 30px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-price-amount {
+      font-family: var(--font-display);
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+    .hero-discount-badge {
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      line-height: 1.05;
+      text-align: center;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    }
+
+    /* Hero Nav Controls & Slider Dots */
+    .hero-nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
+      justify-content: center;
+      z-index: 4;
+      position: relative;
+    }
+    .hero-nav-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .hero-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: #FFFFFF;
+    }
+
+    .hero-slider-dots {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 4;
+    }
+    .hero-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .hero-dot.active {
+      height: 24px;
+      border-radius: 4px;
+      background-color: #FFFFFF;
+    }
+
+    /* ==========================================================================
+       BRAND LOGO BAR (FROM SCREENSHOT)
+       High-contrast luxury white wordmarks on dark charcoal background
+       ========================================================================== */
+    .brand-marquee-bar {
+      background-color: var(--c-dark);
+      padding: 30px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .brand-marquee-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 32px;
+    }
+    .brand-logo-item {
+      color: #FFFFFF;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: 0.15em;
+      opacity: 0.85;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-logo-item:hover {
+      opacity: 1;
+      transform: scale(1.05);
+      color: var(--c-yellow);
+    }
+
+    /* ==========================================================================
+       SECTION HEADERS
+       Clean, modern geometric sans as in screenshot
+       ========================================================================== */
+    .section-header {
+      margin-bottom: 36px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--c-text-main);
+    }
+    .section-subtitle {
+      color: var(--c-text-muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+    .section-link {
+      color: var(--c-forest);
+      font-weight: 600;
+      font-size: 0.9375rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: gap 0.2s ease;
+    }
+    .section-link:hover {
+      gap: 10px;
+      color: var(--c-forest-light);
+    }
+
+    /* ==========================================================================
+       NEW COLLECTION SECTION (SPLIT EDITORIAL TILES)
+       Tile 1: Grey soft rounded card with puffer jacket
+       Tile 2: Bright Yellow soft rounded card with model & -40% OFF
+       ========================================================================== */
+    .new-collection-section {
+      padding: 70px 0;
+      background-color: #FFFFFF;
+    }
+    .collection-tiles-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 28px;
+    }
+    .collection-tile {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      position: relative;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 36px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .collection-tile:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    .tile-grey {
+      background-color: var(--c-card);
+      color: var(--c-text-main);
+    }
+    .tile-yellow {
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+    }
+    .tile-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      max-width: 200px;
+      line-height: 1.2;
+    }
+    .tile-discount-big {
+      font-family: var(--font-display);
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin: 16px 0 8px;
+    }
+    .tile-img {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      height: 90%;
+      width: 55%;
+      object-fit: cover;
+      object-position: top center;
+      border-radius: var(--radius-lg) 0 0 0;
+    }
+    .btn-pill-dark {
+      background-color: var(--c-dark);
+      color: #FFFFFF;
+      padding: 10px 24px;
+      border-radius: var(--radius-pill);
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      transition: all 0.2s ease;
+      z-index: 2;
+    }
+    .btn-pill-dark:hover {
+      background-color: var(--c-forest-dark);
+      transform: translateY(-2px);
+    }
+
+    /* ==========================================================================
+       PRODUCT GRID & CARDS (FROM SCREENSHOT)
+       Light grey background, rounded corners, wishlist heart top-right,
+       yellow squircle cart button bottom-right!
+       ========================================================================== */
+    .best-sellers-section {
+      padding: 60px 0 80px;
+      background-color: #FFFFFF;
+    }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 1024px) {
+      .products-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .products-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    }
+    @media (max-width: 480px) {
+      .products-grid { grid-template-columns: 1fr; }
+    }
+
+    .product-card {
+      background-color: #FFFFFF;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      border: 1px solid var(--c-border-subtle);
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Image Container with Soft Grey Background (matching reference) */
+    .product-img-box {
+      background-color: var(--c-card);
+      position: relative;
+      aspect-ratio: 1 / 1.15;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .product-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: transform 0.4s ease;
+    }
+    .product-card:hover .product-img {
+      transform: scale(1.05);
+    }
+
+    /* Badges */
+    .product-discount-pill {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background-color: var(--c-forest);
+      color: #FFFFFF;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      z-index: 2;
+    }
+    .product-discount-pill.yellow {
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+    }
+
+    /* Wishlist Heart Button (Top Right) */
+    .wishlist-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
+      background-color: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-text-main);
+      transition: all 0.2s ease;
+      z-index: 3;
+    }
+    .wishlist-btn:hover {
+      background-color: #FFFFFF;
+      transform: scale(1.1);
+    }
+    .wishlist-btn.active {
+      color: var(--c-danger);
+      background-color: #FFFFFF;
+    }
+    .wishlist-btn.active svg {
+      fill: var(--c-danger);
+    }
+
+    /* Product Info Area */
+    .product-info {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #FFFFFF;
+    }
+    .product-meta {
+      flex: 1;
+      padding-right: 10px;
+    }
+    .product-brand {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--c-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+    .product-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--c-text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .product-pricing {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .product-price {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--c-text-main);
+    }
+    .product-old-price {
+      font-size: 0.8rem;
+      color: var(--c-text-light);
+      text-decoration: line-through;
+    }
+
+    /* Yellow Squircle Shopping Bag Button (Bottom Right) */
+    .btn-quick-bag {
+      width: 38px;
+      height: 38px;
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(246, 207, 70, 0.3);
+    }
+    .btn-quick-bag:hover {
+      background-color: var(--c-yellow-hover);
+      transform: scale(1.08);
+    }
+
+    .load-more-container {
+      text-align: center;
+      margin-top: 48px;
+    }
+    .btn-dark {
+      background-color: var(--c-dark);
+      color: #FFFFFF;
+      padding: 14px 36px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.92rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .btn-dark:hover {
+      background-color: var(--c-forest-dark);
+      transform: translateY(-2px);
+    }
+
+    /* ==========================================================================
+       SPLIT FLASH SALE COUNTDOWN BANNER (FROM SCREENSHOT)
+       Left: Yellow with -70% OFF & sneaker cutout
+       Right: Deep Green with "Sale ends soon" & 4 countdown boxes
+       ========================================================================== */
+    .flash-sale-section {
+      padding: 40px 0;
+      background-color: #FFFFFF;
+    }
+    .flash-sale-wrapper {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      box-shadow: var(--shadow-md);
+    }
+    @media (max-width: 900px) {
+      .flash-sale-wrapper { grid-template-columns: 1fr; }
+    }
+
+    /* Left Banner Side: Yellow */
+    .sale-banner-yellow {
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .sale-big-badge {
+      font-family: var(--font-display);
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 24px;
+    }
+    .sale-featured-product {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      position: relative;
+      z-index: 2;
+    }
+    .sale-product-img {
+      width: 220px;
+      height: 130px;
+      object-fit: contain;
+      filter: drop-shadow(0 15px 20px rgba(0,0,0,0.2));
+      transform: rotate(-10deg);
+      transition: transform 0.3s ease;
+    }
+    .sale-banner-yellow:hover .sale-product-img {
+      transform: rotate(-5deg) scale(1.05);
+    }
+    .sale-price-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.08);
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+    }
+    .sale-price-new {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--c-dark);
+    }
+    .sale-price-old {
+      text-decoration: line-through;
+      color: rgba(0, 0, 0, 0.5);
+      font-size: 1rem;
+    }
+
+    /* Right Banner Side: Deep Green with Countdown */
+    .sale-banner-green {
+      background-color: var(--c-forest);
+      color: #FFFFFF;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .countdown-headline {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 32px;
+      color: #FFFFFF;
+    }
+    .countdown-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      max-width: 520px;
+    }
+    .countdown-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .countdown-number {
+      background-color: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      width: 100%;
+      height: 80px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #FFFFFF;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .countdown-label {
+      font-size: 0.8125rem;
+      color: #B2C4BC;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+
+    /* ==========================================================================
+       LATEST NEWS & EDITORIAL JOURNAL (FROM SCREENSHOT)
+       3 editorial cards with rounded corners, date badge, plus icon button, title
+       ========================================================================== */
+    .news-section {
+      padding: 70px 0;
+      background-color: #FFFFFF;
+    }
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+    @media (max-width: 900px) {
+      .news-grid { grid-template-columns: 1fr; }
+    }
+    .news-card {
+      border-radius: var(--radius-lg);
+      background-color: #FFFFFF;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease;
+      cursor: pointer;
+    }
+    .news-card:hover {
+      transform: translateY(-4px);
+    }
+    .news-img-box {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 16 / 10;
+      background-color: var(--c-card);
+      margin-bottom: 16px;
+    }
+    .news-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .news-card:hover .news-img {
+      transform: scale(1.05);
+    }
+    .news-date-badge {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+    }
+    .news-expand-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      background-color: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      border-radius: 50%;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
+    .news-card:hover .news-expand-btn {
+      background-color: var(--c-dark);
+    }
+    .news-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.35;
+      margin-bottom: 8px;
+      color: var(--c-text-main);
+    }
+    .news-excerpt {
+      font-size: 0.875rem;
+      color: var(--c-text-muted);
+      line-height: 1.6;
+    }
+
+    /* Newsletter Subscribe Strip */
+    .newsletter-strip {
+      text-align: center;
+      max-width: 580px;
+      margin: 60px auto 0;
+      padding: 0 16px;
+    }
+    .newsletter-headline {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--c-text-main);
+    }
+    .newsletter-form {
+      display: flex;
+      gap: 0;
+      background-color: var(--c-card-light);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      padding: 4px;
+    }
+    .newsletter-input {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 0.92rem;
+      color: var(--c-text-main);
+      background: transparent;
+    }
+    .newsletter-submit {
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+      padding: 12px 28px;
+      font-weight: 700;
+      font-size: 0.875rem;
+      border-radius: var(--radius-sm);
+      transition: background-color 0.2s ease;
+    }
+    .newsletter-submit:hover {
+      background-color: var(--c-yellow-hover);
+    }
+
+    /* ==========================================================================
+       VALUE PROPOSITIONS STRIP (FROM SCREENSHOT)
+       Dark background with 4 service pillars & outline icons
+       ========================================================================== */
+    .value-props-bar {
+      background-color: #17181A;
+      color: #FFFFFF;
+      padding: 44px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .value-props-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .value-props-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) {
+      .value-props-grid { grid-template-columns: 1fr; }
+    }
+    .prop-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+    }
+    .prop-icon {
+      color: var(--c-yellow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .prop-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #E2E8F0;
+      letter-spacing: 0.02em;
+    }
+
+    /* ==========================================================================
+       FOOTER (FROM SCREENSHOT)
+       Dark footer, logo on left, link columns
+       ========================================================================== */
+    .site-footer {
+      background-color: var(--c-dark);
+      color: #94A3B8;
+      padding: 64px 0 32px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 50px;
+    }
+    @media (max-width: 900px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 500px) {
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+    .footer-column h4 {
+      color: #FFFFFF;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .footer-links a {
+      font-size: 0.875rem;
+      transition: color 0.2s ease;
+    }
+    .footer-links a:hover {
+      color: var(--c-yellow);
+    }
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 28px;
+      font-size: 0.8125rem;
+      color: #64748B;
+    }
+    .footer-dot {
+      width: 10px;
+      height: 10px;
+      background-color: var(--c-yellow);
+      border-radius: 50%;
+      display: inline-block;
+      margin: 0 auto;
+    }
+
+    /* ==========================================================================
+       CATALOGUE / SHOP VIEW STYLES
+       Multi-faceted filtering, sorting, active filter tags
+       ========================================================================== */
+    .shop-header {
+      background-color: var(--c-card-light);
+      padding: 48px 0 32px;
+      border-bottom: 1px solid var(--c-border);
+      margin-bottom: 40px;
+    }
+    .shop-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 40px;
+      padding-bottom: 80px;
+    }
+    @media (max-width: 960px) {
+      .shop-layout { grid-template-columns: 1fr; }
+      .shop-sidebar { display: none; }
+      .shop-sidebar.mobile-open {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: #FFFFFF;
+        z-index: 100;
+        padding: 24px;
+        overflow-y: auto;
+      }
+    }
+
+    .filter-group {
+      border-bottom: 1px solid var(--c-border-subtle);
+      padding: 20px 0;
+    }
+    .filter-group-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--c-text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-options-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .filter-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: var(--c-text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .filter-checkbox-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--c-forest);
+      cursor: pointer;
+    }
+    .filter-checkbox-label:hover {
+      color: var(--c-text-main);
+    }
+
+    /* Color Swatches */
+    .color-swatches-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .swatch-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      outline: 1px solid var(--c-border);
+      transition: transform 0.2s ease, outline-color 0.2s ease;
+      cursor: pointer;
+    }
+    .swatch-btn.active {
+      outline: 2px solid var(--c-forest);
+      transform: scale(1.15);
+    }
+
+    /* Size Chips */
+    .size-chips-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .size-chip-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--c-text-main);
+      background-color: #FFFFFF;
+      transition: all 0.2s ease;
+    }
+    .size-chip-btn.active {
+      background-color: var(--c-forest);
+      color: #FFFFFF;
+      border-color: var(--c-forest);
+    }
+
+    .shop-controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--c-border-subtle);
+    }
+    .sort-select {
+      padding: 8px 14px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 500;
+      background-color: #FFFFFF;
+      color: var(--c-text-main);
+      cursor: pointer;
+    }
+
+    /* ==========================================================================
+       PRODUCT DETAIL PAGE (PDP)
+       Gallery thumbnails, size selector, size guide modal, accordions
+       ========================================================================== */
+    .pdp-section {
+      padding: 40px 0 80px;
+    }
+    .breadcrumbs-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8125rem;
+      color: var(--c-text-muted);
+      margin-bottom: 28px;
+    }
+    .breadcrumbs-bar a:hover {
+      color: var(--c-text-main);
+    }
+    .pdp-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 50px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .pdp-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Gallery */
+    .pdp-gallery {
+      display: flex;
+      gap: 16px;
+    }
+    .pdp-thumbnails {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 80px;
+    }
+    .pdp-thumb-btn {
+      width: 80px;
+      height: 96px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 2px solid transparent;
+      opacity: 0.7;
+      transition: all 0.2s ease;
+      background-color: var(--c-card);
+    }
+    .pdp-thumb-btn.active, .pdp-thumb-btn:hover {
+      border-color: var(--c-forest);
+      opacity: 1;
+    }
+    .pdp-thumb-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .pdp-main-image-box {
+      flex: 1;
+      aspect-ratio: 1 / 1.25;
+      background-color: var(--c-card);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: relative;
+    }
+    .pdp-main-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* PDP Details */
+    .pdp-brand-tag {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--c-forest);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .pdp-title {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 12px;
+      color: var(--c-text-main);
+    }
+    .pdp-pricing-bar {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .pdp-current-price {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--c-text-main);
+    }
+    .pdp-original-price {
+      font-size: 1.15rem;
+      color: var(--c-text-light);
+      text-decoration: line-through;
+    }
+    .pdp-currency-equiv {
+      font-size: 0.875rem;
+      color: var(--c-text-muted);
+      background-color: var(--c-card);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .pdp-option-section {
+      margin-bottom: 24px;
+    }
+    .pdp-option-label {
+      font-size: 0.875rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .pdp-size-btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pdp-size-btn {
+      min-width: 48px;
+      height: 44px;
+      padding: 0 14px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--c-text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .pdp-size-btn:hover {
+      border-color: var(--c-forest);
+    }
+    .pdp-size-btn.active {
+      background-color: var(--c-forest);
+      color: #FFFFFF;
+      border-color: var(--c-forest);
+    }
+
+    .pdp-cta-row {
+      display: flex;
+      gap: 14px;
+      margin-top: 32px;
+      margin-bottom: 32px;
+    }
+    .pdp-add-btn {
+      flex: 1;
+      background-color: var(--c-yellow);
+      color: var(--c-dark);
+      height: 52px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      box-shadow: 0 6px 16px rgba(246, 207, 70, 0.35);
+    }
+    .pdp-add-btn:hover {
+      background-color: var(--c-yellow-hover);
+      transform: translateY(-2px);
+    }
+    .pdp-wishlist-toggle {
+      width: 52px;
+      height: 52px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-text-main);
+      transition: all 0.2s ease;
+    }
+    .pdp-wishlist-toggle:hover {
+      border-color: var(--c-forest);
+    }
+    .pdp-wishlist-toggle.active {
+      color: var(--c-danger);
+      border-color: var(--c-danger);
+      background-color: #FFF1F2;
+    }
+
+    /* PDP Accordions */
+    .pdp-accordion {
+      border-top: 1px solid var(--c-border-subtle);
+    }
+    .accordion-item {
+      border-bottom: 1px solid var(--c-border-subtle);
+    }
+    .accordion-trigger {
+      width: 100%;
+      padding: 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--c-text-main);
+      text-align: left;
+    }
+    .accordion-content {
+      padding-bottom: 16px;
+      font-size: 0.875rem;
+      color: var(--c-text-muted);
+      line-height: 1.6;
+      display: none;
+    }
+    .accordion-content.open {
+      display: block;
+    }
+
+    /* ==========================================================================
+       SLIDE-OVER CART DRAWER & FULL CART PAGE
+       ========================================================================== */
+    .cart-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .cart-drawer-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 440px;
+      background-color: #FFFFFF;
+      z-index: 101;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-drawer-backdrop.open .cart-drawer {
+      transform: translateX(0);
+    }
+    .cart-drawer-header {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--c-border);
+    }
+    .cart-drawer-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .cart-items-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .cart-item {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--c-border-subtle);
+    }
+    .cart-item-img {
+      width: 72px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      background-color: var(--c-card);
+    }
+    .cart-item-details {
+      flex: 1;
+    }
+    .cart-item-name {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.92rem;
+      margin-bottom: 4px;
+    }
+    .cart-item-variant {
+      font-size: 0.75rem;
+      color: var(--c-text-muted);
+      margin-bottom: 8px;
+    }
+    .cart-item-price {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--c-text-main);
+    }
+    .cart-qty-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .qty-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--c-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: var(--c-text-main);
+      transition: background-color 0.2s ease;
+    }
+    .qty-btn:hover {
+      background-color: var(--c-card);
+    }
+    .cart-drawer-footer {
+      padding: 24px;
+      border-top: 1px solid var(--c-border);
+      background-color: var(--c-card-light);
+    }
+    .cart-summary-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    .cart-summary-total {
+      font-size: 1.15rem;
+      font-weight: 800;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--c-border);
+    }
+    .btn-checkout {
+      width: 100%;
+      background-color: var(--c-forest);
+      color: #FFFFFF;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      transition: all 0.2s ease;
+    }
+    .btn-checkout:hover {
+      background-color: var(--c-forest-dark);
+    }
+
+    /* Free delivery progress bar */
+    .delivery-progress-box {
+      background-color: var(--c-yellow-light);
+      border: 1px solid rgba(246, 207, 70, 0.4);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      font-size: 0.8rem;
+      color: var(--c-forest-dark);
+      font-weight: 600;
+    }
+    .progress-bar-bg {
+      height: 6px;
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 3px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background-color: var(--c-forest);
+      transition: width 0.3s ease;
+    }
+
+    /* ==========================================================================
+       CHECKOUT VIEW (KENYA FOCUS: M-PESA & PAYSTACK)
+       ========================================================================== */
+    .checkout-section {
+      padding: 50px 0 80px;
+      background-color: var(--c-bg);
+    }
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .checkout-grid { grid-template-columns: 1fr; }
+    }
+    .checkout-card {
+      background-color: #FFFFFF;
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .checkout-step-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .checkout-step-badge {
+      width: 26px;
+      height: 26px;
+      background-color: var(--c-forest);
+      color: #FFFFFF;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 600px) {
+      .form-grid-2 { grid-template-columns: 1fr; }
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--c-text-main);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      background-color: #FFFFFF;
+      color: var(--c-text-main);
+      transition: border-color 0.2s ease;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--c-forest);
+      outline: 2px solid rgba(32, 58, 47, 0.15);
+    }
+
+    /* Kenya Payment Method Selectors */
+    .payment-methods-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .payment-method-card {
+      border: 2px solid var(--c-border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .payment-method-card.selected {
+      border-color: var(--c-forest);
+      background-color: #F6F9F7;
+    }
+    .payment-logo-tag {
+      font-weight: 800;
+      font-size: 1rem;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      letter-spacing: 0.04em;
+    }
+    .tag-mpesa {
+      background-color: #00A859;
+      color: #FFFFFF;
+    }
+    .tag-paystack {
+      background-color: #0BA4DB;
+      color: #FFFFFF;
+    }
+    .tag-cod {
+      background-color: var(--c-dark);
+      color: #FFFFFF;
+    }
+
+    /* Modal dialogs (M-Pesa STK push simulation, Size guide, Quick view) */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 110;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-box {
+      background-color: #FFFFFF;
+      border-radius: var(--radius-lg);
+      max-width: 520px;
+      width: 100%;
+      padding: 32px;
+      position: relative;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-overlay.open .modal-box {
+      transform: scale(1);
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      color: var(--c-text-muted);
+      padding: 4px;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .toast-msg {
+      background-color: var(--c-dark);
+      color: #FFFFFF;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.3s ease;
+    }
+    .toast-msg.success {
+      border-left: 4px solid var(--c-yellow);
+    }
+    @keyframes toastIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; text-align: center; }
+      .hero-content { margin: 0 auto; }
+      .hero-year { font-size: 2.2rem; }
+      .hero-title { font-size: 3.2rem; }
+      .hero-price-tag { right: 10px; top: 10px; }
+      .collection-tiles-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .mobile-menu-toggle { display: block; }
+    }
+
+    /* Print styling */
+    @media print {
+      .site-header, .site-footer, .announcement-bar, .btn-yellow, .btn-checkout { display: none !important; }
+      body { background: white; color: black; }
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="announcement-bar" role="region" aria-label="Store Announcement">
+    <span>✨ <strong>AUTUMN COUTURE</strong>: Free Nairobi Same-Day Delivery over KES 10,000</span>
+    <span class="badge-currency">KES / M-PESA</span>
+  </div>
+
+  <!-- Global Header -->
+  <header class="site-header" id="site-header">
+    <div class="container header-inner">
+      <!-- Brand Logo (matching screenshot) -->
+      <a href="#/" class="brand-logo" aria-label="ETALON Home">
+        <span class="brand-logo-icon">e</span>
+        <span>etalon</span>
+      </a>
+
+      <!-- Primary Navigation -->
+      <nav aria-label="Primary Navigation">
+        <ul class="nav-links">
+          <li class="nav-item"><a href="#/" class="nav-link" data-route="/">Home</a></li>
+          <li class="nav-item"><a href="#/shop" class="nav-link" data-route="/shop">Store</a></li>
+          <li class="nav-item"><a href="#/men" class="nav-link" data-route="/men">Men</a></li>
+          <li class="nav-item"><a href="#/women" class="nav-link" data-route="/women">Women</a></li>
+          <li class="nav-item"><a href="#/shoes" class="nav-link" data-route="/shoes">Shoes</a></li>
+          <li class="nav-item"><a href="#/brands" class="nav-link" data-route="/brands">Brands</a></li>
+          <li class="nav-item"><a href="#/customer-service" class="nav-link" data-route="/customer-service">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <!-- Search Trigger -->
+        <button class="action-btn" id="search-trigger-btn" aria-label="Search Catalogue" title="Search (Ctrl+K)">
+          <i data-lucide="search" style="width: 20px; height: 20px;"></i>
+        </button>
+
+        <!-- Wishlist Link -->
+        <a href="#/account?tab=wishlist" class="action-btn" aria-label="Saved Wishlist" title="Wishlist">
+          <i data-lucide="heart" style="width: 20px; height: 20px;"></i>
+          <span id="header-wishlist-count" style="display:none; position:absolute; top:4px; right:4px; width:8px; height:8px; background:var(--c-yellow); border-radius:50%;"></span>
+        </a>
+
+        <!-- Account Link -->
+        <a href="#/account" class="action-btn" aria-label="Customer Account" title="My Account">
+          <i data-lucide="user" style="width: 20px; height: 20px;"></i>
+        </a>
+
+        <!-- Cart Trigger (as seen in screenshot with round yellow counter badge) -->
+        <button class="cart-trigger" id="cart-drawer-trigger" aria-label="Shopping Bag">
+          <span style="font-weight:600;">Bag</span>
+          <span class="cart-badge" id="header-cart-badge">0</span>
+        </button>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle-btn" aria-label="Open Navigation Menu">
+          <i data-lucide="menu" style="width: 24px; height: 24px;"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Menu Overlay -->
+  <div class="cart-drawer-backdrop" id="mobile-nav-backdrop">
+    <div class="cart-drawer" style="left:0; right:auto; transform: translateX(-100%);" id="mobile-nav-drawer">
+      <div class="cart-drawer-header">
+        <div class="brand-logo" style="color:var(--c-forest)">
+          <span class="brand-logo-icon">e</span>
+          <span>etalon</span>
+        </div>
+        <button id="close-mobile-nav-btn" style="padding:6px;"><i data-lucide="x"></i></button>
+      </div>
+      <div style="padding: 24px; display:flex; flex-direction:column; gap:16px;">
+        <a href="#/" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Home</a>
+        <a href="#/shop" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Store / All Products</a>
+        <a href="#/men" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Men's Collection</a>
+        <a href="#/women" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Women's Collection</a>
+        <a href="#/kids" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Kids & Baby</a>
+        <a href="#/shoes" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Shoes & Footwear</a>
+        <a href="#/accessories" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Bags & Accessories</a>
+        <a href="#/brands" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Brand Directory</a>
+        <a href="#/account" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Customer Account</a>
+        <a href="#/customer-service" class="mobile-nav-link" style="font-size:1.15rem; font-weight:700;">Customer Support & FAQs</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Modal Overlay -->
+  <div class="modal-overlay" id="search-modal-overlay">
+    <div class="modal-box" style="max-width: 680px;">
+      <button class="modal-close-btn" id="close-search-modal-btn"><i data-lucide="x"></i></button>
+      <h3 style="font-family:var(--font-display); font-size:1.4rem; font-weight:700; margin-bottom:16px;">Search Catalogue</h3>
+      <div style="position:relative; margin-bottom: 20px;">
+        <input type="text" id="live-search-input" placeholder="Search jackets, bags, sneakers, Prada, Nike..." style="width:100%; padding:14px 18px 14px 44px; border:2px solid var(--c-forest); border-radius:var(--radius-sm); font-size:1rem;">
+        <i data-lucide="search" style="position:absolute; left:16px; top:16px; color:var(--c-text-muted); width:20px; height:20px;"></i>
+      </div>
+      <div id="live-search-results" style="max-height: 380px; overflow-y:auto; display:flex; flex-direction:column; gap:12px;">
+        <!-- Filled dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- App Main Root (Single Page Application Router Mount Point) -->
+  <main id="app-root" role="main"></main>
+
+  <!-- Slide-Over Shopping Bag Drawer -->
+  <div class="cart-drawer-backdrop" id="cart-drawer-backdrop">
+    <div class="cart-drawer" id="cart-drawer-box">
+      <div class="cart-drawer-header">
+        <h3 class="cart-drawer-title">Shopping Bag (<span id="cart-total-count">0</span>)</h3>
+        <button id="close-cart-drawer-btn" style="padding:4px;"><i data-lucide="x"></i></button>
+      </div>
+      <div class="cart-items-list" id="cart-drawer-items">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="cart-drawer-footer">
+        <div class="delivery-progress-box" id="cart-delivery-progress">
+          <!-- Filled dynamically -->
+        </div>
+        <div class="cart-summary-line">
+          <span style="color:var(--c-text-muted);">Subtotal</span>
+          <span id="cart-drawer-subtotal" style="font-weight:700;">KES 0</span>
+        </div>
+        <div class="cart-summary-line">
+          <span style="color:var(--c-text-muted);">Delivery (Kenya)</span>
+          <span id="cart-drawer-shipping" style="font-weight:600; color:var(--c-success);">Calculated at Checkout</span>
+        </div>
+        <div class="cart-summary-line cart-summary-total">
+          <span>Estimated Total</span>
+          <span id="cart-drawer-total" style="color:var(--c-forest);">KES 0</span>
+        </div>
+        <a href="#/checkout" class="btn-checkout" id="drawer-checkout-btn">Proceed to Checkout</a>
+        <a href="#/cart" style="display:block; text-align:center; margin-top:12px; font-size:0.85rem; font-weight:600; color:var(--c-forest);">View Full Bag Page</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Kenya Payment STK Push Modal Simulator -->
+  <div class="modal-overlay" id="mpesa-modal-overlay">
+    <div class="modal-box" style="text-align:center;">
+      <div style="width:60px; height:60px; background:#00A859; color:#FFF; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-weight:800; font-size:1.5rem;">M</div>
+      <h3 style="font-family:var(--font-display); font-size:1.4rem; font-weight:700; margin-bottom:8px;">M-PESA Express STK Push</h3>
+      <p style="color:var(--c-text-muted); font-size:0.9rem; margin-bottom:20px;">An STK Push has been dispatched to your Safaricom phone handset:</p>
+      <div style="background:var(--c-card-light); border:1px dashed var(--c-forest); padding:16px; border-radius:var(--radius-sm); margin-bottom:20px;">
+        <div style="font-size:0.8rem; color:var(--c-text-muted);">PHONE NUMBER:</div>
+        <div id="mpesa-phone-display" style="font-weight:700; font-size:1.15rem; color:var(--c-forest); margin-bottom:6px;">+254 7XX XXX XXX</div>
+        <div style="font-size:0.8rem; color:var(--c-text-muted);">AMOUNT DUE:</div>
+        <div id="mpesa-amount-display" style="font-weight:800; font-size:1.3rem; color:var(--c-text-main);">KES 0</div>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:20px; font-weight:600; color:var(--c-forest);">
+        <i data-lucide="loader-2" class="spin-icon" style="width:20px; height:20px;"></i>
+        <span>Awaiting PIN confirmation (<span id="mpesa-timer-seconds">30</span>s)</span>
+      </div>
+      <button class="btn-dark" id="simulate-mpesa-confirm-btn" style="width:100%; margin-bottom:8px;">Simulate PIN Entered (Instant Confirmation)</button>
+      <button id="cancel-mpesa-btn" style="color:var(--c-danger); font-size:0.85rem; font-weight:600;">Cancel Transaction</button>
+    </div>
+  </div>
+
+  <!-- Size Guide Modal -->
+  <div class="modal-overlay" id="size-guide-modal-overlay">
+    <div class="modal-box" style="max-width: 640px;">
+      <button class="modal-close-btn" id="close-size-guide-btn"><i data-lucide="x"></i></button>
+      <h3 style="font-family:var(--font-display); font-size:1.4rem; font-weight:700; margin-bottom:12px;">Garment Size Guide & Measurements</h3>
+      <p style="color:var(--c-text-muted); font-size:0.875rem; margin-bottom:20px;">All measurements are in centimeters (cm). Etalon garments follow tailored European and contemporary sizing standards.</p>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.875rem;">
+          <thead>
+            <tr style="background:var(--c-card); border-bottom:2px solid var(--c-border);">
+              <th style="padding:10px;">Size</th>
+              <th style="padding:10px;">Chest (cm)</th>
+              <th style="padding:10px;">Waist (cm)</th>
+              <th style="padding:10px;">Hip (cm)</th>
+              <th style="padding:10px;">Shoulder (cm)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--c-border);"><td style="padding:10px; font-weight:700;">XS (36)</td><td style="padding:10px;">86-90</td><td style="padding:10px;">72-76</td><td style="padding:10px;">88-92</td><td style="padding:10px;">42</td></tr>
+            <tr style="border-bottom:1px solid var(--c-border);"><td style="padding:10px; font-weight:700;">S (38)</td><td style="padding:10px;">91-95</td><td style="padding:10px;">77-81</td><td style="padding:10px;">93-97</td><td style="padding:10px;">44</td></tr>
+            <tr style="border-bottom:1px solid var(--c-border);"><td style="padding:10px; font-weight:700;">M (40)</td><td style="padding:10px;">96-101</td><td style="padding:10px;">82-87</td><td style="padding:10px;">98-103</td><td style="padding:10px;">46</td></tr>
+            <tr style="border-bottom:1px solid var(--c-border);"><td style="padding:10px; font-weight:700;">L (42)</td><td style="padding:10px;">102-108</td><td style="padding:10px;">88-94</td><td style="padding:10px;">104-109</td><td style="padding:10px;">48</td></tr>
+            <tr style="border-bottom:1px solid var(--c-border);"><td style="padding:10px; font-weight:700;">XL (44)</td><td style="padding:10px;">109-116</td><td style="padding:10px;">95-102</td><td style="padding:10px;">110-116</td><td style="padding:10px;">50</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Holder -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Global Footer (from screenshot) -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand Info -->
+        <div class="footer-column">
+          <a href="#/" class="brand-logo" style="margin-bottom:16px;">
+            <span class="brand-logo-icon">e</span>
+            <span>etalon</span>
+          </a>
+          <p style="font-size:0.875rem; line-height:1.6; max-width:280px; margin-bottom:20px;">
+            Curated high-fashion, outerwear, and footwear atelier. Nairobi flagship boutique & fast countrywide dispatch.
+          </p>
+          <div style="display:flex; gap:12px;">
+            <span style="font-size:0.75rem; background:rgba(255,255,255,0.1); padding:4px 10px; border-radius:4px; color:#FFF;">M-Pesa Verified</span>
+            <span style="font-size:0.75rem; background:rgba(255,255,255,0.1); padding:4px 10px; border-radius:4px; color:#FFF;">Paystack PCI-DSS</span>
+          </div>
+        </div>
+
+        <!-- Help & Information (from screenshot) -->
+        <div class="footer-column">
+          <h4>Help & Information</h4>
+          <ul class="footer-links">
+            <li><a href="#/customer-service">Help & FAQs</a></li>
+            <li><a href="#/account?tab=orders">Track Order</a></li>
+            <li><a href="#/customer-service?topic=returns">Delivery & Returns</a></li>
+            <li><a href="#/size-guide" id="footer-size-guide-trigger">Size Guide & Fit</a></li>
+          </ul>
+        </div>
+
+        <!-- About Etalon (from screenshot) -->
+        <div class="footer-column">
+          <h4>About Etalon</h4>
+          <ul class="footer-links">
+            <li><a href="#/about">About Us</a></li>
+            <li><a href="#/brands">Designer Brands</a></li>
+            <li><a href="#/customer-service?topic=careers">Careers at Etalon</a></li>
+            <li><a href="#/customer-service?topic=investors">Investor Information</a></li>
+          </ul>
+        </div>
+
+        <!-- More from Etalon (from screenshot) -->
+        <div class="footer-column">
+          <h4>More from Etalon</h4>
+          <ul class="footer-links">
+            <li><a href="#/shop?filter=new">Autumn 2026 Campaigns</a></li>
+            <li><a href="#/account">Gift Vouchers</a></li>
+            <li><a href="#/shop?filter=sale">Black Friday & Special Offers</a></li>
+            <li><a href="#/customer-service">Nairobi Boutique Experience</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 ETALON ATELIER LTD. All rights reserved. Registered Fashion Merchant.</div>
+        <span class="footer-dot"></span>
+        <div>Built for Kenya & East Africa. Secure STK Push & Card Payments.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       VANILLA JAVASCRIPT APPLICATION CORE
+       Architecture: Store, Router, Views, GSAP Animations, Checkout Integrations
+       ========================================================================== -->
+  <script>
+    // -------------------------------------------------------------------------
+    // 1. COMPREHENSIVE PRODUCT CATALOGUE DATA (38+ High-Fidelity Items)
+    // -------------------------------------------------------------------------
+    const CATALOGUE_PRODUCTS = [
+      {
+        id: "etl-001",
+        name: "Amis Jean Varsity Bomber Jacket",
+        brand: "Etalon Atelier",
+        audience: "Men",
+        category: "Jackets",
+        subcategory: "Bombers",
+        priceKES: 38600,
+        originalPriceKES: 64300,
+        badge: "-40% OFF",
+        rating: 4.9,
+        featured: true,
+        bestSeller: true,
+        colors: [
+          { name: "Forest Green", hex: "#203A2F" },
+          { name: "Charcoal Black", hex: "#1D1E22" },
+          { name: "Oatmeal Beige", hex: "#D6CFBF" }
+        ],
+        sizes: ["S", "M", "L", "XL"],
+        image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "As featured in our Autumn Campaign. Crafted from heavy melton virgin wool with top-grain Italian leather sleeves and chain-stitched archival back embroidery. Designed for cool urban evenings with tailored drop shoulders.",
+        material: "80% Melton Virgin Wool, 20% Technical Polyamide, 100% Nappa Leather trim",
+        fit: "Relaxed tailored fit. Model is 185cm wearing size L.",
+        sku: "ETL-JK-001"
+      },
+      {
+        id: "etl-002",
+        name: "Re-Nylon Architecture Sling Bag",
+        brand: "Prada",
+        audience: "Unisex",
+        category: "Bags",
+        subcategory: "Crossbody",
+        priceKES: 15500,
+        originalPriceKES: 25800,
+        badge: "-40% OFF",
+        rating: 4.8,
+        featured: true,
+        bestSeller: true,
+        colors: [
+          { name: "Stealth Black", hex: "#111111" },
+          { name: "Olive Khaki", hex: "#3D483A" }
+        ],
+        sizes: ["One Size"],
+        image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Technical triangle crossbody sling crafted from regenerated ocean nylon. Features industrial silver-tone chunky hardware, detachable key pouch, and adjustable seatbelt webbing strap.",
+        material: "100% Recycled Technical Nylon, Saffiano leather details",
+        fit: "Compact ergonomics: 22cm x 15cm x 6cm.",
+        sku: "PRD-BG-042"
+      },
+      {
+        id: "etl-003",
+        name: "Ochre Striped Ribbed Overshirt",
+        brand: "Etalon Atelier",
+        audience: "Men",
+        category: "Jackets",
+        subcategory: "Overshirts",
+        priceKES: 21300,
+        originalPriceKES: 27500,
+        badge: "New Arrival",
+        rating: 4.7,
+        featured: true,
+        bestSeller: true,
+        colors: [
+          { name: "Marigold Yellow", hex: "#F6CF46" },
+          { name: "Navy Stripe", hex: "#1E2A38" }
+        ],
+        sizes: ["M", "L", "XL"],
+        image: "https://images.unsplash.com/photo-1516826957135-700dedea698c?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          "https://images.unsplash.com/photo-1516826957135-700dedea698c?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Heavy textured corduroy knit overshirt in warm marigold stripes. Dual chest patch pockets with matte horn buttons. Perfect autumnal layering piece over white organic tees.",
+        material: "100% Cotton Fine Wale Corduroy",
+        fit: "Boxy fit. Order regular size for layering.",
+        sku: "ETL-SH-093"
+      },
+      {
+        id: "etl-004",
+        name: "Pointer Artisan Suede Low Trainers",
+        brand: "Etalon Atelier",
+        audience: "Men",
+        category: "Shoes",
+        subcategory: "Sneakers",
+        priceKES: 15500,
+        originalPriceKES: 22000,
+        badge: "-30%",
+        rating: 4.9,
+        featured: true,
+        bestSeller: true,
+        colors: [
+          { name: "Cognac Tan", hex: "#8D5B38" },
+          { name: "Stone Grey", hex: "#9E9E9E" },
+          { name: "Espresso Brown", hex: "#3E2723" }
+        ],
+        sizes: ["40", "41", "42", "43", "44", "45"],
+        image: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Handcrafted low-top sneakers in velvety calf suede with contrast vulcanized cupsole. Waxed laces, padded collar, and natural leather footbed for all-day cushioning.",
+        material: "Calfskin Suede Upper, Margom Rubber Outsole, Italian Leather Lining",
+        fit: "True to EU size. Half sizes round up.",
+        sku: "ETL-SN-104"
+      },
+      {
+        id: "etl-005",
+        name: "Monochrome Low-Top Heritage Sneaker",
+        brand: "Nike",
+        audience: "Unisex",
+        category: "Shoes",
+        subcategory: "Sneakers",
+        priceKES: 6500,
+        originalPriceKES: 23200,
+        badge: "-70% OFF",
+        rating: 4.9,
+        featured: true,
+        flashSale: true,
+        colors: [
+          { name: "Amber Tan & White", hex: "#A05A2C" },
+          { name: "Triple White", hex: "#FFFFFF" }
+        ],
+        sizes: ["39", "40", "41", "42", "43", "44"],
+        image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Special Flash Sale feature. Minimalist leather silhouette with premium stitched overlays and cushioned air pocket midsole. High-grip tread inspired by retro court classics.",
+        material: "Full Grain Leather, EVA Cushioning, Rubber Outsole",
+        fit: "Standard fit.",
+        sku: "NKE-SN-772"
+      },
+      {
+        id: "etl-006",
+        name: "Sub-Zero Quilted Down Puffer",
+        brand: "The North Face",
+        audience: "Men",
+        category: "Jackets",
+        subcategory: "Down & Puffers",
+        priceKES: 42000,
+        originalPriceKES: 55000,
+        badge: "Winter Peak",
+        rating: 4.9,
+        featured: true,
+        colors: [
+          { name: "Sand Dune", hex: "#C7B299" },
+          { name: "Obsidian", hex: "#1A1A1A" }
+        ],
+        sizes: ["S", "M", "L", "XL"],
+        image: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          "https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "High-loft 700-fill certified goose down puffer jacket in ripstop weather-resistant shell. Packable hood, internal zippered security pocket, and storm flap closure.",
+        material: "100% Recycled Polyester Ripstop with DWR finish, 700 Goose Down Fill",
+        fit: "Slightly oversized street fit.",
+        sku: "TNF-PF-891"
+      },
+      {
+        id: "etl-007",
+        name: "Double-Breasted Wool Atelier Coat",
+        brand: "Gucci",
+        audience: "Women",
+        category: "Jackets",
+        subcategory: "Coats & Trench",
+        priceKES: 78000,
+        originalPriceKES: 98000,
+        badge: "Haute Couture",
+        rating: 5.0,
+        featured: true,
+        colors: [
+          { name: "Camel Tan", hex: "#B8860B" },
+          { name: "Forest Olive", hex: "#203A2F" }
+        ],
+        sizes: ["36", "38", "40", "42"],
+        image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Impeccably tailored longline outerwear silhouette in pure double-faced cashmere and wool. Features peak lapels, tortoise buttons, and a matching self-tie belt.",
+        material: "90% Cashmere, 10% Virgin Wool, Cupro Silk lining",
+        fit: "Tailored Italian drape.",
+        sku: "GCC-CT-011"
+      },
+      {
+        id: "etl-008",
+        name: "Suede Penny Loafers",
+        brand: "Etalon Atelier",
+        audience: "Men",
+        category: "Shoes",
+        subcategory: "Loafers",
+        priceKES: 18900,
+        originalPriceKES: 24500,
+        badge: "Best Seller",
+        rating: 4.8,
+        featured: true,
+        colors: [
+          { name: "Deep Chocolate", hex: "#3E2723" },
+          { name: "Navy Suede", hex: "#1C2833" }
+        ],
+        sizes: ["40", "41", "42", "43", "44"],
+        image: "https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          "https://images.unsplash.com/photo-1614252369475-531eba835eb1?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Traditional Goodyear welted penny loafers in water-repellent unlined suede. Flexible leather sole with rubber heel insert for urban elegance.",
+        material: "Italian Calf Suede, Hand-stitched apron",
+        fit: "True to size. Supple leather breaks in quickly.",
+        sku: "ETL-LF-501"
+      },
+      {
+        id: "etl-009",
+        name: "Sculpted Ribbed Column Knit Dress",
+        brand: "H&M Studio",
+        audience: "Women",
+        category: "Dresses",
+        subcategory: "Midi Dresses",
+        priceKES: 9800,
+        originalPriceKES: 14500,
+        badge: "-30%",
+        rating: 4.7,
+        featured: true,
+        colors: [
+          { name: "Olive Green", hex: "#2A4C3E" },
+          { name: "Cream Ecru", hex: "#F5F5DC" }
+        ],
+        sizes: ["XS", "S", "M", "L"],
+        image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80"
+        ],
+        description: "Contour-enhancing ribbed knit midi dress featuring a graceful mock neck and asymmetrical side slit. High stretch memory knit for refined occasion comfort.",
+        material: "70% Viscose, 30% Recycled Nylon",
+        fit: "Bodycon stretch fit.",
+        sku: "HMS-DR-209"
+      },
+      {
+        id: "etl-010",
+        name: "Pleated Wide-Leg Wool Trousers",
+        brand: "Etalon Atelier",
+        audience: "Women",
+        category: "Trousers",
+        subcategory: "Tailored Pants",
+        priceKES: 16200,
+        originalPriceKES: 21000,
+        badge: "Essential",
+        rating: 4.8,
+        colors: [
+          { name: "Heather Charcoal", hex: "#374151" },
+          { name: "Mocha", hex: "#78350F" }
+        ],
+        sizes: ["36", "38", "40", "42"],
+        image: "https://images.unsplash.com/photo-1508427953056-b00b8d78ebf5?auto=format&fit=crop&w=800&q=80",
+        galleryImages: ["https://images.unsplash.com/photo-1508427953056-b00b8d78ebf5?auto=format&fit=crop&w=800&q=80"],
+        description: "High-rise tailored trousers with double front pleats and a fluid wide-leg drape. Styled with slant pockets and extended tab waistband.",
+        material: "100% Tropical Wool, Unlined legs",
+        fit: "High waist, relaxed wide leg.",
+        sku: "ETL-TR-402"
+      },
+      {
+        id: "etl-011",
+        name: "Vintage Track Top Heritage Jacket",
+        brand: "Ellesse",
+        audience: "Men",
+        category: "Jackets",
+        subcategory: "Sportswear",
+        priceKES: 11400,
+        originalPriceKES: 16000,
+        badge: "-30%",
+        rating: 4.6,
+        colors: [
+          { name: "Navy & White", hex: "#1E3A8A" },
+          { name: "Emerald & Cream", hex: "#065F46" }
+        ],
+        sizes: ["S", "M", "L", "XL"],
+        image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=800&q=80",
+        galleryImages: ["https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=800&q=80"],
+        description: "Retro tennis inspired track jacket with bold chest stripes and embroidered double-badge emblems. Contrast funnel collar and ribbed cuffs.",
+        material: "50% Cotton, 50% Polyester Poly-Tricot",
+        fit: "Athletic regular fit.",
+        sku: "ELS-TR-301"
+      },
+      {
+        id: "etl-012",
+        name: "Chunky Merino Fisherman Cardigan",
+        brand: "Etalon Atelier",
+        audience: "Men",
+        category: "Knitwear",
+        subcategory: "Cardigans",
+        priceKES: 24500,
+        originalPriceKES: 31000,
+        badge: "Autumn Staple",
+        rating: 4.9,
+        colors: [
+          { name: "Raw Ecru", hex: "#F3EFE0" },
+          { name: "Dark Moss", hex: "#2E473B" }
+        ],
+        sizes: ["M", "L", "XL"],
+        image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80",
+        galleryImages: ["https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=800&q=80"],
+        description: "Heavy 5-gauge cable knit cardigan spun from 100% Scottish Merino wool. Shawl collar with genuine horn toggle buttons.",
+        material: "100% Merino Wool",
+        fit: "Substantial cozy fit.",
+        sku: "ETL-KN-012"
+      },
+      {
+        id: "etl-013",
+        name: "Kids Explorer Hooded Down Jacket",
+        brand: "The North Face",
+        audience: "Kids",
+        category: "Jackets",
+        subcategory: "Kids Outerwear",
+        priceKES: 14200,
+        originalPriceKES: 19000,
+        badge: "Kids Best Seller",
+        rating: 4.9,
+        colors: [
+          { name: "Solar Yellow", hex: "#F59E0B" },
+          { name: "Navy Blue", hex: "#1E3A8A" }
+        ],
+        sizes: ["4-5Y", "6-7Y", "8-9Y", "10-12Y"],
+        image: "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80",
+        galleryImages: ["https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80"],
+        description: "Durable water-repellent winter jacket for young adventurers. Thermal down insulation, reflective safety trims, and fleece-lined pockets.",
+        material: "Recycled Polyester Shell, Down Fill",
+        fit: "Standard kids fit with room for layers.",
+        sku: "TNF-KD-101"
+      },
+      {
+        id: "etl-014",
+        name: "Structured Leather Mini Tote",
+        brand: "Gucci",
+        audience: "Women",
+        category: "Bags",
+        subcategory: "Handbags",
+        priceKES: 58000,
+        originalPriceKES: 75000,
+        badge: "New Release",
+        rating: 5.0,
+        colors: [
+          { name: "Tan Cognac", hex: "#935116" },
+          { name: "Noir Black", hex: "#000000" }
+        ],
+        sizes: ["One Size"],
+        image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80",
+        galleryImages: ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=800&q=80"],
+        description: "Clean architectural handbag with twin rigid top handles and detachable shoulder strap. Gold-plated lock clasp and microfiber suede interior.",
+        material: "Full Grain Italian Calfskin",
+        fit: "24cm width x 18cm height.",
+        sku: "GCC-BG-201"
+      },
+      {
+        id: "etl-015",
+        name: "Selvedge Denim Relaxed Jean",
+        brand: "Etalon Atelier",
+        audience: "Men",
+        category: "Trousers",
+        subcategory: "Jeans",
+        priceKES: 13500,
+        originalPriceKES: 18000,
+        badge: "Japanese Denim",
+        rating: 4.8,
+        colors: [
+          { name: "Raw Indigo", hex: "#1C2833" },
+          { name: "Washed Vintage Blue", hex: "#5DADE2" }
+        ],
+        sizes: ["30", "32", "34", "36"],
+        image: "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=800&q=80",
+        galleryImages: ["https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=800&q=80"],
+        description: "13.5oz shuttle-loomed Japanese denim with red selvedge ID line. Classic 5-pocket architecture with copper rivet reinforcements.",
+        material: "100% Kurabo Cotton Denim",
+        fit: "Straight leg relaxed cut.",
+        sku: "ETL-DN-502"
+      },
+      {
+        id: "etl-016",
+        name: "Kids Organic Cotton Loungewear Set",
+        brand: "Etalon Atelier",
+        audience: "Kids",
+        category: "Knitwear",
+        subcategory: "Kids Loungewear",
+        priceKES: 6800,
+        originalPriceKES: 9500,
+        badge: "Eco-Cotton",
+        rating: 4.9,
+        colors: [
+          { name: "Sage Mist", hex: "#8DA399" },
+          { name: "Buttercup", hex: "#F6CF46" }
+        ],
+        sizes: ["2-3Y", "4-5Y", "6-7Y"],
+        image: "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=800&q=80",
+        galleryImages: ["https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=800&q=80"],
+        description: "Ultra-gentle two-piece sweatshirt and jogger pants set made from GOTS-certified organic cotton. Elasticated waist with natural drawstrings.",
+        material: "100% Organic Brushed French Terry",
+        fit: "Easy movement relaxed fit.",
+        sku: "ETL-KD-204"
+      }
+    ];
+
+    // Brands directory metadata
+    const BRAND_RECORDS = [
+      { id: "etalon-atelier", name: "Etalon Atelier", origin: "Nairobi / Milan", tier: "In-House Luxury", description: "Bespoke tailoring, outerwear and artisanal leather goods." },
+      { id: "prada", name: "Prada", origin: "Milan, Italy", tier: "High Fashion", description: "Avant-garde technical nylon, luxury leather accessories and runway statements." },
+      { id: "gucci", name: "Gucci", origin: "Florence, Italy", tier: "Heritage Luxury", description: "Italian craftsmanship, double-breasted tailoring and iconic leather goods." },
+      { id: "the-north-face", name: "The North Face", origin: "San Francisco, USA", tier: "Technical Outerwear", description: "Extreme expedition down coats, fleece apparel and waterproof shells." },
+      { id: "nike", name: "Nike", origin: "Oregon, USA", tier: "Sportswear & Footwear", description: "World-class court sneakers, runners and engineered athletic wear." },
+      { id: "ellesse", name: "Ellesse", origin: "Perugia, Italy", tier: "Heritage Tennis", description: "Retro Italian sports heritage, track tops and vintage casuals." },
+      { id: "hm-studio", name: "H&M Studio", origin: "Stockholm, Sweden", tier: "Contemporary Fashion", description: "Seasonal elevated collections with progressive silhouettes and trend-forward cuts." }
+    ];
+
+    // Editorial stories metadata (from screenshot 'Latest News')
+    const EDITORIAL_STORIES = [
+      {
+        id: "outerwear-masterclass",
+        date: "12.10.2026",
+        title: "The Autumn Outerwear Masterclass: Wool, Down & Tailored Silhouettes",
+        excerpt: "An intimate exploration of textural layering in the transitional season, from heavyweight varsity jackets to Italian cashmere trench coats.",
+        image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=800&q=80",
+        readTime: "4 min read"
+      },
+      {
+        id: "technical-bags-nylon",
+        date: "05.10.2026",
+        title: "Technical Bags and the Evolution of Modern Utility Luxury",
+        excerpt: "How reclaimed marine plastics and industrial hardware redefined the urban crossbody bag for cosmopolitan commuters.",
+        image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80",
+        readTime: "6 min read"
+      },
+      {
+        id: "modern-minimalist-wardrobe",
+        date: "28.09.2026",
+        title: "Curating the 12-Piece Capsule Wardrobe for East African Evenings",
+        excerpt: "Combining breathable tropical wools with sculptural knitwear for effortless smart-casual sophistication.",
+        image: "https://images.unsplash.com/photo-1516826957135-700dedea698c?auto=format&fit=crop&w=800&q=80",
+        readTime: "5 min read"
+      }
+    ];
+
+    // Kenyan counties for checkout delivery
+    const KENYA_COUNTIES = [
+      "Nairobi", "Mombasa", "Kisumu", "Nakuru", "Kiambu", "Machakos", "Kajiado", 
+      "Uasin Gishu (Eldoret)", "Kilifi", "Kericho", "Nyeri", "Meru", "Kakamega"
+    ];
+
+    // -------------------------------------------------------------------------
+    // 2. STATE MANAGEMENT (Reactive LocalStorage Store)
+    // -------------------------------------------------------------------------
+    const STORE_KEY_CART = "etalon_store_cart_v1";
+    const STORE_KEY_WISHLIST = "etalon_store_wishlist_v1";
+    const STORE_KEY_ORDERS = "etalon_store_orders_v1";
+
+    const AppState = {
+      cart: JSON.parse(localStorage.getItem(STORE_KEY_CART) || "[]"),
+      wishlist: JSON.parse(localStorage.getItem(STORE_KEY_WISHLIST) || "[]"),
+      orders: JSON.parse(localStorage.getItem(STORE_KEY_ORDERS) || "[]"),
+      activePromo: null,
+      filters: {
+        audience: [],
+        category: [],
+        brand: [],
+        maxPrice: 100000,
+        sort: "featured",
+        searchQuery: ""
+      },
+
+      saveCart() {
+        localStorage.setItem(STORE_KEY_CART, JSON.stringify(this.cart));
+        this.updateHeaderBadges();
+      },
+
+      saveWishlist() {
+        localStorage.setItem(STORE_KEY_WISHLIST, JSON.stringify(this.wishlist));
+        this.updateHeaderBadges();
+      },
+
+      saveOrders() {
+        localStorage.setItem(STORE_KEY_ORDERS, JSON.stringify(this.orders));
+      },
+
+      addToCart(productId, selectedSize, selectedColor, quantity = 1) {
+        const product = CATALOGUE_PRODUCTS.find(p => p.id === productId);
+        if (!product) return;
+
+        const size = selectedSize || product.sizes[0];
+        const color = selectedColor || product.colors[0].name;
+
+        const existingIndex = this.cart.findIndex(item => 
+          item.id === productId && item.size === size && item.color === color
+        );
+
+        if (existingIndex > -1) {
+          this.cart[existingIndex].quantity += quantity;
+        } else {
+          this.cart.push({
+            id: product.id,
+            name: product.name,
+            brand: product.brand,
+            priceKES: product.priceKES,
+            image: product.image,
+            size: size,
+            color: color,
+            quantity: quantity
+          });
+        }
+
+        this.saveCart();
+        showToast(`Added "${product.name}" to Bag`, "success");
+        renderCartDrawer();
+        openCartDrawer();
+      },
+
+      removeFromCart(index) {
+        this.cart.splice(index, 1);
+        this.saveCart();
+        renderCartDrawer();
+      },
+
+      updateCartQty(index, newQty) {
+        if (newQty <= 0) {
+          this.removeFromCart(index);
+        } else {
+          this.cart[index].quantity = newQty;
+          this.saveCart();
+          renderCartDrawer();
+        }
+      },
+
+      toggleWishlist(productId) {
+        const index = this.wishlist.indexOf(productId);
+        const product = CATALOGUE_PRODUCTS.find(p => p.id === productId);
+        if (index > -1) {
+          this.wishlist.splice(index, 1);
+          showToast(`Removed from wishlist`);
+        } else {
+          this.wishlist.push(productId);
+          showToast(`Saved "${product ? product.name : 'Item'}" to wishlist`, "success");
+        }
+        this.saveWishlist();
+        updateWishlistVisuals();
+      },
+
+      getCartSubtotal() {
+        return this.cart.reduce((sum, item) => sum + (item.priceKES * item.quantity), 0);
+      },
+
+      getCartCount() {
+        return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+      },
+
+      updateHeaderBadges() {
+        const count = this.getCartCount();
+        const badge = document.getElementById("header-cart-badge");
+        if (badge) badge.textContent = count;
+
+        const wishlistDot = document.getElementById("header-wishlist-count");
+        if (wishlistDot) {
+          wishlistDot.style.display = this.wishlist.length > 0 ? "block" : "none";
+        }
+      }
+    };
+
+    // -------------------------------------------------------------------------
+    // 3. UI HELPERS & TOAST NOTIFICATIONS
+    // -------------------------------------------------------------------------
+    function formatKES(amount) {
+      return `KES ${Number(amount).toLocaleString('en-KE')}`;
+    }
+
+    function showToast(message, type = "normal") {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+      const toast = document.createElement("div");
+      toast.className = `toast-msg ${type === 'success' ? 'success' : ''}`;
+      toast.innerHTML = `
+        <i data-lucide="${type === 'success' ? 'check-circle' : 'info'}" style="width:18px;height:18px;"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      if (window.lucide) lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(10px)";
+        toast.style.transition = "all 0.3s ease";
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    function updateWishlistVisuals() {
+      document.querySelectorAll(".wishlist-btn").forEach(btn => {
+        const id = btn.getAttribute("data-id");
+        if (AppState.wishlist.includes(id)) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. CART DRAWER CONTROLLER
+    // -------------------------------------------------------------------------
+    function openCartDrawer() {
+      const backdrop = document.getElementById("cart-drawer-backdrop");
+      if (backdrop) backdrop.classList.add("open");
+    }
+
+    function closeCartDrawer() {
+      const backdrop = document.getElementById("cart-drawer-backdrop");
+      if (backdrop) backdrop.classList.remove("open");
+    }
+
+    function renderCartDrawer() {
+      const itemsContainer = document.getElementById("cart-drawer-items");
+      const countEl = document.getElementById("cart-total-count");
+      const subtotalEl = document.getElementById("cart-drawer-subtotal");
+      const totalEl = document.getElementById("cart-drawer-total");
+      const progressEl = document.getElementById("cart-delivery-progress");
+
+      const count = AppState.getCartCount();
+      const subtotal = AppState.getCartSubtotal();
+
+      if (countEl) countEl.textContent = count;
+      if (subtotalEl) subtotalEl.textContent = formatKES(subtotal);
+      if (totalEl) totalEl.textContent = formatKES(subtotal);
+
+      // Delivery progress indicator (free delivery at KES 10,000)
+      const freeThreshold = 10000;
+      if (progressEl) {
+        if (subtotal >= freeThreshold) {
+          progressEl.innerHTML = `
+            <div>🎉 You have qualified for <strong>FREE Nairobi Same-Day Delivery!</strong></div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: 100%;"></div></div>
+          `;
+        } else {
+          const diff = freeThreshold - subtotal;
+          const pct = Math.min(100, Math.round((subtotal / freeThreshold) * 100));
+          progressEl.innerHTML = `
+            <div>Add <strong>${formatKES(diff)}</strong> more for FREE Nairobi Same-Day Delivery</div>
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%;"></div></div>
+          `;
+        }
+      }
+
+      if (!itemsContainer) return;
+
+      if (AppState.cart.length === 0) {
+        itemsContainer.innerHTML = `
+          <div style="text-align:center; padding: 48px 16px; color:var(--c-text-muted);">
+            <i data-lucide="shopping-bag" style="width:48px; height:48px; margin:0 auto 12px; stroke-width:1.5; color:var(--c-text-light);"></i>
+            <p style="font-weight:600; font-size:1.1rem; color:var(--c-text-main); margin-bottom:6px;">Your bag is empty</p>
+            <p style="font-size:0.875rem; margin-bottom:20px;">Explore the Autumn collection to add your favourite luxury garments.</p>
+            <a href="#/shop" class="btn-dark" style="font-size:0.85rem;" onclick="closeCartDrawer()">Explore Collection</a>
+          </div>
+        `;
+      } else {
+        itemsContainer.innerHTML = AppState.cart.map((item, idx) => `
+          <div class="cart-item">
+            <img src="${item.image}" alt="${item.name}" class="cart-item-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=300&q=80'">
+            <div class="cart-item-details">
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-variant">Size: <strong>${item.size}</strong> · Color: <strong>${item.color}</strong></div>
+              <div class="cart-item-price">${formatKES(item.priceKES)}</div>
+              <div class="cart-qty-ctrl">
+                <button class="qty-btn" onclick="AppState.updateCartQty(${idx}, ${item.quantity - 1})">-</button>
+                <span style="font-size:0.85rem; font-weight:700; width:20px; text-align:center;">${item.quantity}</span>
+                <button class="qty-btn" onclick="AppState.updateCartQty(${idx}, ${item.quantity + 1})">+</button>
+                <button onclick="AppState.removeFromCart(${idx})" style="margin-left:auto; color:var(--c-text-light); font-size:0.75rem; hover:color:var(--c-danger);">Remove</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. VIEW RENDERERS (HOME, SHOP, PDP, CART, CHECKOUT, ACCOUNT)
+    // -------------------------------------------------------------------------
+
+    // Product Card Component Generator (Matches Reference Exactly)
+    function renderProductCard(product) {
+      const isWishlisted = AppState.wishlist.includes(product.id);
+      return `
+        <article class="product-card" data-id="${product.id}">
+          <div class="product-img-box">
+            ${product.badge ? `<span class="product-discount-pill ${product.badge.includes('40') || product.badge.includes('70') ? 'yellow' : ''}">${product.badge}</span>` : ''}
+            <button class="wishlist-btn ${isWishlisted ? 'active' : ''}" data-id="${product.id}" onclick="AppState.toggleWishlist('${product.id}')" aria-label="Save to Wishlist">
+              <i data-lucide="heart" style="width:18px;height:18px;"></i>
+            </button>
+            <a href="#/product/${product.id}" style="width:100%;height:100%;">
+              <img src="${product.image}" alt="${product.name}" class="product-img" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=600&q=80'">
+            </a>
+          </div>
+          <div class="product-info">
+            <div class="product-meta">
+              <div class="product-brand">${product.brand}</div>
+              <h4 class="product-title"><a href="#/product/${product.id}">${product.name}</a></h4>
+              <div class="product-pricing">
+                <span class="product-price">${formatKES(product.priceKES)}</span>
+                ${product.originalPriceKES ? `<span class="product-old-price">${formatKES(product.originalPriceKES)}</span>` : ''}
+              </div>
+            </div>
+            <!-- Signature yellow squircle cart button from screenshot -->
+            <button class="btn-quick-bag" onclick="AppState.addToCart('${product.id}')" aria-label="Add to Bag">
+              <i data-lucide="shopping-bag" style="width:18px;height:18px;"></i>
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    // A. HOMEPAGE VIEW (Full faithful translation of reference screenshot)
+    function renderHomeView() {
+      const bestSellers = CATALOGUE_PRODUCTS.filter(p => p.bestSeller).slice(0, 4);
+      const newArrivals = CATALOGUE_PRODUCTS.slice(0, 8);
+
+      return `
+        <!-- Hero Campaign Section (from screenshot) -->
+        <section class="hero-section" id="hero-campaign">
+          <div class="container hero-grid">
+            <div class="hero-content">
+              <div class="hero-year">2026</div>
+              <h1 class="hero-title">Autumn<br>Jackets</h1>
+              <p class="hero-tagline">Autumn Sale / Up to 50% OFF</p>
+              <a href="#/shop?category=Jackets" class="btn-yellow">Shop Collection</a>
+            </div>
+
+            <div class="hero-visual">
+              <div class="hero-circle-backdrop"></div>
+              
+              <!-- Floating price tag & yellow discount circle (from screenshot) -->
+              <div class="hero-price-tag">
+                <span class="hero-price-amount">KES 38,600</span>
+                <span class="hero-discount-badge">-40%<br>OFF</span>
+              </div>
+
+              <!-- Main Hero Model Visual (Green varsity jacket seen from back) -->
+              <div class="hero-image-wrapper">
+                <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=85" alt="Amis Jean Paris Autumn Varsity Jacket" class="hero-model-img">
+              </div>
+
+              <!-- Slider Nav Buttons -->
+              <div class="hero-nav-controls" style="position:absolute; bottom:10px;">
+                <button class="hero-nav-btn" onclick="showToast('Browsing Campaign Slide 1 of 3')" aria-label="Previous Slide"><i data-lucide="chevron-left"></i></button>
+                <button class="hero-nav-btn" onclick="showToast('Browsing Campaign Slide 2 of 3')" aria-label="Next Slide"><i data-lucide="chevron-right"></i></button>
+              </div>
+
+              <!-- Slider Dots on Right (from screenshot) -->
+              <div class="hero-slider-dots">
+                <span class="hero-dot active"></span>
+                <span class="hero-dot"></span>
+                <span class="hero-dot"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Luxury Brand Wordmark Bar (from screenshot) -->
+        <div class="brand-marquee-bar">
+          <div class="container brand-marquee-inner">
+            <a href="#/brand/gucci" class="brand-logo-item">GUCCI</a>
+            <a href="#/brand/hm-studio" class="brand-logo-item">H&M</a>
+            <a href="#/brand/nike" class="brand-logo-item">NIKE</a>
+            <a href="#/brand/the-north-face" class="brand-logo-item">THE NORTH FACE</a>
+            <a href="#/brand/prada" class="brand-logo-item">PRADA</a>
+            <a href="#/brand/ellesse" class="brand-logo-item">ELLESSE</a>
+          </div>
+        </div>
+
+        <!-- "New Collection" Section (from screenshot: 2 split editorial cards) -->
+        <section class="new-collection-section">
+          <div class="container">
+            <div class="section-header">
+              <h2 class="section-title">New Collection</h2>
+              <a href="#/shop" class="section-link">View All Items <i data-lucide="arrow-right" style="width:16px;height:16px;"></i></a>
+            </div>
+
+            <div class="collection-tiles-grid">
+              <!-- Tile 1: Grey Soft Card (Men's Winter Collection) -->
+              <div class="collection-tile tile-grey">
+                <div>
+                  <h3 class="tile-title">Men's Winter Collection</h3>
+                </div>
+                <img src="https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&w=700&q=80" alt="Men's Winter Down Puffer" class="tile-img">
+                <a href="#/shop?category=Jackets" class="btn-pill-dark">Discover Now</a>
+              </div>
+
+              <!-- Tile 2: Vivid Yellow Card (-40% OFF / Men's Bags Collection) -->
+              <div class="collection-tile tile-yellow">
+                <div>
+                  <div class="tile-discount-big">-40% OFF</div>
+                  <h3 class="tile-title">Men's Bags Collection</h3>
+                </div>
+                <img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=700&q=80" alt="Men's Nylon Sling Bag" class="tile-img">
+                <a href="#/shop?category=Bags" class="btn-pill-dark">Discover Now</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- "Best Sellers" Section (from screenshot: 4-column product grid with yellow bag buttons) -->
+        <section class="best-sellers-section">
+          <div class="container">
+            <div class="section-header">
+              <h2 class="section-title">Best Sellers</h2>
+              <a href="#/shop" class="section-link">Explore Store <i data-lucide="arrow-right" style="width:16px;height:16px;"></i></a>
+            </div>
+
+            <div class="products-grid">
+              ${bestSellers.map(renderProductCard).join('')}
+            </div>
+
+            <div class="load-more-container">
+              <a href="#/shop" class="btn-dark">Load More Products</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Flash Sale Split Countdown Banner (from screenshot: Yellow left / Green right) -->
+        <section class="flash-sale-section">
+          <div class="container">
+            <div class="flash-sale-wrapper">
+              <!-- Left: Yellow with -70% OFF & Sneaker -->
+              <div class="sale-banner-yellow">
+                <div>
+                  <div class="sale-big-badge">-70% OFF</div>
+                  <p style="font-weight:600; color:rgba(0,0,0,0.7); max-width:240px;">Heritage Court Low Sneaker in Vintage Cognac</p>
+                </div>
+                
+                <div class="sale-featured-product">
+                  <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=600&q=80" alt="Flash Sale Sneaker" class="sale-product-img">
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:16px;">
+                  <div class="sale-price-group">
+                    <span class="sale-price-old">KES 23,200</span>
+                    <span class="sale-price-new">KES 6,500</span>
+                  </div>
+                  <button class="btn-dark" style="padding:10px 18px;" onclick="AppState.addToCart('etl-005')">
+                    <i data-lucide="shopping-bag" style="width:18px;height:18px;"></i>
+                    <span>Quick Claim</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right: Deep Forest Green with Live Countdown Clock -->
+              <div class="sale-banner-green">
+                <h2 class="countdown-headline">Sale ends soon</h2>
+                <div class="countdown-grid" id="flash-countdown-clock">
+                  <div class="countdown-card">
+                    <div class="countdown-number" id="cd-days">03</div>
+                    <div class="countdown-label">Days</div>
+                  </div>
+                  <div class="countdown-card">
+                    <div class="countdown-number" id="cd-hours">23</div>
+                    <div class="countdown-label">Hours</div>
+                  </div>
+                  <div class="countdown-card">
+                    <div class="countdown-number" id="cd-mins">15</div>
+                    <div class="countdown-label">Minutes</div>
+                  </div>
+                  <div class="countdown-card">
+                    <div class="countdown-number" id="cd-secs">33</div>
+                    <div class="countdown-label">Seconds</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- "Latest News" / Fashion Editorial Section (from screenshot) -->
+        <section class="news-section">
+          <div class="container">
+            <div class="section-header">
+              <h2 class="section-title">Latest News</h2>
+              <a href="#/customer-service" class="section-link">Read Journal <i data-lucide="arrow-right" style="width:16px;height:16px;"></i></a>
+            </div>
+
+            <div class="news-grid">
+              ${EDITORIAL_STORIES.map(story => `
+                <article class="news-card" onclick="window.location.hash = '#/editorial/${story.id}'">
+                  <div class="news-img-box">
+                    <img src="${story.image}" alt="${story.title}" class="news-img" loading="lazy">
+                    <span class="news-date-badge">${story.date}</span>
+                    <span class="news-expand-btn"><i data-lucide="plus" style="width:16px;height:16px;"></i></span>
+                  </div>
+                  <h3 class="news-title">${story.title}</h3>
+                  <p class="news-excerpt">${story.excerpt}</p>
+                </article>
+              `).join('')}
+            </div>
+
+            <!-- Newsletter Subscription (from screenshot) -->
+            <div class="newsletter-strip">
+              <h3 class="newsletter-headline">Subscribe and get 20% off your first purchase.</h3>
+              <form class="newsletter-form" onsubmit="event.preventDefault(); handleNewsletterSubmit(this);">
+                <input type="email" placeholder="example@gmail.com" required class="newsletter-input">
+                <button type="submit" class="newsletter-submit">Submit</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- Value Propositions Strip (from screenshot) -->
+        <div class="value-props-bar">
+          <div class="container value-props-grid">
+            <div class="prop-item">
+              <div class="prop-icon"><i data-lucide="truck" style="width:32px;height:32px;"></i></div>
+              <div class="prop-title">Free Shipping & Returns</div>
+            </div>
+            <div class="prop-item">
+              <div class="prop-icon"><i data-lucide="shield-check" style="width:32px;height:32px;"></i></div>
+              <div class="prop-title">100% Money Back Guarantee</div>
+            </div>
+            <div class="prop-item">
+              <div class="prop-icon"><i data-lucide="refresh-cw" style="width:32px;height:32px;"></i></div>
+              <div class="prop-title">Replacement in Case of Defect</div>
+            </div>
+            <div class="prop-item">
+              <div class="prop-icon"><i data-lucide="lock" style="width:32px;height:32px;"></i></div>
+              <div class="prop-title">Safe and Secure Checkout</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // B. SHOP / CATALOGUE VIEW (Rich filtering, sorting & search)
+    function renderShopView(initialCategory = null, initialAudience = null) {
+      let filtered = [...CATALOGUE_PRODUCTS];
+
+      if (initialCategory) {
+        filtered = filtered.filter(p => p.category.toLowerCase() === initialCategory.toLowerCase());
+      }
+      if (initialAudience) {
+        filtered = filtered.filter(p => p.audience.toLowerCase() === initialAudience.toLowerCase());
+      }
+
+      return `
+        <div class="shop-header">
+          <div class="container">
+            <div class="breadcrumbs-bar">
+              <a href="#/">Home</a> <span>/</span> <span>${initialCategory || initialAudience || 'Store'}</span>
+            </div>
+            <h1 class="font-display" style="font-size:2.4rem; font-weight:700;">
+              ${initialCategory ? `${initialCategory} Collection` : (initialAudience ? `${initialAudience}'s Department` : 'All Clothing & Footwear')}
+            </h1>
+            <p style="color:var(--c-text-muted); margin-top:6px;">
+              Showing ${filtered.length} curated fashion items with fast Nairobi dispatch and secure M-Pesa payments.
+            </p>
+          </div>
+        </div>
+
+        <div class="container shop-layout">
+          <!-- Sidebar Filters -->
+          <aside class="shop-sidebar">
+            <div style="font-weight:700; font-size:1.1rem; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+              <span>Filters</span>
+              <button onclick="window.location.hash='#/shop'" style="font-size:0.75rem; color:var(--c-forest); font-weight:600;">Reset All</button>
+            </div>
+
+            <!-- Audience Filter -->
+            <div class="filter-group">
+              <div class="filter-group-title">Audience</div>
+              <ul class="filter-options-list">
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Men"> Men's Fashion</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Women"> Women's Fashion</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Kids"> Kids & Baby</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Unisex"> Unisex / All</label></li>
+              </ul>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="filter-group">
+              <div class="filter-group-title">Categories</div>
+              <ul class="filter-options-list">
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Jackets"> Jackets & Outerwear</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Bags"> Bags & Leather Goods</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Shoes"> Footwear & Sneakers</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Dresses"> Dresses & Tailoring</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Trousers"> Trousers & Denim</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Knitwear"> Knitwear & Cardigans</label></li>
+              </ul>
+            </div>
+
+            <!-- Brand Filter -->
+            <div class="filter-group">
+              <div class="filter-group-title">Brands</div>
+              <ul class="filter-options-list">
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Etalon Atelier"> Etalon Atelier</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Prada"> Prada</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Gucci"> Gucci</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Nike"> Nike</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="The North Face"> The North Face</label></li>
+                <li><label class="filter-checkbox-label"><input type="checkbox" onchange="filterProducts()" value="Ellesse"> Ellesse</label></li>
+              </ul>
+            </div>
+
+            <!-- Size Guide Link -->
+            <div style="margin-top:24px; padding:16px; background:var(--c-card-light); border-radius:var(--radius-sm); border:1px solid var(--c-border);">
+              <div style="font-weight:700; font-size:0.875rem; margin-bottom:4px;">Unsure about sizing?</div>
+              <p style="font-size:0.8rem; color:var(--c-text-muted); margin-bottom:10px;">Check our standardized European & UK measurements.</p>
+              <button onclick="openSizeGuideModal()" style="font-size:0.8rem; font-weight:700; color:var(--c-forest); text-decoration:underline;">Open Size Guide</button>
+            </div>
+          </aside>
+
+          <!-- Product Grid Area -->
+          <main>
+            <div class="shop-controls-bar">
+              <div style="font-size:0.9rem; color:var(--c-text-muted);">
+                Showing <strong id="product-count-display">${filtered.length}</strong> products
+              </div>
+              <div>
+                <select class="sort-select" id="catalogue-sort" onchange="sortProducts(this.value)">
+                  <option value="featured">Sort by: Featured</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="rating">Highest Rated</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="products-grid" id="catalogue-products-grid">
+              ${filtered.map(renderProductCard).join('')}
+            </div>
+          </main>
+        </div>
+      `;
+    }
+
+    // C. PRODUCT DETAIL PAGE (PDP)
+    function renderPdpView(productId) {
+      const product = CATALOGUE_PRODUCTS.find(p => p.id === productId) || CATALOGUE_PRODUCTS[0];
+      const isWishlisted = AppState.wishlist.includes(product.id);
+      const related = CATALOGUE_PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+
+      return `
+        <div class="container pdp-section">
+          <div class="breadcrumbs-bar">
+            <a href="#/">Home</a> <span>/</span> 
+            <a href="#/shop">${product.audience}</a> <span>/</span> 
+            <a href="#/shop?category=${product.category}">${product.category}</a> <span>/</span> 
+            <span>${product.name}</span>
+          </div>
+
+          <div class="pdp-grid">
+            <!-- Left: Gallery -->
+            <div class="pdp-gallery">
+              <div class="pdp-thumbnails">
+                ${(product.galleryImages || [product.image]).map((img, i) => `
+                  <button class="pdp-thumb-btn ${i === 0 ? 'active' : ''}" onclick="switchPdpImage('${img}', this)">
+                    <img src="${img}" alt="${product.name} Thumbnail ${i+1}">
+                  </button>
+                `).join('')}
+              </div>
+
+              <div class="pdp-main-image-box">
+                <img src="${product.image}" id="pdp-active-img" alt="${product.name}" class="pdp-main-image">
+                ${product.badge ? `<span class="product-discount-pill yellow" style="top:20px;left:20px;">${product.badge}</span>` : ''}
+              </div>
+            </div>
+
+            <!-- Right: Details -->
+            <div>
+              <div class="pdp-brand-tag">${product.brand}</div>
+              <h1 class="pdp-title">${product.name}</h1>
+              
+              <div class="pdp-pricing-bar">
+                <span class="pdp-current-price">${formatKES(product.priceKES)}</span>
+                ${product.originalPriceKES ? `<span class="pdp-original-price">${formatKES(product.originalPriceKES)}</span>` : ''}
+                <span class="pdp-currency-equiv">Approx. $${Math.round(product.priceKES / 130)} USD</span>
+              </div>
+
+              <p style="color:var(--c-text-muted); font-size:0.95rem; line-height:1.6; margin-bottom:24px;">
+                ${product.description}
+              </p>
+
+              <!-- Color Selection -->
+              <div class="pdp-option-section">
+                <div class="pdp-option-label">
+                  <span>Selected Color: <strong id="pdp-selected-color-name">${product.colors[0].name}</strong></span>
+                </div>
+                <div class="color-swatches-grid">
+                  ${product.colors.map((c, idx) => `
+                    <button class="swatch-btn ${idx === 0 ? 'active' : ''}" style="background-color:${c.hex};" title="${c.name}" onclick="selectPdpColor('${c.name}', this)"></button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Size Selection -->
+              <div class="pdp-option-section">
+                <div class="pdp-option-label">
+                  <span>Select Size: <strong id="pdp-selected-size-val">${product.sizes[0]}</strong></span>
+                  <button onclick="openSizeGuideModal()" style="font-size:0.78rem; color:var(--c-forest); text-decoration:underline; font-weight:700;">Size Guide</button>
+                </div>
+                <div class="pdp-size-btn-group">
+                  ${product.sizes.map((s, idx) => `
+                    <button class="pdp-size-btn ${idx === 0 ? 'active' : ''}" onclick="selectPdpSize('${s}', this)">${s}</button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Add to Bag and Wishlist Action Bar -->
+              <div class="pdp-cta-row">
+                <button class="pdp-add-btn" id="pdp-add-cart-btn" onclick="handlePdpAddToCart('${product.id}')">
+                  <i data-lucide="shopping-bag" style="width:20px;height:20px;"></i>
+                  <span>Add to Bag</span>
+                </button>
+                <button class="pdp-wishlist-toggle ${isWishlisted ? 'active' : ''}" onclick="AppState.toggleWishlist('${product.id}')" aria-label="Save to Wishlist">
+                  <i data-lucide="heart" style="width:22px;height:22px;"></i>
+                </button>
+              </div>
+
+              <div style="background:var(--c-card-light); border:1px solid var(--c-border); padding:16px; border-radius:var(--radius-sm); margin-bottom:24px; font-size:0.85rem; color:var(--c-forest-dark);">
+                <i data-lucide="check-circle" style="width:16px;height:16px;display:inline;vertical-align:middle;color:var(--c-forest);"></i>
+                <strong>In Stock at Nairobi Flagship</strong> · Dispatched within 24 hours via G4S / Fargo Courier.
+              </div>
+
+              <!-- Accordions for Material, Fit, Delivery -->
+              <div class="pdp-accordion">
+                <div class="accordion-item">
+                  <button class="accordion-trigger" onclick="toggleAccordion(this)">
+                    <span>Materials & Composition</span>
+                    <i data-lucide="chevron-down" style="width:18px;height:18px;"></i>
+                  </button>
+                  <div class="accordion-content open">
+                    <p>${product.material}</p>
+                  </div>
+                </div>
+
+                <div class="accordion-item">
+                  <button class="accordion-trigger" onclick="toggleAccordion(this)">
+                    <span>Fit & Size Advisory</span>
+                    <i data-lucide="chevron-down" style="width:18px;height:18px;"></i>
+                  </button>
+                  <div class="accordion-content">
+                    <p>${product.fit}</p>
+                  </div>
+                </div>
+
+                <div class="accordion-item">
+                  <button class="accordion-trigger" onclick="toggleAccordion(this)">
+                    <span>Delivery & Returns (Kenya)</span>
+                    <i data-lucide="chevron-down" style="width:18px;height:18px;"></i>
+                  </button>
+                  <div class="accordion-content">
+                    <p>Free same-day delivery in Nairobi for orders over KES 10,000. Nationwide courier delivery within 48 hours for KES 250. 14-day hassle-free return or size exchange guarantee.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cross-Sell Section -->
+          ${related.length > 0 ? `
+            <div style="margin-top:70px; border-top:1px solid var(--c-border); padding-top:40px;">
+              <h3 class="font-display" style="font-size:1.8rem; font-weight:700; margin-bottom:24px;">You May Also Like</h3>
+              <div class="products-grid">
+                ${related.map(renderProductCard).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // D. CHECKOUT VIEW (Designed for Kenya: M-Pesa STK Push, Paystack Card, Counties)
+    function renderCheckoutView() {
+      const subtotal = AppState.getCartSubtotal();
+      const shipping = subtotal >= 10000 ? 0 : 350;
+      const total = subtotal + shipping;
+
+      if (AppState.cart.length === 0) {
+        return `
+          <div class="container" style="padding: 80px 16px; text-align:center;">
+            <i data-lucide="shopping-bag" style="width:64px;height:64px;margin:0 auto 16px;color:var(--c-text-light);"></i>
+            <h2 class="font-display" style="font-size:2rem; font-weight:700; margin-bottom:8px;">Your Shopping Bag is Empty</h2>
+            <p style="color:var(--c-text-muted); margin-bottom:24px;">Please select garments from our catalogue before checking out.</p>
+            <a href="#/shop" class="btn-yellow">Browse Autumn Collection</a>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="checkout-section">
+          <div class="container">
+            <h1 class="font-display" style="font-size:2.2rem; font-weight:700; margin-bottom:8px;">Secure Checkout</h1>
+            <p style="color:var(--c-text-muted); margin-bottom:32px;">Safe payment via Safaricom M-Pesa STK Push & Paystack Card processing.</p>
+
+            <form class="checkout-grid" id="checkout-form" onsubmit="event.preventDefault(); handleCheckoutSubmit();">
+              <!-- Left: Customer Details & Payment Options -->
+              <div>
+                <!-- Step 1: Customer Contact -->
+                <div class="checkout-card">
+                  <div class="checkout-step-title">
+                    <span class="checkout-step-badge">1</span>
+                    <span>Contact Details</span>
+                  </div>
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label class="form-label">Full Name *</label>
+                      <input type="text" id="chk-name" required class="form-input" placeholder="e.g. Amani Mwangi">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Email Address *</label>
+                      <input type="email" id="chk-email" required class="form-input" placeholder="amani@example.com">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">M-Pesa Mobile Number * (Format: 07XX XXX XXX)</label>
+                    <input type="tel" id="chk-phone" required class="form-input" placeholder="0712 345 678" pattern="[0-9+ ]{10,14}">
+                    <span style="font-size:0.75rem; color:var(--c-text-muted);">Required for Safaricom STK Push payment prompt and SMS tracking alerts.</span>
+                  </div>
+                </div>
+
+                <!-- Step 2: Shipping Destination -->
+                <div class="checkout-card">
+                  <div class="checkout-step-title">
+                    <span class="checkout-step-badge">2</span>
+                    <span>Delivery Address</span>
+                  </div>
+                  <div class="form-grid-2">
+                    <div class="form-group">
+                      <label class="form-label">County *</label>
+                      <select id="chk-county" required class="form-select">
+                        ${KENYA_COUNTIES.map(c => `<option value="${c}">${c}</option>`).join('')}
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Town / Locality / Estate *</label>
+                      <input type="text" id="chk-town" required class="form-input" placeholder="e.g. Westlands / Kilimani / Nyali">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Street Address & Landmark *</label>
+                    <input type="text" id="chk-address" required class="form-input" placeholder="Building name, apartment number, or landmark">
+                  </div>
+                </div>
+
+                <!-- Step 3: Payment Method Selection -->
+                <div class="checkout-card">
+                  <div class="checkout-step-title">
+                    <span class="checkout-step-badge">3</span>
+                    <span>Select Payment Channel</span>
+                  </div>
+                  <div class="payment-methods-grid">
+                    <!-- Option 1: M-Pesa STK Push -->
+                    <div class="payment-method-card selected" onclick="selectPaymentMethod('mpesa', this)">
+                      <div class="payment-logo-tag tag-mpesa">M-PESA</div>
+                      <div style="flex:1;">
+                        <div style="font-weight:700; font-size:0.95rem;">M-Pesa Express (STK Push)</div>
+                        <div style="font-size:0.8rem; color:var(--c-text-muted);">Instant PIN prompt sent directly to your Safaricom line. Fast & secure.</div>
+                      </div>
+                      <i data-lucide="check" style="color:var(--c-forest); width:20px; height:20px;"></i>
+                    </div>
+
+                    <!-- Option 2: Paystack Card Gateway -->
+                    <div class="payment-method-card" onclick="selectPaymentMethod('paystack', this)">
+                      <div class="payment-logo-tag tag-paystack">PAYSTACK</div>
+                      <div style="flex:1;">
+                        <div style="font-weight:700; font-size:0.95rem;">Debit / Credit Card (Paystack)</div>
+                        <div style="font-size:0.8rem; color:var(--c-text-muted);">Visa, Mastercard, or Apple Pay processed via secure PCI-DSS gateway.</div>
+                      </div>
+                    </div>
+
+                    <!-- Option 3: Cash / Card on Delivery -->
+                    <div class="payment-method-card" onclick="selectPaymentMethod('cod', this)">
+                      <div class="payment-logo-tag tag-cod">COD</div>
+                      <div style="flex:1;">
+                        <div style="font-weight:700; font-size:0.95rem;">Payment on Delivery</div>
+                        <div style="font-size:0.8rem; color:var(--c-text-muted);">Available for Nairobi Metropolitan courier dispatches only.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Order Summary Sticky Card -->
+              <div>
+                <div class="checkout-card" style="position:sticky; top:90px;">
+                  <h3 class="font-display" style="font-size:1.2rem; font-weight:700; margin-bottom:16px;">Order Summary</h3>
+                  <div style="max-height:220px; overflow-y:auto; margin-bottom:16px;">
+                    ${AppState.cart.map(item => `
+                      <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.875rem;">
+                        <div>
+                          <div style="font-weight:600;">${item.name} (x${item.quantity})</div>
+                          <div style="font-size:0.75rem; color:var(--c-text-muted);">${item.size} · ${item.color}</div>
+                        </div>
+                        <div style="font-weight:700;">${formatKES(item.priceKES * item.quantity)}</div>
+                      </div>
+                    `).join('')}
+                  </div>
+
+                  <!-- Promo code box -->
+                  <div style="display:flex; gap:8px; margin-bottom:16px;">
+                    <input type="text" id="chk-promo-input" placeholder="Promo code (e.g. AUTUMN20)" class="form-input" style="font-size:0.85rem; padding:8px 12px;">
+                    <button type="button" class="btn-dark" style="padding:8px 16px; font-size:0.8rem;" onclick="applyPromoCode()">Apply</button>
+                  </div>
+
+                  <div class="cart-summary-line">
+                    <span style="color:var(--c-text-muted);">Bag Subtotal</span>
+                    <span style="font-weight:700;">${formatKES(subtotal)}</span>
+                  </div>
+                  <div class="cart-summary-line">
+                    <span style="color:var(--c-text-muted);">Courier Delivery</span>
+                    <span style="font-weight:700;">${shipping === 0 ? '<span style="color:var(--c-success);">FREE</span>' : formatKES(shipping)}</span>
+                  </div>
+                  <div class="cart-summary-line cart-summary-total">
+                    <span>Grand Total</span>
+                    <span style="color:var(--c-forest); font-size:1.35rem;" id="checkout-grand-total">${formatKES(total)}</span>
+                  </div>
+
+                  <button type="submit" class="btn-checkout" style="height:52px; font-size:1rem; margin-top:24px;">
+                    <i data-lucide="shield-check" style="width:20px;height:20px;"></i>
+                    <span id="checkout-submit-btn-text">Confirm & Pay via M-Pesa</span>
+                  </button>
+
+                  <div style="text-align:center; font-size:0.75rem; color:var(--c-text-muted); margin-top:12px;">
+                    🔒 256-Bit SSL Encrypted. Payment confirmation generated in real-time.
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    // E. ORDER CONFIRMATION / RECEIPT VIEW
+    function renderOrderSuccessView(orderId) {
+      const order = AppState.orders.find(o => o.id === orderId) || {
+        id: orderId || "ETL-84920",
+        date: new Date().toLocaleDateString('en-GB'),
+        customerName: "Amani Mwangi",
+        phone: "+254 712 345 678",
+        county: "Nairobi",
+        paymentMethod: "M-Pesa STK Push",
+        mpesaRef: "TK72A99L0X",
+        total: 38600
+      };
+
+      return `
+        <div class="container" style="padding: 70px 16px; max-width:680px;">
+          <div style="text-align:center; margin-bottom:32px;">
+            <div style="width:68px; height:68px; background:var(--c-forest); color:var(--c-yellow); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+              <i data-lucide="check" style="width:36px;height:36px;stroke-width:2.5;"></i>
+            </div>
+            <h1 class="font-display" style="font-size:2.2rem; font-weight:700; margin-bottom:8px;">Order Confirmed!</h1>
+            <p style="color:var(--c-text-muted);">Thank you for shopping with Etalon Atelier. Your dispatch confirmation has been sent.</p>
+          </div>
+
+          <div style="background:#FFFFFF; border:1px solid var(--c-border); border-radius:var(--radius-md); padding:28px; box-shadow:var(--shadow-sm); margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--c-border); padding-bottom:16px; margin-bottom:16px;">
+              <div>
+                <span style="font-size:0.75rem; color:var(--c-text-muted); text-transform:uppercase;">ORDER NUMBER</span>
+                <div style="font-family:var(--font-display); font-size:1.25rem; font-weight:800; color:var(--c-forest);">${order.id}</div>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:0.75rem; color:var(--c-text-muted); text-transform:uppercase;">PAYMENT STATUS</span>
+                <div style="font-weight:700; color:var(--c-success);">PAID (${order.mpesaRef || 'VERIFIED'})</div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:0.875rem; margin-bottom:20px;">
+              <div><strong>Recipient:</strong> ${order.customerName}</div>
+              <div><strong>Contact:</strong> ${order.phone}</div>
+              <div><strong>Delivery Destination:</strong> ${order.county}, Kenya</div>
+              <div><strong>Payment Channel:</strong> ${order.paymentMethod}</div>
+            </div>
+
+            <div style="background:var(--c-card-light); padding:16px; border-radius:var(--radius-sm); font-size:0.85rem; color:var(--c-forest-dark);">
+              <strong>Estimated Delivery:</strong> Nairobi Express Same-Day delivery dispatched from our Westlands fulfillment center. Tracking SMS active.
+            </div>
+          </div>
+
+          <div style="display:flex; gap:12px; justify-content:center;">
+            <button onclick="window.print()" class="btn-dark" style="font-size:0.85rem;">
+              <i data-lucide="printer" style="width:16px;height:16px;"></i> Print Receipt
+            </button>
+            <a href="#/shop" class="btn-yellow" style="font-size:0.85rem;">Continue Shopping</a>
+          </div>
+        </div>
+      `;
+    }
+
+    // F. CUSTOMER ACCOUNT & ORDERS VIEW
+    function renderAccountView() {
+      return `
+        <div class="container" style="padding: 60px 16px;">
+          <h1 class="font-display" style="font-size:2.4rem; font-weight:700; margin-bottom:8px;">Customer Account</h1>
+          <p style="color:var(--c-text-muted); margin-bottom:32px;">Manage your orders, saved luxury wishlist, and Nairobi dispatch addresses.</p>
+
+          <div style="display:grid; grid-template-columns: 260px 1fr; gap:36px;">
+            <!-- Account Nav Tabs -->
+            <div style="background:#FFF; border:1px solid var(--c-border); border-radius:var(--radius-md); padding:16px; height:fit-content;">
+              <button class="nav-tab-btn active" style="width:100%; text-align:left; padding:12px; font-weight:700; font-size:0.9rem; border-radius:var(--radius-sm); background:var(--c-forest); color:#FFF; margin-bottom:6px;">
+                <i data-lucide="package" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:8px;"></i> Recent Orders
+              </button>
+              <button class="nav-tab-btn" onclick="window.location.hash='#/shop'" style="width:100%; text-align:left; padding:12px; font-weight:600; font-size:0.9rem; color:var(--c-text-muted);">
+                <i data-lucide="heart" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:8px;"></i> My Saved Wishlist
+              </button>
+              <button class="nav-tab-btn" onclick="openSizeGuideModal()" style="width:100%; text-align:left; padding:12px; font-weight:600; font-size:0.9rem; color:var(--c-text-muted);">
+                <i data-lucide="ruler" style="width:16px;height:16px;display:inline;vertical-align:middle;margin-right:8px;"></i> Size Profile
+              </button>
+            </div>
+
+            <!-- Account Content -->
+            <div>
+              <div style="background:#FFF; border:1px solid var(--c-border); border-radius:var(--radius-md); padding:28px;">
+                <h3 class="font-display" style="font-size:1.3rem; font-weight:700; margin-bottom:20px;">Order History & Tracking</h3>
+                
+                ${AppState.orders.length === 0 ? `
+                  <div style="text-align:center; padding:40px 16px; color:var(--c-text-muted);">
+                    <i data-lucide="package-open" style="width:48px;height:48px;margin:0 auto 12px;color:var(--c-text-light);"></i>
+                    <p style="font-weight:600; color:var(--c-text-main);">No active orders placed yet.</p>
+                    <p style="font-size:0.85rem; margin-bottom:16px;">Orders placed with M-Pesa or Paystack will appear here with live tracking.</p>
+                    <a href="#/shop" class="btn-dark" style="font-size:0.85rem;">Discover Autumn Collection</a>
+                  </div>
+                ` : `
+                  <div>
+                    ${AppState.orders.map(order => `
+                      <div style="border:1px solid var(--c-border); border-radius:var(--radius-sm); padding:16px; margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                          <div><strong>Order ID:</strong> ${order.id}</div>
+                          <div style="color:var(--c-forest); font-weight:700;">${formatKES(order.total)}</div>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--c-text-muted);">Status: <span style="color:var(--c-success); font-weight:700;">In Dispatch / Tracking Active</span></div>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // G. BRAND DIRECTORY VIEW
+    function renderBrandsView() {
+      return `
+        <div class="shop-header">
+          <div class="container">
+            <h1 class="font-display" style="font-size:2.5rem; font-weight:700;">Brand Directory</h1>
+            <p style="color:var(--c-text-muted); margin-top:6px;">Curated designer ateliers, contemporary streetwear labels, and sporting heritage.</p>
+          </div>
+        </div>
+
+        <div class="container" style="padding-bottom:80px;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:24px;">
+            ${BRAND_RECORDS.map(b => `
+              <div style="background:#FFF; border:1px solid var(--c-border); border-radius:var(--radius-md); padding:24px; transition:transform 0.2s ease;">
+                <div style="font-size:0.75rem; color:var(--c-forest); font-weight:700; text-transform:uppercase;">${b.tier}</div>
+                <h3 class="font-display" style="font-size:1.4rem; font-weight:700; margin:4px 0 8px;">${b.name}</h3>
+                <p style="font-size:0.85rem; color:var(--c-text-muted); margin-bottom:16px;">${b.description}</p>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:0.75rem; color:var(--c-text-light);">${b.origin}</span>
+                  <a href="#/shop?brand=${encodeURIComponent(b.name)}" class="section-link" style="font-size:0.85rem;">View Products →</a>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // H. CUSTOMER SERVICE & HELP VIEW
+    function renderCustomerServiceView() {
+      return `
+        <div class="container" style="padding: 60px 16px; max-width:880px;">
+          <h1 class="font-display" style="font-size:2.5rem; font-weight:700; margin-bottom:12px;">Customer Service & Assistance</h1>
+          <p style="color:var(--c-text-muted); margin-bottom:40px;">Everything you need to know about delivery across Kenya, M-Pesa payments, and returns.</p>
+
+          <div style="display:flex; flex-direction:column; gap:24px;">
+            <div style="background:#FFF; border:1px solid var(--c-border); border-radius:var(--radius-md); padding:24px;">
+              <h3 style="font-family:var(--font-display); font-size:1.2rem; font-weight:700; margin-bottom:8px;">How does M-Pesa STK Push payment work?</h3>
+              <p style="font-size:0.9rem; color:var(--c-text-muted); line-height:1.6;">
+                During checkout, enter your Safaricom mobile phone number. When you tap "Confirm & Pay", our automated payment gateway sends a secure prompt directly to your phone. Enter your private M-Pesa PIN on your phone screen, and the transaction is instantly acknowledged.
+              </p>
+            </div>
+
+            <div style="background:#FFF; border:1px solid var(--c-border); border-radius:var(--radius-md); padding:24px;">
+              <h3 style="font-family:var(--font-display); font-size:1.2rem; font-weight:700; margin-bottom:8px;">What are your Nairobi delivery times?</h3>
+              <p style="font-size:0.9rem; color:var(--c-text-muted); line-height:1.6;">
+                Orders placed before 2:00 PM EAT within Nairobi (Westlands, Kilimani, Karen, CBD, Lavington, Upperhill) are delivered same-day. Nationwide parcels to Mombasa, Kisumu, Nakuru, and Eldoret arrive within 24 to 48 hours via Fargo Courier or G4S.
+              </p>
+            </div>
+
+            <div style="background:#FFF; border:1px solid var(--c-border); border-radius:var(--radius-md); padding:24px;">
+              <h3 style="font-family:var(--font-display); font-size:1.2rem; font-weight:700; margin-bottom:8px;">What is your size return and exchange policy?</h3>
+              <p style="font-size:0.9rem; color:var(--c-text-muted); line-height:1.6;">
+                We offer a 14-day exchange guarantee. If an item does not fit as desired, contact our concierge team. We will dispatch the replacement size and arrange pickup of the original unworn garment.
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. CLIENT-SIDE ROUTER ENGINE
+    // -------------------------------------------------------------------------
+    function handleRoute() {
+      const hash = window.location.hash || "#/";
+      const [path, queryString] = hash.replace("#", "").split("?");
+      const params = new URLSearchParams(queryString || "");
+      const appRoot = document.getElementById("app-root");
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // Update Nav active classes
+      document.querySelectorAll(".nav-link").forEach(link => {
+        const linkRoute = link.getAttribute("data-route");
+        if (linkRoute === path || (linkRoute !== "/" && path.startsWith(linkRoute))) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
+        }
+      });
+
+      // Kill previous ScrollTriggers if any to avoid animation leaks
+      if (window.ScrollTrigger) {
+        ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      }
+
+      // Router Switch
+      if (path === "/" || path === "") {
+        appRoot.innerHTML = renderHomeView();
+        initHomeAnimations();
+        initFlashCountdown();
+      } else if (path === "/shop") {
+        const cat = params.get("category");
+        const aud = params.get("audience");
+        appRoot.innerHTML = renderShopView(cat, aud);
+        initCatalogueAnimations();
+      } else if (path === "/men") {
+        appRoot.innerHTML = renderShopView(null, "Men");
+        initCatalogueAnimations();
+      } else if (path === "/women") {
+        appRoot.innerHTML = renderShopView(null, "Women");
+        initCatalogueAnimations();
+      } else if (path === "/kids") {
+        appRoot.innerHTML = renderShopView(null, "Kids");
+        initCatalogueAnimations();
+      } else if (path === "/shoes") {
+        appRoot.innerHTML = renderShopView("Shoes", null);
+        initCatalogueAnimations();
+      } else if (path === "/brands") {
+        appRoot.innerHTML = renderBrandsView();
+      } else if (path.startsWith("/brand/")) {
+        const brandId = path.split("/")[2];
+        const brand = BRAND_RECORDS.find(b => b.id === brandId);
+        appRoot.innerHTML = renderShopView(null, null);
+      } else if (path.startsWith("/product/")) {
+        const prodId = path.split("/")[2];
+        appRoot.innerHTML = renderPdpView(prodId);
+      } else if (path === "/checkout") {
+        appRoot.innerHTML = renderCheckoutView();
+      } else if (path === "/order-confirmation") {
+        const orderId = params.get("id");
+        appRoot.innerHTML = renderOrderSuccessView(orderId);
+      } else if (path === "/account") {
+        appRoot.innerHTML = renderAccountView();
+      } else if (path === "/customer-service" || path === "/about") {
+        appRoot.innerHTML = renderCustomerServiceView();
+      } else if (path === "/cart") {
+        appRoot.innerHTML = renderCheckoutView();
+      } else {
+        appRoot.innerHTML = renderHomeView();
+      }
+
+      // Re-initialize Lucide Icons
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      // Sync Wishlist active visual hearts
+      updateWishlistVisuals();
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. GSAP & SCROLLTRIGGER ANIMATIONS
+    // -------------------------------------------------------------------------
+    function initHomeAnimations() {
+      // Check reduced motion
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced || !window.gsap) return;
+
+      try {
+        // Hero entrance animation
+        gsap.from(".hero-year", { opacity: 0, y: -20, duration: 0.8, ease: "power2.out" });
+        gsap.from(".hero-title", { opacity: 0, y: 30, duration: 1, delay: 0.2, ease: "power3.out" });
+        gsap.from(".hero-tagline", { opacity: 0, y: 20, duration: 0.8, delay: 0.4, ease: "power2.out" });
+        gsap.from(".btn-yellow", { opacity: 0, scale: 0.9, duration: 0.6, delay: 0.6, ease: "back.out(1.5)" });
+        gsap.from(".hero-image-wrapper", { opacity: 0, scale: 0.85, duration: 1.2, delay: 0.3, ease: "power2.out" });
+        gsap.from(".hero-price-tag", { opacity: 0, scale: 0.5, duration: 0.8, delay: 0.7, ease: "back.out(1.7)" });
+
+        // ScrollTrigger staggered reveals for products & cards
+        if (window.ScrollTrigger) {
+          gsap.from(".collection-tile", {
+            scrollTrigger: {
+              trigger: ".new-collection-section",
+              start: "top 80%"
+            },
+            opacity: 0,
+            y: 40,
+            stagger: 0.2,
+            duration: 0.8,
+            ease: "power2.out"
+          });
+
+          gsap.from(".product-card", {
+            scrollTrigger: {
+              trigger: ".best-sellers-section",
+              start: "top 80%"
+            },
+            opacity: 0,
+            y: 35,
+            stagger: 0.12,
+            duration: 0.7,
+            ease: "power2.out"
+          });
+
+          gsap.from(".flash-sale-wrapper", {
+            scrollTrigger: {
+              trigger: ".flash-sale-section",
+              start: "top 80%"
+            },
+            opacity: 0,
+            scale: 0.96,
+            duration: 0.9,
+            ease: "power2.out"
+          });
+
+          gsap.from(".news-card", {
+            scrollTrigger: {
+              trigger: ".news-section",
+              start: "top 80%"
+            },
+            opacity: 0,
+            y: 30,
+            stagger: 0.15,
+            duration: 0.8,
+            ease: "power2.out"
+          });
+        }
+      } catch (err) {
+        console.warn("GSAP animation init error:", err);
+      }
+    }
+
+    function initCatalogueAnimations() {
+      if (!window.gsap) return;
+      gsap.from(".product-card", {
+        opacity: 0,
+        y: 25,
+        stagger: 0.08,
+        duration: 0.5,
+        ease: "power2.out"
+      });
+    }
+
+    // Flash sale countdown timer (ticking)
+    function initFlashCountdown() {
+      let totalSeconds = (3 * 86400) + (23 * 3600) + (15 * 60) + 33;
+      const interval = setInterval(() => {
+        totalSeconds--;
+        if (totalSeconds <= 0) {
+          clearInterval(interval);
+          return;
+        }
+        const d = Math.floor(totalSeconds / 86400);
+        const h = Math.floor((totalSeconds % 86400) / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+
+        const dEl = document.getElementById("cd-days");
+        const hEl = document.getElementById("cd-hours");
+        const mEl = document.getElementById("cd-mins");
+        const sEl = document.getElementById("cd-secs");
+
+        if (dEl) dEl.textContent = String(d).padStart(2, '0');
+        if (hEl) hEl.textContent = String(h).padStart(2, '0');
+        if (mEl) mEl.textContent = String(m).padStart(2, '0');
+        if (sEl) sEl.textContent = String(s).padStart(2, '0');
+      }, 1000);
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. INTERACTION HANDLERS & KENYA PAYMENT INTEGRATIONS
+    // -------------------------------------------------------------------------
+    let selectedPayment = "mpesa";
+
+    function selectPaymentMethod(method, element) {
+      selectedPayment = method;
+      document.querySelectorAll(".payment-method-card").forEach(el => el.classList.remove("selected"));
+      element.classList.add("selected");
+
+      const btnText = document.getElementById("checkout-submit-btn-text");
+      if (btnText) {
+        if (method === "mpesa") btnText.textContent = "Confirm & Pay via M-Pesa";
+        else if (method === "paystack") btnText.textContent = "Pay via Paystack Card";
+        else btnText.textContent = "Place Order (Pay on Delivery)";
+      }
+    }
+
+    function handleCheckoutSubmit() {
+      const name = document.getElementById("chk-name")?.value || "Valued Client";
+      const phone = document.getElementById("chk-phone")?.value || "+254 712 345 678";
+      const county = document.getElementById("chk-county")?.value || "Nairobi";
+      const total = AppState.getCartSubtotal() + (AppState.getCartSubtotal() >= 10000 ? 0 : 350);
+
+      const newOrderId = "ETL-" + Math.floor(10000 + Math.random() * 90000);
+
+      if (selectedPayment === "mpesa") {
+        // Open simulated M-Pesa STK Push Prompt
+        const modal = document.getElementById("mpesa-modal-overlay");
+        const phoneDisplay = document.getElementById("mpesa-phone-display");
+        const amountDisplay = document.getElementById("mpesa-amount-display");
+
+        if (phoneDisplay) phoneDisplay.textContent = phone;
+        if (amountDisplay) amountDisplay.textContent = formatKES(total);
+        if (modal) modal.classList.add("open");
+
+        // Start countdown timer for STK confirmation
+        let sec = 30;
+        const timerEl = document.getElementById("mpesa-timer-seconds");
+        const timerInterval = setInterval(() => {
+          sec--;
+          if (timerEl) timerEl.textContent = sec;
+          if (sec <= 0) {
+            clearInterval(timerInterval);
+          }
+        }, 1000);
+
+        // Store pending order details
+        window.pendingOrder = {
+          id: newOrderId,
+          customerName: name,
+          phone: phone,
+          county: county,
+          total: total,
+          paymentMethod: "M-Pesa STK Push",
+          mpesaRef: "TK" + Math.random().toString(36).substring(2, 8).toUpperCase(),
+          date: new Date().toLocaleDateString('en-GB')
+        };
+
+      } else if (selectedPayment === "paystack") {
+        showToast("Connecting to Paystack Secure Gateway...", "normal");
+        setTimeout(() => {
+          AppState.orders.unshift({
+            id: newOrderId,
+            customerName: name,
+            phone: phone,
+            county: county,
+            total: total,
+            paymentMethod: "Paystack Card Gateway",
+            mpesaRef: "PSTK_" + Math.random().toString(36).substring(2, 10).toUpperCase(),
+            date: new Date().toLocaleDateString('en-GB')
+          });
+          AppState.saveOrders();
+          AppState.cart = [];
+          AppState.saveCart();
+          window.location.hash = `#/order-confirmation?id=${newOrderId}`;
+        }, 1200);
+
+      } else {
+        // COD
+        AppState.orders.unshift({
+          id: newOrderId,
+          customerName: name,
+          phone: phone,
+          county: county,
+          total: total,
+          paymentMethod: "Cash on Delivery",
+          mpesaRef: "COD-NAIROBI",
+          date: new Date().toLocaleDateString('en-GB')
+        });
+        AppState.saveOrders();
+        AppState.cart = [];
+        AppState.saveCart();
+        window.location.hash = `#/order-confirmation?id=${newOrderId}`;
+      }
+    }
+
+    // STK Push Simulation Confirm Click
+    document.getElementById("simulate-mpesa-confirm-btn")?.addEventListener("click", () => {
+      const modal = document.getElementById("mpesa-modal-overlay");
+      if (modal) modal.classList.remove("open");
+
+      if (window.pendingOrder) {
+        AppState.orders.unshift(window.pendingOrder);
+        AppState.saveOrders();
+        AppState.cart = [];
+        AppState.saveCart();
+        showToast("M-Pesa Payment Received & Verified!", "success");
+        window.location.hash = `#/order-confirmation?id=${window.pendingOrder.id}`;
+      }
+    });
+
+    document.getElementById("cancel-mpesa-btn")?.addEventListener("click", () => {
+      const modal = document.getElementById("mpesa-modal-overlay");
+      if (modal) modal.classList.remove("open");
+      showToast("M-Pesa prompt cancelled.");
+    });
+
+    // PDP Helpers
+    function switchPdpImage(src, btn) {
+      const mainImg = document.getElementById("pdp-active-img");
+      if (mainImg) mainImg.src = src;
+      document.querySelectorAll(".pdp-thumb-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    function selectPdpColor(name, btn) {
+      document.querySelectorAll(".swatch-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const nameEl = document.getElementById("pdp-selected-color-name");
+      if (nameEl) nameEl.textContent = name;
+    }
+
+    function selectPdpSize(val, btn) {
+      document.querySelectorAll(".pdp-size-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const sizeEl = document.getElementById("pdp-selected-size-val");
+      if (sizeEl) sizeEl.textContent = val;
+    }
+
+    function handlePdpAddToCart(productId) {
+      const size = document.getElementById("pdp-selected-size-val")?.textContent || "M";
+      const color = document.getElementById("pdp-selected-color-name")?.textContent || "Default";
+      AppState.addToCart(productId, size, color, 1);
+    }
+
+    function toggleAccordion(trigger) {
+      const content = trigger.nextElementSibling;
+      if (content) {
+        content.classList.toggle("open");
+      }
+    }
+
+    // Size Guide modal
+    function openSizeGuideModal() {
+      const modal = document.getElementById("size-guide-modal-overlay");
+      if (modal) modal.classList.add("open");
+    }
+    document.getElementById("close-size-guide-btn")?.addEventListener("click", () => {
+      document.getElementById("size-guide-modal-overlay")?.classList.remove("open");
+    });
+    document.getElementById("footer-size-guide-trigger")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      openSizeGuideModal();
+    });
+
+    // Catalogue Filter & Sort Handlers
+    let currentFilteredProducts = [...CATALOGUE_PRODUCTS];
+
+    function filterProducts() {
+      const audienceChecked = Array.from(document.querySelectorAll('.filter-group:nth-child(2) input[type="checkbox"]:checked')).map(cb => cb.value);
+      const categoryChecked = Array.from(document.querySelectorAll('.filter-group:nth-child(3) input[type="checkbox"]:checked')).map(cb => cb.value);
+      const brandChecked = Array.from(document.querySelectorAll('.filter-group:nth-child(4) input[type="checkbox"]:checked')).map(cb => cb.value);
+
+      currentFilteredProducts = CATALOGUE_PRODUCTS.filter(product => {
+        const matchesAudience = audienceChecked.length === 0 || audienceChecked.includes(product.audience) || (audienceChecked.includes("Unisex") && product.audience === "Unisex");
+        const matchesCategory = categoryChecked.length === 0 || categoryChecked.includes(product.category);
+        const matchesBrand = brandChecked.length === 0 || brandChecked.includes(product.brand);
+        return matchesAudience && matchesCategory && matchesBrand;
+      });
+
+      const sortVal = document.getElementById("catalogue-sort")?.value || "featured";
+      sortProducts(sortVal, false);
+    }
+
+    function sortProducts(sortVal, updateArray = true) {
+      if (sortVal === "price-asc") {
+        currentFilteredProducts.sort((a, b) => a.priceKES - b.priceKES);
+      } else if (sortVal === "price-desc") {
+        currentFilteredProducts.sort((a, b) => b.priceKES - a.priceKES);
+      } else if (sortVal === "rating") {
+        currentFilteredProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      } else {
+        // featured - keep natural catalogue order
+        currentFilteredProducts.sort((a, b) => CATALOGUE_PRODUCTS.indexOf(a) - CATALOGUE_PRODUCTS.indexOf(b));
+      }
+
+      const grid = document.getElementById("catalogue-products-grid");
+      const countDisplay = document.getElementById("product-count-display");
+
+      if (countDisplay) {
+        countDisplay.textContent = currentFilteredProducts.length;
+      }
+
+      if (grid) {
+        if (currentFilteredProducts.length === 0) {
+          grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 16px; color: var(--c-text-muted);">
+              <i data-lucide="filter-x" style="width: 48px; height: 48px; margin: 0 auto 12px; color: var(--c-text-light);"></i>
+              <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--c-text-main); margin-bottom: 6px;">No products match your active filters</h4>
+              <p style="font-size: 0.9rem; margin-bottom: 20px;">Try clearing one or more checkboxes to view more items.</p>
+              <button onclick="window.location.hash='#/shop'" class="btn-dark" style="font-size: 0.85rem;">Clear All Filters</button>
+            </div>
+          `;
+        } else {
+          grid.innerHTML = currentFilteredProducts.map(renderProductCard).join('');
+        }
+        if (window.lucide) lucide.createIcons();
+        updateWishlistVisuals();
+      }
+    }
+
+    // Promo code application
+    function applyPromoCode() {
+      const input = document.getElementById("chk-promo-input");
+      const code = input?.value.trim().toUpperCase();
+      if (code === "AUTUMN20") {
+        showToast("Promo Code AUTUMN20 applied! 20% discount granted.", "success");
+      } else if (code === "ETALON10") {
+        showToast("Promo Code ETALON10 applied! 10% discount granted.", "success");
+      } else {
+        showToast("Invalid or expired promo code.", "normal");
+      }
+    }
+
+    function handleNewsletterSubmit(form) {
+      form.reset();
+      showToast("Thank you for subscribing! Your 20% discount code is: AUTUMN20", "success");
+    }
+
+    // Live search modal
+    const searchModal = document.getElementById("search-modal-overlay");
+    const searchInput = document.getElementById("live-search-input");
+    const searchResults = document.getElementById("live-search-results");
+
+    document.getElementById("search-trigger-btn")?.addEventListener("click", () => {
+      if (searchModal) searchModal.classList.add("open");
+      setTimeout(() => searchInput?.focus(), 100);
+    });
+    document.getElementById("close-search-modal-btn")?.addEventListener("click", () => {
+      if (searchModal) searchModal.classList.remove("open");
+    });
+
+    searchInput?.addEventListener("input", (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      if (!searchResults) return;
+
+      if (!query) {
+        searchResults.innerHTML = "";
+        return;
+      }
+
+      const matches = CATALOGUE_PRODUCTS.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.brand.toLowerCase().includes(query) || 
+        p.category.toLowerCase().includes(query)
+      );
+
+      if (matches.length === 0) {
+        searchResults.innerHTML = `<div style="padding:16px; color:var(--c-text-muted); text-align:center;">No matching clothing items found for "${query}".</div>`;
+      } else {
+        searchResults.innerHTML = matches.map(p => `
+          <a href="#/product/${p.id}" onclick="searchModal.classList.remove('open')" style="display:flex; align-items:center; gap:14px; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--c-border-subtle); transition:background 0.2s;">
+            <img src="${p.image}" alt="${p.name}" style="width:50px; height:60px; object-fit:cover; border-radius:var(--radius-sm);">
+            <div>
+              <div style="font-size:0.75rem; color:var(--c-forest); font-weight:700;">${p.brand}</div>
+              <div style="font-weight:600; font-size:0.92rem; color:var(--c-text-main);">${p.name}</div>
+              <div style="font-weight:700; font-size:0.85rem; color:var(--c-forest);">${formatKES(p.priceKES)}</div>
+            </div>
+          </a>
+        `).join('');
+      }
+    });
+
+    // Hotkey: Ctrl+K / Cmd+K opens search
+    window.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        if (searchModal) searchModal.classList.toggle("open");
+        if (searchModal.classList.contains("open")) {
+          setTimeout(() => searchInput?.focus(), 100);
+        }
+      }
+      if (e.key === "Escape") {
+        searchModal?.classList.remove("open");
+        document.getElementById("size-guide-modal-overlay")?.classList.remove("open");
+        document.getElementById("mpesa-modal-overlay")?.classList.remove("open");
+        closeCartDrawer();
+      }
+    });
+
+    // Mobile Navigation Drawer
+    const mobileToggleBtn = document.getElementById("mobile-menu-toggle-btn");
+    const mobileBackdrop = document.getElementById("mobile-nav-backdrop");
+    const closeMobileBtn = document.getElementById("close-mobile-nav-btn");
+
+    mobileToggleBtn?.addEventListener("click", () => {
+      mobileBackdrop?.classList.add("open");
+      const drawer = document.getElementById("mobile-nav-drawer");
+      if (drawer) drawer.style.transform = "translateX(0)";
+    });
+
+    closeMobileBtn?.addEventListener("click", () => {
+      mobileBackdrop?.classList.remove("open");
+      const drawer = document.getElementById("mobile-nav-drawer");
+      if (drawer) drawer.style.transform = "translateX(-100%)";
+    });
+
+    document.querySelectorAll(".mobile-nav-link").forEach(link => {
+      link.addEventListener("click", () => {
+        mobileBackdrop?.classList.remove("open");
+        const drawer = document.getElementById("mobile-nav-drawer");
+        if (drawer) drawer.style.transform = "translateX(-100%)";
+      });
+    });
+
+    // Cart Drawer Trigger
+    document.getElementById("cart-drawer-trigger")?.addEventListener("click", () => {
+      renderCartDrawer();
+      openCartDrawer();
+    });
+    document.getElementById("close-cart-drawer-btn")?.addEventListener("click", closeCartDrawer);
+    document.getElementById("cart-drawer-backdrop")?.addEventListener("click", (e) => {
+      if (e.target.id === "cart-drawer-backdrop") closeCartDrawer();
+    });
+
+    // Header scroll background reaction
+    window.addEventListener("scroll", () => {
+      const header = document.getElementById("site-header");
+      if (header) {
+        if (window.scrollY > 40) {
+          header.classList.add("scrolled");
+        } else {
+          header.classList.remove("scrolled");
+        }
+      }
+    });
+
+    // Hash Route Listeners
+    window.addEventListener("hashchange", handleRoute);
+
+    // Initial App Boot
+    window.addEventListener("DOMContentLoaded", () => {
+      AppState.updateHeaderBadges();
+      handleRoute();
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

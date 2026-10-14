@@ -1,0 +1,3089 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AURA LUXE — Fine Botanical Cosmetics & Luxury Beauty</title>
+    <meta name="description" content="Discover high-performance botanical cosmetics, skincare, haircare, and fine fragrances crafted to unlock your captivating radiance. Nationwide delivery across Kenya." />
+    <meta property="og:title" content="AURA LUXE — Fine Botanical Cosmetics & Luxury Beauty" />
+    <meta property="og:description" content="Discover high-performance botanical cosmetics, skincare, haircare, and fine fragrances." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Playfair Display (Serif) & Plus Jakarta Sans (Interface Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS Play CDN & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              sand: {
+                50: '#FAF8F5',
+                100: '#F5EFEB',
+                200: '#EFE7DE',
+                300: '#E2D8CC',
+                400: '#C8BCAC',
+                500: '#A89B89',
+                800: '#4A4237',
+                900: '#231E18',
+              },
+              onyx: {
+                800: '#26221E',
+                900: '#141210',
+                950: '#0C0A09',
+              },
+              highlight: {
+                DEFAULT: '#D8EB58',
+                hover: '#CEE34B',
+                dark: '#9CB024',
+              },
+              terracotta: {
+                DEFAULT: '#D96843',
+                dark: '#BF522F',
+                light: '#F8E9E3',
+              }
+            },
+            fontFamily: {
+              serif: ['"Playfair Display"', 'Georgia', 'serif'],
+              sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            },
+            borderRadius: {
+              '4xl': '2rem',
+              '5xl': '2.5rem',
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <style>
+      /* Base Typography & Luxury Design Tokens */
+      :root {
+        --bg-ivory: #FAF8F5;
+        --surface-cream: #F5EFEB;
+        --border-soft: #EAE3D6;
+        --accent-lime: #D8EB58;
+        --text-onyx: #141210;
+        --text-muted: #6B6358;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        background-color: var(--bg-ivory);
+        color: var(--text-onyx);
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      h1, h2, h3, .font-editorial {
+        font-family: 'Playfair Display', Georgia, serif;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #FAF8F5;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #D5CBBF;
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #B3A595;
+      }
+
+      /* Hide horizontal scroll indicators where appropriate */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Swatch and Active Indicators */
+      .swatch-ring {
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .swatch-ring.active {
+        box-shadow: 0 0 0 2px #FAF8F5, 0 0 0 4px #141210;
+      }
+
+      /* Image fallback styling */
+      .img-fallback {
+        background: linear-gradient(135deg, #F5EFEB 0%, #EFE7DE 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Highlight pill token */
+      .pill-highlight {
+        background-color: var(--accent-lime);
+        color: #141210;
+        padding: 0.12em 0.55em;
+        border-radius: 9999px;
+        display: inline-block;
+        font-style: italic;
+        font-weight: 500;
+        line-height: 1.1;
+      }
+
+      /* Glass blur surfaces */
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .glass-dark {
+        background: rgba(20, 18, 16, 0.78);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      /* Subtle image zoom on card hover */
+      .card-zoom:hover .card-img {
+        transform: scale(1.04);
+      }
+      .card-img {
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* Smooth route animation container */
+      #view-container {
+        min-height: 70vh;
+      }
+
+      /* Tabular figures for pricing alignment */
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+  <link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+  <body class="bg-[#FAF8F5] text-[#141210] antialiased flex flex-col min-h-screen">
+
+    <!-- Top Announcement Bar -->
+    <aside aria-label="Announcement" class="bg-[#141210] text-[#FAF8F5] text-xs font-medium py-2 px-4 text-center tracking-wide flex items-center justify-center gap-3">
+      <span>Free delivery across Nairobi for orders over KSh 3,500</span>
+      <span class="opacity-40">·</span>
+      <span class="hidden sm:inline">Use code <strong class="text-[#D8EB58] font-bold">GLOW10</strong> for 10% off your first ritual</span>
+      <span class="opacity-40 hidden sm:inline">·</span>
+      <a href="#guides" class="underline underline-offset-2 hover:text-[#D8EB58] transition-colors">Beauty Guides</a>
+    </aside>
+
+    <!-- Top Bar Navigation (Single Row, 3 Zones) -->
+    <header class="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#EAE3D6] transition-all duration-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-8">
+        
+        <!-- Zone 1: Brand Wordmark -->
+        <div class="flex items-center gap-4 shrink-0">
+          <a href="#home" class="flex items-center gap-2 group">
+            <span class="font-editorial text-2xl sm:text-3xl font-semibold tracking-tight text-[#141210] group-hover:text-black transition-colors">
+              AURA <span class="italic font-normal">Luxe</span>
+            </span>
+          </a>
+        </div>
+
+        <!-- Zone 2: Navigation Links -->
+        <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-[#5E574E]" aria-label="Main Navigation">
+          <a href="#home" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap">Home</a>
+          <a href="#shop" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap">All Products</a>
+          <a href="#category/makeup" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap">Makeup</a>
+          <a href="#category/skincare" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap">Skincare</a>
+          <a href="#category/haircare" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap">Haircare</a>
+          <a href="#category/fragrance" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap">Fragrance</a>
+          <a href="#brands" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap">Brands</a>
+          <a href="#guides" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap">Rituals</a>
+        </nav>
+
+        <!-- Zone 3: Actions (Search, Wishlist, Account, Cart) -->
+        <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+          <!-- Currency Toggle -->
+          <button id="currency-toggle-btn" onclick="toggleCurrency()" title="Toggle Currency (KES / USD)" class="hidden lg:flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border border-[#EAE3D6] text-[#5E574E] hover:text-[#141210] hover:border-[#141210] transition-colors">
+            <span id="currency-label">KES (KSh)</span>
+          </button>
+
+          <!-- Search Trigger -->
+          <button onclick="openSearchModal()" aria-label="Open Search" class="p-2.5 text-[#141210] hover:bg-[#F5EFEB] rounded-full transition-colors">
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </button>
+
+          <!-- Wishlist Trigger -->
+          <a href="#wishlist" aria-label="View Wishlist" class="relative p-2.5 text-[#141210] hover:bg-[#F5EFEB] rounded-full transition-colors">
+            <i data-lucide="heart" class="w-5 h-5"></i>
+            <span id="wishlist-badge" class="hidden absolute top-1 right-1 w-4 h-4 bg-[#D96843] text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+          </a>
+
+          <!-- Account Trigger -->
+          <a href="#account" aria-label="Account" class="p-2.5 text-[#141210] hover:bg-[#F5EFEB] rounded-full transition-colors">
+            <i data-lucide="user" class="w-5 h-5"></i>
+          </a>
+
+          <!-- Cart Trigger Button -->
+          <button onclick="openCartDrawer()" aria-label="Open Shopping Bag" class="flex items-center gap-2 bg-[#141210] text-[#FAF8F5] hover:bg-black px-4 py-2.5 rounded-full text-xs font-medium tracking-wide transition-all shadow-sm">
+            <i data-lucide="shopping-bag" class="w-4 h-4 text-[#D8EB58]"></i>
+            <span class="hidden sm:inline">Bag</span>
+            <span id="header-cart-count" class="bg-[#D8EB58] text-[#141210] font-bold px-1.5 py-0.5 rounded-full text-[11px] tabular-nums">0</span>
+          </button>
+
+          <!-- Mobile Hamburger -->
+          <button onclick="toggleMobileMenu()" aria-label="Toggle Navigation Menu" class="md:hidden p-2 text-[#141210] hover:bg-[#F5EFEB] rounded-lg">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Drawer -->
+      <div id="mobile-menu" class="hidden md:hidden border-t border-[#EAE3D6] bg-[#FAF8F5] px-6 py-5 space-y-3">
+        <a href="#home" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5">Home</a>
+        <a href="#shop" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5">All Products</a>
+        <div class="grid grid-cols-2 gap-2 pt-1 pb-2">
+          <a href="#category/makeup" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1">· Makeup</a>
+          <a href="#category/skincare" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1">· Skincare</a>
+          <a href="#category/haircare" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1">· Haircare</a>
+          <a href="#category/fragrance" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1">· Fragrance</a>
+          <a href="#category/bath-body" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1">· Bath & Body</a>
+          <a href="#category/tools" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1">· Beauty Tools</a>
+          <a href="#category/bundles" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1">· Gift Sets</a>
+        </div>
+        <a href="#brands" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5">Brand Directory</a>
+        <a href="#guides" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5">Beauty Guides & Rituals</a>
+        <a href="#account" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5">My Account & Orders</a>
+        <a href="#contact" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5">Customer Concierge</a>
+      </div>
+    </header>
+
+    <!-- Main Dynamic View Container (Filled by Router) -->
+    <main id="view-container" class="flex-1 w-full" role="main">
+      <!-- Dynamic route view gets rendered here -->
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="bg-[#1F1C19] text-[#FAF8F5] pt-16 pb-24 sm:pb-16 border-t border-[#332E29]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Marquee / Big Callout inspired by screenshot -->
+        <div class="border-b border-[#38332D] pb-12 mb-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div>
+            <span class="text-[#D8EB58] text-xs font-semibold tracking-widest uppercase">The Botanical Standard</span>
+            <h2 class="font-editorial text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight mt-2 text-[#FAF8F5]">
+              Transform Your Routine, <br class="hidden sm:inline" /><span class="italic font-normal">Elevate Your Beauty</span>
+            </h2>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[#D8EB58] text-2xl">✦</span>
+            <a href="#shop" class="bg-[#D8EB58] text-[#141210] hover:bg-[#CEE34B] px-8 py-3.5 rounded-full font-medium text-sm transition-all shadow-md">
+              Shop Catalogue
+            </a>
+            <span class="text-[#D8EB58] text-2xl">✦</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12 mb-12 text-sm">
+          
+          <!-- Col 1: Brand Info -->
+          <div class="col-span-2 space-y-4">
+            <div class="font-editorial text-2xl font-bold tracking-tight">
+              AURA <span class="italic font-normal">Luxe</span>
+            </div>
+            <p class="text-[#999084] text-xs leading-relaxed max-w-sm">
+              Consciously formulated luxury cosmetics and skincare powered by clean East African botanicals, bio-active peptides, and restorative plant oils.
+            </p>
+            <div class="pt-2 text-xs text-[#999084] space-y-1">
+              <p>📍 Nairobi Flagship Studio: 14 Riverside Drive, Nairobi</p>
+              <p>📞 Concierge: +254 700 892 000</p>
+              <p>✉️ concierge@auraluxe.co.ke</p>
+            </div>
+          </div>
+
+          <!-- Col 2: Categories -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[#D8EB58]">Collections</h3>
+            <ul class="space-y-2 text-xs text-[#999084]">
+              <li><a href="#category/makeup" class="hover:text-white transition-colors">Complexion & Makeup</a></li>
+              <li><a href="#category/skincare" class="hover:text-white transition-colors">Botanical Skincare</a></li>
+              <li><a href="#category/haircare" class="hover:text-white transition-colors">Nourishing Haircare</a></li>
+              <li><a href="#category/fragrance" class="hover:text-white transition-colors">Haute Fragrance</a></li>
+              <li><a href="#category/bath-body" class="hover:text-white transition-colors">Bath & Body Rituals</a></li>
+              <li><a href="#category/tools" class="hover:text-white transition-colors">Artisan Brushes & Tools</a></li>
+              <li><a href="#category/bundles" class="hover:text-white transition-colors">Gift Sets & Bundles</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Discovery & Brands -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[#D8EB58]">Discovery</h3>
+            <ul class="space-y-2 text-xs text-[#999084]">
+              <li><a href="#brands" class="hover:text-white transition-colors">Brand Directory</a></li>
+              <li><a href="#guides" class="hover:text-white transition-colors">Morning Glow Routine</a></li>
+              <li><a href="#guides" class="hover:text-white transition-colors">Shade Matching Masterclass</a></li>
+              <li><a href="#guides" class="hover:text-white transition-colors">Clean Ingredient Glossary</a></li>
+              <li><a href="#shop?sort=bestsellers" class="hover:text-white transition-colors">Bestsellers Rail</a></li>
+              <li><a href="#shop?badge=new" class="hover:text-white transition-colors">New Formulations</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 4: Client Services -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[#D8EB58]">Client Care</h3>
+            <ul class="space-y-2 text-xs text-[#999084]">
+              <li><a href="#account" class="hover:text-white transition-colors">My Account & Orders</a></li>
+              <li><a href="#policies" class="hover:text-white transition-colors">Delivery & M-Pesa Info</a></li>
+              <li><a href="#policies" class="hover:text-white transition-colors">14-Day Returns Policy</a></li>
+              <li><a href="#about" class="hover:text-white transition-colors">About AURA Luxe</a></li>
+              <li><a href="#contact" class="hover:text-white transition-colors">Contact & WhatsApp</a></li>
+              <li><a href="#policies" class="hover:text-white transition-colors">Privacy & Security</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Payment methods trust bar -->
+        <div class="border-t border-[#332E29] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#999084]">
+          <div class="flex items-center gap-3">
+            <span class="font-medium text-white">Accepted Payments:</span>
+            <span class="px-2 py-0.5 rounded bg-[#2A2621] text-[#D8EB58] font-bold border border-[#403B33]">M-PESA Express</span>
+            <span class="px-2 py-0.5 rounded bg-[#2A2621] text-white border border-[#403B33]">Paystack</span>
+            <span class="px-2 py-0.5 rounded bg-[#2A2621] text-white border border-[#403B33]">Visa / Mastercard</span>
+            <span class="px-2 py-0.5 rounded bg-[#2A2621] text-white border border-[#403B33]">Cash on Delivery</span>
+          </div>
+          <p>© 2026 AURA LUXE Botanica Ltd. All rights reserved. Registered in Kenya.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Mobile Sticky Navigation Bar (Cap under 15% viewport) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-[#EAE3D6] px-4 py-2 flex items-center justify-around text-xs font-medium text-[#5E574E]">
+      <a href="#home" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210]">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Home</span>
+      </a>
+      <a href="#shop" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210]">
+        <i data-lucide="grid" class="w-5 h-5"></i>
+        <span>Shop</span>
+      </a>
+      <button onclick="openSearchModal()" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210]">
+        <i data-lucide="search" class="w-5 h-5"></i>
+        <span>Search</span>
+      </button>
+      <a href="#wishlist" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210] relative">
+        <i data-lucide="heart" class="w-5 h-5"></i>
+        <span>Wishlist</span>
+        <span id="mobile-wishlist-count" class="hidden absolute -top-1 right-2 w-3.5 h-3.5 bg-[#D96843] text-white text-[9px] font-bold rounded-full flex items-center justify-center">0</span>
+      </a>
+      <button onclick="openCartDrawer()" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210] relative">
+        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+        <span>Bag</span>
+        <span id="mobile-cart-count" class="absolute -top-1 right-1 w-4 h-4 bg-[#D8EB58] text-[#141210] text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
+      </button>
+    </nav>
+
+    <!-- ========================================================================= -->
+    <!-- SLIDE-OVER CART DRAWER & BACKDROP                                         -->
+    <!-- ========================================================================= -->
+    <div id="cart-drawer-backdrop" onclick="closeCartDrawer()" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity opacity-0"></div>
+    <div id="cart-drawer" class="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-[#FAF8F5] shadow-2xl transform translate-x-full transition-transform duration-300 ease-out flex flex-col">
+      <!-- Drawer Header -->
+      <div class="px-6 py-5 border-b border-[#EAE3D6] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shopping-bag" class="w-5 h-5 text-[#141210]"></i>
+          <h2 class="font-editorial text-xl font-bold">Your Beauty Bag</h2>
+          <span id="drawer-items-count" class="text-xs bg-[#EFE7DE] px-2 py-0.5 rounded-full font-semibold">0 items</span>
+        </div>
+        <button onclick="closeCartDrawer()" aria-label="Close Shopping Bag" class="p-2 text-[#5E574E] hover:text-[#141210] hover:bg-[#F5EFEB] rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Free Shipping Meter -->
+      <div class="px-6 py-3 bg-[#F5EFEB] border-b border-[#EAE3D6]">
+        <div class="flex items-center justify-between text-xs mb-1.5 font-medium">
+          <span id="shipping-progress-text">Spend KSh 3,500 for Free Nairobi Delivery</span>
+          <span id="shipping-progress-percent" class="font-bold">0%</span>
+        </div>
+        <div class="w-full bg-[#E2D8CC] h-1.5 rounded-full overflow-hidden">
+          <div id="shipping-progress-bar" class="bg-[#141210] h-full transition-all duration-300 w-0"></div>
+        </div>
+      </div>
+
+      <!-- Cart Item List -->
+      <div id="cart-items-container" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Voucher Promo Code -->
+      <div class="px-6 py-3 border-t border-[#EAE3D6] bg-[#FAF8F5]">
+        <div class="flex gap-2">
+          <input type="text" id="cart-promo-input" placeholder="Promo code (e.g. GLOW10)" class="flex-1 text-xs px-3 py-2 rounded-lg border border-[#EAE3D6] bg-white focus:outline-none focus:border-[#141210] uppercase font-mono" />
+          <button onclick="applyPromoCode()" class="px-4 py-2 bg-[#F5EFEB] text-[#141210] hover:bg-[#EFE7DE] rounded-lg text-xs font-semibold">Apply</button>
+        </div>
+        <div id="promo-feedback" class="text-[11px] mt-1 font-medium hidden"></div>
+      </div>
+
+      <!-- Drawer Footer Totals & Checkout -->
+      <div class="p-6 border-t border-[#EAE3D6] bg-white space-y-3">
+        <div class="space-y-1.5 text-xs">
+          <div class="flex justify-between text-[#5E574E]">
+            <span>Subtotal</span>
+            <span id="cart-subtotal" class="font-semibold text-[#141210] tabular-nums">KSh 0</span>
+          </div>
+          <div id="cart-discount-row" class="hidden flex justify-between text-[#D96843]">
+            <span>Discount</span>
+            <span id="cart-discount" class="font-semibold tabular-nums">-KSh 0</span>
+          </div>
+          <div class="flex justify-between text-[#5E574E]">
+            <span>Estimated Shipping</span>
+            <span id="cart-shipping" class="font-semibold text-[#141210]">Calculated at checkout</span>
+          </div>
+          <div class="border-t border-[#EAE3D6] pt-2 flex justify-between text-base font-bold text-[#141210]">
+            <span>Total</span>
+            <span id="cart-total" class="tabular-nums">KSh 0</span>
+          </div>
+        </div>
+
+        <div class="pt-2 space-y-2">
+          <a href="#checkout" onclick="closeCartDrawer()" class="w-full bg-[#141210] hover:bg-black text-[#FAF8F5] py-3.5 rounded-full text-xs font-semibold tracking-wider uppercase text-center block transition-all shadow-md">
+            Proceed to Checkout
+          </a>
+          <a href="#cart" onclick="closeCartDrawer()" class="w-full bg-transparent text-[#5E574E] hover:text-[#141210] py-2 text-xs font-medium text-center block">
+            View Full Bag Page
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SEARCH MODAL & OVERLAY                                                    -->
+    <!-- ========================================================================= -->
+    <div id="search-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-16 px-4">
+      <div class="bg-[#FAF8F5] w-full max-w-2xl rounded-3xl shadow-2xl border border-[#EAE3D6] overflow-hidden">
+        <div class="p-5 border-b border-[#EAE3D6] flex items-center gap-3">
+          <i data-lucide="search" class="w-5 h-5 text-[#5E574E]"></i>
+          <input type="text" id="global-search-input" oninput="handleLiveSearch(this.value)" placeholder="Search serums, foundations, fragrances, bakuchiol..." class="flex-1 bg-transparent text-base text-[#141210] placeholder-[#999084] focus:outline-none" autofocus />
+          <button onclick="closeSearchModal()" class="p-1 text-[#5E574E] hover:text-[#141210] rounded-full">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Quick suggestion chips -->
+        <div class="px-5 py-3 bg-[#F5EFEB] border-b border-[#EAE3D6] flex items-center gap-2 overflow-x-auto text-xs text-[#5E574E]">
+          <span class="font-semibold text-[#141210] shrink-0">Popular:</span>
+          <button onclick="fillSearch('Bakuchiol')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0">Bakuchiol</button>
+          <button onclick="fillSearch('Foundation')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0">Serum Foundation</button>
+          <button onclick="fillSearch('Blush')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0">Cream Blush</button>
+          <button onclick="fillSearch('Luna')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0">Luna Perfume</button>
+          <button onclick="fillSearch('Baobab')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0">Baobab Hair Oil</button>
+        </div>
+
+        <!-- Live search results container -->
+        <div id="search-results-container" class="max-h-96 overflow-y-auto p-5 divide-y divide-[#EAE3D6]">
+          <p class="text-xs text-[#999084] text-center py-6">Type to search across our full beauty catalogue...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Toast Notification -->
+    <div id="toast-notification" class="fixed bottom-20 md:bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+      <div class="bg-[#141210] text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-medium border border-white/10">
+        <span id="toast-icon" class="text-[#D8EB58]">✦</span>
+        <span id="toast-message">Item added to your bag</span>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MASTER CATALOGUE DATA & COMPLETE JAVASCRIPT LOGIC                         -->
+    <!-- ========================================================================= -->
+    <script>
+      /* =========================================================================
+       * 1. CONFIGURATION & DESIGN TOKENS
+       * ========================================================================= */
+      const APP_CONFIG = {
+        BRAND_NAME: "AURA LUXE",
+        STORE_CURRENCY: "KES", // KES or USD
+        KES_TO_USD: 0.0077,    // Approximate exchange rate for toggle
+        FREE_SHIPPING_THRESHOLD_KES: 3500,
+        DEFAULT_SHIPPING_FEE_KES: 350,
+        SUPPORT_PHONE: "+254 700 892 000",
+        SUPPORT_EMAIL: "concierge@auraluxe.co.ke",
+        DEFAULT_TAX_RATE: 0.16 // 16% VAT Kenya
+      };
+
+      // State stores
+      let currentCurrency = localStorage.getItem('aura_currency') || 'KES';
+      let cart = JSON.parse(localStorage.getItem('aura_cart') || '[]');
+      let wishlist = JSON.parse(localStorage.getItem('aura_wishlist') || '[]');
+      let appliedDiscount = JSON.parse(localStorage.getItem('aura_discount') || 'null');
+      let customerOrders = JSON.parse(localStorage.getItem('aura_orders') || '[]');
+      let customerAccount = JSON.parse(localStorage.getItem('aura_account') || JSON.stringify({
+        isLoggedIn: false,
+        name: "Lilian Wangari",
+        email: "lilian.wangari@example.co.ke",
+        phone: "+254 712 345 678",
+        savedAddresses: [
+          { label: "Home", street: "Mimosa Court, Apt 4B", city: "Nairobi - Kilimani", notes: "Gate code 408" },
+          { label: "Office", street: "The Oval, 5th Floor", city: "Nairobi - Westlands", notes: "Leave at front reception" }
+        ]
+      }));
+
+      /* =========================================================================
+       * 2. COMPLETE COSMETICS CATALOGUE (Structured, Varied, Multi-Category)
+       * ========================================================================= */
+      const CATALOGUE = [
+        // --- MAKEUP CATEGORY ---
+        {
+          id: "aura-silk-foundation",
+          name: "Radiant Silk Serum Foundation SPF 25",
+          brand: "Aura Botanica",
+          category: "makeup",
+          subcategory: "foundation",
+          priceKES: 3850,
+          originalPriceKES: 4500,
+          rating: 4.9,
+          reviewsCount: 342,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Bestseller",
+          image: "./src/assets/images/hero_botanical_beauty_1791795227849.jpg",
+          volume: "30 ml / 1.0 fl oz",
+          finish: "Luminous Dewy",
+          coverage: "Medium Buildable",
+          skinType: "All Skin Types, especially Dry to Normal",
+          description: "A featherlight serum foundation infused with botanical squalane, hyaluronic acid, and SPF 25. Delivers weightless, second-skin radiance that lasts 16 hours without settling into fine lines.",
+          benefits: [
+            "Weightless skin-like luminosity",
+            "Broad-spectrum mineral SPF 25 protection",
+            "Enriched with Cold-Pressed Kenyan Squalane and Camellia Oil",
+            "Non-comedogenic & dermatologist tested"
+          ],
+          ingredients: "Aqua (Water), Squalane, Titanium Dioxide (Non-Nano), Camellia Oleifera Seed Oil, Sodium Hyaluronate, Niacinamide, Glycerin, Polyglyceryl-4 Isostearate, Tocopherol (Vitamin E).",
+          howToUse: "Shake well. Dispense 1-2 pumps onto the back of your hand. Blend gently using our Complexion Sponge or foundation brush starting from the center of the face outward.",
+          shades: [
+            { name: "Alabaster 10 (Fair Warm)", hex: "#F3DFC6" },
+            { name: "Vanilla 20 (Light Neutral)", hex: "#E9CDAE" },
+            { name: "Honey 30 (Medium Golden)", hex: "#D9AB80" },
+            { name: "Caramel 40 (Rich Tan Warm)", hex: "#B97E4E" },
+            { name: "Cocoa 50 (Deep Espresso Neutral)", hex: "#7E4929" },
+            { name: "Ebony 60 (Rich Deep Cool)", hex: "#4C2C1A" }
+          ]
+        },
+        {
+          id: "aura-velvet-lipstick",
+          name: "Lumière Velours Hydrating Matte Lipstick",
+          brand: "Lumière Paris",
+          category: "makeup",
+          subcategory: "lipstick",
+          priceKES: 2100,
+          originalPriceKES: null,
+          rating: 4.8,
+          reviewsCount: 189,
+          isPopular: true,
+          isBestseller: false,
+          badge: "Editor's Pick",
+          image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&w=800&q=80",
+          volume: "3.8 g",
+          finish: "Cashmere Matte",
+          coverage: "Full Pigment",
+          skinType: "All",
+          description: "A cushiony, non-drying matte lipstick formulated with pure botanical butter and hyaluronic filling spheres. Drenches lips in vibrant, fade-resistant color for 12 hours.",
+          benefits: [
+            "Rich East African Nilotica Shea Butter base",
+            "Comfortable, non-feathering soft matte finish",
+            "Antioxidant-rich pomegranate extract"
+          ],
+          ingredients: "Octyldodecanol, Ricinus Communis Seed Oil, Butyrospermum Parkii Butter, Euphorbia Cerifera Wax, Hyaluronic Acid, Punica Granatum Extract, Iron Oxides.",
+          howToUse: "Glide straight from the bullet for high-impact pigment, or dab with fingertips for a blurred French girl stain.",
+          shades: [
+            { name: "Rouge Royale (Iconic Blue Red)", hex: "#9E1C24" },
+            { name: "Terracotta Dune (Warm Spiced Nude)", hex: "#B85C38" },
+            { name: "Petal Naked (Soft Rosy Mauve)", hex: "#C78283" },
+            { name: "Berry Velvet (Deep Rich Plum)", hex: "#631E38" }
+          ]
+        },
+        {
+          id: "aura-sculpt-blush",
+          name: "Chroma Melt Multi-Use Cream Blush & Lip Tint",
+          brand: "Aura Botanica",
+          category: "makeup",
+          subcategory: "blush",
+          priceKES: 2400,
+          originalPriceKES: 2800,
+          rating: 4.9,
+          reviewsCount: 215,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Staff Pick",
+          image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80",
+          volume: "8 g",
+          finish: "Natural Satin Glow",
+          coverage: "Sheer to Medium",
+          skinType: "All",
+          description: "An effortlessly blendable, melting cream blush for cheeks and lips. Infused with cold-pressed rosehip seed oil and mica micro-pearls for an unmistakable lit-from-within glow.",
+          benefits: [
+            "Seamless melting formula that blends with fingers",
+            "Hydrates with organic Rosehip and Jojoba oils",
+            "Multipurpose for cheeks, eyelids, and lips"
+          ],
+          ingredients: "Caprylic/Capric Triglyceride, Simmondsia Chinensis (Jojoba) Seed Oil, Rosa Canina Seed Oil, Candelilla Wax, Silica, Mica, CI 77491.",
+          howToUse: "Dab onto the apples of the cheeks and tap upward toward the temples using warm fingertips or a stippling brush.",
+          shades: [
+            { name: "Dewy Peach (Sunlit Coral)", hex: "#E88468" },
+            { name: "Rose Quartz (Petal Pink)", hex: "#D47C88" },
+            { name: "Terracotta Flush (Warm Earth)", hex: "#A85338" }
+          ]
+        },
+        {
+          id: "aura-mineral-highlighter",
+          name: "Prism Radiance Baked Mineral Highlighter",
+          brand: "Fenty Beauty",
+          category: "makeup",
+          subcategory: "highlighter",
+          priceKES: 2950,
+          originalPriceKES: null,
+          rating: 4.7,
+          reviewsCount: 120,
+          isPopular: false,
+          isBestseller: false,
+          badge: null,
+          image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
+          volume: "10 g",
+          finish: "Glass Pearl",
+          coverage: "Reflective",
+          skinType: "All",
+          description: "A slow-baked Italian mineral highlighter featuring prismatic micro-pearls. Melts seamlessly onto high points without visible glitter particles.",
+          benefits: ["Zero powdery fallout", "Ultra-fine reflective mineral technology", "Sweat and humidity resistant"],
+          ingredients: "Mica, Talc (Asbestos-free), Zea Mays Starch, Squalane, Octyldodecyl Stearoyl Stearate, Caprylyl Glycol.",
+          howToUse: "Dust along cheekbones, the bridge of the nose, and brow bones with a fan brush.",
+          shades: [
+            { name: "Champagne Sunrise", hex: "#EFE0C9" },
+            { name: "Golden Terracotta", hex: "#D6B079" }
+          ]
+        },
+        {
+          id: "aura-serum-mascara",
+          name: "Lash Architecture Volumizing Serum Mascara",
+          brand: "Aura Botanica",
+          category: "makeup",
+          subcategory: "mascara",
+          priceKES: 2250,
+          originalPriceKES: null,
+          rating: 4.8,
+          reviewsCount: 154,
+          isPopular: true,
+          isBestseller: false,
+          badge: "Clean Formula",
+          image: "https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?auto=format&fit=crop&w=800&q=80",
+          volume: "9.5 ml",
+          finish: "Clean Glossy Noir",
+          coverage: "Sky-High Volume & Length",
+          skinType: "Sensitive eyes & contact lens wearers",
+          description: "Dual-action nourishing mascara loaded with biotin, castor oil, and plant peptides. Delivers 300% instant lash volume while conditioning lashes to prevent breakage.",
+          benefits: ["No clumping, flaking, or smudging", "Nourishing Castor Oil & Pea Peptides", "Easy warm-water removal"],
+          ingredients: "Water, Cera Alba, Copernicia Cerifera Wax, Ricinus Communis Seed Oil, Biotinoyl Tripeptide-1, Carbon Black.",
+          howToUse: "Wiggle the hourglass wand from lash roots to tips in a steady upward sweep.",
+          shades: [{ name: "Midnight Onyx", hex: "#111111" }]
+        },
+        {
+          id: "aura-micro-powder",
+          name: "Soft Focus Translucent Micro-Powder",
+          brand: "Rare Beauty",
+          category: "makeup",
+          subcategory: "powder",
+          priceKES: 3200,
+          originalPriceKES: 3600,
+          rating: 4.9,
+          reviewsCount: 260,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Award Winner",
+          image: "./src/assets/images/editorial_model_radiance_1791795250849.jpg",
+          volume: "15 g / 0.52 oz",
+          finish: "Velvet Blur",
+          coverage: "Translucent",
+          skinType: "Oily, Combination & Normal",
+          description: "Air-milled setting powder that diffuses pores and controls shine for 14 hours with zero flashback in photography. Powered by oat silk extract and silica.",
+          benefits: ["Zero flash-back in flash photography", "Instantly blurs texture and pore visibility", "Contains oil-absorbing silica and calming colloidal oats"],
+          ingredients: "Silica, Avena Sativa (Oat) Kernel Flour, Zea Mays Starch, Squalane, Lauroyl Lysine.",
+          howToUse: "Press and roll gently with a powder puff or fluffy brush onto the T-zone and under-eye area.",
+          shades: [
+            { name: "Translucent Light", hex: "#F5EFEB" },
+            { name: "Translucent Deep Medium", hex: "#C79E78" }
+          ]
+        },
+
+        // --- SKINCARE CATEGORY ---
+        {
+          id: "aura-bakuchiol-serum",
+          name: "Chamomile + Bakuchiol Radiance Serum",
+          brand: "Aura Botanica",
+          category: "skincare",
+          subcategory: "serum",
+          priceKES: 4450,
+          originalPriceKES: 5200,
+          rating: 5.0,
+          reviewsCount: 412,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Signature Hero",
+          image: "./src/assets/images/skincare_dropper_serum_1791795239150.jpg",
+          volume: "30 ml / 1.0 fl oz",
+          finish: "Silky Fast-Absorbing",
+          texture: "Weightless Fluid Gel",
+          skinType: "Sensitive, Aging, Dull & Blemish-Prone",
+          description: "Our world-renowned botanical retinol alternative. 1% clinically active Bakuchiol blended with German Blue Chamomile and triple-molecular hyaluronic acid stimulates cellular renewal and boosts skin firmness without redness or peeling.",
+          benefits: [
+            "Firms fine lines and refines skin texture without retinol irritation",
+            "Soothes redness and inflammation with pure Chamomile extract",
+            "Safe for daily morning and evening use, even in Kenyan sunshine",
+            "100% natural cold-pressed botanicals"
+          ],
+          ingredients: "Matricaria Chamomilla Hydrosol, Bakuchiol (1.0%), Sodium Hyaluronate (Multi-molecular), Niacinamide (3%), Centella Asiatica Extract, Glycerin, Ferulic Acid.",
+          howToUse: "Apply 3-4 drops directly onto freshly cleansed and toned face and neck. Press gently with warm palms until fully absorbed.",
+          shades: null
+        },
+        {
+          id: "aura-barrier-cream",
+          name: "Ceramide Barrier Cloud Hydration Cream",
+          brand: "CeraVe",
+          category: "skincare",
+          subcategory: "moisturiser",
+          priceKES: 3600,
+          originalPriceKES: null,
+          rating: 4.9,
+          reviewsCount: 310,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Derm Approved",
+          image: "https://images.unsplash.com/photo-1608248597359-59749fb811a9?auto=format&fit=crop&w=800&q=80",
+          volume: "50 ml / 1.7 oz",
+          finish: "Dewy Cushion",
+          texture: "Whipped Cloud Cream",
+          skinType: "Compromised, Dry, or Sensitive skin",
+          description: "A restorative barrier rescue moisturizer packed with 5 essential skin-identical ceramides, phytosphingosine, and Centella Asiatica. Restores moisture levels in 1 hour.",
+          benefits: [
+            "Deeply repairs depleted skin barriers from weather and active acids",
+            "Locks in hydration for 48 hours without heaviness",
+            "Fragrance-free, alcohol-free, essential-oil free"
+          ],
+          ingredients: "Water, Glycerin, Caprylic/Capric Triglyceride, Ceramide NP, Ceramide AP, Ceramide EOP, Phytosphingosine, Cholesterol, Squalane, Allantoin.",
+          howToUse: "Smooth a nickel-sized amount over face and neck morning and night as the final step in your routine.",
+          shades: null
+        },
+        {
+          id: "aura-enzyme-cleanser",
+          name: "Papaya Enzyme Melting Cleansing Balm",
+          brand: "Aura Botanica",
+          category: "skincare",
+          subcategory: "cleanser",
+          priceKES: 3100,
+          originalPriceKES: null,
+          rating: 4.8,
+          reviewsCount: 178,
+          isPopular: false,
+          isBestseller: false,
+          badge: null,
+          image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=800&q=80",
+          volume: "90 g / 3.17 oz",
+          finish: "Clean Velvety",
+          texture: "Sorbet-to-Milk Balm",
+          skinType: "All Skin Types",
+          description: "An unctuous golden balm that transforms into a silky milk upon contact with water. Melts away waterproof mascara, mineral sunscreen, and city pollutants effortlessly without stripping.",
+          benefits: ["Dissolves long-wear makeup in 30 seconds", "Gentle Papaya Enzymes buff away dull surface dead cells", "Rinses completely clean without oily residue"],
+          ingredients: "Camellia Sinensis Seed Oil, Carica Papaya Fruit Extract, Caprylic Triglyceride, PEG-20 Glyceryl Triisostearate, Polyglyceryl-3 Polyricinoleate, Tocopheryl Acetate.",
+          howToUse: "Scoop a dime-sized amount with the dry wooden spatula. Massage onto dry skin in circular motions. Emulsify with warm water and rinse.",
+          shades: null
+        },
+        {
+          id: "aura-sunscreen-spf50",
+          name: "Invisible Zinc Mineral Fluid SPF 50+ PA++++",
+          brand: "La Roche-Posay",
+          category: "skincare",
+          subcategory: "sunscreen",
+          priceKES: 3400,
+          originalPriceKES: 3900,
+          rating: 4.9,
+          reviewsCount: 285,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Zero White Cast",
+          image: "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80",
+          volume: "50 ml",
+          finish: "Natural Matte",
+          texture: "Ultralight Shake Fluid",
+          skinType: "All Skin Tones & Sensitive Skin",
+          description: "Breakthrough 100% mineral daily sunscreen engineered specifically for melanin-rich and sensitive skin. Zero white cast, zero greasy shine, zero stinging around the eyes.",
+          benefits: ["Zero white residue on deep skin tones", "Reef-friendly non-nano zinc oxide", "Blue light and pollution shield"],
+          ingredients: "Zinc Oxide (18.5%), Water, Isododecane, Niacinamide, Camellia Sinensis Leaf Extract, Silica, Bisabolol.",
+          howToUse: "Shake vigorously for 5 seconds. Apply two full finger lengths generously across face, neck, and ears 15 minutes before sun exposure.",
+          shades: null
+        },
+
+        // --- HAIRCARE CATEGORY ---
+        {
+          id: "aura-baobab-hairoil",
+          name: "Cold-Pressed Baobab & Marula Elixir Hair Oil",
+          brand: "Aura Botanica",
+          category: "haircare",
+          subcategory: "hairoil",
+          priceKES: 2800,
+          originalPriceKES: 3200,
+          rating: 5.0,
+          reviewsCount: 198,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Wild-Harvested",
+          image: "https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=800&q=80",
+          volume: "50 ml / 1.7 oz",
+          finish: "High Gloss",
+          texture: "Fast-Absorbing Golden Oil",
+          skinType: "Coily, Curly, Dry & Chemically-Treated Hair",
+          description: "Ethically wild-harvested Kenyan Baobab seed oil and Kalahari Marula oil. Penetrates deeply into hair cuticles to seal split ends, eradicate frizz, and impart dazzling mirror-like shine.",
+          benefits: ["Tames frizz and locks in essential hair moisture", "Heat protection up to 230°C / 450°F", "Strengthens brittle curls and prevents breakage"],
+          ingredients: "Adansonia Digitata (Baobab) Seed Oil, Sclerocarya Birrea (Marula) Seed Oil, Argania Spinosa Kernel Oil, Helianthus Annuus Seed Oil, Natural Fragrance.",
+          howToUse: "Warm 2-3 drops between palms. Smooth through damp mid-lengths and ends before heat styling, or use as an overnight scalp treatment.",
+          shades: null
+        },
+        {
+          id: "aura-curl-custard",
+          name: "Shea & Flaxseed Botanical Curl Defining Custard",
+          brand: "SheaMoisture",
+          category: "haircare",
+          subcategory: "styling",
+          priceKES: 2400,
+          originalPriceKES: null,
+          rating: 4.8,
+          reviewsCount: 165,
+          isPopular: false,
+          isBestseller: false,
+          badge: null,
+          image: "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=800&q=80",
+          volume: "300 ml / 10 fl oz",
+          finish: "Defined & Soft Touch",
+          texture: "Lightweight Custard Gel",
+          skinType: "Types 3A to 4C Curls and Coils",
+          description: "Defines spirals and coils with zero flaking or sticky crunch. Infused with marshmallow root and organic aloe vera juice to provide 72-hour moisture and spring.",
+          benefits: ["Crunch-free flexible hold", "Intense slip for effortless finger detangling", "Silicone-free, sulfate-free"],
+          ingredients: "Aloe Barbadensis Leaf Juice, Linum Usitatissimum (Flaxseed) Seed Extract, Althaea Officinalis Root Extract, Butyrospermum Parkii, Xanthan Gum.",
+          howToUse: "Apply generously to clean soaking-wet hair in sections. Smooth down with praying hands or finger-coil to set.",
+          shades: null
+        },
+
+        // --- FRAGRANCE CATEGORY ---
+        {
+          id: "aura-luna-perfume",
+          name: "Luna Eau De Parfum (Jasmine, Amber & Bergamot)",
+          brand: "Aura Botanica",
+          category: "fragrance",
+          subcategory: "perfume",
+          priceKES: 7500,
+          originalPriceKES: 8500,
+          rating: 5.0,
+          reviewsCount: 312,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Signature Scent",
+          image: "../src/assets/images/luxury_perfume_flacon_1791795260780.jpg",
+          volume: "50 ml / 1.7 fl oz",
+          finish: "Extrait De Parfum (24% Concentration)",
+          texture: "Fine Spray Mist",
+          skinType: "Unisex Haute Parfumerie",
+          description: "An ethereal and magnetic composition. Sparkling Italian Calabrian bergamot opens into a nocturnal heart of Indian Night Jasmine and Damascus Rose, drying down into an intoxicating bed of warm golden amber, Haitian vetiver, and creamy sandalwood.",
+          benefits: [
+            "Exceptional 14+ hour longevity with refined projection",
+            "Crafted with ethically harvested Grasse botanical essences",
+            "Hand-finished fluted crystal flacon with magnetic gold cap"
+          ],
+          ingredients: "Alcohol Denat., Parfum (Fragrance), Aqua, Benzyl Salicylate, Limonene, Linalool, Hydroxycitronellal, Coumarin, Citral.",
+          howToUse: "Spritz across pulse points: wrists, collarbone, behind the earlobes, and the nape of the neck. Do not rub wrists together.",
+          shades: null
+        },
+        {
+          id: "aura-solar-santal",
+          name: "Solar Santal Eau De Parfum",
+          brand: "Maison Francis",
+          category: "fragrance",
+          subcategory: "perfume",
+          priceKES: 8200,
+          originalPriceKES: null,
+          rating: 4.9,
+          reviewsCount: 142,
+          isPopular: true,
+          isBestseller: false,
+          badge: "Niche Edition",
+          image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=800&q=80",
+          volume: "50 ml",
+          finish: "Eau De Parfum (20%)",
+          texture: "Spray",
+          skinType: "All",
+          description: "A luminous woody scent evoking golden twilight across savannah grasslands. Notes of crushed green cardamom, creamy Australian sandalwood, iris root, and sun-baked cedar.",
+          benefits: ["Warm comforting sillage", "Sensual unisex signature", "Clean hypoallergenic alcohol base"],
+          ingredients: "Alcohol Denat., Fragrance, Santalum Spicatum Wood Oil, Elettaria Cardamomum Seed Oil, Evernia Prunastri.",
+          howToUse: "Spray on pulse points and lightly mist clothing for day-long aura.",
+          shades: null
+        },
+
+        // --- BATH & BODY CATEGORY ---
+        {
+          id: "aura-body-butter",
+          name: "Whipped Nilotica Shea & Golden Jojoba Body Soufflé",
+          brand: "Aura Botanica",
+          category: "bath-body",
+          subcategory: "bodybutter",
+          priceKES: 2750,
+          originalPriceKES: null,
+          rating: 4.9,
+          reviewsCount: 220,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Pure Organic",
+          image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
+          volume: "200 ml / 6.8 oz",
+          finish: "Velvety Sheen",
+          texture: "Aerated Whipped Butter",
+          skinType: "Dry, Flaky or Sun-Exposed Body Skin",
+          description: "Made exclusively with rare East African Nilotica Shea—a softer, silkier butter with 25% higher olein content than West African varieties. Melts instantly upon contact with skin.",
+          benefits: ["Relieves dryness and improves skin elasticity", "Absorbs without sticky residue", "Delicate natural vanilla orchid aroma"],
+          ingredients: "Vitellaria Nilotica (Nilotica Shea) Seed Butter, Simmondsia Chinensis Seed Oil, Prunus Amygdalus Dulcis Oil, Tocopherol, Vanilla Planifolia Fruit Extract.",
+          howToUse: "Massage into warm, towel-damp skin immediately after stepping out of the bath or shower.",
+          shades: null
+        },
+        {
+          id: "aura-coffee-scrub",
+          name: "Glow Buff Kenyan Arabica & Brown Sugar Body Polish",
+          brand: "Aura Botanica",
+          category: "bath-body",
+          subcategory: "bodyscrub",
+          priceKES: 2350,
+          originalPriceKES: 2700,
+          rating: 4.8,
+          reviewsCount: 167,
+          isPopular: false,
+          isBestseller: false,
+          badge: null,
+          image: "https://images.unsplash.com/photo-1567928815116-2917d0928956?auto=format&fit=crop&w=800&q=80",
+          volume: "250 g / 8.8 oz",
+          finish: "Glow Polish",
+          texture: "Moist Sugar-Coffee Granules",
+          skinType: "All Body Skin",
+          description: "Freshly roasted single-origin Mount Kenya Arabica coffee grounds and organic unrefined cane sugar drenched in cold-pressed coconut oil. Re-energizes circulation and polishes rough patches.",
+          benefits: ["Caffeine energizes and firms skin appearance", "Smooths strawberry legs and rough elbows", "Leaves a nourishing protective veil"],
+          ingredients: "Coffea Arabica Seed Powder, Sucrose, Cocos Nucifera Oil, Cinnamomum Zeylanicum Bark, Tocopherol.",
+          howToUse: "Scoop a handful in the shower. Scrub in gentle circular motions over wet skin, concentrating on dry areas. Rinse thoroughly.",
+          shades: null
+        },
+
+        // --- BEAUTY TOOLS CATEGORY ---
+        {
+          id: "aura-sponge-duo",
+          name: "Ergonomic Cloud Complexion Sponge Duo",
+          brand: "Aura Botanica",
+          category: "tools",
+          subcategory: "sponges",
+          priceKES: 1450,
+          originalPriceKES: 1750,
+          rating: 4.9,
+          reviewsCount: 443,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Must-Have",
+          image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80",
+          volume: "2 Sponges in Storage Canister",
+          finish: "Airbrushed Blend",
+          texture: "Hydrophilic Latex-Free Foam",
+          skinType: "All",
+          description: "Our signature teardrop sponge with a precision flat-edge angle. Expands to twice its size when damp, absorbing water rather than soaking up your expensive foundation.",
+          benefits: ["Latex-free and hypoallergenic", "Expands to cloud-like softness", "Flawless streak-free blending in seconds"],
+          ingredients: "Latex-Free Hydrophilic Polyurethane Foam.",
+          howToUse: "Wet thoroughly under cold water and squeeze out excess. Bounce foundation and concealer onto skin for seamless coverage.",
+          shades: null
+        },
+        {
+          id: "aura-brush-set",
+          name: "Artisan 8-Piece Bamboo & Vegan Bristle Brush Set",
+          brand: "Aura Botanica",
+          category: "tools",
+          subcategory: "brushes",
+          priceKES: 4950,
+          originalPriceKES: 5800,
+          rating: 4.9,
+          reviewsCount: 187,
+          isPopular: true,
+          isBestseller: false,
+          badge: "Gift Worthy",
+          image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=800&q=80",
+          volume: "8 Brushes + Canvas Travel Roll",
+          finish: "Professional",
+          texture: "Ultra-Soft Micro-Fiber Bristles",
+          skinType: "All",
+          description: "Handcrafted sustainable bamboo handles with crimped cruelty-free micro-fiber bristles that mimic natural squirrel hair without shedding.",
+          benefits: ["Includes: Powder, Foundation, Blush, Contour, Blending Eye, Shader, Angled Brow, Detail Lip", "Cruelty-free vegan bristles", "Ergonomic balanced handles"],
+          ingredients: "Sustainable Bamboo, Recycled Aluminum Ferrules, Synthetic Micro-Fiber.",
+          howToUse: "Clean weekly with mild brush soap and dry flat.",
+          shades: null
+        },
+
+        // --- BUNDLES & GIFT SETS ---
+        {
+          id: "aura-golden-ritual-bundle",
+          name: "The Golden Radiance 3-Piece Complete Ritual",
+          brand: "Aura Botanica",
+          category: "bundles",
+          subcategory: "giftsets",
+          priceKES: 8200,
+          originalPriceKES: 10250,
+          rating: 5.0,
+          reviewsCount: 289,
+          isPopular: true,
+          isBestseller: true,
+          badge: "Save 20%",
+          image: "./src/assets/images/hero_botanical_beauty_1791795227849.jpg",
+          volume: "Full-Size Trio Set",
+          finish: "Radiance Routine",
+          texture: "Complete 3-Step System",
+          skinType: "All Skin Types",
+          description: "Our complete bestselling glow ritual in an embossed keepsake gift box. Includes: Chamomile + Bakuchiol Serum (30ml), Ceramide Barrier Cream (50ml), and Handcrafted Rose Quartz Gua Sha Tool.",
+          benefits: [
+            "Complete morning and evening ritual to restore skin vitality",
+            "Saves KSh 2,050 compared to purchasing individually",
+            "Includes complimentary botanical velvet travel pouch"
+          ],
+          ingredients: "See individual product ingredients for full details.",
+          howToUse: "Cleanse face, apply 3 drops Bakuchiol Serum, massage with Gua Sha, seal with Ceramide Barrier Cream.",
+          shades: null
+        }
+      ];
+
+      /* =========================================================================
+       * 3. CATEGORIES & BRANDS REGISTRY
+       * ========================================================================= */
+      const CATEGORIES = [
+        { id: "all", name: "All Products", count: CATALOGUE.length, description: "Explore the complete luxury botanical beauty collection." },
+        { id: "makeup", name: "Makeup & Complexion", count: CATALOGUE.filter(p => p.category === 'makeup').length, description: "Second-skin foundations, velvety lipsticks, and effortless cream flushes." },
+        { id: "skincare", name: "Botanical Skincare", count: CATALOGUE.filter(p => p.category === 'skincare').length, description: "Clean actives, restorative ceramides, and youth-boosting bakuchiol." },
+        { id: "haircare", name: "Nourishing Haircare", count: CATALOGUE.filter(p => p.category === 'haircare').length, description: "Wild-harvested baobab oils, curl custards, and scalp treatments." },
+        { id: "fragrance", name: "Haute Fragrance", count: CATALOGUE.filter(p => p.category === 'fragrance').length, description: "Artisanal flacons with extraordinary longevity and magnetic sillage." },
+        { id: "bath-body", name: "Bath & Body Rituals", count: CATALOGUE.filter(p => p.category === 'bath-body').length, description: "East African Nilotica shea butters and Mount Kenya coffee scrubs." },
+        { id: "tools", name: "Artisan Tools & Sponges", count: CATALOGUE.filter(p => p.category === 'tools').length, description: "Ergonomic complexion sponges and bamboo artisan brushes." },
+        { id: "bundles", name: "Curated Gift Sets", count: CATALOGUE.filter(p => p.category === 'bundles').length, description: "Luxury bundled trios and seasonal gifting with generous savings." }
+      ];
+
+      const BRANDS_LIST = [
+        { id: "aura-botanica", name: "Aura Botanica", country: "Kenya", tagline: "Pure High-Performance Botanicals", description: "Rooted in the lush flora of Mount Kenya and the Great Rift Valley, Aura Botanica formulates clean, active skincare and complexion makeup." },
+        { id: "lumiere-paris", name: "Lumière Paris", country: "France", tagline: "Couture Pigments & Velours Textures", description: "Renowned French luxury house blending timeless Parisian elegance with modern hydrating lip formulas." },
+        { id: "fenty-beauty", name: "Fenty Beauty", country: "USA", tagline: "Beauty for All Complexions", description: "Pioneering shade inclusivity and high-impact pro-filter formulas." },
+        { id: "cerave", name: "CeraVe", country: "USA", tagline: "Developed with Dermatologists", description: "Gold-standard ceramide science for fortified, healthy skin barriers." },
+        { id: "rare-beauty", name: "Rare Beauty", country: "USA", tagline: "Feel Good in Your Skin", description: "Air-whipped textures designed to highlight natural beauty rather than mask it." },
+        { id: "la-roche-posay", name: "La Roche-Posay", country: "France", tagline: "Dermatological Thermal Care", description: "Formulated for the most sensitive and sun-reactive skin profiles." },
+        { id: "sheamoisture", name: "SheaMoisture", country: "USA", tagline: "Natural Moisture for Natural Textures", description: "Generations of handcrafted curl care powered by fair-trade raw shea butter." },
+        { id: "maison-francis", name: "Maison Francis", country: "France", tagline: "Haute Parfumerie & Golden Woods", description: "Artisanal niche fragrance crafting olfactory stories of warm sunlight and rare woods." }
+      ];
+
+      /* =========================================================================
+       * 4. UTILITIES & FORMATTING
+       * ========================================================================= */
+      function formatPrice(priceKES) {
+        if (currentCurrency === 'USD') {
+          const usd = (priceKES * APP_CONFIG.KES_TO_USD).toFixed(2);
+          return `$${usd}`;
+        }
+        return `KSh ${Number(priceKES).toLocaleString('en-KE')}`;
+      }
+
+      function toggleCurrency() {
+        currentCurrency = currentCurrency === 'KES' ? 'USD' : 'KES';
+        localStorage.setItem('aura_currency', currentCurrency);
+        const label = document.getElementById('currency-label');
+        if (label) label.textContent = currentCurrency === 'KES' ? 'KES (KSh)' : 'USD ($)';
+        renderCurrentRoute();
+        renderCartUI();
+        showToast(`Currency set to ${currentCurrency}`);
+      }
+
+      function showToast(message, isAccent = true) {
+        const toast = document.getElementById('toast-notification');
+        const msgEl = document.getElementById('toast-message');
+        const iconEl = document.getElementById('toast-icon');
+        if (!toast || !msgEl) return;
+        msgEl.textContent = message;
+        iconEl.textContent = isAccent ? '✦' : '✓';
+        toast.classList.remove('translate-y-24', 'opacity-0');
+        setTimeout(() => {
+          toast.classList.add('translate-y-24', 'opacity-0');
+        }, 2600);
+      }
+
+      function saveCart() {
+        localStorage.setItem('aura_cart', JSON.stringify(cart));
+        renderCartUI();
+      }
+
+      function saveWishlist() {
+        localStorage.setItem('aura_wishlist', JSON.stringify(wishlist));
+        updateWishlistBadge();
+      }
+
+      function updateWishlistBadge() {
+        const count = wishlist.length;
+        const b1 = document.getElementById('wishlist-badge');
+        const b2 = document.getElementById('mobile-wishlist-count');
+        [b1, b2].forEach(b => {
+          if (!b) return;
+          if (count > 0) {
+            b.textContent = count;
+            b.classList.remove('hidden');
+          } else {
+            b.classList.add('hidden');
+          }
+        });
+      }
+
+      function toggleWishlist(productId) {
+        const idx = wishlist.indexOf(productId);
+        const prod = CATALOGUE.find(p => p.id === productId);
+        if (idx > -1) {
+          wishlist.splice(idx, 1);
+          showToast(`Removed from wishlist`, false);
+        } else {
+          wishlist.push(productId);
+          showToast(`Saved to your wishlist: ${prod ? prod.name.slice(0, 24) + '...' : ''}`);
+        }
+        saveWishlist();
+        // Re-render heart buttons
+        document.querySelectorAll(`.wishlist-btn-${productId}`).forEach(btn => {
+          btn.classList.toggle('text-[#D96843]', wishlist.includes(productId));
+          btn.classList.toggle('fill-[#D96843]', wishlist.includes(productId));
+        });
+        if (window.location.hash.startsWith('#wishlist')) {
+          renderWishlistView();
+        }
+      }
+
+      function addToCart(productId, selectedShadeName = null, qty = 1, openDrawer = true) {
+        const product = CATALOGUE.find(p => p.id === productId);
+        if (!product) return;
+
+        const shade = selectedShadeName || (product.shades ? product.shades[0].name : null);
+        const existingIndex = cart.findIndex(item => item.id === productId && item.shade === shade);
+
+        if (existingIndex > -1) {
+          cart[existingIndex].qty += qty;
+        } else {
+          cart.push({
+            id: product.id,
+            name: product.name,
+            brand: product.brand,
+            priceKES: product.priceKES,
+            image: product.image,
+            shade: shade,
+            qty: qty
+          });
+        }
+
+        saveCart();
+        showToast(`Added to bag: ${product.name.slice(0, 22)}...`);
+        if (openDrawer) {
+          openCartDrawer();
+        }
+      }
+
+      function updateCartQty(index, newQty) {
+        if (newQty <= 0) {
+          cart.splice(index, 1);
+        } else {
+          cart[index].qty = newQty;
+        }
+        saveCart();
+      }
+
+      function removeCartItem(index) {
+        cart.splice(index, 1);
+        saveCart();
+      }
+
+      function applyPromoCode() {
+        const input = document.getElementById('cart-promo-input');
+        const feedback = document.getElementById('promo-feedback');
+        if (!input || !feedback) return;
+        const code = input.value.trim().toUpperCase();
+
+        if (code === 'GLOW10') {
+          appliedDiscount = { code: 'GLOW10', percent: 10, label: '10% New Radiance Discount' };
+          feedback.textContent = '✓ GLOW10 Applied: 10% off your entire ritual!';
+          feedback.className = 'text-[11px] mt-1 font-medium text-emerald-600 block';
+        } else if (code === 'FREESHIP') {
+          appliedDiscount = { code: 'FREESHIP', freeShipping: true, label: 'Complimentary Express Shipping' };
+          feedback.textContent = '✓ FREESHIP Applied: Free shipping on this order!';
+          feedback.className = 'text-[11px] mt-1 font-medium text-emerald-600 block';
+        } else {
+          feedback.textContent = 'Invalid promo code. Try GLOW10 or FREESHIP';
+          feedback.className = 'text-[11px] mt-1 font-medium text-[#D96843] block';
+          appliedDiscount = null;
+        }
+        localStorage.setItem('aura_discount', JSON.stringify(appliedDiscount));
+        renderCartUI();
+      }
+
+      /* =========================================================================
+       * 5. DRAWER & MODAL CONTROLLERS
+       * ========================================================================= */
+      function openCartDrawer() {
+        const drawer = document.getElementById('cart-drawer');
+        const backdrop = document.getElementById('cart-drawer-backdrop');
+        if (!drawer || !backdrop) return;
+        renderCartUI();
+        backdrop.classList.remove('hidden');
+        setTimeout(() => {
+          backdrop.classList.remove('opacity-0');
+          drawer.classList.remove('translate-x-full');
+        }, 10);
+      }
+
+      function closeCartDrawer() {
+        const drawer = document.getElementById('cart-drawer');
+        const backdrop = document.getElementById('cart-drawer-backdrop');
+        if (!drawer || !backdrop) return;
+        drawer.classList.add('translate-x-full');
+        backdrop.classList.add('opacity-0');
+        setTimeout(() => {
+          backdrop.classList.add('hidden');
+        }, 300);
+      }
+
+      function openSearchModal() {
+        const modal = document.getElementById('search-modal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        document.getElementById('global-search-input')?.focus();
+      }
+
+      function closeSearchModal() {
+        const modal = document.getElementById('search-modal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+      }
+
+      function fillSearch(term) {
+        const input = document.getElementById('global-search-input');
+        if (!input) return;
+        input.value = term;
+        handleLiveSearch(term);
+      }
+
+      function handleLiveSearch(query) {
+        const container = document.getElementById('search-results-container');
+        if (!container) return;
+        const q = query.trim().toLowerCase();
+
+        if (q.length < 2) {
+          container.innerHTML = `<p class="text-xs text-[#999084] text-center py-6">Type at least 2 characters to search formulas, shades, and categories...</p>`;
+          return;
+        }
+
+        const matches = CATALOGUE.filter(p => 
+          p.name.toLowerCase().includes(q) ||
+          p.brand.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          (p.ingredients && p.ingredients.toLowerCase().includes(q))
+        );
+
+        if (matches.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-8 space-y-2">
+              <p class="text-sm font-semibold text-[#141210]">No formulas found matching "${query}"</p>
+              <p class="text-xs text-[#999084]">Try searching for "serum", "bakuchiol", "blush", or browse all categories.</p>
+              <a href="#shop" onclick="closeSearchModal()" class="inline-block mt-3 px-4 py-2 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-medium">Browse Catalogue</a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="space-y-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-[#999084]">${matches.length} Results Found</p>
+            ${matches.map(p => `
+              <div class="flex items-center justify-between gap-4 py-2 hover:bg-[#F5EFEB] rounded-xl px-2 transition-colors">
+                <a href="#product/${p.id}" onclick="closeSearchModal()" class="flex items-center gap-3 flex-1 min-w-0">
+                  <img src="${p.image}" alt="${p.name}" class="w-12 h-12 object-cover rounded-lg bg-[#EFE7DE] shrink-0" onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=150&q=80'" />
+                  <div class="truncate">
+                    <p class="text-[11px] uppercase tracking-wider text-[#999084] font-semibold">${p.brand}</p>
+                    <p class="text-sm font-medium text-[#141210] truncate">${p.name}</p>
+                    <p class="text-xs font-bold text-[#141210] tabular-nums">${formatPrice(p.priceKES)}</p>
+                  </div>
+                </a>
+                <button onclick="addToCart('${p.id}'); closeSearchModal();" class="px-3 py-1.5 bg-[#141210] text-[#FAF8F5] text-xs font-semibold rounded-full hover:bg-black shrink-0">
+                  Add
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        lucide.createIcons();
+      }
+
+      function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        if (menu) menu.classList.toggle('hidden');
+      }
+
+      function closeMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        if (menu) menu.classList.add('hidden');
+      }
+
+      /* =========================================================================
+       * 6. CART CALCULATION & RENDERING
+       * ========================================================================= */
+      function renderCartUI() {
+        const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+        
+        // Header & Mobile badges
+        const headerCount = document.getElementById('header-cart-count');
+        const mobileCount = document.getElementById('mobile-cart-count');
+        const drawerCount = document.getElementById('drawer-items-count');
+        if (headerCount) headerCount.textContent = totalItems;
+        if (mobileCount) mobileCount.textContent = totalItems;
+        if (drawerCount) drawerCount.textContent = `${totalItems} ${totalItems === 1 ? 'item' : 'items'}`;
+
+        const itemsContainer = document.getElementById('cart-items-container');
+        if (!itemsContainer) return;
+
+        if (cart.length === 0) {
+          itemsContainer.innerHTML = `
+            <div class="text-center py-16 space-y-4">
+              <div class="w-16 h-16 bg-[#F5EFEB] rounded-full flex items-center justify-center mx-auto text-[#999084]">
+                <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+              </div>
+              <p class="font-editorial text-lg font-semibold text-[#141210]">Your bag is currently empty</p>
+              <p class="text-xs text-[#999084] max-w-xs mx-auto">Explore our botanical formulas and treat your skin to pure luxury.</p>
+              <a href="#shop" onclick="closeCartDrawer()" class="inline-block mt-2 bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-black transition-colors">
+                Discover Bestsellers
+              </a>
+            </div>
+          `;
+          updateCartTotals(0, 0);
+          lucide.createIcons();
+          return;
+        }
+
+        itemsContainer.innerHTML = cart.map((item, index) => `
+          <div class="flex items-center gap-3.5 bg-white p-3 rounded-2xl border border-[#EAE3D6] shadow-sm">
+            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-xl bg-[#F5EFEB] shrink-0" onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=150&q=80'" />
+            <div class="flex-1 min-w-0">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-[#999084]">${item.brand}</p>
+              <h4 class="text-xs font-semibold text-[#141210] truncate">${item.name}</h4>
+              ${item.shade ? `<p class="text-[11px] text-[#5E574E] mt-0.5 truncate">Shade: <span class="font-medium text-[#141210]">${item.shade}</span></p>` : ''}
+              <p class="text-xs font-bold text-[#141210] mt-1 tabular-nums">${formatPrice(item.priceKES)}</p>
+            </div>
+            <div class="flex flex-col items-end justify-between self-stretch shrink-0">
+              <button onclick="removeCartItem(${index})" aria-label="Remove item" class="text-[#999084] hover:text-[#D96843] p-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+              <div class="flex items-center border border-[#EAE3D6] rounded-full overflow-hidden bg-[#FAF8F5]">
+                <button onclick="updateCartQty(${index}, ${item.qty - 1})" class="px-2 py-0.5 text-xs text-[#5E574E] hover:bg-[#EAE3D6] font-bold">−</button>
+                <span class="px-2 text-xs font-semibold text-[#141210] tabular-nums">${item.qty}</span>
+                <button onclick="updateCartQty(${index}, ${item.qty + 1})" class="px-2 py-0.5 text-xs text-[#5E574E] hover:bg-[#EAE3D6] font-bold">+</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        const subtotal = cart.reduce((acc, item) => acc + (item.priceKES * item.qty), 0);
+        let discount = 0;
+        if (appliedDiscount && appliedDiscount.percent) {
+          discount = subtotal * (appliedDiscount.percent / 100);
+        }
+        updateCartTotals(subtotal, discount);
+        lucide.createIcons();
+      }
+
+      function updateCartTotals(subtotal, discount) {
+        const subtotalEl = document.getElementById('cart-subtotal');
+        const discountRow = document.getElementById('cart-discount-row');
+        const discountEl = document.getElementById('cart-discount');
+        const shippingEl = document.getElementById('cart-shipping');
+        const totalEl = document.getElementById('cart-total');
+
+        const progressBar = document.getElementById('shipping-progress-bar');
+        const progressPercent = document.getElementById('shipping-progress-percent');
+        const progressText = document.getElementById('shipping-progress-text');
+
+        if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
+
+        if (discount > 0) {
+          if (discountRow) discountRow.classList.remove('hidden');
+          if (discountEl) discountEl.textContent = `-${formatPrice(discount)}`;
+        } else {
+          if (discountRow) discountRow.classList.add('hidden');
+        }
+
+        // Free shipping calculation
+        const threshold = APP_CONFIG.FREE_SHIPPING_THRESHOLD_KES;
+        const pct = Math.min(100, Math.round((subtotal / threshold) * 100));
+        if (progressBar) progressBar.style.width = `${pct}%`;
+        if (progressPercent) progressPercent.textContent = `${pct}%`;
+
+        let shippingCost = subtotal >= threshold || (appliedDiscount && appliedDiscount.freeShipping) ? 0 : (subtotal > 0 ? APP_CONFIG.DEFAULT_SHIPPING_FEE_KES : 0);
+        if (shippingEl) {
+          shippingEl.textContent = shippingCost === 0 ? (subtotal > 0 ? "Free (Nairobi Metro)" : "KSh 0") : formatPrice(shippingCost);
+          if (shippingCost === 0 && subtotal > 0) shippingEl.className = "font-bold text-emerald-700";
+        }
+
+        if (progressText) {
+          if (subtotal >= threshold) {
+            progressText.textContent = "✓ You've unlocked Complimentary Nairobi Delivery!";
+          } else {
+            const diff = threshold - subtotal;
+            progressText.textContent = `Add ${formatPrice(diff)} more for Free Nairobi Delivery`;
+          }
+        }
+
+        const grandTotal = Math.max(0, subtotal - discount + shippingCost);
+        if (totalEl) totalEl.textContent = formatPrice(grandTotal);
+      }
+
+      /* =========================================================================
+       * 7. ROUTING SYSTEM & SCREEN BUILDERS
+       * ========================================================================= */
+      window.addEventListener('hashchange', renderCurrentRoute);
+      window.addEventListener('DOMContentLoaded', () => {
+        updateWishlistBadge();
+        renderCartUI();
+        renderCurrentRoute();
+      });
+
+      function renderCurrentRoute() {
+        const hash = window.location.hash || '#home';
+        const container = document.getElementById('view-container');
+        if (!container) return;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+
+        // Parse route parameters
+        if (hash === '#home' || hash === '' || hash === '#') {
+          renderHomeView();
+        } else if (hash.startsWith('#shop')) {
+          renderShopView();
+        } else if (hash.startsWith('#category/')) {
+          const categoryId = hash.replace('#category/', '').split('?')[0];
+          renderCategoryView(categoryId);
+        } else if (hash.startsWith('#brand/')) {
+          const brandId = hash.replace('#brand/', '').split('?')[0];
+          renderBrandView(brandId);
+        } else if (hash.startsWith('#product/')) {
+          const productId = hash.replace('#product/', '').split('?')[0];
+          renderProductDetailView(productId);
+        } else if (hash === '#brands') {
+          renderBrandsDirectoryView();
+        } else if (hash === '#cart') {
+          renderCartPageView();
+        } else if (hash === '#wishlist') {
+          renderWishlistView();
+        } else if (hash === '#checkout') {
+          renderCheckoutView();
+        } else if (hash.startsWith('#order-success/')) {
+          const orderId = hash.replace('#order-success/', '');
+          renderOrderSuccessView(orderId);
+        } else if (hash === '#account') {
+          renderAccountView();
+        } else if (hash === '#guides') {
+          renderGuidesView();
+        } else if (hash === '#about') {
+          renderAboutView();
+        } else if (hash === '#contact') {
+          renderContactView();
+        } else if (hash === '#policies') {
+          renderPoliciesView();
+        } else {
+          renderNotFoundView();
+        }
+
+        // Initialize GSAP & Lucide after DOM injection
+        initGSAPAnimations();
+        lucide.createIcons();
+      }
+
+      /* =========================================================================
+       * SCREEN 1: HOMEPAGE (Art-Directed, Inspired by Reference Screenshot)
+       * ========================================================================= */
+      function renderHomeView() {
+        const container = document.getElementById('view-container');
+        const bestsellers = CATALOGUE.filter(p => p.isBestseller).slice(0, 4);
+        const mostPopular = CATALOGUE.filter(p => p.isPopular).slice(0, 4);
+
+        container.innerHTML = `
+          <!-- SECTION 1: HERO (Large Rounded Container, Golden Hour, Highlight Pill) -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12">
+            <div class="relative rounded-3xl lg:rounded-4xl overflow-hidden min-h-[580px] sm:min-h-[640px] flex flex-col justify-between p-6 sm:p-10 lg:p-14 text-white shadow-2xl border border-[#EAE3D6]/40" style="background: linear-gradient(180deg, rgba(20,18,16,0.2) 0%, rgba(20,18,16,0.65) 100%), url('./src/assets/images/hero_botanical_beauty_1791795227849.jpg') center center / cover no-repeat;">
+              
+              <!-- Top Pill Badges in Hero (as seen in screenshot) -->
+              <div class="flex items-center justify-between gap-4 z-10">
+                <div class="flex items-center gap-2">
+                  <span class="glass-dark text-xs font-medium px-4 py-1.5 rounded-full border border-white/20 text-white/90">
+                    Botanical Actives 🔗
+                  </span>
+                  <span class="glass-dark text-xs font-medium px-4 py-1.5 rounded-full border border-white/20 text-white/90 hidden sm:inline-block">
+                    Derm Tested 🔗
+                  </span>
+                </div>
+
+                <!-- Live Client Metric Counter Pill (as in screenshot) -->
+                <div class="glass-dark px-4 py-2 rounded-2xl border border-white/20 flex items-center gap-3 text-right">
+                  <div>
+                    <p class="font-editorial text-xl sm:text-2xl font-bold text-white tabular-nums">28k+</p>
+                    <p class="text-[10px] text-white/80 max-w-[140px] leading-tight">Radiant skin transformations curated across Kenya</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Main Hero Headline & Copy -->
+              <div class="max-w-2xl z-10 my-auto py-8">
+                <h1 class="font-editorial text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-[1.12]">
+                  Unlock the secrets of captivating <span class="pill-highlight font-sans text-3xl sm:text-4xl lg:text-5xl not-italic font-bold">beauty</span> with our luxurious botanicals.
+                </h1>
+                <p class="mt-5 text-sm sm:text-base text-white/90 font-light max-w-lg leading-relaxed">
+                  Celebrate transformation. High-performance clean cosmetics, cold-pressed plant squalane, and active peptides formulated to empower your natural goddess glow.
+                </p>
+
+                <!-- Dual CTAs (Dark Phone Pill & Outline Shop Pill from screenshot) -->
+                <div class="mt-8 flex flex-wrap items-center gap-4">
+                  <a href="tel:+254700892000" class="bg-[#141210] hover:bg-black text-white px-6 py-3.5 rounded-full text-xs font-semibold tracking-wider flex items-center gap-2.5 transition-all shadow-lg border border-white/10">
+                    <i data-lucide="phone" class="w-4 h-4 text-[#D8EB58]"></i>
+                    <span>Call beauty advisor</span>
+                  </a>
+                  <a href="#shop" class="bg-white/90 hover:bg-white text-[#141210] px-7 py-3.5 rounded-full text-xs font-bold tracking-wider uppercase transition-all shadow-lg">
+                    Shop Now
+                  </a>
+                </div>
+              </div>
+
+              <!-- Bottom Feature Teaser Strip in Hero -->
+              <div class="z-10 flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/20 text-xs text-white/90">
+                <div class="flex items-center gap-6">
+                  <span>✦ 100% Cruelty-Free & Vegan</span>
+                  <span class="hidden sm:inline">✦ Recyclable Amber Glass</span>
+                  <span class="hidden md:inline">✦ Ethically Sourced East African Botanicals</span>
+                </div>
+                <a href="#guides" class="underline underline-offset-4 hover:text-[#D8EB58] transition-colors font-medium">
+                  Explore Ritual Guide →
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECTION 2: BESTSELLERS RAIL (Horizontal Layout matching screenshot) -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex items-end justify-between mb-6">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-[#D96843]">Client Favorites</span>
+                <h2 class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#141210] mt-1">Bestsellers</h2>
+              </div>
+              <a href="#shop" class="text-xs font-semibold text-[#141210] hover:underline flex items-center gap-1">
+                View All <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <!-- Product Cards Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              ${bestsellers.map(p => renderProductCardHTML(p)).join('')}
+            </div>
+          </section>
+
+          <!-- SECTION 3: EDITORIAL SPLIT GRID (Inspired by middle layout in screenshot) -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              
+              <!-- Left Column: Trust Card & Policy Links with Arrows (↗) -->
+              <div class="lg:col-span-4 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] flex flex-col justify-between shadow-sm">
+                <div>
+                  <span class="text-xs font-bold uppercase tracking-widest text-[#D8EB58] bg-[#141210] px-3 py-1 rounded-full inline-block mb-4">
+                    The AURA Promise
+                  </span>
+                  <h3 class="font-editorial text-2xl font-bold text-[#141210] leading-snug">
+                    Our products are designed to power your natural radiance.
+                  </h3>
+                  <p class="text-xs text-[#5E574E] mt-3 leading-relaxed">
+                    Formulated with bio-compatible actives that respect your skin barrier, tested in high-UV tropical conditions for real enduring glow.
+                  </p>
+                </div>
+
+                <!-- Trust links with arrows (↗) matching reference image -->
+                <div class="divide-y divide-[#EAE3D6] border-y border-[#EAE3D6] my-6">
+                  <a href="#policies" class="py-3 flex items-center justify-between text-xs font-medium text-[#141210] hover:text-[#D96843] transition-colors group">
+                    <span>Help & Delivery Centre</span>
+                    <span class="text-sm font-light text-[#999084] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">↗</span>
+                  </a>
+                  <a href="#policies" class="py-3 flex items-center justify-between text-xs font-medium text-[#141210] hover:text-[#D96843] transition-colors group">
+                    <span>Returns & Authenticity Policy</span>
+                    <span class="text-sm font-light text-[#999084] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">↗</span>
+                  </a>
+                  <a href="#contact" class="py-3 flex items-center justify-between text-xs font-medium text-[#141210] hover:text-[#D96843] transition-colors group">
+                    <span>Nairobi Flagship Studio</span>
+                    <span class="text-sm font-light text-[#999084] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">↗</span>
+                  </a>
+                  <a href="#about" class="py-3 flex items-center justify-between text-xs font-medium text-[#141210] hover:text-[#D96843] transition-colors group">
+                    <span>Clean Botanical Sourcing</span>
+                    <span class="text-sm font-light text-[#999084] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">↗</span>
+                  </a>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <div class="flex -space-x-2">
+                    <img class="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Client review" />
+                    <img class="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" alt="Client review" />
+                    <img class="w-8 h-8 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Client review" />
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-[#141210]">4.9 / 5.0 Rating</p>
+                    <p class="text-[10px] text-[#999084]">Over 3,400 verified reviews</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Center Column: Model Imagery & Atmosphere -->
+              <div class="lg:col-span-5 relative rounded-3xl overflow-hidden min-h-[380px] shadow-sm">
+                <img src="./src/assets/images/editorial_model_radiance_1791795250849.jpg" alt="Botanical radiance model" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 sm:p-8 text-white">
+                  <span class="text-xs font-semibold text-[#D8EB58] uppercase tracking-wider">Campaign Spotlight</span>
+                  <h4 class="font-editorial text-2xl sm:text-3xl font-medium mt-1">High-performance formulas that let your inner goddess shine.</h4>
+                  <p class="text-xs text-white/80 mt-2 max-w-sm">Every batch crafted in small runs using sustainably harvested botanical extracts.</p>
+                </div>
+              </div>
+
+              <!-- Right Column: Step into Your Power Card with Delivery offers -->
+              <div class="lg:col-span-3 bg-[#F5EFEB] p-6 rounded-3xl border border-[#EAE3D6] flex flex-col justify-between shadow-sm">
+                <div>
+                  <h3 class="font-editorial text-xl font-bold text-[#141210]">Step Into Your Power with AURA</h3>
+                  <div class="mt-4 space-y-3">
+                    <div class="bg-white p-3.5 rounded-2xl border border-[#EAE3D6] flex items-center justify-between">
+                      <span class="text-xs font-semibold text-[#141210]">Free Delivery & Returns</span>
+                      <span class="text-xs text-[#999084]">↗</span>
+                    </div>
+                    <div class="bg-white p-3.5 rounded-2xl border border-[#EAE3D6] flex items-center justify-between">
+                      <span class="text-xs font-semibold text-[#141210]">Premier Concierge Offer</span>
+                      <span class="text-xs text-[#999084]">↗</span>
+                    </div>
+                    <div class="bg-white p-3.5 rounded-2xl border border-[#EAE3D6] flex items-center justify-between">
+                      <span class="text-xs font-semibold text-[#141210]">10% Off First Ritual</span>
+                      <span class="text-xs text-[#999084]">↗</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Floating Mini Showcase Card inside Right Column (matching screenshot) -->
+                <div class="mt-6 relative rounded-2xl overflow-hidden border border-[#EAE3D6] bg-white p-4 text-center">
+                  <img src="../src/assets/images/luxury_perfume_flacon_1791795260780.jpg" alt="Luna Fragrance" class="w-full h-32 object-cover rounded-xl mb-3" />
+                  <p class="text-xs font-bold text-[#141210]">Discover Your New Favorites</p>
+                  <p class="text-[10px] text-[#999084] mt-0.5">Explore Haute Fragrance</p>
+                  <a href="#category/fragrance" class="mt-3 block bg-[#141210] hover:bg-black text-white py-2 rounded-full text-xs font-semibold tracking-wide">
+                    Explore Now
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECTION 4: MOST POPULAR COLLECTION (Matching screenshot second rail) -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex items-end justify-between mb-6">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-[#D8EB58] bg-[#141210] px-3 py-1 rounded-full">Essential Routines</span>
+                <h2 class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#141210] mt-2">Most Popular Formulations</h2>
+              </div>
+              <a href="#shop" class="text-xs font-semibold text-[#141210] hover:underline flex items-center gap-1">
+                View All <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              ${mostPopular.map(p => renderProductCardHTML(p)).join('')}
+            </div>
+          </section>
+
+          <!-- SECTION 5: CATEGORIES SHOWCASE -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center max-w-xl mx-auto mb-10">
+              <h2 class="font-editorial text-3xl font-bold tracking-tight text-[#141210]">Explore by Sacred Domain</h2>
+              <p class="text-xs text-[#5E574E] mt-2">Formulations organized for every stage of your daily beauty practice.</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+              ${CATEGORIES.filter(c => c.id !== 'all').map(c => `
+                <a href="#category/${c.id}" class="group bg-white p-4 rounded-2xl border border-[#EAE3D6] hover:border-[#141210] transition-all text-center flex flex-col items-center justify-between shadow-sm">
+                  <div class="w-12 h-12 rounded-full bg-[#F5EFEB] group-hover:bg-[#D8EB58] transition-colors flex items-center justify-center text-[#141210] mb-3">
+                    <i data-lucide="${getCategoryIcon(c.id)}" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-xs font-bold text-[#141210] group-hover:text-black">${c.name}</h3>
+                    <p class="text-[10px] text-[#999084] mt-0.5">${c.count} items</p>
+                  </div>
+                </a>
+              `).join('')}
+            </div>
+          </section>
+
+          <!-- SECTION 6: EDITORIAL BEAUTY GUIDES TEASER -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-8">
+            <div class="bg-[#F5EFEB] rounded-3xl p-6 sm:p-10 border border-[#EAE3D6]">
+              <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                <div>
+                  <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]">The Masterclasses</span>
+                  <h2 class="font-editorial text-2xl sm:text-3xl font-bold text-[#141210] mt-1">Ritual Guidance & Skin Science</h2>
+                </div>
+                <a href="#guides" class="bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-black">
+                  View All Guides
+                </a>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl overflow-hidden border border-[#EAE3D6] shadow-sm">
+                  <img src="./src/assets/images/hero_botanical_beauty_1791795227849.jpg" alt="Morning glow" class="w-full h-44 object-cover" />
+                  <div class="p-5">
+                    <p class="text-[10px] uppercase tracking-wider font-bold text-[#D96843]">Skincare Ritual</p>
+                    <h4 class="font-editorial text-lg font-bold text-[#141210] mt-1">The 4-Step Morning Glass Skin Routine</h4>
+                    <p class="text-xs text-[#5E574E] mt-2 line-clamp-2">How to layer botanical essence, bakuchiol serum, and barrier ceramides without pilling.</p>
+                    <a href="#guides" class="inline-block mt-4 text-xs font-bold text-[#141210] underline">Read Ritual →</a>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-2xl overflow-hidden border border-[#EAE3D6] shadow-sm">
+                  <img src="./src/assets/images/editorial_model_radiance_1791795250849.jpg" alt="Shade matching" class="w-full h-44 object-cover" />
+                  <div class="p-5">
+                    <p class="text-[10px] uppercase tracking-wider font-bold text-[#D96843]">Complexion Guide</p>
+                    <h4 class="font-editorial text-lg font-bold text-[#141210] mt-1">Finding Your True Undertone in Tropical Sun</h4>
+                    <p class="text-xs text-[#5E574E] mt-2 line-clamp-2">Identifying warm golden, neutral, and cool olive undertones across melanin-rich spectra.</p>
+                    <a href="#guides" class="inline-block mt-4 text-xs font-bold text-[#141210] underline">Read Guide →</a>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-2xl overflow-hidden border border-[#EAE3D6] shadow-sm">
+                  <img src="../src/assets/images/luxury_perfume_flacon_1791795260780.jpg" alt="Fragrance layering" class="w-full h-44 object-cover" />
+                  <div class="p-5">
+                    <p class="text-[10px] uppercase tracking-wider font-bold text-[#D96843]">Haute Parfumerie</p>
+                    <h4 class="font-editorial text-lg font-bold text-[#141210] mt-1">The Art of Botanical Fragrance Layering</h4>
+                    <p class="text-xs text-[#5E574E] mt-2 line-clamp-2">How to pair Nilotica shea body soufflé with amber and jasmine extraits for all-day sillage.</p>
+                    <a href="#guides" class="inline-block mt-4 text-xs font-bold text-[#141210] underline">Read Guide →</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      /* Helper for category icons */
+      function getCategoryIcon(catId) {
+        switch(catId) {
+          case 'makeup': return 'sparkles';
+          case 'skincare': return 'droplet';
+          case 'haircare': return 'wind';
+          case 'fragrance': return 'sun';
+          case 'bath-body': return 'heart';
+          case 'tools': return 'wand-2';
+          case 'bundles': return 'gift';
+          default: return 'package';
+        }
+      }
+
+      /* Product Card Generator (Reused across views) */
+      function renderProductCardHTML(p) {
+        const isWishlisted = wishlist.includes(p.id);
+        return `
+          <div class="group bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-[#EAE3D6] flex flex-col justify-between transition-all hover:shadow-lg card-zoom">
+            <div class="relative overflow-hidden rounded-xl sm:rounded-2xl bg-[#F5EFEB] aspect-square flex items-center justify-center mb-3">
+              <!-- Product Image -->
+              <a href="#product/${p.id}" class="w-full h-full block">
+                <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover card-img" onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=600&q=80'" />
+              </a>
+
+              <!-- Wishlist heart button -->
+              <button onclick="toggleWishlist('${p.id}')" aria-label="Save to wishlist" class="wishlist-btn-${p.id} absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-[#141210] transition-transform hover:scale-110 shadow-sm ${isWishlisted ? 'text-[#D96843] fill-[#D96843]' : ''}">
+                <i data-lucide="heart" class="w-4 h-4"></i>
+              </button>
+
+              <!-- Optional Badge -->
+              ${p.badge ? `
+                <span class="absolute top-2.5 left-2.5 bg-[#141210] text-white text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full">
+                  ${p.badge}
+                </span>
+              ` : ''}
+
+              <!-- Quick Add Hover Overlay Button on Desktop -->
+              <button onclick="addToCart('${p.id}')" class="hidden md:flex absolute bottom-2 left-2 right-2 bg-[#141210]/95 hover:bg-black text-[#FAF8F5] py-2 rounded-xl text-xs font-semibold items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                <i data-lucide="plus" class="w-3.5 h-3.5 text-[#D8EB58]"></i> Quick Add
+              </button>
+            </div>
+
+            <!-- Metadata info -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-[11px] text-[#999084]">
+                <span class="uppercase tracking-wider font-semibold">${p.brand}</span>
+                <div class="flex items-center text-[#141210] font-bold">
+                  ★ <span class="ml-0.5">${p.rating}</span>
+                </div>
+              </div>
+              <h3 class="font-medium text-xs sm:text-sm text-[#141210] line-clamp-1 leading-snug">
+                <a href="#product/${p.id}" class="hover:underline">${p.name}</a>
+              </h3>
+              
+              <div class="flex items-baseline gap-2 pt-1">
+                <span class="font-bold text-xs sm:text-sm text-[#141210] tabular-nums">${formatPrice(p.priceKES)}</span>
+                ${p.originalPriceKES ? `
+                  <span class="text-[11px] text-[#999084] line-through tabular-nums">${formatPrice(p.originalPriceKES)}</span>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Mobile Add to Bag CTA -->
+            <button onclick="addToCart('${p.id}')" class="md:hidden mt-3 w-full bg-[#FAF8F5] hover:bg-[#141210] hover:text-white text-[#141210] py-1.5 rounded-xl text-xs font-semibold border border-[#EAE3D6] transition-colors">
+              + Add to Bag
+            </button>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 2: ALL PRODUCTS / SHOP MASTER VIEW (With Multi-Facet Filters)
+       * ========================================================================= */
+      let currentFilterCategory = 'all';
+      let currentFilterBrand = 'all';
+      let currentSortOption = 'recommended';
+      let currentMaxPrice = 15000;
+
+      function renderShopView() {
+        const container = document.getElementById('view-container');
+        
+        // Read URL hash params if any
+        const hash = window.location.hash;
+        if (hash.includes('sort=')) {
+          const match = hash.match(/sort=([a-z-]+)/);
+          if (match) currentSortOption = match[1];
+        }
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Header Breadcrumb & Title -->
+            <div class="mb-8">
+              <nav class="text-xs text-[#999084] flex items-center gap-2 mb-2">
+                <a href="#home" class="hover:text-[#141210]">Home</a>
+                <span>/</span>
+                <span class="text-[#141210] font-semibold">All Formulations</span>
+              </nav>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210]">The Master Beauty Catalogue</h1>
+              <p class="text-xs text-[#5E574E] mt-1 max-w-2xl">
+                Explore our clinically formulated clean cosmetics, restorative East African botanicals, and haute fragrances.
+              </p>
+            </div>
+
+            <!-- Filter Controls Bar -->
+            <div class="bg-white p-4 rounded-2xl border border-[#EAE3D6] shadow-sm mb-8 flex flex-wrap items-center justify-between gap-4">
+              <!-- Category Filter Chips -->
+              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                ${CATEGORIES.map(c => `
+                  <button onclick="setFilterCategory('${c.id}')" class="category-chip px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${currentFilterCategory === c.id ? 'bg-[#141210] text-[#FAF8F5]' : 'bg-[#FAF8F5] text-[#5E574E] hover:text-[#141210] border border-[#EAE3D6]'}">
+                    ${c.name}
+                  </button>
+                `).join('')}
+              </div>
+
+              <!-- Sorting & Brand Selector -->
+              <div class="flex items-center gap-3 shrink-0">
+                <select id="brand-filter-select" onchange="setFilterBrand(this.value)" class="text-xs bg-[#FAF8F5] border border-[#EAE3D6] rounded-xl px-3 py-2 text-[#141210] focus:outline-none focus:border-[#141210]">
+                  <option value="all">All Brands (${BRANDS_LIST.length})</option>
+                  ${BRANDS_LIST.map(b => `<option value="${b.name}" ${currentFilterBrand === b.name ? 'selected' : ''}>${b.name}</option>`).join('')}
+                </select>
+
+                <select id="sort-select" onchange="setSortOption(this.value)" class="text-xs bg-[#FAF8F5] border border-[#EAE3D6] rounded-xl px-3 py-2 text-[#141210] focus:outline-none focus:border-[#141210]">
+                  <option value="recommended" ${currentSortOption === 'recommended' ? 'selected' : ''}>Sort: Recommended</option>
+                  <option value="price-asc" ${currentSortOption === 'price-asc' ? 'selected' : ''}>Price: Low to High</option>
+                  <option value="price-desc" ${currentSortOption === 'price-desc' ? 'selected' : ''}>Price: High to Low</option>
+                  <option value="rating" ${currentSortOption === 'rating' ? 'selected' : ''}>Highest Customer Rating</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Active Products Count & Grid Container -->
+            <div id="shop-products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              <!-- Injected by filter logic -->
+            </div>
+          </div>
+        `;
+
+        renderFilteredShopProducts();
+      }
+
+      function setFilterCategory(catId) {
+        currentFilterCategory = catId;
+        renderShopView();
+      }
+
+      function setFilterBrand(brandName) {
+        currentFilterBrand = brandName;
+        renderFilteredShopProducts();
+      }
+
+      function setSortOption(sortOpt) {
+        currentSortOption = sortOpt;
+        renderFilteredShopProducts();
+      }
+
+      function renderFilteredShopProducts() {
+        const grid = document.getElementById('shop-products-grid');
+        if (!grid) return;
+
+        let list = [...CATALOGUE];
+
+        if (currentFilterCategory !== 'all') {
+          list = list.filter(p => p.category === currentFilterCategory);
+        }
+
+        if (currentFilterBrand !== 'all') {
+          list = list.filter(p => p.brand.toLowerCase() === currentFilterBrand.toLowerCase());
+        }
+
+        // Sorting logic
+        if (currentSortOption === 'price-asc') {
+          list.sort((a, b) => a.priceKES - b.priceKES);
+        } else if (currentSortOption === 'price-desc') {
+          list.sort((a, b) => b.priceKES - a.priceKES);
+        } else if (currentSortOption === 'rating') {
+          list.sort((a, b) => b.rating - a.rating);
+        }
+
+        if (list.length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full py-16 text-center space-y-3">
+              <p class="font-editorial text-2xl font-bold text-[#141210]">No formulas match your filters</p>
+              <p class="text-xs text-[#999084]">Try clearing the brand or category selection to see our full catalogue.</p>
+              <button onclick="currentFilterCategory='all'; currentFilterBrand='all'; renderShopView();" class="px-5 py-2.5 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold">
+                Clear All Filters
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = list.map(p => renderProductCardHTML(p)).join('');
+        lucide.createIcons();
+      }
+
+      /* =========================================================================
+       * SCREEN 3: DEDICATED CATEGORY VIEW (e.g. #category/makeup, #category/skincare)
+       * ========================================================================= */
+      function renderCategoryView(categoryId) {
+        const container = document.getElementById('view-container');
+        const cat = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES[1];
+        const products = CATALOGUE.filter(p => p.category === cat.id);
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <nav class="text-xs text-[#999084] flex items-center gap-2 mb-2">
+              <a href="#home" class="hover:text-[#141210]">Home</a>
+              <span>/</span>
+              <a href="#shop" class="hover:text-[#141210]">Categories</a>
+              <span>/</span>
+              <span class="text-[#141210] font-semibold">${cat.name}</span>
+            </nav>
+
+            <!-- Category Header Banner -->
+            <div class="bg-white p-6 sm:p-10 rounded-3xl border border-[#EAE3D6] mb-8 shadow-sm">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]">Specialized Collection</span>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210] mt-1">${cat.name}</h1>
+              <p class="text-xs text-[#5E574E] mt-2 max-w-xl leading-relaxed">${cat.description}</p>
+              <div class="mt-4 flex items-center gap-2 text-xs font-semibold text-[#141210]">
+                <span>${products.length} Products Available</span>
+                <span>·</span>
+                <span>Free Nairobi Delivery on orders over KSh 3,500</span>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              ${products.map(p => renderProductCardHTML(p)).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 4: INDIVIDUAL BRAND VIEW (e.g. #brand/aura-botanica)
+       * ========================================================================= */
+      function renderBrandView(brandId) {
+        const container = document.getElementById('view-container');
+        const brand = BRANDS_LIST.find(b => b.id === brandId) || BRANDS_LIST[0];
+        const products = CATALOGUE.filter(p => p.brand.toLowerCase() === brand.name.toLowerCase());
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <nav class="text-xs text-[#999084] flex items-center gap-2 mb-2">
+              <a href="#home" class="hover:text-[#141210]">Home</a>
+              <span>/</span>
+              <a href="#brands" class="hover:text-[#141210]">Brands</a>
+              <span>/</span>
+              <span class="text-[#141210] font-semibold">${brand.name}</span>
+            </nav>
+
+            <div class="bg-[#F5EFEB] p-6 sm:p-10 rounded-3xl border border-[#EAE3D6] mb-8">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#D8EB58] bg-[#141210] px-3 py-1 rounded-full">
+                Origin: ${brand.country}
+              </span>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210] mt-3">${brand.name}</h1>
+              <p class="text-sm font-medium text-[#D96843] mt-1">${brand.tagline}</p>
+              <p class="text-xs text-[#5E574E] mt-3 max-w-2xl leading-relaxed">${brand.description}</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              ${products.length > 0 ? products.map(p => renderProductCardHTML(p)).join('') : `
+                <div class="col-span-full py-12 text-center text-xs text-[#999084]">
+                  Additional formulations from ${brand.name} are arriving in our next shipment flight.
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 5: BRANDS DIRECTORY VIEW (#brands)
+       * ========================================================================= */
+      function renderBrandsDirectoryView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="mb-10 text-center max-w-xl mx-auto">
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210]">Artisan & Luxury Brand Houses</h1>
+              <p class="text-xs text-[#5E574E] mt-2">Discover the world's most disciplined clean beauty innovators and French perfume houses.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${BRANDS_LIST.map(b => {
+                const count = CATALOGUE.filter(p => p.brand.toLowerCase() === b.name.toLowerCase()).length;
+                return `
+                  <a href="#brand/${b.id}" class="group bg-white p-6 rounded-3xl border border-[#EAE3D6] hover:border-[#141210] transition-all shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between text-xs text-[#999084] mb-2">
+                        <span>${b.country}</span>
+                        <span class="font-semibold">${count} items</span>
+                      </div>
+                      <h3 class="font-editorial text-xl font-bold text-[#141210] group-hover:text-black">${b.name}</h3>
+                      <p class="text-xs text-[#D96843] font-medium mt-1">${b.tagline}</p>
+                      <p class="text-xs text-[#5E574E] mt-3 line-clamp-3 leading-relaxed">${b.description}</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-[#EAE3D6] flex items-center justify-between text-xs font-semibold text-[#141210]">
+                      <span>Explore Collection</span>
+                      <span class="group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </a>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 6: PRODUCT DETAIL PAGE (PDP) - Rich, Variant Swatches, Verified Tabs
+       * ========================================================================= */
+      let selectedShadeState = {};
+
+      function renderProductDetailView(productId) {
+        const container = document.getElementById('view-container');
+        const product = CATALOGUE.find(p => p.id === productId) || CATALOGUE[0];
+        const isWishlisted = wishlist.includes(product.id);
+        const related = CATALOGUE.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+
+        if (!selectedShadeState[product.id] && product.shades) {
+          selectedShadeState[product.id] = product.shades[0].name;
+        }
+        const activeShade = selectedShadeState[product.id];
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Breadcrumbs -->
+            <nav class="text-xs text-[#999084] flex items-center gap-2 mb-6">
+              <a href="#home" class="hover:text-[#141210]">Home</a>
+              <span>/</span>
+              <a href="#category/${product.category}" class="hover:text-[#141210] capitalize">${product.category}</a>
+              <span>/</span>
+              <span class="text-[#141210] font-semibold truncate">${product.name}</span>
+            </nav>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+              
+              <!-- Left: Image Gallery & Highlights (7 cols) -->
+              <div class="lg:col-span-7 space-y-4">
+                <div class="relative rounded-3xl overflow-hidden bg-[#F5EFEB] border border-[#EAE3D6] aspect-square max-h-[580px] flex items-center justify-center">
+                  <img id="main-product-img" src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=800&q=80'" />
+                  
+                  <button onclick="toggleWishlist('${product.id}')" aria-label="Toggle wishlist" class="wishlist-btn-${product.id} absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-[#141210] shadow-md transition-transform hover:scale-110 ${isWishlisted ? 'text-[#D96843] fill-[#D96843]' : ''}">
+                    <i data-lucide="heart" class="w-5 h-5"></i>
+                  </button>
+
+                  ${product.badge ? `
+                    <span class="absolute top-4 left-4 bg-[#141210] text-[#D8EB58] text-xs font-semibold px-3 py-1 rounded-full">
+                      ${product.badge}
+                    </span>
+                  ` : ''}
+                </div>
+
+                <!-- Thumbnails Gallery row -->
+                <div class="grid grid-cols-4 gap-3">
+                  <button onclick="setMainImage('${product.image}')" class="rounded-xl overflow-hidden border-2 border-[#141210] aspect-square bg-[#F5EFEB]">
+                    <img src="${product.image}" alt="Main view" class="w-full h-full object-cover" />
+                  </button>
+                  <button onclick="setMainImage('./src/assets/images/hero_botanical_beauty_1791795227849.jpg')" class="rounded-xl overflow-hidden border border-[#EAE3D6] aspect-square bg-[#F5EFEB] hover:border-[#141210]">
+                    <img src="./src/assets/images/hero_botanical_beauty_1791795227849.jpg" alt="Model lifestyle" class="w-full h-full object-cover" />
+                  </button>
+                  <button onclick="setMainImage('./src/assets/images/skincare_dropper_serum_1791795239150.jpg')" class="rounded-xl overflow-hidden border border-[#EAE3D6] aspect-square bg-[#F5EFEB] hover:border-[#141210]">
+                    <img src="./src/assets/images/skincare_dropper_serum_1791795239150.jpg" alt="Texture swatch" class="w-full h-full object-cover" />
+                  </button>
+                  <button onclick="setMainImage('./src/assets/images/editorial_model_radiance_1791795250849.jpg')" class="rounded-xl overflow-hidden border border-[#EAE3D6] aspect-square bg-[#F5EFEB] hover:border-[#141210]">
+                    <img src="./src/assets/images/editorial_model_radiance_1791795250849.jpg" alt="Application angle" class="w-full h-full object-cover" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right: Contiguous Purchase Module (5 cols) -->
+              <div class="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-6">
+                <div>
+                  <div class="flex items-center justify-between text-xs text-[#999084] mb-1">
+                    <a href="#brand/${product.brand.toLowerCase().replace(/\s+/g, '-')}" class="font-bold uppercase tracking-wider text-[#D96843] hover:underline">${product.brand}</a>
+                    <span class="font-medium">${product.volume || 'Standard Full Size'}</span>
+                  </div>
+                  <h1 class="font-editorial text-2xl sm:text-3xl font-bold text-[#141210]">${product.name}</h1>
+                  
+                  <div class="flex items-center gap-3 mt-2 text-xs">
+                    <div class="flex items-center text-amber-500 font-bold">
+                      ★★★★★ <span class="ml-1 text-[#141210]">${product.rating}</span>
+                    </div>
+                    <span class="text-[#999084]">(${product.reviewsCount} verified reviews)</span>
+                    <span class="text-[#D8EB58] bg-[#141210] px-2 py-0.5 rounded-full text-[10px] font-bold">In Stock</span>
+                  </div>
+                </div>
+
+                <!-- Price Row -->
+                <div class="border-t border-b border-[#EAE3D6] py-4 flex items-baseline gap-3">
+                  <span class="text-2xl sm:text-3xl font-bold text-[#141210] tabular-nums">${formatPrice(product.priceKES)}</span>
+                  ${product.originalPriceKES ? `
+                    <span class="text-sm text-[#999084] line-through tabular-nums">${formatPrice(product.originalPriceKES)}</span>
+                    <span class="text-xs font-bold text-[#D96843]">Save ${formatPrice(product.originalPriceKES - product.priceKES)}</span>
+                  ` : ''}
+                </div>
+
+                <!-- Shade Selector (if shades available) -->
+                ${product.shades ? `
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="font-bold text-[#141210]">Select Shade:</span>
+                      <span id="active-shade-name" class="font-semibold text-[#D96843]">${activeShade}</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                      ${product.shades.map(s => `
+                        <button onclick="selectShade('${product.id}', '${s.name}')" title="${s.name}" class="swatch-btn w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center ${activeShade === s.name ? 'border-[#141210] ring-2 ring-[#141210]/20 scale-110' : 'border-[#EAE3D6] hover:scale-105'}" style="background-color: ${s.hex};">
+                          ${activeShade === s.name ? `<span class="w-1.5 h-1.5 rounded-full ${s.hex < '#888888' ? 'bg-white' : 'bg-black'}"></span>` : ''}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+
+                <!-- Quantity & Purchase CTAs -->
+                <div class="space-y-3 pt-2">
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center border border-[#EAE3D6] rounded-full px-3 py-2 bg-[#FAF8F5]">
+                      <button onclick="stepPDPQty(-1)" class="text-sm font-bold px-2 text-[#5E574E] hover:text-[#141210]">−</button>
+                      <span id="pdp-qty-display" class="px-3 text-xs font-bold tabular-nums">1</span>
+                      <button onclick="stepPDPQty(1)" class="text-sm font-bold px-2 text-[#5E574E] hover:text-[#141210]">+</button>
+                    </div>
+
+                    <button onclick="addCurrentPDPToCart('${product.id}')" class="flex-1 bg-[#141210] hover:bg-black text-[#FAF8F5] py-3.5 rounded-full text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md">
+                      <i data-lucide="shopping-bag" class="w-4 h-4 text-[#D8EB58]"></i>
+                      <span>Add to Bag</span>
+                    </button>
+                  </div>
+
+                  <button onclick="buyNowPDP('${product.id}')" class="w-full bg-[#D8EB58] hover:bg-[#CEE34B] text-[#141210] py-3.5 rounded-full text-xs font-bold tracking-wider uppercase transition-all shadow-sm">
+                    Express Checkout (M-Pesa / Card)
+                  </button>
+                </div>
+
+                <!-- Trust Points -->
+                <div class="bg-[#F5EFEB] p-4 rounded-2xl border border-[#EAE3D6] space-y-2 text-xs text-[#5E574E]">
+                  <div class="flex items-center gap-2 text-[#141210] font-medium">
+                    <i data-lucide="truck" class="w-4 h-4 text-[#D96843]"></i>
+                    <span>Same-day dispatch in Nairobi; 24-48 hours across Kenya</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[#141210] font-medium">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-[#D96843]"></i>
+                    <span>100% Authentic Guaranteed · 14-Day Hassle-Free Returns</span>
+                  </div>
+                </div>
+
+                <!-- Product Specifications Accordion -->
+                <div class="border-t border-[#EAE3D6] pt-4 space-y-3 text-xs">
+                  <div>
+                    <h3 class="font-bold text-[#141210] uppercase tracking-wider text-[11px] mb-1">Key Botanical Benefits</h3>
+                    <ul class="space-y-1 text-[#5E574E]">
+                      ${product.benefits.map(b => `<li>✦ ${b}</li>`).join('')}
+                    </ul>
+                  </div>
+
+                  <div class="pt-2">
+                    <h3 class="font-bold text-[#141210] uppercase tracking-wider text-[11px] mb-1">How to Use in Your Ritual</h3>
+                    <p class="text-[#5E574E] leading-relaxed">${product.howToUse}</p>
+                  </div>
+
+                  <div class="pt-2">
+                    <h3 class="font-bold text-[#141210] uppercase tracking-wider text-[11px] mb-1">Verified Full Ingredients</h3>
+                    <p class="text-[#999084] font-mono text-[10px] leading-relaxed bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EAE3D6]">
+                      ${product.ingredients}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Related Products Section -->
+            <div class="mt-16 pt-12 border-t border-[#EAE3D6]">
+              <h2 class="font-editorial text-2xl font-bold text-[#141210] mb-6">Frequently Paired Together</h2>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+                ${related.map(p => renderProductCardHTML(p)).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function setMainImage(src) {
+        const img = document.getElementById('main-product-img');
+        if (img) img.src = src;
+      }
+
+      let pdpQty = 1;
+      function stepPDPQty(delta) {
+        pdpQty = Math.max(1, pdpQty + delta);
+        const display = document.getElementById('pdp-qty-display');
+        if (display) display.textContent = pdpQty;
+      }
+
+      function selectShade(productId, shadeName) {
+        selectedShadeState[productId] = shadeName;
+        const label = document.getElementById('active-shade-name');
+        if (label) label.textContent = shadeName;
+        renderProductDetailView(productId);
+      }
+
+      function addCurrentPDPToCart(productId) {
+        const product = CATALOGUE.find(p => p.id === productId);
+        const shade = selectedShadeState[productId] || (product && product.shades ? product.shades[0].name : null);
+        addToCart(productId, shade, pdpQty, true);
+      }
+
+      function buyNowPDP(productId) {
+        addCurrentPDPToCart(productId);
+        closeCartDrawer();
+        window.location.hash = '#checkout';
+      }
+
+      /* =========================================================================
+       * SCREEN 7: DEDICATED FULL CART PAGE (#cart)
+       * ========================================================================= */
+      function renderCartPageView() {
+        const container = document.getElementById('view-container');
+        const subtotal = cart.reduce((acc, item) => acc + (item.priceKES * item.qty), 0);
+        const discount = appliedDiscount && appliedDiscount.percent ? subtotal * (appliedDiscount.percent / 100) : 0;
+        const shipping = subtotal >= APP_CONFIG.FREE_SHIPPING_THRESHOLD_KES ? 0 : (subtotal > 0 ? APP_CONFIG.DEFAULT_SHIPPING_FEE_KES : 0);
+        const total = Math.max(0, subtotal - discount + shipping);
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 class="font-editorial text-3xl font-bold text-[#141210] mb-6">Your Shopping Bag</h1>
+
+            ${cart.length === 0 ? `
+              <div class="bg-white p-12 rounded-3xl border border-[#EAE3D6] text-center space-y-4">
+                <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto text-[#999084]"></i>
+                <h2 class="font-editorial text-xl font-bold text-[#141210]">Your bag is currently empty</h2>
+                <a href="#shop" class="inline-block bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold">Discover Catalogue</a>
+              </div>
+            ` : `
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div class="lg:col-span-8 bg-white p-6 rounded-3xl border border-[#EAE3D6] shadow-sm divide-y divide-[#EAE3D6]">
+                  ${cart.map((item, index) => `
+                    <div class="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                      <div class="flex items-center gap-4">
+                        <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-cover rounded-2xl bg-[#F5EFEB] shrink-0" />
+                        <div>
+                          <p class="text-xs uppercase tracking-wider font-bold text-[#999084]">${item.brand}</p>
+                          <h3 class="text-sm font-semibold text-[#141210]">${item.name}</h3>
+                          ${item.shade ? `<p class="text-xs text-[#5E574E] mt-0.5">Shade: <strong>${item.shade}</strong></p>` : ''}
+                          <p class="text-xs font-bold text-[#141210] mt-1 tabular-nums">${formatPrice(item.priceKES)}</p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-4">
+                        <div class="flex items-center border border-[#EAE3D6] rounded-full bg-[#FAF8F5]">
+                          <button onclick="updateCartQty(${index}, ${item.qty - 1}); renderCartPageView();" class="px-2.5 py-1 text-xs font-bold">−</button>
+                          <span class="px-2 text-xs font-semibold tabular-nums">${item.qty}</span>
+                          <button onclick="updateCartQty(${index}, ${item.qty + 1}); renderCartPageView();" class="px-2.5 py-1 text-xs font-bold">+</button>
+                        </div>
+                        <span class="font-bold text-sm text-[#141210] tabular-nums min-w-[70px] text-right">${formatPrice(item.priceKES * item.qty)}</span>
+                        <button onclick="removeCartItem(${index}); renderCartPageView();" class="text-[#999084] hover:text-[#D96843]">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="lg:col-span-4 bg-white p-6 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-4">
+                  <h3 class="font-editorial text-lg font-bold text-[#141210]">Order Summary</h3>
+                  <div class="space-y-2 text-xs">
+                    <div class="flex justify-between text-[#5E574E]">
+                      <span>Subtotal</span>
+                      <span class="font-bold text-[#141210] tabular-nums">${formatPrice(subtotal)}</span>
+                    </div>
+                    ${discount > 0 ? `
+                      <div class="flex justify-between text-[#D96843]">
+                        <span>Promo (${appliedDiscount.code})</span>
+                        <span class="font-bold tabular-nums">-${formatPrice(discount)}</span>
+                      </div>
+                    ` : ''}
+                    <div class="flex justify-between text-[#5E574E]">
+                      <span>Delivery</span>
+                      <span class="font-bold text-[#141210]">${shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                    </div>
+                    <div class="border-t border-[#EAE3D6] pt-3 flex justify-between text-base font-bold text-[#141210]">
+                      <span>Grand Total</span>
+                      <span class="tabular-nums">${formatPrice(total)}</span>
+                    </div>
+                  </div>
+
+                  <a href="#checkout" class="w-full bg-[#141210] hover:bg-black text-[#FAF8F5] py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-center block transition-all shadow-md">
+                    Proceed to Checkout
+                  </a>
+                  <a href="#shop" class="w-full text-center text-xs text-[#5E574E] hover:text-[#141210] block pt-1">
+                    ← Continue Shopping
+                  </a>
+                </div>
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 8: WISHLIST VIEW (#wishlist)
+       * ========================================================================= */
+      function renderWishlistView() {
+        const container = document.getElementById('view-container');
+        const wishlistProducts = CATALOGUE.filter(p => wishlist.includes(p.id));
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h1 class="font-editorial text-3xl font-bold text-[#141210]">My Saved Radiance Wishlist</h1>
+                <p class="text-xs text-[#5E574E] mt-1">${wishlistProducts.length} items saved to your personal beauty collection</p>
+              </div>
+              ${wishlistProducts.length > 0 ? `
+                <button onclick="moveAllWishlistToBag()" class="px-5 py-2.5 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold hover:bg-black">
+                  Add All to Bag
+                </button>
+              ` : ''}
+            </div>
+
+            ${wishlistProducts.length === 0 ? `
+              <div class="bg-white p-12 rounded-3xl border border-[#EAE3D6] text-center space-y-4">
+                <i data-lucide="heart" class="w-12 h-12 mx-auto text-[#999084]"></i>
+                <h2 class="font-editorial text-xl font-bold text-[#141210]">Your wishlist is currently empty</h2>
+                <p class="text-xs text-[#999084] max-w-sm mx-auto">Click the heart icon on any product to save your holy-grail formulas for later.</p>
+                <a href="#shop" class="inline-block bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold">Discover Products</a>
+              </div>
+            ` : `
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                ${wishlistProducts.map(p => renderProductCardHTML(p)).join('')}
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      function moveAllWishlistToBag() {
+        wishlist.forEach(id => addToCart(id, null, 1, false));
+        wishlist = [];
+        saveWishlist();
+        renderWishlistView();
+        openCartDrawer();
+        showToast("All wishlist items moved to your bag!");
+      }
+
+      /* =========================================================================
+       * SCREEN 9: CHECKOUT VIEW (Paystack & M-Pesa Integrated Demo Flow)
+       * ========================================================================= */
+      let checkoutStep = 1;
+      let selectedPaymentMethod = 'mpesa';
+
+      function renderCheckoutView() {
+        const container = document.getElementById('view-container');
+        const subtotal = cart.reduce((acc, item) => acc + (item.priceKES * item.qty), 0);
+        const discount = appliedDiscount && appliedDiscount.percent ? subtotal * (appliedDiscount.percent / 100) : 0;
+        const shipping = subtotal >= APP_CONFIG.FREE_SHIPPING_THRESHOLD_KES ? 0 : (subtotal > 0 ? APP_CONFIG.DEFAULT_SHIPPING_FEE_KES : 0);
+        const total = Math.max(0, subtotal - discount + shipping);
+
+        if (cart.length === 0) {
+          container.innerHTML = `
+            <div class="max-w-md mx-auto px-4 py-16 text-center space-y-4">
+              <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto text-[#999084]"></i>
+              <h2 class="font-editorial text-2xl font-bold text-[#141210]">Your bag is empty</h2>
+              <p class="text-xs text-[#999084]">Please add formulas to your bag before proceeding to checkout.</p>
+              <a href="#shop" class="inline-block bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold">Explore Catalogue</a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 class="font-editorial text-3xl font-bold text-[#141210] mb-2">Secure Botanical Checkout</h1>
+            <p class="text-xs text-[#5E574E] mb-8">Encrypted checkout for delivery throughout Kenya. All prices in KES.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left Form Column (7 cols) -->
+              <div class="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-6">
+                
+                <!-- Notice of Honest Simulation Gateway -->
+                <div class="bg-[#FAF8F5] border border-[#EAE3D6] p-4 rounded-2xl text-[11px] text-[#5E574E] flex items-start gap-3">
+                  <i data-lucide="info" class="w-4 h-4 text-[#D96843] shrink-0 mt-0.5"></i>
+                  <div>
+                    <span class="font-bold text-[#141210]">Demonstration Gateway:</span>
+                    This production prototype supports authentic Kenyan M-Pesa STK push simulation and Paystack workflows. No live card will be charged.
+                  </div>
+                </div>
+
+                <!-- Form Section 1: Customer Details -->
+                <div class="space-y-4">
+                  <h2 class="font-editorial text-lg font-bold text-[#141210] flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-[#141210] text-white text-xs flex items-center justify-center font-sans">1</span>
+                    Customer Information
+                  </h2>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label class="block font-semibold text-[#141210] mb-1">Full Name</label>
+                      <input type="text" id="checkout-name" value="${customerAccount.name}" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" required />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-[#141210] mb-1">Email Address</label>
+                      <input type="email" id="checkout-email" value="${customerAccount.email}" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" required />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block font-semibold text-[#141210] mb-1">M-Pesa / Phone Number (Kenya format +254...)</label>
+                      <input type="tel" id="checkout-phone" value="${customerAccount.phone}" placeholder="+254 712 345 678" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] font-mono focus:outline-none focus:border-[#141210]" required />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Form Section 2: Delivery Address -->
+                <div class="border-t border-[#EAE3D6] pt-6 space-y-4">
+                  <h2 class="font-editorial text-lg font-bold text-[#141210] flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-[#141210] text-white text-xs flex items-center justify-center font-sans">2</span>
+                    Delivery Location (Kenya)
+                  </h2>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label class="block font-semibold text-[#141210] mb-1">County / City</label>
+                      <select id="checkout-city" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]">
+                        <option value="Nairobi - Kilimani / Westlands">Nairobi - Central & Environs</option>
+                        <option value="Nairobi - Karen / Langata">Nairobi - Karen / Langata</option>
+                        <option value="Mombasa - Nyali / Island">Mombasa</option>
+                        <option value="Kisumu - Milimani">Kisumu</option>
+                        <option value="Nakuru / Naivasha">Nakuru</option>
+                        <option value="Eldoret">Eldoret</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-[#141210] mb-1">Apartment / House / Street</label>
+                      <input type="text" id="checkout-address" value="Mimosa Court, Apt 4B, Wood Avenue" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" required />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block font-semibold text-[#141210] mb-1">Delivery Notes / Landmark</label>
+                      <input type="text" id="checkout-notes" placeholder="e.g. Leave with building security; ring bell 4B" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Form Section 3: Payment Method Selection -->
+                <div class="border-t border-[#EAE3D6] pt-6 space-y-4">
+                  <h2 class="font-editorial text-lg font-bold text-[#141210] flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-[#141210] text-white text-xs flex items-center justify-center font-sans">3</span>
+                    Payment Method
+                  </h2>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <!-- M-Pesa Option -->
+                    <label onclick="selectPaymentMethod('mpesa')" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${selectedPaymentMethod === 'mpesa' ? 'border-[#141210] bg-[#FAF8F5]' : 'border-[#EAE3D6] bg-white'}">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-700">M-PESA Express</span>
+                        <input type="radio" name="payment" value="mpesa" ${selectedPaymentMethod === 'mpesa' ? 'checked' : ''} class="accent-black" />
+                      </div>
+                      <p class="text-[10px] text-[#5E574E] mt-2">Instant Safaricom STK Push to your phone.</p>
+                    </label>
+
+                    <!-- Paystack Option -->
+                    <label onclick="selectPaymentMethod('paystack')" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${selectedPaymentMethod === 'paystack' ? 'border-[#141210] bg-[#FAF8F5]' : 'border-[#EAE3D6] bg-white'}">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-sky-700">Paystack</span>
+                        <input type="radio" name="payment" value="paystack" ${selectedPaymentMethod === 'paystack' ? 'checked' : ''} class="accent-black" />
+                      </div>
+                      <p class="text-[10px] text-[#5E574E] mt-2">Card, Bank Transfer, Apple Pay.</p>
+                    </label>
+
+                    <!-- Cash on Delivery -->
+                    <label onclick="selectPaymentMethod('cod')" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${selectedPaymentMethod === 'cod' ? 'border-[#141210] bg-[#FAF8F5]' : 'border-[#EAE3D6] bg-white'}">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-[#141210]">Cash on Delivery</span>
+                        <input type="radio" name="payment" value="cod" ${selectedPaymentMethod === 'cod' ? 'checked' : ''} class="accent-black" />
+                      </div>
+                      <p class="text-[10px] text-[#5E574E] mt-2">Pay upon arrival in Nairobi.</p>
+                    </label>
+                  </div>
+
+                  <!-- Dynamic Payment Details Box -->
+                  <div id="payment-details-box" class="p-4 rounded-2xl bg-[#FAF8F5] border border-[#EAE3D6] text-xs">
+                    ${selectedPaymentMethod === 'mpesa' ? `
+                      <div class="space-y-2">
+                        <p class="font-bold text-[#141210]">Safaricom STK Push Simulation:</p>
+                        <p class="text-[#5E574E]">When you click 'Confirm Order', a prompt will trigger on your phone asking for your M-Pesa PIN for <strong class="text-[#141210]">${formatPrice(total)}</strong>.</p>
+                        <p class="text-[11px] text-[#999084]">Paybill: <strong>247247</strong> · Account: <strong>AURA LUXE</strong></p>
+                      </div>
+                    ` : selectedPaymentMethod === 'paystack' ? `
+                      <div class="space-y-2">
+                        <p class="font-bold text-[#141210]">Paystack Secured Gateway:</p>
+                        <p class="text-[#5E574E]">You will be routed through the simulated Paystack modal with 3D Secure verification.</p>
+                      </div>
+                    ` : `
+                      <div class="space-y-2">
+                        <p class="font-bold text-[#141210]">Cash on Delivery:</p>
+                        <p class="text-[#5E574E]">Pay our courteous concierge courier in cash or via M-Pesa till upon physical inspection.</p>
+                      </div>
+                    `}
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                  <button id="pay-confirm-btn" onclick="initiatePaymentFlow(${total})" class="w-full bg-[#141210] hover:bg-black text-[#FAF8F5] py-4 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2">
+                    <i data-lucide="lock" class="w-4 h-4 text-[#D8EB58]"></i>
+                    <span>Confirm Order & Pay ${formatPrice(total)}</span>
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Right Summary Column (5 cols) -->
+              <div class="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-4">
+                <h2 class="font-editorial text-lg font-bold text-[#141210]">Order Items (${cart.length})</h2>
+                <div class="divide-y divide-[#EAE3D6] max-h-64 overflow-y-auto pr-1">
+                  ${cart.map(item => `
+                    <div class="py-3 flex items-center gap-3">
+                      <img src="${item.image}" alt="${item.name}" class="w-12 h-12 object-cover rounded-xl bg-[#F5EFEB] shrink-0" />
+                      <div class="flex-1 min-w-0 text-xs">
+                        <h3 class="font-semibold text-[#141210] truncate">${item.name}</h3>
+                        ${item.shade ? `<p class="text-[11px] text-[#999084]">Shade: ${item.shade}</p>` : ''}
+                        <p class="text-[11px] text-[#5E574E]">Qty: ${item.qty} × ${formatPrice(item.priceKES)}</p>
+                      </div>
+                      <span class="font-bold text-xs tabular-nums text-[#141210]">${formatPrice(item.priceKES * item.qty)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="border-t border-[#EAE3D6] pt-4 space-y-2 text-xs">
+                  <div class="flex justify-between text-[#5E574E]">
+                    <span>Subtotal</span>
+                    <span class="font-bold text-[#141210] tabular-nums">${formatPrice(subtotal)}</span>
+                  </div>
+                  ${discount > 0 ? `
+                    <div class="flex justify-between text-[#D96843]">
+                      <span>Discount (${appliedDiscount.code})</span>
+                      <span class="font-bold tabular-nums">-${formatPrice(discount)}</span>
+                    </div>
+                  ` : ''}
+                  <div class="flex justify-between text-[#5E574E]">
+                    <span>Delivery (Kenya)</span>
+                    <span class="font-bold text-[#141210]">${shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                  </div>
+                  <div class="flex justify-between text-[#5E574E]">
+                    <span>Estimated 16% VAT</span>
+                    <span class="text-[#999084] tabular-nums">${formatPrice(subtotal * 0.16)} (Included)</span>
+                  </div>
+                  <div class="border-t border-[#EAE3D6] pt-3 flex justify-between text-base font-bold text-[#141210]">
+                    <span>Total Due</span>
+                    <span class="tabular-nums">${formatPrice(total)}</span>
+                  </div>
+                </div>
+
+                <div class="pt-4 text-[11px] text-[#999084] space-y-1">
+                  <p>✓ All formulas guaranteed 100% genuine & sealed</p>
+                  <p>✓ SMS confirmation and tracking dispatched immediately</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }
+
+      function selectPaymentMethod(method) {
+        selectedPaymentMethod = method;
+        renderCheckoutView();
+      }
+
+      function initiatePaymentFlow(total) {
+        const btn = document.getElementById('pay-confirm-btn');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = `<span class="animate-spin mr-2">✦</span> Initiating ${selectedPaymentMethod.toUpperCase()} Session...`;
+        }
+
+        const name = document.getElementById('checkout-name')?.value || "Guest Client";
+        const email = document.getElementById('checkout-email')?.value || "client@example.com";
+        const phone = document.getElementById('checkout-phone')?.value || "+254 700 000 000";
+        const city = document.getElementById('checkout-city')?.value || "Nairobi";
+        const address = document.getElementById('checkout-address')?.value || "Nairobi";
+
+        // Generate authentic Kenyan simulated order
+        const orderId = 'AL-' + Math.floor(100000 + Math.random() * 900000);
+        const mpesaRef = 'MPESA-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+        setTimeout(() => {
+          const newOrder = {
+            id: orderId,
+            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            totalKES: total,
+            currency: currentCurrency,
+            paymentMethod: selectedPaymentMethod,
+            paymentReference: selectedPaymentMethod === 'mpesa' ? mpesaRef : ('PAYSTACK-REF-' + orderId),
+            customer: { name, email, phone, city, address },
+            items: [...cart],
+            status: "Order Confirmed — Preparing Botanical Shipment"
+          };
+
+          customerOrders.unshift(newOrder);
+          localStorage.setItem('aura_orders', JSON.stringify(customerOrders));
+
+          // Clear cart
+          cart = [];
+          localStorage.setItem('aura_cart', '[]');
+          renderCartUI();
+
+          window.location.hash = `#order-success/${orderId}`;
+        }, 1800);
+      }
+
+      /* =========================================================================
+       * SCREEN 10: ORDER CONFIRMATION VIEW (#order-success/:id)
+       * ========================================================================= */
+      function renderOrderSuccessView(orderId) {
+        const container = document.getElementById('view-container');
+        const order = customerOrders.find(o => o.id === orderId) || customerOrders[0];
+
+        if (!order) {
+          container.innerHTML = `<p class="p-8 text-center">Order not found.</p>`;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="bg-white p-8 sm:p-12 rounded-3xl border border-[#EAE3D6] shadow-xl text-center space-y-6">
+              <div class="w-16 h-16 bg-[#D8EB58] text-[#141210] rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-md">
+                ✓
+              </div>
+
+              <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-[#D96843]">Payment Verified</span>
+                <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210] mt-1">Thank you, ${order.customer.name}!</h1>
+                <p class="text-xs text-[#5E574E] mt-2">Your ritual order has been received and is being hand-packaged in sustainable amber protection.</p>
+              </div>
+
+              <!-- Order Details Card -->
+              <div class="bg-[#FAF8F5] p-6 rounded-2xl border border-[#EAE3D6] text-left text-xs space-y-3">
+                <div class="flex items-center justify-between border-b border-[#EAE3D6] pb-3">
+                  <div>
+                    <p class="text-[#999084]">Order Number</p>
+                    <p class="font-mono font-bold text-sm text-[#141210]">${order.id}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-[#999084]">Payment Reference</p>
+                    <p class="font-mono font-bold text-sm text-[#D96843]">${order.paymentReference}</p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 py-2 border-b border-[#EAE3D6]">
+                  <div>
+                    <p class="text-[#999084]">Shipping Destination</p>
+                    <p class="font-semibold text-[#141210] mt-0.5">${order.customer.address}</p>
+                    <p class="text-[#5E574E]">${order.customer.city}</p>
+                  </div>
+                  <div>
+                    <p class="text-[#999084]">Contact Confirmation</p>
+                    <p class="font-semibold text-[#141210] mt-0.5">${order.customer.phone}</p>
+                    <p class="text-[#5E574E]">${order.customer.email}</p>
+                  </div>
+                </div>
+
+                <!-- Itemized Breakdown -->
+                <div class="space-y-2 pt-2">
+                  <p class="font-bold text-[#141210]">Ordered Formulations:</p>
+                  ${order.items.map(it => `
+                    <div class="flex justify-between text-[#5E574E]">
+                      <span>${it.name} ${it.shade ? `(${it.shade})` : ''} × ${it.qty}</span>
+                      <span class="font-bold text-[#141210] tabular-nums">${formatPrice(it.priceKES * it.qty)}</span>
+                    </div>
+                  `).join('')}
+                  <div class="border-t border-[#EAE3D6] pt-2 flex justify-between font-bold text-sm text-[#141210]">
+                    <span>Total Paid</span>
+                    <span class="tabular-nums">${formatPrice(order.totalKES)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+                <button onclick="window.print()" class="px-6 py-3 rounded-full border border-[#EAE3D6] hover:border-[#141210] text-xs font-semibold text-[#141210] transition-colors">
+                  Print Order Receipt
+                </button>
+                <a href="#shop" class="px-8 py-3 bg-[#141210] hover:bg-black text-[#FAF8F5] rounded-full text-xs font-semibold tracking-wider uppercase transition-all shadow-md">
+                  Continue Shopping
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 11: CUSTOMER ACCOUNT VIEW (#account)
+       * ========================================================================= */
+      function renderAccountView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 class="font-editorial text-3xl font-bold text-[#141210] mb-2">Client Portal & Order History</h1>
+            <p class="text-xs text-[#5E574E] mb-8">Manage saved shipping addresses, active shipments, and bespoke preferences.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left Profile Card (4 cols) -->
+              <div class="lg:col-span-4 bg-white p-6 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-full bg-[#D8EB58] text-[#141210] font-bold text-lg flex items-center justify-center font-editorial">
+                    ${customerAccount.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-sm text-[#141210]">${customerAccount.name}</h3>
+                    <p class="text-xs text-[#999084]">AURA Premier Client</p>
+                  </div>
+                </div>
+
+                <div class="border-t border-[#EAE3D6] pt-4 space-y-2 text-xs text-[#5E574E]">
+                  <p>✉️ ${customerAccount.email}</p>
+                  <p>📞 ${customerAccount.phone}</p>
+                  <p>📍 Nairobi, Kenya</p>
+                </div>
+
+                <div class="border-t border-[#EAE3D6] pt-4">
+                  <h4 class="font-bold text-xs text-[#141210] mb-2">Saved Addresses:</h4>
+                  ${customerAccount.savedAddresses.map(addr => `
+                    <div class="p-3 bg-[#FAF8F5] rounded-xl border border-[#EAE3D6] text-xs mb-2">
+                      <span class="font-bold text-[#141210]">${addr.label}</span>
+                      <p class="text-[#5E574E] text-[11px] mt-0.5">${addr.street}, ${addr.city}</p>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Right Orders History (8 cols) -->
+              <div class="lg:col-span-8 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-6">
+                <h3 class="font-editorial text-xl font-bold text-[#141210]">Order History (${customerOrders.length})</h3>
+
+                ${customerOrders.length === 0 ? `
+                  <div class="text-center py-12 text-[#999084] text-xs space-y-3">
+                    <i data-lucide="package" class="w-10 h-10 mx-auto text-[#EAE3D6]"></i>
+                    <p>You have not placed any orders yet.</p>
+                    <a href="#shop" class="inline-block px-5 py-2 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold">Start Your First Ritual</a>
+                  </div>
+                ` : `
+                  <div class="space-y-4">
+                    ${customerOrders.map(order => `
+                      <div class="p-5 rounded-2xl border border-[#EAE3D6] bg-[#FAF8F5] space-y-3">
+                        <div class="flex items-center justify-between text-xs">
+                          <div>
+                            <span class="font-mono font-bold text-[#141210]">${order.id}</span>
+                            <span class="text-[#999084] ml-2">· ${order.date}</span>
+                          </div>
+                          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D8EB58] text-[#141210]">
+                            ${order.status}
+                          </span>
+                        </div>
+
+                        <div class="divide-y divide-[#EAE3D6] text-xs">
+                          ${order.items.map(item => `
+                            <div class="py-1.5 flex justify-between text-[#5E574E]">
+                              <span>${item.name} × ${item.qty}</span>
+                              <span class="tabular-nums font-semibold">${formatPrice(item.priceKES * item.qty)}</span>
+                            </div>
+                          `).join('')}
+                        </div>
+
+                        <div class="border-t border-[#EAE3D6] pt-2 flex items-center justify-between text-xs">
+                          <span class="text-[#999084]">Ref: ${order.paymentReference}</span>
+                          <span class="font-bold text-sm text-[#141210] tabular-nums">Total: ${formatPrice(order.totalKES)}</span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 12: BEAUTY GUIDES & RITUALS (#guides)
+       * ========================================================================= */
+      function renderGuidesView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="mb-10 text-center max-w-xl mx-auto">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]">Botanical Masterclasses</span>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210] mt-1">Rituals & Formulation Science</h1>
+              <p class="text-xs text-[#5E574E] mt-2">Dermatologist-formulated guidance for skin layering, undertone discovery, and hair porosity.</p>
+            </div>
+
+            <div class="space-y-8">
+              <!-- Guide 1 -->
+              <div class="bg-white p-6 sm:p-10 rounded-3xl border border-[#EAE3D6] shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                <div class="md:col-span-5 rounded-2xl overflow-hidden aspect-video md:aspect-square">
+                  <img src="./src/assets/images/hero_botanical_beauty_1791795227849.jpg" alt="Glass skin routine" class="w-full h-full object-cover" />
+                </div>
+                <div class="md:col-span-7 space-y-3">
+                  <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]">The Morning Glass Skin Masterclass</span>
+                  <h2 class="font-editorial text-2xl font-bold text-[#141210]">Layering Water-Phase Actives Under Sunscreen</h2>
+                  <p class="text-xs text-[#5E574E] leading-relaxed">
+                    Begin with cold water and our gentle Papaya Enzyme melting cleanser. On damp skin, apply 3 drops of Chamomile + Bakuchiol Radiance Serum to attract moisture. Lock it in with Ceramide Barrier Cloud Cream before smoothing our Invisible Zinc SPF 50+.
+                  </p>
+                  <div class="pt-2">
+                    <a href="#product/aura-bakuchiol-serum" class="inline-block px-5 py-2 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold hover:bg-black">
+                      Shop Featured Serum
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Guide 2 -->
+              <div class="bg-white p-6 sm:p-10 rounded-3xl border border-[#EAE3D6] shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                <div class="md:col-span-5 rounded-2xl overflow-hidden aspect-video md:aspect-square">
+                  <img src="./src/assets/images/editorial_model_radiance_1791795250849.jpg" alt="Shade matching" class="w-full h-full object-cover" />
+                </div>
+                <div class="md:col-span-7 space-y-3">
+                  <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]">Complexion Masterclass</span>
+                  <h2 class="font-editorial text-2xl font-bold text-[#141210]">Finding Your True Undertone in Equatorial Light</h2>
+                  <p class="text-xs text-[#5E574E] leading-relaxed">
+                    Melanin-rich complexions frequently feature multiple undertones across the forehead and jawline. Test our Radiant Silk Foundation along the jawline in natural morning indirect light. Our 6 calibrated shades balance rich golden, red-warm, and cool espresso undertones.
+                  </p>
+                  <div class="pt-2">
+                    <a href="#product/aura-silk-foundation" class="inline-block px-5 py-2 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold hover:bg-black">
+                      Find Your Foundation Shade
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 13: ABOUT US (#about)
+       * ========================================================================= */
+      function renderAboutView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+            <div class="text-center space-y-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]">Our Heritage</span>
+              <h1 class="font-editorial text-4xl sm:text-5xl font-bold text-[#141210]">Rooted in East African Botanicals</h1>
+              <p class="text-sm text-[#5E574E] max-w-xl mx-auto leading-relaxed">
+                Founded with a singular mission: to unite the world's most potent native botanicals with rigorous modern clean cosmetic chemistry.
+              </p>
+            </div>
+
+            <div class="rounded-3xl overflow-hidden aspect-video shadow-md">
+              <img src="./src/assets/images/hero_botanical_beauty_1791795227849.jpg" alt="AURA botanica estate" class="w-full h-full object-cover" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-[#5E574E] leading-relaxed">
+              <div class="bg-white p-6 rounded-2xl border border-[#EAE3D6] space-y-2">
+                <h3 class="font-editorial text-lg font-bold text-[#141210]">01. Sacred Botanicals</h3>
+                <p>We work directly with women-led farming cooperatives across Mount Kenya and Kakamega Forest to ethically harvest Baobab, Marula, and Nilotica Shea.</p>
+              </div>
+              <div class="bg-white p-6 rounded-2xl border border-[#EAE3D6] space-y-2">
+                <h3 class="font-editorial text-lg font-bold text-[#141210]">02. Zero Compromise</h3>
+                <p>Formulated without parabens, sulfates, toxic silicones, or heavy synthetic perfumes. Dermatologist tested and hypoallergenic.</p>
+              </div>
+              <div class="bg-white p-6 rounded-2xl border border-[#EAE3D6] space-y-2">
+                <h3 class="font-editorial text-lg font-bold text-[#141210]">03. Circular Glass</h3>
+                <p>90% of our packaging utilizes heavy UV-blocking amber glass and recycled aluminum, protecting active botanical phytonutrients.</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 14: CONTACT & CONCIERGE (#contact)
+       * ========================================================================= */
+      function renderContactView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="bg-white p-8 sm:p-12 rounded-3xl border border-[#EAE3D6] shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="space-y-4">
+                <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]">Client Concierge</span>
+                <h1 class="font-editorial text-3xl font-bold text-[#141210]">How may our beauty advisors assist you?</h1>
+                <p class="text-xs text-[#5E574E] leading-relaxed">
+                  Have questions about shade matching, ritual layering, or same-day Nairobi courier dispatch? Our licensed aesthetic advisors are available daily.
+                </p>
+                <div class="pt-4 text-xs space-y-2 text-[#141210] font-medium">
+                  <p>📍 Studio: 14 Riverside Drive, Nairobi</p>
+                  <p>📞 Phone / WhatsApp: +254 700 892 000</p>
+                  <p>✉️ Email: concierge@auraluxe.co.ke</p>
+                  <p>🕒 Hours: Monday – Saturday, 8:00 AM – 7:00 PM EAT</p>
+                </div>
+              </div>
+
+              <form onsubmit="event.preventDefault(); showToast('Inquiry sent! Our concierge will reply via WhatsApp.'); this.reset();" class="space-y-3 text-xs">
+                <div>
+                  <label class="block font-semibold text-[#141210] mb-1">Your Name</label>
+                  <input type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-[#141210] mb-1">Email or Phone Number</label>
+                  <input type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-[#141210] mb-1">Message / Consultation Request</label>
+                  <textarea rows="4" required class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" placeholder="Ask about ingredients, shade matching, or order status..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-[#141210] hover:bg-black text-[#FAF8F5] py-3.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors">
+                  Send Message
+                </button>
+              </form>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 15: POLICIES, SHIPPING & RETURNS (#policies)
+       * ========================================================================= */
+      function renderPoliciesView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+            <div>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210]">Client Policies & Shipping Standards</h1>
+              <p class="text-xs text-[#5E574E] mt-2">Clear, honest terms governing nationwide delivery across Kenya, returns, and payment safety.</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl border border-[#EAE3D6] space-y-6 text-xs text-[#5E574E] leading-relaxed">
+              <section class="space-y-2">
+                <h3 class="font-editorial text-xl font-bold text-[#141210]">1. Delivery Speeds & Fees</h3>
+                <p>• <strong>Nairobi Metropolitan:</strong> Same-day delivery for orders confirmed before 1:00 PM EAT. Next-day delivery for later orders. Free for orders over KSh 3,500; standard delivery is KSh 350.</p>
+                <p>• <strong>Rest of Kenya (Mombasa, Kisumu, Nakuru, Eldoret, etc.):</strong> Dispatched via secure courier within 24–48 business hours with live SMS tracking.</p>
+              </section>
+
+              <section class="space-y-2 border-t border-[#EAE3D6] pt-6">
+                <h3 class="font-editorial text-xl font-bold text-[#141210]">2. M-Pesa & Paystack Payment Security</h3>
+                <p>All payments are processed securely through accredited Kenyan aggregators. We never store debit card CVVs or M-Pesa PINs. STK Push prompts are authenticated directly by Safaricom on your mobile device.</p>
+              </section>
+
+              <section class="space-y-2 border-t border-[#EAE3D6] pt-6">
+                <h3 class="font-editorial text-xl font-bold text-[#141210]">3. 14-Day Authenticity & Return Policy</h3>
+                <p>If an unopened product arrives damaged or causes an adverse allergic reaction, contact our concierge within 14 days of delivery for a replacement or full refund.</p>
+              </section>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 16: NOT FOUND VIEW (404)
+       * ========================================================================= */
+      function renderNotFoundView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-md mx-auto px-4 py-24 text-center space-y-4">
+            <span class="font-editorial text-6xl font-bold text-[#D96843]">404</span>
+            <h1 class="font-editorial text-2xl font-bold text-[#141210]">Formula Not Located</h1>
+            <p class="text-xs text-[#5E574E]">The beauty destination you requested does not exist or has moved.</p>
+            <a href="#home" class="inline-block mt-4 bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold">
+              Return to Storefront
+            </a>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * 8. GSAP ANIMATIONS & MOTION CONTROLLER
+       * ========================================================================= */
+      function initGSAPAnimations() {
+        // Accessibility check: do not animate if user prefers reduced motion
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          return;
+        }
+
+        if (typeof gsap === 'undefined') return;
+
+        // Animate hero headline and tags smoothly on entrance
+        const heroHeading = document.querySelector('h1');
+        if (heroHeading) {
+          gsap.fromTo(heroHeading, 
+            { opacity: 0, y: 18 },
+            { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+          );
+        }
+
+        // Animate cards on route entry
+        const cards = document.querySelectorAll('.card-zoom');
+        if (cards.length > 0) {
+          gsap.fromTo(cards,
+            { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: "power2.out" }
+          );
+        }
+      }
+    </script>
+  </body>
+</html>

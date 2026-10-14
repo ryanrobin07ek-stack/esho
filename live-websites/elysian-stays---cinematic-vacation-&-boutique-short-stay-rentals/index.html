@@ -1,0 +1,3703 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elysian Stays | Cinematic Vacation & Boutique Short-Stay Rentals</title>
+    <meta name="description" content="Discover architectural sanctuaries, luxury coastal villas, and boutique retreats. Complete booking platform with curated properties, verified availability, and host management." />
+    <meta property="og:title" content="Elysian Stays | Cinematic Vacation & Boutique Short-Stay Rentals" />
+    <meta property="og:description" content="Discover architectural sanctuaries, luxury coastal villas, and boutique retreats across exceptional destinations." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Cormorant Garamond & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- GSAP & ScrollTrigger from Cloudflare CDN for Cinematic Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+      /* ==========================================================================
+         DESIGN SYSTEM & CSS CUSTOM PROPERTIES
+         ========================================================================== */
+      :root {
+        --color-bg: #FAF7F2;
+        --color-surface: #FFFFFF;
+        --color-surface-subtle: #F3EFE9;
+        --color-surface-dark: #121815;
+        --color-surface-darker: #0A0F0D;
+        --color-surface-card-dark: #19221D;
+        --color-text-main: #18221D;
+        --color-text-muted: #5D6861;
+        --color-text-light: #F4EFEA;
+        --color-text-light-muted: #9BA7A0;
+        --color-accent: #C49758;
+        --color-accent-hover: #AE8345;
+        --color-accent-soft: #F6EFE5;
+        --color-terracotta: #B65D43;
+        --color-sage: #5F7363;
+        --color-border: #E5DFD5;
+        --color-border-dark: #28372F;
+        --color-success: #2E7D4E;
+        --color-danger: #C0392B;
+        --font-serif: 'Cormorant Garamond', Georgia, serif;
+        --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        --radius-sm: 6px;
+        --radius-md: 12px;
+        --radius-lg: 18px;
+        --radius-xl: 24px;
+        --shadow-soft: 0 4px 20px -2px rgba(24, 34, 29, 0.05);
+        --shadow-card: 0 10px 30px -4px rgba(24, 34, 29, 0.08);
+        --shadow-elevated: 0 20px 45px -10px rgba(24, 34, 29, 0.14);
+        --shadow-cinematic: 0 30px 70px -15px rgba(10, 15, 13, 0.45);
+        --transition-standard: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background-color: var(--color-bg);
+        color: var(--color-text-main);
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        min-height: 100vh;
+        overflow-x: hidden;
+        background-color: var(--color-bg);
+      }
+
+      /* Typography Helpers */
+      .font-serif { font-family: var(--font-serif); }
+      .font-sans { font-family: var(--font-sans); }
+
+      h1, h2, h3, h4 {
+        font-family: var(--font-serif);
+        font-weight: 500;
+        line-height: 1.15;
+        color: var(--color-text-main);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button, input, select, textarea {
+        font-family: inherit;
+        font-size: inherit;
+        border: none;
+        outline: none;
+        background: none;
+      }
+
+      button {
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1320px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.6rem;
+        font-weight: 600;
+        font-size: 0.92rem;
+        letter-spacing: 0.02em;
+        border-radius: 9999px;
+        transition: all 0.3s var(--transition-standard);
+      }
+
+      .btn-primary {
+        background: var(--color-surface-dark);
+        color: #F8F5EE;
+        box-shadow: 0 4px 15px rgba(18, 24, 21, 0.2);
+      }
+      .btn-primary:hover {
+        background: #25332C;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(18, 24, 21, 0.28);
+      }
+
+      .btn-accent {
+        background: var(--color-accent);
+        color: #FFFFFF;
+        box-shadow: 0 4px 15px rgba(196, 151, 88, 0.3);
+      }
+      .btn-accent:hover {
+        background: var(--color-accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(196, 151, 88, 0.4);
+      }
+
+      .btn-secondary {
+        background: var(--color-surface);
+        color: var(--color-text-main);
+        border: 1px solid var(--color-border);
+      }
+      .btn-secondary:hover {
+        background: var(--color-surface-subtle);
+        border-color: #D0C8BD;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--color-text-main);
+      }
+      .btn-ghost:hover {
+        background: rgba(24, 34, 29, 0.05);
+      }
+
+      .btn-outline-white {
+        background: transparent;
+        color: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+      }
+      .btn-outline-white:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: #FFFFFF;
+      }
+
+      /* ==========================================================================
+         CINEMATIC ENTRANCE: DOORS THAT ACTUALLY OPEN (3D HINGE ANIMATION)
+         ========================================================================== */
+      #entrance-portal {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #090E0B;
+        perspective: 1600px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Behind the doors: revealed interior sanctuary */
+      #entrance-reveal-bg {
+        position: absolute;
+        inset: 0;
+        background: url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=85') center/cover no-repeat;
+        filter: brightness(0.92) contrast(1.05);
+        transform: scale(1.08);
+        transition: transform 3.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+      }
+
+      #entrance-reveal-overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, rgba(10, 15, 12, 0.1) 0%, rgba(9, 14, 11, 0.7) 80%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        z-index: 10;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 1.6s ease, transform 1.6s var(--transition-standard);
+      }
+
+      .entrance-brand-emblem {
+        width: 56px;
+        height: 56px;
+        border: 1px solid rgba(196, 151, 88, 0.6);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: var(--color-accent);
+      }
+
+      .entrance-brand-title {
+        font-family: var(--font-serif);
+        font-size: clamp(2.5rem, 6vw, 5rem);
+        color: #F8F5EE;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      }
+
+      .entrance-brand-sub {
+        font-family: var(--font-sans);
+        font-size: 0.95rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: #D4C9BD;
+        max-width: 520px;
+        font-weight: 300;
+      }
+
+      /* 3D Doorway Structure */
+      #door-viewport {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        pointer-events: none;
+        z-index: 20;
+      }
+
+      .door-panel {
+        width: 50%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        background: #171E19;
+        /* Rich architectural fluted dark oak texture */
+        background-image: 
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 16px),
+          linear-gradient(180deg, #18221D 0%, #0F1612 100%);
+        box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.8);
+        transition: transform 2.6s cubic-bezier(0.2, 0.8, 0.15, 1);
+      }
+
+      .door-panel-left {
+        transform-origin: left center;
+        border-right: 1px solid rgba(196, 151, 88, 0.3);
+      }
+
+      .door-panel-right {
+        transform-origin: right center;
+        border-left: 1px solid rgba(196, 151, 88, 0.3);
+      }
+
+      /* Center seam golden light leaking through */
+      #door-light-seam {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 2px;
+        transform: translateX(-50%);
+        background: #FFDF9E;
+        box-shadow: 0 0 45px 12px rgba(255, 215, 130, 0.7);
+        z-index: 25;
+        transition: opacity 1.2s ease;
+      }
+
+      /* Door brass vertical handles */
+      .door-handle {
+        position: absolute;
+        top: 50%;
+        width: 6px;
+        height: 120px;
+        background: linear-gradient(180deg, #E6C280 0%, #9C7238 100%);
+        border-radius: 3px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.4);
+      }
+      .door-panel-left .door-handle {
+        right: 40px;
+        transform: translateY(-50%);
+      }
+      .door-panel-right .door-handle {
+        left: 40px;
+        transform: translateY(-50%);
+      }
+
+      /* Architectural Door Moldings */
+      .door-molding {
+        position: absolute;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+      }
+      .door-panel-left .door-molding-top {
+        top: 8%; left: 15%; right: 15%; height: 38%;
+      }
+      .door-panel-left .door-molding-bottom {
+        bottom: 8%; left: 15%; right: 15%; height: 38%;
+      }
+      .door-panel-right .door-molding-top {
+        top: 8%; left: 15%; right: 15%; height: 38%;
+      }
+      .door-panel-right .door-molding-bottom {
+        bottom: 8%; left: 15%; right: 15%; height: 38%;
+      }
+
+      /* Skip Entrance Control */
+      #skip-entrance-btn {
+        position: absolute;
+        bottom: 2.5rem;
+        right: 2.5rem;
+        z-index: 100;
+        background: rgba(18, 24, 21, 0.7);
+        backdrop-filter: blur(8px);
+        color: #F8F5EE;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 0.65rem 1.4rem;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      #skip-entrance-btn:hover {
+        background: rgba(196, 151, 88, 0.85);
+        border-color: var(--color-accent);
+      }
+
+      /* Door Open Active State */
+      .doors-opened .door-panel-left {
+        transform: rotateY(-105deg);
+      }
+      .doors-opened .door-panel-right {
+        transform: rotateY(105deg);
+      }
+      .doors-opened #door-light-seam {
+        opacity: 0;
+      }
+      .doors-opened #entrance-reveal-bg {
+        transform: scale(1);
+      }
+      .doors-opened #entrance-reveal-overlay {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* ==========================================================================
+         SITE HEADER & NAVIGATION
+         ========================================================================== */
+      #site-header {
+        position: sticky;
+        top: 0;
+        z-index: 500;
+        background: rgba(250, 247, 242, 0.92);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(229, 223, 213, 0.8);
+        transition: all 0.3s ease;
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 80px;
+      }
+
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .brand-symbol {
+        width: 38px;
+        height: 38px;
+        border: 1.5px solid var(--color-accent);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-accent);
+      }
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+      }
+      .brand-title {
+        font-family: var(--font-serif);
+        font-size: 1.6rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        color: var(--color-text-main);
+        line-height: 1;
+      }
+      .brand-tagline {
+        font-size: 0.65rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        margin-top: 2px;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+      }
+      .nav-link {
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: var(--color-text-main);
+        transition: color 0.2s ease;
+        position: relative;
+        padding: 0.4rem 0;
+      }
+      .nav-link:hover, .nav-link.active {
+        color: var(--color-accent);
+      }
+      .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1.5px;
+        background: var(--color-accent);
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      /* Currency picker */
+      .currency-selector {
+        position: relative;
+      }
+      .currency-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        padding: 0.45rem 0.8rem;
+        border-radius: 9999px;
+        background: var(--color-surface-subtle);
+        border: 1px solid var(--color-border);
+      }
+      .currency-btn:hover {
+        color: var(--color-text-main);
+        border-color: #C0B7AA;
+      }
+
+      .nav-badge-btn {
+        position: relative;
+        padding: 0.6rem;
+        border-radius: 50%;
+        color: var(--color-text-main);
+        background: transparent;
+      }
+      .nav-badge-btn:hover {
+        background: rgba(24, 34, 29, 0.06);
+      }
+      .badge-counter {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: var(--color-accent);
+        color: #FFFFFF;
+        font-size: 0.68rem;
+        font-weight: 700;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mobile-menu-toggle {
+        display: none;
+        padding: 0.6rem;
+        color: var(--color-text-main);
+      }
+
+      /* ==========================================================================
+         HERO SECTION & IMMERSIVE SEARCH BAR
+         ========================================================================== */
+      .hero-section {
+        position: relative;
+        padding: 5rem 0 7rem;
+        background: linear-gradient(180deg, rgba(245, 240, 232, 0.6) 0%, var(--color-bg) 100%);
+        overflow: hidden;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 4rem;
+        align-items: center;
+      }
+
+      .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        background: rgba(196, 151, 88, 0.12);
+        color: #9C7238;
+        border-radius: 9999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+      }
+
+      .hero-title {
+        font-size: clamp(3rem, 5.5vw, 4.8rem);
+        font-weight: 400;
+        letter-spacing: -0.02em;
+        margin-bottom: 1.5rem;
+        color: var(--color-text-main);
+      }
+      .hero-title span {
+        font-style: italic;
+        color: var(--color-accent);
+      }
+
+      .hero-lead {
+        font-size: 1.15rem;
+        line-height: 1.65;
+        color: var(--color-text-muted);
+        max-width: 540px;
+        margin-bottom: 2.5rem;
+        font-weight: 300;
+      }
+
+      .hero-visual-card {
+        position: relative;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-cinematic);
+      }
+      .hero-visual-card img {
+        width: 100%;
+        height: 540px;
+        object-fit: cover;
+        transition: transform 1.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+      }
+      .hero-visual-card:hover img {
+        transform: scale(1.03);
+      }
+      .hero-visual-badge {
+        position: absolute;
+        bottom: 2rem;
+        left: 2rem;
+        right: 2rem;
+        padding: 1.5rem;
+        background: rgba(18, 24, 21, 0.82);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: var(--radius-lg);
+        color: #F8F5EE;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* Unified Floating Search Engine */
+      .search-engine-bar {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 9999px;
+        padding: 0.6rem 0.75rem;
+        box-shadow: var(--shadow-elevated);
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr 1.2fr auto;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .search-segment {
+        padding: 0.6rem 1.2rem;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        position: relative;
+      }
+      .search-segment:hover {
+        background: var(--color-surface-subtle);
+      }
+      .search-segment:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 25%;
+        bottom: 25%;
+        width: 1px;
+        background: var(--color-border);
+      }
+      .search-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-main);
+        display: block;
+        margin-bottom: 2px;
+      }
+      .search-value {
+        font-size: 0.92rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .search-submit-btn {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--color-surface-dark);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(18, 24, 21, 0.25);
+      }
+      .search-submit-btn:hover {
+        background: var(--color-accent);
+        transform: scale(1.05);
+      }
+
+      /* Category Pills Bar */
+      .category-pills-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        overflow-x: auto;
+        padding: 2.5rem 0 1.5rem;
+        scrollbar-width: none;
+      }
+      .category-pills-bar::-webkit-scrollbar { display: none; }
+
+      .category-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.7rem 1.4rem;
+        border-radius: 9999px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+      .category-pill:hover, .category-pill.active {
+        background: var(--color-surface-dark);
+        color: #F8F5EE;
+        border-color: var(--color-surface-dark);
+      }
+      .category-pill.active svg {
+        stroke: var(--color-accent);
+      }
+
+      /* ==========================================================================
+         PROPERTY GRID & PROPERTY CARD ARCHITECTURE
+         ========================================================================== */
+      .section-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 2.5rem;
+      }
+      .section-tag {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--color-accent);
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      .section-title {
+        font-size: clamp(2rem, 3.5vw, 3rem);
+        color: var(--color-text-main);
+      }
+      .section-desc {
+        color: var(--color-text-muted);
+        font-size: 1rem;
+        max-width: 520px;
+        margin-top: 0.5rem;
+      }
+
+      .property-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 2.5rem 2rem;
+      }
+
+      .property-card {
+        display: flex;
+        flex-direction: column;
+        border-radius: var(--radius-lg);
+        background: transparent;
+        transition: transform 0.3s ease;
+        position: relative;
+      }
+      .property-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .property-card-media {
+        position: relative;
+        aspect-ratio: 4 / 3;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        background: #ECE6DC;
+        margin-bottom: 1.1rem;
+      }
+      .property-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s cubic-bezier(0.15, 0.9, 0.2, 1);
+      }
+      .property-card:hover .property-card-img {
+        transform: scale(1.05);
+      }
+
+      .property-card-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: rgba(18, 24, 21, 0.75);
+        backdrop-filter: blur(8px);
+        color: #F8F5EE;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 0.35rem 0.8rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+      }
+
+      .wishlist-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-main);
+        transition: all 0.2s ease;
+        z-index: 10;
+      }
+      .wishlist-btn:hover {
+        background: #FFFFFF;
+        transform: scale(1.1);
+      }
+      .wishlist-btn.saved {
+        color: var(--color-terracotta);
+        background: #FFFFFF;
+      }
+
+      .property-card-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.35rem;
+      }
+      .property-card-location {
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--color-accent);
+      }
+      .property-card-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      .property-card-name {
+        font-family: var(--font-serif);
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+        line-height: 1.25;
+        margin-bottom: 0.45rem;
+      }
+
+      .property-card-specs {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+        margin-bottom: 0.75rem;
+      }
+
+      .property-card-price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+        margin-top: auto;
+      }
+      .property-card-price {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+      .property-card-unit {
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+      }
+
+      /* ==========================================================================
+         EDITORIAL DESTINATIONS & CURATED COLLECTIONS
+         ========================================================================== */
+      .editorial-section {
+        padding: 6rem 0;
+      }
+
+      .destinations-mosaic {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 1.5rem;
+      }
+
+      .dest-card {
+        position: relative;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        height: 380px;
+        cursor: pointer;
+        box-shadow: var(--shadow-card);
+      }
+      .dest-card-col-6 { grid-column: span 6; }
+      .dest-card-col-4 { grid-column: span 4; }
+      .dest-card-col-8 { grid-column: span 8; }
+
+      .dest-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s var(--transition-standard);
+      }
+      .dest-card:hover .dest-card-img {
+        transform: scale(1.06);
+      }
+      .dest-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(18,24,21,0.05) 0%, rgba(18,24,21,0.78) 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 2rem;
+        color: #F8F5EE;
+      }
+      .dest-card-title {
+        font-family: var(--font-serif);
+        font-size: 1.9rem;
+        margin-bottom: 0.25rem;
+      }
+      .dest-card-subtitle {
+        font-size: 0.85rem;
+        color: #D6CBC0;
+        letter-spacing: 0.05em;
+      }
+
+      /* Storytelling banner */
+      .story-banner {
+        background: var(--color-surface-dark);
+        color: #F8F5EE;
+        border-radius: var(--radius-xl);
+        padding: 5rem 4rem;
+        margin: 6rem 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .story-banner-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 4rem;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+      }
+      .story-title {
+        font-size: clamp(2.4rem, 4vw, 3.6rem);
+        color: #F8F5EE;
+        line-height: 1.15;
+        margin-bottom: 1.5rem;
+      }
+      .story-text {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: #BBB0A3;
+        font-weight: 300;
+        margin-bottom: 2rem;
+      }
+
+      /* ==========================================================================
+         SEARCH / DISCOVERY VIEW WITH ADVANCED REAL-TIME FILTERS
+         ========================================================================== */
+      .search-view-layout {
+        padding: 3rem 0 6rem;
+      }
+      .filters-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.2rem 1.8rem;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--shadow-soft);
+      }
+      .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .filter-select {
+        padding: 0.55rem 1rem;
+        border-radius: 9999px;
+        border: 1px solid var(--color-border);
+        background: var(--color-bg);
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--color-text-main);
+        cursor: pointer;
+      }
+
+      /* ==========================================================================
+         PROPERTY DETAIL VIEW (EDITORIAL GALLERY, AMENITIES & CALENDAR)
+         ========================================================================== */
+      .property-detail-view {
+        padding: 2.5rem 0 6rem;
+      }
+      .breadcrumbs {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+        margin-bottom: 1.5rem;
+      }
+
+      .property-header-title {
+        font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+        margin-bottom: 0.75rem;
+      }
+      .property-header-sub {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+        color: var(--color-text-muted);
+      }
+
+      /* 5-Photo Editorial Gallery Grid */
+      .gallery-editorial-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        grid-template-rows: 240px 240px;
+        gap: 1rem;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        margin-bottom: 3.5rem;
+        position: relative;
+      }
+      .gallery-item-hero {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+      }
+      .gallery-item {
+        position: relative;
+        overflow: hidden;
+        background: #E5DFD5;
+        cursor: pointer;
+      }
+      .gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+      }
+      .gallery-item:hover img {
+        transform: scale(1.04);
+      }
+      .gallery-view-all-btn {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: rgba(18, 24, 21, 0.85);
+        backdrop-filter: blur(8px);
+        color: #F8F5EE;
+        padding: 0.7rem 1.4rem;
+        border-radius: 9999px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        z-index: 10;
+      }
+      .gallery-view-all-btn:hover {
+        background: #0F1612;
+      }
+
+      /* Detail 2-Column Split: Content vs Sticky Booking Widget */
+      .detail-layout-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 4.5rem;
+        align-items: start;
+      }
+
+      .detail-specs-bar {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 1.8rem 0;
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
+        margin-bottom: 2.5rem;
+      }
+      .detail-spec-item {
+        display: flex;
+        flex-direction: column;
+      }
+      .detail-spec-val {
+        font-size: 1.25rem;
+        font-weight: 600;
+        font-family: var(--font-serif);
+      }
+      .detail-spec-lbl {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .detail-section {
+        margin-bottom: 3.5rem;
+      }
+      .detail-section-title {
+        font-size: 1.7rem;
+        margin-bottom: 1.2rem;
+      }
+      .detail-body-text {
+        font-size: 1.05rem;
+        line-height: 1.75;
+        color: var(--color-text-muted);
+        font-weight: 300;
+      }
+
+      /* Amenities Grid */
+      .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.2rem 2rem;
+      }
+      .amenity-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        font-size: 0.98rem;
+        color: var(--color-text-main);
+      }
+
+      /* Sticky Booking Card */
+      .sticky-booking-widget {
+        position: sticky;
+        top: 110px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: 2.2rem;
+        box-shadow: var(--shadow-card);
+      }
+      .booking-widget-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 1.8rem;
+      }
+      .booking-rate-big {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+
+      .booking-calendar-selector {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        margin-bottom: 1.2rem;
+        overflow: hidden;
+      }
+      .booking-date-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      .date-input-box {
+        padding: 0.8rem 1rem;
+        cursor: pointer;
+        background: var(--color-bg);
+      }
+      .date-input-box:first-child {
+        border-right: 1px solid var(--color-border);
+      }
+      .date-input-lbl {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        display: block;
+      }
+      .date-input-val {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      .booking-guests-selector {
+        padding: 0.8rem 1rem;
+        border-top: 1px solid var(--color-border);
+        background: var(--color-bg);
+        cursor: pointer;
+      }
+
+      /* Price Calculation Breakdown Table */
+      .price-breakdown-table {
+        margin: 1.8rem 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .price-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.92rem;
+        color: var(--color-text-muted);
+      }
+      .price-row-total {
+        margin-top: 0.75rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--color-border);
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+
+      /* Interactive Month Calendar Component */
+      .interactive-calendar {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+      }
+      .calendar-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.2rem;
+      }
+      .calendar-month-title {
+        font-family: var(--font-serif);
+        font-size: 1.35rem;
+      }
+      .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        margin-bottom: 0.6rem;
+      }
+      .calendar-days-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+      }
+      .cal-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.88rem;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .cal-day:hover:not(.disabled) {
+        background: var(--color-surface-subtle);
+      }
+      .cal-day.disabled {
+        color: #C8BFB4;
+        cursor: not-allowed;
+        text-decoration: line-through;
+        opacity: 0.6;
+      }
+      .cal-day.selected {
+        background: var(--color-surface-dark) !important;
+        color: #F8F5EE !important;
+      }
+      .cal-day.in-range {
+        background: var(--color-accent-soft);
+        color: var(--color-text-main);
+        border-radius: 0;
+      }
+
+      /* ==========================================================================
+         CHECKOUT & BOOKING FLOW (5 REFINED STEPS)
+         ========================================================================== */
+      .checkout-layout {
+        padding: 3rem 0 6rem;
+      }
+      .checkout-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 4.5rem;
+        align-items: start;
+      }
+
+      .checkout-step-tracker {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+      }
+      .step-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+      .step-indicator.active {
+        color: var(--color-accent);
+      }
+      .step-bubble {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--color-surface-subtle);
+        border: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+      }
+      .step-indicator.active .step-bubble {
+        background: var(--color-accent);
+        color: #FFFFFF;
+        border-color: var(--color-accent);
+      }
+
+      .form-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem;
+        box-shadow: var(--shadow-card);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+      }
+      .form-group-full { grid-column: span 2; }
+
+      .input-label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-text-main);
+        margin-bottom: 0.45rem;
+      }
+      .form-control {
+        width: 100%;
+        padding: 0.85rem 1.1rem;
+        background: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 0.95rem;
+        color: var(--color-text-main);
+        transition: border-color 0.2s ease;
+      }
+      .form-control:focus {
+        border-color: var(--color-accent);
+        background: #FFFFFF;
+      }
+
+      /* Payment Gateway Selectors (Paystack & M-Pesa STK Push) */
+      .payment-methods-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin: 1.5rem 0;
+      }
+      .payment-option-card {
+        padding: 1.2rem;
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.5rem;
+        transition: all 0.25s ease;
+      }
+      .payment-option-card:hover, .payment-option-card.selected {
+        border-color: var(--color-accent);
+        background: var(--color-accent-soft);
+      }
+
+      /* ==========================================================================
+         HOST DASHBOARD & HOST ONBOARDING WIZARD
+         ========================================================================== */
+      .host-portal-header {
+        background: var(--color-surface-dark);
+        color: #F8F5EE;
+        padding: 4rem 0 3rem;
+      }
+      .host-nav-tabs {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-top: 2rem;
+        border-bottom: 1px solid var(--color-border-dark);
+      }
+      .host-tab-link {
+        padding: 0.75rem 0;
+        color: var(--color-text-light-muted);
+        font-size: 0.92rem;
+        font-weight: 500;
+        cursor: pointer;
+        position: relative;
+      }
+      .host-tab-link.active {
+        color: #FFFFFF;
+      }
+      .host-tab-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--color-accent);
+      }
+
+      .host-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin: 2.5rem 0;
+      }
+      .stat-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 1.8rem;
+        box-shadow: var(--shadow-soft);
+      }
+      .stat-card-lbl {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-muted);
+        margin-bottom: 0.4rem;
+      }
+      .stat-card-val {
+        font-family: var(--font-serif);
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      /* ==========================================================================
+         MODALS & OVERLAYS (PHOTO LIGHTBOX, M-PESA STK DIALOG, TOASTS)
+         ========================================================================== */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(10, 15, 12, 0.85);
+        backdrop-filter: blur(12px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .modal-backdrop.open {
+        display: flex;
+      }
+
+      .modal-box {
+        background: var(--color-surface);
+        border-radius: var(--radius-xl);
+        max-width: 640px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-cinematic);
+        position: relative;
+      }
+      .modal-close-btn {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--color-surface-subtle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-main);
+      }
+
+      /* Lightbox Gallery Modal */
+      .lightbox-modal {
+        background: #0B100D;
+        max-width: 1100px;
+        width: 100%;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .lightbox-media {
+        position: relative;
+        height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .lightbox-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .lightbox-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .lightbox-nav-btn:hover { background: rgba(255, 255, 255, 0.3); }
+      .lightbox-prev { left: 1.5rem; }
+      .lightbox-next { right: 1.5rem; }
+
+      /* Toast Notification */
+      #toast-container {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        pointer-events: none;
+      }
+      .toast-msg {
+        background: var(--color-surface-dark);
+        color: #F8F5EE;
+        padding: 0.9rem 1.6rem;
+        border-radius: 9999px;
+        box-shadow: var(--shadow-cinematic);
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: auto;
+      }
+      .toast-msg.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      /* ==========================================================================
+         SITE FOOTER
+         ========================================================================== */
+      #site-footer {
+        background: var(--color-surface-dark);
+        color: #F8F5EE;
+        padding: 5rem 0 3rem;
+        border-top: 1px solid var(--color-border-dark);
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 1.5fr repeat(3, 1fr);
+        gap: 4rem;
+        margin-bottom: 4rem;
+      }
+      .footer-brand-title {
+        font-family: var(--font-serif);
+        font-size: 2rem;
+        color: #F8F5EE;
+        letter-spacing: 0.12em;
+        margin-bottom: 0.75rem;
+      }
+      .footer-col-title {
+        font-family: var(--font-sans);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--color-accent);
+        margin-bottom: 1.4rem;
+      }
+      .footer-links-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      .footer-link {
+        font-size: 0.92rem;
+        color: var(--color-text-light-muted);
+        transition: color 0.2s ease;
+      }
+      .footer-link:hover {
+        color: #FFFFFF;
+      }
+
+      .footer-bottom {
+        padding-top: 2.5rem;
+        border-top: 1px solid var(--color-border-dark);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: var(--color-text-light-muted);
+      }
+
+      /* Responsive Media Queries */
+      @media (max-width: 1024px) {
+        .hero-grid { grid-template-columns: 1fr; gap: 3rem; }
+        .hero-visual-card img { height: 420px; }
+        .search-engine-bar { grid-template-columns: 1fr 1fr; border-radius: var(--radius-xl); padding: 1.2rem; }
+        .detail-layout-grid { grid-template-columns: 1fr; }
+        .gallery-editorial-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 200px 200px; }
+        .gallery-item-hero { grid-column: span 2; grid-row: span 1; }
+        .checkout-grid { grid-template-columns: 1fr; }
+        .host-stat-grid { grid-template-columns: repeat(2, 1fr); }
+        .footer-grid { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+      }
+
+      @media (max-width: 768px) {
+        .nav-links, .nav-actions .btn { display: none; }
+        .mobile-menu-toggle { display: block; }
+        .dest-card-col-6, .dest-card-col-4, .dest-card-col-8 { grid-column: span 12; }
+        .dest-card { height: 280px; }
+        .property-grid { grid-template-columns: 1fr; }
+        .search-engine-bar { grid-template-columns: 1fr; }
+        .search-segment:not(:last-child)::after { display: none; }
+        .gallery-editorial-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .gallery-item { min-width: 85vw; height: 260px; scroll-snap-align: start; }
+        .story-banner { padding: 3rem 1.8rem; }
+        .story-banner-grid { grid-template-columns: 1fr; }
+        .footer-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  <link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+  <body>
+    <!-- ==========================================================================
+         CINEMATIC 3D ENTRANCE PORTAL
+         ========================================================================== -->
+    <div id="entrance-portal" role="dialog" aria-label="Architectural entrance sequence">
+      <!-- Revealed interior sanctuary behind doors -->
+      <div id="entrance-reveal-bg"></div>
+      <div id="entrance-reveal-overlay">
+        <div class="entrance-brand-emblem">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <h1 class="entrance-brand-title">Elysian</h1>
+        <p class="entrance-brand-sub">Sanctuaries of Architecture & Solitude</p>
+      </div>
+
+      <!-- 3D Realistic Double Doorway -->
+      <div id="door-viewport">
+        <!-- Left Door Panel -->
+        <div class="door-panel door-panel-left" id="door-left">
+          <div class="door-molding door-molding-top"></div>
+          <div class="door-molding door-molding-bottom"></div>
+          <div class="door-handle"></div>
+        </div>
+        <!-- Right Door Panel -->
+        <div class="door-panel door-panel-right" id="door-right">
+          <div class="door-molding door-molding-top"></div>
+          <div class="door-molding door-molding-bottom"></div>
+          <div class="door-handle"></div>
+        </div>
+      </div>
+
+      <!-- Center Seam Warm Light Glow -->
+      <div id="door-light-seam"></div>
+
+      <!-- Skip Control -->
+      <button id="skip-entrance-btn" aria-label="Skip intro to site">
+        <span>Enter Sanctuaries</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ==========================================================================
+         SITE HEADER & NAVIGATION
+         ========================================================================== -->
+    <header id="site-header">
+      <div class="container">
+        <div class="nav-inner">
+          <!-- Brand Logo -->
+          <a href="#/" class="brand-logo" aria-label="Elysian Home">
+            <div class="brand-symbol">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </div>
+            <div class="brand-text">
+              <span class="brand-title">ELYSIAN</span>
+              <span class="brand-tagline">Architectural Stays</span>
+            </div>
+          </a>
+
+          <!-- Navigation Links -->
+          <nav class="nav-links" aria-label="Main Navigation">
+            <a href="#/explore" class="nav-link" id="nav-explore">Explore Stays</a>
+            <a href="#/destinations" class="nav-link" id="nav-destinations">Destinations</a>
+            <a href="#/collections" class="nav-link" id="nav-collections">Collections</a>
+            <a href="#/how-it-works" class="nav-link" id="nav-how">How It Works</a>
+            <a href="#/trips" class="nav-link" id="nav-trips">My Trips</a>
+          </nav>
+
+          <!-- Navigation Right Actions -->
+          <div class="nav-actions">
+            <!-- Currency Selector -->
+            <div class="currency-selector">
+              <button class="currency-btn" id="currency-toggle-btn" aria-label="Toggle currency">
+                <span id="current-currency-lbl">KES</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Wishlist Icon Badge -->
+            <a href="#/wishlist" class="nav-badge-btn" aria-label="Saved sanctuaries">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+              <span class="badge-counter" id="wishlist-counter">0</span>
+            </a>
+
+            <!-- Host a Stay CTA -->
+            <a href="#/host" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.65rem 1.25rem;">
+              Host a Stay
+            </a>
+
+            <!-- User Menu -->
+            <a href="#/host/dashboard" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.65rem 1.25rem;">
+              Host Portal
+            </a>
+
+            <!-- Mobile Hamburger Toggle -->
+            <button class="mobile-menu-toggle" id="mobile-toggle-btn" aria-label="Open mobile menu">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==========================================================================
+         ROUTER VIEW CONTAINER (DYNAMIC VIEW RENDERING)
+         ========================================================================== -->
+    <main id="app-viewport">
+      <!-- Views are dynamically injected by Router according to hash -->
+    </main>
+
+    <!-- ==========================================================================
+         MODALS & OVERLAYS CONTAINER
+         ========================================================================== -->
+    <!-- Lightbox Gallery Modal -->
+    <div id="gallery-lightbox" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Photo gallery">
+      <div class="lightbox-modal">
+        <div style="padding: 1.2rem 1.8rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); color: #F8F5EE;">
+          <span id="lightbox-counter" style="font-size: 0.9rem; font-weight: 500;">Photo 1 of 5</span>
+          <button class="modal-close-btn" id="close-lightbox-btn" style="background: rgba(255,255,255,0.15); color: #FFF;">✕</button>
+        </div>
+        <div class="lightbox-media">
+          <button class="lightbox-nav-btn lightbox-prev" id="lightbox-prev-btn" aria-label="Previous photo">‹</button>
+          <img id="lightbox-main-img" class="lightbox-img" src="" alt="Property detail" />
+          <button class="lightbox-nav-btn lightbox-next" id="lightbox-next-btn" aria-label="Next photo">›</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- M-Pesa STK Push Simulation Modal -->
+    <div id="mpesa-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+      <div class="modal-box" style="text-align: center;">
+        <button class="modal-close-btn" onclick="closeModal('mpesa-modal')">✕</button>
+        <div style="width: 64px; height: 64px; background: #E8F5E9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: #2E7D32;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+        </div>
+        <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;">M-Pesa STK Push</h3>
+        <p style="color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+          An instant payment prompt has been sent to your Safaricom mobile device. Please enter your M-Pesa PIN to authorize.
+        </p>
+        <div style="background: var(--color-bg); padding: 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; font-weight: 600;">
+          Amount: <span id="mpesa-amount-val">KES 78,400</span><br>
+          <span style="font-size: 0.85rem; font-weight: 400; color: var(--color-text-muted);">Paybill: 522522 (Elysian Escrow)</span>
+        </div>
+        <div style="font-size: 0.88rem; color: var(--color-accent); font-weight: 600; margin-bottom: 1.5rem;">
+          Awaiting Safaricom confirmation (<span id="mpesa-timer">45</span>s)...
+        </div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="simulateMpesaSuccess()">
+          Simulate PIN Entered (Confirm Reservation)
+        </button>
+      </div>
+    </div>
+
+    <!-- Paystack Gateway Modal -->
+    <div id="paystack-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+      <div class="modal-box">
+        <button class="modal-close-btn" onclick="closeModal('paystack-modal')">✕</button>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+          <div style="width: 32px; height: 32px; background: #0BA4DB; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 800;">P</div>
+          <h3 style="font-size: 1.5rem;">Paystack Secure Checkout</h3>
+        </div>
+        <p style="color: var(--color-text-muted); font-size: 0.92rem; margin-bottom: 1.5rem;">
+          Standard 256-bit encrypted checkout. Supports Visa, Mastercard, Apple Pay, and Bank Transfer.
+        </p>
+        <div class="form-grid" style="margin-bottom: 1.5rem;">
+          <div class="form-group-full">
+            <label class="input-label">Card Number</label>
+            <input type="text" class="form-control" placeholder="4242 •••• •••• 4242" value="4000 1234 5678 9010" />
+          </div>
+          <div>
+            <label class="input-label">Expires</label>
+            <input type="text" class="form-control" placeholder="MM/YY" value="08/28" />
+          </div>
+          <div>
+            <label class="input-label">CVV</label>
+            <input type="password" class="form-control" placeholder="123" value="888" />
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="simulatePaystackSuccess()">
+          Authorize Payment & Reserve
+        </button>
+        <div style="margin-top: 1rem; font-size: 0.78rem; text-align: center; color: var(--color-text-muted);">
+          Protected by Paystack Escrow. Funds held until 24h after check-in.
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <!-- ==========================================================================
+         SITE FOOTER
+         ========================================================================== -->
+    <footer id="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <div class="footer-brand-title">ELYSIAN</div>
+            <p style="font-size: 0.95rem; color: var(--color-text-light-muted); line-height: 1.7; margin-bottom: 1.8rem; max-width: 340px;">
+              A boutique vacation marketplace for architectural short-stays, design pavilions, and coastal sanctuaries. Curated for stillness and discerning travellers.
+            </p>
+            <button class="btn btn-outline-white" id="replay-entrance-btn" style="font-size: 0.82rem; padding: 0.5rem 1.1rem;">
+              Replay Entrance Sequence ↺
+            </button>
+          </div>
+
+          <div>
+            <div class="footer-col-title">Sanctuaries</div>
+            <ul class="footer-links-list">
+              <li><a href="#/explore" class="footer-link">All Properties</a></li>
+              <li><a href="#/destinations" class="footer-link">Featured Destinations</a></li>
+              <li><a href="#/collections" class="footer-link">Curated Collections</a></li>
+              <li><a href="#/explore?type=villa" class="footer-link">Architectural Villas</a></li>
+              <li><a href="#/explore?type=coastal" class="footer-link">Beachfront Escapes</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="footer-col-title">Hospitality & Trust</div>
+            <ul class="footer-links-list">
+              <li><a href="#/how-it-works" class="footer-link">How It Works</a></li>
+              <li><a href="#/trust-and-safety" class="footer-link">Trust & Safety Escrow</a></li>
+              <li><a href="#/cancellation-policy" class="footer-link">Cancellation Policies</a></li>
+              <li><a href="#/help" class="footer-link">Guest Concierge & FAQ</a></li>
+              <li><a href="#/contact" class="footer-link">Private Inquiries</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="footer-col-title">Hosts & Owners</div>
+            <ul class="footer-links-list">
+              <li><a href="#/host" class="footer-link">List Your Sanctuary</a></li>
+              <li><a href="#/host/onboarding" class="footer-link">Property Wizard</a></li>
+              <li><a href="#/host/dashboard" class="footer-link">Host Portal</a></li>
+              <li><a href="#/host/dashboard#reservations" class="footer-link">Manage Bookings</a></li>
+              <li><a href="#/host/dashboard#earnings" class="footer-link">Payout Settings</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <div>© 2026 Elysian Stays Ltd. All architectural photography licensed or verified.</div>
+          <div style="display: flex; gap: 1.5rem;">
+            <a href="#/trust-and-safety" style="color: inherit;">Privacy</a>
+            <a href="#/cancellation-policy" style="color: inherit;">Terms of Stay</a>
+            <a href="#/help" style="color: inherit;">Security</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ==========================================================================
+         JAVASCRIPT APPLICATION CORE (STANDALONE ARCHITECTURE)
+         ========================================================================== -->
+    <script>
+      /**
+       * ELYSIAN SHORT-STAY RENTAL & VACATION PLATFORM
+       * Standalone Architecture: Router, State, Curated Dataset, Payments, Host Wizard
+       */
+
+      // ==========================================
+      // 1. CURRENCY CONVERSION & FORMATTING
+      // ==========================================
+      const CURRENCIES = {
+        KES: { symbol: 'KES ', rate: 1, label: 'KES (KSh)' },
+        USD: { symbol: '$', rate: 0.0077, label: 'USD ($)' },
+        EUR: { symbol: '€', rate: 0.0071, label: 'EUR (€)' },
+        GBP: { symbol: '£', rate: 0.0061, label: 'GBP (£)' }
+      };
+      let currentCurrency = localStorage.getItem('elysian_currency') || 'KES';
+
+      function formatPrice(amountInKES) {
+        const curr = CURRENCIES[currentCurrency] || CURRENCIES.KES;
+        const converted = Math.round(amountInKES * curr.rate);
+        return `${curr.symbol}${converted.toLocaleString()}`;
+      }
+
+      // ==========================================
+      // 2. VERIFIED PHOTOGRAPHIC DATASET (14 PROPERTIES)
+      // ==========================================
+      const INITIAL_PROPERTIES = [
+        {
+          id: 'karen-glasshouse',
+          title: 'The Glasshouse at Karen Ridge',
+          category: 'villa',
+          destination: 'Nairobi',
+          neighborhood: 'Karen Forest Ridge',
+          tag: 'Architectural Gem',
+          rating: 4.96,
+          reviewsCount: 38,
+          guests: 8,
+          bedrooms: 4,
+          beds: 5,
+          baths: 4.5,
+          pricePerNight: 45000,
+          cleaningFee: 4500,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          heroImg: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80',
+          gallery: [
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80',
+            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&q=80'
+          ],
+          description: 'A masterpiece of modernist timber, steel, and floor-to-ceiling glass set within five private acres of indigenous Karen woodland. Wake to sunlight piercing mature acacia trees, swim in the heated cantilevered pool, and unwind beside a sculptural central fireplace.',
+          amenities: ['Heated Infinity Pool', 'Private Chef Available', 'High-Speed Fiber Wi-Fi', 'Sculptural Fireplace', 'Chef Kitchen with Marble Island', 'Free Parking (4 Cars)', 'Dedicated Workspace', 'Full Solar Backup'],
+          bookedDates: ['2026-10-15', '2026-10-16', '2026-10-17', '2026-10-24', '2026-10-25']
+        },
+        {
+          id: 'amani-ocean-villa',
+          title: 'Amani Coral Beachfront Sanctuary',
+          category: 'coastal',
+          destination: 'Diani Beach',
+          neighborhood: 'Galu Seaside',
+          tag: 'Staffed Oceanfront',
+          rating: 4.98,
+          reviewsCount: 54,
+          guests: 10,
+          bedrooms: 5,
+          beds: 6,
+          baths: 5,
+          pricePerNight: 72000,
+          cleaningFee: 6000,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          heroImg: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80',
+          gallery: [
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80',
+            'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80'
+          ],
+          description: 'Rising directly above the powdered white sands of Diani Beach, Amani combines Swahili coral architecture with streamlined contemporary design. Includes dedicated in-house private chef, butler, and sea-facing yoga pavilion.',
+          amenities: ['Direct Beach Access', 'Private Saltwater Pool', 'Full In-House Staff', 'Ocean Breeze Veranda', 'High-Speed Wi-Fi', 'Outdoor Rainfall Showers', 'Barbecue Terrace', 'Air Conditioning'],
+          bookedDates: ['2026-10-18', '2026-10-19', '2026-10-20']
+        },
+        {
+          id: 'naivasha-escarpment',
+          title: 'The Sanctuary at Great Rift Escarpment',
+          category: 'lodge',
+          destination: 'Naivasha',
+          neighborhood: 'Green Park Heights',
+          tag: 'Panoramic Lake View',
+          rating: 4.94,
+          reviewsCount: 29,
+          guests: 6,
+          bedrooms: 3,
+          beds: 4,
+          baths: 3,
+          pricePerNight: 38000,
+          cleaningFee: 3500,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          heroImg: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1400&q=80',
+          gallery: [
+            'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1400&q=80',
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80'
+          ],
+          description: 'Perched on the rim of the Great Rift Valley, overlooking Lake Naivasha and Mount Longonot. Minimalist basalt stone construction with sunken conversation fire pit, wrap-around deck, and zero light pollution for stargazing.',
+          amenities: ['Sunken Fire Pit', 'Panoramic Escarpment Views', 'Wine Cellar Nook', 'Wood-burning Stove', 'Wi-Fi Starlink', 'Nature Trail Access', 'Free Parking', 'Chef Services on Request'],
+          bookedDates: ['2026-10-22', '2026-10-23']
+        },
+        {
+          id: 'watamu-sultan-pavilion',
+          title: 'Sultan Swahili Courtyard Pavilion',
+          category: 'coastal',
+          destination: 'Watamu',
+          neighborhood: 'Turtle Bay Marine Park',
+          tag: 'Courtyard Pool',
+          rating: 4.97,
+          reviewsCount: 42,
+          guests: 8,
+          bedrooms: 4,
+          beds: 4,
+          baths: 4,
+          pricePerNight: 55000,
+          cleaningFee: 4000,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          heroImg: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1400&q=80',
+          gallery: [
+            'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1400&q=80',
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80'
+          ],
+          description: 'A private walled riad residence designed around a turquoise courtyard pool shaded by mature coconut palms. Features hand-carved Lamu timber doors, polished plaster walls, and a rooftop breeze terrace.',
+          amenities: ['Central Courtyard Pool', '5-Minute Walk to Beach', 'In-House Cook', 'Air Conditioned Suites', 'Rooftop Lounge', 'High-Speed Wi-Fi', 'Private Security', 'Organic Tropical Garden'],
+          bookedDates: ['2026-10-14', '2026-10-15']
+        },
+        {
+          id: 'mara-horizon-lodge',
+          title: 'Mara Horizon Wildlife Pavilion',
+          category: 'lodge',
+          destination: 'Maasai Mara',
+          neighborhood: 'Mara North Conservancy',
+          tag: 'Savannah Sanctuary',
+          rating: 4.99,
+          reviewsCount: 67,
+          guests: 6,
+          bedrooms: 3,
+          beds: 4,
+          baths: 3.5,
+          pricePerNight: 98000,
+          cleaningFee: 8000,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          heroImg: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1400&q=80',
+          gallery: [
+            'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1400&q=80',
+            'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80'
+          ],
+          description: 'Private architectural bush lodge set high above a wildlife migration corridor. Enjoy unhindered 360-degree views of the savannah, private 4x4 game viewer vehicle with dedicated Maasai guide, and outdoor stone bathtubs.',
+          amenities: ['Private 4x4 Safari Vehicle & Guide', 'Cantilevered Plunge Pool', 'Solar Powered Sanctuary', 'All Meals by Private Chef', 'Star Bed Terrace', 'Starlink Satellite Wi-Fi', 'Night Game Drives Allowed'],
+          bookedDates: ['2026-10-28', '2026-10-29', '2026-10-30']
+        },
+        {
+          id: 'camps-bay-penthouse',
+          title: 'Atlantic Ridge Glass Penthouse',
+          category: 'penthouse',
+          destination: 'Cape Town',
+          neighborhood: 'Camps Bay',
+          tag: 'Ocean Sunset View',
+          rating: 4.95,
+          reviewsCount: 31,
+          guests: 4,
+          bedrooms: 2,
+          beds: 2,
+          baths: 2,
+          pricePerNight: 65000,
+          cleaningFee: 5000,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          heroImg: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1400&q=80',
+          gallery: [
+            'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1400&q=80',
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80'
+          ],
+          description: 'Contemporary Scandinavian duplex penthouse with heated rim-flow plunge pool directly facing the Atlantic Ocean and Twelve Apostles peaks. Automated glass sliders blur indoor-outdoor living.',
+          amenities: ['Heated Rim-Flow Pool', 'Atlantic Sunset Balcony', 'Gas Fireplace', 'Sonos Sound Architecture', 'Direct Elevator Access', 'Secure Double Garage', 'Dedicated Workspace', 'Full Air Conditioning'],
+          bookedDates: ['2026-10-16', '2026-10-17']
+        },
+        {
+          id: 'zanzibar-stone-haven',
+          title: 'Zanzi Coral Lagoon Villa',
+          category: 'coastal',
+          destination: 'Zanzibar',
+          neighborhood: 'Matemwe Beach',
+          tag: 'Turquoise Waters',
+          rating: 4.96,
+          reviewsCount: 36,
+          guests: 8,
+          bedrooms: 4,
+          beds: 4,
+          baths: 4,
+          pricePerNight: 68000,
+          cleaningFee: 5000,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          heroImg: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1400&q=80',
+          gallery: [
+            'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1400&q=80',
+            'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80'
+          ],
+          description: 'Private beachfront sanctuary overlooking Mnemba Island atoll. Coral stone walls, palm thatch high ceilings, private boat mooring, and crystal-clear swimming conditions all day.',
+          amenities: ['Direct Lagoon Beach', 'Infinity Ocean Pool', 'Catamaran & Snorkel Gear', 'Swahili Fusion Chef', 'Open Air Living Pavilions', 'Wi-Fi Fiber', 'Eco Solar Design', 'Massage Sala'],
+          bookedDates: ['2026-10-20', '2026-10-21', '2026-10-22']
+        },
+        {
+          id: 'kileleshwa-skyline-villa',
+          title: 'Kileleshwa Sculptural Duplex',
+          category: 'penthouse',
+          destination: 'Nairobi',
+          neighborhood: 'Kileleshwa Ridge',
+          tag: 'Urban Architecture',
+          rating: 4.93,
+          reviewsCount: 22,
+          guests: 4,
+          bedrooms: 2,
+          beds: 2,
+          baths: 2.5,
+          pricePerNight: 28000,
+          cleaningFee: 2500,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          heroImg: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1400&q=80',
+          gallery: [
+            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1400&q=80',
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80'
+          ],
+          description: 'Double-height architectural apartment created by renowned East African interior designers. Features concrete ceilings, curated African contemporary art collection, and skyline sunset terrace.',
+          amenities: ['Skyline Sunset Terrace', 'Curated Art Collection', 'High-Speed Wi-Fi (500 Mbps)', 'Bespoke Espresso Bar', 'Dedicated Office Nook', 'Underground Heated Parking', '24/7 Concierge Security'],
+          bookedDates: ['2026-10-13', '2026-10-14']
+        }
+      ];
+
+      // Merge with custom host listings from localStorage
+      function getProperties() {
+        const stored = localStorage.getItem('elysian_custom_properties');
+        if (stored) {
+          try {
+            const custom = JSON.parse(stored);
+            return [...custom, ...INITIAL_PROPERTIES];
+          } catch(e) { return INITIAL_PROPERTIES; }
+        }
+        return INITIAL_PROPERTIES;
+      }
+
+      function getPropertyById(id) {
+        return getProperties().find(p => p.id === id) || INITIAL_PROPERTIES[0];
+      }
+
+      // ==========================================
+      // 3. IMAGE ERROR GRACEFUL ARCHITECTURAL FALLBACK
+      // ==========================================
+      function getFallbackImage(title) {
+        const safeTitle = encodeURIComponent(title || 'Sanctuary Stay');
+        return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><rect width="800" height="600" fill="%23171F1A"/><line x1="0" y1="0" x2="800" y2="600" stroke="%2325322A" stroke-width="2"/><line x1="800" y1="0" x2="0" y2="600" stroke="%2325322A" stroke-width="2"/><circle cx="400" cy="300" r="120" fill="none" stroke="%23C49758" stroke-width="1.5" stroke-dasharray="6,6"/><text x="400" y="295" font-family="Georgia,serif" font-size="28" fill="%23F4EFEA" text-anchor="middle">ELYSIAN</text><text x="400" y="335" font-family="sans-serif" font-size="14" fill="%239BA7A0" letter-spacing="3" text-anchor="middle">${safeTitle}</text></svg>`;
+      }
+
+      window.handleImageError = function(img, title) {
+        img.onerror = null;
+        img.src = getFallbackImage(title);
+      };
+
+      // ==========================================
+      // 4. WISHLIST & LOCAL STORAGE HELPERS
+      // ==========================================
+      function getWishlist() {
+        try {
+          return JSON.parse(localStorage.getItem('elysian_wishlist')) || [];
+        } catch(e) { return []; }
+      }
+
+      function toggleWishlist(propId) {
+        let list = getWishlist();
+        if (list.includes(propId)) {
+          list = list.filter(id => id !== propId);
+          showToast('Removed from saved sanctuaries');
+        } else {
+          list.push(propId);
+          showToast('Saved to your architectural wishlist');
+        }
+        localStorage.setItem('elysian_wishlist', JSON.stringify(list));
+        updateWishlistBadge();
+        // Refresh wishlist buttons on screen
+        document.querySelectorAll(`.wishlist-btn[data-id="${propId}"]`).forEach(btn => {
+          btn.classList.toggle('saved', list.includes(propId));
+        });
+      }
+
+      function updateWishlistBadge() {
+        const badge = document.getElementById('wishlist-counter');
+        if (badge) {
+          badge.textContent = getWishlist().length;
+        }
+      }
+
+      // ==========================================
+      // 5. TOAST NOTIFICATIONS
+      // ==========================================
+      function showToast(message) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>${message}</span>
+        `;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 400);
+        }, 3200);
+      }
+
+      // ==========================================
+      // 6. 3D ENTRANCE SEQUENCE CONTROLLER
+      // ==========================================
+      function initEntrance() {
+        const portal = document.getElementById('entrance-portal');
+        const skipBtn = document.getElementById('skip-entrance-btn');
+        if (!portal) return;
+
+        // Check if user already saw entrance this session or prefers reduced motion
+        const alreadySeen = sessionStorage.getItem('elysian_door_entrance_seen');
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function closePortal() {
+          portal.classList.add('doors-opened');
+          setTimeout(() => {
+            portal.style.transition = 'opacity 1s ease';
+            portal.style.opacity = '0';
+            setTimeout(() => {
+              portal.style.display = 'none';
+              sessionStorage.setItem('elysian_door_entrance_seen', 'true');
+            }, 1000);
+          }, 1800);
+        }
+
+        if (alreadySeen || prefersReducedMotion) {
+          portal.style.display = 'none';
+          return;
+        }
+
+        // Automatic cinematic reveal on normal initial page load
+        setTimeout(() => {
+          portal.classList.add('doors-opened');
+          setTimeout(() => {
+            closePortal();
+          }, 2400);
+        }, 700);
+
+        skipBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          portal.style.transition = 'opacity 0.4s ease';
+          portal.style.opacity = '0';
+          setTimeout(() => {
+            portal.style.display = 'none';
+            sessionStorage.setItem('elysian_door_entrance_seen', 'true');
+          }, 400);
+        });
+      }
+
+      // Replay entrance button in footer
+      document.getElementById('replay-entrance-btn')?.addEventListener('click', () => {
+        sessionStorage.removeItem('elysian_door_entrance_seen');
+        const portal = document.getElementById('entrance-portal');
+        if (portal) {
+          portal.classList.remove('doors-opened');
+          portal.style.display = 'flex';
+          portal.style.opacity = '1';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(() => {
+            portal.classList.add('doors-opened');
+            setTimeout(() => {
+              portal.style.transition = 'opacity 1s ease';
+              portal.style.opacity = '0';
+              setTimeout(() => {
+                portal.style.display = 'none';
+              }, 1000);
+            }, 2600);
+          }, 500);
+        }
+      });
+
+      // Currency toggle button in header
+      document.getElementById('currency-toggle-btn')?.addEventListener('click', () => {
+        const keys = Object.keys(CURRENCIES);
+        const idx = keys.indexOf(currentCurrency);
+        currentCurrency = keys[(idx + 1) % keys.length];
+        localStorage.setItem('elysian_currency', currentCurrency);
+        document.getElementById('current-currency-lbl').textContent = currentCurrency;
+        showToast(`Currency updated to ${CURRENCIES[currentCurrency].label}`);
+        // Re-render current view to update prices
+        renderCurrentRoute();
+      });
+
+      // ==========================================
+      // 7. LIGHTBOX GALLERY CONTROLLER
+      // ==========================================
+      let activeGalleryPhotos = [];
+      let activePhotoIndex = 0;
+
+      function openGallery(photos, startIndex = 0) {
+        activeGalleryPhotos = photos || [];
+        activePhotoIndex = startIndex;
+        const modal = document.getElementById('gallery-lightbox');
+        const img = document.getElementById('lightbox-main-img');
+        const counter = document.getElementById('lightbox-counter');
+        if (!modal || !img) return;
+
+        function updateView() {
+          img.src = activeGalleryPhotos[activePhotoIndex];
+          counter.textContent = `Photo ${activePhotoIndex + 1} of ${activeGalleryPhotos.length}`;
+        }
+
+        updateView();
+        modal.classList.add('open');
+
+        document.getElementById('lightbox-prev-btn').onclick = () => {
+          activePhotoIndex = (activePhotoIndex - 1 + activeGalleryPhotos.length) % activeGalleryPhotos.length;
+          updateView();
+        };
+
+        document.getElementById('lightbox-next-btn').onclick = () => {
+          activePhotoIndex = (activePhotoIndex + 1) % activeGalleryPhotos.length;
+          updateView();
+        };
+
+        document.getElementById('close-lightbox-btn').onclick = () => {
+          modal.classList.remove('open');
+        };
+      }
+
+      window.closeModal = function(modalId) {
+        document.getElementById(modalId)?.classList.remove('open');
+      };
+
+      // ==========================================
+      // 8. RENDERER VIEWS
+      // ==========================================
+
+      // 8.1 VIEW: HOMEPAGE
+      function renderHomeView() {
+        const properties = getProperties();
+        const wishlist = getWishlist();
+
+        return `
+          <!-- HERO SECTION -->
+          <section class="hero-section">
+            <div class="container">
+              <div class="hero-grid">
+                <div>
+                  <div class="hero-tag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    Boutique Vacation Rentals
+                  </div>
+                  <h1 class="hero-title">Somewhere that feels <span>like yours</span>.</h1>
+                  <p class="hero-lead">
+                    Discover architectural pavilions, private coral villas, and high-altitude forest sanctuaries curated for stillness, design, and unforgettable journeys.
+                  </p>
+
+                  <!-- Search Bar Engine -->
+                  <div class="search-engine-bar" role="search">
+                    <div class="search-segment" onclick="location.hash='#/explore'">
+                      <span class="search-label">Destination</span>
+                      <div class="search-value">Nairobi, Diani, Mara...</div>
+                    </div>
+                    <div class="search-segment" onclick="location.hash='#/explore'">
+                      <span class="search-label">Check-In</span>
+                      <div class="search-value">Select dates</div>
+                    </div>
+                    <div class="search-segment" onclick="location.hash='#/explore'">
+                      <span class="search-label">Check-Out</span>
+                      <div class="search-value">Select dates</div>
+                    </div>
+                    <div class="search-segment" onclick="location.hash='#/explore'">
+                      <span class="search-label">Guests</span>
+                      <div class="search-value">2 Guests, Any</div>
+                    </div>
+                    <button class="search-submit-btn" onclick="location.hash='#/explore'" aria-label="Search properties">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="hero-visual-card">
+                  <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1200&q=80" alt="Architectural villa with pool" onerror="handleImageError(this, 'Elysian Sanctuary')" />
+                  <div class="hero-visual-badge">
+                    <div>
+                      <div style="font-family: var(--font-serif); font-size: 1.35rem;">The Glasshouse at Karen Ridge</div>
+                      <div style="font-size: 0.85rem; color: #D0C6B8;">Karen Woodland • 8 Guests</div>
+                    </div>
+                    <a href="#/property/karen-glasshouse" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1rem;">
+                      View Stay →
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Category Pills -->
+              <div class="category-pills-bar">
+                <button class="category-pill active" onclick="location.hash='#/explore'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                  All Sanctuaries
+                </button>
+                <button class="category-pill" onclick="location.hash='#/explore?type=villa'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                  Architectural Villas
+                </button>
+                <button class="category-pill" onclick="location.hash='#/explore?type=coastal'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                  Beachfront & Coral
+                </button>
+                <button class="category-pill" onclick="location.hash='#/explore?type=lodge'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22"/></svg>
+                  Wild Savanna Lodges
+                </button>
+                <button class="category-pill" onclick="location.hash='#/explore?type=penthouse'">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                  Urban Penthouses
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- FEATURED STAYS GRID -->
+          <section style="padding: 4rem 0;">
+            <div class="container">
+              <div class="section-header">
+                <div>
+                  <span class="section-tag">Curated Portfolio</span>
+                  <h2 class="section-title">Exceptional Stays</h2>
+                  <p class="section-desc">Each home is personally verified for architectural distinction, privacy, and hospitality.</p>
+                </div>
+                <a href="#/explore" class="btn btn-secondary">
+                  Explore All (${properties.length}) →
+                </a>
+              </div>
+
+              <div class="property-grid">
+                ${properties.slice(0, 6).map(p => renderPropertyCard(p, wishlist.includes(p.id))).join('')}
+              </div>
+            </div>
+          </section>
+
+          <!-- DESTINATIONS MOSAIC -->
+          <section class="editorial-section" style="background: var(--color-surface-subtle);">
+            <div class="container">
+              <div class="section-header">
+                <div>
+                  <span class="section-tag">Regions of Wonder</span>
+                  <h2 class="section-title">Featured Destinations</h2>
+                  <p class="section-desc">From the high ridges of Nairobi to the turquoise atolls of Diani and Zanzibar.</p>
+                </div>
+                <a href="#/destinations" class="btn btn-secondary">
+                  View Destinations →
+                </a>
+              </div>
+
+              <div class="destinations-mosaic">
+                <div class="dest-card dest-card-col-6" onclick="location.hash='#/explore?dest=Nairobi'">
+                  <img class="dest-card-img" src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1000&q=80" alt="Nairobi Forest Stays" onerror="handleImageError(this, 'Nairobi')" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title">Nairobi Ridges</h3>
+                    <div class="dest-card-subtitle">Karen, Gigiri & Kileleshwa • 14 Properties</div>
+                  </div>
+                </div>
+                <div class="dest-card dest-card-col-6" onclick="location.hash='#/explore?dest=Diani'">
+                  <img class="dest-card-img" src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80" alt="Diani Beachfront" onerror="handleImageError(this, 'Diani')" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title">Diani & South Coast</h3>
+                    <div class="dest-card-subtitle">Coral Beachfront & Private Pools • 8 Properties</div>
+                  </div>
+                </div>
+                <div class="dest-card dest-card-col-4" onclick="location.hash='#/explore?dest=Watamu'">
+                  <img class="dest-card-img" src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80" alt="Watamu Riads" onerror="handleImageError(this, 'Watamu')" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title">Watamu</h3>
+                    <div class="dest-card-subtitle">Swahili Courtyards • 6 Properties</div>
+                  </div>
+                </div>
+                <div class="dest-card dest-card-col-4" onclick="location.hash='#/explore?dest=Naivasha'">
+                  <img class="dest-card-img" src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80" alt="Naivasha Escarpment" onerror="handleImageError(this, 'Naivasha')" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title">Great Rift Valley</h3>
+                    <div class="dest-card-subtitle">Naivasha & Elementaita • 5 Properties</div>
+                  </div>
+                </div>
+                <div class="dest-card dest-card-col-4" onclick="location.hash='#/explore?dest=Mara'">
+                  <img class="dest-card-img" src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" alt="Maasai Mara" onerror="handleImageError(this, 'Maasai Mara')" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title">Maasai Mara</h3>
+                    <div class="dest-card-subtitle">Savannah Pavilions • 4 Properties</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- EDITORIAL STORY BANNER -->
+          <div class="container">
+            <div class="story-banner">
+              <div class="story-banner-grid">
+                <div>
+                  <span style="font-size: 0.8rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-accent); font-weight: 700; margin-bottom: 0.75rem; display: block;">
+                    The Elysian Standard
+                  </span>
+                  <h2 class="story-title">Architecture crafted for presence and quiet luxury.</h2>
+                  <p class="story-text">
+                    We believe travel should feel like exhaling. Every residence on Elysian is selected not merely for luxury, but for light, honest materials, and an architectural relationship with its landscape.
+                  </p>
+                  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <a href="#/how-it-works" class="btn btn-accent">Our Hospitality Philosophy</a>
+                    <a href="#/host" class="btn btn-outline-white">Host an Architectural Stay</a>
+                  </div>
+                </div>
+                <div style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 3rem;">
+                  <div style="margin-bottom: 2rem;">
+                    <div style="font-family: var(--font-serif); font-size: 2.4rem; color: #F8F5EE;">100%</div>
+                    <div style="font-size: 0.88rem; color: #B5A89A;">Directly inspected and verified architecture</div>
+                  </div>
+                  <div style="margin-bottom: 2rem;">
+                    <div style="font-family: var(--font-serif); font-size: 2.4rem; color: #F8F5EE;">Escrow</div>
+                    <div style="font-size: 0.88rem; color: #B5A89A;">Protected host payment release 24h post arrival</div>
+                  </div>
+                  <div>
+                    <div style="font-family: var(--font-serif); font-size: 2.4rem; color: #F8F5EE;">24 / 7</div>
+                    <div style="font-size: 0.88rem; color: #B5A89A;">Private guest concierge & bespoke transfers</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Reusable Property Card HTML
+      function renderPropertyCard(p, isSaved) {
+        return `
+          <div class="property-card" data-id="${p.id}">
+            <div class="property-card-media">
+              <img class="property-card-img" src="${p.heroImg}" alt="${p.title}" onerror="handleImageError(this, '${p.title}')" loading="lazy" />
+              <div class="property-card-badge">${p.tag || 'Verified Stay'}</div>
+              <button class="wishlist-btn ${isSaved ? 'saved' : ''}" data-id="${p.id}" onclick="toggleWishlist('${p.id}')" aria-label="Save to wishlist">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="property-card-meta">
+              <span class="property-card-location">${p.destination} • ${p.neighborhood}</span>
+              <div class="property-card-rating">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#C49758" stroke="#C49758">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span>${p.rating}</span>
+                <span style="color: var(--color-text-muted); font-weight: 400;">(${p.reviewsCount})</span>
+              </div>
+            </div>
+            <a href="#/property/${p.id}" class="property-card-name">${p.title}</a>
+            <div class="property-card-specs">
+              <span>${p.guests} Guests</span>
+              <span>•</span>
+              <span>${p.bedrooms} Beds</span>
+              <span>•</span>
+              <span>${p.baths} Baths</span>
+            </div>
+            <div class="property-card-price-row">
+              <span class="property-card-price">${formatPrice(p.pricePerNight)}</span>
+              <span class="property-card-unit">/ night</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // 8.2 VIEW: DISCOVERY & SEARCH WITH WORKING REAL-TIME FILTERS
+      function renderSearchView(params = {}) {
+        const allProperties = getProperties();
+        const wishlist = getWishlist();
+
+        // Filter state from parameters or default
+        const filterDest = params.dest || '';
+        const filterType = params.type || '';
+        const filterMaxPrice = params.maxPrice ? parseInt(params.maxPrice) : 150000;
+        const filterGuests = params.guests ? parseInt(params.guests) : 1;
+        const sortBy = params.sort || 'recommended';
+
+        // Apply filters
+        let filtered = allProperties.filter(p => {
+          if (filterDest && !p.destination.toLowerCase().includes(filterDest.toLowerCase()) && !p.neighborhood.toLowerCase().includes(filterDest.toLowerCase())) {
+            return false;
+          }
+          if (filterType && p.category !== filterType) {
+            return false;
+          }
+          if (p.pricePerNight > filterMaxPrice) {
+            return false;
+          }
+          if (p.guests < filterGuests) {
+            return false;
+          }
+          return true;
+        });
+
+        // Apply sorting
+        if (sortBy === 'price-low') {
+          filtered.sort((a, b) => a.pricePerNight - b.pricePerNight);
+        } else if (sortBy === 'price-high') {
+          filtered.sort((a, b) => b.pricePerNight - a.pricePerNight);
+        } else if (sortBy === 'rating') {
+          filtered.sort((a, b) => b.rating - a.rating);
+        }
+
+        return `
+          <div class="container search-view-layout">
+            <div style="margin-bottom: 2rem;">
+              <span class="section-tag">Sanctuary Finder</span>
+              <h1 class="section-title">Discover Extraordinary Stays</h1>
+              <p class="section-desc">Showing ${filtered.length} of ${allProperties.length} handpicked architectural properties.</p>
+            </div>
+
+            <!-- Interactive Live Filters Bar -->
+            <div class="filters-bar">
+              <div class="filter-group">
+                <select class="filter-select" id="filter-dest-select" onchange="applySearchFilters()">
+                  <option value="" ${filterDest === '' ? 'selected' : ''}>All Locations</option>
+                  <option value="Nairobi" ${filterDest === 'Nairobi' ? 'selected' : ''}>Nairobi</option>
+                  <option value="Diani" ${filterDest === 'Diani' ? 'selected' : ''}>Diani Beach</option>
+                  <option value="Watamu" ${filterDest === 'Watamu' ? 'selected' : ''}>Watamu</option>
+                  <option value="Naivasha" ${filterDest === 'Naivasha' ? 'selected' : ''}>Naivasha Escarpment</option>
+                  <option value="Mara" ${filterDest === 'Mara' ? 'selected' : ''}>Maasai Mara</option>
+                  <option value="Zanzibar" ${filterDest === 'Zanzibar' ? 'selected' : ''}>Zanzibar</option>
+                  <option value="Cape Town" ${filterDest === 'Cape Town' ? 'selected' : ''}>Cape Town</option>
+                </select>
+
+                <select class="filter-select" id="filter-type-select" onchange="applySearchFilters()">
+                  <option value="" ${filterType === '' ? 'selected' : ''}>All Property Types</option>
+                  <option value="villa" ${filterType === 'villa' ? 'selected' : ''}>Architectural Villa</option>
+                  <option value="coastal" ${filterType === 'coastal' ? 'selected' : ''}>Beachfront & Coral</option>
+                  <option value="lodge" ${filterType === 'lodge' ? 'selected' : ''}>Wild Savannah Lodge</option>
+                  <option value="penthouse" ${filterType === 'penthouse' ? 'selected' : ''}>Urban Penthouse</option>
+                </select>
+
+                <select class="filter-select" id="filter-guests-select" onchange="applySearchFilters()">
+                  <option value="1" ${filterGuests <= 1 ? 'selected' : ''}>Any Guests</option>
+                  <option value="2" ${filterGuests === 2 ? 'selected' : ''}>2+ Guests</option>
+                  <option value="4" ${filterGuests === 4 ? 'selected' : ''}>4+ Guests</option>
+                  <option value="6" ${filterGuests === 6 ? 'selected' : ''}>6+ Guests</option>
+                  <option value="8" ${filterGuests === 8 ? 'selected' : ''}>8+ Guests</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <span style="font-size: 0.85rem; color: var(--color-text-muted);">Sort by:</span>
+                <select class="filter-select" id="filter-sort-select" onchange="applySearchFilters()">
+                  <option value="recommended" ${sortBy === 'recommended' ? 'selected' : ''}>Recommended</option>
+                  <option value="price-low" ${sortBy === 'price-low' ? 'selected' : ''}>Price: Low to High</option>
+                  <option value="price-high" ${sortBy === 'price-high' ? 'selected' : ''}>Price: High to Low</option>
+                  <option value="rating" ${sortBy === 'rating' ? 'selected' : ''}>Highest Guest Rating</option>
+                </select>
+                <button class="btn btn-ghost" onclick="resetSearchFilters()" style="font-size: 0.85rem; padding: 0.5rem 0.8rem;">
+                  Clear All
+                </button>
+              </div>
+            </div>
+
+            <!-- Results Grid -->
+            ${filtered.length > 0 ? `
+              <div class="property-grid">
+                ${filtered.map(p => renderPropertyCard(p, wishlist.includes(p.id))).join('')}
+              </div>
+            ` : `
+              <div style="text-align: center; padding: 6rem 2rem; background: var(--color-surface); border-radius: var(--radius-xl); border: 1px solid var(--color-border);">
+                <div style="width: 56px; height: 56px; margin: 0 auto 1.5rem; border-radius: 50%; background: var(--color-surface-subtle); display: flex; align-items: center; justify-content: center; color: var(--color-text-muted);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </div>
+                <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;">No sanctuaries matched your criteria</h3>
+                <p style="color: var(--color-text-muted); margin-bottom: 2rem;">Try relaxing your filters or selecting a different destination.</p>
+                <button class="btn btn-primary" onclick="resetSearchFilters()">Reset All Filters</button>
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      window.applySearchFilters = function() {
+        const dest = document.getElementById('filter-dest-select').value;
+        const type = document.getElementById('filter-type-select').value;
+        const guests = document.getElementById('filter-guests-select').value;
+        const sort = document.getElementById('filter-sort-select').value;
+        let query = `#/explore?`;
+        if (dest) query += `dest=${encodeURIComponent(dest)}&`;
+        if (type) query += `type=${encodeURIComponent(type)}&`;
+        if (guests > 1) query += `guests=${guests}&`;
+        if (sort) query += `sort=${sort}&`;
+        location.hash = query.replace(/&$/, '');
+      };
+
+      window.resetSearchFilters = function() {
+        location.hash = '#/explore';
+      };
+
+      // 8.3 VIEW: PROPERTY DETAIL PAGE WITH REAL INTERACTIVE CALENDAR & AMENITIES
+      function renderPropertyDetailView(id) {
+        const p = getPropertyById(id);
+        const wishlist = getWishlist();
+        const isSaved = wishlist.includes(p.id);
+
+        // Default reservation state: 3 nights starting from 2 days ahead
+        const today = new Date();
+        const d1 = new Date(today);
+        d1.setDate(today.getDate() + 2);
+        const d2 = new Date(today);
+        d2.setDate(today.getDate() + 5);
+        const nights = 3;
+
+        const subtotal = p.pricePerNight * nights;
+        const serviceFee = Math.round(subtotal * p.serviceFeePercent);
+        const taxes = Math.round(subtotal * p.taxPercent);
+        const total = subtotal + p.cleaningFee + serviceFee + taxes;
+
+        return `
+          <div class="container property-detail-view">
+            <!-- Breadcrumbs -->
+            <div class="breadcrumbs">
+              <a href="#/">Home</a> <span>›</span>
+              <a href="#/explore">Sanctuaries</a> <span>›</span>
+              <a href="#/explore?dest=${encodeURIComponent(p.destination)}">${p.destination}</a> <span>›</span>
+              <span style="color: var(--color-text-main); font-weight: 500;">${p.title}</span>
+            </div>
+
+            <!-- Title & Share/Wishlist Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h1 class="property-header-title">${p.title}</h1>
+                <div class="property-header-sub">
+                  <span>★ ${p.rating} (${p.reviewsCount} verified stays) • ${p.neighborhood}, ${p.destination}</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.75rem;">
+                <button class="btn btn-secondary" onclick="toggleWishlist('${p.id}')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                  ${isSaved ? 'Saved' : 'Save'}
+                </button>
+                <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(window.location.href); showToast('Link copied to clipboard')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                  Share
+                </button>
+              </div>
+            </div>
+
+            <!-- 5-Photo Editorial Gallery Grid -->
+            <div class="gallery-editorial-grid">
+              <div class="gallery-item gallery-item-hero" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 0)">
+                <img src="${p.gallery[0]}" alt="${p.title}" onerror="handleImageError(this, '${p.title}')" />
+              </div>
+              <div class="gallery-item" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 1)">
+                <img src="${p.gallery[1] || p.heroImg}" alt="Living space" onerror="handleImageError(this, 'Interior')" />
+              </div>
+              <div class="gallery-item" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 2)">
+                <img src="${p.gallery[2] || p.heroImg}" alt="Master bedroom" onerror="handleImageError(this, 'Bedroom')" />
+              </div>
+              <div class="gallery-item" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 3)">
+                <img src="${p.gallery[3] || p.heroImg}" alt="Bathroom spa" onerror="handleImageError(this, 'Spa Bath')" />
+              </div>
+              <div class="gallery-item" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 4)">
+                <img src="${p.gallery[4] || p.heroImg}" alt="Terrace and grounds" onerror="handleImageError(this, 'Terrace')" />
+                <button class="gallery-view-all-btn" onclick="event.stopPropagation(); openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 0)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg>
+                  View all ${p.gallery.length} photos
+                </button>
+              </div>
+            </div>
+
+            <!-- Detail Split: Description vs Sticky Booking Card -->
+            <div class="detail-layout-grid">
+              <div>
+                <!-- Specs Bar -->
+                <div class="detail-specs-bar">
+                  <div class="detail-spec-item">
+                    <span class="detail-spec-val">${p.guests}</span>
+                    <span class="detail-spec-lbl">Guests</span>
+                  </div>
+                  <div class="detail-spec-item">
+                    <span class="detail-spec-val">${p.bedrooms}</span>
+                    <span class="detail-spec-lbl">Bedrooms</span>
+                  </div>
+                  <div class="detail-spec-item">
+                    <span class="detail-spec-val">${p.beds}</span>
+                    <span class="detail-spec-lbl">Beds</span>
+                  </div>
+                  <div class="detail-spec-item">
+                    <span class="detail-spec-val">${p.baths}</span>
+                    <span class="detail-spec-lbl">Bathrooms</span>
+                  </div>
+                </div>
+
+                <!-- Host Note -->
+                <div style="display: flex; gap: 1.2rem; align-items: center; margin-bottom: 2.5rem; padding: 1.5rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);">
+                  <div style="width: 52px; height: 52px; border-radius: 50%; background: #25332C; color: #FFF; display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 1.4rem;">
+                    E
+                  </div>
+                  <div>
+                    <div style="font-weight: 600; font-size: 1.05rem;">Hosted by Elysian Premier Host Group</div>
+                    <div style="font-size: 0.85rem; color: var(--color-text-muted);">Verified architectural partner • 100% Response Rate • Superhost</div>
+                  </div>
+                </div>
+
+                <!-- Architectural Description -->
+                <div class="detail-section">
+                  <h2 class="detail-section-title">The Space</h2>
+                  <p class="detail-body-text">${p.description}</p>
+                </div>
+
+                <!-- Sleeping Arrangements -->
+                <div class="detail-section">
+                  <h2 class="detail-section-title">Sleeping Arrangements</h2>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;">
+                    ${Array.from({length: p.bedrooms}).map((_, i) => `
+                      <div style="padding: 1.4rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--color-accent); margin-bottom: 0.75rem;">
+                          <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>
+                        </svg>
+                        <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.2rem;">Bedroom ${i + 1}</div>
+                        <div style="font-size: 0.82rem; color: var(--color-text-muted);">1 King Bed • Ensuite Bath</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Verified Amenities -->
+                <div class="detail-section">
+                  <h2 class="detail-section-title">Sanctuary Amenities</h2>
+                  <div class="amenities-grid">
+                    ${p.amenities.map(am => `
+                      <div class="amenity-chip">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>${am}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- House Rules & Policies -->
+                <div class="detail-section">
+                  <h2 class="detail-section-title">House Rules & Safety</h2>
+                  <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.95rem; color: var(--color-text-muted);">
+                    <div>• <strong>Check-in:</strong> 3:00 PM – 9:00 PM • <strong>Check-out:</strong> 11:00 AM</div>
+                    <div>• Quiet hours from 10:00 PM out of respect for nature and neighbours</div>
+                    <div>• Private events allowed only by prior host agreement</div>
+                    <div>• Non-smoking indoors • Smoke alarms and carbon monoxide monitors installed</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sticky Booking Card Widget -->
+              <div class="sticky-booking-widget">
+                <div class="booking-widget-header">
+                  <div>
+                    <span class="booking-rate-big">${formatPrice(p.pricePerNight)}</span>
+                    <span style="color: var(--color-text-muted); font-size: 0.9rem;"> / night</span>
+                  </div>
+                  <div style="font-size: 0.88rem; font-weight: 600;">★ ${p.rating}</div>
+                </div>
+
+                <!-- Calendar Date Selectors -->
+                <div class="booking-calendar-selector">
+                  <div class="booking-date-inputs">
+                    <div class="date-input-box" onclick="showToast('Select dates in calendar below')">
+                      <span class="date-input-lbl">Check-In</span>
+                      <span class="date-input-val">${d1.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    </div>
+                    <div class="date-input-box" onclick="showToast('Select dates in calendar below')">
+                      <span class="date-input-lbl">Check-Out</span>
+                      <span class="date-input-val">${d2.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    </div>
+                  </div>
+                  <div class="booking-guests-selector">
+                    <span class="date-input-lbl">Guests</span>
+                    <span class="date-input-val">2 Adults (Capacity: ${p.guests})</span>
+                  </div>
+                </div>
+
+                <!-- Transparent Price Breakdown -->
+                <div class="price-breakdown-table">
+                  <div class="price-row">
+                    <span>${formatPrice(p.pricePerNight)} × ${nights} nights</span>
+                    <span>${formatPrice(subtotal)}</span>
+                  </div>
+                  <div class="price-row">
+                    <span>Architectural Cleaning Fee</span>
+                    <span>${formatPrice(p.cleaningFee)}</span>
+                  </div>
+                  <div class="price-row">
+                    <span>Elysian Concierge Service (10%)</span>
+                    <span>${formatPrice(serviceFee)}</span>
+                  </div>
+                  <div class="price-row">
+                    <span>Occupancy Taxes & VAT (14%)</span>
+                    <span>${formatPrice(taxes)}</span>
+                  </div>
+                  <div class="price-row price-row-total">
+                    <span>Total Due</span>
+                    <span>${formatPrice(total)}</span>
+                  </div>
+                </div>
+
+                <a href="#/booking/${p.id}" class="btn btn-primary" style="width: 100%; padding: 1.1rem; font-size: 1rem; border-radius: var(--radius-md);">
+                  Reserve Sanctuary
+                </a>
+
+                <div style="text-align: center; font-size: 0.78rem; color: var(--color-text-muted); margin-top: 1rem;">
+                  You won't be charged yet. Escrow holds your reservation safely.
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 8.4 VIEW: 5-STEP CHECKOUT & BOOKING FLOW
+      function renderBookingView(id, currentStep = 1) {
+        const p = getPropertyById(id);
+        const nights = 3;
+        const subtotal = p.pricePerNight * nights;
+        const serviceFee = Math.round(subtotal * p.serviceFeePercent);
+        const taxes = Math.round(subtotal * p.taxPercent);
+        const total = subtotal + p.cleaningFee + serviceFee + taxes;
+
+        return `
+          <div class="container checkout-layout">
+            <div style="margin-bottom: 2rem;">
+              <a href="#/property/${p.id}" style="font-size: 0.9rem; color: var(--color-accent); font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem;">
+                ‹ Back to ${p.title}
+              </a>
+              <h1 class="section-title" style="margin-top: 0.5rem;">Confirm & Reserve</h1>
+            </div>
+
+            <!-- Step Progress Tracker -->
+            <div class="checkout-step-tracker">
+              <div class="step-indicator ${currentStep >= 1 ? 'active' : ''}">
+                <div class="step-bubble">1</div>
+                <span>Stay</span>
+              </div>
+              <span>›</span>
+              <div class="step-indicator ${currentStep >= 2 ? 'active' : ''}">
+                <div class="step-bubble">2</div>
+                <span>Guest Details</span>
+              </div>
+              <span>›</span>
+              <div class="step-indicator ${currentStep >= 3 ? 'active' : ''}">
+                <div class="step-bubble">3</div>
+                <span>Policies</span>
+              </div>
+              <span>›</span>
+              <div class="step-indicator ${currentStep >= 4 ? 'active' : ''}">
+                <div class="step-bubble">4</div>
+                <span>Payment</span>
+              </div>
+              <span>›</span>
+              <div class="step-indicator ${currentStep >= 5 ? 'active' : ''}">
+                <div class="step-bubble">5</div>
+                <span>Confirmation</span>
+              </div>
+            </div>
+
+            <div class="checkout-grid">
+              <!-- Left Column: Step Form Content -->
+              <div>
+                ${currentStep === 1 ? `
+                  <div class="form-card">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Review Your Dates</h2>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+                      <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--color-bg); border-radius: var(--radius-md);">
+                        <div>
+                          <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Dates</div>
+                          <div style="font-weight: 600;">3 Nights • Next Weekend</div>
+                        </div>
+                        <button class="btn btn-ghost" onclick="showToast('Dates confirmed for stay')">Edit</button>
+                      </div>
+                      <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--color-bg); border-radius: var(--radius-md);">
+                        <div>
+                          <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Guests</div>
+                          <div style="font-weight: 600;">2 Adults</div>
+                        </div>
+                        <button class="btn btn-ghost" onclick="showToast('Guest count confirmed')">Edit</button>
+                      </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="navigateBookingStep('${p.id}', 2)">
+                      Continue to Guest Details →
+                    </button>
+                  </div>
+                ` : ''}
+
+                ${currentStep === 2 ? `
+                  <div class="form-card">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Guest Information</h2>
+                    <form id="booking-guest-form" onsubmit="event.preventDefault(); navigateBookingStep('${p.id}', 3);">
+                      <div class="form-grid" style="margin-bottom: 2rem;">
+                        <div>
+                          <label class="input-label">First Name *</label>
+                          <input type="text" class="form-control" required placeholder="Amina" value="Sarah" />
+                        </div>
+                        <div>
+                          <label class="input-label">Last Name *</label>
+                          <input type="text" class="form-control" required placeholder="Wanjiku" value="Kamau" />
+                        </div>
+                        <div class="form-group-full">
+                          <label class="input-label">Email Address *</label>
+                          <input type="email" class="form-control" required placeholder="you@domain.com" value="sarah.kamau@example.com" />
+                        </div>
+                        <div class="form-group-full">
+                          <label class="input-label">Mobile Phone (M-Pesa / SMS) *</label>
+                          <input type="tel" class="form-control" required placeholder="+254 712 345 678" value="+254 712 345 678" />
+                        </div>
+                        <div class="form-group-full">
+                          <label class="input-label">Special Requests (Optional)</label>
+                          <textarea class="form-control" rows="3" placeholder="Dietary preferences for private chef, late check-in arrival time..."></textarea>
+                        </div>
+                      </div>
+                      <div style="display: flex; gap: 1rem;">
+                        <button type="button" class="btn btn-secondary" onclick="navigateBookingStep('${p.id}', 1)">‹ Back</button>
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">Continue to Policies →</button>
+                      </div>
+                    </form>
+                  </div>
+                ` : ''}
+
+                ${currentStep === 3 ? `
+                  <div class="form-card">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Terms & Policies</h2>
+                    <div style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 2rem; font-size: 0.95rem; color: var(--color-text-muted);">
+                      <div style="padding: 1.2rem; background: var(--color-bg); border-radius: var(--radius-md);">
+                        <strong style="color: var(--color-text-main); display: block; margin-bottom: 0.3rem;">Cancellation Policy</strong>
+                        Full refund up to 48 hours before check-in date. If cancelled less than 48h prior, the first night plus cleaning fee is non-refundable.
+                      </div>
+                      <div style="padding: 1.2rem; background: var(--color-bg); border-radius: var(--radius-md);">
+                        <strong style="color: var(--color-text-main); display: block; margin-bottom: 0.3rem;">House Rules</strong>
+                        Respect quiet hours after 10 PM. No unauthorized commercial video shoots without host release.
+                      </div>
+                      <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; color: var(--color-text-main);">
+                        <input type="checkbox" checked required style="margin-top: 4px;" />
+                        <span>I understand and agree to the house rules, cancellation policy, and terms of stay.</span>
+                      </label>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                      <button class="btn btn-secondary" onclick="navigateBookingStep('${p.id}', 2)">‹ Back</button>
+                      <button class="btn btn-primary" style="flex: 1;" onclick="navigateBookingStep('${p.id}', 4)">Proceed to Payment →</button>
+                    </div>
+                  </div>
+                ` : ''}
+
+                ${currentStep === 4 ? `
+                  <div class="form-card">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 1.2rem;">Choose Payment Method</h2>
+                    <p style="color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+                      Select your preferred secure payment provider. Funds are held in escrow until 24h after check-in.
+                    </p>
+
+                    <div class="payment-methods-grid">
+                      <div class="payment-option-card selected" onclick="selectPaymentMethod(this, 'mpesa')">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: #2E7D32; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem;">M</div>
+                        <div style="font-weight: 600; font-size: 0.92rem;">M-Pesa STK</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted);">Instant Safaricom Prompt</div>
+                      </div>
+                      <div class="payment-option-card" onclick="selectPaymentMethod(this, 'paystack')">
+                        <div style="width: 36px; height: 36px; border-radius: 6px; background: #0BA4DB; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem;">P</div>
+                        <div style="font-weight: 600; font-size: 0.92rem;">Paystack</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted);">Cards & Apple Pay</div>
+                      </div>
+                      <div class="payment-option-card" onclick="selectPaymentMethod(this, 'card')">
+                        <div style="width: 36px; height: 36px; border-radius: 6px; background: #18221D; color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem;">💳</div>
+                        <div style="font-weight: 600; font-size: 0.92rem;">Direct Card</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted);">Visa / Mastercard</div>
+                      </div>
+                    </div>
+
+                    <div id="payment-method-details" style="margin-bottom: 2rem;">
+                      <div style="padding: 1.2rem; background: var(--color-bg); border-radius: var(--radius-md);">
+                        <label class="input-label">M-Pesa Registered Number</label>
+                        <input type="tel" id="checkout-mpesa-phone" class="form-control" value="+254 712 345 678" />
+                        <span style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.4rem; display: block;">You will receive an STK pin prompt on this number.</span>
+                      </div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem;">
+                      <button class="btn btn-secondary" onclick="navigateBookingStep('${p.id}', 3)">‹ Back</button>
+                      <button class="btn btn-accent" style="flex: 1;" onclick="triggerPaymentFlow('${p.id}', ${total})">
+                        Pay ${formatPrice(total)} & Confirm Stay
+                      </button>
+                    </div>
+                  </div>
+                ` : ''}
+
+                ${currentStep === 5 ? `
+                  <div class="form-card" style="text-align: center; padding: 3.5rem 2.5rem;">
+                    <div style="width: 64px; height: 64px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                    <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-accent);">Reservation Confirmed</span>
+                    <h2 style="font-size: 2.2rem; margin: 0.5rem 0 1rem;">Pack your bags for ${p.destination}.</h2>
+                    <p style="color: var(--color-text-muted); max-width: 460px; margin: 0 auto 2rem; font-size: 1rem;">
+                      Your sanctuary stay at <strong>${p.title}</strong> is secured. Reference code: <code style="background: var(--color-bg); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700;">ELY-89421</code>
+                    </p>
+
+                    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                      <a href="#/trips" class="btn btn-primary">View In My Trips</a>
+                      <a href="#/" class="btn btn-secondary">Return Home</a>
+                    </div>
+
+                    <div style="margin-top: 2.5rem; padding: 1.2rem; background: var(--color-surface-subtle); border-radius: var(--radius-md); font-size: 0.8rem; color: var(--color-text-muted); text-align: left;">
+                      <strong>Note:</strong> In production deployment, booking status and transaction references are signed authoritatively by the backend server via Daraja STK webhook or Paystack verify endpoint.
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Right Column: Sticky Summary Card -->
+              <div style="position: sticky; top: 110px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-card);">
+                <div style="display: flex; gap: 1.2rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--color-border);">
+                  <img src="${p.heroImg}" alt="${p.title}" style="width: 88px; height: 88px; border-radius: var(--radius-md); object-fit: cover;" onerror="handleImageError(this, '${p.title}')" />
+                  <div>
+                    <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--color-accent);">${p.category}</span>
+                    <h3 style="font-size: 1.2rem; margin: 0.2rem 0;">${p.title}</h3>
+                    <div style="font-size: 0.85rem; color: var(--color-text-muted);">${p.destination} • ★ ${p.rating}</div>
+                  </div>
+                </div>
+
+                <div class="price-breakdown-table">
+                  <div class="price-row">
+                    <span>${formatPrice(p.pricePerNight)} × ${nights} nights</span>
+                    <span>${formatPrice(subtotal)}</span>
+                  </div>
+                  <div class="price-row">
+                    <span>Cleaning Fee</span>
+                    <span>${formatPrice(p.cleaningFee)}</span>
+                  </div>
+                  <div class="price-row">
+                    <span>Elysian Service (10%)</span>
+                    <span>${formatPrice(serviceFee)}</span>
+                  </div>
+                  <div class="price-row">
+                    <span>Taxes & VAT (14%)</span>
+                    <span>${formatPrice(taxes)}</span>
+                  </div>
+                  <div class="price-row price-row-total">
+                    <span>Total Due</span>
+                    <span>${formatPrice(total)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      window.navigateBookingStep = function(propId, step) {
+        location.hash = `#/booking/${propId}?step=${step}`;
+      };
+
+      let selectedPayment = 'mpesa';
+      window.selectPaymentMethod = function(cardEl, method) {
+        document.querySelectorAll('.payment-option-card').forEach(c => c.classList.remove('selected'));
+        cardEl.classList.add('selected');
+        selectedPayment = method;
+        const detailsEl = document.getElementById('payment-method-details');
+        if (method === 'mpesa') {
+          detailsEl.innerHTML = `
+            <div style="padding: 1.2rem; background: var(--color-bg); border-radius: var(--radius-md);">
+              <label class="input-label">M-Pesa Registered Number</label>
+              <input type="tel" id="checkout-mpesa-phone" class="form-control" value="+254 712 345 678" />
+              <span style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.4rem; display: block;">You will receive an STK pin prompt on this number.</span>
+            </div>
+          `;
+        } else if (method === 'paystack') {
+          detailsEl.innerHTML = `
+            <div style="padding: 1.2rem; background: var(--color-bg); border-radius: var(--radius-md);">
+              <div style="font-size: 0.88rem; color: var(--color-text-main); font-weight: 600;">Paystack Secure Gateway Handshake</div>
+              <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.4rem;">Click below to open Paystack modal. Multi-currency KES/USD card checkout with 3D Secure verification.</p>
+            </div>
+          `;
+        } else {
+          detailsEl.innerHTML = `
+            <div class="form-grid" style="padding: 1.2rem; background: var(--color-bg); border-radius: var(--radius-md);">
+              <div class="form-group-full">
+                <label class="input-label">Card Number</label>
+                <input type="text" class="form-control" value="•••• •••• •••• 4242" />
+              </div>
+              <div>
+                <label class="input-label">Exp</label>
+                <input type="text" class="form-control" value="08/28" />
+              </div>
+              <div>
+                <label class="input-label">CVV</label>
+                <input type="password" class="form-control" value="123" />
+              </div>
+            </div>
+          `;
+        }
+      };
+
+      window.triggerPaymentFlow = function(propId, totalKES) {
+        if (selectedPayment === 'mpesa') {
+          document.getElementById('mpesa-amount-val').textContent = formatPrice(totalKES);
+          document.getElementById('mpesa-modal').classList.add('open');
+        } else if (selectedPayment === 'paystack') {
+          document.getElementById('paystack-modal').classList.add('open');
+        } else {
+          saveBookingRecord(propId);
+          navigateBookingStep(propId, 5);
+        }
+      };
+
+      window.simulateMpesaSuccess = function() {
+        closeModal('mpesa-modal');
+        const hash = location.hash;
+        const propId = hash.split('/')[2]?.split('?')[0];
+        saveBookingRecord(propId);
+        showToast('M-Pesa transaction confirmed by Safaricom');
+        navigateBookingStep(propId, 5);
+      };
+
+      window.simulatePaystackSuccess = function() {
+        closeModal('paystack-modal');
+        const hash = location.hash;
+        const propId = hash.split('/')[2]?.split('?')[0];
+        saveBookingRecord(propId);
+        showToast('Paystack payment verified successfully');
+        navigateBookingStep(propId, 5);
+      };
+
+      function saveBookingRecord(propId) {
+        const p = getPropertyById(propId);
+        const existing = JSON.parse(localStorage.getItem('elysian_bookings') || '[]');
+        existing.push({
+          id: 'ELY-' + Math.floor(100000 + Math.random() * 900000),
+          propertyId: propId,
+          title: p.title,
+          heroImg: p.heroImg,
+          destination: p.destination,
+          dates: '3 Nights • Confirmed Stay',
+          bookedAt: new Date().toLocaleDateString()
+        });
+        localStorage.setItem('elysian_bookings', JSON.stringify(existing));
+      }
+
+      // 8.5 VIEW: MY TRIPS & BOOKING MANAGEMENT
+      function renderTripsView() {
+        const bookings = JSON.parse(localStorage.getItem('elysian_bookings') || '[]');
+
+        return `
+          <div class="container" style="padding: 3rem 0 6rem;">
+            <div style="margin-bottom: 2.5rem;">
+              <span class="section-tag">Guest Dashboard</span>
+              <h1 class="section-title">My Journeys & Stays</h1>
+              <p class="section-desc">Manage your upcoming retreats, access check-in guides, and contact your dedicated hosts.</p>
+            </div>
+
+            ${bookings.length > 0 ? `
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 2rem;">
+                ${bookings.map(b => `
+                  <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-card);">
+                    <img src="${b.heroImg}" alt="${b.title}" style="width: 100%; height: 200px; object-fit: cover;" onerror="handleImageError(this, '${b.title}')" />
+                    <div style="padding: 1.8rem;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase;">Reference ${b.id}</span>
+                        <span style="font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 9999px; background: #E8F5E9; color: #2E7D32; font-weight: 600;">Confirmed</span>
+                      </div>
+                      <h3 style="font-size: 1.4rem; margin-bottom: 0.35rem;">${b.title}</h3>
+                      <div style="font-size: 0.88rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">${b.destination} • ${b.dates}</div>
+                      <div style="display: flex; gap: 0.75rem;">
+                        <a href="#/property/${b.propertyId}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.55rem 1rem;">View Property</a>
+                        <button class="btn btn-primary" style="font-size: 0.85rem; padding: 0.55rem 1rem;" onclick="showToast('Directions & door code sent to your email')">Arrival Guide</button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : `
+              <div style="text-align: center; padding: 6rem 2rem; background: var(--color-surface); border-radius: var(--radius-xl); border: 1px solid var(--color-border);">
+                <div style="width: 56px; height: 56px; margin: 0 auto 1.5rem; border-radius: 50%; background: var(--color-surface-subtle); display: flex; align-items: center; justify-content: center; color: var(--color-text-muted);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+                <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;">No trips booked yet</h3>
+                <p style="color: var(--color-text-muted); margin-bottom: 2rem;">When you reserve an architectural sanctuary, your itinerary will appear here.</p>
+                <a href="#/explore" class="btn btn-primary">Discover Places to Stay</a>
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      // 8.6 VIEW: SAVED WISHLIST
+      function renderWishlistView() {
+        const wishlistIds = getWishlist();
+        const allProperties = getProperties();
+        const savedProperties = allProperties.filter(p => wishlistIds.includes(p.id));
+
+        return `
+          <div class="container" style="padding: 3rem 0 6rem;">
+            <div style="margin-bottom: 2.5rem;">
+              <span class="section-tag">Curated Collection</span>
+              <h1 class="section-title">Saved Sanctuaries</h1>
+              <p class="section-desc">Your personal architectural wishlist (${savedProperties.length} properties).</p>
+            </div>
+
+            ${savedProperties.length > 0 ? `
+              <div class="property-grid">
+                ${savedProperties.map(p => renderPropertyCard(p, true)).join('')}
+              </div>
+            ` : `
+              <div style="text-align: center; padding: 6rem 2rem; background: var(--color-surface); border-radius: var(--radius-xl); border: 1px solid var(--color-border);">
+                <div style="width: 56px; height: 56px; margin: 0 auto 1.5rem; border-radius: 50%; background: var(--color-surface-subtle); display: flex; align-items: center; justify-content: center; color: var(--color-text-muted);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                </div>
+                <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Your wishlist is empty</h3>
+                <p style="color: var(--color-text-muted); margin-bottom: 2rem;">Tap the heart icon on any property to save it to your collection.</p>
+                <a href="#/explore" class="btn btn-primary">Explore Sanctuaries</a>
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      // 8.7 VIEW: HOST ONBOARDING WIZARD & HOST DASHBOARD
+      function renderHostOnboardingView(step = 1) {
+        return `
+          <div class="container" style="padding: 3rem 0 6rem; max-width: 820px;">
+            <div style="margin-bottom: 2rem;">
+              <span class="section-tag">Property Owner Onboarding</span>
+              <h1 class="section-title">List Your Sanctuary</h1>
+              <p class="section-desc">Join our curated network of architectural vacation rentals and boutique accommodations.</p>
+            </div>
+
+            <div class="form-card">
+              <form id="host-wizard-form" onsubmit="event.preventDefault(); submitNewPropertyListing();">
+                <div class="form-grid">
+                  <div class="form-group-full">
+                    <label class="input-label">Property Title *</label>
+                    <input type="text" id="wizard-title" class="form-control" required placeholder="e.g. The Baobab Clifftop Pavilion" value="The Cedar Ridge Forest Villa" />
+                  </div>
+                  <div>
+                    <label class="input-label">Destination / City *</label>
+                    <input type="text" id="wizard-dest" class="form-control" required placeholder="e.g. Nairobi, Diani, Naivasha" value="Nairobi" />
+                  </div>
+                  <div>
+                    <label class="input-label">Neighborhood / Area *</label>
+                    <input type="text" id="wizard-hood" class="form-control" required placeholder="e.g. Karen, Galu, Muthaiga" value="Gigiri Forest" />
+                  </div>
+                  <div>
+                    <label class="input-label">Property Type</label>
+                    <select id="wizard-cat" class="form-control">
+                      <option value="villa">Architectural Villa</option>
+                      <option value="coastal">Coastal Beachfront</option>
+                      <option value="lodge">Savannah Safari Lodge</option>
+                      <option value="penthouse">Urban Penthouse</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="input-label">Nightly Rate (KES) *</label>
+                    <input type="number" id="wizard-price" class="form-control" required value="42000" />
+                  </div>
+                  <div>
+                    <label class="input-label">Guest Capacity</label>
+                    <input type="number" id="wizard-guests" class="form-control" value="6" />
+                  </div>
+                  <div>
+                    <label class="input-label">Bedrooms</label>
+                    <input type="number" id="wizard-beds" class="form-control" value="3" />
+                  </div>
+                  <div class="form-group-full">
+                    <label class="input-label">Architectural Narrative & Space Description *</label>
+                    <textarea id="wizard-desc" class="form-control" rows="4" required>A modern Scandinavian-inspired timber retreat built alongside indigenous cedar and bamboo forests. Features heated pool, floor-to-ceiling glass, and tranquil yoga deck.</textarea>
+                  </div>
+                  <div class="form-group-full">
+                    <label class="input-label">Hero Photograph URL (Verified HTTPS)</label>
+                    <input type="url" id="wizard-img" class="form-control" value="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80" />
+                  </div>
+                </div>
+
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                  <button type="submit" class="btn btn-primary" style="flex: 1;">Publish Sanctuary to Marketplace</button>
+                  <a href="#/host/dashboard" class="btn btn-secondary">Cancel</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        `;
+      }
+
+      window.submitNewPropertyListing = function() {
+        const newProp = {
+          id: 'custom-' + Date.now(),
+          title: document.getElementById('wizard-title').value,
+          destination: document.getElementById('wizard-dest').value,
+          neighborhood: document.getElementById('wizard-hood').value,
+          category: document.getElementById('wizard-cat').value,
+          pricePerNight: parseInt(document.getElementById('wizard-price').value) || 35000,
+          cleaningFee: 3500,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          guests: parseInt(document.getElementById('wizard-guests').value) || 4,
+          bedrooms: parseInt(document.getElementById('wizard-beds').value) || 2,
+          beds: parseInt(document.getElementById('wizard-beds').value) || 2,
+          baths: 2,
+          rating: 5.0,
+          reviewsCount: 1,
+          tag: 'New Listing',
+          heroImg: document.getElementById('wizard-img').value || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80',
+          gallery: [
+            document.getElementById('wizard-img').value,
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80'
+          ],
+          description: document.getElementById('wizard-desc').value,
+          amenities: ['Private Heated Pool', 'High-Speed Wi-Fi', 'Full Kitchen', 'Dedicated Workspace', 'Free Parking']
+        };
+
+        const existing = JSON.parse(localStorage.getItem('elysian_custom_properties') || '[]');
+        existing.unshift(newProp);
+        localStorage.setItem('elysian_custom_properties', JSON.stringify(existing));
+
+        showToast('Sanctuary successfully listed!');
+        location.hash = `#/property/${newProp.id}`;
+      };
+
+      // 8.8 VIEW: HOST DASHBOARD
+      function renderHostDashboardView() {
+        const properties = getProperties();
+        const customProps = JSON.parse(localStorage.getItem('elysian_custom_properties') || '[]');
+
+        return `
+          <div>
+            <div class="host-portal-header">
+              <div class="container">
+                <span style="font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-accent); font-weight: 700;">Host Management Portal</span>
+                <h1 style="font-size: 2.8rem; color: #F8F5EE; margin: 0.4rem 0;">Property Owner Dashboard</h1>
+                <div class="host-nav-tabs">
+                  <span class="host-tab-link active">Overview</span>
+                  <span class="host-tab-link" onclick="location.hash='#/host/onboarding'">Add Property +</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="container" style="padding-bottom: 6rem;">
+              <!-- KPI Cards -->
+              <div class="host-stat-grid">
+                <div class="stat-card">
+                  <div class="stat-card-lbl">30-Day Revenue</div>
+                  <div class="stat-card-val">${formatPrice(684000)}</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-card-lbl">Total Bookings</div>
+                  <div class="stat-card-val">14 Stays</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-card-lbl">Average Rating</div>
+                  <div class="stat-card-val">4.97 ★</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-card-lbl">Occupancy Rate</div>
+                  <div class="stat-card-val">82%</div>
+                </div>
+              </div>
+
+              <!-- Host Properties Section -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.8rem;">Your Listed Sanctuaries</h2>
+                <a href="#/host/onboarding" class="btn btn-primary" style="font-size: 0.85rem;">+ Add New Property</a>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;">
+                ${properties.slice(0, 4).map(p => `
+                  <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; display: flex; gap: 1rem; padding: 1rem;">
+                    <img src="${p.heroImg}" alt="${p.title}" style="width: 110px; height: 110px; border-radius: var(--radius-md); object-fit: cover;" onerror="handleImageError(this, '${p.title}')" />
+                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                      <div>
+                        <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--color-accent); font-weight: 700;">Active</span>
+                        <div style="font-weight: 600; font-size: 1rem; line-height: 1.2;">${p.title}</div>
+                        <div style="font-size: 0.82rem; color: var(--color-text-muted);">${formatPrice(p.pricePerNight)} / night</div>
+                      </div>
+                      <div style="display: flex; gap: 0.5rem;">
+                        <a href="#/property/${p.id}" class="btn btn-ghost" style="padding: 0.3rem 0.6rem; font-size: 0.78rem;">View Stay</a>
+                        <button class="btn btn-ghost" style="padding: 0.3rem 0.6rem; font-size: 0.78rem;" onclick="showToast('Calendar updated')">Edit Calendar</button>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 8.9 VIEW: HOW IT WORKS & TRUST
+      function renderHowItWorksView() {
+        return `
+          <div class="container" style="padding: 4rem 0 6rem; max-width: 960px;">
+            <div style="text-align: center; margin-bottom: 4rem;">
+              <span class="section-tag">Hospitality Standard</span>
+              <h1 class="section-title">The Art of Stillness</h1>
+              <p class="section-desc" style="margin: 0.5rem auto 0;">How we curate, protect, and deliver genuine boutique short-stay journeys.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 5rem;">
+              <div style="padding: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);">
+                <div style="font-family: var(--font-serif); font-size: 2rem; color: var(--color-accent); margin-bottom: 0.75rem;">01</div>
+                <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Architectural Curation</h3>
+                <p style="font-size: 0.92rem; color: var(--color-text-muted);">Every property is assessed in person for light, natural materials, tranquility, and spatial privacy.</p>
+              </div>
+              <div style="padding: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);">
+                <div style="font-family: var(--font-serif); font-size: 2rem; color: var(--color-accent); margin-bottom: 0.75rem;">02</div>
+                <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Escrow Protection</h3>
+                <p style="font-size: 0.92rem; color: var(--color-text-muted);">Payment is held securely in escrow and released to the host only 24 hours after a smooth check-in.</p>
+              </div>
+              <div style="padding: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);">
+                <div style="font-family: var(--font-serif); font-size: 2rem; color: var(--color-accent); margin-bottom: 0.75rem;">03</div>
+                <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Dedicated Concierge</h3>
+                <p style="font-size: 0.92rem; color: var(--color-text-muted);">Private airport transfers, in-house chefs, and custom game drives organized seamlessly.</p>
+              </div>
+            </div>
+
+            <div style="text-align: center;">
+              <a href="#/explore" class="btn btn-primary" style="padding: 1rem 2rem;">Explore Sanctuaries Now</a>
+            </div>
+          </div>
+        `;
+      }
+
+      // ==========================================
+      // 9. CLIENT-SIDE ROUTER & DISPATCHER
+      // ==========================================
+      function parseHash() {
+        const hash = location.hash || '#/';
+        const [path, queryString] = hash.split('?');
+        const params = {};
+        if (queryString) {
+          new URLSearchParams(queryString).forEach((val, key) => {
+            params[key] = val;
+          });
+        }
+        return { path, params };
+      }
+
+      function renderCurrentRoute() {
+        const { path, params } = parseHash();
+        const viewport = document.getElementById('app-viewport');
+        if (!viewport) return;
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Update active state on nav links
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        if (path === '#/' || path === '') {
+          // Home
+        } else if (path.startsWith('#/explore') || path.startsWith('#/search')) {
+          document.getElementById('nav-explore')?.classList.add('active');
+        } else if (path.startsWith('#/destinations')) {
+          document.getElementById('nav-destinations')?.classList.add('active');
+        } else if (path.startsWith('#/collections')) {
+          document.getElementById('nav-collections')?.classList.add('active');
+        } else if (path.startsWith('#/trips')) {
+          document.getElementById('nav-trips')?.classList.add('active');
+        }
+
+        // Route dispatcher
+        if (path === '#/' || path === '') {
+          viewport.innerHTML = renderHomeView();
+        } else if (path === '#/explore' || path === '#/search') {
+          viewport.innerHTML = renderSearchView(params);
+        } else if (path.startsWith('#/property/')) {
+          const id = path.replace('#/property/', '');
+          viewport.innerHTML = renderPropertyDetailView(id);
+        } else if (path.startsWith('#/booking/')) {
+          const id = path.replace('#/booking/', '').split('?')[0];
+          const step = parseInt(params.step) || 1;
+          viewport.innerHTML = renderBookingView(id, step);
+        } else if (path === '#/trips') {
+          viewport.innerHTML = renderTripsView();
+        } else if (path === '#/wishlist') {
+          viewport.innerHTML = renderWishlistView();
+        } else if (path === '#/host') {
+          viewport.innerHTML = renderHowItWorksView();
+        } else if (path === '#/host/onboarding') {
+          viewport.innerHTML = renderHostOnboardingView();
+        } else if (path.startsWith('#/host/dashboard')) {
+          viewport.innerHTML = renderHostDashboardView();
+        } else if (path === '#/how-it-works' || path === '#/trust-and-safety' || path === '#/cancellation-policy') {
+          viewport.innerHTML = renderHowItWorksView();
+        } else if (path === '#/destinations') {
+          viewport.innerHTML = renderSearchView();
+        } else if (path === '#/collections') {
+          viewport.innerHTML = renderSearchView();
+        } else {
+          // Fallback to home
+          viewport.innerHTML = renderHomeView();
+        }
+
+        updateWishlistBadge();
+      }
+
+      // Initialize App Lifecycle
+      window.addEventListener('hashchange', renderCurrentRoute);
+      window.addEventListener('DOMContentLoaded', () => {
+        initEntrance();
+        renderCurrentRoute();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,3274 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Woodora | Modern Furniture & Luxury Home Interiors Kenya</title>
+  <meta name="description" content="Premium handcrafted modern furniture, living room suites, solid wood dining, bedroom sets, and curated interior spaces tailored for Kenya." />
+  <meta property="og:title" content="Woodora | Modern Furniture & Luxury Home Interiors Kenya" />
+  <meta property="og:description" content="Premium handcrafted modern furniture, living room suites, solid wood dining, bedroom sets, and curated interior spaces tailored for Kenya." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Outfit"', '"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            wood: {
+              50: '#FAF8F5',
+              100: '#F4EFEA',
+              200: '#E7DDD3',
+              300: '#D5C3B2',
+              400: '#BFA58E',
+              500: '#A4846B',
+              600: '#8A6A53',
+              700: '#6D513E',
+              800: '#4D382B',
+              900: '#2E221A',
+            },
+            charcoal: {
+              50: '#F5F5F6',
+              100: '#E5E5E7',
+              200: '#C8C8CC',
+              800: '#27272A',
+              900: '#18181B',
+              950: '#0F0F11',
+            },
+            amberwood: '#C58940',
+            terracotta: '#A85A3B',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- GSAP & ScrollTrigger CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --bg-canvas: #FAF8F5;
+      --bg-surface: #FFFFFF;
+      --border-subtle: #E8E4DF;
+      --text-main: #18181B;
+      --text-muted: #71717A;
+      --accent-warm: #C28B53;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Hotspot pin pulse */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 0; }
+      100% { transform: scale(0.95); opacity: 0; }
+    }
+    .hotspot-glow::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 9999px;
+      background: rgba(24, 24, 27, 0.2);
+      animation: pulse-ring 2.5s infinite cubic-bezier(0.25, 1, 0.5, 1);
+      z-index: -1;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F4EFEA;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D5C3B2;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #A4846B;
+    }
+
+    /* Hide scrollbar for clean horizontal product rails */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Glass and backdrop */
+    .glass-nav {
+      background: rgba(250, 248, 245, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+<body class="flex flex-col min-h-screen">
+
+  <!-- TOP ANNOUNCEMENT BAR -->
+  <div id="announcement-bar" class="bg-[#18181B] text-white text-xs py-2 px-4 text-center tracking-wide font-medium flex items-center justify-center gap-4 transition-all">
+    <div class="flex items-center gap-2">
+      <span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+      <span>Handcrafted in Kenya · Complimentary White-Glove Delivery in Nairobi & Environs for orders over KES 75,000</span>
+    </div>
+    <span class="text-zinc-500 hidden md:inline">|</span>
+    <a href="#custom-orders" class="underline text-amber-200 hover:text-white transition-colors hidden md:inline">Request Bespoke Joinery</a>
+  </div>
+
+  <!-- MAIN HEADER -->
+  <header class="sticky top-0 z-40 w-full glass-nav border-b border-[#E8E4DF] transition-shadow duration-200" id="main-header">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20 gap-8">
+        
+        <!-- ZONE 1: BRAND LOGO -->
+        <a href="#" class="flex items-center gap-2 tracking-tight shrink-0 group">
+          <span class="font-display text-2xl sm:text-3xl font-extrabold text-[#18181B] tracking-tight uppercase group-hover:text-amber-800 transition-colors">Woodora</span>
+          <span class="text-[10px] font-bold text-amber-800 tracking-widest uppercase px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200/60 hidden sm:inline">KENYA</span>
+        </a>
+
+        <!-- ZONE 2: PRIMARY NAVIGATION LINKS (Single-line, clear hierarchy) -->
+        <nav class="hidden lg:flex items-center gap-7 text-sm font-medium text-zinc-700">
+          <a href="#shop" class="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0">Shop All</a>
+          <a href="#shop?room=living" class="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0">Living Room</a>
+          <a href="#shop?room=bedroom" class="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0">Bedroom</a>
+          <a href="#shop?room=dining" class="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0">Dining</a>
+          <a href="#shop?room=office" class="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0">Office</a>
+          <a href="#room-combos" class="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0 flex items-center gap-1">
+            <span>Curated Combos</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+          </a>
+          <a href="#custom-orders" class="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0">Custom Joinery</a>
+          <a href="#b2b-quotes" class="hover:text-zinc-950 transition-colors whitespace-nowrap shrink-0 text-zinc-500">B2B / Projects</a>
+        </nav>
+
+        <!-- ZONE 3: ACTIONS (Search, Wishlist, Account, Cart, Mobile Toggle) -->
+        <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+          <!-- Search trigger -->
+          <button id="open-search-btn" aria-label="Search catalog" class="p-2 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 rounded-full transition-colors">
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </button>
+
+          <!-- Wishlist trigger with badge -->
+          <a href="#wishlist" aria-label="View Wishlist" class="p-2 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 rounded-full transition-colors relative">
+            <i data-lucide="heart" class="w-5 h-5"></i>
+            <span id="wishlist-badge" class="absolute top-1 right-1 bg-amber-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center opacity-0 scale-75 transition-all">0</span>
+          </a>
+
+          <!-- Account trigger -->
+          <a href="#account" aria-label="My Account" class="p-2 text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100 rounded-full transition-colors hidden sm:flex">
+            <i data-lucide="user" class="w-5 h-5"></i>
+          </a>
+
+          <!-- Cart trigger with item count -->
+          <button id="open-cart-btn" aria-label="Shopping Bag" class="flex items-center gap-2 p-2 bg-[#18181B] text-white hover:bg-zinc-800 rounded-full sm:rounded-lg px-3 sm:px-4 py-2 transition-all">
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            <span class="text-xs font-semibold hidden sm:inline">Bag</span>
+            <span id="cart-badge" class="text-xs font-bold bg-white text-zinc-950 rounded-full w-5 h-5 flex items-center justify-center tabular-nums">0</span>
+          </button>
+
+          <!-- Mobile menu toggle button -->
+          <button id="mobile-menu-btn" aria-label="Open navigation menu" class="p-2 text-zinc-800 lg:hidden hover:bg-zinc-100 rounded-lg">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE NAVIGATION DRAWER -->
+  <div id="mobile-drawer" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="fixed inset-y-0 right-0 w-full max-w-sm bg-[#FAF8F5] shadow-2xl flex flex-col p-6 overflow-y-auto transform translate-x-full transition-transform duration-300" id="mobile-drawer-panel">
+      <div class="flex items-center justify-between pb-6 border-b border-[#E8E4DF]">
+        <span class="font-display text-2xl font-bold uppercase tracking-tight">Woodora</span>
+        <button id="close-mobile-drawer" class="p-2 text-zinc-500 hover:text-zinc-950 rounded-full">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <div class="py-6 flex flex-col gap-4 text-base font-medium text-zinc-800">
+        <a href="#" class="mobile-nav-link py-2 border-b border-zinc-200/50">Home</a>
+        <a href="#shop" class="mobile-nav-link py-2 border-b border-zinc-200/50">Shop All Catalog</a>
+        <a href="#shop?room=living" class="mobile-nav-link py-2 border-b border-zinc-200/50">Living Room Furniture</a>
+        <a href="#shop?room=bedroom" class="mobile-nav-link py-2 border-b border-zinc-200/50">Bedroom & Mattresses</a>
+        <a href="#shop?room=dining" class="mobile-nav-link py-2 border-b border-zinc-200/50">Dining Room Sets</a>
+        <a href="#shop?room=office" class="mobile-nav-link py-2 border-b border-zinc-200/50">Home & Executive Office</a>
+        <a href="#shop?room=outdoor" class="mobile-nav-link py-2 border-b border-zinc-200/50">Patio & Outdoor</a>
+        <a href="#room-combos" class="mobile-nav-link py-2 border-b border-zinc-200/50 flex items-center justify-between text-amber-900 font-semibold">
+          <span>Curated Room Combos</span>
+          <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Save 20%</span>
+        </a>
+        <a href="#custom-orders" class="mobile-nav-link py-2 border-b border-zinc-200/50">Custom Furniture Workshop</a>
+        <a href="#b2b-quotes" class="mobile-nav-link py-2 border-b border-zinc-200/50">B2B Commercial Quotations</a>
+        <a href="#wishlist" class="mobile-nav-link py-2 border-b border-zinc-200/50">Saved Wishlist</a>
+        <a href="#account" class="mobile-nav-link py-2 border-b border-zinc-200/50">My Account & Orders</a>
+        <a href="#about" class="mobile-nav-link py-2 border-b border-zinc-200/50">About Woodora Kenya</a>
+        <a href="#faq" class="mobile-nav-link py-2">Delivery & Warranty FAQs</a>
+      </div>
+      <div class="mt-auto pt-6 border-t border-[#E8E4DF] text-xs text-zinc-500">
+        <p>Nairobi Showroom: Westlands Commercial Center</p>
+        <p class="mt-1">Inquiries: +254 700 892 145</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIVE SEARCH OVERLAY MODAL -->
+  <div id="search-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden opacity-0 transition-opacity duration-200 flex items-start justify-center pt-16 px-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-zinc-200 transform scale-95 transition-transform duration-200" id="search-modal-container">
+      <div class="flex items-center justify-between pb-4 border-b border-zinc-100">
+        <div class="flex items-center gap-3 flex-1">
+          <i data-lucide="search" class="w-5 h-5 text-zinc-400"></i>
+          <input type="text" id="search-input" placeholder="Search sofas, oak dining tables, beds, desks..." class="w-full text-lg outline-none text-zinc-900 placeholder-zinc-400 font-medium" autofocus />
+        </div>
+        <button id="close-search-btn" class="p-2 text-zinc-400 hover:text-zinc-900 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="pt-4">
+        <div class="flex items-center gap-2 mb-3 text-xs text-zinc-400 font-medium uppercase tracking-wider">
+          <span>Popular Searches</span>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-6" id="popular-search-tags">
+          <button class="search-tag px-3 py-1 bg-zinc-100 hover:bg-zinc-200 text-xs text-zinc-700 rounded-full transition-colors" data-term="sofa">Italian Leather Sofa</button>
+          <button class="search-tag px-3 py-1 bg-zinc-100 hover:bg-zinc-200 text-xs text-zinc-700 rounded-full transition-colors" data-term="dining">Solid Oak Dining Table</button>
+          <button class="search-tag px-3 py-1 bg-zinc-100 hover:bg-zinc-200 text-xs text-zinc-700 rounded-full transition-colors" data-term="bed">King Storage Bed</button>
+          <button class="search-tag px-3 py-1 bg-zinc-100 hover:bg-zinc-200 text-xs text-zinc-700 rounded-full transition-colors" data-term="lounge">Lounge Chair</button>
+          <button class="search-tag px-3 py-1 bg-zinc-100 hover:bg-zinc-200 text-xs text-zinc-700 rounded-full transition-colors" data-term="coffee">Teak Coffee Table</button>
+        </div>
+        <!-- Live Search Results Container -->
+        <div id="search-results-list" class="max-h-80 overflow-y-auto space-y-2 divide-y divide-zinc-100">
+          <p class="text-sm text-zinc-500 py-4 text-center">Type a keyword or category name to search 30+ items...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE-OUT SHOPPING BAG DRAWER -->
+  <div id="cart-drawer" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300" id="cart-drawer-panel">
+      <!-- Drawer Header -->
+      <div class="p-6 border-b border-zinc-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shopping-bag" class="w-5 h-5 text-zinc-900"></i>
+          <h2 class="text-lg font-bold text-zinc-900">Shopping Bag</h2>
+          <span id="drawer-item-count" class="text-xs bg-zinc-100 text-zinc-700 font-semibold px-2 py-0.5 rounded-full tabular-nums">0 items</span>
+        </div>
+        <button id="close-cart-btn" class="p-2 text-zinc-400 hover:text-zinc-900 rounded-full transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Free Delivery Progress Bar for Kenya -->
+      <div class="bg-amber-50/70 border-b border-amber-100 px-6 py-3">
+        <div class="flex justify-between text-xs font-medium text-amber-900 mb-1.5" id="shipping-threshold-text">
+          <span>Complimentary Nairobi Delivery</span>
+          <span class="font-bold tabular-nums" id="shipping-threshold-amount">Add KES 75,000 for free delivery</span>
+        </div>
+        <div class="w-full h-1.5 bg-amber-200/60 rounded-full overflow-hidden">
+          <div id="shipping-progress-bar" class="h-full bg-amber-600 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Cart Items List (Dynamic) -->
+      <div class="flex-1 overflow-y-auto p-6 space-y-4" id="cart-items-container">
+        <!-- Injected via renderCart() -->
+      </div>
+
+      <!-- Cart Drawer Footer -->
+      <div class="p-6 border-t border-zinc-100 bg-[#FAF8F5]/80 space-y-4">
+        <div class="space-y-1.5 text-sm">
+          <div class="flex justify-between text-zinc-600">
+            <span>Subtotal</span>
+            <span class="font-semibold text-zinc-900 tabular-nums" id="cart-subtotal">KES 0</span>
+          </div>
+          <div class="flex justify-between text-zinc-600">
+            <span>Estimated Delivery (Nairobi)</span>
+            <span class="font-medium text-emerald-700 tabular-nums" id="cart-shipping-fee">Calculated at checkout</span>
+          </div>
+          <div class="flex justify-between text-base font-bold text-zinc-900 pt-2 border-t border-zinc-200">
+            <span>Total</span>
+            <span class="tabular-nums" id="cart-grandtotal">KES 0</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <a href="#cart" id="view-bag-btn" class="w-full py-3 px-4 border border-zinc-300 hover:border-zinc-900 text-zinc-800 hover:text-zinc-950 font-semibold rounded-lg text-center text-sm transition-colors">
+            View Bag
+          </a>
+          <a href="#checkout" id="checkout-direct-btn" class="w-full py-3 px-4 bg-[#18181B] hover:bg-zinc-800 text-white font-semibold rounded-lg text-center text-sm transition-colors shadow-sm">
+            Checkout
+          </a>
+        </div>
+        <p class="text-[11px] text-center text-zinc-400">Accepted: M-Pesa Express · Paystack Cards · Bank Wire</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK VIEW MODAL -->
+  <div id="quickview-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300" id="quickview-content">
+      <button id="close-quickview-btn" class="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-900 rounded-full z-10 bg-white/80">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <div id="quickview-body" class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <!-- Injected via openQuickView() -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION VIEW ROUTER OUTLET -->
+  <main id="app-root" class="flex-1">
+    <!-- Active view content will be injected here via Vanilla JS router -->
+  </main>
+
+  <!-- TOAST NOTIFICATION POPUP -->
+  <div id="toast-notification" class="fixed bottom-6 right-6 z-50 bg-[#18181B] text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400 shrink-0"></i>
+    <span id="toast-message" class="text-sm font-medium">Added to shopping bag</span>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-[#18181B] text-zinc-300 pt-16 pb-12 border-t border-zinc-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-16 border-b border-zinc-800">
+        
+        <!-- Col 1: Brand & Craftsmanship -->
+        <div class="lg:col-span-2 space-y-4">
+          <a href="#" class="font-display text-2xl font-extrabold text-white tracking-tight uppercase">Woodora</a>
+          <p class="text-sm text-zinc-400 max-w-sm leading-relaxed">
+            Pioneering modern furniture design in Kenya. Handcrafted in our Nairobi Industrial Area workshops using kiln-dried sustainably harvested hardwoods, Italian leathers, and precision joinery.
+          </p>
+          <div class="pt-2 flex items-center gap-4 text-xs text-zinc-400">
+            <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i> 3-Year Frame Guarantee</span>
+            <span class="flex items-center gap-1.5"><i data-lucide="truck" class="w-4 h-4 text-amber-400"></i> White-Glove Setup</span>
+          </div>
+        </div>
+
+        <!-- Col 2: Categories -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider">Catalog Collections</h4>
+          <ul class="space-y-2 text-sm text-zinc-400">
+            <li><a href="#shop?room=living" class="hover:text-white transition-colors">Living Room Suites</a></li>
+            <li><a href="#shop?cat=sofas" class="hover:text-white transition-colors">Sectionals & Sofas</a></li>
+            <li><a href="#shop?room=bedroom" class="hover:text-white transition-colors">Beds & Nightstands</a></li>
+            <li><a href="#shop?room=dining" class="hover:text-white transition-colors">Solid Ash Dining Sets</a></li>
+            <li><a href="#shop?room=office" class="hover:text-white transition-colors">Executive Home Office</a></li>
+            <li><a href="#room-combos" class="hover:text-white transition-colors text-amber-300">Curated Room Combos</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Services & Bespoke -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider">Services & Bespoke</h4>
+          <ul class="space-y-2 text-sm text-zinc-400">
+            <li><a href="#custom-orders" class="hover:text-white transition-colors">Custom Joinery Workshop</a></li>
+            <li><a href="#b2b-quotes" class="hover:text-white transition-colors">Commercial & Hotel Quotations</a></li>
+            <li><a href="#about" class="hover:text-white transition-colors">Our Nairobi Workshop</a></li>
+            <li><a href="#faq" class="hover:text-white transition-colors">Delivery Coverage & Timelines</a></li>
+            <li><a href="#faq" class="hover:text-white transition-colors">Timber & Leather Care Guide</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Kenya Locality & Contact -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider">Nairobi Showroom</h4>
+          <div class="space-y-2 text-sm text-zinc-400">
+            <p>Westlands Commercial Center, Ring Road Parklands, Nairobi</p>
+            <p>Workshop: Enterprise Rd, Industrial Area</p>
+            <p class="text-white font-medium">Mon - Sat: 9:00 AM – 6:30 PM</p>
+            <p class="text-amber-400 font-medium">+254 700 892 145</p>
+            <p class="text-xs text-zinc-500">concierge@woodora.co.ke</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
+        <p>© 2026 Woodora Interiors Kenya Ltd. All rights reserved.</p>
+        <div class="flex items-center gap-6">
+          <a href="#faq" class="hover:text-zinc-300">Privacy Policy</a>
+          <a href="#faq" class="hover:text-zinc-300">Terms of Service</a>
+          <a href="#faq" class="hover:text-zinc-300">Return & Exchange Policy</a>
+          <span class="text-zinc-600">Built for Kenya</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT: APPLICATION DATA & STORE LOGIC -->
+  <script>
+    // -------------------------------------------------------------
+    // 1. EXTENSIVE STRUCTURED FURNITURE CATALOG DATA (30+ Products)
+    // -------------------------------------------------------------
+    const PRODUCTS = [
+      {
+        id: "wod-101",
+        name: "The Cozynest Italian Leather Sofa",
+        sku: "WOD-SOF-101",
+        brand: "Woodora Atelier",
+        category: "sofas",
+        room: "living",
+        price: 115000,
+        originalPrice: 135000,
+        rating: 4.8,
+        reviewsCount: 300,
+        description: "An iconic Chesterfield-inspired mid-century sofa upholstered in butter-soft semi-aniline Italian leather. Deep diamond tufting and hand-turned solid mahogany feet.",
+        features: ["Top-grain semi-aniline leather", "Kiln-dried African Mahogany frame", "High-resilience foam core with duck-feather wrap", "Hand-hammered brass nailhead trim"],
+        dimensions: { w: 220, d: 96, h: 78, seatH: 45, weight: 68 },
+        materials: "Italian Full-Grain Leather, Solid Mahogany, Brass hardware",
+        finish: "Cognac Amber Waxed",
+        colors: [
+          { name: "Cognac Amber", hex: "#9E5B32" },
+          { name: "Dark Walnut Brown", hex: "#4A2F1B" },
+          { name: "Vintage Charcoal", hex: "#2B2B2B" }
+        ],
+        stock: 7,
+        inStock: true,
+        deliveryEst: "24-48 hrs in Nairobi · 3 days Upcountry",
+        warranty: "5-Year Structural Frame Guarantee",
+        image: "./images/woodora_hero_living_1791798708458.jpg",
+        tags: ["bestseller", "leather", "luxury", "living"]
+      },
+      {
+        id: "wod-102",
+        name: "Veroliving Solid Teak Coffee Table",
+        sku: "WOD-COF-102",
+        brand: "Woodora Artisan",
+        category: "tables",
+        room: "living",
+        price: 38000,
+        originalPrice: 45000,
+        rating: 4.9,
+        reviewsCount: 142,
+        description: "Sculptural round architectural coffee table with flared tripod joinery base and double-bevel lip. Turned from sustainably salvaged Kenyan teak.",
+        features: ["100% Solid Kiln-Dried Teak", "Water-resistant matte organic hardwax-oil finish", "Traditional mortise and tenon joints", "Rounded soft bullnose edge"],
+        dimensions: { w: 90, d: 90, h: 44, seatH: null, weight: 22 },
+        materials: "Solid Salvaged Teak Wood",
+        finish: "Matte Honey Oil",
+        colors: [
+          { name: "Natural Honey", hex: "#C68B59" },
+          { name: "Smoked Espresso", hex: "#423229" }
+        ],
+        stock: 12,
+        inStock: true,
+        deliveryEst: "Next-Day Nairobi",
+        warranty: "3-Year Craftsmanship Guarantee",
+        image: "./images/woodora_hero_living_1791798708458.jpg",
+        tags: ["new-arrival", "solid-wood", "living"]
+      },
+      {
+        id: "wod-103",
+        name: "Serenity Rocking Lounge Chair",
+        sku: "WOD-LOU-103",
+        brand: "Woodora Atelier",
+        category: "chairs",
+        room: "living",
+        price: 45000,
+        originalPrice: 52000,
+        rating: 4.8,
+        reviewsCount: 185,
+        description: "Classic spindle-back rocking armchair with contoured lumbar support and tailored textured tweed cushion. Balanced rocker glides quietly on any hardwood or rug.",
+        features: ["Solid White Ash wood frame", "Heavy-duty textured linen-blend cushion", "Smooth precision-balanced rocking arcs", "Removable zippered cushion cover"],
+        dimensions: { w: 68, d: 88, h: 96, seatH: 46, weight: 16 },
+        materials: "Solid White Ash, Woven Tweed, Brass pivot pegs",
+        finish: "Warm Walnut Glaze",
+        colors: [
+          { name: "Oatmeal Tweed", hex: "#D6CFC7" },
+          { name: "Forest Moss", hex: "#4A5D4E" },
+          { name: "Deep Charcoal", hex: "#3A3A3C" }
+        ],
+        stock: 9,
+        inStock: true,
+        deliveryEst: "24-48 hrs in Nairobi",
+        warranty: "3-Year Structural Guarantee",
+        image: "./images/woodora_editorial_comfort_1791798733114.jpg",
+        tags: ["popular", "living", "comfort"]
+      },
+      {
+        id: "wod-104",
+        name: "Rustic Floating Wall Sideboard",
+        sku: "WOD-STO-104",
+        brand: "Woodora Custom",
+        category: "storage",
+        room: "living",
+        price: 58000,
+        originalPrice: 65000,
+        rating: 4.8,
+        reviewsCount: 88,
+        description: "Mid-century low-profile credenza featuring fluted sliding tambour doors and hidden cable management conduits for media and audio receivers.",
+        features: ["Solid American Walnut veneer over marine birch", "German soft-close concealed hardware", "Integrated ventilation slats for electronics", "Adjustable interior shelf dividers"],
+        dimensions: { w: 180, d: 45, h: 58, seatH: null, weight: 48 },
+        materials: "American Walnut & Solid Teak Trim",
+        finish: "Natural Satin Oil",
+        colors: [
+          { name: "American Walnut", hex: "#5C3E28" },
+          { name: "Ebonized Oak", hex: "#22201E" }
+        ],
+        stock: 4,
+        inStock: true,
+        deliveryEst: "2-3 business days",
+        warranty: "3-Year Warranty",
+        image: "./images/woodora_hero_living_1791798708458.jpg",
+        tags: ["storage", "living", "media"]
+      },
+      {
+        id: "wod-105",
+        name: "Cascade Solid Wood 5-Tier Bookshelf",
+        sku: "WOD-BKS-105",
+        brand: "Woodora Artisan",
+        category: "storage",
+        room: "office",
+        price: 48000,
+        originalPrice: 55000,
+        rating: 4.8,
+        reviewsCount: 94,
+        description: "Open architectural bookshelf designed with tapered vertical stiles and graduated shelving depth. Clean crown molding and reinforced anti-tip brackets.",
+        features: ["Reinforced solid hardwood construction", "Graduated shelf heights for oversized art folios", "Safety wall anchors included", "Satin low-VOC lacquered finish"],
+        dimensions: { w: 100, d: 38, h: 195, seatH: null, weight: 42 },
+        materials: "Solid Cypress & African Mvule",
+        finish: "Ivory White Lacquer",
+        colors: [
+          { name: "Ivory White", hex: "#F7F5F0" },
+          { name: "Natural Mvule", hex: "#B88746" }
+        ],
+        stock: 6,
+        inStock: true,
+        deliveryEst: "24-48 hrs in Nairobi",
+        warranty: "5-Year Guarantee",
+        image: "./images/woodora_editorial_comfort_1791798733114.jpg",
+        tags: ["storage", "office", "living"]
+      },
+      {
+        id: "wod-106",
+        name: "Aurora Upholstered King Bed Frame",
+        sku: "WOD-BED-106",
+        brand: "Woodora Atelier",
+        category: "beds",
+        room: "bedroom",
+        price: 140000,
+        originalPrice: 160000,
+        rating: 4.9,
+        reviewsCount: 167,
+        description: "A sanctuary centerpiece. Sculptural padded wingback headboard tailored in heavy Belgian textured linen with solid white oak perimeter plinth base.",
+        features: ["Built-in solid pine posture-slat mattress support", "Stain-resistant textured performance linen", "Zero squeak steel-reinforced corner brackets", "Accommodates standard King 180x200cm or 6x6ft"],
+        dimensions: { w: 195, d: 215, h: 120, seatH: 35, weight: 82 },
+        materials: "Belgian Linen, Solid White Oak, Kiln-Dried Pine",
+        finish: "Warm Chalk Oak",
+        colors: [
+          { name: "Oatmeal Linen", hex: "#DDD6CC" },
+          { name: "Pebble Grey", hex: "#9E9E9E" },
+          { name: "Midnight Navy", hex: "#1C2A3A" }
+        ],
+        stock: 5,
+        inStock: true,
+        deliveryEst: "Free White-Glove Setup in Nairobi",
+        warranty: "10-Year Frame Guarantee",
+        image: "./images/woodora_hero_living_1791798708458.jpg",
+        tags: ["bedroom", "luxury", "king-bed"]
+      },
+      {
+        id: "wod-107",
+        name: "Maplecraft Solid Ash Dining Chairs (Pair)",
+        sku: "WOD-DNC-107",
+        brand: "Woodora Artisan",
+        category: "chairs",
+        room: "dining",
+        price: 32000,
+        originalPrice: 38000,
+        rating: 4.8,
+        reviewsCount: 215,
+        description: "Pair of Scandinavian Windsor-style dining chairs with 7-spindle curved steam-bent bow back and ergonomically carved saddle seat.",
+        features: ["Steam-bent solid Ash backrest", "Mortise, tenon, and wedged dowel construction", "Supplied as a matched pair (Set of 2)", "Felt floor protection glides installed"],
+        dimensions: { w: 52, d: 54, h: 84, seatH: 46, weight: 12 },
+        materials: "Solid American Ash Wood",
+        finish: "Warm Natural Ash",
+        colors: [
+          { name: "Natural Ash", hex: "#DEC8A5" },
+          { name: "Matte Black Stain", hex: "#1F1F1F" }
+        ],
+        stock: 16,
+        inStock: true,
+        deliveryEst: "Next-Day Nairobi",
+        warranty: "3-Year Structural Guarantee",
+        image: "./images/woodora_craftsmanship_1791798744170.jpg",
+        tags: ["dining", "chairs", "ash"]
+      },
+      {
+        id: "wod-108",
+        name: "Coastal All-Weather Patio Set with Coffee Table",
+        sku: "WOD-OUT-108",
+        brand: "Woodora Outdoor",
+        category: "outdoor",
+        room: "outdoor",
+        price: 110000,
+        originalPrice: 128000,
+        rating: 4.8,
+        reviewsCount: 76,
+        description: "Three-piece patio conversation suite comprising two club armchairs with high-density quick-dry Sunbrella foam cushions and a woven round occasional table.",
+        features: ["UV-resistant high-density polyethylene resin weave", "Powder-coated rustproof aircraft aluminium frame", "Olefin weather and mold-resistant fabric", "Tempered glass table surface"],
+        dimensions: { w: 180, d: 85, h: 76, seatH: 42, weight: 36 },
+        materials: "All-Weather Resin Rattan, Aluminium, Olefin Fabric",
+        finish: "Charcoal Slate Weave",
+        colors: [
+          { name: "Charcoal Slate", hex: "#3A3D40" },
+          { name: "Warm Dune Rattan", hex: "#C7B299" }
+        ],
+        stock: 8,
+        inStock: true,
+        deliveryEst: "2-3 business days",
+        warranty: "3-Year Outdoor Weather Guarantee",
+        image: "/images/woodora_curated_combo_1791798721656.jpg",
+        tags: ["outdoor", "patio", "balcony"]
+      },
+      {
+        id: "wod-109",
+        name: "Elmora Modern Executive Desk",
+        sku: "WOD-DSK-109",
+        brand: "Woodora Atelier",
+        category: "desks",
+        room: "office",
+        price: 62000,
+        originalPrice: 72000,
+        rating: 4.8,
+        reviewsCount: 110,
+        description: "Clean-lined executive desk with floating modesty panel, integrated lockable 3-drawer pedestal, and discrete brushed alloy wireless charger & cable dock.",
+        features: ["Solid Hardwood worktop with beveled chamfer", "Integrated cable organizer ducting under desk", "Full-extension ball bearing drawer slides", "Keyed master lock on top stationery drawer"],
+        dimensions: { w: 160, d: 75, h: 76, seatH: null, weight: 58 },
+        materials: "Kiln-Dried African Oak & Brushed Aluminium",
+        finish: "Natural Oak with Matte White Accents",
+        colors: [
+          { name: "Natural Oak & White", hex: "#E8D8C3" },
+          { name: "Dark Walnut & Black", hex: "#3B2B20" }
+        ],
+        stock: 11,
+        inStock: true,
+        deliveryEst: "24-48 hrs in Nairobi",
+        warranty: "5-Year Guarantee",
+        image: "./images/woodora_editorial_comfort_1791798733114.jpg",
+        tags: ["office", "executive", "desk"]
+      },
+      {
+        id: "wod-110",
+        name: "Rift Oak 8-Seater Extendable Dining Table",
+        sku: "WOD-TAB-110",
+        brand: "Woodora Custom",
+        category: "tables",
+        room: "dining",
+        price: 120000,
+        originalPrice: 145000,
+        rating: 4.9,
+        reviewsCount: 92,
+        description: "Masterpiece dining table featuring continuous grain butterfly leaf mechanism that effortlessly extends from 6 seats (200cm) to 8-10 seats (260cm).",
+        features: ["German synchronized cable-glide extension hardware", "Solid Rift-sawn Oak slab top", "Integrated internal storage for extension leaves", "Sculptural trestle base leaves full legroom"],
+        dimensions: { w: 260, d: 100, h: 76, seatH: null, weight: 88 },
+        materials: "Solid Rift Oak, Steel extension runners",
+        finish: "Matte Organic Polyx-Oil",
+        colors: [
+          { name: "Natural Rift Oak", hex: "#D4B996" },
+          { name: "Smoked Grey Oak", hex: "#6E6862" }
+        ],
+        stock: 3,
+        inStock: true,
+        deliveryEst: "White-Glove Nairobi Assembly Included",
+        warranty: "10-Year Craftsmanship Warranty",
+        image: "./images/woodora_craftsmanship_1791798744170.jpg",
+        tags: ["dining", "table", "extendable"]
+      },
+      {
+        id: "wod-111",
+        name: "CloudRest Ortho-Support Pocket Spring Mattress",
+        sku: "WOD-MAT-111",
+        brand: "Woodora Sleep",
+        category: "mattresses",
+        room: "bedroom",
+        price: 68000,
+        originalPrice: 78000,
+        rating: 4.9,
+        reviewsCount: 230,
+        description: "Engineered for optimal spinal alignment in Kenyan climates. Features 1,400 individually encased zoned pocket springs topped with breathable organic bamboo quilted cover.",
+        features: ["1,400 Individually encased barrel coils", "Zero motion transfer between sleeping partners", "Hypoallergenic bamboo-knitted cover", "Medium-Firm orthopedic ergonomic support (7/10)"],
+        dimensions: { w: 180, d: 200, h: 28, seatH: null, weight: 44 },
+        materials: "High-Tensile Carbon Steel Coils, Natural Latex, Bamboo Jacquard",
+        finish: "Quilted Cloud White",
+        colors: [{ name: "Bamboo Cloud White", hex: "#FDFDFD" }],
+        stock: 14,
+        inStock: true,
+        deliveryEst: "Next-Day Nairobi",
+        warranty: "10-Year Non-Sag Warranty",
+        image: "/images/woodora_curated_combo_1791798721656.jpg",
+        tags: ["mattress", "bedroom", "ortho"]
+      },
+      {
+        id: "wod-112",
+        name: "Solstice Washi Paper Pendant Lamp",
+        sku: "WOD-LGT-112",
+        brand: "Woodora Lighting",
+        category: "lighting",
+        room: "lighting",
+        price: 16500,
+        originalPrice: 19500,
+        rating: 4.7,
+        reviewsCount: 64,
+        description: "Volumetric Japanese Noguchi-inspired pendant lantern made from hand-stretched mulberry washi paper on thin bamboo ribs. Casts serene, shadowless atmospheric ambient light.",
+        features: ["Handcrafted washi paper & bamboo ribbing", "Includes 2m fabric-covered suspension cord & brass ceiling rose", "E27 socket compatible with smart LED bulbs", "Diffuses glare into soft warm 2700K ambient glow"],
+        dimensions: { w: 60, d: 60, h: 55, seatH: null, weight: 2 },
+        materials: "Washi Mulberry Paper, Natural Bamboo, Brushed Brass",
+        finish: "Translucent Cream",
+        colors: [{ name: "Translucent Washi Cream", hex: "#FFFDF5" }],
+        stock: 20,
+        inStock: true,
+        deliveryEst: "Same-Day Dispatch Nairobi",
+        warranty: "2-Year Electrical Warranty",
+        image: "/images/woodora_curated_combo_1791798721656.jpg",
+        tags: ["lighting", "pendant", "minimalist"]
+      },
+      {
+        id: "wod-113",
+        name: "Ergofit Pro Mesh High-Back Swivel Chair",
+        sku: "WOD-OFC-113",
+        brand: "Woodora Office",
+        category: "chairs",
+        room: "office",
+        price: 42000,
+        originalPrice: 49000,
+        rating: 4.9,
+        reviewsCount: 174,
+        description: "Ergonomic mesh task chair with adaptive dynamic lumbar support, 4D multidirectional armrests, synchro-tilt mechanism, and quiet dual-wheel nylon carpet casters.",
+        features: ["Breathable Korean high-elasticity mesh", "Class 4 heavy-duty KGS pneumatic gas lift", "Adjustable 3D headrest and tilt tension limiter", "Tested for 150kg weight capacity"],
+        dimensions: { w: 68, d: 68, h: 128, seatH: 52, weight: 19 },
+        materials: "Elastomeric Mesh, Polished Cast Aluminium base",
+        finish: "Matte Black & Chrome",
+        colors: [
+          { name: "Obsidian Black", hex: "#1A1A1A" },
+          { name: "Slate Grey", hex: "#5C6066" }
+        ],
+        stock: 15,
+        inStock: true,
+        deliveryEst: "Next-Day Nairobi",
+        warranty: "5-Year Mechanical Warranty",
+        image: "./images/woodora_editorial_comfort_1791798733114.jpg",
+        tags: ["office", "ergonomic", "desk-chair"]
+      },
+      {
+        id: "wod-114",
+        name: "Karen Fluted Walnut Sideboard Buffet",
+        sku: "WOD-BUF-114",
+        brand: "Woodora Atelier",
+        category: "storage",
+        room: "dining",
+        price: 78000,
+        originalPrice: 89000,
+        rating: 4.8,
+        reviewsCount: 58,
+        description: "Four-door dining credenza enveloped in handcrafted vertical tambour fluting. Solid brass recessed ring pulls and concealed wine stemware racks inside.",
+        features: ["Solid walnut tambour fluting", "Soft-close Blum concealed door hinges", "Interior felt-lined silverware pullout drawer", "Solid brass conical turned feet with levelers"],
+        dimensions: { w: 190, d: 48, h: 82, seatH: null, weight: 62 },
+        materials: "Solid American Walnut, Brass trim",
+        finish: "Warm Walnut Satin",
+        colors: [{ name: "Rich American Walnut", hex: "#563A28" }],
+        stock: 3,
+        inStock: true,
+        deliveryEst: "3 business days",
+        warranty: "5-Year Guarantee",
+        image: "./images/woodora_hero_living_1791798708458.jpg",
+        tags: ["dining", "storage", "buffet"]
+      },
+      {
+        id: "wod-115",
+        name: "Sculptural Ochre Velvet Armchair",
+        sku: "WOD-ARM-115",
+        brand: "Woodora Atelier",
+        category: "chairs",
+        room: "living",
+        price: 36000,
+        originalPrice: 42000,
+        rating: 4.8,
+        reviewsCount: 140,
+        description: "Cocooning organic curves wrapped in sumptuous marigold mustard velvet with slim architectural black powder-coated tapered steel legs.",
+        features: ["Commercial-grade 50,000 double-rub velvet", "High-density molded foam shell", "Reinforced solid beech internal frame", "Stain-resistant textile protection"],
+        dimensions: { w: 82, d: 84, h: 78, seatH: 44, weight: 18 },
+        materials: "Performance Velvet, Molded High-Resilience Foam, Steel",
+        finish: "Marigold Ochre",
+        colors: [
+          { name: "Marigold Ochre", hex: "#D69E2E" },
+          { name: "Terracotta Rust", hex: "#B85D38" },
+          { name: "Sage Olive", hex: "#606F5B" }
+        ],
+        stock: 8,
+        inStock: true,
+        deliveryEst: "Next-Day Nairobi",
+        warranty: "3-Year Structural Guarantee",
+        image: "./images/woodora_editorial_comfort_1791798733114.jpg",
+        tags: ["living", "armchair", "velvet"]
+      },
+      {
+        id: "wod-116",
+        name: "Savannah 4-Door Sliding Wardrobe",
+        sku: "WOD-WAR-116",
+        brand: "Woodora Custom",
+        category: "storage",
+        room: "bedroom",
+        price: 185000,
+        originalPrice: 210000,
+        rating: 4.9,
+        reviewsCount: 45,
+        description: "Full-height wardrobe with smooth whisper-quiet top-hung sliding doors, full-length tinted smoked glass bronze mirrors, and automated LED warm interior strip lights.",
+        features: ["Top-hung Italian damper sliding tracks", "Smoked bronze safety glass paneling", "Sensor-activated warm 3000K LED interior rails", "Modular internal configurations (hanging, drawers, shoe racks)"],
+        dimensions: { w: 240, d: 65, h: 235, seatH: null, weight: 145 },
+        materials: "Kiln-Dried Hardwood, Smoked Mirror, Anodized Aluminium",
+        finish: "Muted Cashmere & Smoked Bronze",
+        colors: [{ name: "Cashmere Grey & Bronze", hex: "#D5CEC5" }],
+        stock: 2,
+        inStock: true,
+        deliveryEst: "On-site Nairobi Installation Included",
+        warranty: "5-Year Guarantee",
+        image: "./images/woodora_hero_living_1791798708458.jpg",
+        tags: ["bedroom", "wardrobe", "custom"]
+      }
+    ];
+
+    // -------------------------------------------------------------
+    // 2. CURATED ROOM COMBOS / PACKAGES DATA
+    // -------------------------------------------------------------
+    const ROOM_COMBOS = [
+      {
+        id: "combo-living-luxe",
+        code: "01/08",
+        title: "Scandinavian Modern Living Room Suite",
+        price: 149000,
+        originalPrice: 198000,
+        savings: 49000,
+        itemsCount: 4,
+        description: "Complete turnkey living space: The Cozynest Italian Leather Sofa + Veroliving Teak Coffee Table + Rustic Sideboard + Solstice Pendant Lamp.",
+        image: "./images/woodora_hero_living_1791798708458.jpg",
+        productsIncluded: ["wod-101", "wod-102", "wod-104", "wod-112"],
+        highlights: ["Saves KES 49,000 compared to individual pieces", "Free White-Glove Nairobi Assembly & Room Placement", "Cohesive hand-matched timber and upholstery tones"]
+      },
+      {
+        id: "combo-editorial-comfort",
+        code: "02/08",
+        title: "Curated Style Meets Comfort Combo",
+        price: 129000,
+        originalPrice: 165000,
+        savings: 36000,
+        itemsCount: 3,
+        description: "The complete Architectural Digest setup seen on Woodora: Button-tufted cream leather sofa, mid-century lounge chair, and fluted media console.",
+        image: "/images/woodora_curated_combo_1791798721656.jpg",
+        productsIncluded: ["wod-101", "wod-103", "wod-104"],
+        highlights: ["Hand-selected by Woodora interior art directors", "Includes complimentary sisal area rug voucher", "Ready to move into today"]
+      },
+      {
+        id: "combo-executive-suite",
+        code: "03/08",
+        title: "Executive Modern Office Suite",
+        price: 135000,
+        originalPrice: 152000,
+        savings: 17000,
+        itemsCount: 3,
+        description: "Create an inspiring work retreat: Elmora Executive Desk + Ergofit Pro Mesh High-Back Chair + Cascade 5-Tier Hardwood Bookshelf.",
+        image: "./images/woodora_editorial_comfort_1791798733114.jpg",
+        productsIncluded: ["wod-109", "wod-113", "wod-105"],
+        highlights: ["Ergonomic certified for full 10-hour workdays", "Concealed cable management pre-installed", "Tax-deductible invoice provided for commercial clients"]
+      }
+    ];
+
+    // -------------------------------------------------------------
+    // 3. PERSISTENT APPLICATION STATE (LocalStorage)
+    // -------------------------------------------------------------
+    const STATE = {
+      cart: JSON.parse(localStorage.getItem('woodora_cart') || '[]'),
+      wishlist: JSON.parse(localStorage.getItem('woodora_wishlist') || '[]'),
+      activeFilter: 'all',
+      activeRoom: 'all',
+      searchQuery: '',
+      sortOption: 'featured',
+      priceRange: 200000,
+      activeComboIndex: 1, // 02/08 default
+      user: JSON.parse(localStorage.getItem('woodora_user') || '{"name":"Robinson Mwangi","email":"robinson36.ke@gmail.com","phone":"+254 712 345 678","county":"Nairobi"}'),
+      discountCode: '',
+      discountPercent: 0
+    };
+
+    function saveCart() {
+      localStorage.setItem('woodora_cart', JSON.stringify(STATE.cart));
+      updateCartUI();
+    }
+
+    function saveWishlist() {
+      localStorage.setItem('woodora_wishlist', JSON.stringify(STATE.wishlist));
+      updateWishlistUI();
+    }
+
+    // -------------------------------------------------------------
+    // 4. FORMATTERS & HELPERS
+    // -------------------------------------------------------------
+    function formatKES(num) {
+      return 'KES ' + Number(num).toLocaleString('en-KE');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast-notification');
+      const msg = document.getElementById('toast-message');
+      msg.textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2600);
+    }
+
+    // -------------------------------------------------------------
+    // 5. CART OPERATIONS
+    // -------------------------------------------------------------
+    function addToCart(productId, selectedColor = null, quantity = 1) {
+      const p = PRODUCTS.find(x => x.id === productId);
+      if (!p) return;
+
+      const chosenColor = selectedColor || (p.colors && p.colors[0] ? p.colors[0].name : 'Default');
+      const existing = STATE.cart.find(item => item.id === productId && item.color === chosenColor);
+
+      if (existing) {
+        existing.quantity += quantity;
+      } else {
+        STATE.cart.push({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          image: p.image,
+          color: chosenColor,
+          sku: p.sku,
+          quantity: quantity
+        });
+      }
+
+      saveCart();
+      showToast(`Added "${p.name}" to shopping bag`);
+      openCartDrawer();
+    }
+
+    function addBundleToCart(comboId) {
+      const combo = ROOM_COMBOS.find(c => c.id === comboId);
+      if (!combo) return;
+
+      STATE.cart.push({
+        id: combo.id,
+        name: combo.title + ' (Curated Bundle)',
+        price: combo.price,
+        image: combo.image,
+        color: 'Curated Room Set',
+        sku: 'BUNDLE-' + combo.id.toUpperCase(),
+        quantity: 1,
+        isBundle: true
+      });
+
+      saveCart();
+      showToast(`Curated Bundle added! Saved ${formatKES(combo.savings)}`);
+      openCartDrawer();
+    }
+
+    function updateCartItemQty(productId, color, delta) {
+      const item = STATE.cart.find(x => x.id === productId && x.color === color);
+      if (!item) return;
+
+      item.quantity += delta;
+      if (item.quantity <= 0) {
+        STATE.cart = STATE.cart.filter(x => !(x.id === productId && x.color === color));
+      }
+      saveCart();
+    }
+
+    function removeCartItem(productId, color) {
+      STATE.cart = STATE.cart.filter(x => !(x.id === productId && x.color === color));
+      saveCart();
+      showToast('Item removed from bag');
+    }
+
+    function toggleWishlist(productId) {
+      const index = STATE.wishlist.indexOf(productId);
+      const product = PRODUCTS.find(p => p.id === productId);
+      if (index > -1) {
+        STATE.wishlist.splice(index, 1);
+        showToast(`Removed "${product ? product.name : ''}" from wishlist`);
+      } else {
+        STATE.wishlist.push(productId);
+        showToast(`Saved to your Woodora Wishlist`);
+      }
+      saveWishlist();
+      // Update any heart icons on visible cards
+      document.querySelectorAll(`[data-wishlist-id="${productId}"]`).forEach(btn => {
+        const isSaved = STATE.wishlist.includes(productId);
+        btn.classList.toggle('text-rose-600', isSaved);
+        btn.classList.toggle('fill-rose-600', isSaved);
+      });
+    }
+
+    function updateCartUI() {
+      const count = STATE.cart.reduce((sum, item) => sum + item.quantity, 0);
+      const badge = document.getElementById('cart-badge');
+      if (badge) badge.textContent = count;
+
+      const drawerBadge = document.getElementById('drawer-item-count');
+      if (drawerBadge) drawerBadge.textContent = `${count} ${count === 1 ? 'item' : 'items'}`;
+
+      const rawSubtotal = STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const discount = rawSubtotal * STATE.discountPercent;
+      const subtotal = rawSubtotal - discount;
+
+      const subtotalEl = document.getElementById('cart-subtotal');
+      if (subtotalEl) subtotalEl.textContent = formatKES(subtotal);
+
+      // Shipping threshold (Free for Nairobi if >= 75,000)
+      const threshold = 75000;
+      const shippingProgress = document.getElementById('shipping-progress-bar');
+      const shippingAmountText = document.getElementById('shipping-threshold-amount');
+      const shippingFeeEl = document.getElementById('cart-shipping-fee');
+
+      if (rawSubtotal >= threshold) {
+        if (shippingProgress) shippingProgress.style.width = '100%';
+        if (shippingAmountText) shippingAmountText.innerHTML = '<span class="text-emerald-700 font-bold">You unlocked FREE White-Glove Nairobi Delivery!</span>';
+        if (shippingFeeEl) shippingFeeEl.innerHTML = '<span class="text-emerald-700 font-semibold">FREE</span>';
+      } else {
+        const pct = Math.min(100, Math.round((rawSubtotal / threshold) * 100));
+        const needed = threshold - rawSubtotal;
+        if (shippingProgress) shippingProgress.style.width = pct + '%';
+        if (shippingAmountText) shippingAmountText.textContent = `Add ${formatKES(needed)} for free delivery`;
+        if (shippingFeeEl) shippingFeeEl.textContent = rawSubtotal > 0 ? 'KES 3,500' : 'Calculated at checkout';
+      }
+
+      const shippingCost = (rawSubtotal > 0 && rawSubtotal < threshold) ? 3500 : 0;
+      const grandTotal = subtotal + shippingCost;
+      const grandTotalEl = document.getElementById('cart-grandtotal');
+      if (grandTotalEl) grandTotalEl.textContent = formatKES(grandTotal);
+
+      // Render items inside drawer
+      const container = document.getElementById('cart-items-container');
+      if (!container) return;
+
+      if (STATE.cart.length === 0) {
+        container.innerHTML = `
+          <div class="h-64 flex flex-col items-center justify-center text-center p-6 text-zinc-400">
+            <i data-lucide="shopping-bag" class="w-12 h-12 stroke-[1.2] mb-3 text-zinc-300"></i>
+            <p class="text-base font-semibold text-zinc-700">Your bag is empty</p>
+            <p class="text-xs text-zinc-500 max-w-xs mt-1">Discover handcrafted Kenyan hardwoods and bespoke upholstered pieces.</p>
+            <a href="#shop" onclick="closeCartDrawer()" class="mt-4 px-4 py-2 bg-[#18181B] text-white text-xs font-semibold rounded-lg hover:bg-zinc-800 transition-colors">Start Shopping</a>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = STATE.cart.map(item => `
+        <div class="flex gap-4 pb-4 border-b border-zinc-100 items-start group">
+          <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-cover rounded-lg bg-zinc-100 border border-zinc-200/60 shrink-0" onerror="this.src='./images/woodora_hero_living_1791798708458.jpg'" />
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-semibold text-zinc-900 truncate">${item.name}</h4>
+            <div class="text-xs text-zinc-500 mt-0.5 flex items-center gap-1.5">
+              <span>Finish: ${item.color}</span>
+              <span>·</span>
+              <span class="text-zinc-400">${item.sku}</span>
+            </div>
+            <div class="text-sm font-bold text-zinc-900 mt-1 tabular-nums">
+              ${formatKES(item.price * item.quantity)}
+            </div>
+            <div class="flex items-center justify-between mt-2">
+              <div class="flex items-center border border-zinc-200 rounded-md bg-white">
+                <button onclick="updateCartItemQty('${item.id}', '${item.color}', -1)" class="w-7 h-7 flex items-center justify-center text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 transition-colors" aria-label="Decrease quantity">
+                  -
+                </button>
+                <span class="w-8 text-center text-xs font-semibold tabular-nums">${item.quantity}</span>
+                <button onclick="updateCartItemQty('${item.id}', '${item.color}', 1)" class="w-7 h-7 flex items-center justify-center text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 transition-colors" aria-label="Increase quantity">
+                  +
+                </button>
+              </div>
+              <button onclick="removeCartItem('${item.id}', '${item.color}')" class="text-xs text-zinc-400 hover:text-rose-600 transition-colors flex items-center gap-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span>Remove</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function updateWishlistUI() {
+      const badge = document.getElementById('wishlist-badge');
+      if (!badge) return;
+      const count = STATE.wishlist.length;
+      badge.textContent = count;
+      if (count > 0) {
+        badge.classList.remove('opacity-0', 'scale-75');
+        badge.classList.add('opacity-100', 'scale-100');
+      } else {
+        badge.classList.remove('opacity-100', 'scale-100');
+        badge.classList.add('opacity-0', 'scale-75');
+      }
+    }
+
+    // Drawer toggles
+    function openCartDrawer() {
+      const drawer = document.getElementById('cart-drawer');
+      const panel = document.getElementById('cart-drawer-panel');
+      drawer.classList.remove('hidden');
+      setTimeout(() => {
+        drawer.classList.remove('opacity-0');
+        panel.classList.remove('translate-x-full');
+      }, 10);
+    }
+
+    function closeCartDrawer() {
+      const drawer = document.getElementById('cart-drawer');
+      const panel = document.getElementById('cart-drawer-panel');
+      drawer.classList.add('opacity-0');
+      panel.classList.add('translate-x-full');
+      setTimeout(() => {
+        drawer.classList.add('hidden');
+      }, 300);
+    }
+
+    // -------------------------------------------------------------
+    // 6. QUICK VIEW MODAL
+    // -------------------------------------------------------------
+    function openQuickView(productId) {
+      const product = PRODUCTS.find(p => p.id === productId);
+      if (!product) return;
+
+      const modal = document.getElementById('quickview-modal');
+      const content = document.getElementById('quickview-content');
+      const body = document.getElementById('quickview-body');
+
+      body.innerHTML = `
+        <div class="relative rounded-xl overflow-hidden bg-zinc-100 aspect-square sm:aspect-4/3 flex items-center justify-center">
+          <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='./images/woodora_hero_living_1791798708458.jpg'" />
+          <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded text-xs font-semibold text-zinc-800">
+            ★ ${product.rating} (${product.reviewsCount} reviews)
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <span class="text-xs font-semibold text-amber-800 uppercase tracking-widest">${product.brand}</span>
+            <h3 class="text-xl sm:text-2xl font-bold text-zinc-900 mt-1">${product.name}</h3>
+            <p class="text-xs text-zinc-400 mt-0.5">SKU: ${product.sku} · ${product.materials}</p>
+          </div>
+
+          <div class="flex items-baseline gap-3">
+            <span class="text-2xl font-extrabold text-zinc-900 tabular-nums">${formatKES(product.price)}</span>
+            ${product.originalPrice ? `<span class="text-sm text-zinc-400 line-through tabular-nums">${formatKES(product.originalPrice)}</span>` : ''}
+          </div>
+
+          <p class="text-sm text-zinc-600 leading-relaxed">${product.description}</p>
+
+          <div class="pt-2 border-t border-zinc-100">
+            <label class="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">Available Finishes</label>
+            <div class="flex gap-2" id="qv-color-swatches">
+              ${(product.colors || []).map((c, i) => `
+                <button type="button" class="qv-color-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium ${i === 0 ? 'border-zinc-900 bg-zinc-50' : 'border-zinc-200'}" data-color="${c.name}">
+                  <span class="w-3 h-3 rounded-full" style="background-color: ${c.hex}"></span>
+                  <span>${c.name}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-zinc-100">
+            <div class="grid grid-cols-2 gap-2 text-xs text-zinc-500 mb-4">
+              <div><span class="font-medium text-zinc-700">Dimensions:</span> ${product.dimensions.w}W × ${product.dimensions.d}D × ${product.dimensions.h}H cm</div>
+              <div><span class="font-medium text-zinc-700">Delivery:</span> ${product.deliveryEst}</div>
+            </div>
+
+            <div class="flex gap-3">
+              <button onclick="addToCart('${product.id}'); document.getElementById('close-quickview-btn').click();" class="flex-1 py-3 px-4 bg-[#18181B] hover:bg-zinc-800 text-white font-semibold rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+                <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                <span>Add to Shopping Bag</span>
+              </button>
+              <a href="#product?id=${product.id}" onclick="document.getElementById('close-quickview-btn').click();" class="py-3 px-4 border border-zinc-300 hover:border-zinc-900 text-zinc-800 font-semibold rounded-lg text-sm transition-colors">
+                Full Details
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+      }, 10);
+
+      lucide.createIcons();
+
+      // Swatch selection handling
+      const swatchBtns = body.querySelectorAll('.qv-color-btn');
+      swatchBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          swatchBtns.forEach(b => b.classList.remove('border-zinc-900', 'bg-zinc-50'));
+          btn.classList.add('border-zinc-900', 'bg-zinc-50');
+        });
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 7. COMPONENT: PRODUCT CARD RENDERER
+    // -------------------------------------------------------------
+    function renderProductCard(product) {
+      const isSaved = STATE.wishlist.includes(product.id);
+      return `
+        <div class="product-card group flex flex-col bg-white rounded-xl overflow-hidden border border-[#E8E4DF] hover:shadow-lg transition-all duration-300 relative" data-product-id="${product.id}">
+          <!-- Image frame -->
+          <div class="relative aspect-4/3 sm:aspect-square bg-[#FAF8F5] overflow-hidden flex items-center justify-center">
+            <a href="#product?id=${product.id}" class="w-full h-full block">
+              <img 
+                src="${product.image}" 
+                alt="${product.name}" 
+                class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500" 
+                loading="lazy" 
+                onerror="this.src='./images/woodora_hero_living_1791798708458.jpg'"
+              />
+            </a>
+
+            <!-- Quick Add (+) Button at bottom right of image (Inspired by Woodora Reference) -->
+            <button 
+              onclick="event.stopPropagation(); addToCart('${product.id}');" 
+              class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-[#18181B] text-white hover:bg-amber-800 flex items-center justify-center shadow-md transition-transform duration-200 hover:scale-110 z-10" 
+              title="Quick Add to Bag"
+              aria-label="Quick Add to Bag"
+            >
+              <i data-lucide="plus" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Wishlist Heart Button at top right -->
+            <button 
+              onclick="event.stopPropagation(); toggleWishlist('${product.id}');" 
+              class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm text-zinc-600 hover:text-rose-600 flex items-center justify-center transition-colors z-10 ${isSaved ? 'text-rose-600 fill-rose-600' : ''}" 
+              data-wishlist-id="${product.id}"
+              aria-label="Save to Wishlist"
+            >
+              <i data-lucide="heart" class="w-4 h-4 ${isSaved ? 'fill-current' : ''}"></i>
+            </button>
+
+            <!-- Quick view button on hover -->
+            <button 
+              onclick="event.stopPropagation(); openQuickView('${product.id}');" 
+              class="absolute bottom-3 left-3 px-2.5 py-1 rounded bg-white/90 backdrop-blur-sm text-[11px] font-semibold text-zinc-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 hidden sm:block"
+            >
+              Quick View
+            </button>
+          </div>
+
+          <!-- Card Content -->
+          <div class="p-4 flex-1 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                <span class="uppercase tracking-wider font-medium text-[10px] text-amber-800">${product.brand}</span>
+                <div class="flex items-center gap-1 text-amber-600 font-semibold text-[11px]">
+                  <span>★</span>
+                  <span>${product.rating}</span>
+                  <span class="text-zinc-400 font-normal">(${product.reviewsCount})</span>
+                </div>
+              </div>
+              <a href="#product?id=${product.id}" class="block group-hover:text-amber-800 transition-colors">
+                <h3 class="text-sm font-bold text-zinc-900 tracking-tight leading-snug line-clamp-1">${product.name}</h3>
+              </a>
+              <p class="text-xs text-zinc-500 mt-1 line-clamp-1">${product.materials}</p>
+            </div>
+
+            <div class="mt-3 pt-3 border-t border-zinc-100 flex items-center justify-between">
+              <div class="flex items-baseline gap-2">
+                <span class="text-base font-extrabold text-zinc-950 tabular-nums">${formatKES(product.price)}</span>
+                ${product.originalPrice ? `<span class="text-xs text-zinc-400 line-through tabular-nums">${formatKES(product.originalPrice)}</span>` : ''}
+              </div>
+              <span class="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">In Stock</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // -------------------------------------------------------------
+    // 8. VIEWS: 
+    //    - HOME
+    //    - SHOP ALL / CATEGORY FILTERS
+    //    - PRODUCT DETAIL (PDP)
+    //    - ROOM COMBOS
+    //    - CUSTOM JOINERY WORKSHOP
+    //    - B2B QUOTES
+    //    - CART & CHECKOUT
+    //    - WISHLIST
+    //    - ACCOUNT
+    //    - ABOUT & FAQ
+    // -------------------------------------------------------------
+
+    // VIEW: HOMEPAGE (Exact structure from Woodora reference image image.png)
+    function renderHomeView() {
+      const newArrivals = PRODUCTS.slice(0, 5);
+      const allProducts = PRODUCTS;
+      const currentCombo = ROOM_COMBOS[STATE.activeComboIndex] || ROOM_COMBOS[1];
+
+      return `
+        <!-- HERO SECTION (Exact composition from Woodora screenshot) -->
+        <section class="relative bg-[#FAF8F5] pt-12 pb-20 border-b border-[#E8E4DF] overflow-hidden" id="hero-section">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Hero Title & Shop CTA -->
+            <div class="text-center max-w-3xl mx-auto space-y-4 mb-8">
+              <h1 class="font-display text-3xl sm:text-5xl lg:text-6xl font-extrabold text-[#18181B] tracking-tight uppercase leading-[1.08] text-balance" id="hero-heading">
+                MODERN FURNITURE<br />FOR MODERN LIVING
+              </h1>
+              <p class="text-sm sm:text-base text-zinc-600 max-w-lg mx-auto">
+                Handcrafted solid wood joinery, Italian leather upholstery, and timeless architectural forms for Kenyan homes.
+              </p>
+              <div class="pt-2">
+                <a href="#shop" class="inline-block px-8 py-3.5 bg-[#18181B] hover:bg-zinc-800 text-white font-semibold text-sm rounded-full tracking-wide transition-all duration-200 shadow-md hover:shadow-xl hover:scale-105">
+                  Shop Now
+                </a>
+              </div>
+            </div>
+
+            <!-- Hero Image with Interactive Hotspot Price Tags (As seen in image.png) -->
+            <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-zinc-200/80 bg-zinc-100 max-w-5xl mx-auto aspect-16/9 group">
+              <img 
+                src="./images/woodora_hero_living_1791798708458.jpg" 
+                alt="Woodora Modern Living Room Suite with Scandinavian Furniture" 
+                class="w-full h-full object-cover" 
+                priority
+              />
+
+              <!-- HOTSPOT 1: Credenza / Sideboard ($234 -> KES 34,500) -->
+              <div class="absolute top-[52%] left-[12%] z-20">
+                <div class="relative group/pin">
+                  <a href="#product?id=wod-104" class="hotspot-glow flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-[#18181B] text-xs font-bold py-1.5 px-3 rounded-full shadow-lg border border-zinc-200 hover:scale-110 transition-transform">
+                    <span>KES 58,000</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  </a>
+                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-[#18181B] text-white p-2.5 rounded-lg text-xs opacity-0 group-hover/pin:opacity-100 transition-opacity pointer-events-none shadow-xl z-30">
+                    <p class="font-semibold">Rustic Floating Sideboard</p>
+                    <p class="text-zinc-400 text-[10px] mt-0.5">Click to view details</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- HOTSPOT 2: Sofa ($499 -> KES 115,000) -->
+              <div class="absolute top-[68%] left-[45%] z-20">
+                <div class="relative group/pin">
+                  <a href="#product?id=wod-101" class="hotspot-glow flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-[#18181B] text-xs font-bold py-1.5 px-3 rounded-full shadow-lg border border-zinc-200 hover:scale-110 transition-transform">
+                    <span>KES 115,000</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  </a>
+                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-[#18181B] text-white p-2.5 rounded-lg text-xs opacity-0 group-hover/pin:opacity-100 transition-opacity pointer-events-none shadow-xl z-30">
+                    <p class="font-semibold">The Cozynest Italian Sofa</p>
+                    <p class="text-zinc-400 text-[10px] mt-0.5">Top-grain leather</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- HOTSPOT 3: Coffee Table ($344 -> KES 38,000) -->
+              <div class="absolute top-[76%] left-[34%] z-20">
+                <div class="relative group/pin">
+                  <a href="#product?id=wod-102" class="hotspot-glow flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-[#18181B] text-xs font-bold py-1.5 px-3 rounded-full shadow-lg border border-zinc-200 hover:scale-110 transition-transform">
+                    <span>KES 38,000</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  </a>
+                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-[#18181B] text-white p-2.5 rounded-lg text-xs opacity-0 group-hover/pin:opacity-100 transition-opacity pointer-events-none shadow-xl z-30">
+                    <p class="font-semibold">Veroliving Solid Teak Table</p>
+                    <p class="text-zinc-400 text-[10px] mt-0.5">Salvaged Kenyan Teak</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- HOTSPOT 4: Lounge Chair ($199 -> KES 45,000) -->
+              <div class="absolute top-[62%] right-[16%] z-20">
+                <div class="relative group/pin">
+                  <a href="#product?id=wod-103" class="hotspot-glow flex items-center gap-1.5 bg-white/95 backdrop-blur-sm text-[#18181B] text-xs font-bold py-1.5 px-3 rounded-full shadow-lg border border-zinc-200 hover:scale-110 transition-transform">
+                    <span>KES 45,000</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  </a>
+                  <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-[#18181B] text-white p-2.5 rounded-lg text-xs opacity-0 group-hover/pin:opacity-100 transition-opacity pointer-events-none shadow-xl z-30">
+                    <p class="font-semibold">Serenity Lounge Rocker</p>
+                    <p class="text-zinc-400 text-[10px] mt-0.5">Spindle-back Ash</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECTION 2: NEW ARRIVALS (As shown in Woodora image.png) -->
+        <section class="py-20 bg-white border-b border-[#E8E4DF]" id="new-arrivals-section">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center max-w-2xl mx-auto mb-12">
+              <h2 class="font-display text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-zinc-900">NEW ARRIVALS</h2>
+              <p class="text-xs sm:text-sm text-zinc-500 mt-2">
+                We Source Only The Finest Materials And Work With Skilled Artisans To Craft Pieces That Stand The Test Of Time.
+              </p>
+            </div>
+
+            <!-- Product Cards Carousel / Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${newArrivals.slice(0, 4).map(p => renderProductCard(p)).join('')}
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="mt-10 flex items-center justify-center gap-3">
+              <button onclick="document.getElementById('new-arrivals-section').scrollIntoView({behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-950 transition-colors" aria-label="Previous arrivals">
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+              </button>
+              <button onclick="document.getElementById('all-products-section').scrollIntoView({behavior: 'smooth'})" class="w-10 h-10 rounded-full border border-zinc-950 bg-zinc-950 text-white flex items-center justify-center transition-colors" aria-label="Next items">
+                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECTION 3: ALL PRODUCTS WITH FILTER PILLS (As seen in image.png) -->
+        <section class="py-20 bg-[#FAF8F5] border-b border-[#E8E4DF]" id="all-products-section">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Header with Category Filter Buttons -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+              <div>
+                <h2 class="font-display text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-zinc-900">ALL PRODUCTS</h2>
+                <p class="text-xs text-zinc-500 mt-1">Explore our full handcrafted furniture inventory across Kenya.</p>
+              </div>
+
+              <!-- Interactive Category Tabs (As seen in Woodora reference) -->
+              <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2" id="home-category-tabs">
+                <button onclick="setHomeCategoryFilter('all', this)" class="home-cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-[#18181B] text-white transition-colors whitespace-nowrap">
+                  All
+                </button>
+                <button onclick="setHomeCategoryFilter('sofas', this)" class="home-cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-900 transition-colors whitespace-nowrap">
+                  Sofas
+                </button>
+                <button onclick="setHomeCategoryFilter('beds', this)" class="home-cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-900 transition-colors whitespace-nowrap">
+                  Beds
+                </button>
+                <button onclick="setHomeCategoryFilter('mattresses', this)" class="home-cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-900 transition-colors whitespace-nowrap">
+                  Mattresses
+                </button>
+                <button onclick="setHomeCategoryFilter('tables', this)" class="home-cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-900 transition-colors whitespace-nowrap">
+                  Dining Tables
+                </button>
+                <button onclick="setHomeCategoryFilter('chairs', this)" class="home-cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-900 transition-colors whitespace-nowrap">
+                  Chairs
+                </button>
+                <button onclick="setHomeCategoryFilter('storage', this)" class="home-cat-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-900 transition-colors whitespace-nowrap">
+                  Storage
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamic Products Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="home-products-grid">
+              ${allProducts.slice(0, 8).map(p => renderProductCard(p)).join('')}
+            </div>
+
+            <!-- "See All" button -->
+            <div class="mt-12 text-center">
+              <a href="#shop" class="inline-block px-8 py-3 bg-[#18181B] hover:bg-zinc-800 text-white font-semibold text-xs uppercase tracking-wider rounded-lg transition-colors">
+                See All Catalog (${PRODUCTS.length} Items)
+              </a>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECTION 4: STYLE MEETS COMFORT EDITORIAL (Exact layout from image.png) -->
+        <section class="py-24 bg-white border-b border-[#E8E4DF]" id="editorial-section">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <!-- Left Column: Editorial Headline & Proof Metrics -->
+              <div class="lg:col-span-6 space-y-8">
+                <div class="space-y-4">
+                  <h2 class="font-display text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-zinc-950 leading-tight">
+                    STYLE MEETS<br />COMFORT
+                  </h2>
+                  <p class="text-sm text-zinc-600 leading-relaxed max-w-lg">
+                    With Years Of Experience In The Furniture Industry, Our Team Is Dedicated To Sourcing And Crafting Pieces That Combine Functionality With Aesthetic Appeal. From Modern Minimalism To Timeless Classics.
+                  </p>
+                </div>
+
+                <!-- Proof Metrics (1,200+ & 98% from image.png) -->
+                <div class="grid grid-cols-2 gap-8 pt-6 border-t border-zinc-200">
+                  <div class="space-y-1">
+                    <span class="font-display text-4xl sm:text-5xl font-black text-zinc-950 tracking-tight tabular-nums">1,200+</span>
+                    <p class="text-xs text-zinc-500 font-medium leading-snug">Unique furniture pieces designed to suit every style</p>
+                  </div>
+                  <div class="space-y-1">
+                    <span class="font-display text-4xl sm:text-5xl font-black text-zinc-950 tracking-tight tabular-nums">98%</span>
+                    <p class="text-xs text-zinc-500 font-medium leading-snug">Customer satisfaction rate with our products and white-glove service</p>
+                  </div>
+                </div>
+
+                <div class="pt-4 flex items-center gap-4">
+                  <a href="#about" class="text-xs font-bold uppercase tracking-wider text-zinc-950 hover:text-amber-800 underline underline-offset-4">Read Our Nairobi Craft Story →</a>
+                </div>
+              </div>
+
+              <!-- Right Column: High-Fidelity Room Image with Yellow Armchair -->
+              <div class="lg:col-span-6">
+                <div class="relative rounded-2xl overflow-hidden shadow-xl border border-zinc-200 aspect-4/3 bg-zinc-100 group">
+                  <img 
+                    src="./images/woodora_editorial_comfort_1791798733114.jpg" 
+                    alt="Woodora Sculptural Yellow Armchair in Sunlit Architectural Interior" 
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                    loading="lazy"
+                  />
+                  <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-lg text-xs font-semibold text-zinc-900 shadow-md">
+                    The Nairobi Solstice Collection
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 5: CURATED COMBOS BANNER (Exact layout from image.png) -->
+        <section class="py-20 bg-[#FAF8F5] border-b border-[#E8E4DF]" id="combos-banner-section">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-3xl p-8 sm:p-12 border border-[#E8E4DF] shadow-xl relative overflow-hidden">
+              
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-8">
+                <!-- Counter & Nav -->
+                <div class="lg:col-span-6 flex items-center gap-4 text-xs font-bold text-zinc-500">
+                  <div class="flex items-center gap-2">
+                    <button onclick="prevCombo()" class="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center hover:bg-zinc-100 transition-colors" aria-label="Previous combo">
+                      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <span class="font-mono text-sm font-extrabold text-zinc-900 tabular-nums" id="combo-code-display">${currentCombo.code}</span>
+                    <button onclick="nextCombo()" class="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center hover:bg-zinc-100 transition-colors" aria-label="Next combo">
+                      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                  <span class="text-zinc-400">|</span>
+                  <span class="text-amber-800 uppercase tracking-widest text-[11px]">Curated Room Set</span>
+                </div>
+
+                <!-- Title & Shop Now Button -->
+                <div class="lg:col-span-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 class="font-display text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-zinc-950" id="combo-title-display">
+                      CURATED COMBOS ${formatKES(currentCombo.price)} ONLY
+                    </h3>
+                    <p class="text-xs text-zinc-500 mt-1">Save ${formatKES(currentCombo.savings)} when bundled together</p>
+                  </div>
+                  <button onclick="addBundleToCart('${currentCombo.id}')" class="px-6 py-3 bg-[#18181B] hover:bg-zinc-800 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors whitespace-nowrap shrink-0 shadow-sm">
+                    Add Bundle to Bag
+                  </button>
+                </div>
+              </div>
+
+              <!-- Curated Combo Image Showcase -->
+              <div class="rounded-2xl overflow-hidden aspect-16/9 bg-zinc-100 border border-zinc-200">
+                <img 
+                  id="combo-image-display"
+                  src="${currentCombo.image}" 
+                  alt="${currentCombo.title}" 
+                  class="w-full h-full object-cover" 
+                  loading="lazy"
+                />
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 6: ARTISAN CRAFTSMANSHIP & WOOD JOINERY -->
+        <section class="py-20 bg-white border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div class="lg:col-span-6 order-2 lg:order-1 rounded-2xl overflow-hidden aspect-16/9 bg-zinc-100 border border-zinc-200 shadow-md">
+                <img 
+                  src="./images/woodora_craftsmanship_1791798744170.jpg" 
+                  alt="Woodora Artisan Handcrafting Solid Hardwood Dining Table in Nairobi Workshop" 
+                  class="w-full h-full object-cover" 
+                  loading="lazy"
+                />
+              </div>
+              <div class="lg:col-span-6 order-1 lg:order-2 space-y-5">
+                <span class="text-xs font-bold uppercase tracking-widest text-amber-800">Sustainably Sourced & Hand-Finished</span>
+                <h2 class="font-display text-2xl sm:text-4xl font-extrabold uppercase tracking-tight text-zinc-950">
+                  HONEST HARDWOODS.<br />MASTER KENYAN JOINERY.
+                </h2>
+                <p class="text-sm text-zinc-600 leading-relaxed">
+                  Every Woodora dining table and credenza begins with kiln-dried African Mahogany, reclaimed Mvule, or imported White Oak. Our Nairobi master carpenters employ time-honored mortise-and-tenon joinery and organic plant-based hardwax oils that age gracefully over generations.
+                </p>
+                <div class="grid grid-cols-3 gap-4 pt-4 border-t border-zinc-100 text-center">
+                  <div class="p-3 bg-[#FAF8F5] rounded-xl border border-zinc-200/60">
+                    <span class="text-xs font-bold text-zinc-900 block">Kiln-Dried</span>
+                    <span class="text-[11px] text-zinc-500">8-10% Moisture</span>
+                  </div>
+                  <div class="p-3 bg-[#FAF8F5] rounded-xl border border-zinc-200/60">
+                    <span class="text-xs font-bold text-zinc-900 block">Zero VOC</span>
+                    <span class="text-[11px] text-zinc-500">Natural Oil Finish</span>
+                  </div>
+                  <div class="p-3 bg-[#FAF8F5] rounded-xl border border-zinc-200/60">
+                    <span class="text-xs font-bold text-zinc-900 block">Custom Fit</span>
+                    <span class="text-[11px] text-zinc-500">Bespoke Sizing</span>
+                  </div>
+                </div>
+                <div>
+                  <a href="#custom-orders" class="inline-block px-6 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-lg transition-colors">
+                    Commission Custom Piece
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 7: WHITE-GLOVE SERVICE & KENYA LOGISTICS PROMISE -->
+        <section class="py-16 bg-[#FAF8F5] border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              
+              <div class="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center shrink-0">
+                  <i data-lucide="truck" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-zinc-900">White-Glove Nairobi Delivery</h4>
+                  <p class="text-xs text-zinc-500 mt-1 leading-relaxed">
+                    Our team delivers to your room of choice, assembles all hardware, and removes packaging. Upcountry deliveries dispatched safely via insured logistics.
+                  </p>
+                </div>
+              </div>
+
+              <div class="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center shrink-0">
+                  <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-zinc-900">3-Year Structural Warranty</h4>
+                  <p class="text-xs text-zinc-500 mt-1 leading-relaxed">
+                    Comprehensive guarantee covering structural hardwood timber frames, joints, and suspension against warping or defects.
+                  </p>
+                </div>
+              </div>
+
+              <div class="p-6 bg-white rounded-2xl border border-zinc-200 shadow-sm flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center shrink-0">
+                  <i data-lucide="credit-card" class="w-6 h-6"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-zinc-900">Secure M-Pesa & Paystack</h4>
+                  <p class="text-xs text-zinc-500 mt-1 leading-relaxed">
+                    Convenient STK push payment via Safaricom M-Pesa or secure card checkout with transparent receipting and no hidden fees.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 8: NEWSLETTER SIGNUP -->
+        <section class="py-16 bg-white">
+          <div class="max-w-3xl mx-auto px-4 text-center space-y-4">
+            <span class="text-xs font-bold uppercase tracking-widest text-amber-800">The Woodora Journal</span>
+            <h3 class="text-2xl font-bold text-zinc-900">Receive Private Catalogue Previews & Interior Inquiries</h3>
+            <p class="text-xs text-zinc-500 max-w-md mx-auto">
+              Join 8,500+ Kenyan homeowners and architects who receive early access to limited seasonal timber releases.
+            </p>
+            <form onsubmit="event.preventDefault(); showToast('Subscribed! Welcome to the Woodora Journal.'); this.reset();" class="flex flex-col sm:flex-row gap-2 max-w-md mx-auto pt-2">
+              <input type="email" required placeholder="Enter your email address" class="px-4 py-2.5 border border-zinc-300 rounded-lg text-sm flex-1 outline-none focus:border-zinc-900" />
+              <button type="submit" class="px-6 py-2.5 bg-[#18181B] text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-zinc-800 transition-colors">
+                Subscribe
+              </button>
+            </form>
+            <p class="text-[11px] text-zinc-400">Strict privacy guarantee. Unsubscribe at any time.</p>
+          </div>
+        </section>
+      `;
+    }
+
+    // Interactive category filter on homepage
+    function setHomeCategoryFilter(cat, btn) {
+      document.querySelectorAll('.home-cat-btn').forEach(b => {
+        b.classList.remove('bg-[#18181B]', 'text-white');
+        b.classList.add('bg-white', 'border', 'border-zinc-300', 'text-zinc-700');
+      });
+      btn.classList.remove('bg-white', 'border', 'border-zinc-300', 'text-zinc-700');
+      btn.classList.add('bg-[#18181B]', 'text-white');
+
+      const grid = document.getElementById('home-products-grid');
+      let filtered = PRODUCTS;
+      if (cat !== 'all') {
+        filtered = PRODUCTS.filter(p => p.category === cat || p.room === cat);
+      }
+      grid.innerHTML = filtered.slice(0, 8).map(p => renderProductCard(p)).join('');
+      lucide.createIcons();
+    }
+
+    // Combo slider functions
+    function prevCombo() {
+      STATE.activeComboIndex = (STATE.activeComboIndex - 1 + ROOM_COMBOS.length) % ROOM_COMBOS.length;
+      updateComboDisplay();
+    }
+    function nextCombo() {
+      STATE.activeComboIndex = (STATE.activeComboIndex + 1) % ROOM_COMBOS.length;
+      updateComboDisplay();
+    }
+    function updateComboDisplay() {
+      const combo = ROOM_COMBOS[STATE.activeComboIndex];
+      const codeEl = document.getElementById('combo-code-display');
+      const titleEl = document.getElementById('combo-title-display');
+      const imgEl = document.getElementById('combo-image-display');
+      if (codeEl) codeEl.textContent = combo.code;
+      if (titleEl) titleEl.textContent = `CURATED COMBOS ${formatKES(combo.price)} ONLY`;
+      if (imgEl) imgEl.src = combo.image;
+    }
+
+    // VIEW: SHOP ALL / CATALOG WITH MULTI-FACETED COMBINABLE FILTERS
+    function renderShopView(params = {}) {
+      const activeCat = params.cat || 'all';
+      const activeRoom = params.room || 'all';
+      const query = params.q || '';
+      const sort = params.sort || 'featured';
+
+      return `
+        <div class="bg-[#FAF8F5] py-8 border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-2 text-xs text-zinc-500 mb-2">
+              <a href="#" class="hover:text-zinc-900">Home</a>
+              <span>/</span>
+              <span class="text-zinc-900 font-medium">Catalog Store</span>
+              ${activeRoom !== 'all' ? `<span>/</span> <span class="capitalize text-amber-800">${activeRoom}</span>` : ''}
+              ${activeCat !== 'all' ? `<span>/</span> <span class="capitalize text-amber-800">${activeCat}</span>` : ''}
+            </div>
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <h1 class="font-display text-3xl font-extrabold uppercase text-zinc-950 tracking-tight">
+                  ${activeRoom !== 'all' ? `${activeRoom.toUpperCase()} FURNITURE` : (activeCat !== 'all' ? `${activeCat.toUpperCase()}` : 'ALL FURNITURE & INTERIORS')}
+                </h1>
+                <p class="text-xs text-zinc-500 mt-1">Discover handcrafted Kenyan pieces built for lifelong comfort.</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs text-zinc-500 font-medium" id="shop-result-count">Derived from catalog</span>
+                <!-- Sort Dropdown -->
+                <select id="shop-sort-select" onchange="applyShopFilters()" class="px-3 py-1.5 bg-white border border-zinc-300 rounded-lg text-xs font-semibold text-zinc-700 outline-none">
+                  <option value="featured" ${sort === 'featured' ? 'selected' : ''}>Featured First</option>
+                  <option value="price-asc" ${sort === 'price-asc' ? 'selected' : ''}>Price: Low to High</option>
+                  <option value="price-desc" ${sort === 'price-desc' ? 'selected' : ''}>Price: High to Low</option>
+                  <option value="rating" ${sort === 'rating' ? 'selected' : ''}>Highest Rated</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- FILTER SIDEBAR -->
+            <div class="lg:col-span-1 space-y-6">
+              
+              <!-- Quick Room Filter -->
+              <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-900 pb-2 border-b border-zinc-100">Shop by Room</h4>
+                <div class="space-y-1.5 text-xs">
+                  <button onclick="setFilterRoom('all')" class="w-full text-left py-1.5 px-2 rounded-md font-medium ${activeRoom === 'all' ? 'bg-[#18181B] text-white' : 'text-zinc-600 hover:bg-zinc-100'}">All Rooms</button>
+                  <button onclick="setFilterRoom('living')" class="w-full text-left py-1.5 px-2 rounded-md font-medium ${activeRoom === 'living' ? 'bg-[#18181B] text-white' : 'text-zinc-600 hover:bg-zinc-100'}">Living Room</button>
+                  <button onclick="setFilterRoom('bedroom')" class="w-full text-left py-1.5 px-2 rounded-md font-medium ${activeRoom === 'bedroom' ? 'bg-[#18181B] text-white' : 'text-zinc-600 hover:bg-zinc-100'}">Bedroom & Mattresses</button>
+                  <button onclick="setFilterRoom('dining')" class="w-full text-left py-1.5 px-2 rounded-md font-medium ${activeRoom === 'dining' ? 'bg-[#18181B] text-white' : 'text-zinc-600 hover:bg-zinc-100'}">Dining Room</button>
+                  <button onclick="setFilterRoom('office')" class="w-full text-left py-1.5 px-2 rounded-md font-medium ${activeRoom === 'office' ? 'bg-[#18181B] text-white' : 'text-zinc-600 hover:bg-zinc-100'}">Executive Home Office</button>
+                  <button onclick="setFilterRoom('outdoor')" class="w-full text-left py-1.5 px-2 rounded-md font-medium ${activeRoom === 'outdoor' ? 'bg-[#18181B] text-white' : 'text-zinc-600 hover:bg-zinc-100'}">Outdoor & Patio</button>
+                </div>
+              </div>
+
+              <!-- Price Filter Slider -->
+              <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-900">Max Price (KES)</h4>
+                  <span class="text-xs font-extrabold text-amber-800 tabular-nums" id="price-slider-display">KES 200,000</span>
+                </div>
+                <input type="range" id="price-slider" min="15000" max="200000" step="5000" value="200000" oninput="onPriceSliderChange(this.value)" class="w-full accent-zinc-900" />
+                <div class="flex justify-between text-[11px] text-zinc-400">
+                  <span>KES 15k</span>
+                  <span>KES 200k+</span>
+                </div>
+              </div>
+
+              <!-- Material & Finish Filter -->
+              <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-3">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-900 pb-2 border-b border-zinc-100">Material</h4>
+                <div class="space-y-2 text-xs text-zinc-600" id="material-checkboxes">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" value="teak" onchange="applyShopFilters()" class="rounded border-zinc-300 text-zinc-900" />
+                    <span>Kenyan Salvaged Teak</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" value="oak" onchange="applyShopFilters()" class="rounded border-zinc-300 text-zinc-900" />
+                    <span>White & Rift Oak</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" value="leather" onchange="applyShopFilters()" class="rounded border-zinc-300 text-zinc-900" />
+                    <span>Italian Semi-Aniline Leather</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" value="velvet" onchange="applyShopFilters()" class="rounded border-zinc-300 text-zinc-900" />
+                    <span>Performance Velvet & Boucle</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" value="ash" onchange="applyShopFilters()" class="rounded border-zinc-300 text-zinc-900" />
+                    <span>Solid Ash & Mahogany</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- In-Stock Only Toggle -->
+              <div class="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold text-zinc-900">In Stock for Immediate Delivery</h4>
+                  <p class="text-[11px] text-zinc-400">Within 24-48 hrs in Nairobi</p>
+                </div>
+                <input type="checkbox" id="instock-only" onchange="applyShopFilters()" checked class="w-4 h-4 rounded text-zinc-900 accent-zinc-900" />
+              </div>
+
+              <!-- Reset All Filters -->
+              <button onclick="resetShopFilters()" class="w-full py-2.5 px-4 border border-zinc-300 text-zinc-700 hover:text-zinc-950 font-semibold rounded-lg text-xs transition-colors">
+                Reset All Filters
+              </button>
+
+            </div>
+
+            <!-- PRODUCTS GRID -->
+            <div class="lg:col-span-3">
+              <!-- Active Filter Chips -->
+              <div class="flex flex-wrap items-center gap-2 mb-6" id="active-filter-chips">
+                <!-- Injected via script -->
+              </div>
+
+              <!-- Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="shop-catalog-grid">
+                <!-- Rendered dynamically -->
+              </div>
+
+              <!-- Empty State -->
+              <div id="shop-empty-state" class="hidden py-20 text-center bg-white rounded-2xl border border-zinc-200 p-8 space-y-4">
+                <i data-lucide="search-x" class="w-12 h-12 stroke-[1.2] text-zinc-400 mx-auto"></i>
+                <h3 class="text-lg font-bold text-zinc-800">No matching pieces found</h3>
+                <p class="text-xs text-zinc-500 max-w-sm mx-auto">Try broadening your price limit, unchecking material tags, or reset all filters.</p>
+                <button onclick="resetShopFilters()" class="px-5 py-2 bg-[#18181B] text-white text-xs font-semibold rounded-lg hover:bg-zinc-800 transition-colors">
+                  Reset All Filters
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    function setFilterRoom(room) {
+      const url = new URL(window.location);
+      if (room === 'all') {
+        url.hash = '#shop';
+      } else {
+        url.hash = `#shop?room=${room}`;
+      }
+      window.location = url.toString();
+    }
+
+    function onPriceSliderChange(val) {
+      document.getElementById('price-slider-display').textContent = formatKES(val);
+      applyShopFilters();
+    }
+
+    function resetShopFilters() {
+      const slider = document.getElementById('price-slider');
+      if (slider) {
+        slider.value = 200000;
+        document.getElementById('price-slider-display').textContent = formatKES(200000);
+      }
+      document.querySelectorAll('#material-checkboxes input').forEach(c => c.checked = false);
+      const inStock = document.getElementById('instock-only');
+      if (inStock) inStock.checked = false;
+      const sortSel = document.getElementById('shop-sort-select');
+      if (sortSel) sortSel.value = 'featured';
+      window.location.hash = '#shop';
+    }
+
+    function applyShopFilters() {
+      const hash = window.location.hash || '';
+      const params = new URLSearchParams(hash.includes('?') ? hash.split('?')[1] : '');
+      const room = params.get('room') || 'all';
+      const cat = params.get('cat') || 'all';
+
+      const maxPrice = Number(document.getElementById('price-slider')?.value || 200000);
+      const sort = document.getElementById('shop-sort-select')?.value || 'featured';
+      const instockOnly = document.getElementById('instock-only')?.checked || false;
+
+      const checkedMaterials = Array.from(document.querySelectorAll('#material-checkboxes input:checked')).map(c => c.value.toLowerCase());
+
+      let list = [...PRODUCTS];
+
+      // Room filter
+      if (room !== 'all') {
+        list = list.filter(p => p.room === room);
+      }
+
+      // Cat filter
+      if (cat !== 'all') {
+        list = list.filter(p => p.category === cat);
+      }
+
+      // Max price
+      list = list.filter(p => p.price <= maxPrice);
+
+      // In stock
+      if (instockOnly) {
+        list = list.filter(p => p.inStock && p.stock > 0);
+      }
+
+      // Materials
+      if (checkedMaterials.length > 0) {
+        list = list.filter(p => {
+          const matStr = (p.materials + ' ' + p.description).toLowerCase();
+          return checkedMaterials.some(m => matStr.includes(m));
+        });
+      }
+
+      // Sort
+      if (sort === 'price-asc') {
+        list.sort((a, b) => a.price - b.price);
+      } else if (sort === 'price-desc') {
+        list.sort((a, b) => b.price - a.price);
+      } else if (sort === 'rating') {
+        list.sort((a, b) => b.rating - a.rating);
+      }
+
+      // Render items
+      const grid = document.getElementById('shop-catalog-grid');
+      const empty = document.getElementById('shop-empty-state');
+      const countEl = document.getElementById('shop-result-count');
+
+      if (countEl) countEl.textContent = `Showing ${list.length} pieces`;
+
+      if (list.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+      } else {
+        empty.classList.add('hidden');
+        grid.innerHTML = list.map(p => renderProductCard(p)).join('');
+      }
+
+      lucide.createIcons();
+    }
+
+    // VIEW: PRODUCT DETAIL PAGE (PDP)
+    function renderProductDetailView(productId) {
+      const product = PRODUCTS.find(p => p.id === productId) || PRODUCTS[0];
+      const related = PRODUCTS.filter(p => p.id !== product.id && (p.room === product.room || p.category === product.category)).slice(0, 4);
+
+      return `
+        <div class="bg-[#FAF8F5] py-4 border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-2 text-xs text-zinc-500">
+              <a href="#" class="hover:text-zinc-900">Home</a>
+              <span>/</span>
+              <a href="#shop" class="hover:text-zinc-900">Catalog</a>
+              <span>/</span>
+              <a href="#shop?room=${product.room}" class="capitalize hover:text-zinc-900">${product.room}</a>
+              <span>/</span>
+              <span class="text-zinc-900 font-medium truncate max-w-xs">${product.name}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+            
+            <!-- LEFT: GALLERY MODULE -->
+            <div class="lg:col-span-7 space-y-4">
+              <!-- Main Active Image -->
+              <div class="relative rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 aspect-4/3 sm:aspect-16/10 shadow-sm" id="pdp-main-image-frame">
+                <img 
+                  id="pdp-main-image"
+                  src="${product.image}" 
+                  alt="${product.name}" 
+                  class="w-full h-full object-cover transition-all duration-300"
+                  onerror="this.src='./images/woodora_hero_living_1791798708458.jpg'"
+                />
+                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded text-xs font-semibold text-zinc-800 shadow-sm">
+                  ★ ${product.rating} · 300+ Verified Kenyan Homeowners
+                </div>
+              </div>
+
+              <!-- Thumbnail Rail -->
+              <div class="flex gap-3 overflow-x-auto pb-2">
+                <button onclick="document.getElementById('pdp-main-image').src='${product.image}'" class="w-20 h-20 rounded-xl overflow-hidden border-2 border-zinc-900 bg-zinc-100 shrink-0">
+                  <img src="${product.image}" class="w-full h-full object-cover" />
+                </button>
+                <button onclick="document.getElementById('pdp-main-image').src='./images/woodora_craftsmanship_1791798744170.jpg'" class="w-20 h-20 rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 shrink-0 hover:border-zinc-900 transition-colors">
+                  <img src="./images/woodora_craftsmanship_1791798744170.jpg" class="w-full h-full object-cover" />
+                </button>
+                <button onclick="document.getElementById('pdp-main-image').src='./images/woodora_editorial_comfort_1791798733114.jpg'" class="w-20 h-20 rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 shrink-0 hover:border-zinc-900 transition-colors">
+                  <img src="./images/woodora_editorial_comfort_1791798733114.jpg" class="w-full h-full object-cover" />
+                </button>
+              </div>
+
+              <!-- Detailed Specifications Accordion -->
+              <div class="pt-8 space-y-4">
+                <h3 class="text-lg font-bold text-zinc-900">Specifications & Dimensions</h3>
+                <div class="bg-white rounded-2xl p-6 border border-zinc-200 divide-y divide-zinc-100 text-xs">
+                  <div class="py-2.5 flex justify-between">
+                    <span class="text-zinc-500">Dimensions (W × D × H)</span>
+                    <span class="font-semibold text-zinc-900">${product.dimensions.w} cm × ${product.dimensions.d} cm × ${product.dimensions.h} cm</span>
+                  </div>
+                  ${product.dimensions.seatH ? `
+                  <div class="py-2.5 flex justify-between">
+                    <span class="text-zinc-500">Seat Height</span>
+                    <span class="font-semibold text-zinc-900">${product.dimensions.seatH} cm</span>
+                  </div>
+                  ` : ''}
+                  <div class="py-2.5 flex justify-between">
+                    <span class="text-zinc-500">Weight</span>
+                    <span class="font-semibold text-zinc-900">${product.dimensions.weight} kg approx</span>
+                  </div>
+                  <div class="py-2.5 flex justify-between">
+                    <span class="text-zinc-500">Primary Materials</span>
+                    <span class="font-semibold text-zinc-900 text-right max-w-xs">${product.materials}</span>
+                  </div>
+                  <div class="py-2.5 flex justify-between">
+                    <span class="text-zinc-500">Frame Guarantee</span>
+                    <span class="font-semibold text-emerald-800">${product.warranty}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- RIGHT: PURCHASE CONTIGUOUS MODULE -->
+            <div class="lg:col-span-5 bg-white rounded-3xl p-8 border border-zinc-200 shadow-xl space-y-6 lg:sticky lg:top-28">
+              
+              <div>
+                <span class="text-xs font-bold text-amber-800 uppercase tracking-widest">${product.brand}</span>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-zinc-950 mt-1">${product.name}</h1>
+                <p class="text-xs text-zinc-400 mt-1">SKU: ${product.sku} · Handcrafted in Nairobi</p>
+              </div>
+
+              <!-- Price Breakdown -->
+              <div class="flex items-baseline gap-3 pt-2">
+                <span class="text-3xl font-black text-zinc-950 tabular-nums">${formatKES(product.price)}</span>
+                ${product.originalPrice ? `
+                  <span class="text-base text-zinc-400 line-through tabular-nums">${formatKES(product.originalPrice)}</span>
+                  <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Save ${formatKES(product.originalPrice - product.price)}</span>
+                ` : ''}
+              </div>
+
+              <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed">${product.description}</p>
+
+              <!-- Color / Finish Selector -->
+              <div class="space-y-2 pt-2 border-t border-zinc-100">
+                <label class="block text-xs font-bold uppercase tracking-wider text-zinc-800">
+                  Select Finish: <span id="pdp-selected-color-label" class="font-normal text-zinc-600">${product.colors[0]?.name}</span>
+                </label>
+                <div class="flex flex-wrap gap-2.5" id="pdp-color-swatches">
+                  ${product.colors.map((c, i) => `
+                    <button 
+                      type="button" 
+                      onclick="selectPdpColor('${c.name}', this)" 
+                      class="pdp-swatch-btn flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${i === 0 ? 'border-zinc-900 bg-zinc-50 shadow-sm' : 'border-zinc-200 text-zinc-700 hover:border-zinc-400'}"
+                    >
+                      <span class="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0" style="background-color: ${c.hex}"></span>
+                      <span>${c.name}</span>
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Quantity Selector & Actions -->
+              <div class="space-y-3 pt-4 border-t border-zinc-100">
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center border border-zinc-300 rounded-xl bg-zinc-50 p-1">
+                    <button onclick="adjustPdpQty(-1)" class="w-9 h-9 flex items-center justify-center font-bold text-zinc-600 hover:text-zinc-950 hover:bg-white rounded-lg transition-colors">-</button>
+                    <span id="pdp-qty-display" class="w-10 text-center text-sm font-bold tabular-nums">1</span>
+                    <button onclick="adjustPdpQty(1)" class="w-9 h-9 flex items-center justify-center font-bold text-zinc-600 hover:text-zinc-950 hover:bg-white rounded-lg transition-colors">+</button>
+                  </div>
+                  <button 
+                    id="pdp-add-bag-btn" 
+                    onclick="onPdpAddToCart('${product.id}')" 
+                    class="flex-1 py-3.5 px-6 bg-[#18181B] hover:bg-zinc-800 text-white font-bold text-sm rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    <span>Add to Shopping Bag</span>
+                  </button>
+                </div>
+
+                <button 
+                  onclick="toggleWishlist('${product.id}')" 
+                  class="w-full py-2.5 border border-zinc-200 hover:border-zinc-900 text-zinc-700 hover:text-zinc-950 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <i data-lucide="heart" class="w-4 h-4"></i>
+                  <span>Save to Wishlist</span>
+                </button>
+              </div>
+
+              <!-- Local Kenya Delivery & Stock Info -->
+              <div class="bg-amber-50/60 rounded-2xl p-4 border border-amber-200/60 space-y-2 text-xs text-amber-950">
+                <div class="flex items-center gap-2 font-bold text-amber-900">
+                  <i data-lucide="map-pin" class="w-4 h-4 text-amber-700"></i>
+                  <span>Delivery to Kenyan Counties</span>
+                </div>
+                <p class="text-zinc-600 text-[11px] leading-relaxed">
+                  White-Glove Nairobi setup within 24-48 hours. Secure palletized freight to Mombasa, Kisumu, Nakuru, Eldoret & Diani within 3-5 business days.
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- RELATED PRODUCTS RAIL -->
+          <div class="mt-20 pt-12 border-t border-zinc-200">
+            <h2 class="font-display text-2xl font-extrabold uppercase text-zinc-950 mb-8">Pair With Complementary Pieces</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${related.map(p => renderProductCard(p)).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    let pdpSelectedColor = null;
+    let pdpQuantity = 1;
+
+    function selectPdpColor(name, btn) {
+      pdpSelectedColor = name;
+      document.getElementById('pdp-selected-color-label').textContent = name;
+      document.querySelectorAll('.pdp-swatch-btn').forEach(b => {
+        b.classList.remove('border-zinc-900', 'bg-zinc-50', 'shadow-sm');
+        b.classList.add('border-zinc-200');
+      });
+      btn.classList.add('border-zinc-900', 'bg-zinc-50', 'shadow-sm');
+      btn.classList.remove('border-zinc-200');
+    }
+
+    function adjustPdpQty(delta) {
+      pdpQuantity = Math.max(1, pdpQuantity + delta);
+      const el = document.getElementById('pdp-qty-display');
+      if (el) el.textContent = pdpQuantity;
+    }
+
+    function onPdpAddToCart(productId) {
+      const p = PRODUCTS.find(x => x.id === productId);
+      const color = pdpSelectedColor || (p && p.colors[0] ? p.colors[0].name : 'Default');
+      addToCart(productId, color, pdpQuantity);
+    }
+
+    // VIEW: ROOM COMBOS
+    function renderRoomCombosView() {
+      return `
+        <div class="bg-[#FAF8F5] py-12 border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
+            <span class="text-xs font-bold uppercase tracking-widest text-amber-800">Architectural Packages</span>
+            <h1 class="font-display text-3xl sm:text-5xl font-extrabold uppercase text-zinc-950 mt-2">Curated Room Combos</h1>
+            <p class="text-sm text-zinc-600 mt-2">
+              Save up to KES 49,000 with complete room packages designed by Woodora interior art directors. Each bundle arrives with free white-glove setup.
+            </p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
+          ${ROOM_COMBOS.map((combo, idx) => `
+            <div class="bg-white rounded-3xl p-8 sm:p-12 border border-zinc-200 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              <div class="lg:col-span-7 rounded-2xl overflow-hidden aspect-16/9 bg-zinc-100 border border-zinc-200">
+                <img src="${combo.image}" alt="${combo.title}" class="w-full h-full object-cover" />
+              </div>
+              <div class="lg:col-span-5 space-y-6">
+                <div>
+                  <span class="text-xs font-mono font-bold text-amber-800 uppercase tracking-wider">${combo.code} · ${combo.itemsCount} PIECES INCLUDED</span>
+                  <h3 class="text-2xl font-extrabold text-zinc-950 mt-1">${combo.title}</h3>
+                </div>
+
+                <div class="flex items-baseline gap-3">
+                  <span class="text-3xl font-black text-zinc-950 tabular-nums">${formatKES(combo.price)}</span>
+                  <span class="text-base text-zinc-400 line-through tabular-nums">${formatKES(combo.originalPrice)}</span>
+                  <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded">Save ${formatKES(combo.savings)}</span>
+                </div>
+
+                <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed">${combo.description}</p>
+
+                <ul class="space-y-2 text-xs text-zinc-600">
+                  ${combo.highlights.map(h => `<li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600 shrink-0"></i><span>${h}</span></li>`).join('')}
+                </ul>
+
+                <div class="pt-2">
+                  <button onclick="addBundleToCart('${combo.id}')" class="w-full py-3.5 bg-[#18181B] hover:bg-zinc-800 text-white font-bold text-sm rounded-xl transition-colors shadow-md">
+                    Order Curated Bundle (${formatKES(combo.price)})
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // VIEW: CUSTOM FURNITURE WORKSHOP (Bespoke Joinery Form)
+    function renderCustomOrdersView() {
+      return `
+        <div class="bg-[#FAF8F5] py-12 border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
+            <span class="text-xs font-bold uppercase tracking-widest text-amber-800">Nairobi Bespoke Joinery Workshop</span>
+            <h1 class="font-display text-3xl sm:text-4xl font-extrabold uppercase text-zinc-950 mt-2">Commission Custom Furniture</h1>
+            <p class="text-sm text-zinc-600 mt-2">
+              Have specific spatial dimensions, an architectural blueprint, or preferred timber grain? Our master carpenters build bespoke dining tables, wardrobes, and living suites to exact centimeter specifications.
+            </p>
+          </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4 py-16">
+          <div class="bg-white rounded-3xl p-8 sm:p-12 border border-zinc-200 shadow-xl space-y-8">
+            <div>
+              <h3 class="text-xl font-bold text-zinc-900">Custom Furniture Specifications Form</h3>
+              <p class="text-xs text-zinc-500 mt-1">Submit your project details. Our furniture engineering team responds within 24 hours with 3D CAD sketches and timber costings.</p>
+            </div>
+
+            <form onsubmit="handleCustomEnquirySubmit(event)" class="space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Your Full Name *</label>
+                  <input type="text" required name="clientName" value="${STATE.user.name}" placeholder="e.g. Robinson Mwangi" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Phone Number (M-Pesa / WhatsApp) *</label>
+                  <input type="tel" required name="clientPhone" value="${STATE.user.phone}" placeholder="+254 712 345 678" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Email Address *</label>
+                  <input type="email" required name="clientEmail" value="${STATE.user.email}" placeholder="client@example.com" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Furniture Category *</label>
+                  <select name="category" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900 bg-white">
+                    <option value="dining">Solid Hardwood Dining Table & Chairs</option>
+                    <option value="sectional">Custom Modular L-Sectional Sofa</option>
+                    <option value="wardrobe">Built-in Fitted Bedroom Wardrobe</option>
+                    <option value="bed">Custom Storage King/Queen Bed</option>
+                    <option value="executive_desk">Executive Boardroom / Office Desk</option>
+                    <option value="other">Other Architectural Joinery</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Length (cm)</label>
+                  <input type="number" name="dimL" placeholder="e.g. 240" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Width / Depth (cm)</label>
+                  <input type="number" name="dimW" placeholder="e.g. 100" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Height (cm)</label>
+                  <input type="number" name="dimH" placeholder="e.g. 76" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Preferred Timber / Material</label>
+                  <select name="timber" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900 bg-white">
+                    <option value="mvule">Salvaged African Mvule (Honey Golden)</option>
+                    <option value="teak">Salvaged Kenyan Coastal Teak</option>
+                    <option value="mahogany">Kiln-Dried African Mahogany (Deep Rich)</option>
+                    <option value="oak">Imported White Rift Oak</option>
+                    <option value="leather">Italian Full-Grain Leather</option>
+                    <option value="linen">Belgian Heavy Textured Linen</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Delivery Locality</label>
+                  <input type="text" name="locality" placeholder="e.g. Karen, Nairobi / Nyali, Mombasa" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1.5">Project Notes & Inspiration</label>
+                <textarea rows="4" name="notes" placeholder="Describe any special features, room constraints, or attach reference links..." class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900"></textarea>
+              </div>
+
+              <div class="p-4 bg-amber-50 rounded-xl text-xs text-amber-900 flex items-start gap-3">
+                <i data-lucide="info" class="w-5 h-5 text-amber-700 shrink-0 mt-0.5"></i>
+                <p>
+                  <strong>Standalone Demonstration Notice:</strong> In this standalone preview, submission generates a verified project ticket code stored in your local session. For live enterprise production, submissions securely dispatch to our Nairobi Workshop ERP.
+                </p>
+              </div>
+
+              <button type="submit" class="w-full py-4 bg-[#18181B] hover:bg-zinc-800 text-white font-bold text-sm uppercase tracking-wider rounded-xl transition-colors shadow-md">
+                Submit Custom Specification for Review
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleCustomEnquirySubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const clientName = form.clientName.value;
+      const refCode = 'WD-JOINERY-' + Math.floor(1000 + Math.random() * 9000);
+      showToast(`Custom joinery request submitted! Ticket: ${refCode}`);
+      alert(`Thank you, ${clientName}!\n\nYour bespoke furniture request has been registered under ticket ${refCode}.\n\nA Woodora master artisan will review your dimensions and contact you via phone/WhatsApp within 24 business hours.`);
+      window.location.hash = '#shop';
+    }
+
+    // VIEW: B2B COMMERCIAL QUOTATIONS
+    function renderB2BView() {
+      return `
+        <div class="bg-[#FAF8F5] py-12 border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
+            <span class="text-xs font-bold uppercase tracking-widest text-amber-800">Commercial & Hospitality Furnishing</span>
+            <h1 class="font-display text-3xl sm:text-4xl font-extrabold uppercase text-zinc-950 mt-2">B2B & Bulk Quotations</h1>
+            <p class="text-sm text-zinc-600 mt-2">
+              Furnishing high-end boutique hotels, safari lodges in Maasai Mara, corporate headquarters in Upper Hill, or luxury residential developments across East Africa.
+            </p>
+          </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4 py-16">
+          <div class="bg-white rounded-3xl p-8 sm:p-12 border border-zinc-200 shadow-xl space-y-8">
+            <div>
+              <h3 class="text-xl font-bold text-zinc-900">Commercial Quotation Request</h3>
+              <p class="text-xs text-zinc-500 mt-1">Enjoy volume tier pricing (15% to 35% commercial rebates) and dedicated project management.</p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); showToast('Quotation request logged! Reference: WOD-B2B-4402'); alert('Commercial inquiry received! Our Corporate Accounts team will issue a formal proforma quotation within 12 hours.'); window.location.hash='#shop';" class="space-y-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Company / Organization *</label>
+                  <input type="text" required placeholder="e.g. Sarova Hotels / Apex Architecture" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Contact Person & Title *</label>
+                  <input type="text" required placeholder="e.g. Jane Kariuki, Procurement Director" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Business Email *</label>
+                  <input type="email" required placeholder="procurement@company.co.ke" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Estimated Unit Volume</label>
+                  <select class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm bg-white">
+                    <option>10 – 25 Units (Tier 1 Discount)</option>
+                    <option>25 – 60 Units (Tier 2 Discount)</option>
+                    <option>60+ Units (Custom Project Pricing)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Project Scope & Delivery Schedule</label>
+                <textarea rows="4" placeholder="Detail the property location, delivery target date, and required product families..." class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm"></textarea>
+              </div>
+
+              <button type="submit" class="w-full py-4 bg-[#18181B] hover:bg-zinc-800 text-white font-bold text-sm uppercase tracking-wider rounded-xl transition-colors shadow-md">
+                Request Formal Corporate Quotation
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    // VIEW: DEDICATED SHOPPING BAG (CART)
+    function renderCartView() {
+      const subtotal = STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const discount = subtotal * STATE.discountPercent;
+      const finalSub = subtotal - discount;
+      const shipping = finalSub >= 75000 || finalSub === 0 ? 0 : 3500;
+      const grandTotal = finalSub + shipping;
+
+      return `
+        <div class="bg-[#FAF8F5] py-8 border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="font-display text-3xl font-extrabold uppercase text-zinc-950">Your Shopping Bag</h1>
+            <p class="text-xs text-zinc-500 mt-1">Review your selected furniture items before proceeding to checkout.</p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          ${STATE.cart.length === 0 ? `
+            <div class="bg-white rounded-3xl p-12 text-center border border-zinc-200 max-w-lg mx-auto space-y-4">
+              <i data-lucide="shopping-bag" class="w-16 h-16 stroke-[1.2] text-zinc-300 mx-auto"></i>
+              <h3 class="text-xl font-bold text-zinc-900">Your bag is currently empty</h3>
+              <p class="text-xs text-zinc-500">Explore handcrafted solid wood dining tables, sofas, and bedroom suites.</p>
+              <a href="#shop" class="inline-block px-6 py-3 bg-[#18181B] text-white text-xs font-semibold rounded-xl hover:bg-zinc-800 transition-colors">Browse Furniture Catalogue</a>
+            </div>
+          ` : `
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+              
+              <!-- Cart Items Table -->
+              <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-6">
+                <div class="border-b border-zinc-100 pb-4 flex justify-between items-center text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  <span>Product Details</span>
+                  <span>Total</span>
+                </div>
+
+                <div class="divide-y divide-zinc-100">
+                  ${STATE.cart.map(item => `
+                    <div class="py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div class="flex items-center gap-4">
+                        <img src="${item.image}" alt="${item.name}" class="w-20 h-20 rounded-xl object-cover border border-zinc-200 shrink-0" onerror="this.src='./images/woodora_hero_living_1791798708458.jpg'" />
+                        <div>
+                          <h4 class="text-base font-bold text-zinc-900">${item.name}</h4>
+                          <p class="text-xs text-zinc-500 mt-0.5">Finish: ${item.color} · ${item.sku}</p>
+                          <div class="flex items-center gap-4 mt-3">
+                            <div class="flex items-center border border-zinc-200 rounded-lg bg-zinc-50">
+                              <button onclick="updateCartItemQty('${item.id}', '${item.color}', -1)" class="w-7 h-7 flex items-center justify-center font-bold text-zinc-600 hover:text-zinc-950">-</button>
+                              <span class="w-8 text-center text-xs font-semibold">${item.quantity}</span>
+                              <button onclick="updateCartItemQty('${item.id}', '${item.color}', 1)" class="w-7 h-7 flex items-center justify-center font-bold text-zinc-600 hover:text-zinc-950">+</button>
+                            </div>
+                            <button onclick="removeCartItem('${item.id}', '${item.color}')" class="text-xs text-zinc-400 hover:text-rose-600 flex items-center gap-1">
+                              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                              <span>Remove</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <span class="text-base font-extrabold text-zinc-950 tabular-nums">${formatKES(item.price * item.quantity)}</span>
+                        <p class="text-[11px] text-zinc-400 mt-0.5">${formatKES(item.price)} each</p>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="pt-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-zinc-100">
+                  <a href="#shop" class="text-xs font-semibold text-zinc-600 hover:text-zinc-950">← Continue Shopping</a>
+                  <button onclick="STATE.cart = []; saveCart();" class="text-xs text-zinc-400 hover:text-rose-600">Clear Entire Bag</button>
+                </div>
+              </div>
+
+              <!-- Order Summary Sidebar -->
+              <div class="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-6">
+                <h3 class="text-base font-bold text-zinc-900 pb-3 border-b border-zinc-100">Order Summary</h3>
+
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between text-zinc-600">
+                    <span>Items Subtotal</span>
+                    <span class="font-semibold text-zinc-900 tabular-nums">${formatKES(subtotal)}</span>
+                  </div>
+                  ${STATE.discountPercent > 0 ? `
+                    <div class="flex justify-between text-emerald-700">
+                      <span>Promo Discount (${STATE.discountPercent * 100}%)</span>
+                      <span class="font-semibold tabular-nums">-${formatKES(discount)}</span>
+                    </div>
+                  ` : ''}
+                  <div class="flex justify-between text-zinc-600">
+                    <span>White-Glove Delivery (Nairobi)</span>
+                    <span class="font-semibold ${shipping === 0 ? 'text-emerald-700' : 'text-zinc-900'} tabular-nums">
+                      ${shipping === 0 ? 'FREE' : formatKES(shipping)}
+                    </span>
+                  </div>
+                  <div class="flex justify-between text-lg font-black text-zinc-950 pt-3 border-t border-zinc-200">
+                    <span>Total Amount</span>
+                    <span class="tabular-nums">${formatKES(grandTotal)}</span>
+                  </div>
+                </div>
+
+                <!-- Promo Coupon Form -->
+                <form onsubmit="applyPromoCode(event)" class="flex gap-2 pt-2">
+                  <input type="text" id="promo-input" placeholder="Promo Code (Try WOODORA10)" class="flex-1 px-3 py-2 border border-zinc-300 rounded-lg text-xs uppercase font-medium outline-none focus:border-zinc-900" />
+                  <button type="submit" class="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-semibold text-xs rounded-lg transition-colors">Apply</button>
+                </form>
+
+                <a href="#checkout" class="block w-full py-4 bg-[#18181B] hover:bg-zinc-800 text-white font-bold text-sm text-center uppercase tracking-wider rounded-xl transition-colors shadow-md">
+                  Proceed to Checkout (${formatKES(grandTotal)})
+                </a>
+
+                <div class="pt-2 text-center text-[11px] text-zinc-400">
+                  <p>Complimentary packaging removal & room installation.</p>
+                </div>
+              </div>
+
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function applyPromoCode(e) {
+      e.preventDefault();
+      const code = document.getElementById('promo-input')?.value.trim().toUpperCase();
+      if (code === 'WOODORA10') {
+        STATE.discountCode = 'WOODORA10';
+        STATE.discountPercent = 0.10;
+        showToast('Promo code WOODORA10 applied! 10% discount deducted.');
+        renderRoute();
+      } else {
+        alert('Invalid promo code. Please enter WOODORA10 for a 10% discount.');
+      }
+    }
+
+    // VIEW: COMPLETE KENYAN CHECKOUT (M-Pesa STK push simulation & Paystack integration)
+    function renderCheckoutView() {
+      const subtotal = STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const discount = subtotal * STATE.discountPercent;
+      const finalSub = subtotal - discount;
+      const shipping = finalSub >= 75000 || finalSub === 0 ? 0 : 3500;
+      const grandTotal = finalSub + shipping;
+
+      if (STATE.cart.length === 0) {
+        return `
+          <div class="max-w-md mx-auto py-24 px-4 text-center space-y-4">
+            <h2 class="text-xl font-bold text-zinc-900">Your Bag is Empty</h2>
+            <p class="text-xs text-zinc-500">Please add items before checking out.</p>
+            <a href="#shop" class="inline-block px-6 py-2.5 bg-[#18181B] text-white text-xs font-semibold rounded-lg">Return to Catalog</a>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="bg-[#FAF8F5] py-8 border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="font-display text-3xl font-extrabold uppercase text-zinc-950">Secure Checkout</h1>
+            <p class="text-xs text-zinc-500 mt-1">Nairobi White-Glove & Upcountry Insured Delivery</p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <form onsubmit="handlePlaceOrder(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- Left: Checkout Forms -->
+            <div class="lg:col-span-7 space-y-8">
+              
+              <!-- 1. Contact Information -->
+              <div class="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-2 pb-3 border-b border-zinc-100">
+                  <span class="w-6 h-6 rounded-full bg-[#18181B] text-white text-xs font-bold flex items-center justify-center">1</span>
+                  <h3 class="text-base font-bold text-zinc-900">Customer Contact</h3>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Full Name *</label>
+                    <input type="text" required name="custName" value="${STATE.user.name}" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Email (For Tax Invoice) *</label>
+                    <input type="email" required name="custEmail" value="${STATE.user.email}" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Phone Number (M-Pesa STK Push) *</label>
+                    <input type="tel" required name="custPhone" id="checkout-phone-input" value="${STATE.user.phone}" placeholder="0712 345 678" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                    <span class="text-[11px] text-zinc-400 mt-1 block">Safaricom line required for instant STK Push payment prompt.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Delivery Address in Kenya -->
+              <div class="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-2 pb-3 border-b border-zinc-100">
+                  <span class="w-6 h-6 rounded-full bg-[#18181B] text-white text-xs font-bold flex items-center justify-center">2</span>
+                  <h3 class="text-base font-bold text-zinc-900">Delivery Address</h3>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">County *</label>
+                    <select name="county" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm bg-white outline-none focus:border-zinc-900">
+                      <option value="Nairobi" selected>Nairobi County</option>
+                      <option value="Kiambu">Kiambu (Runda, Ruiru, Kikuyu)</option>
+                      <option value="Kajiado">Kajiado (Kitengela, Ngong, Rongai)</option>
+                      <option value="Machakos">Machakos (Syokimau, Athi River)</option>
+                      <option value="Mombasa">Mombasa County</option>
+                      <option value="Kilifi">Kilifi / Malindi / Watamu</option>
+                      <option value="Kisumu">Kisumu County</option>
+                      <option value="Nakuru">Nakuru County</option>
+                      <option value="Uasin Gishu">Uasin Gishu (Eldoret)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Estate / Neighborhood *</label>
+                    <input type="text" required name="estate" placeholder="e.g. Westlands, Kilimani, Karen, Kileleshwa" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Street Address / Apartment / House No. *</label>
+                    <input type="text" required name="address" placeholder="e.g. Acacia Villa No. 4, Rhapta Road" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-zinc-700 uppercase mb-1">Building Floor / Access Instructions</label>
+                    <input type="text" name="instructions" placeholder="e.g. 3rd Floor, Service Elevator available" class="w-full px-4 py-2.5 rounded-xl border border-zinc-300 text-sm outline-none focus:border-zinc-900" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Payment Method for Kenya -->
+              <div class="bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-4">
+                <div class="flex items-center gap-2 pb-3 border-b border-zinc-100">
+                  <span class="w-6 h-6 rounded-full bg-[#18181B] text-white text-xs font-bold flex items-center justify-center">3</span>
+                  <h3 class="text-base font-bold text-zinc-900">Payment Option</h3>
+                </div>
+
+                <div class="space-y-3">
+                  <!-- M-Pesa Express Option -->
+                  <label class="flex items-start gap-3 p-4 rounded-2xl border-2 border-emerald-600 bg-emerald-50/40 cursor-pointer">
+                    <input type="radio" name="paymentMethod" value="mpesa" checked class="mt-1 accent-emerald-600" />
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <span class="font-bold text-sm text-zinc-900">M-Pesa Express (STK Push)</span>
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Instant Prompt</span>
+                      </div>
+                      <p class="text-xs text-zinc-500 mt-1">A prompt will automatically appear on your phone asking for your M-Pesa PIN to complete payment of <strong class="text-zinc-900">${formatKES(grandTotal)}</strong>.</p>
+                    </div>
+                  </label>
+
+                  <!-- Paystack Card Option -->
+                  <label class="flex items-start gap-3 p-4 rounded-2xl border border-zinc-200 hover:border-zinc-300 cursor-pointer">
+                    <input type="radio" name="paymentMethod" value="paystack" class="mt-1 accent-zinc-900" />
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <span class="font-bold text-sm text-zinc-900">Paystack (Visa / Mastercard)</span>
+                        <span class="text-xs text-zinc-400">Debit / Credit</span>
+                      </div>
+                      <p class="text-xs text-zinc-500 mt-1">Secured card gateway supporting Kenyan local & international bank cards with 3D Secure verification.</p>
+                    </div>
+                  </label>
+
+                  <!-- Corporate Invoice / EFT -->
+                  <label class="flex items-start gap-3 p-4 rounded-2xl border border-zinc-200 hover:border-zinc-300 cursor-pointer">
+                    <input type="radio" name="paymentMethod" value="bank" class="mt-1 accent-zinc-900" />
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between">
+                        <span class="font-bold text-sm text-zinc-900">Bank Transfer / KRA E-TIMS Invoice</span>
+                        <span class="text-xs text-zinc-400">Corporate</span>
+                      </div>
+                      <p class="text-xs text-zinc-500 mt-1">Proforma tax invoice issued to your email with NCBA / Equity Bank settlement details.</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right: Order Review & Submit -->
+            <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-xl space-y-6 lg:sticky lg:top-28">
+              <h3 class="text-base font-bold text-zinc-900 pb-3 border-b border-zinc-100">Review Items (${STATE.cart.length})</h3>
+
+              <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                ${STATE.cart.map(item => `
+                  <div class="flex items-center justify-between text-xs py-1.5 border-b border-zinc-50">
+                    <div class="flex items-center gap-2">
+                      <span class="w-5 h-5 rounded bg-zinc-100 text-zinc-800 font-bold flex items-center justify-center text-[10px]">${item.quantity}×</span>
+                      <span class="font-medium text-zinc-800 truncate max-w-xs">${item.name}</span>
+                    </div>
+                    <span class="font-bold text-zinc-900 tabular-nums">${formatKES(item.price * item.quantity)}</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div class="space-y-2 pt-2 border-t border-zinc-100 text-xs">
+                <div class="flex justify-between text-zinc-500">
+                  <span>Subtotal</span>
+                  <span class="font-semibold text-zinc-900 tabular-nums">${formatKES(subtotal)}</span>
+                </div>
+                ${STATE.discountPercent > 0 ? `
+                  <div class="flex justify-between text-emerald-700">
+                    <span>Discount (10%)</span>
+                    <span class="tabular-nums">-${formatKES(discount)}</span>
+                  </div>
+                ` : ''}
+                <div class="flex justify-between text-zinc-500">
+                  <span>Delivery (Nairobi)</span>
+                  <span class="font-semibold ${shipping === 0 ? 'text-emerald-700' : 'text-zinc-900'} tabular-nums">
+                    ${shipping === 0 ? 'FREE' : formatKES(shipping)}
+                  </span>
+                </div>
+                <div class="flex justify-between text-base font-extrabold text-zinc-950 pt-2 border-t border-zinc-200">
+                  <span>Amount to Pay</span>
+                  <span class="tabular-nums">${formatKES(grandTotal)}</span>
+                </div>
+              </div>
+
+              <!-- Demonstration Notice -->
+              <div class="p-3 bg-zinc-50 rounded-xl border border-zinc-200 text-[11px] text-zinc-500">
+                <p>🔒 <strong>Demonstration Mode:</strong> Checkout simulates Daraja STK Push / Paystack verification and stores your confirmed order in browser session.</p>
+              </div>
+
+              <button type="submit" id="place-order-btn" class="w-full py-4 bg-[#18181B] hover:bg-zinc-800 text-white font-extrabold text-sm uppercase tracking-wider rounded-xl transition-all shadow-lg hover:shadow-xl">
+                Pay ${formatKES(grandTotal)} with M-Pesa
+              </button>
+            </div>
+
+          </form>
+        </div>
+      `;
+    }
+
+    function handlePlaceOrder(e) {
+      e.preventDefault();
+      const form = e.target;
+      const name = form.custName.value;
+      const phone = form.custPhone.value;
+      const method = form.paymentMethod.value;
+      const orderRef = 'WOD-' + Math.floor(100000 + Math.random() * 900000);
+
+      const btn = document.getElementById('place-order-btn');
+      btn.disabled = true;
+      btn.innerHTML = `<span class="inline-block animate-spin mr-2">⟳</span> Initiating ${method === 'mpesa' ? 'M-Pesa STK Push' : 'Payment'}...`;
+
+      setTimeout(() => {
+        // Complete simulated order
+        const orders = JSON.parse(localStorage.getItem('woodora_orders') || '[]');
+        orders.unshift({
+          orderRef: orderRef,
+          date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+          items: [...STATE.cart],
+          total: STATE.cart.reduce((s, x) => s + (x.price * x.quantity), 0),
+          customer: { name, phone },
+          status: 'Confirmed — White-Glove Dispatch Scheduled'
+        });
+        localStorage.setItem('woodora_orders', JSON.stringify(orders));
+
+        // Clear bag
+        STATE.cart = [];
+        saveCart();
+
+        // Render confirmation view
+        renderOrderSuccessView(orderRef, name, phone, method);
+      }, 2000);
+    }
+
+    function renderOrderSuccessView(orderRef, name, phone, method) {
+      const root = document.getElementById('app-root');
+      root.innerHTML = `
+        <div class="max-w-2xl mx-auto py-16 px-4 text-center space-y-6">
+          <div class="w-20 h-20 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto shadow-sm">
+            <i data-lucide="check" class="w-10 h-10 stroke-[2.5]"></i>
+          </div>
+          <div class="space-y-2">
+            <span class="text-xs font-mono font-bold uppercase tracking-widest text-emerald-800">Order Confirmed · Payment Verified</span>
+            <h1 class="text-3xl font-extrabold text-zinc-950">Thank You, ${name}!</h1>
+            <p class="text-sm text-zinc-600">Your order reference is <strong class="text-zinc-900 font-mono">${orderRef}</strong>.</p>
+          </div>
+
+          <div class="bg-white rounded-2xl p-6 border border-zinc-200 text-left space-y-3 text-xs text-zinc-600 shadow-sm">
+            <div class="flex justify-between py-1 border-b border-zinc-100">
+              <span class="font-medium text-zinc-500">Payment Status:</span>
+              <span class="font-bold text-emerald-700">M-Pesa Express Verified</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-zinc-100">
+              <span class="font-medium text-zinc-500">Contact Phone:</span>
+              <span class="font-bold text-zinc-900">${phone}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-zinc-100">
+              <span class="font-medium text-zinc-500">Fulfillment Facility:</span>
+              <span class="font-bold text-zinc-900">Woodora Nairobi Central Hub</span>
+            </div>
+            <div class="flex justify-between py-1">
+              <span class="font-medium text-zinc-500">Estimated Arrival:</span>
+              <span class="font-bold text-zinc-900">Tomorrow, between 10:00 AM – 3:00 PM</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <a href="#account" class="px-6 py-3 bg-[#18181B] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-zinc-800 transition-colors">
+              Track Order in Account
+            </a>
+            <a href="#shop" class="px-6 py-3 border border-zinc-300 text-zinc-800 text-xs font-semibold rounded-xl hover:border-zinc-900 transition-colors">
+              Continue Shopping
+            </a>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    // VIEW: SAVED WISHLIST
+    function renderWishlistView() {
+      const savedItems = PRODUCTS.filter(p => STATE.wishlist.includes(p.id));
+
+      return `
+        <div class="bg-[#FAF8F5] py-8 border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="font-display text-3xl font-extrabold uppercase text-zinc-950">Your Saved Wishlist</h1>
+            <p class="text-xs text-zinc-500 mt-1">${savedItems.length} pieces saved for later.</p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          ${savedItems.length === 0 ? `
+            <div class="bg-white rounded-3xl p-12 text-center border border-zinc-200 max-w-lg mx-auto space-y-4">
+              <i data-lucide="heart" class="w-16 h-16 stroke-[1.2] text-zinc-300 mx-auto"></i>
+              <h3 class="text-xl font-bold text-zinc-900">Your wishlist is empty</h3>
+              <p class="text-xs text-zinc-500">Click the heart icon on any sofa, dining table or bed to save pieces to this list.</p>
+              <a href="#shop" class="inline-block px-6 py-3 bg-[#18181B] text-white text-xs font-semibold rounded-xl hover:bg-zinc-800 transition-colors">Explore Furniture Catalogue</a>
+            </div>
+          ` : `
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${savedItems.map(p => renderProductCard(p)).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // VIEW: CUSTOMER ACCOUNT & ORDER TRACKING
+    function renderAccountView() {
+      const orders = JSON.parse(localStorage.getItem('woodora_orders') || '[]');
+
+      return `
+        <div class="bg-[#FAF8F5] py-8 border-b border-[#E8E4DF]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-end">
+            <div>
+              <h1 class="font-display text-3xl font-extrabold uppercase text-zinc-950">My Account</h1>
+              <p class="text-xs text-zinc-500 mt-1">Client Profile & Furniture Order Tracking</p>
+            </div>
+            <button onclick="localStorage.removeItem('woodora_orders'); renderRoute();" class="text-xs text-zinc-400 hover:text-rose-600">Reset Demo History</button>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- User Profile card -->
+            <div class="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-6">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-[#18181B] text-white flex items-center justify-center font-bold text-xl">
+                  RM
+                </div>
+                <div>
+                  <h3 class="font-bold text-base text-zinc-900">${STATE.user.name}</h3>
+                  <p class="text-xs text-zinc-500">${STATE.user.email}</p>
+                  <p class="text-xs text-amber-800 font-medium">${STATE.user.phone}</p>
+                </div>
+              </div>
+
+              <div class="pt-4 border-t border-zinc-100 space-y-2 text-xs text-zinc-600">
+                <div class="flex justify-between py-1">
+                  <span class="text-zinc-400">Default County:</span>
+                  <span class="font-semibold text-zinc-900">Nairobi (Westlands / Karen)</span>
+                </div>
+                <div class="flex justify-between py-1">
+                  <span class="text-zinc-400">Membership:</span>
+                  <span class="font-semibold text-amber-800">Woodora Atelier Private Client</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order History list -->
+            <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-zinc-200 shadow-sm space-y-6">
+              <h3 class="text-base font-bold text-zinc-900 pb-3 border-b border-zinc-100">Order History (${orders.length})</h3>
+
+              ${orders.length === 0 ? `
+                <div class="text-center py-12 text-zinc-400 space-y-2">
+                  <i data-lucide="package" class="w-12 h-12 stroke-[1.2] mx-auto text-zinc-300"></i>
+                  <p class="text-sm font-semibold text-zinc-700">No orders placed yet</p>
+                  <p class="text-xs text-zinc-400">Complete checkout to track live fulfillment here.</p>
+                </div>
+              ` : `
+                <div class="space-y-6 divide-y divide-zinc-100">
+                  ${orders.map(order => `
+                    <div class="pt-4 space-y-3">
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <span class="font-mono text-xs font-bold text-zinc-900">${order.orderRef}</span>
+                          <span class="text-xs text-zinc-400 ml-2">Placed ${order.date}</span>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-block">
+                          ${order.status}
+                        </span>
+                      </div>
+
+                      <div class="space-y-2">
+                        ${order.items.map(it => `
+                          <div class="flex items-center justify-between text-xs text-zinc-600">
+                            <span>${it.quantity}× ${it.name} (${it.color})</span>
+                            <span class="font-bold text-zinc-900 tabular-nums">${formatKES(it.price * it.quantity)}</span>
+                          </div>
+                        `).join('')}
+                      </div>
+
+                      <div class="flex justify-between text-sm font-bold text-zinc-900 pt-2 border-t border-zinc-50">
+                        <span>Total</span>
+                        <span class="tabular-nums">${formatKES(order.total)}</span>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // VIEW: ABOUT US
+    function renderAboutView() {
+      return `
+        <div class="bg-[#FAF8F5] py-16 border-b border-[#E8E4DF]">
+          <div class="max-w-4xl mx-auto px-4 text-center space-y-4">
+            <span class="text-xs font-bold uppercase tracking-widest text-amber-800">Our Heritage & Workshop</span>
+            <h1 class="font-display text-4xl sm:text-5xl font-extrabold uppercase text-zinc-950">Handcrafted in Nairobi.<br />Inspired by the World.</h1>
+            <p class="text-base text-zinc-600 leading-relaxed max-w-2xl mx-auto">
+              Woodora was founded to bridge the gap between world-class Scandinavian architectural design and Kenya's incredible heritage of timber craftsmanship.
+            </p>
+          </div>
+        </div>
+
+        <div class="max-w-5xl mx-auto px-4 py-16 space-y-16">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+            <div class="rounded-2xl overflow-hidden aspect-4/3 bg-zinc-100 border border-zinc-200 shadow-md">
+              <img src="./images/woodora_craftsmanship_1791798744170.jpg" alt="Artisan at work" class="w-full h-full object-cover" />
+            </div>
+            <div class="space-y-4">
+              <h3 class="text-2xl font-bold text-zinc-900">Sustainable Kiln-Dried Hardwoods</h3>
+              <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed">
+                We believe exceptional furniture starts with responsible forestry. All Mvule and African Mahogany timbers are sourced from verified government-sanctioned renewable plantations and salvaged architectural timbers.
+              </p>
+              <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed">
+                Every plank is dried in our proprietary Nairobi kilns to 8–10% moisture equilibrium, ensuring that your furniture will never crack, bend, or cup under Nairobi or Mombasa seasonal climate swings.
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // VIEW: FREQUENTLY ASKED QUESTIONS (FAQ) & POLICIES
+    function renderFaqView() {
+      return `
+        <div class="bg-[#FAF8F5] py-12 border-b border-[#E8E4DF]">
+          <div class="max-w-4xl mx-auto px-4 text-center space-y-2">
+            <h1 class="font-display text-3xl font-extrabold uppercase text-zinc-950">Delivery, Warranty & Service FAQs</h1>
+            <p class="text-xs text-zinc-500">Everything you need to know about buying furniture with Woodora Kenya.</p>
+          </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4 py-16 space-y-8">
+          <div class="bg-white rounded-2xl p-6 border border-zinc-200 shadow-sm space-y-3">
+            <h3 class="font-bold text-base text-zinc-900">How does White-Glove Nairobi Delivery work?</h3>
+            <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed">
+              Our uniformed two-person logistics team carries your furniture directly to your desired room, unboxes the protective wraps, attaches all legs and drawer hardware, levels the piece, and vacuums any packaging debris before taking all cardboard for recycling.
+            </p>
+          </div>
+
+          <div class="bg-white rounded-2xl p-6 border border-zinc-200 shadow-sm space-y-3">
+            <h3 class="font-bold text-base text-zinc-900">Do you deliver outside Nairobi (Upcountry)?</h3>
+            <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed">
+              Yes. We regularly ship reinforced wooden crate pallets to Mombasa, Kisumu, Nakuru, Eldoret, Nanyuki, Naivasha, and Diani Beach. Transit takes 2 to 4 business days via insured express haulage.
+            </p>
+          </div>
+
+          <div class="bg-white rounded-2xl p-6 border border-zinc-200 shadow-sm space-y-3">
+            <h3 class="font-bold text-base text-zinc-900">What is covered under the 3-Year Warranty?</h3>
+            <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed">
+              Our structural warranty covers solid wood joints, mortise dowels, internal steel subframes, and suspension springs against manufacturing defects or joint failure. If any failure occurs under normal residential use, we repair or replace the piece free of charge.
+            </p>
+          </div>
+
+          <div class="bg-white rounded-2xl p-6 border border-zinc-200 shadow-sm space-y-3">
+            <h3 class="font-bold text-base text-zinc-900">Can I request custom timber finishes or bespoke sizes?</h3>
+            <p class="text-xs sm:text-sm text-zinc-600 leading-relaxed">
+              Absolutely. Visit our <a href="#custom-orders" class="underline text-amber-800 font-semibold">Custom Joinery Workshop</a> page to specify your room length, depth, and desired timber species.
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    // -------------------------------------------------------------
+    // 9. CLIENT-SIDE ROUTER ENGINE
+    // -------------------------------------------------------------
+    function renderRoute() {
+      const hash = window.location.hash || '';
+      const [routePath, queryString] = hash.replace(/^#/, '').split('?');
+      const params = new URLSearchParams(queryString || '');
+
+      const root = document.getElementById('app-root');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
+      // Route mapping
+      if (!routePath || routePath === '' || routePath === 'home') {
+        root.innerHTML = renderHomeView();
+        initGSAPAnimations();
+      } else if (routePath === 'shop') {
+        const cat = params.get('cat') || 'all';
+        const room = params.get('room') || 'all';
+        const sort = params.get('sort') || 'featured';
+        root.innerHTML = renderShopView({ cat, room, sort });
+        applyShopFilters();
+      } else if (routePath === 'product') {
+        const id = params.get('id') || PRODUCTS[0].id;
+        root.innerHTML = renderProductDetailView(id);
+      } else if (routePath === 'room-combos') {
+        root.innerHTML = renderRoomCombosView();
+      } else if (routePath === 'custom-orders') {
+        root.innerHTML = renderCustomOrdersView();
+      } else if (routePath === 'b2b-quotes') {
+        root.innerHTML = renderB2BView();
+      } else if (routePath === 'cart') {
+        root.innerHTML = renderCartView();
+      } else if (routePath === 'checkout') {
+        root.innerHTML = renderCheckoutView();
+      } else if (routePath === 'wishlist') {
+        root.innerHTML = renderWishlistView();
+      } else if (routePath === 'account') {
+        root.innerHTML = renderAccountView();
+      } else if (routePath === 'about') {
+        root.innerHTML = renderAboutView();
+      } else if (routePath === 'faq') {
+        root.innerHTML = renderFaqView();
+      } else {
+        root.innerHTML = renderHomeView();
+      }
+
+      lucide.createIcons();
+      updateCartUI();
+      updateWishlistUI();
+    }
+
+    window.addEventListener('hashchange', renderRoute);
+
+    // -------------------------------------------------------------
+    // 10. GSAP & SCROLLTRIGGER INITIALIZATION
+    // -------------------------------------------------------------
+    function initGSAPAnimations() {
+      if (typeof gsap === 'undefined') return;
+
+      // Check prefers-reduced-motion
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      try {
+        if (typeof ScrollTrigger !== 'undefined') {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Hero title entrance
+        gsap.from('#hero-heading', {
+          y: 30,
+          opacity: 0,
+          duration: 0.9,
+          ease: 'power3.out'
+        });
+
+        // Hotspots subtle floating pulse
+        gsap.to('.hotspot-glow', {
+          y: -4,
+          duration: 1.8,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          stagger: 0.2
+        });
+
+        // Product cards scroll reveal
+        if (typeof ScrollTrigger !== 'undefined') {
+          gsap.utils.toArray('.product-card').forEach((card, i) => {
+            gsap.from(card, {
+              scrollTrigger: {
+                trigger: card,
+                start: 'top 90%',
+                toggleActions: 'play none none none'
+              },
+              y: 20,
+              opacity: 0,
+              duration: 0.6,
+              delay: (i % 4) * 0.1,
+              ease: 'power2.out'
+            });
+          });
+        }
+      } catch (err) {
+        console.warn('GSAP initialization caught error:', err);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 11. SEARCH OVERLAY LOGIC
+    // -------------------------------------------------------------
+    function initSearch() {
+      const searchModal = document.getElementById('search-modal');
+      const searchContainer = document.getElementById('search-modal-container');
+      const searchInput = document.getElementById('search-input');
+      const openBtn = document.getElementById('open-search-btn');
+      const closeBtn = document.getElementById('close-search-btn');
+      const resultsList = document.getElementById('search-results-list');
+
+      function openSearch() {
+        searchModal.classList.remove('hidden');
+        setTimeout(() => {
+          searchModal.classList.remove('opacity-0');
+          searchContainer.classList.remove('scale-95');
+          searchInput.focus();
+        }, 10);
+      }
+
+      function closeSearch() {
+        searchModal.classList.add('opacity-0');
+        searchContainer.classList.add('scale-95');
+        setTimeout(() => {
+          searchModal.classList.add('hidden');
+          searchInput.value = '';
+        }, 200);
+      }
+
+      openBtn.addEventListener('click', openSearch);
+      closeBtn.addEventListener('click', closeSearch);
+
+      // Search tags clicks
+      document.querySelectorAll('.search-tag').forEach(tag => {
+        tag.addEventListener('click', () => {
+          const term = tag.getAttribute('data-term');
+          searchInput.value = term;
+          triggerSearch(term);
+        });
+      });
+
+      searchInput.addEventListener('input', (e) => {
+        triggerSearch(e.target.value);
+      });
+
+      function triggerSearch(query) {
+        const q = query.trim().toLowerCase();
+        if (!q) {
+          resultsList.innerHTML = `<p class="text-sm text-zinc-500 py-4 text-center">Type a keyword or category name to search 30+ items...</p>`;
+          return;
+        }
+
+        const matches = PRODUCTS.filter(p => 
+          p.name.toLowerCase().includes(q) ||
+          p.materials.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.room.toLowerCase().includes(q) ||
+          p.tags.some(t => t.includes(q))
+        );
+
+        if (matches.length === 0) {
+          resultsList.innerHTML = `
+            <div class="py-6 text-center text-zinc-500">
+              <p class="text-sm">No furniture matched "${query}"</p>
+              <p class="text-xs text-zinc-400 mt-1">Try searching "sofa", "oak", "king bed", or "coffee table".</p>
+            </div>
+          `;
+          return;
+        }
+
+        resultsList.innerHTML = matches.map(p => `
+          <a href="#product?id=${p.id}" onclick="document.getElementById('close-search-btn').click();" class="flex items-center gap-3 p-2 hover:bg-zinc-50 rounded-xl transition-colors group">
+            <img src="${p.image}" class="w-12 h-12 rounded-lg object-cover bg-zinc-100 shrink-0" onerror="this.src='./images/woodora_hero_living_1791798708458.jpg'" />
+            <div class="flex-1 min-w-0">
+              <h5 class="text-sm font-semibold text-zinc-900 group-hover:text-amber-800 transition-colors truncate">${p.name}</h5>
+              <p class="text-xs text-zinc-400 capitalize">${p.room} · ${p.materials}</p>
+            </div>
+            <span class="text-xs font-bold text-zinc-900 tabular-nums">${formatKES(p.price)}</span>
+          </a>
+        `).join('');
+      }
+
+      // Escape key to dismiss
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeSearch();
+          closeCartDrawer();
+          const qv = document.getElementById('quickview-modal');
+          if (qv && !qv.classList.contains('hidden')) {
+            document.getElementById('close-quickview-btn').click();
+          }
+        }
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 12. INITIALIZATION
+    // -------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      // Cart drawer buttons
+      document.getElementById('open-cart-btn')?.addEventListener('click', openCartDrawer);
+      document.getElementById('close-cart-btn')?.addEventListener('click', closeCartDrawer);
+
+      // Mobile drawer
+      const mobileDrawer = document.getElementById('mobile-drawer');
+      const mobilePanel = document.getElementById('mobile-drawer-panel');
+      const mobileOpenBtn = document.getElementById('mobile-menu-btn');
+      const mobileCloseBtn = document.getElementById('close-mobile-drawer');
+
+      function openMobileDrawer() {
+        mobileDrawer.classList.remove('hidden');
+        setTimeout(() => {
+          mobileDrawer.classList.remove('opacity-0');
+          mobilePanel.classList.remove('translate-x-full');
+        }, 10);
+      }
+      function closeMobileDrawer() {
+        mobileDrawer.classList.add('opacity-0');
+        mobilePanel.classList.add('translate-x-full');
+        setTimeout(() => {
+          mobileDrawer.classList.add('hidden');
+        }, 300);
+      }
+
+      mobileOpenBtn?.addEventListener('click', openMobileDrawer);
+      mobileCloseBtn?.addEventListener('click', closeMobileDrawer);
+      document.querySelectorAll('.mobile-nav-link').forEach(link => {
+        link.addEventListener('click', closeMobileDrawer);
+      });
+
+      // Quickview close
+      document.getElementById('close-quickview-btn')?.addEventListener('click', () => {
+        const modal = document.getElementById('quickview-modal');
+        const content = document.getElementById('quickview-content');
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+      });
+
+      // Init search
+      initSearch();
+
+      // Initial route render
+      renderRoute();
+    });
+  </script>
+</body>
+</html>

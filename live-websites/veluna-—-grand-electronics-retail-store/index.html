@@ -1,0 +1,3543 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veluna — Grand Electronics Retail Store</title>
+  <meta name="description" content="A grand, content-rich electronics retail store featuring flagship smartphones, creator laptops, audiophile sound, gaming gear, 4K TVs, smart home tech, and multi-step checkout." />
+  <meta property="og:title" content="Veluna — Redefining Everyday Tech" />
+  <meta property="og:description" content="Explore cutting-edge electronics, flagship smartphones, creator laptops, and pro audio at Veluna." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            veluna: {
+              black: '#0A0C10',
+              dark: '#12151C',
+              surface: '#FFFFFF',
+              canvas: '#F8F9FA',
+              border: '#E8EAED',
+              borderDark: '#12151C',
+              slate: '#2C445E',
+              slateDark: '#1E3247',
+              ivory: '#F5EBE1',
+              periwinkle: '#E5EBF8',
+              gold: '#8C7355',
+              muted: '#636D7E',
+              subtle: '#949EB0',
+              accent: '#0A0C10'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- GSAP & ScrollTrigger CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* Design Tokens & Reset */
+    :root {
+      --color-primary: #0A0C10;
+      --color-surface: #FFFFFF;
+      --color-canvas: #F8F9FA;
+      --color-border: #E8EAED;
+      --color-text-main: #12151C;
+      --color-text-muted: #636D7E;
+      --color-slate-banner: #2B4561;
+      --color-ivory-banner: #F6ECE2;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --radius-pill: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--color-canvas);
+      color: var(--color-text-main);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F3F5;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+
+    /* Typography Utilities */
+    .tracking-tight-headings {
+      letter-spacing: -0.035em;
+    }
+
+    /* Hide horizontal scroll indicators */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Card & Image Styling */
+    .product-card {
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -8px rgba(10, 12, 16, 0.08);
+      border-color: #CBD5E1;
+    }
+
+    /* Swatch dot */
+    .swatch-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #FFF;
+      box-shadow: 0 0 0 1px #D1D5DB;
+      display: inline-block;
+      transition: transform 0.15s ease;
+    }
+    .swatch-dot:hover {
+      transform: scale(1.2);
+    }
+
+    /* Watermark text effect */
+    .watermark-text {
+      position: absolute;
+      font-size: clamp(4rem, 15vw, 13rem);
+      font-weight: 800;
+      line-height: 0.8;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.06;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: -0.05em;
+    }
+
+    /* Toast Animation */
+    @keyframes slideInUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .toast-anim {
+      animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Image zoom on hover */
+    .zoom-img-container {
+      overflow: hidden;
+    }
+    .zoom-img-container img {
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .product-card:hover .zoom-img-container img {
+      transform: scale(1.04);
+    }
+
+    /* Range slider custom thumb */
+    input[type=range] {
+      accent-color: #0A0C10;
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+<body class="bg-[#F8F9FA] text-[#12151C] antialiased min-h-screen flex flex-col">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Quick Search Modal Overlay -->
+  <div id="search-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-start justify-center pt-20 p-4 transition-opacity">
+    <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in">
+      <div class="p-4 border-b border-gray-100 flex items-center gap-3">
+        <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+        <input id="modal-search-input" type="text" placeholder="Search smartphones, MacBooks, Sony audio, 4K TVs..." 
+               class="w-full text-base font-medium outline-none placeholder:text-gray-400" autocomplete="off" />
+        <button onclick="closeSearchModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="search-modal-results" class="max-h-[60vh] overflow-y-auto p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Popular Searches</div>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button onclick="quickSearch('iPhone 17')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">iPhone 17 Pro</button>
+          <button onclick="quickSearch('Galaxy Z Fold')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">Galaxy Z Fold 7</button>
+          <button onclick="quickSearch('Airbeatz')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">Airbeatz Pro Buds</button>
+          <button onclick="quickSearch('MacBook')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">MacBook Pro M3</button>
+          <button onclick="quickSearch('Sony WH-1000XM5')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">Sony WH-1000XM5</button>
+          <button onclick="quickSearch('OLED TV')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">4K OLED TV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Slide-Over Drawer -->
+  <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
+    <div onclick="toggleCartDrawer(false)" class="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col z-10">
+      <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <h3 class="font-bold text-lg text-gray-900">Shopping Cart</h3>
+          <span id="drawer-cart-count-badge" class="px-2 py-0.5 bg-gray-100 text-xs font-bold rounded-full text-gray-700">0</span>
+        </div>
+        <button onclick="toggleCartDrawer(false)" class="p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="drawer-cart-items" class="flex-1 overflow-y-auto p-5 space-y-4">
+        <!-- Rendered items go here -->
+      </div>
+      <div id="drawer-cart-footer" class="p-5 border-t border-gray-100 bg-gray-50/50 space-y-3">
+        <!-- Footer subtotal & checkout button -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky Comparison Floating Bar -->
+  <div id="compare-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-gray-900 text-white rounded-full px-5 py-3 shadow-2xl hidden items-center gap-4 border border-gray-800">
+    <div class="flex items-center gap-2 text-sm font-medium">
+      <i data-lucide="columns-2" class="w-4 h-4 text-blue-400"></i>
+      <span>Compare (<span id="compare-bar-count">0</span>/4)</span>
+    </div>
+    <div id="compare-bar-thumbs" class="flex items-center gap-1.5"></div>
+    <div class="flex items-center gap-2">
+      <a href="#/compare" class="px-3.5 py-1.5 bg-white text-gray-900 text-xs font-bold rounded-full hover:bg-gray-100 transition-colors">Compare Now</a>
+      <button onclick="clearCompare()" class="p-1 text-gray-400 hover:text-white" title="Clear comparison">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Announcement Utility Bar -->
+  <header class="w-full bg-[#0A0C10] text-gray-300 text-xs py-2 px-4 border-b border-gray-800">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5 text-emerald-400 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Free Express Delivery on orders over $150
+        </span>
+        <span class="hidden md:inline text-gray-600">|</span>
+        <span class="hidden md:inline text-gray-400">2-Year Official Manufacturer Warranty</span>
+        <span class="hidden lg:inline text-gray-600">|</span>
+        <span class="hidden lg:inline text-gray-400">30-Day Hassle-Free Returns</span>
+      </div>
+      <div class="flex items-center gap-4 ml-auto">
+        <div class="flex items-center gap-1 cursor-pointer hover:text-white" onclick="toggleCurrency()">
+          <span id="current-currency-label" class="font-bold text-white">USD ($)</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+        </div>
+        <a href="#/support" class="hover:text-white transition-colors">Support & Tracking</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation Header -->
+  <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20 gap-4">
+        
+        <!-- Logo -->
+        <a href="#/" class="flex items-center gap-2.5 text-gray-900 hover:opacity-90 transition-opacity flex-shrink-0">
+          <span class="w-8 h-8 rounded-full bg-[#0A0C10] text-white flex items-center justify-center font-black text-base shadow-sm">
+            V
+          </span>
+          <span class="font-extrabold text-2xl tracking-tighter text-gray-900">veluna</span>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <div class="hidden lg:flex items-center gap-7 text-sm font-semibold text-gray-700">
+          <a href="#/" class="hover:text-black transition-colors">Home</a>
+          <a href="#/category/phones" class="hover:text-black transition-colors">Phones</a>
+          <a href="#/category/computers" class="hover:text-black transition-colors">Computers</a>
+          <a href="#/category/audio" class="hover:text-black transition-colors">Audio</a>
+          <a href="#/category/gaming" class="hover:text-black transition-colors">Gaming</a>
+          <a href="#/category/tvs" class="hover:text-black transition-colors">TVs & Home</a>
+          <a href="#/category/cameras" class="hover:text-black transition-colors">Cameras</a>
+          <a href="#/category/wearables" class="hover:text-black transition-colors">Wearables</a>
+          <a href="#/brands" class="hover:text-black transition-colors">Brands</a>
+          <a href="#/deals" class="text-rose-600 font-bold hover:text-rose-700 transition-colors flex items-center gap-1">
+            <span>Deals</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+          </a>
+        </div>
+
+        <!-- Right Side: Search, Wishlist, Compare, Cart, Account -->
+        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <!-- Search trigger -->
+          <button onclick="openSearchModal()" class="flex items-center gap-2 px-3 py-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-full transition-colors text-sm">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span class="hidden md:inline text-xs text-gray-400 font-normal">Search products...</span>
+          </button>
+
+          <!-- Wishlist link -->
+          <a href="#/wishlist" class="relative p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors" title="Wishlist">
+            <i data-lucide="heart" class="w-5 h-5"></i>
+            <span id="nav-wishlist-count" class="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+          </a>
+
+          <!-- Compare link -->
+          <a href="#/compare" class="relative p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors" title="Compare products">
+            <i data-lucide="columns-2" class="w-5 h-5"></i>
+            <span id="nav-compare-count" class="absolute top-1 right-1 w-4 h-4 bg-blue-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+          </a>
+
+          <!-- Cart Drawer Trigger -->
+          <button onclick="toggleCartDrawer(true)" class="relative p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors" title="Shopping Cart">
+            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+            <span id="nav-cart-count" class="absolute top-1 right-1 w-4 h-4 bg-black text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+          </button>
+
+          <!-- Account -->
+          <a href="#/account" class="p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors" title="My Account">
+            <i data-lucide="user" class="w-5 h-5"></i>
+          </a>
+
+          <!-- Mobile menu toggle -->
+          <button onclick="toggleMobileNav()" class="lg:hidden p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Nav Drawer -->
+    <div id="mobile-nav" class="lg:hidden hidden border-t border-gray-100 bg-white px-4 pt-3 pb-6 space-y-2">
+      <div class="grid grid-cols-2 gap-2 text-sm font-semibold text-gray-800">
+        <a href="#/" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">Home</a>
+        <a href="#/category/phones" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">Smartphones</a>
+        <a href="#/category/computers" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">Computers & Laptops</a>
+        <a href="#/category/audio" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">Audio & Earbuds</a>
+        <a href="#/category/gaming" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">Gaming & Consoles</a>
+        <a href="#/category/tvs" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">TVs & Home Cinema</a>
+        <a href="#/category/cameras" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">Cameras & Creation</a>
+        <a href="#/category/wearables" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">Smartwatches</a>
+        <a href="#/brands" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">All Brands</a>
+        <a href="#/deals" class="p-2 rounded-lg text-rose-600 hover:bg-rose-50" onclick="toggleMobileNav(false)">Current Deals</a>
+        <a href="#/support" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">Help & Policies</a>
+        <a href="#/account" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)">Customer Account</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Dynamic Application Container -->
+  <main id="app-root" class="flex-1 w-full"></main>
+
+  <!-- Global Footer -->
+  <footer class="bg-white border-t border-gray-200 mt-20 pt-16 pb-12 text-sm text-gray-600">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-14 border-b border-gray-100">
+        
+        <!-- Brand Info -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-[#0A0C10] text-white flex items-center justify-center font-bold text-sm">V</span>
+            <span class="font-extrabold text-xl tracking-tighter text-gray-900">veluna</span>
+          </div>
+          <p class="text-gray-500 text-sm max-w-sm leading-relaxed">
+            Modern electronics engineered for everyday excellence. Discover industry-leading sound, precision display technology, and flagship hardware backed by official manufacturer warranties.
+          </p>
+          <div class="pt-2">
+            <div class="text-xs font-bold uppercase tracking-wider text-gray-900 mb-2">Subscribe to our newsletter</div>
+            <form onsubmit="handleNewsletterSubmit(event)" class="flex gap-2 max-w-sm">
+              <input type="email" required placeholder="Enter your email" class="flex-1 px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black" />
+              <button type="submit" class="px-4 py-2.5 bg-black text-white font-semibold rounded-xl text-sm hover:bg-gray-800 transition-colors">Subscribe</button>
+            </form>
+            <p class="text-[11px] text-gray-400 mt-1.5">No spam. Only product drops, tech breakdowns, and member discounts.</p>
+          </div>
+        </div>
+
+        <!-- Shop Destinations -->
+        <div>
+          <h4 class="font-bold text-gray-900 text-sm mb-4">Shop Categories</h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="#/category/phones" class="hover:text-black transition-colors">Smartphones & Foldables</a></li>
+            <li><a href="#/category/computers" class="hover:text-black transition-colors">Laptops & Workstations</a></li>
+            <li><a href="#/category/audio" class="hover:text-black transition-colors">Headphones & Wireless Buds</a></li>
+            <li><a href="#/category/gaming" class="hover:text-black transition-colors">Gaming Consoles & Gear</a></li>
+            <li><a href="#/category/tvs" class="hover:text-black transition-colors">OLED & 4K Home Displays</a></li>
+            <li><a href="#/category/cameras" class="hover:text-black transition-colors">Cameras & Content Studio</a></li>
+            <li><a href="#/category/wearables" class="hover:text-black transition-colors">Smartwatches & Rings</a></li>
+          </ul>
+        </div>
+
+        <!-- Brands & Guides -->
+        <div>
+          <h4 class="font-bold text-gray-900 text-sm mb-4">Top Brands</h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="#/brand/apple" class="hover:text-black transition-colors">Apple Ecosystem</a></li>
+            <li><a href="#/brand/samsung" class="hover:text-black transition-colors">Samsung Galaxy</a></li>
+            <li><a href="#/brand/sony" class="hover:text-black transition-colors">Sony Audio & Camera</a></li>
+            <li><a href="#/brand/google" class="hover:text-black transition-colors">Google Pixel</a></li>
+            <li><a href="#/brand/bose" class="hover:text-black transition-colors">Bose Acoustics</a></li>
+            <li><a href="#/brand/asus" class="hover:text-black transition-colors">ASUS Republic of Gamers</a></li>
+            <li><a href="#/brands" class="font-semibold text-black hover:underline">View All 24+ Brands →</a></li>
+          </ul>
+        </div>
+
+        <!-- Help & Legal -->
+        <div>
+          <h4 class="font-bold text-gray-900 text-sm mb-4">Customer Care & Support</h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="#/support" class="hover:text-black transition-colors">Help Center & FAQ</a></li>
+            <li><a href="#/shipping" class="hover:text-black transition-colors">Shipping & Delivery Details</a></li>
+            <li><a href="#/returns" class="hover:text-black transition-colors">Warranty & Return Policies</a></li>
+            <li><a href="#/account/orders" class="hover:text-black transition-colors">Track Existing Order</a></li>
+            <li><a href="#/contact" class="hover:text-black transition-colors">Contact Support Concierge</a></li>
+            <li><a href="#/privacy" class="hover:text-black transition-colors">Privacy Notice</a></li>
+            <li><a href="#/terms" class="hover:text-black transition-colors">Terms of Retail Service</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+        <div>
+          © 2026 Veluna Electronics Retail Ltd. All rights reserved. Built with precision vanilla web standards.
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1 font-mono text-gray-600">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+            256-Bit SSL Encrypted
+          </span>
+          <span>·</span>
+          <span>Verified M-Pesa & Card Gateway Ready</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script injection follows below -->
+  <!-- CORE SCRIPTS & ELECTRONICS STORE APPLICATION -->
+  <script>
+    // --- 1. GLOBAL STATE & CONFIGURATION ---
+    const CONFIG = {
+      storeName: 'Veluna',
+      currencyUSD: 'USD',
+      currencyKES: 'KES',
+      exchangeRateKES: 130.0, // 1 USD = 130 KES
+      taxRate: 0.08, // 8% sales tax
+      freeShippingThreshold: 150.0,
+      standardShippingFee: 15.0,
+      expressShippingFee: 28.0
+    };
+
+    const STATE = {
+      currency: localStorage.getItem('veluna_currency') || 'USD',
+      cart: JSON.parse(localStorage.getItem('veluna_cart') || '[]'),
+      wishlist: JSON.parse(localStorage.getItem('veluna_wishlist') || '[]'),
+      compareList: JSON.parse(localStorage.getItem('veluna_compare') || '[]'),
+      user: JSON.parse(localStorage.getItem('veluna_user') || 'null'),
+      orders: JSON.parse(localStorage.getItem('veluna_orders') || '[]'),
+      searchHistory: JSON.parse(localStorage.getItem('veluna_search_history') || '[]'),
+      activeFilters: {
+        category: null,
+        brand: null,
+        maxPrice: null,
+        sortBy: 'featured',
+        inStockOnly: false,
+        storage: null
+      }
+    };
+
+    function saveState(key) {
+      if (key === 'cart') localStorage.setItem('veluna_cart', JSON.stringify(STATE.cart));
+      if (key === 'wishlist') localStorage.setItem('veluna_wishlist', JSON.stringify(STATE.wishlist));
+      if (key === 'compare') localStorage.setItem('veluna_compare', JSON.stringify(STATE.compareList));
+      if (key === 'user') localStorage.setItem('veluna_user', JSON.stringify(STATE.user));
+      if (key === 'orders') localStorage.setItem('veluna_orders', JSON.stringify(STATE.orders));
+    }
+
+    // --- 2. HIGH-RELIABILITY IMAGE FALLBACK SYSTEM ---
+    // Generates pristine, crisp inline SVGs when an external image cannot be fetched
+    function handleImgError(imgEl, category, title) {
+      imgEl.onerror = null; // Prevent recursion
+      const cleanTitle = (title || 'Electronics Device').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const bgColors = {
+        phones: '#1E293B',
+        computers: '#0F172A',
+        audio: '#18181B',
+        gaming: '#1E1B4B',
+        tvs: '#111827',
+        cameras: '#1C1917',
+        wearables: '#134E4A',
+        accessories: '#1F2937',
+        default: '#1E293B'
+      };
+      const bg = bgColors[category] || bgColors.default;
+      
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" fill="none">
+          <rect width="600" height="600" fill="${bg}"/>
+          <circle cx="300" cy="270" r="140" fill="white" fill-opacity="0.04" stroke="white" stroke-opacity="0.1" stroke-width="2"/>
+          <path d="M260 250H340M260 270H340M260 290H310" stroke="white" stroke-width="4" stroke-linecap="round" stroke-opacity="0.4"/>
+          <rect x="230" y="190" width="140" height="160" rx="16" stroke="white" stroke-width="3" stroke-opacity="0.3"/>
+          <text x="300" y="440" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="20" letter-spacing="-0.02em">${cleanTitle}</text>
+          <text x="300" y="470" text-anchor="middle" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-weight="500" font-size="14">VELUNA OFFICIAL SPECIFICATION</text>
+        </svg>
+      `;
+      imgEl.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
+
+    // --- 3. CURRENCY FORMATTER ---
+    function formatMoney(amountUSD) {
+      if (STATE.currency === 'KES') {
+        const kes = Math.round(amountUSD * CONFIG.exchangeRateKES);
+        return 'KES ' + kes.toLocaleString();
+      }
+      return '$' + amountUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function toggleCurrency() {
+      STATE.currency = STATE.currency === 'USD' ? 'KES' : 'USD';
+      localStorage.setItem('veluna_currency', STATE.currency);
+      const label = document.getElementById('current-currency-label');
+      if (label) label.textContent = STATE.currency === 'USD' ? 'USD ($)' : 'KES (Sh)';
+      renderRoute();
+      showToast(`Switched currency to ${STATE.currency}`);
+    }
+
+    // --- 4. EXTENSIVE MASTER PRODUCT CATALOGUE (50+ Real High-End Electronics) ---
+    const PRODUCTS = [
+      // == PHONES ==
+      {
+        id: 'iphone-17-pro-max',
+        name: 'iPhone 17 Pro Max',
+        brand: 'Apple',
+        category: 'phones',
+        subCategory: 'Smartphones',
+        price: 1199,
+        originalPrice: 1299,
+        rating: 4.9,
+        reviewCount: 384,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: 'Natural Titanium', hex: '#9E9992' },
+          { name: 'Deep Blue', hex: '#2B384A' },
+          { name: 'Midnight', hex: '#1C1D21' }
+        ],
+        variants: ['256GB', '512GB', '1TB'],
+        storage: '256GB',
+        image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
+        gallery: [
+          'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=800&q=80'
+        ],
+        specs: {
+          'Processor': 'Apple A18 Pro 3nm Silicon',
+          'Display': '6.9" Super Retina XDR OLED (1-120Hz ProMotion)',
+          'Main Camera': '48MP Quad-Pixel + 48MP Ultra-Wide + 12MP 5x Telephoto',
+          'Battery': 'Up to 33 hours video playback, Qi2 & MagSafe 25W',
+          'Build': 'Grade 5 Titanium frame with Ceramic Shield front'
+        },
+        description: 'Engineered from forged Grade 5 titanium, iPhone 17 Pro Max introduces the breakthrough A18 Pro chip, next-generation camera control, and unparalleled battery longevity.',
+        inStock: true
+      },
+      {
+        id: 'galaxy-z-fold-7',
+        name: 'Galaxy Z Fold 7',
+        brand: 'Samsung',
+        category: 'phones',
+        subCategory: 'Foldables',
+        price: 1799,
+        originalPrice: 1919,
+        rating: 4.8,
+        reviewCount: 219,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: 'Navy Slate', hex: '#2D3E50' },
+          { name: 'Silver Shadow', hex: '#C2C7CF' },
+          { name: 'Crafted Black', hex: '#1C1C1E' }
+        ],
+        variants: ['256GB', '512GB', '1TB'],
+        storage: '512GB',
+        image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
+        gallery: [
+          'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?auto=format&fit=crop&w=800&q=80'
+        ],
+        specs: {
+          'Processor': 'Snapdragon 8 Gen 3 for Galaxy (4nm)',
+          'Main Screen': '7.6" Dynamic AMOLED 2X 120Hz Foldable',
+          'Cover Screen': '6.3" Dynamic AMOLED 2X FHD+',
+          'Cameras': '50MP Wide + 12MP Ultra-Wide + 10MP 3x Optical',
+          'Durability': 'Armor Aluminum frame, IP48 Water Resistance'
+        },
+        description: 'The definitive folding flagship. Thinner, lighter, and fortified with an ultra-rigid hinge. Multitask with up to three applications simultaneously.',
+        inStock: true
+      },
+      {
+        id: 'oneplus-12-pro',
+        name: 'OnePlus 12 Pro',
+        brand: 'OnePlus',
+        category: 'phones',
+        subCategory: 'Smartphones',
+        price: 849,
+        originalPrice: 899,
+        rating: 4.7,
+        reviewCount: 142,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: 'Flowy Emerald', hex: '#2F4F4F' },
+          { name: 'Silky Black', hex: '#1F1F1F' }
+        ],
+        variants: ['256GB', '512GB'],
+        storage: '256GB',
+        image: 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Processor': 'Snapdragon 8 Gen 3',
+          'Display': '6.82" 2K 120Hz ProXDR with Aqua Touch',
+          'Cameras': '4th Gen Hasselblad Camera for Mobile (50MP + 64MP + 48MP)',
+          'Charging': '100W SUPERVOOC wired + 50W AIRVOOC wireless'
+        },
+        description: 'Co-developed with Hasselblad, the OnePlus 12 Pro combines blazing fast 100W charging with supreme 2K display ergonomics.',
+        inStock: true
+      },
+      {
+        id: 'google-pixel-9-pro',
+        name: 'Google Pixel 9 Pro',
+        brand: 'Google',
+        category: 'phones',
+        subCategory: 'Smartphones',
+        price: 999,
+        originalPrice: 1049,
+        rating: 4.8,
+        reviewCount: 270,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: 'Obsidian', hex: '#222326' },
+          { name: 'Porcelain', hex: '#F0EFEA' },
+          { name: 'Hazel', hex: '#63655F' }
+        ],
+        variants: ['128GB', '256GB', '512GB'],
+        storage: '256GB',
+        image: 'https://images.unsplash.com/photo-1598327105854-c8674faddf79?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1598327105854-c8674faddf79?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Processor': 'Google Tensor G4 with Titan M2 security',
+          'Display': '6.3" Super Actua OLED 1-120Hz LTPO (3000 nits)',
+          'Main Camera': '50MP Octa PD + 48MP Ultra-wide + 48MP 5x Telephoto',
+          'Software': '7 Years of guaranteed OS and security updates'
+        },
+        description: 'The pinnacle of mobile computational photography. Armed with Google Tensor G4 and unmatched on-device Gemini intelligence.',
+        inStock: true
+      },
+      {
+        id: 'galaxy-s24-ultra',
+        name: 'Samsung Galaxy S24 Ultra',
+        brand: 'Samsung',
+        category: 'phones',
+        subCategory: 'Smartphones',
+        price: 1199,
+        originalPrice: 1299,
+        rating: 4.9,
+        reviewCount: 512,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: 'Titanium Gray', hex: '#878787' },
+          { name: 'Titanium Black', hex: '#242426' },
+          { name: 'Titanium Yellow', hex: '#DEC996' }
+        ],
+        variants: ['256GB', '512GB', '1TB'],
+        storage: '512GB',
+        image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Processor': 'Snapdragon 8 Gen 3 for Galaxy',
+          'Display': '6.8" Flat Dynamic AMOLED 2X with Corning Gorilla Armor',
+          'Cameras': '200MP Main + 50MP 5x Periscope + 10MP 3x + 12MP Ultra-wide',
+          'S Pen': 'Integrated Bluetooth S Pen with air gestures'
+        },
+        description: 'Titanium exterior, anti-reflective Corning Gorilla Armor, and 200 megapixels of raw imaging power with the built-in S Pen.',
+        inStock: true
+      },
+      {
+        id: 'galaxy-z-flip-6',
+        name: 'Samsung Galaxy Z Flip 6',
+        brand: 'Samsung',
+        category: 'phones',
+        subCategory: 'Foldables',
+        price: 899,
+        originalPrice: 999,
+        rating: 4.6,
+        reviewCount: 183,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: 'Mint Green', hex: '#A8D5BA' },
+          { name: 'Silver Shadow', hex: '#B8BFC6' }
+        ],
+        variants: ['256GB', '512GB'],
+        storage: '256GB',
+        image: 'https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Display': '6.7" Dynamic AMOLED 2X 120Hz + 3.4" Super AMOLED FlexWindow',
+          'Cameras': '50MP Wide + 12MP Ultra-Wide',
+          'Battery': '4,000mAh with intelligent battery management'
+        },
+        description: 'Compact pocket-sized design featuring the expansive FlexWindow cover screen and automatic framing FlexCam.',
+        inStock: true
+      },
+
+      // == AUDIO ==
+      {
+        id: 'airbeatz-pro-buds',
+        name: 'Airbeatz Pro Buds',
+        brand: 'Veluna Acoustic',
+        category: 'audio',
+        subCategory: 'Wireless Earbuds',
+        price: 149,
+        originalPrice: 199,
+        rating: 4.9,
+        reviewCount: 430,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: 'Porcelain White', hex: '#F8F9FA' },
+          { name: 'Matte Obsidian', hex: '#1A1C20' }
+        ],
+        variants: ['Standard Charging Case', 'Wireless Qi Case'],
+        image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80',
+        gallery: [
+          'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fit=crop&w=800&q=80'
+        ],
+        specs: {
+          'Drivers': '11mm Custom High-Excursion Titanium Diaphragm',
+          'Noise Cancellation': 'Adaptive Hybrid ANC up to 48dB reduction',
+          'Battery Life': '9.5 hours per charge, 38 hours total with case',
+          'Water Resistance': 'IPX5 sweat & splash resistant'
+        },
+        description: 'As highlighted in our showcase: True wireless acoustic perfection with custom titanium drivers and immersive spatial tracking.',
+        inStock: true
+      },
+      {
+        id: 'sony-wh1000xm5',
+        name: 'Sony WH-1000XM5 Wireless Headphones',
+        brand: 'Sony',
+        category: 'audio',
+        subCategory: 'Headphones',
+        price: 349,
+        originalPrice: 399,
+        rating: 4.9,
+        reviewCount: 890,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: 'Silver Gold', hex: '#E2DBD1' },
+          { name: 'Midnight Black', hex: '#1C1C1E' },
+          { name: 'Midnight Blue', hex: '#222D42' }
+        ],
+        variants: ['Standard Edition'],
+        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+        gallery: [
+          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=800&q=80'
+        ],
+        specs: {
+          'Processors': 'Integrated Processor V1 + HD Noise Cancelling Processor QN1',
+          'Drivers': '30mm precision-engineered carbon fiber composite',
+          'Battery': '30 hours with ANC enabled; 3 min quick charge for 3 hours',
+          'Microphones': '8 beamforming microphones for crystal-clear calls'
+        },
+        description: 'Industry benchmark noise cancellation. The Auto NC Optimizer automatically tunes noise reduction based on your ambient wearing conditions.',
+        inStock: true
+      },
+      {
+        id: 'bose-quietcomfort-ultra',
+        name: 'Bose QuietComfort Ultra',
+        brand: 'Bose',
+        category: 'audio',
+        subCategory: 'Headphones',
+        price: 379,
+        originalPrice: 429,
+        rating: 4.8,
+        reviewCount: 310,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: 'Black', hex: '#111215' },
+          { name: 'White Smoke', hex: '#EDECE8' }
+        ],
+        variants: ['Standard Edition'],
+        image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Audio Tech': 'Bose Immersive Audio spatialized acoustic stage',
+          'CustomTune': 'Sound personalized precisely to the shape of your ears',
+          'Battery': 'Up to 24 hours playback (18 hrs with Immersive Audio)'
+        },
+        description: 'World-class active noise cancellation coupled with Bose Immersive Audio creates an audio experience that puts you right on stage.',
+        inStock: true
+      },
+      {
+        id: 'cylinder-sound-hub',
+        name: 'Veluna Cylindro 360 Smart Speaker',
+        brand: 'Veluna Acoustic',
+        category: 'audio',
+        subCategory: 'Home Speakers',
+        price: 129,
+        originalPrice: 159,
+        rating: 4.7,
+        reviewCount: 94,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: 'Textured Grey', hex: '#9AA0A6' },
+          { name: 'Charcoal', hex: '#26292E' }
+        ],
+        variants: ['Standard'],
+        image: 'https://images.unsplash.com/photo-1543512214-318c7553f230?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1543512214-318c7553f230?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Acoustic Field': '360° omnidirectional dispersion with dual passive radiators',
+          'Connectivity': 'Wi-Fi 6, AirPlay 2, Spotify Connect, Bluetooth 5.3',
+          'Smart Hub': 'Built-in Matter & Thread border router'
+        },
+        description: 'Seamless acoustic presence. Fill any living room with 360-degree spatial fidelity wrapped in acoustically transparent Nordic fabric.',
+        inStock: true
+      },
+
+      // == COMPUTERS & LAPTOPS ==
+      {
+        id: 'macbook-pro-16-m3-max',
+        name: 'MacBook Pro 16" M3 Max',
+        brand: 'Apple',
+        category: 'computers',
+        subCategory: 'Laptops',
+        price: 3499,
+        originalPrice: 3699,
+        rating: 5.0,
+        reviewCount: 167,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: 'Space Black', hex: '#242528' },
+          { name: 'Silver', hex: '#E1E3E5' }
+        ],
+        variants: ['36GB RAM / 1TB SSD', '48GB RAM / 1TB SSD', '128GB RAM / 2TB SSD'],
+        storage: '1TB',
+        image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+        gallery: [
+          'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&w=800&q=80'
+        ],
+        specs: {
+          'Processor': 'Apple M3 Max (16-core CPU, 40-core GPU)',
+          'Memory': '48GB Unified Memory with 400GB/s bandwidth',
+          'Display': '16.2" Liquid Retina XDR (1600 nits peak, 120Hz ProMotion)',
+          'Battery': 'Up to 22 hours on a single charge',
+          'Ports': '3x Thunderbolt 4, HDMI, SDXC, MagSafe 3'
+        },
+        description: 'The ultimate powerhouse for 3D artists, machine learning researchers, and filmmakers. Uncompromised performance on battery power.',
+        inStock: true
+      },
+      {
+        id: 'dell-xps-15-oled',
+        name: 'Dell XPS 15 9530 OLED',
+        brand: 'Dell',
+        category: 'computers',
+        subCategory: 'Laptops',
+        price: 1899,
+        originalPrice: 2099,
+        rating: 4.8,
+        reviewCount: 95,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: 'Platinum Silver', hex: '#D2D6DC' }
+        ],
+        variants: ['32GB RAM / 1TB SSD', '64GB RAM / 2TB SSD'],
+        storage: '1TB',
+        image: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Processor': 'Intel Core i9-13900H (14 cores, up to 5.4GHz)',
+          'Graphics': 'NVIDIA GeForce RTX 4070 Laptop GPU 8GB GDDR6',
+          'Display': '15.6" 3.5K (3456x2160) InfinityEdge OLED Touch (400 nits)',
+          'Chassis': 'CNC machined aluminum with carbon fiber palm rest'
+        },
+        description: 'Spectacular 3.5K OLED touch display encased in precision-milled aluminum. Engineered for uncompromising creators.',
+        inStock: true
+      },
+      {
+        id: 'asus-rog-zephyrus-g16',
+        name: 'ASUS ROG Zephyrus G16 OLED',
+        brand: 'ASUS',
+        category: 'computers',
+        subCategory: 'Gaming Laptops',
+        price: 2199,
+        originalPrice: 2399,
+        rating: 4.9,
+        reviewCount: 88,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: 'Eclipse Gray', hex: '#373A40' },
+          { name: 'Platinum White', hex: '#EEF0F2' }
+        ],
+        variants: ['32GB RAM / 1TB SSD', '32GB RAM / 2TB SSD'],
+        storage: '1TB',
+        image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1603302576837-37561b2e2302?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Processor': 'Intel Core Ultra 9 185H with dedicated NPU',
+          'Graphics': 'NVIDIA GeForce RTX 4080 12GB GDDR6',
+          'Display': '16" 2.5K 240Hz ROG Nebula OLED display with G-SYNC',
+          'Audio': '6-speaker setup with dual force-cancelling woofers'
+        },
+        description: 'Ultra-slim 1.49cm aluminum chassis housing a 240Hz ROG Nebula OLED panel and RTX 4080 gaming muscle.',
+        inStock: true
+      },
+
+      // == GAMING ==
+      {
+        id: 'playstation-5-pro',
+        name: 'Sony PlayStation 5 Pro Console',
+        brand: 'Sony',
+        category: 'gaming',
+        subCategory: 'Consoles',
+        price: 699,
+        originalPrice: 699,
+        rating: 4.9,
+        reviewCount: 640,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: 'Glacier White', hex: '#F0F2F5' }
+        ],
+        variants: ['2TB Digital Console'],
+        storage: '2TB',
+        image: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'GPU': 'Upgraded GPU with 67% more Compute Units, 45% faster rendering',
+          'Upscaling': 'PlayStation Spectral Super Resolution (PSSR) AI Upscaling',
+          'Ray Tracing': 'Advanced hardware ray tracing at native 60fps',
+          'Storage': '2TB Ultra-High Speed NVMe Internal SSD'
+        },
+        description: 'Witness games with breathtaking graphical clarity and smooth 60fps frame rates through AI-powered PSSR upscaling.',
+        inStock: true
+      },
+      {
+        id: 'nintendo-switch-oled',
+        name: 'Nintendo Switch OLED Model',
+        brand: 'Nintendo',
+        category: 'gaming',
+        subCategory: 'Consoles',
+        price: 349,
+        originalPrice: 349,
+        rating: 4.8,
+        reviewCount: 920,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: 'White Joy-Con', hex: '#F5F5F7' },
+          { name: 'Neon Red/Blue', hex: '#E63946' }
+        ],
+        variants: ['64GB Internal'],
+        storage: '64GB',
+        image: 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Display': '7-inch OLED screen with vivid colors and deep contrast',
+          'Audio': 'Enhanced audio from the systems onboard stereo speakers',
+          'Dock': 'Wired LAN port built into the dock for competitive play'
+        },
+        description: 'Vibrant 7-inch OLED screen, a wide adjustable stand, enhanced audio, and 64GB of internal storage.',
+        inStock: true
+      },
+      {
+        id: 'pro-gaming-controller',
+        name: 'Veluna Apex Pro Wireless Gamepad',
+        brand: 'Veluna Gaming',
+        category: 'gaming',
+        subCategory: 'Controllers',
+        price: 79,
+        originalPrice: 99,
+        rating: 4.7,
+        reviewCount: 165,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: 'Carbon Black', hex: '#1C1D21' },
+          { name: 'Arctic White', hex: '#F0F2F5' }
+        ],
+        variants: ['Standard Edition'],
+        image: 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Sticks': 'Hall Effect electromagnetic anti-drift analog sticks',
+          'Polling Rate': '1000Hz ultra-low latency wireless polling',
+          'Triggers': 'Dual-mode mechanical mouse-click microswitch triggers'
+        },
+        description: 'Zero drift Hall Effect thumbsticks, 4 remappable rear paddles, and customizable trigger stops.',
+        inStock: true
+      },
+
+      // == TVS & HOME THEATRE ==
+      {
+        id: 'samsung-neo-qled-65',
+        name: 'Samsung 65" Neo QLED 4K QN90D',
+        brand: 'Samsung',
+        category: 'tvs',
+        subCategory: 'Smart TVs',
+        price: 1599,
+        originalPrice: 1899,
+        rating: 4.8,
+        reviewCount: 178,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: 'Titan Black', hex: '#1E1F24' }
+        ],
+        variants: ['55-inch', '65-inch', '75-inch'],
+        image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Display': 'Quantum Matrix with Mini LEDs and Neo Quantum HDR+',
+          'Processor': 'NQ4 AI Gen2 Processor with 4K AI Upscaling',
+          'Refresh Rate': 'Motion Xcelerator 144Hz for PC and Console Gaming',
+          'Audio': 'Dolby Atmos and Object Tracking Sound+ (OTS+)'
+        },
+        description: 'Ultra-fine light control with Quantum Mini LEDs reveals stunning detail in both the darkest and brightest scenes.',
+        inStock: true
+      },
+      {
+        id: 'q-series-soundbar',
+        name: 'Samsung HW-Q990D 11.1.4ch Dolby Atmos Soundbar',
+        brand: 'Samsung',
+        category: 'tvs',
+        subCategory: 'Soundbars',
+        price: 999,
+        originalPrice: 1399,
+        rating: 4.9,
+        reviewCount: 142,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: 'Titan Black', hex: '#1C1D21' }
+        ],
+        variants: ['11.1.4 Channel System'],
+        image: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Channels': '11 channels, 1 subwoofer, and 4 up-firing rear speakers',
+          'Audio Formats': 'Wireless Dolby Atmos, DTS:X, Q-Symphony',
+          'Gaming': '4K 120Hz HDMI 2.1 Passthrough with VRR'
+        },
+        description: 'Room-filling, cinema-grade surround audio without cables running from the front of your room to the back.',
+        inStock: true
+      },
+      {
+        id: 'curved-gaming-monitor',
+        name: 'Samsung Odyssey Neo G9 49" Curved OLED',
+        brand: 'Samsung',
+        category: 'computers',
+        subCategory: 'Monitors',
+        price: 1399,
+        originalPrice: 1799,
+        rating: 4.8,
+        reviewCount: 96,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: 'White / Black', hex: '#FFFFFF' }
+        ],
+        variants: ['49-inch Dual QHD'],
+        image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Resolution': 'Dual QHD (5120 x 1440) 32:9 Super Ultra-Wide',
+          'Refresh Rate': '240Hz refresh rate with 0.03ms response time',
+          'Curvature': '1800R curve with Neo Quantum Processor Pro'
+        },
+        description: 'Immerse your peripheral vision in expansive Dual QHD OLED brilliance. 240Hz refresh rate eliminates motion blur.',
+        inStock: true
+      },
+
+      // == CAMERAS & CONTENT GEAR ==
+      {
+        id: 'sony-a7-iv',
+        name: 'Sony Alpha 7 IV Full-Frame Mirrorless',
+        brand: 'Sony',
+        category: 'cameras',
+        subCategory: 'Mirrorless Cameras',
+        price: 2298,
+        originalPrice: 2499,
+        rating: 4.9,
+        reviewCount: 204,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: 'Black', hex: '#151515' }
+        ],
+        variants: ['Body Only', 'With 28-70mm Lens Kit'],
+        image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Sensor': '33MP Full-Frame Exmor R Back-Illuminated CMOS Sensor',
+          'Video': '4K 60p 10-bit 4:2:2 recording with S-Cinetone and S-Log3',
+          'Autofocus': '759 phase-detection points with Real-time Eye AF for Humans, Animals & Birds'
+        },
+        description: 'The definitive hybrid camera. Superb 33-megapixel stills and professional 4K 60p cinematic video capture.',
+        inStock: true
+      },
+      {
+        id: 'dji-mini-4-pro',
+        name: 'DJI Mini 4 Pro Fly More Combo',
+        brand: 'DJI',
+        category: 'cameras',
+        subCategory: 'Drones',
+        price: 1099,
+        originalPrice: 1159,
+        rating: 4.9,
+        reviewCount: 168,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: 'Light Grey', hex: '#DCDFE3' }
+        ],
+        variants: ['DJI RC 2 Controller Bundle'],
+        image: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Weight': 'Under 249g (No pilot license required in most regions)',
+          'Camera': '4K/60fps HDR True Vertical Shooting & D-Log M 10-bit',
+          'Safety': 'Omnidirectional obstacle sensing & 20km FHD transmission'
+        },
+        description: 'Ultralight folding drone with omnidirectional obstacle sensing, 4K/60fps HDR video, and 34 minutes of flight time per battery.',
+        inStock: true
+      },
+
+      // == WEARABLES ==
+      {
+        id: 'apple-watch-ultra-2',
+        name: 'Apple Watch Ultra 2 GPS + Cellular',
+        brand: 'Apple',
+        category: 'wearables',
+        subCategory: 'Smartwatches',
+        price: 799,
+        originalPrice: 799,
+        rating: 4.9,
+        reviewCount: 312,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: 'Natural Titanium', hex: '#A39C93' },
+          { name: 'Black Titanium', hex: '#26272B' }
+        ],
+        variants: ['49mm Alpine Loop', '49mm Trail Loop', '49mm Ocean Band'],
+        image: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Case': '49mm Aerospace-grade titanium case with raised sapphire crystal',
+          'Screen': '3,000 nits Always-On Retina display',
+          'Battery': 'Up to 36 hours regular use, up to 72 hours in Low Power Mode',
+          'Water Rating': '100m water resistance, EN13319 certified for scuba diving to 40m'
+        },
+        description: 'Built for endurance athletes, outdoor adventurers, and ocean explorers with dual-frequency GPS and an ultra-bright 3000-nit screen.',
+        inStock: true
+      },
+      {
+        id: 'smart-ring-gen-3',
+        name: 'Veluna Pulse Smart Health Ring',
+        brand: 'Veluna Tech',
+        category: 'wearables',
+        subCategory: 'Smart Rings',
+        price: 299,
+        originalPrice: 349,
+        rating: 4.7,
+        reviewCount: 110,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: 'Titanium Black', hex: '#1C1D21' },
+          { name: 'Stealth Silver', hex: '#CBD5E1' },
+          { name: 'Rose Gold', hex: '#E0A899' }
+        ],
+        variants: ['Size 8', 'Size 9', 'Size 10', 'Size 11'],
+        image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Sensors': 'Infrared PPG sensors, body temperature sensor, 3D accelerometer',
+          'Battery Life': '7 days on a single charge with wireless dock',
+          'Water Resistance': '100m water resistant titanium alloy'
+        },
+        description: 'Continuous sleep tracking, HRV analysis, body temperature sensing, and recovery insights wrapped around your finger.',
+        inStock: true
+      },
+
+      // == ACCESSORIES & POWER ==
+      {
+        id: 'anker-prime-powerbank',
+        name: 'Anker Prime 27,650mAh Power Bank (250W)',
+        brand: 'Anker',
+        category: 'accessories',
+        subCategory: 'Power Banks',
+        price: 159,
+        originalPrice: 179,
+        rating: 4.9,
+        reviewCount: 220,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: 'Graphite', hex: '#2C3038' }
+        ],
+        variants: ['27,650mAh 250W'],
+        image: 'https://images.unsplash.com/photo-1609592426868-b7a4be489e24?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1609592426868-b7a4be489e24?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Total Output': '250W Multi-device simultaneous fast charging',
+          'Capacity': '27,650mAh TSA flight-approved airline capacity',
+          'Display': 'Smart digital display showing live watts, volts, and recharge time'
+        },
+        description: 'Charge a 16" MacBook Pro to 50% in just 28 minutes. Features an intelligent smart digital display and app control.',
+        inStock: true
+      },
+      {
+        id: 'belkin-magsafe-charger',
+        name: 'Belkin BoostCharge Pro 3-in-1 MagSafe',
+        brand: 'Belkin',
+        category: 'accessories',
+        subCategory: 'Wireless Chargers',
+        price: 129,
+        originalPrice: 149,
+        rating: 4.8,
+        reviewCount: 175,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: 'White', hex: '#FFFFFF' },
+          { name: 'Black', hex: '#1A1A1A' }
+        ],
+        variants: ['15W MagSafe Fast Charge'],
+        image: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
+        gallery: ['https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80'],
+        specs: {
+          'Compatibility': 'Official MagSafe 15W for iPhone, fast charge for Apple Watch, Qi pad for AirPods',
+          'Design': 'Architectural chrome tree stand with non-slip weighted base'
+        },
+        description: 'Charges your iPhone, Apple Watch, and AirPods simultaneously in a sleek, minimalist architectural design.',
+        inStock: true
+      }
+    ];
+
+    // --- 5. CATEGORIES METADATA ---
+    const CATEGORIES = [
+      { id: 'phones', name: 'Smartphones & Foldables', short: 'Phones', count: 18, icon: 'smartphone', desc: 'Flagship iOS, Android, and innovative folding devices with cutting-edge displays and cameras.' },
+      { id: 'computers', name: 'Computers & Laptops', short: 'Computers', count: 14, icon: 'laptop', desc: 'MacBooks, creator laptops, workstations, and ultra-high refresh rate gaming rigs.' },
+      { id: 'audio', name: 'Audio & Acoustics', short: 'Audio', count: 12, icon: 'headphones', desc: 'Audiophile over-ear headphones, noise-cancelling true wireless earbuds, and 360° sound hubs.' },
+      { id: 'gaming', name: 'Gaming & Consoles', short: 'Gaming', count: 9, icon: 'gamepad-2', desc: 'Next-gen consoles, Hall Effect pro gamepads, high-framerate monitors, and peripherals.' },
+      { id: 'tvs', name: 'TVs & Home Entertainment', short: 'TVs & Home', count: 8, icon: 'tv', desc: 'Mini-LED 4K displays, OLED cinematic panels, and Dolby Atmos architectural soundbars.' },
+      { id: 'cameras', name: 'Cameras & Content Studio', short: 'Cameras', count: 7, icon: 'camera', desc: 'Full-frame mirrorless sensors, compact drones, cinema lenses, and studio microphones.' },
+      { id: 'wearables', name: 'Wearables & Health', short: 'Wearables', count: 6, icon: 'watch', desc: 'Rugged titanium adventure watches, health monitoring smart rings, and fitness trackers.' },
+      { id: 'accessories', name: 'Power & Charging Hubs', short: 'Accessories', count: 11, icon: 'zap', desc: 'High-wattage GaN chargers, airline-approved power banks, and MagSafe charging stations.' }
+    ];
+
+    // --- 6. BRANDS DIRECTORY ---
+    const BRANDS = [
+      { id: 'apple', name: 'Apple', country: 'Cupertino, USA', tagline: 'Think Different · Leading Silicon Architecture', logo: 'apple', count: 8 },
+      { id: 'samsung', name: 'Samsung', country: 'Suwon, South Korea', tagline: 'Pioneering Dynamic AMOLED & Foldable Engineering', logo: 'smartphone', count: 9 },
+      { id: 'sony', name: 'Sony', country: 'Tokyo, Japan', tagline: 'Unmatched Acoustic Precision & Cinema Sensor Heritage', logo: 'headphones', count: 6 },
+      { id: 'google', name: 'Google Pixel', country: 'Mountain View, USA', tagline: 'AI-First Mobile Hardware with Computational Cameras', logo: 'sparkles', count: 4 },
+      { id: 'oneplus', name: 'OnePlus', country: 'Shenzhen, China', tagline: 'Never Settle · Ultra-Fast SUPERVOOC Charging', logo: 'zap', count: 3 },
+      { id: 'bose', name: 'Bose', country: 'Framingham, USA', tagline: 'World-Renowned Acoustic Noise Cancellation', logo: 'volume-2', count: 3 },
+      { id: 'asus', name: 'ASUS ROG', country: 'Taipei, Taiwan', tagline: 'Republic of Gamers · Extreme PC Performance', logo: 'cpu', count: 4 },
+      { id: 'dell', name: 'Dell', country: 'Round Rock, USA', tagline: 'Precision XPS Computing for Creators', logo: 'laptop', count: 3 },
+      { id: 'dji', name: 'DJI', country: 'Shenzhen, China', tagline: 'The Global Standard in Aerial Cinematography', logo: 'video', count: 2 },
+      { id: 'nintendo', name: 'Nintendo', country: 'Kyoto, Japan', tagline: 'Pure Entertainment & Iconic Gaming Magic', logo: 'gamepad-2', count: 2 },
+      { id: 'anker', name: 'Anker', country: 'Changsha, China', tagline: 'Global Leader in Fast GaN Power & Energy Storage', logo: 'battery-charging', count: 3 },
+      { id: 'belkin', name: 'Belkin', country: 'Los Angeles, USA', tagline: 'Engineered Connectivity & Apple Certified Gear', logo: 'shield-check', count: 2 }
+    ];
+    // --- 7. CART, WISHLIST & COMPARISON ACTIONS ---
+
+    function showToast(message, iconName = 'check-circle') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast-anim bg-gray-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-sm border border-gray-800 pointer-events-auto';
+      toast.innerHTML = `
+        <i data-lucide="${iconName}" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      if (window.lucide) lucide.createIcons({ root: toast });
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 3000);
+    }
+
+    function updateBadges() {
+      // Cart badge
+      const cartCount = STATE.cart.reduce((sum, item) => sum + item.quantity, 0);
+      const navCartBadge = document.getElementById('nav-cart-count');
+      const drawerCartBadge = document.getElementById('drawer-cart-count-badge');
+      if (navCartBadge) {
+        navCartBadge.textContent = cartCount;
+        navCartBadge.classList.toggle('hidden', cartCount === 0);
+      }
+      if (drawerCartBadge) drawerCartBadge.textContent = cartCount;
+
+      // Wishlist badge
+      const navWishlistBadge = document.getElementById('nav-wishlist-count');
+      if (navWishlistBadge) {
+        navWishlistBadge.textContent = STATE.wishlist.length;
+        navWishlistBadge.classList.toggle('hidden', STATE.wishlist.length === 0);
+      }
+
+      // Compare bar
+      const navCompareBadge = document.getElementById('nav-compare-count');
+      if (navCompareBadge) {
+        navCompareBadge.textContent = STATE.compareList.length;
+        navCompareBadge.classList.toggle('hidden', STATE.compareList.length === 0);
+      }
+      const compareBar = document.getElementById('compare-bar');
+      const compareBarCount = document.getElementById('compare-bar-count');
+      const compareBarThumbs = document.getElementById('compare-bar-thumbs');
+      if (compareBar && compareBarCount && compareBarThumbs) {
+        compareBarCount.textContent = STATE.compareList.length;
+        if (STATE.compareList.length > 0) {
+          compareBar.classList.remove('hidden');
+          compareBar.classList.add('flex');
+          compareBarThumbs.innerHTML = STATE.compareList.map(id => {
+            const prod = PRODUCTS.find(p => p.id === id);
+            return prod ? `<img src="${prod.image}" class="w-6 h-6 rounded-full object-cover border border-gray-700" title="${prod.name}" onerror="handleImgError(this, '${prod.category}', '${prod.name}')">` : '';
+          }).join('');
+        } else {
+          compareBar.classList.add('hidden');
+          compareBar.classList.remove('flex');
+        }
+      }
+
+      renderCartDrawerItems();
+    }
+
+    function addToCart(productId, variant = null, color = null, qty = 1, showDrawer = true) {
+      const product = PRODUCTS.find(p => p.id === productId);
+      if (!product) return;
+
+      const chosenVariant = variant || (product.variants && product.variants.length > 0 ? product.variants[0] : 'Standard');
+      const chosenColor = color || (product.colors && product.colors.length > 0 ? product.colors[0].name : 'Default');
+
+      const existingIndex = STATE.cart.findIndex(item => 
+        item.id === productId && item.variant === chosenVariant && item.color === chosenColor
+      );
+
+      if (existingIndex > -1) {
+        STATE.cart[existingIndex].quantity += qty;
+      } else {
+        STATE.cart.push({
+          id: productId,
+          name: product.name,
+          brand: product.brand,
+          price: product.price,
+          image: product.image,
+          category: product.category,
+          variant: chosenVariant,
+          color: chosenColor,
+          quantity: qty
+        });
+      }
+
+      saveState('cart');
+      updateBadges();
+      showToast(`Added ${product.name} to cart`);
+      if (showDrawer) toggleCartDrawer(true);
+    }
+
+    function updateCartQuantity(index, delta) {
+      if (!STATE.cart[index]) return;
+      STATE.cart[index].quantity += delta;
+      if (STATE.cart[index].quantity <= 0) {
+        STATE.cart.splice(index, 1);
+      }
+      saveState('cart');
+      updateBadges();
+      // If we are on the /cart page, re-render it
+      if (window.location.hash.startsWith('#/cart')) {
+        renderRoute();
+      }
+    }
+
+    function removeFromCart(index) {
+      if (!STATE.cart[index]) return;
+      const name = STATE.cart[index].name;
+      STATE.cart.splice(index, 1);
+      saveState('cart');
+      updateBadges();
+      showToast(`Removed ${name} from cart`, 'trash-2');
+      if (window.location.hash.startsWith('#/cart')) {
+        renderRoute();
+      }
+    }
+
+    function toggleWishlist(productId) {
+      const index = STATE.wishlist.indexOf(productId);
+      const prod = PRODUCTS.find(p => p.id === productId);
+      const name = prod ? prod.name : 'Product';
+      if (index > -1) {
+        STATE.wishlist.splice(index, 1);
+        showToast(`Removed ${name} from wishlist`, 'heart-off');
+      } else {
+        STATE.wishlist.push(productId);
+        showToast(`Saved ${name} to wishlist`, 'heart');
+      }
+      saveState('wishlist');
+      updateBadges();
+      renderRoute();
+    }
+
+    function toggleCompare(productId) {
+      const index = STATE.compareList.indexOf(productId);
+      const prod = PRODUCTS.find(p => p.id === productId);
+      const name = prod ? prod.name : 'Product';
+      if (index > -1) {
+        STATE.compareList.splice(index, 1);
+        showToast(`Removed from comparison`, 'minus');
+      } else {
+        if (STATE.compareList.length >= 4) {
+          showToast(`Maximum 4 products in comparison`, 'alert-circle');
+          return;
+        }
+        STATE.compareList.push(productId);
+        showToast(`Added ${name} to comparison`, 'columns-2');
+      }
+      saveState('compare');
+      updateBadges();
+    }
+
+    function clearCompare() {
+      STATE.compareList = [];
+      saveState('compare');
+      updateBadges();
+      showToast(`Comparison list cleared`);
+      if (window.location.hash.startsWith('#/compare')) {
+        renderRoute();
+      }
+    }
+
+    function toggleCartDrawer(open) {
+      const drawer = document.getElementById('cart-drawer');
+      if (!drawer) return;
+      if (open) {
+        drawer.classList.remove('hidden');
+        renderCartDrawerItems();
+      } else {
+        drawer.classList.add('hidden');
+      }
+    }
+
+    function renderCartDrawerItems() {
+      const itemsContainer = document.getElementById('drawer-cart-items');
+      const footerContainer = document.getElementById('drawer-cart-footer');
+      if (!itemsContainer || !footerContainer) return;
+
+      if (STATE.cart.length === 0) {
+        itemsContainer.innerHTML = `
+          <div class="py-16 text-center text-gray-500 space-y-3">
+            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto text-gray-400">
+              <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+            </div>
+            <p class="font-bold text-gray-800 text-base">Your cart is currently empty</p>
+            <p class="text-xs text-gray-500 max-w-xs mx-auto">Explore our cutting-edge phones, acoustics, and gaming systems.</p>
+            <a href="#/category/phones" onclick="toggleCartDrawer(false)" class="inline-block mt-2 px-5 py-2.5 bg-black text-white text-xs font-bold rounded-full hover:bg-gray-800 transition-colors">Start Shopping</a>
+          </div>
+        `;
+        footerContainer.innerHTML = '';
+        if (window.lucide) lucide.createIcons({ root: itemsContainer });
+        return;
+      }
+
+      let subtotal = 0;
+      itemsContainer.innerHTML = STATE.cart.map((item, idx) => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        return `
+          <div class="flex items-center gap-3 p-3 bg-gray-50/80 rounded-xl border border-gray-100">
+            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg bg-white flex-shrink-0" onerror="handleImgError(this, '${item.category}', '${item.name}')">
+            <div class="flex-1 min-w-0">
+              <h4 class="text-xs font-bold text-gray-900 truncate">${item.name}</h4>
+              <p class="text-[11px] text-gray-500 truncate">${item.variant} · ${item.color}</p>
+              <div class="font-mono font-bold text-xs text-gray-900 mt-1">${formatMoney(item.price)}</div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+              <button onclick="removeFromCart(${idx})" class="text-gray-400 hover:text-rose-600 transition-colors">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+              <div class="flex items-center border border-gray-200 rounded-md bg-white">
+                <button onclick="updateCartQuantity(${idx}, -1)" class="px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100">-</button>
+                <span class="px-2 py-0.5 text-xs font-bold">${item.quantity}</span>
+                <button onclick="updateCartQuantity(${idx}, 1)" class="px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100">+</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      footerContainer.innerHTML = `
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-500 font-medium">Subtotal</span>
+          <span class="font-bold text-base text-gray-900 font-mono">${formatMoney(subtotal)}</span>
+        </div>
+        <p class="text-[11px] text-gray-400">Taxes, shipping calculated at checkout.</p>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <a href="#/cart" onclick="toggleCartDrawer(false)" class="w-full text-center py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs rounded-xl transition-colors">View Full Cart</a>
+          <a href="#/checkout" onclick="toggleCartDrawer(false)" class="w-full text-center py-2.5 bg-black hover:bg-gray-800 text-white font-bold text-xs rounded-xl transition-colors">Checkout</a>
+        </div>
+      `;
+
+      if (window.lucide) {
+        lucide.createIcons({ root: itemsContainer });
+        lucide.createIcons({ root: footerContainer });
+      }
+    }
+
+    // --- 8. SEARCH MODAL LOGIC ---
+    function openSearchModal() {
+      const modal = document.getElementById('search-modal');
+      const input = document.getElementById('modal-search-input');
+      if (modal && input) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        input.value = '';
+        input.focus();
+        handleSearchInput('');
+      }
+    }
+
+    function closeSearchModal() {
+      const modal = document.getElementById('search-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function quickSearch(q) {
+      closeSearchModal();
+      window.location.hash = `#/search?q=${encodeURIComponent(q)}`;
+    }
+
+    function handleSearchInput(q) {
+      const resultsContainer = document.getElementById('search-modal-results');
+      if (!resultsContainer) return;
+      const clean = q.trim().toLowerCase();
+      if (!clean) {
+        resultsContainer.innerHTML = `
+          <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Popular Searches</div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button onclick="quickSearch('iPhone 17')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">iPhone 17 Pro</button>
+            <button onclick="quickSearch('Galaxy Z Fold')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">Galaxy Z Fold 7</button>
+            <button onclick="quickSearch('Airbeatz')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">Airbeatz Pro Buds</button>
+            <button onclick="quickSearch('MacBook')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">MacBook Pro M3</button>
+            <button onclick="quickSearch('Sony WH-1000XM5')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">Sony WH-1000XM5</button>
+            <button onclick="quickSearch('OLED TV')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors">4K OLED TV</button>
+          </div>
+        `;
+        return;
+      }
+
+      const matches = PRODUCTS.filter(p => 
+        p.name.toLowerCase().includes(clean) ||
+        p.brand.toLowerCase().includes(clean) ||
+        p.category.toLowerCase().includes(clean) ||
+        p.description.toLowerCase().includes(clean)
+      ).slice(0, 6);
+
+      if (matches.length === 0) {
+        resultsContainer.innerHTML = `
+          <div class="py-8 text-center text-gray-500">
+            <p class="font-medium text-sm">No products found for "${q}"</p>
+            <p class="text-xs text-gray-400 mt-1">Try searching for "iPhone", "Sony", "Laptop", or "Fold".</p>
+          </div>
+        `;
+        return;
+      }
+
+      resultsContainer.innerHTML = `
+        <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Matching Products (${matches.length})</div>
+        <div class="space-y-2">
+          ${matches.map(p => `
+            <a href="#/product/${p.id}" onclick="closeSearchModal()" class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200">
+              <img src="${p.image}" class="w-12 h-12 object-cover rounded-lg bg-gray-100" onerror="handleImgError(this, '${p.category}', '${p.name}')">
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-xs text-gray-900 truncate">${p.name}</div>
+                <div class="text-[11px] text-gray-500">${p.brand} · ${p.category}</div>
+              </div>
+              <div class="font-mono font-bold text-xs text-gray-900">${formatMoney(p.price)}</div>
+            </a>
+          `).join('')}
+        </div>
+        <div class="pt-3 border-t border-gray-100 mt-3 text-center">
+          <button onclick="quickSearch('${q}')" class="text-xs font-bold text-black hover:underline">View all results for "${q}" →</button>
+        </div>
+      `;
+    }
+
+    // Modal search input keyup
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('modal-search-input');
+      if (input) {
+        input.addEventListener('input', (e) => handleSearchInput(e.target.value));
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && e.target.value.trim()) {
+            quickSearch(e.target.value.trim());
+          }
+        });
+      }
+    });
+
+    function toggleMobileNav(force) {
+      const nav = document.getElementById('mobile-nav');
+      if (!nav) return;
+      if (typeof force === 'boolean') {
+        nav.classList.toggle('hidden', !force);
+      } else {
+        nav.classList.toggle('hidden');
+      }
+    }
+
+    function handleNewsletterSubmit(e) {
+      e.preventDefault();
+      showToast('Thank you for subscribing to Veluna drops!', 'sparkles');
+      e.target.reset();
+    }
+    // --- 9. PRODUCT CARD COMPONENT ---
+    function createProductCardHTML(p) {
+      const isWishlisted = STATE.wishlist.includes(p.id);
+      const isCompared = STATE.compareList.includes(p.id);
+      const discountPercent = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+
+      const swatchHTML = p.colors && p.colors.length > 0 ? `
+        <div class="flex items-center gap-1.5 mt-2">
+          ${p.colors.map((c, i) => `
+            <span class="swatch-dot" style="background-color: ${c.hex};" title="${c.name}"></span>
+          `).join('')}
+        </div>
+      ` : '';
+
+      return `
+        <div class="product-card group relative bg-white rounded-2xl p-4 border border-gray-100 flex flex-col justify-between" data-product-id="${p.id}">
+          
+          <!-- Badges & Action Buttons -->
+          <div class="flex items-center justify-between z-10 mb-2">
+            <div>
+              ${p.isNew ? `<span class="text-[11px] font-bold uppercase tracking-wider text-black bg-gray-100 px-2 py-0.5 rounded-md">New</span>` : ''}
+              ${discountPercent > 0 ? `<span class="text-[11px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md ml-1">-${discountPercent}%</span>` : ''}
+            </div>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleCompare('${p.id}')" title="Compare" class="p-1.5 rounded-full ${isCompared ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-black hover:bg-gray-100'} transition-colors">
+                <i data-lucide="columns-2" class="w-4 h-4"></i>
+              </button>
+              <button onclick="toggleWishlist('${p.id}')" title="Wishlist" class="p-1.5 rounded-full ${isWishlisted ? 'bg-rose-50 text-rose-600' : 'text-gray-400 hover:text-black hover:bg-gray-100'} transition-colors">
+                <i data-lucide="heart" class="w-4 h-4 ${isWishlisted ? 'fill-rose-600' : ''}"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Product Image Link -->
+          <a href="#/product/${p.id}" class="zoom-img-container block aspect-square bg-[#F8F9FA] rounded-xl overflow-hidden mb-4 p-4 flex items-center justify-center">
+            <img src="${p.image}" alt="${p.name}" loading="lazy" class="w-full h-full object-contain mix-blend-multiply" onerror="handleImgError(this, '${p.category}', '${p.name}')">
+          </a>
+
+          <!-- Details -->
+          <div class="flex-1 flex flex-col justify-between">
+            <div>
+              <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">${p.brand}</div>
+              <a href="#/product/${p.id}" class="block font-bold text-sm text-gray-900 group-hover:text-black transition-colors line-clamp-1 mt-0.5">
+                ${p.name}
+              </a>
+              ${swatchHTML}
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <div>
+                <div class="font-mono font-bold text-base text-gray-900">${formatMoney(p.price)}</div>
+                ${p.originalPrice ? `<div class="text-[11px] text-gray-400 line-through font-mono">${formatMoney(p.originalPrice)}</div>` : ''}
+              </div>
+              <button onclick="addToCart('${p.id}')" class="px-3 py-1.5 bg-black hover:bg-gray-800 text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95">
+                <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                <span>Add</span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      `;
+    }
+
+    // --- 10. HOMEPAGE VIEW RENDERER ---
+    function renderHomePage() {
+      const trendingProducts = PRODUCTS.slice(0, 6);
+      const newArrivals = PRODUCTS.filter(p => p.isNew).slice(0, 4);
+      const lineupAudioTVs = PRODUCTS.filter(p => p.category === 'tvs' || p.category === 'audio').slice(0, 4);
+
+      return `
+        <!-- HERO SECTION (Identical to screenshot reference) -->
+        <section class="relative bg-white pt-10 pb-16 lg:pt-16 lg:pb-24 overflow-hidden border-b border-gray-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <!-- Left Copy & CTA -->
+              <div class="lg:col-span-7 space-y-6 hero-text-block">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-800">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  VELUNA SPRING 2026 COLLECTION DROPPED
+                </div>
+                <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight-headings text-gray-950 leading-[1.08]">
+                  Redefining<br/>Everyday Tech
+                </h1>
+                <p class="text-base sm:text-lg text-gray-600 max-w-xl leading-relaxed">
+                  Experience next-generation tech and lifestyle products built for modern living with innovative audio and visual excellence.
+                </p>
+                <div class="flex flex-wrap items-center gap-4 pt-2">
+                  <a href="#/category/phones" class="px-8 py-3.5 bg-black text-white font-bold text-sm rounded-full hover:bg-gray-800 transition-all shadow-lg shadow-black/10 hover:shadow-xl active:scale-95">
+                    Shop Now
+                  </a>
+                  <a href="#/category/audio" class="px-6 py-3.5 bg-gray-100 text-gray-800 font-bold text-sm rounded-full hover:bg-gray-200 transition-all">
+                    Explore Acoustics
+                  </a>
+                </div>
+
+                <!-- Customer Trust Proof (As seen in screenshot) -->
+                <div class="flex items-center gap-4 pt-4 border-t border-gray-100">
+                  <div class="flex -space-x-2">
+                    <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" alt="Customer">
+                    <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" alt="Customer">
+                    <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80" alt="Customer">
+                  </div>
+                  <div class="text-xs">
+                    <div class="font-extrabold text-gray-900 flex items-center gap-1">
+                      <span>4.9 / 5.0</span>
+                      <span class="text-amber-500">★★★★★</span>
+                    </div>
+                    <div class="text-gray-500 font-medium">12k+ Verified Customer Reviews</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Visual: Thoughtful Model with Cream Headphones -->
+              <div class="lg:col-span-5 relative hero-image-block">
+                <div class="relative mx-auto max-w-md lg:max-w-none">
+                  <!-- Floating subtle decorative tech rings -->
+                  <div class="absolute -top-6 -right-6 w-32 h-32 rounded-full border border-gray-200/80 -z-10"></div>
+                  <div class="absolute -bottom-8 -left-8 w-48 h-48 rounded-full border border-dashed border-gray-200/80 -z-10"></div>
+
+                  <div class="relative rounded-3xl overflow-hidden bg-gradient-to-b from-[#F5EBE1] to-[#EAE0D5] aspect-[4/5] flex items-center justify-center shadow-2xl">
+                    <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80" 
+                         alt="Veluna Acoustic Over-Ear Flagship Headphones" 
+                         class="w-full h-full object-cover mix-blend-multiply"
+                         onerror="handleImgError(this, 'audio', 'Veluna Acoustic Signature')">
+                    
+                    <div class="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/50 flex items-center justify-between">
+                      <div>
+                        <div class="text-xs font-bold text-gray-900">Veluna Acoustic Master</div>
+                        <div class="text-[11px] text-gray-500 font-medium">Titanium 40mm · 48dB ANC</div>
+                      </div>
+                      <span class="font-mono font-bold text-sm text-black">$349.00</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: BEST PICKS FOR YOU (BENTO MASONRY AS IN SCREENSHOT) -->
+        <section class="py-16 bg-[#F8F9FA]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950">Best Picks For You</h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Curated electronics engineered for uncompromised lifestyle performance</p>
+              </div>
+              <a href="#/category/phones" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span>View all</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <!-- Bento Asymmetrical Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              
+              <!-- Large Card 1: Airbeatz Pro Buds (Takes 2 rows on desktop) -->
+              <div class="md:col-span-2 lg:col-span-2 relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#1C1D21] to-[#2B2D33] text-white p-6 sm:p-8 flex flex-col justify-between min-h-[360px] group shadow-sm">
+                <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=900&q=80" 
+                     alt="Airbeatz Pro Buds" 
+                     class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700 -z-0"
+                     onerror="handleImgError(this, 'audio', 'Airbeatz Pro Buds')">
+                <div class="relative z-10">
+                  <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold">Featured Acoustic Drop</span>
+                  <h3 class="text-2xl sm:text-3xl font-black mt-2 text-white">Airbeatz Pro Buds</h3>
+                  <p class="text-xs sm:text-sm text-gray-300 max-w-sm mt-1">True wireless audio with custom titanium high-excursion drivers and spatial immersion.</p>
+                </div>
+                <div class="relative z-10 pt-6 flex items-center justify-between">
+                  <a href="#/product/airbeatz-pro-buds" class="px-5 py-2.5 bg-white text-black font-bold text-xs rounded-full hover:bg-gray-100 transition-colors shadow">
+                    Shop Now
+                  </a>
+                  <span class="font-mono text-base font-bold text-white">$149.00</span>
+                </div>
+              </div>
+
+              <!-- Card 2: Gaming Controller with Action Round Indicator -->
+              <div class="relative rounded-3xl overflow-hidden bg-white p-5 border border-gray-200/80 flex flex-col justify-between group shadow-sm">
+                <div class="aspect-square rounded-2xl overflow-hidden bg-[#F1F3F5] relative mb-3">
+                  <img src="https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?auto=format&fit=crop&w=600&q=80" 
+                       alt="Gaming Controller" 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                       onerror="handleImgError(this, 'gaming', 'Apex Gamepad')">
+                  <a href="#/product/pro-gaming-controller" class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-black flex items-center justify-center shadow hover:scale-110 transition-transform">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </a>
+                </div>
+                <div>
+                  <div class="text-[11px] uppercase tracking-wider font-bold text-gray-400">Gaming</div>
+                  <h4 class="font-bold text-sm text-gray-900 truncate">Veluna Apex Pro Wireless Gamepad</h4>
+                  <div class="font-mono font-bold text-xs text-gray-900 mt-1">$79.00</div>
+                </div>
+              </div>
+
+              <!-- Card 3: Cylindro Smart Speaker -->
+              <div class="relative rounded-3xl overflow-hidden bg-white p-5 border border-gray-200/80 flex flex-col justify-between group shadow-sm">
+                <div class="aspect-square rounded-2xl overflow-hidden bg-[#F1F3F5] relative mb-3">
+                  <img src="https://images.unsplash.com/photo-1543512214-318c7553f230?auto=format&fit=crop&w=600&q=80" 
+                       alt="Smart Speaker" 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                       onerror="handleImgError(this, 'audio', 'Cylindro 360')">
+                  <a href="#/product/cylinder-sound-hub" class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-black flex items-center justify-center shadow hover:scale-110 transition-transform">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </a>
+                </div>
+                <div>
+                  <div class="text-[11px] uppercase tracking-wider font-bold text-gray-400">Home Audio</div>
+                  <h4 class="font-bold text-sm text-gray-900 truncate">Veluna Cylindro 360 Smart Speaker</h4>
+                  <div class="font-mono font-bold text-xs text-gray-900 mt-1">$129.00</div>
+                </div>
+              </div>
+
+              <!-- Card 4: Creator Laptop on Desk -->
+              <div class="relative rounded-3xl overflow-hidden bg-white p-5 border border-gray-200/80 flex flex-col justify-between group shadow-sm">
+                <div class="aspect-square rounded-2xl overflow-hidden bg-[#F1F3F5] relative mb-3">
+                  <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80" 
+                       alt="Creator Laptop" 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                       onerror="handleImgError(this, 'computers', 'MacBook Pro')">
+                  <a href="#/product/macbook-pro-16-m3-max" class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-black flex items-center justify-center shadow hover:scale-110 transition-transform">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </a>
+                </div>
+                <div>
+                  <div class="text-[11px] uppercase tracking-wider font-bold text-gray-400">Computers</div>
+                  <h4 class="font-bold text-sm text-gray-900 truncate">MacBook Pro 16" M3 Max</h4>
+                  <div class="font-mono font-bold text-xs text-gray-900 mt-1">$3,499.00</div>
+                </div>
+              </div>
+
+              <!-- Card 5: Smart Health Ring -->
+              <div class="relative rounded-3xl overflow-hidden bg-white p-5 border border-gray-200/80 flex flex-col justify-between group shadow-sm">
+                <div class="aspect-square rounded-2xl overflow-hidden bg-[#F1F3F5] relative mb-3">
+                  <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80" 
+                       alt="Smart Ring" 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                       onerror="handleImgError(this, 'wearables', 'Pulse Ring')">
+                  <a href="#/product/smart-ring-gen-3" class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-black flex items-center justify-center shadow hover:scale-110 transition-transform">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </a>
+                </div>
+                <div>
+                  <div class="text-[11px] uppercase tracking-wider font-bold text-gray-400">Wearables</div>
+                  <h4 class="font-bold text-sm text-gray-900 truncate">Veluna Pulse Smart Health Ring</h4>
+                  <div class="font-mono font-bold text-xs text-gray-900 mt-1">$299.00</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 3: NEW ARRIVALS CAROUSEL/GRID -->
+        <section class="py-16 bg-white border-b border-gray-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950">New Arrivals</h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Fresh from factory lines. Latest hardware revisions and seasonal releases.</p>
+              </div>
+              <a href="#/category/phones" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span>View all</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${newArrivals.map(createProductCardHTML).join('')}
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 4: GALAXY Z FOLD 7 EDITORIAL BANNER (Exact dusty slate-blue from screenshot) -->
+        <section class="relative bg-[#2B4561] text-white py-16 sm:py-24 overflow-hidden">
+          <!-- Giant subtle background typography watermark -->
+          <div class="watermark-text top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white">GALAXY</div>
+          
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              
+              <div class="lg:col-span-7 space-y-6">
+                <span class="inline-block px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-xs font-bold uppercase tracking-wider text-blue-200">
+                  Samsung Next Generation
+                </span>
+                <h2 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight-headings leading-tight">
+                  Galaxy Z Fold 7
+                </h2>
+                <p class="text-sm sm:text-base text-blue-100/90 max-w-xl leading-relaxed">
+                  Unfold an immersive experience with ultra-smooth Dynamic AMOLED screen, engineered for seamless multitasking — all in an ultra-refined, pocket-sized design.
+                </p>
+                <div class="flex flex-wrap items-center gap-4 pt-2">
+                  <a href="#/product/galaxy-z-fold-7" class="px-7 py-3 bg-white text-gray-900 font-bold text-xs sm:text-sm rounded-full hover:bg-gray-100 transition-all shadow-lg active:scale-95">
+                    Shop Now
+                  </a>
+                  <a href="#/product/galaxy-z-fold-7" class="px-6 py-3 border border-white/40 text-white font-bold text-xs sm:text-sm rounded-full hover:bg-white/10 transition-all">
+                    View Specifications
+                  </a>
+                </div>
+              </div>
+
+              <!-- Product Render of Foldable -->
+              <div class="lg:col-span-5 flex justify-center">
+                <div class="relative max-w-sm sm:max-w-md">
+                  <img src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80" 
+                       alt="Galaxy Z Fold 7" 
+                       class="w-full h-auto drop-shadow-2xl rounded-2xl"
+                       onerror="handleImgError(this, 'phones', 'Galaxy Z Fold 7')">
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 5: SHOP BY CATEGORY (WITH PILL PRICE BADGES AS IN SCREENSHOT) -->
+        <section class="py-16 bg-[#F8F9FA]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950">Shop By Category</h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Direct access to verified electronics across all major product lines</p>
+              </div>
+              <a href="#/category/phones" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span>See all</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <!-- Categories Horizontal Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              
+              <a href="#/category/audio" class="group relative rounded-2xl overflow-hidden bg-white p-4 border border-gray-200/80 hover:shadow-lg transition-all">
+                <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 relative">
+                  <img src="https://images.unsplash.com/photo-1543512214-318c7553f230?auto=format&fit=crop&w=600&q=80" 
+                       alt="Cylinder Audio" 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                       onerror="handleImgError(this, 'audio', 'Cylinder Audio')">
+                  <span class="absolute bottom-2.5 left-2.5 px-2.5 py-1 bg-black/80 backdrop-blur-sm text-white text-[11px] font-bold rounded-full">
+                    From $129.00
+                  </span>
+                </div>
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-black">Cylinder Audio</h3>
+                <p class="text-[11px] text-gray-400">360° Omnidirectional</p>
+              </a>
+
+              <a href="#/category/audio" class="group relative rounded-2xl overflow-hidden bg-white p-4 border border-gray-200/80 hover:shadow-lg transition-all">
+                <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 relative">
+                  <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80" 
+                       alt="Wireless Earbuds" 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                       onerror="handleImgError(this, 'audio', 'Wireless Earbuds')">
+                  <span class="absolute bottom-2.5 left-2.5 px-2.5 py-1 bg-black/80 backdrop-blur-sm text-white text-[11px] font-bold rounded-full">
+                    From $149.00
+                  </span>
+                </div>
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-black">Wireless Earbuds</h3>
+                <p class="text-[11px] text-gray-400">Noise Cancelling</p>
+              </a>
+
+              <a href="#/category/gaming" class="group relative rounded-2xl overflow-hidden bg-white p-4 border border-gray-200/80 hover:shadow-lg transition-all">
+                <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 relative">
+                  <img src="https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?auto=format&fit=crop&w=600&q=80" 
+                       alt="Gaming Controllers" 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                       onerror="handleImgError(this, 'gaming', 'Controllers')">
+                  <span class="absolute bottom-2.5 left-2.5 px-2.5 py-1 bg-black/80 backdrop-blur-sm text-white text-[11px] font-bold rounded-full">
+                    From $59.00
+                  </span>
+                </div>
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-black">Gaming Controllers</h3>
+                <p class="text-[11px] text-gray-400">Zero Drift Hall Effect</p>
+              </a>
+
+              <a href="#/category/cameras" class="group relative rounded-2xl overflow-hidden bg-white p-4 border border-gray-200/80 hover:shadow-lg transition-all">
+                <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 relative">
+                  <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&q=80" 
+                       alt="Cinema & 4K Cameras" 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                       onerror="handleImgError(this, 'cameras', 'Cameras')">
+                  <span class="absolute bottom-2.5 left-2.5 px-2.5 py-1 bg-black/80 backdrop-blur-sm text-white text-[11px] font-bold rounded-full">
+                    From $499.00
+                  </span>
+                </div>
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-black">Cinema & Cameras</h3>
+                <p class="text-[11px] text-gray-400">Full-Frame Sensors</p>
+              </a>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 6: TWIN EDITORIAL BANNERS SIDE-BY-SIDE -->
+        <section class="py-12 bg-white">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              <!-- Left Banner: Sound of Pure Celebration (Warm Ivory) -->
+              <div class="rounded-3xl bg-[#F6ECE2] p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden">
+                <div class="space-y-4 max-w-xs text-center sm:text-left">
+                  <h3 class="text-2xl sm:text-3xl font-black text-gray-950 leading-tight">
+                    Sound Of Pure Celebration
+                  </h3>
+                  <p class="text-xs sm:text-sm text-gray-600">
+                    Revel in life's best beats with audiophile-grade acoustic precision and punchy bass.
+                  </p>
+                  <a href="#/category/audio" class="inline-block px-5 py-2.5 bg-black text-white font-bold text-xs rounded-full hover:bg-gray-800 transition-colors">
+                    Shop Now
+                  </a>
+                </div>
+                <div class="w-48 sm:w-56 flex-shrink-0">
+                  <img src="https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fit=crop&w=600&q=80" 
+                       alt="Celebration Audio" 
+                       class="w-full h-auto rounded-2xl shadow-sm mix-blend-multiply"
+                       onerror="handleImgError(this, 'audio', 'Celebration Audio')">
+                </div>
+              </div>
+
+              <!-- Right Banner: Next-Gen Noise Cancellation (Luxury Gold/Black Headphones) -->
+              <div class="rounded-3xl bg-[#F1F3F5] p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden">
+                <div class="space-y-4 max-w-xs text-center sm:text-left">
+                  <h3 class="text-2xl sm:text-3xl font-black text-gray-950 leading-tight">
+                    Next-Gen Noise Cancellation
+                  </h3>
+                  <p class="text-xs sm:text-sm text-gray-600">
+                    Immerse in rich, distraction-free sound with active adaptive acoustic algorithms.
+                  </p>
+                  <a href="#/product/sony-wh1000xm5" class="inline-block px-5 py-2.5 bg-black text-white font-bold text-xs rounded-full hover:bg-gray-800 transition-colors">
+                    Shop Now
+                  </a>
+                </div>
+                <div class="w-48 sm:w-56 flex-shrink-0">
+                  <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80" 
+                       alt="Noise Cancelling Headphones" 
+                       class="w-full h-auto rounded-2xl shadow-sm mix-blend-multiply"
+                       onerror="handleImgError(this, 'audio', 'Noise Cancellation')">
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 7: TOP TRENDING FLAGSHIPS -->
+        <section class="py-16 bg-[#F8F9FA] border-t border-gray-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950">Top Trending</h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">The most wanted flagships and gadgets among Veluna members</p>
+              </div>
+              <a href="#/category/phones" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span>View all</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              ${trendingProducts.map(createProductCardHTML).join('')}
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 8: APPLE PROMO BANNER (Celebrate Season with iPhone 17) -->
+        <section class="py-12 bg-white">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="rounded-3xl bg-gradient-to-r from-[#EAEFF9] to-[#DDE6F7] p-8 sm:p-12 border border-blue-100 flex flex-col lg:flex-row items-center justify-between gap-8">
+              
+              <div class="space-y-5 max-w-lg text-center lg:text-left">
+                <div class="inline-flex items-center gap-1.5 text-gray-800 text-xs font-bold">
+                  <i data-lucide="apple" class="w-4 h-4"></i>
+                  <span>Official Authorized Apple Catalog</span>
+                </div>
+                <h3 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-950 leading-tight">
+                  Celebrate the Season with iPhone 17
+                </h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                  Experience the ultra-fast A18 Bionic chip, an advanced dual camera system, and all-day battery life crafted with precision aerospace-grade aluminium.
+                </p>
+                <div class="pt-2">
+                  <a href="#/product/iphone-17-pro-max" class="inline-block px-8 py-3 bg-black text-white font-bold text-sm rounded-full hover:bg-gray-800 transition-colors shadow">
+                    Shop Now
+                  </a>
+                </div>
+              </div>
+
+              <div class="w-full max-w-md lg:max-w-lg flex justify-center">
+                <img src="https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=900&q=80" 
+                     alt="iPhone 17 Showcase" 
+                     class="w-full h-auto drop-shadow-xl rounded-2xl mix-blend-multiply"
+                     onerror="handleImgError(this, 'phones', 'iPhone 17')">
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 9: GREAT DEALS BENTO (Smartphones, Laptops, Headphones + Living Room TV) -->
+        <section class="py-16 bg-[#F8F9FA]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950">Great Deals</h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Special price markdowns backed by official distributor warranty</p>
+              </div>
+              <a href="#/deals" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span>All deals</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <!-- Bento 3-columns top -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              
+              <a href="#/category/phones" class="group relative rounded-3xl overflow-hidden bg-gray-900 text-white p-6 min-h-[240px] flex flex-col justify-end">
+                <img src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=700&q=80" 
+                     alt="Smartphones Deal" 
+                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+                     onerror="handleImgError(this, 'phones', 'Flagship Phones')">
+                <div class="relative z-10">
+                  <h4 class="font-bold text-lg">Flagship Smartphones</h4>
+                  <div class="text-xs text-gray-300 mt-1 font-mono">From $599.00</div>
+                </div>
+              </a>
+
+              <a href="#/category/computers" class="group relative rounded-3xl overflow-hidden bg-gray-900 text-white p-6 min-h-[240px] flex flex-col justify-end">
+                <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=700&q=80" 
+                     alt="Laptops Deal" 
+                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+                     onerror="handleImgError(this, 'computers', 'Laptops')">
+                <div class="relative z-10">
+                  <h4 class="font-bold text-lg">PowerCore Laptops</h4>
+                  <div class="text-xs text-gray-300 mt-1 font-mono">From $849.00</div>
+                </div>
+              </a>
+
+              <a href="#/category/audio" class="group relative rounded-3xl overflow-hidden bg-gray-900 text-white p-6 min-h-[240px] flex flex-col justify-end">
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=700&q=80" 
+                     alt="Headphones Deal" 
+                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+                     onerror="handleImgError(this, 'audio', 'Headphones')">
+                <div class="relative z-10">
+                  <h4 class="font-bold text-lg">Studio Pro Headphones</h4>
+                  <div class="text-xs text-gray-300 mt-1 font-mono">From $199.00</div>
+                </div>
+              </a>
+
+            </div>
+
+            <!-- Wide Banner Below: Unmatched Visual Clarity 4K TV -->
+            <div class="rounded-3xl bg-white border border-gray-200/80 p-8 sm:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-sm">
+              <div class="space-y-4 max-w-md">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Cinematic Home Displays</span>
+                <h3 class="text-2xl sm:text-4xl font-black text-gray-950 leading-tight">
+                  Unmatched Visual Clarity
+                </h3>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                  Elevate your living room entertainment with ultra-thin OLED 4K displays and multi-dimensional cinematic sound performance.
+                </p>
+                <div class="pt-2">
+                  <a href="#/category/tvs" class="inline-block px-6 py-2.5 bg-black text-white font-bold text-xs rounded-full hover:bg-gray-800 transition-colors">
+                    Shop Now
+                  </a>
+                </div>
+              </div>
+
+              <div class="w-full max-w-lg">
+                <img src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=900&q=80" 
+                     alt="4K TV Visual Clarity" 
+                     class="w-full h-auto rounded-2xl shadow-md"
+                     onerror="handleImgError(this, 'tvs', '4K Smart Display')">
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECTION 10: LATEST LINE-UP (TVs, Soundbars, Curved Monitors) -->
+        <section class="py-16 bg-white border-t border-gray-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950">Latest Line-up</h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Home theatre, Dolby Atmos sound systems, and ultra-wide curved workstations</p>
+              </div>
+              <a href="#/category/tvs" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span>See all</span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${lineupAudioTVs.map(createProductCardHTML).join('')}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+    // --- 11. DEEP CATEGORY VIEW RENDERER ---
+    function renderCategoryPage(categoryId) {
+      const category = CATEGORIES.find(c => c.id === categoryId) || {
+        id: categoryId,
+        name: 'All Electronics',
+        desc: 'Explore the complete Veluna electronics catalogue with official manufacturer warranties.'
+      };
+
+      // Filter products by category
+      let filtered = PRODUCTS.filter(p => p.category === categoryId);
+      
+      // Apply active sub-filters if present
+      const stateFilter = STATE.activeFilters;
+      if (stateFilter.brand) {
+        filtered = filtered.filter(p => p.brand.toLowerCase() === stateFilter.brand.toLowerCase());
+      }
+      if (stateFilter.maxPrice) {
+        filtered = filtered.filter(p => p.price <= stateFilter.maxPrice);
+      }
+      if (stateFilter.inStockOnly) {
+        filtered = filtered.filter(p => p.inStock);
+      }
+      if (stateFilter.storage) {
+        filtered = filtered.filter(p => p.storage === stateFilter.storage);
+      }
+
+      // Apply sorting
+      if (stateFilter.sortBy === 'price-low') {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (stateFilter.sortBy === 'price-high') {
+        filtered.sort((a, b) => b.price - a.price);
+      } else if (stateFilter.sortBy === 'rating') {
+        filtered.sort((a, b) => b.rating - a.rating);
+      } else if (stateFilter.sortBy === 'newest') {
+        filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+      }
+
+      // Available brands in this category
+      const catBrands = [...new Set(PRODUCTS.filter(p => p.category === categoryId).map(p => p.brand))];
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-8">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Breadcrumbs -->
+            <nav class="flex items-center gap-2 text-xs text-gray-400 mb-3 font-medium">
+              <a href="#/" class="hover:text-black">Home</a>
+              <span>/</span>
+              <span class="text-gray-900">${category.name}</span>
+            </nav>
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight-headings text-gray-950">${category.name}</h1>
+                <p class="text-xs sm:text-sm text-gray-500 max-w-2xl mt-1.5 leading-relaxed">${category.desc}</p>
+              </div>
+              <div class="text-xs text-gray-500 font-mono font-bold bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                ${filtered.length} products available
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- Filter Sidebar -->
+            <aside class="space-y-6 bg-white p-5 rounded-2xl border border-gray-200/80 h-fit">
+              <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <span class="font-bold text-sm text-gray-900 flex items-center gap-2">
+                  <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                  Filter Selection
+                </span>
+                <button onclick="resetCategoryFilters('${categoryId}')" class="text-xs text-gray-400 hover:text-black">Reset All</button>
+              </div>
+
+              <!-- Brand Filter -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Brand</label>
+                <div class="space-y-2">
+                  <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                    <input type="radio" name="brand-filter" value="" ${!stateFilter.brand ? 'checked' : ''} onchange="setCategoryFilter('brand', null, '${categoryId}')" class="rounded">
+                    <span>All Brands</span>
+                  </label>
+                  ${catBrands.map(b => `
+                    <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                      <input type="radio" name="brand-filter" value="${b}" ${stateFilter.brand === b ? 'checked' : ''} onchange="setCategoryFilter('brand', '${b}', '${categoryId}')" class="rounded">
+                      <span>${b}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Price Slider Filter -->
+              <div>
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-bold uppercase tracking-wider text-gray-400">Max Price</span>
+                  <span class="font-mono font-bold text-gray-900">${stateFilter.maxPrice ? formatMoney(stateFilter.maxPrice) : '$4,000+'}</span>
+                </div>
+                <input type="range" min="100" max="4000" step="50" value="${stateFilter.maxPrice || 4000}" 
+                       oninput="setCategoryFilter('maxPrice', Number(this.value), '${categoryId}')" class="w-full">
+              </div>
+
+              <!-- In-Stock Switch -->
+              <div class="pt-2 border-t border-gray-100">
+                <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer font-medium">
+                  <input type="checkbox" ${stateFilter.inStockOnly ? 'checked' : ''} onchange="setCategoryFilter('inStockOnly', this.checked, '${categoryId}')" class="rounded">
+                  <span>In Stock Only</span>
+                </label>
+              </div>
+
+              <!-- Sort Dropdown -->
+              <div class="pt-2 border-t border-gray-100">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Sort Results</label>
+                <select onchange="setCategoryFilter('sortBy', this.value, '${categoryId}')" class="w-full text-xs font-medium bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:outline-none">
+                  <option value="featured" ${stateFilter.sortBy === 'featured' ? 'selected' : ''}>Featured First</option>
+                  <option value="price-low" ${stateFilter.sortBy === 'price-low' ? 'selected' : ''}>Price: Low to High</option>
+                  <option value="price-high" ${stateFilter.sortBy === 'price-high' ? 'selected' : ''}>Price: High to Low</option>
+                  <option value="rating" ${stateFilter.sortBy === 'rating' ? 'selected' : ''}>Top Customer Rating</option>
+                  <option value="newest" ${stateFilter.sortBy === 'newest' ? 'selected' : ''}>Newest Releases</option>
+                </select>
+              </div>
+
+            </aside>
+
+            <!-- Products Results Area -->
+            <div class="lg:col-span-3">
+              ${filtered.length === 0 ? `
+                <div class="bg-white rounded-2xl p-12 text-center border border-gray-200/80">
+                  <i data-lucide="search-x" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+                  <h3 class="font-bold text-base text-gray-900">No products match your active filters</h3>
+                  <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">Try widening your price range or clearing brand selections.</p>
+                  <button onclick="resetCategoryFilters('${categoryId}')" class="mt-4 px-4 py-2 bg-black text-white text-xs font-bold rounded-full">Reset Filters</button>
+                </div>
+              ` : `
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  ${filtered.map(createProductCardHTML).join('')}
+                </div>
+              `}
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    function setCategoryFilter(key, val, categoryId) {
+      STATE.activeFilters[key] = val;
+      renderRoute();
+    }
+
+    function resetCategoryFilters(categoryId) {
+      STATE.activeFilters = {
+        category: null,
+        brand: null,
+        maxPrice: null,
+        sortBy: 'featured',
+        inStockOnly: false,
+        storage: null
+      };
+      renderRoute();
+    }
+
+    // --- 12. BRANDS DIRECTORY & DEDICATED BRAND PAGES ---
+    function renderBrandsPage() {
+      return `
+        <div class="bg-white border-b border-gray-100 py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight-headings text-gray-950">Brand Directory</h1>
+            <p class="text-sm text-gray-500 max-w-2xl mt-2">
+              Browse world-class consumer electronics manufacturers officially stocked in our catalogue.
+            </p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            ${BRANDS.map(b => `
+              <a href="#/brand/${b.id}" class="group bg-white p-6 rounded-2xl border border-gray-200/80 hover:shadow-xl transition-all flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-4">
+                    <span class="w-10 h-10 rounded-xl bg-gray-100 group-hover:bg-black group-hover:text-white flex items-center justify-center font-bold text-gray-800 transition-colors">
+                      <i data-lucide="${b.logo}" class="w-5 h-5"></i>
+                    </span>
+                    <span class="text-xs font-mono text-gray-400 font-bold">${b.count} Models</span>
+                  </div>
+                  <h3 class="font-extrabold text-xl text-gray-950 group-hover:text-black">${b.name}</h3>
+                  <div class="text-xs text-gray-400 font-medium mt-0.5">${b.country}</div>
+                  <p class="text-xs text-gray-600 mt-3 leading-relaxed">${b.tagline}</p>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs font-bold text-black">
+                  <span>Explore Lineup</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                </div>
+              </a>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBrandPage(brandId) {
+      const brand = BRANDS.find(b => b.id.toLowerCase() === brandId.toLowerCase()) || {
+        id: brandId,
+        name: brandId.toUpperCase(),
+        country: 'Global Manufacturer',
+        tagline: 'Leading consumer electronics engineered for performance.'
+      };
+
+      const brandProducts = PRODUCTS.filter(p => p.brand.toLowerCase().includes(brandId.toLowerCase()));
+
+      return `
+        <div class="bg-gray-950 text-white py-14">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex items-center gap-2 text-xs text-gray-400 mb-4 font-medium">
+              <a href="#/" class="hover:text-white">Home</a>
+              <span>/</span>
+              <a href="#/brands" class="hover:text-white">Brands</a>
+              <span>/</span>
+              <span class="text-white">${brand.name}</span>
+            </nav>
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div>
+                <span class="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">${brand.country}</span>
+                <h1 class="text-3xl sm:text-5xl font-black tracking-tight-headings mt-1">${brand.name}</h1>
+                <p class="text-sm text-gray-300 max-w-xl mt-2">${brand.tagline}</p>
+              </div>
+              <div class="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 text-right">
+                <div class="text-xs text-gray-400">Catalogue Stock</div>
+                <div class="text-2xl font-mono font-bold">${brandProducts.length} Flagships</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          ${brandProducts.length === 0 ? `
+            <div class="bg-white rounded-2xl p-12 text-center border border-gray-200">
+              <p class="text-sm text-gray-500">No products currently registered under this brand.</p>
+              <a href="#/brands" class="inline-block mt-3 px-4 py-2 bg-black text-white text-xs font-bold rounded-full">Return to Directory</a>
+            </div>
+          ` : `
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${brandProducts.map(createProductCardHTML).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // --- 13. INDIVIDUAL PRODUCT DETAIL PAGE (PDP) ---
+    function renderProductDetailPage(productId) {
+      const product = PRODUCTS.find(p => p.id === productId);
+      if (!product) {
+        return `
+          <div class="max-w-3xl mx-auto py-20 px-4 text-center">
+            <h2 class="text-2xl font-bold text-gray-900">Product Not Found</h2>
+            <p class="text-xs text-gray-500 mt-2">The device you requested does not exist in our active catalogue.</p>
+            <a href="#/" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full">Back to Home</a>
+          </div>
+        `;
+      }
+
+      const isWishlisted = STATE.wishlist.includes(product.id);
+      const isCompared = STATE.compareList.includes(product.id);
+      const discountPercent = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+      const related = PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-4">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex items-center gap-2 text-xs text-gray-400 font-medium">
+              <a href="#/" class="hover:text-black">Home</a>
+              <span>/</span>
+              <a href="#/category/${product.category}" class="hover:text-black capitalize">${product.category}</a>
+              <span>/</span>
+              <span class="text-gray-900 truncate">${product.name}</span>
+            </nav>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- Left: Interactive Gallery -->
+            <div class="lg:col-span-7 space-y-4">
+              <div class="aspect-[4/3] rounded-3xl bg-[#F8F9FA] p-8 flex items-center justify-center border border-gray-200/80 overflow-hidden relative">
+                <img id="pdp-main-image" src="${product.image}" alt="${product.name}" class="max-h-full max-w-full object-contain mix-blend-multiply" onerror="handleImgError(this, '${product.category}', '${product.name}')">
+                ${discountPercent > 0 ? `
+                  <span class="absolute top-4 left-4 px-3 py-1 bg-rose-600 text-white text-xs font-bold rounded-full">Save ${discountPercent}%</span>
+                ` : ''}
+              </div>
+
+              <!-- Thumbnails -->
+              <div class="flex items-center gap-3 overflow-x-auto pb-2">
+                ${(product.gallery || [product.image]).map((img, i) => `
+                  <button onclick="document.getElementById('pdp-main-image').src = '${img}'" class="w-20 h-20 rounded-xl bg-gray-50 border border-gray-200 p-2 flex-shrink-0 hover:border-black transition-colors">
+                    <img src="${img}" class="w-full h-full object-contain mix-blend-multiply" onerror="handleImgError(this, '${product.category}', '${product.name}')">
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Right: Product Purchase Configurator -->
+            <div class="lg:col-span-5 space-y-6">
+              <div>
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-widest">${product.brand} · ${product.subCategory}</div>
+                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight-headings text-gray-950 mt-1">${product.name}</h1>
+                
+                <div class="flex items-center gap-3 mt-3">
+                  <div class="flex items-center text-amber-500 text-sm">
+                    <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                  </div>
+                  <span class="text-xs font-bold text-gray-900">${product.rating}</span>
+                  <span class="text-xs text-gray-400">(${product.reviewCount} verified reviews)</span>
+                </div>
+              </div>
+
+              <!-- Price Breakdown -->
+              <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                <div>
+                  <div class="font-mono text-3xl font-black text-gray-950">${formatMoney(product.price)}</div>
+                  ${product.originalPrice ? `
+                    <div class="text-xs text-gray-400 line-through font-mono mt-0.5">Original: ${formatMoney(product.originalPrice)}</div>
+                  ` : ''}
+                </div>
+                <div class="text-right">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    In Stock · Ships Today
+                  </span>
+                </div>
+              </div>
+
+              <!-- Variants / Storage Options -->
+              ${product.variants && product.variants.length > 0 ? `
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Configuration / Variant</label>
+                  <div class="flex flex-wrap gap-2" id="pdp-variant-selector">
+                    ${product.variants.map((v, i) => `
+                      <button type="button" onclick="selectPDPVariant(this, '${v}')" class="px-4 py-2 border ${i === 0 ? 'border-black bg-black text-white' : 'border-gray-200 bg-white text-gray-800'} text-xs font-bold rounded-xl transition-all">
+                        ${v}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Color Options -->
+              ${product.colors && product.colors.length > 0 ? `
+                <div>
+                  <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Color Choice: <span id="pdp-selected-color-label" class="text-black font-extrabold">${product.colors[0].name}</span></label>
+                  <div class="flex items-center gap-3">
+                    ${product.colors.map((c, i) => `
+                      <button type="button" onclick="selectPDPColor('${c.name}')" style="background-color: ${c.hex};" class="w-8 h-8 rounded-full border-2 border-white shadow-sm ring-1 ring-gray-300 hover:ring-black focus:ring-2 focus:ring-black transition-all" title="${c.name}"></button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Quantity & CTA Actions -->
+              <div class="space-y-3 pt-2">
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center border border-gray-200 rounded-full bg-white px-3 py-2">
+                    <button onclick="changePDPQty(-1)" class="text-sm font-bold text-gray-600 hover:text-black px-2">-</button>
+                    <input id="pdp-qty-input" type="number" value="1" min="1" max="10" class="w-10 text-center text-xs font-bold outline-none" readonly>
+                    <button onclick="changePDPQty(1)" class="text-sm font-bold text-gray-600 hover:text-black px-2">+</button>
+                  </div>
+                  <button onclick="handlePDPAddToCart('${product.id}')" class="flex-1 py-3.5 bg-black hover:bg-gray-800 text-white text-xs sm:text-sm font-bold rounded-full transition-all shadow-md active:scale-98 flex items-center justify-center gap-2">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                    <span>Add to Cart</span>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <button onclick="handlePDPBuyNow('${product.id}')" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-full transition-colors">
+                    Buy Now
+                  </button>
+                  <button onclick="toggleWishlist('${product.id}')" class="w-full py-3 border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs font-bold rounded-full transition-colors flex items-center justify-center gap-1.5">
+                    <i data-lucide="heart" class="w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}"></i>
+                    <span>${isWishlisted ? 'Saved' : 'Wishlist'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Key Assurances -->
+              <div class="pt-4 border-t border-gray-100 space-y-2 text-xs text-gray-500">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                  <span>2-Year Veluna Official Comprehensive Warranty</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i data-lucide="truck" class="w-4 h-4 text-emerald-600"></i>
+                  <span>Free Express Air Dispatch on orders over $150</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4 text-emerald-600"></i>
+                  <span>30-Day Zero-Hassle Return Policy</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Tabbed Technical Details & Reviews -->
+          <div class="mt-16 bg-white rounded-3xl p-6 sm:p-10 border border-gray-200/80">
+            <h3 class="text-xl font-extrabold text-gray-950 mb-6">Technical Specifications & Hardware Overview</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+              ${Object.entries(product.specs || {}).map(([key, val]) => `
+                <div class="flex items-start justify-between py-3 border-b border-gray-100 text-xs">
+                  <span class="font-bold text-gray-500 uppercase tracking-wider">${key}</span>
+                  <span class="font-medium text-gray-900 text-right max-w-xs">${val}</span>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-gray-100">
+              <h4 class="text-sm font-bold text-gray-900 mb-2">What is in the box:</h4>
+              <div class="flex flex-wrap gap-2 text-xs text-gray-600">
+                <span class="px-3 py-1.5 bg-gray-100 rounded-lg font-medium">1x ${product.name}</span>
+                <span class="px-3 py-1.5 bg-gray-100 rounded-lg font-medium">1x USB-C Braided Fast Charge Cable</span>
+                <span class="px-3 py-1.5 bg-gray-100 rounded-lg font-medium">1x Documentation & Quick Start Guide</span>
+                <span class="px-3 py-1.5 bg-gray-100 rounded-lg font-medium">1x Official 2-Year Warranty Certificate</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Related Products Carousel -->
+          ${related.length > 0 ? `
+            <div class="mt-16">
+              <h3 class="text-2xl font-extrabold text-gray-950 mb-6">Related Products in ${product.category}</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                ${related.map(createProductCardHTML).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+        </div>
+      `;
+    }
+
+    let pdpSelectedVariant = null;
+    let pdpSelectedColor = null;
+
+    function selectPDPVariant(btn, variantName) {
+      pdpSelectedVariant = variantName;
+      const buttons = document.querySelectorAll('#pdp-variant-selector button');
+      buttons.forEach(b => {
+        b.className = 'px-4 py-2 border border-gray-200 bg-white text-gray-800 text-xs font-bold rounded-xl transition-all';
+      });
+      btn.className = 'px-4 py-2 border border-black bg-black text-white text-xs font-bold rounded-xl transition-all';
+    }
+
+    function selectPDPColor(colorName) {
+      pdpSelectedColor = colorName;
+      const label = document.getElementById('pdp-selected-color-label');
+      if (label) label.textContent = colorName;
+      showToast(`Selected color: ${colorName}`);
+    }
+
+    function changePDPQty(delta) {
+      const input = document.getElementById('pdp-qty-input');
+      if (!input) return;
+      let val = parseInt(input.value, 10) + delta;
+      if (val < 1) val = 1;
+      if (val > 10) val = 10;
+      input.value = val;
+    }
+
+    function handlePDPAddToCart(productId) {
+      const qtyInput = document.getElementById('pdp-qty-input');
+      const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+      addToCart(productId, pdpSelectedVariant, pdpSelectedColor, qty, true);
+    }
+
+    function handlePDPBuyNow(productId) {
+      const qtyInput = document.getElementById('pdp-qty-input');
+      const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+      addToCart(productId, pdpSelectedVariant, pdpSelectedColor, qty, false);
+      window.location.hash = '#/checkout';
+    }
+    // --- 14. SEARCH RESULTS VIEW ---
+    function renderSearchResultsPage(query) {
+      const q = (query || '').trim().toLowerCase();
+      const results = PRODUCTS.filter(p => 
+        p.name.toLowerCase().includes(q) ||
+        p.brand.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+      );
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-10">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950">Search Results</h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1">Showing matches for <span class="font-bold text-black">"${query}"</span> (${results.length} found)</p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          ${results.length === 0 ? `
+            <div class="bg-white rounded-3xl p-16 text-center border border-gray-200/80 max-w-lg mx-auto">
+              <i data-lucide="search-x" class="w-12 h-12 text-gray-300 mx-auto mb-4"></i>
+              <h3 class="font-extrabold text-xl text-gray-950">No results found</h3>
+              <p class="text-xs text-gray-500 mt-2">We could not locate any models or brands matching "${query}". Check your spelling or try popular search categories.</p>
+              <div class="mt-6 flex flex-wrap justify-center gap-2">
+                <a href="#/category/phones" class="px-4 py-2 bg-gray-100 text-xs font-bold rounded-full hover:bg-gray-200">Smartphones</a>
+                <a href="#/category/computers" class="px-4 py-2 bg-gray-100 text-xs font-bold rounded-full hover:bg-gray-200">Laptops</a>
+                <a href="#/category/audio" class="px-4 py-2 bg-gray-100 text-xs font-bold rounded-full hover:bg-gray-200">Audio</a>
+              </div>
+            </div>
+          ` : `
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${results.map(createProductCardHTML).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // --- 15. COMPARISON MATRIX SCREEN ---
+    function renderComparePage() {
+      const items = STATE.compareList.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+
+      if (items.length === 0) {
+        return `
+          <div class="max-w-3xl mx-auto py-20 px-4 text-center">
+            <div class="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="columns-2" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">No Products in Comparison</h2>
+            <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto">Add up to 4 electronics devices to examine side-by-side specifications, battery ratings, and pricing.</p>
+            <a href="#/category/phones" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full">Browse Smartphones</a>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-8">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <div>
+              <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950">Product Comparison</h1>
+              <p class="text-xs text-gray-500 mt-1">Side-by-side hardware evaluation matrix</p>
+            </div>
+            <button onclick="clearCompare()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-xs font-bold rounded-full text-gray-700">Clear All</button>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 overflow-x-auto">
+          <table class="w-full min-w-[700px] border-collapse bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200">
+            <thead>
+              <tr class="border-b border-gray-200 bg-gray-50/50">
+                <th class="p-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400 w-44">Feature</th>
+                ${items.map(p => `
+                  <th class="p-4 text-left w-64 align-top">
+                    <div class="relative">
+                      <button onclick="toggleCompare('${p.id}')" class="absolute -top-1 -right-1 p-1 text-gray-400 hover:text-rose-600">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                      </button>
+                      <img src="${p.image}" class="w-24 h-24 object-contain mx-auto mb-2 mix-blend-multiply" onerror="handleImgError(this, '${p.category}', '${p.name}')">
+                      <div class="font-bold text-xs text-gray-900 truncate">${p.name}</div>
+                      <div class="font-mono text-sm font-black text-black mt-1">${formatMoney(p.price)}</div>
+                      <button onclick="addToCart('${p.id}')" class="w-full mt-3 py-1.5 bg-black text-white text-[11px] font-bold rounded-full hover:bg-gray-800">Add to Cart</button>
+                    </div>
+                  </th>
+                `).join('')}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-xs">
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider">Brand</td>
+                ${items.map(p => `<td class="p-4 font-semibold text-gray-900">${p.brand}</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider">Category</td>
+                ${items.map(p => `<td class="p-4 capitalize text-gray-700">${p.category}</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider">Rating</td>
+                ${items.map(p => `<td class="p-4 text-amber-600 font-bold">★ ${p.rating} (${p.reviewCount})</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider">Variants</td>
+                ${items.map(p => `<td class="p-4 text-gray-600">${(p.variants || []).join(', ') || 'Standard'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider">Availability</td>
+                ${items.map(p => `<td class="p-4 text-emerald-600 font-bold">${p.inStock ? 'Ready to Ship' : 'Backorder'}</td>`).join('')}
+              </tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider">Highlights</td>
+                ${items.map(p => `<td class="p-4 text-gray-600 leading-relaxed">${p.description}</td>`).join('')}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    // --- 16. WISHLIST VIEW ---
+    function renderWishlistPage() {
+      const items = STATE.wishlist.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+
+      if (items.length === 0) {
+        return `
+          <div class="max-w-3xl mx-auto py-20 px-4 text-center">
+            <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="heart" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Your Wishlist is Empty</h2>
+            <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto">Click the heart icon on any product to save it to your personal wishlist.</p>
+            <a href="#/category/phones" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full">Explore Catalog</a>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-8">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950">Saved Wishlist</h1>
+            <p class="text-xs text-gray-500 mt-1">${items.length} saved devices in your personal collection</p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            ${items.map(createProductCardHTML).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 17. FULL SHOPPING CART PAGE ---
+    function renderCartPage() {
+      if (STATE.cart.length === 0) {
+        return `
+          <div class="max-w-3xl mx-auto py-20 px-4 text-center">
+            <div class="w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Your Cart is Empty</h2>
+            <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto">Explore our cutting-edge smartphones, audio products, and laptops.</p>
+            <a href="#/category/phones" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full">Continue Shopping</a>
+          </div>
+        `;
+      }
+
+      let subtotal = 0;
+      STATE.cart.forEach(item => {
+        subtotal += item.price * item.quantity;
+      });
+
+      const shipping = subtotal >= CONFIG.freeShippingThreshold ? 0 : CONFIG.standardShippingFee;
+      const tax = subtotal * CONFIG.taxRate;
+      const total = subtotal + shipping + tax;
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-8">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950">Review Your Cart</h1>
+            <p class="text-xs text-gray-500 mt-1">${STATE.cart.length} item configurations selected</p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- Items Table -->
+            <div class="lg:col-span-8 space-y-4">
+              ${STATE.cart.map((item, idx) => `
+                <div class="bg-white p-5 rounded-2xl border border-gray-200/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div class="flex items-center gap-4 w-full sm:w-auto">
+                    <img src="${item.image}" class="w-20 h-20 object-contain rounded-xl bg-[#F8F9FA] p-2 flex-shrink-0" onerror="handleImgError(this, '${item.category}', '${item.name}')">
+                    <div>
+                      <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">${item.brand}</div>
+                      <h3 class="font-bold text-sm text-gray-900">${item.name}</h3>
+                      <div class="text-xs text-gray-500 mt-0.5">${item.variant} · ${item.color}</div>
+                      <div class="font-mono font-bold text-sm text-gray-950 mt-1">${formatMoney(item.price)} each</div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between w-full sm:w-auto gap-6">
+                    <div class="flex items-center border border-gray-200 rounded-full bg-white px-3 py-1">
+                      <button onclick="updateCartQuantity(${idx}, -1)" class="px-2 text-sm text-gray-600 hover:text-black">-</button>
+                      <span class="px-2 text-xs font-bold">${item.quantity}</span>
+                      <button onclick="updateCartQuantity(${idx}, 1)" class="px-2 text-sm text-gray-600 hover:text-black">+</button>
+                    </div>
+                    <div class="font-mono font-black text-sm text-gray-900 w-24 text-right">
+                      ${formatMoney(item.price * item.quantity)}
+                    </div>
+                    <button onclick="removeFromCart(${idx})" class="text-gray-400 hover:text-rose-600 p-1">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Order Summary Card -->
+            <div class="lg:col-span-4">
+              <div class="bg-white p-6 rounded-3xl border border-gray-200/80 space-y-4 shadow-sm">
+                <h3 class="font-extrabold text-lg text-gray-950 pb-3 border-b border-gray-100">Order Summary</h3>
+                
+                <div class="space-y-2 text-xs">
+                  <div class="flex justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span class="font-mono font-bold text-gray-900">${formatMoney(subtotal)}</span>
+                  </div>
+                  <div class="flex justify-between text-gray-600">
+                    <span>Shipping Dispatch</span>
+                    <span class="font-mono font-bold ${shipping === 0 ? 'text-emerald-600' : 'text-gray-900'}">
+                      ${shipping === 0 ? 'FREE' : formatMoney(shipping)}
+                    </span>
+                  </div>
+                  <div class="flex justify-between text-gray-600">
+                    <span>Estimated Sales Tax (8%)</span>
+                    <span class="font-mono font-bold text-gray-900">${formatMoney(tax)}</span>
+                  </div>
+                </div>
+
+                <div class="pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <span class="font-bold text-sm text-gray-900">Total</span>
+                  <span class="font-mono font-black text-xl text-gray-950">${formatMoney(total)}</span>
+                </div>
+
+                <a href="#/checkout" class="block w-full py-3.5 bg-black hover:bg-gray-800 text-white font-bold text-xs text-center rounded-full transition-colors shadow">
+                  Proceed to Checkout
+                </a>
+
+                <div class="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1.5 pt-1">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span>Official Warranty Guarantee Included</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 18. MULTI-STEP CHECKOUT VIEW (Card & M-Pesa Integration) ---
+    function renderCheckoutPage() {
+      if (STATE.cart.length === 0) {
+        return `
+          <div class="max-w-xl mx-auto py-20 px-4 text-center">
+            <h2 class="text-xl font-bold">Your cart is empty</h2>
+            <p class="text-xs text-gray-500 mt-2">Add items to your cart before proceeding to checkout.</p>
+            <a href="#/" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full">Return Home</a>
+          </div>
+        `;
+      }
+
+      let subtotal = 0;
+      STATE.cart.forEach(item => subtotal += (item.price * item.quantity));
+      const shipping = subtotal >= CONFIG.freeShippingThreshold ? 0 : CONFIG.standardShippingFee;
+      const tax = subtotal * CONFIG.taxRate;
+      const total = subtotal + shipping + tax;
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-6">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <h1 class="text-2xl font-extrabold tracking-tight-headings text-gray-950">Veluna Secure Checkout</h1>
+            <div class="flex items-center gap-2 text-xs text-emerald-600 font-bold">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+              <span>256-bit Encrypted Checkout</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <form onsubmit="handleCheckoutSubmit(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- Left Form Fields -->
+            <div class="lg:col-span-8 space-y-8">
+              
+              <!-- Contact Information -->
+              <div class="bg-white p-6 rounded-2xl border border-gray-200/80 space-y-4">
+                <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs">1</span>
+                  Contact Information
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Email Address *</label>
+                    <input type="email" required placeholder="name@domain.com" class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black" value="${STATE.user ? STATE.user.email : 'customer@example.com'}">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Phone Number (For Delivery SMS) *</label>
+                    <input type="tel" required placeholder="+254 700 000 000 or +1 (555) 000-0000" class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black" value="+254 712 345 678">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Shipping Destination -->
+              <div class="bg-white p-6 rounded-2xl border border-gray-200/80 space-y-4">
+                <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs">2</span>
+                  Delivery Address
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Full Legal Name *</label>
+                    <input type="text" required placeholder="Alex Mercer" class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black" value="Alex Mercer">
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Street Address *</label>
+                    <input type="text" required placeholder="Kilimani, Westlands Road, Suite 401" class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black" value="42 Innovation Way, Tech Park">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">City / Metro *</label>
+                    <input type="text" required placeholder="Nairobi" class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black" value="Nairobi">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Country / Region *</label>
+                    <select class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black bg-white">
+                      <option value="KE" selected>Kenya (Local Courier Dispatch)</option>
+                      <option value="US">United States (Express Air)</option>
+                      <option value="GB">United Kingdom (Express Air)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payment Method Selection -->
+              <div class="bg-white p-6 rounded-2xl border border-gray-200/80 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs">3</span>
+                    Select Payment Gateway
+                  </h3>
+                  <span class="text-[11px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded">Demo Sandbox</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="payment-method-selector">
+                  <label class="p-4 border-2 border-black rounded-xl cursor-pointer flex flex-col justify-between bg-gray-50/50">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-xs text-gray-900">Credit / Debit Card</span>
+                      <input type="radio" name="payment-method" value="card" checked onchange="togglePaymentInputs('card')">
+                    </div>
+                    <div class="text-[11px] text-gray-500 mt-2">Visa, Mastercard, Apple Pay</div>
+                  </label>
+
+                  <label class="p-4 border border-gray-200 rounded-xl cursor-pointer flex flex-col justify-between hover:border-black">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-xs text-gray-900">M-Pesa Mobile Money</span>
+                      <input type="radio" name="payment-method" value="mpesa" onchange="togglePaymentInputs('mpesa')">
+                    </div>
+                    <div class="text-[11px] text-emerald-600 font-bold mt-2">Instant STK Push Prompt</div>
+                  </label>
+                </div>
+
+                <!-- Card Details Container -->
+                <div id="card-payment-details" class="space-y-3 pt-2">
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Card Number</label>
+                    <input type="text" placeholder="4242 •••• •••• 4242" class="w-full text-xs p-3 rounded-xl border border-gray-200 font-mono focus:outline-none" value="4242 •••• •••• 4242">
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-600 mb-1">Expiry MM/YY</label>
+                      <input type="text" placeholder="12/28" class="w-full text-xs p-3 rounded-xl border border-gray-200 font-mono focus:outline-none" value="12/28">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-600 mb-1">CVC Code</label>
+                      <input type="text" placeholder="888" class="w-full text-xs p-3 rounded-xl border border-gray-200 font-mono focus:outline-none" value="888">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- M-Pesa Details Container -->
+                <div id="mpesa-payment-details" class="space-y-3 pt-2 hidden">
+                  <div class="p-3 bg-emerald-50 rounded-xl text-xs text-emerald-800 space-y-1">
+                    <div class="font-bold">M-Pesa STK Push Demonstration:</div>
+                    <p>Enter your Safaricom mobile number. When you place order, an STK push prompt will simulate verification on your device.</p>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">M-Pesa Phone Number</label>
+                    <input type="tel" placeholder="0712 345 678" class="w-full text-xs p-3 rounded-xl border border-gray-200 font-mono focus:outline-none" value="0712 345 678">
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Right Column: Final Order Summary -->
+            <div class="lg:col-span-4 space-y-4">
+              <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-sm space-y-4 sticky top-28">
+                <h3 class="font-bold text-base text-gray-950 pb-3 border-b border-gray-100">Review Items (${STATE.cart.length})</h3>
+
+                <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                  ${STATE.cart.map(item => `
+                    <div class="flex items-center gap-3 text-xs">
+                      <img src="${item.image}" class="w-10 h-10 object-contain rounded bg-gray-50 flex-shrink-0" onerror="handleImgError(this, '${item.category}', '${item.name}')">
+                      <div class="flex-1 min-w-0">
+                        <div class="font-bold text-gray-900 truncate">${item.name}</div>
+                        <div class="text-[11px] text-gray-500">${item.quantity} × ${formatMoney(item.price)}</div>
+                      </div>
+                      <div class="font-mono font-bold text-gray-900">${formatMoney(item.price * item.quantity)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="pt-3 border-t border-gray-100 space-y-2 text-xs">
+                  <div class="flex justify-between text-gray-500">
+                    <span>Subtotal</span>
+                    <span class="font-mono font-bold text-gray-900">${formatMoney(subtotal)}</span>
+                  </div>
+                  <div class="flex justify-between text-gray-500">
+                    <span>Delivery</span>
+                    <span class="font-mono font-bold ${shipping === 0 ? 'text-emerald-600' : 'text-gray-900'}">${shipping === 0 ? 'FREE' : formatMoney(shipping)}</span>
+                  </div>
+                  <div class="flex justify-between text-gray-500">
+                    <span>Estimated Tax</span>
+                    <span class="font-mono font-bold text-gray-900">${formatMoney(tax)}</span>
+                  </div>
+                  <div class="pt-2 border-t border-gray-100 flex justify-between items-center text-sm font-bold text-gray-950">
+                    <span>Grand Total</span>
+                    <span class="font-mono text-lg font-black">${formatMoney(total)}</span>
+                  </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-black hover:bg-gray-800 text-white font-bold text-xs rounded-full transition-all shadow-md active:scale-98">
+                  Confirm & Place Order
+                </button>
+
+                <p class="text-[10px] text-gray-400 text-center leading-normal">
+                  By completing order, you acknowledge sandbox verification and agree to Veluna Retail terms of warranty.
+                </p>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      `;
+    }
+
+    function togglePaymentInputs(method) {
+      const cardBox = document.getElementById('card-payment-details');
+      const mpesaBox = document.getElementById('mpesa-payment-details');
+      if (!cardBox || !mpesaBox) return;
+      if (method === 'card') {
+        cardBox.classList.remove('hidden');
+        mpesaBox.classList.add('hidden');
+      } else {
+        cardBox.classList.add('hidden');
+        mpesaBox.classList.remove('hidden');
+      }
+    }
+
+    function handleCheckoutSubmit(e) {
+      e.preventDefault();
+      const orderId = 'VLN-' + Math.floor(100000 + Math.random() * 900000);
+      let subtotal = 0;
+      STATE.cart.forEach(item => subtotal += (item.price * item.quantity));
+      const total = subtotal + (subtotal * CONFIG.taxRate);
+
+      const newOrder = {
+        id: orderId,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        items: [...STATE.cart],
+        total: total,
+        status: 'Confirmed & Processing',
+        trackingNumber: 'TRK-' + Math.floor(10000000 + Math.random() * 90000000)
+      };
+
+      STATE.orders.unshift(newOrder);
+      STATE.cart = [];
+      saveState('orders');
+      saveState('cart');
+      updateBadges();
+
+      window.location.hash = `#/order-success/${orderId}`;
+    }
+
+    // --- 19. ORDER CONFIRMATION / SUCCESS VIEW ---
+    function renderOrderSuccessPage(orderId) {
+      const order = STATE.orders.find(o => o.id === orderId) || {
+        id: orderId,
+        date: 'Today',
+        items: [],
+        total: 1299,
+        status: 'Confirmed & Dispatched',
+        trackingNumber: 'TRK-98214490'
+      };
+
+      return `
+        <div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+          <div class="bg-white rounded-3xl p-8 sm:p-12 border border-gray-200/80 shadow-sm text-center space-y-6">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+              <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            
+            <div>
+              <span class="text-xs font-mono font-bold text-emerald-600 uppercase tracking-widest">Order Successfully Placed</span>
+              <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950 mt-1">Thank You for Shopping at Veluna</h1>
+              <p class="text-xs sm:text-sm text-gray-500 mt-2 max-w-md mx-auto">
+                Your order reference is <span class="font-mono font-bold text-gray-900">${order.id}</span>. We've sent a detailed delivery manifest to your email.
+              </p>
+            </div>
+
+            <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100 text-left max-w-md mx-auto space-y-3 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-500 font-semibold">Tracking Number:</span>
+                <span class="font-mono font-bold text-gray-900">${order.trackingNumber}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500 font-semibold">Estimated Dispatch:</span>
+                <span class="font-bold text-gray-900">Within 24 Hours</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500 font-semibold">Status:</span>
+                <span class="font-bold text-emerald-600">${order.status}</span>
+              </div>
+            </div>
+
+            <div class="pt-4 flex flex-wrap items-center justify-center gap-3">
+              <a href="#/account/orders" class="px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full hover:bg-gray-800 transition-colors">
+                View My Orders
+              </a>
+              <a href="#/" class="px-6 py-2.5 bg-gray-100 text-gray-900 text-xs font-bold rounded-full hover:bg-gray-200 transition-colors">
+                Continue Shopping
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 20. CUSTOMER ACCOUNT & SUPPORT SCREENS ---
+    function renderAccountPage() {
+      return `
+        <div class="bg-white border-b border-gray-100 py-10">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950">Customer Account</h1>
+            <p class="text-xs text-gray-500 mt-1">Manage orders, official warranty certificates, and saved delivery destinations</p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <aside class="lg:col-span-4 bg-white p-6 rounded-2xl border border-gray-200/80 space-y-4 h-fit">
+              <div class="flex items-center gap-3 pb-4 border-b border-gray-100">
+                <div class="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center font-bold text-base">A</div>
+                <div>
+                  <div class="font-bold text-sm text-gray-900">Alex Mercer</div>
+                  <div class="text-xs text-gray-400">alex.mercer@example.com</div>
+                </div>
+              </div>
+              <nav class="space-y-1 text-xs font-bold">
+                <a href="#/account" class="block p-2.5 rounded-xl bg-gray-100 text-black">Order History (${STATE.orders.length})</a>
+                <a href="#/wishlist" class="block p-2.5 rounded-xl text-gray-600 hover:bg-gray-50">Saved Wishlist (${STATE.wishlist.length})</a>
+                <a href="#/support" class="block p-2.5 rounded-xl text-gray-600 hover:bg-gray-50">Warranty Support & Concierge</a>
+              </nav>
+            </aside>
+
+            <div class="lg:col-span-8 space-y-4">
+              <h3 class="font-extrabold text-lg text-gray-950">Recent Hardware Orders</h3>
+              ${STATE.orders.length === 0 ? `
+                <div class="bg-white p-12 rounded-2xl border border-gray-200 text-center">
+                  <p class="text-xs text-gray-500">You have not placed any orders yet.</p>
+                  <a href="#/category/phones" class="inline-block mt-3 px-5 py-2 bg-black text-white text-xs font-bold rounded-full">Discover Products</a>
+                </div>
+              ` : `
+                <div class="space-y-3">
+                  ${STATE.orders.map(o => `
+                    <div class="bg-white p-5 rounded-2xl border border-gray-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                        <div class="font-mono font-bold text-xs text-gray-900">${o.id} · <span class="text-gray-400">${o.date}</span></div>
+                        <div class="text-xs text-emerald-600 font-bold mt-1 flex items-center gap-1.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          ${o.status}
+                        </div>
+                        <div class="text-[11px] text-gray-500 mt-1">${(o.items || []).length} items · Tracking: ${o.trackingNumber}</div>
+                      </div>
+                      <div class="text-right">
+                        <div class="font-mono font-black text-sm text-gray-950">${formatMoney(o.total)}</div>
+                        <button onclick="showToast('Tracking info dispatched to your SMS')" class="mt-2 text-xs font-bold text-black underline">Track Delivery</button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 21. DEALS DESTINATION VIEW ---
+    function renderDealsPage() {
+      const deals = PRODUCTS.filter(p => p.originalPrice && p.originalPrice > p.price);
+      return `
+        <div class="bg-rose-950 text-white py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-rose-300">Seasonal Markdowns</span>
+            <h1 class="text-3xl sm:text-5xl font-black tracking-tight-headings mt-1">Veluna Special Deals & Offers</h1>
+            <p class="text-sm text-rose-100 max-w-xl mt-2">Every item includes our verified manufacturer warranty. Genuine discounts on flagship consumer tech.</p>
+          </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            ${deals.map(createProductCardHTML).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 22. SUPPORT & RETAIL INFORMATION ---
+    function renderSupportPage() {
+      return `
+        <div class="bg-white border-b border-gray-100 py-12">
+          <div class="max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight-headings text-gray-950">Help & Support Concierge</h1>
+            <p class="text-sm text-gray-500 mt-2">Find answers to shipping timelines, warranty registration, and repair queries.</p>
+          </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4 py-12 space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-gray-200/80">
+            <h3 class="font-bold text-base text-gray-900 mb-2">What is the Veluna 2-Year Official Warranty?</h3>
+            <p class="text-xs text-gray-600 leading-relaxed">
+              Every electronic device purchased from Veluna includes a comprehensive 24-month manufacturer and retailer warranty covering internal hardware defects, optical sensor calibration, and battery cell health.
+            </p>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-gray-200/80">
+            <h3 class="font-bold text-base text-gray-900 mb-2">What are the delivery timescales?</h3>
+            <p class="text-xs text-gray-600 leading-relaxed">
+              Orders within metropolitan areas arrive within 24–48 hours via local dispatch. Regional orders arrive within 3 business days with active live SMS tracking.
+            </p>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-gray-200/80">
+            <h3 class="font-bold text-base text-gray-900 mb-2">How do returns work?</h3>
+            <p class="text-xs text-gray-600 leading-relaxed">
+              We provide a 30-day zero-hassle return policy. If you are not completely satisfied, return the device in original packaging for a full refund or exchange.
+            </p>
+          </div>
+        </div>
+      `;
+    }
+    // --- 23. HASH ROUTER ENGINE ---
+    function renderRoute() {
+      const hash = window.location.hash || '#/';
+      const appRoot = document.getElementById('app-root');
+      if (!appRoot) return;
+
+      // Scroll smoothly to top on navigation
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
+      // Clean up previous GSAP ScrollTriggers to prevent duplicate handlers
+      if (window.ScrollTrigger) {
+        ScrollTrigger.getAll().forEach(t => t.kill());
+      }
+
+      if (hash === '#/' || hash === '' || hash === '#/home') {
+        appRoot.innerHTML = renderHomePage();
+      } else if (hash.startsWith('#/category/')) {
+        const catId = hash.replace('#/category/', '').split('?')[0];
+        appRoot.innerHTML = renderCategoryPage(catId);
+      } else if (hash === '#/brands') {
+        appRoot.innerHTML = renderBrandsPage();
+      } else if (hash.startsWith('#/brand/')) {
+        const brandId = hash.replace('#/brand/', '').split('?')[0];
+        appRoot.innerHTML = renderBrandPage(brandId);
+      } else if (hash.startsWith('#/product/')) {
+        const prodId = hash.replace('#/product/', '').split('?')[0];
+        appRoot.innerHTML = renderProductDetailPage(prodId);
+      } else if (hash.startsWith('#/search')) {
+        const params = new URLSearchParams(hash.split('?')[1] || '');
+        const query = params.get('q') || '';
+        appRoot.innerHTML = renderSearchResultsPage(query);
+      } else if (hash === '#/compare') {
+        appRoot.innerHTML = renderComparePage();
+      } else if (hash === '#/wishlist') {
+        appRoot.innerHTML = renderWishlistPage();
+      } else if (hash === '#/cart') {
+        appRoot.innerHTML = renderCartPage();
+      } else if (hash === '#/checkout') {
+        appRoot.innerHTML = renderCheckoutPage();
+      } else if (hash.startsWith('#/order-success/')) {
+        const orderId = hash.replace('#/order-success/', '').split('?')[0];
+        appRoot.innerHTML = renderOrderSuccessPage(orderId);
+      } else if (hash.startsWith('#/account')) {
+        appRoot.innerHTML = renderAccountPage();
+      } else if (hash === '#/deals') {
+        appRoot.innerHTML = renderDealsPage();
+      } else if (hash === '#/support' || hash === '#/contact' || hash === '#/shipping' || hash === '#/returns' || hash === '#/terms' || hash === '#/privacy') {
+        appRoot.innerHTML = renderSupportPage();
+      } else {
+        appRoot.innerHTML = `
+          <div class="max-w-xl mx-auto py-24 px-4 text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900">404</h1>
+            <p class="text-sm text-gray-500 mt-2">The page you were searching for does not exist in the Veluna directory.</p>
+            <a href="#/" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full">Return Home</a>
+          </div>
+        `;
+      }
+
+      // Re-initialize Lucide Icons across all dynamic elements
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      // Initialize GSAP Animations on newly rendered view
+      initGSAPAnimations();
+    }
+
+    // --- 24. GSAP & SCROLLTRIGGER ANIMATION SYSTEM ---
+    function initGSAPAnimations() {
+      // Respect user's motion preferences
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      if (!window.gsap) return;
+
+      try {
+        if (window.ScrollTrigger) {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Hero entrance animation
+        const heroText = document.querySelector('.hero-text-block');
+        const heroImg = document.querySelector('.hero-image-block');
+        if (heroText && heroImg) {
+          gsap.from(heroText.children, {
+            y: 24,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.12,
+            ease: 'power3.out'
+          });
+          gsap.from(heroImg, {
+            scale: 0.94,
+            opacity: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+            delay: 0.2
+          });
+        }
+
+        // Section ScrollTrigger reveals
+        if (window.ScrollTrigger) {
+          const cards = document.querySelectorAll('.product-card');
+          if (cards.length > 0) {
+            ScrollTrigger.batch(cards, {
+              onEnter: batch => gsap.from(batch, {
+                opacity: 0,
+                y: 20,
+                stagger: 0.08,
+                duration: 0.6,
+                ease: 'power2.out',
+                overwrite: true
+              }),
+              once: true
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('GSAP animation skipped:', err);
+      }
+    }
+
+    // --- 25. INITIALIZATION ---
+    window.addEventListener('hashchange', renderRoute);
+    window.addEventListener('DOMContentLoaded', () => {
+      updateBadges();
+      renderRoute();
+    });
+
+    // Keyboard shortcut (Cmd+K or Ctrl+K) to open search modal
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openSearchModal();
+      }
+      if (e.key === 'Escape') {
+        closeSearchModal();
+        toggleCartDrawer(false);
+      }
+    });
+  </script>
+</body>
+</html>

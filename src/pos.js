@@ -540,11 +540,11 @@ async function listProducts() {
     p.price_cents, p.buying_price_cents, p.stock_count AS stock, p.image_uri AS imageUri,
     hex(p.image_embedding) AS imageEmbeddingHex,
     p.low_stock_threshold AS lowStockThreshold, p.active
-    FROM pos_products p JOIN pos_categories c ON c.id = p.category_id ORDER BY p.name COLLATE NOCASE`)
+    FROM pos_products p LEFT JOIN pos_categories c ON c.id = p.category_id ORDER BY p.name COLLATE NOCASE`)
     .then((items) => items.map((item) => ({
       id: item.id, name: item.name, sku: item.sku || '', barcode: item.barcode || '',
       expiryDate: item.expiryDate || '',
-      categoryId: item.categoryId, categoryName: item.categoryName,
+      categoryId: item.categoryId, categoryName: item.categoryName || '',
       price: fromCents(item.price_cents), buyingPrice: item.buying_price_cents == null ? null : fromCents(item.buying_price_cents),
       stock: item.stock, imageUri: item.imageUri, imageEmbedding: embeddingHexToInt8(item.imageEmbeddingHex || ''),
       lowStockThreshold: Number(item.lowStockThreshold) || 0,
@@ -633,7 +633,7 @@ async function recordSharedStockUpdate(sku, stock) {
       VALUES (?,?,?,'connect','pending',?)`, [eventId, tenantId, body, createdAt])
   ]);
   await window.EshopInventoryBridge?.updateLocalStock?.(tenantId, [{ sku, stock }]);
-  if (navigator.onLine !== false) {
+  if (navigator.onLine !== false && window.EshopInventoryBridge?.hasTenantOwnerKey?.(tenantId) !== false) {
     try {
       await window.EshopInventoryBridge?.request?.(tenantId, 'connect', 'POST', JSON.parse(body));
       await run("UPDATE pos_inventory_queue SET status='synced',last_error=NULL,updated_at=? WHERE event_id=?",
@@ -1311,6 +1311,8 @@ export function createPosApp() {
     const categories = state.categories;
     const websites = typeof window.EshopInventoryBridge?.websites === 'function'
       ? window.EshopInventoryBridge.websites() : [];
+    const inventoryCloudLinked = state.sharedTenantId &&
+      window.EshopInventoryBridge?.hasTenantOwnerKey?.(state.sharedTenantId) !== false;
     const websiteChoices = websites.map((website) => [website.tenant_id, website.name || website.tenant_id]);
     const selectedWebsite = state.sharedTenantId || websiteChoices[0]?.[0] || '';
     const requestedBarcode = params.get('barcode') || '';
@@ -1372,7 +1374,7 @@ export function createPosApp() {
         ${tabsTitle('Inventory', `${state.products.length} products · stock on hand`)}
         ${card(`<h3>POS ↔ website stock</h3>
           ${websites.length ? `<label class="pos-field"><span>Website</span><select id="pos-shared-website">${websiteChoices.map(([value, label]) => `<option value="${escapeHtml(value)}" ${value === selectedWebsite ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>
-            <p class="pos-help">${state.sharedTenantId ? `Connected · ${escapeHtml(websites.find((item) => item.tenant_id === state.sharedTenantId)?.name || state.sharedTenantId)}. ${state.pendingInventoryEvents} POS sales waiting to sync.` : 'Products link by exact SKU. Choose which side supplies starting stock.'}</p>
+            <p class="pos-help">${inventoryCloudLinked ? `Connected · ${escapeHtml(websites.find((item) => item.tenant_id === state.sharedTenantId)?.name || state.sharedTenantId)}. ${state.pendingInventoryEvents} POS sales waiting to sync.` : state.sharedTenantId ? 'Local products and stock remain available. Cloud stock sync is paused until this shop is linked once.' : 'Load website stock to import products into this device’s POS. POS-to-website live stock sync is a separate shop connection.'}</p>
             <div class="pos-form-actions">${button('Use POS stock for website', 'sync-shared-stock', 'data-source="pos"', true)}${button('Load website stock into POS', 'sync-shared-stock', 'data-source="website"', true)}</div>`
             : '<p class="pos-help">Create or select a website in Studio to connect inventory.</p>'}`)}
         ${card(`<div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>On hand</th><th>Reorder at</th><th>Status</th></tr></thead><tbody>
@@ -1388,9 +1390,11 @@ export function createPosApp() {
         ${websites.length ? `<label class="pos-field"><span>Website</span><select id="pos-shared-website">
           ${websiteChoices.map(([value, label]) => `<option value="${escapeHtml(value)}" ${value === selectedWebsite ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}
         </select></label>
-        <p class="pos-help">${state.sharedTenantId
+        <p class="pos-help">${inventoryCloudLinked
           ? `Connected · ${escapeHtml(websites.find((item) => item.tenant_id === state.sharedTenantId)?.name || state.sharedTenantId)}. ${state.pendingInventoryEvents} POS sale${state.pendingInventoryEvents === 1 ? '' : 's'} waiting to sync.`
-          : 'Products link by exact SKU. Choose which side supplies the starting stock; matching SKUs are required.'}</p>
+          : state.sharedTenantId
+            ? 'Local products and stock remain available. Cloud stock sync is paused until this shop is linked once.'
+            : 'Load website stock to import products into this device’s POS. POS-to-website live stock sync is separate and links matching SKUs.'}</p>
         ${state.sharedTenantId && state.pendingInventoryEvents && navigator.onLine === false
           ? '<p class="pos-help" role="status">Offline: shared stock changes are saved locally and queued for D1 sync.</p>'
           : state.inventorySyncError ? `<p class="pos-help" role="status">Latest sync issue: ${escapeHtml(state.inventorySyncError)}</p>` : ''}
@@ -2494,6 +2498,9 @@ export function createPosApp() {
     state.sharedTenantId = sharedTenant[0]?.value || '';
     state.pendingInventoryEvents = Number(queuedEvents[0]?.count || 0);
     state.inventorySyncError = queueError[0]?.last_error || '';
+    if (state.sharedTenantId && window.EshopInventoryBridge?.hasTenantOwnerKey?.(state.sharedTenantId) === false) {
+      state.inventorySyncError = '';
+    }
     const summaries = await Promise.all(instances.map(async (instance) =>
       [instance.id, await instanceTotals(instance, settings.currency)]));
     state.instanceSummaries = new Map(summaries);
@@ -3582,6 +3589,7 @@ export function createPosApp() {
     const sharedTenant = (await rows("SELECT value FROM pos_settings WHERE key='shared_tenant_id'"))[0]?.value;
     const syncedTenants = new Set(sharedTenant ? [sharedTenant] : []);
     for (const event of queued) {
+      if (window.EshopInventoryBridge.hasTenantOwnerKey?.(event.tenant_id) === false) continue;
       try {
         const body = JSON.parse(event.items_json);
         if (event.operation === 'connect') {
@@ -3638,6 +3646,64 @@ export function createPosApp() {
     if (!bridge) throw new Error('Website sync is unavailable. Reload the app and try again.');
     const website = bridge.websites().find((item) => item.tenant_id === websiteId);
     if (!website) throw new Error('The selected website is no longer available. Refresh and try again.');
+    let catalog = bridge.localCatalog(websiteId);
+    if ((!catalog || !catalog.products?.length) && navigator.onLine !== false) {
+      catalog = await bridge.catalog(websiteId);
+    }
+    if (!catalog) throw new Error('This website has no catalog saved on this device. Open it online once, then try again.');
+    if (source === 'website') {
+      const normalize = (value) => String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+      const posCategories = await listCategories();
+      const categoryIds = new Map(posCategories.map((category) => [normalize(category.name), category.id]));
+      const posProducts = await listProducts();
+      const productsBySku = new Map(posProducts.filter((product) => product.sku)
+        .map((product) => [String(product.sku).trim().toLocaleUpperCase(), product]));
+      const imported = [];
+      for (const websiteProduct of (catalog.products || []).filter((product) => product.status !== 'archived')) {
+        const name = String(websiteProduct.name || '').trim();
+        if (!name) continue;
+        const stock = websiteProduct.stock == null ? 0 : Number(websiteProduct.stock);
+        if (!Number.isSafeInteger(stock) || stock < 0) {
+          throw new Error(`${name} has an invalid website stock count.`);
+        }
+        const categoryName = String((catalog.categories || []).find((category) =>
+          String(category.id) === String(websiteProduct.category_id))?.name
+          || websiteProduct.category_name || websiteProduct.category || 'Other').trim() || 'Other';
+        const categoryKey = normalize(categoryName);
+        let categoryId = categoryIds.get(categoryKey);
+        if (!categoryId) {
+          await addCategory(categoryName);
+          const createdCategory = (await listCategories()).find((category) => normalize(category.name) === categoryKey);
+          if (!createdCategory) throw new Error(`Could not create POS category "${categoryName}".`);
+          categoryId = createdCategory.id;
+          categoryIds.set(categoryKey, categoryId);
+        }
+        const sku = String(websiteProduct.sku || '').trim();
+        const existing = (sku && productsBySku.get(sku.toLocaleUpperCase()))
+          || posProducts.find((product) => normalize(product.name) === normalize(name)
+            && product.categoryId === categoryId);
+        const productId = await saveProduct({
+          id: existing?.id || 0,
+          name: existing?.name || name,
+          categoryId: existing?.categoryId || categoryId,
+          price: existing?.price ?? (Number(websiteProduct.price) || 0),
+          buyingPrice: existing?.buyingPrice ?? websiteProduct.cost_price ?? null,
+          stock,
+          sku: existing?.sku || sku,
+          imageUri: existing?.imageUri || websiteProduct.images?.[0] || '',
+          lowStockThreshold: existing?.lowStockThreshold ?? 3,
+          active: existing?.active ?? true
+        });
+        const saved = (await listProducts()).find((product) => Number(product.id) === Number(productId));
+        if (!saved) throw new Error(`${name} was not saved to POS inventory.`);
+        if (saved.sku) productsBySku.set(saved.sku.toLocaleUpperCase(), saved);
+        posProducts.push(saved);
+        imported.push(saved);
+      }
+      if (!imported.length) throw new Error('This website has no products to load into POS.');
+      await refresh();
+      return { count: imported.length, pending: 0, localOnly: true };
+    }
     const posBySku = new Map();
     for (const product of state.products) {
       const sku = String(product.sku || '').trim();
@@ -3648,11 +3714,6 @@ export function createPosApp() {
       }
       posBySku.set(sku, product);
     }
-    let catalog = bridge.localCatalog(websiteId);
-    if (navigator.onLine !== false) {
-      catalog = await bridge.catalog(websiteId);
-    }
-    if (!catalog) throw new Error('This website has no catalog saved on this device. Open it online once, then try again.');
     const websiteBySku = new Map((catalog.products || [])
       .filter((product) => typeof product.sku === 'string' && product.sku.trim())
       .map((product) => [product.sku.trim(), product]));
@@ -3878,16 +3939,10 @@ export function createPosApp() {
 
   async function readImageFile(file) {
     if (!file) return '';
-    if (!file.type.startsWith('image/') || file.size > 1024 * 1024) {
-      throw new Error('Choose an image file no larger than 1 MB.');
+    if (!window.AppUtils?.compressImageFile) {
+      throw new Error('Image compression is not available in this app session.');
     }
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(new Error('The selected image could not be read.'));
-      reader.onload = () => typeof reader.result === 'string'
-        ? resolve(reader.result) : reject(new Error('The selected image could not be read.'));
-      reader.readAsDataURL(file);
-    });
+    return window.AppUtils.compressImageFile(file, { maxDimension: 1800, maxBytes: 900_000 });
   }
 
   async function getProductVision() {
@@ -5114,7 +5169,9 @@ export function createPosApp() {
         await refresh();
       } else if (action === 'sync-shared-stock') {
         const result = await syncSharedStock(target.dataset.source);
-        toast(`${result.count} matching products connected${result.pending ? ` · ${result.pending} sale${result.pending === 1 ? '' : 's'} waiting to sync` : ''}.`);
+        toast(result.localOnly
+          ? `${result.count} website product${result.count === 1 ? '' : 's'} loaded into this device's POS. Cloud stock sharing is separate.`
+          : `${result.count} matching products connected${result.pending ? ` · ${result.pending} sale${result.pending === 1 ? '' : 's'} waiting to sync` : ''}.`);
       } else if (action === 'snooze-alert' || action === 'dismiss-alert') {
         const key = String(target.dataset.key || '');
         if (!key) throw new Error('This insight alert could not be identified.');

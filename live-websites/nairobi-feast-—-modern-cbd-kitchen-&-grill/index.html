@@ -1,0 +1,4526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nairobi Feast — Modern CBD Kitchen & Grill</title>
+  <meta name="description" content="Lively, affordable, and delicious restaurant in Nairobi CBD serving everyday favourites, Kenyan classics, combos, halal specialties, and fresh healthy meals.">
+  
+  <!-- OpenGraph & Social Sharing -->
+  <meta property="og:title" content="Nairobi Feast — Modern CBD Kitchen & Grill">
+  <meta property="og:description" content="Lively, affordable, and delicious restaurant in Nairobi CBD. Real portions, fast city lunch service, 80+ menu items, halal certified kitchen, and office delivery.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nairobifeast.co.ke">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nairobi Feast — Modern CBD Kitchen & Grill">
+  <meta name="twitter:description" content="Lively, affordable, and delicious restaurant in Nairobi CBD. Real portions, fast city lunch service, and office delivery.">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80">
+  <meta name="theme-color" content="#D92732">
+
+  <!-- Google Fonts: Outfit (Punchy Editorial Display) and Plus Jakarta Sans (Clean Modern Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- GSAP & ScrollTrigger for fluid animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ==========================================================================
+       1. CSS RESET & DESIGN TOKENS
+       ========================================================================== */
+    :root {
+      --color-red: #D92732;
+      --color-red-hover: #BF1C26;
+      --color-red-subtle: #FDF1F2;
+      --color-cream: #FAF6EE;
+      --color-cream-card: #FFFFFF;
+      --color-grey-cream: #ECE8DD;
+      --color-grey-border: #DDD8CB;
+      --color-green: #3F6E45;
+      --color-green-light: #E9F2EA;
+      --color-orange: #F28A35;
+      --color-orange-light: #FEF3EB;
+      --color-charcoal: #22201D;
+      --color-charcoal-muted: #68645C;
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 2px 6px rgba(34, 32, 29, 0.05);
+      --shadow-md: 0 8px 24px rgba(34, 32, 29, 0.08);
+      --shadow-lg: 0 16px 40px rgba(34, 32, 29, 0.12);
+      --shadow-food: 0 24px 50px -10px rgba(34, 32, 29, 0.22);
+      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--color-cream);
+      color: var(--color-charcoal);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.55;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: var(--transition);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    /* Container Utility */
+    .container {
+      width: 100%;
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--color-charcoal);
+      letter-spacing: -0.02em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-red { background: var(--color-red-subtle); color: var(--color-red); }
+    .badge-green { background: var(--color-green-light); color: var(--color-green); }
+    .badge-orange { background: var(--color-orange-light); color: var(--color-orange); }
+    .badge-dark { background: var(--color-charcoal); color: #fff; }
+
+    /* Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      font-size: 15px;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background-color: var(--color-red);
+      color: #FFFFFF;
+      box-shadow: 0 8px 20px -4px rgba(217, 39, 50, 0.45);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--color-red-hover);
+      box-shadow: 0 10px 24px -4px rgba(217, 39, 50, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background-color: #FFFFFF;
+      color: var(--color-charcoal);
+      border: 1.5px solid var(--color-grey-border);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--color-grey-cream);
+      border-color: var(--color-charcoal);
+    }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+
+    /* ==========================================================================
+       2. TOP BAR & HANGING CRESCENT ORNAMENTS
+       ========================================================================== */
+    .top-announcement {
+      background-color: var(--color-charcoal);
+      color: #FFFFFF;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 0;
+      text-align: center;
+      position: relative;
+      z-index: 40;
+    }
+
+    .top-announcement .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .top-badge-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+    }
+
+    /* Hanging Crescent Moon and Stars Sway Animation */
+    .hanging-ornaments {
+      position: absolute;
+      top: 0;
+      right: 40px;
+      display: flex;
+      gap: 22px;
+      pointer-events: none;
+      z-index: 35;
+    }
+
+    .ornament {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform-origin: top center;
+      animation: gentleSway 5s ease-in-out infinite alternate;
+    }
+
+    .ornament-line {
+      width: 1px;
+      background: linear-gradient(to bottom, rgba(242, 138, 53, 0.4), rgba(217, 39, 50, 0.8));
+    }
+
+    .ornament-1 { animation-duration: 4.8s; }
+    .ornament-2 { animation-duration: 6.2s; animation-delay: 0.5s; }
+    .ornament-3 { animation-duration: 5.4s; animation-delay: 1.2s; }
+
+    @keyframes gentleSway {
+      0% { transform: rotate(-5deg); }
+      100% { transform: rotate(5deg); }
+    }
+
+    /* ==========================================================================
+       3. SITE HEADER & NAVIGATION
+       ========================================================================== */
+    .header {
+      position: sticky;
+      top: 0;
+      background-color: rgba(250, 246, 238, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(221, 216, 203, 0.5);
+      z-index: 100;
+      transition: var(--transition);
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 76px;
+    }
+
+    .logo-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      background: var(--color-red);
+      color: #FFF;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 22px;
+      box-shadow: 0 4px 12px rgba(217, 39, 50, 0.35);
+    }
+
+    .brand-name {
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-name span {
+      color: var(--color-red);
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-charcoal-muted);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-weight: 600;
+      font-size: 14.5px;
+      color: var(--color-charcoal);
+      padding: 6px 0;
+      position: relative;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--color-red);
+    }
+
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2.5px;
+      background: var(--color-red);
+      border-radius: var(--radius-full);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cart-btn {
+      position: relative;
+      background: #FFFFFF;
+      border: 1.5px solid var(--color-grey-border);
+      border-radius: var(--radius-full);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--color-charcoal);
+    }
+
+    .cart-btn:hover {
+      border-color: var(--color-red);
+      color: var(--color-red);
+    }
+
+    .cart-count {
+      background: var(--color-red);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 5px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+      padding: 8px;
+      color: var(--color-charcoal);
+    }
+
+    /* ==========================================================================
+       4. HERO SECTION (REFERENCE COMPOSITION: LEFT TEXT, RIGHT FLOATING FOOD)
+       ========================================================================== */
+    .hero {
+      position: relative;
+      padding: 40px 0 60px;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--color-cream) 0%, rgba(236, 232, 221, 0.4) 100%);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      align-items: center;
+      gap: 50px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .hero-left {
+      max-width: 580px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #FFFFFF;
+      border: 1px solid var(--color-grey-border);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-red);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .hero-title {
+      font-size: 58px;
+      font-weight: 900;
+      line-height: 1.05;
+      margin-bottom: 20px;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-title span.accent-red {
+      color: var(--color-red);
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--color-charcoal-muted);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+
+    .hero-service-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding-top: 24px;
+      border-top: 1px solid var(--color-grey-border);
+      flex-wrap: wrap;
+    }
+
+    .service-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--color-charcoal);
+    }
+
+    .service-pill i {
+      color: var(--color-green);
+    }
+
+    /* Hero Right: Floating Food Plate (NO big square box!) */
+    .hero-right {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 480px;
+    }
+
+    .plate-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .plate-glow {
+      position: absolute;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(circle, rgba(242, 138, 53, 0.22) 0%, rgba(217, 39, 50, 0.08) 50%, transparent 70%);
+      border-radius: 50%;
+      filter: blur(25px);
+      z-index: 1;
+    }
+
+    .plate-image {
+      position: relative;
+      z-index: 2;
+      width: 90%;
+      height: 90%;
+      object-fit: cover;
+      border-radius: 50%;
+      box-shadow: var(--shadow-food);
+      border: 8px solid rgba(255, 255, 255, 0.95);
+      transition: transform 0.5s ease-out;
+    }
+
+    .plate-wrapper:hover .plate-image {
+      transform: scale(1.02) rotate(1deg);
+    }
+
+    /* Floating Garnish & Ingredient Accents */
+    .floating-garnish {
+      position: absolute;
+      z-index: 3;
+      pointer-events: none;
+      filter: drop-shadow(0 8px 14px rgba(34, 32, 29, 0.2));
+    }
+
+    .garnish-1 {
+      top: 10px;
+      left: 10px;
+      width: 70px;
+      animation: floatMotion 4.2s ease-in-out infinite alternate;
+    }
+
+    .garnish-2 {
+      bottom: 25px;
+      right: 5px;
+      width: 80px;
+      animation: floatMotion 5s ease-in-out infinite alternate-reverse;
+    }
+
+    .garnish-3 {
+      top: 35%;
+      right: -25px;
+      width: 60px;
+      animation: floatMotion 3.8s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatMotion {
+      0% { transform: translateY(0px) rotate(0deg); }
+      100% { transform: translateY(-12px) rotate(8deg); }
+    }
+
+    /* Floating Hero Badge */
+    .hero-floating-card {
+      position: absolute;
+      bottom: 10px;
+      left: -10px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 12px 18px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(221, 216, 203, 0.8);
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: floatMotion 4.5s ease-in-out infinite alternate;
+    }
+
+    .hero-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--color-orange-light);
+      color: var(--color-orange);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    /* ==========================================================================
+       5. POPULAR QUICK PICKS HORIZONTAL RAIL (BELOW HERO)
+       ========================================================================== */
+    .quick-picks-section {
+      padding: 30px 0 50px;
+      border-bottom: 1px solid var(--color-grey-border);
+    }
+
+    .section-header-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 20px;
+    }
+
+    .section-title {
+      font-size: 32px;
+      font-weight: 800;
+    }
+
+    .section-subtitle {
+      font-size: 15px;
+      color: var(--color-charcoal-muted);
+      margin-top: 4px;
+    }
+
+    .quick-rail {
+      display: flex;
+      gap: 18px;
+      overflow-x: auto;
+      padding: 8px 4px 20px;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-grey-border) transparent;
+    }
+
+    .quick-rail::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .quick-rail::-webkit-scrollbar-thumb {
+      background: var(--color-grey-border);
+      border-radius: 10px;
+    }
+
+    .quick-item-card {
+      flex: 0 0 260px;
+      scroll-snap-align: start;
+      background: var(--color-cream-card);
+      border: 1.5px solid var(--color-grey-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .quick-item-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-charcoal);
+    }
+
+    .quick-img-wrapper {
+      position: relative;
+      width: 100%;
+      height: 140px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--color-grey-cream);
+    }
+
+    .quick-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .quick-item-card:hover .quick-img-wrapper img {
+      transform: scale(1.06);
+    }
+
+    .quick-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .quick-dish-name {
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .quick-dish-price {
+      font-weight: 800;
+      color: var(--color-red);
+      font-size: 15px;
+      white-space: nowrap;
+    }
+
+    .quick-card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px dashed var(--color-grey-border);
+    }
+
+    .prep-tag {
+      font-size: 11.5px;
+      color: var(--color-charcoal-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-quick-add {
+      background: var(--color-red);
+      color: #FFF;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: var(--transition);
+    }
+
+    .btn-quick-add:hover {
+      background: var(--color-red-hover);
+      transform: scale(1.1);
+    }
+
+    /* ==========================================================================
+       6. MENU EXPLORER & CATEGORY FILTERING SECTION
+       ========================================================================== */
+    .menu-section {
+      padding: 60px 0;
+      background: var(--color-cream);
+    }
+
+    .filter-controls-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--color-grey-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 36px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-input-wrapper i {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-charcoal-muted);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 16px 14px 46px;
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--color-grey-border);
+      background: var(--color-cream);
+      font-size: 15px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .search-input:focus {
+      border-color: var(--color-red);
+      background: #FFF;
+      box-shadow: 0 0 0 3px rgba(217, 39, 50, 0.15);
+    }
+
+    .sort-select {
+      padding: 13px 20px;
+      border-radius: var(--radius-full);
+      border: 1.5px solid var(--color-grey-border);
+      background: #FFFFFF;
+      font-weight: 600;
+      color: var(--color-charcoal);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .category-pills {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      scrollbar-width: none;
+    }
+
+    .category-pills::-webkit-scrollbar { display: none; }
+
+    .cat-pill {
+      padding: 9px 18px;
+      border-radius: var(--radius-full);
+      background: var(--color-grey-cream);
+      color: var(--color-charcoal);
+      font-weight: 700;
+      font-size: 13.5px;
+      white-space: nowrap;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cat-pill:hover {
+      background: var(--color-grey-border);
+    }
+
+    .cat-pill.active {
+      background: var(--color-red);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(217, 39, 50, 0.35);
+    }
+
+    .dietary-tags-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-top: 18px;
+      border-top: 1px solid var(--color-grey-border);
+      flex-wrap: wrap;
+    }
+
+    .dietary-filter-chip {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-grey-border);
+      font-size: 12.5px;
+      font-weight: 700;
+      background: #FFF;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+
+    .dietary-filter-chip.active {
+      background: var(--color-charcoal);
+      color: #FFF;
+      border-color: var(--color-charcoal);
+    }
+
+    .reset-btn {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--color-red);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    /* Menu Cards Grid */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .dish-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--color-grey-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .dish-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--color-charcoal);
+    }
+
+    .dish-img-box {
+      position: relative;
+      width: 100%;
+      height: 190px;
+      background: var(--color-grey-cream);
+      overflow: hidden;
+    }
+
+    .dish-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .dish-card:hover .dish-img-box img {
+      transform: scale(1.07);
+    }
+
+    .dish-badges {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 2;
+    }
+
+    .dish-content {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .dish-category-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-charcoal-muted);
+      margin-bottom: 4px;
+    }
+
+    .dish-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+
+    .dish-desc {
+      font-size: 13px;
+      color: var(--color-charcoal-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .dish-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--color-grey-border);
+    }
+
+    .dish-price-val {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--color-red);
+    }
+
+    .dish-actions-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-dish-details {
+      padding: 8px 14px;
+      border-radius: var(--radius-full);
+      background: var(--color-grey-cream);
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .btn-dish-details:hover {
+      background: var(--color-grey-border);
+    }
+
+    .btn-add-tray {
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      background: var(--color-red);
+      color: #FFF;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-add-tray:hover {
+      background: var(--color-red-hover);
+    }
+
+    /* ==========================================================================
+       7. SECTION HIGHLIGHTS (COMBOS, KENYAN MEALS, HALAL & HEALTHY BANNER)
+       ========================================================================== */
+    .section-banner-card {
+      background: var(--color-charcoal);
+      color: #FFFFFF;
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      margin: 50px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      align-items: center;
+      gap: 30px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .banner-title {
+      color: #FFFFFF;
+      font-size: 38px;
+      margin-bottom: 14px;
+    }
+
+    .banner-desc {
+      color: #DDD8CB;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* Halal Section specific accents */
+    .halal-showcase {
+      background: #FFFFFF;
+      border: 2px solid var(--color-green);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      margin: 50px 0;
+      position: relative;
+    }
+
+    .halal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    /* ==========================================================================
+       8. MODAL WINDOWS (DISH DETAIL MODAL & CART DRAWER)
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(34, 32, 29, 0.65);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .dish-modal-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      max-width: 650px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalPop {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--color-charcoal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .modal-img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+    }
+
+    .modal-body {
+      padding: 26px;
+    }
+
+    .modal-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      gap: 16px;
+    }
+
+    .modal-dish-title {
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .modal-dish-price {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--color-red);
+      white-space: nowrap;
+    }
+
+    .modal-desc {
+      color: var(--color-charcoal-muted);
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+
+    .option-group-title {
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .option-radio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .option-box {
+      border: 1.5px solid var(--color-grey-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .option-box input {
+      accent-color: var(--color-red);
+    }
+
+    .option-box:hover {
+      border-color: var(--color-charcoal);
+    }
+
+    .option-box.selected {
+      border-color: var(--color-red);
+      background: var(--color-red-subtle);
+      color: var(--color-red);
+    }
+
+    .modal-footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--color-grey-border);
+    }
+
+    .qty-counter {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid var(--color-grey-border);
+      border-radius: var(--radius-full);
+      padding: 4px;
+      background: var(--color-cream);
+    }
+
+    .qty-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .qty-num {
+      min-width: 36px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    /* Cart Slide-Over Drawer */
+    .cart-drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(34, 32, 29, 0.5);
+      z-index: 1050;
+      display: none;
+      justify-content: flex-end;
+    }
+
+    .cart-drawer-overlay.active {
+      display: flex;
+    }
+
+    .cart-drawer {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 440px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -8px 0 30px rgba(0, 0, 0, 0.15);
+      animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideInRight {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(0); }
+    }
+
+    .cart-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--color-grey-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cart-title {
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cart-body {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .cart-item {
+      display: flex;
+      gap: 14px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--color-grey-border);
+    }
+
+    .cart-item-img {
+      width: 68px;
+      height: 68px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background: var(--color-grey-cream);
+    }
+
+    .cart-item-details {
+      flex-grow: 1;
+    }
+
+    .cart-item-name {
+      font-weight: 700;
+      font-size: 14.5px;
+      margin-bottom: 2px;
+    }
+
+    .cart-item-options {
+      font-size: 12px;
+      color: var(--color-charcoal-muted);
+      margin-bottom: 6px;
+    }
+
+    .cart-item-price {
+      font-weight: 800;
+      color: var(--color-red);
+      font-size: 14px;
+    }
+
+    .cart-footer {
+      padding: 20px 24px;
+      border-top: 1px solid var(--color-grey-border);
+      background: var(--color-cream);
+    }
+
+    .cart-summary-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: var(--color-charcoal-muted);
+    }
+
+    .cart-summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--color-charcoal);
+      padding-top: 10px;
+      border-top: 1px dashed var(--color-grey-border);
+      margin-bottom: 18px;
+    }
+
+    /* ==========================================================================
+       9. CHECKOUT VIEW, TRACKING VIEW & OTHER SUB-VIEWS
+       ========================================================================== */
+    .view-container {
+      display: none;
+      padding: 40px 0 80px;
+    }
+
+    .view-container.active-view {
+      display: block;
+    }
+
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    .checkout-card {
+      background: #FFFFFF;
+      border: 1.5px solid var(--color-grey-border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--color-charcoal);
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--color-grey-border);
+      font-size: 14.5px;
+      outline: none;
+      background: var(--color-cream);
+      transition: var(--transition);
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--color-red);
+      background: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(217, 39, 50, 0.12);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .payment-method-radio {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border: 1.5px solid var(--color-grey-border);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .payment-method-radio.selected {
+      border-color: var(--color-green);
+      background: var(--color-green-light);
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 30px;
+      margin: 30px 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 5px;
+      bottom: 5px;
+      width: 2px;
+      background: var(--color-grey-border);
+    }
+
+    .timeline-step {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -30px;
+      top: 2px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--color-grey-cream);
+      border: 2px solid var(--color-grey-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--color-charcoal);
+    }
+
+    .timeline-step.completed .timeline-dot {
+      background: var(--color-green);
+      border-color: var(--color-green);
+      color: #FFF;
+    }
+
+    .timeline-step.active .timeline-dot {
+      background: var(--color-red);
+      border-color: var(--color-red);
+      color: #FFF;
+      box-shadow: 0 0 0 4px rgba(217, 39, 50, 0.2);
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--color-charcoal);
+      color: #FFF;
+      padding: 12px 20px;
+      border-radius: var(--radius-full);
+      box-shadow: var(--shadow-lg);
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes toastSlide {
+      0% { transform: translateY(20px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ==========================================================================
+       10. FOOTER & COMPACT MOBILE DRAWER
+       ========================================================================== */
+    .footer {
+      background: var(--color-charcoal);
+      color: #FFFFFF;
+      padding: 60px 0 30px;
+      margin-top: auto;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.2fr;
+      gap: 40px;
+      margin-bottom: 50px;
+    }
+
+    .footer-col h4 {
+      color: #FFFFFF;
+      font-size: 17px;
+      margin-bottom: 18px;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      color: #BBB6AA;
+      font-size: 14px;
+    }
+
+    .footer-links a:hover {
+      color: #FFFFFF;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(221, 216, 203, 0.2);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #8C887E;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* Mobile Drawer */
+    .mobile-drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(34, 32, 29, 0.5);
+      z-index: 1000;
+      display: none;
+    }
+
+    .mobile-drawer-overlay.active {
+      display: block;
+    }
+
+    .mobile-drawer {
+      background: #FFFFFF;
+      width: 290px;
+      height: 100%;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      animation: slideInLeft 0.3s ease;
+    }
+
+    @keyframes slideInLeft {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(0); }
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 992px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        text-align: center;
+      }
+      .hero-left {
+        max-width: 100%;
+        margin: 0 auto;
+      }
+      .hero-title {
+        font-size: 42px;
+      }
+      .hero-actions {
+        justify-content: center;
+      }
+      .hero-service-row {
+        justify-content: center;
+      }
+      .hero-right {
+        min-height: 380px;
+      }
+      .banner-grid {
+        grid-template-columns: 1fr;
+      }
+      .checkout-grid {
+        grid-template-columns: 1fr;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .mobile-menu-btn {
+        display: block;
+      }
+      .hero-title {
+        font-size: 34px;
+      }
+      .hero-floating-card {
+        bottom: -10px;
+        left: 10px;
+      }
+      .search-row {
+        grid-template-columns: 1fr;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       TOP ANNOUNCEMENT BAR WITH SWAYING CRESCENT ORNAMENTS
+       ========================================================================== -->
+  <div class="top-announcement">
+    <div class="container">
+      <div class="top-badge-group">
+        <span>📍 Kimathi Street, Nairobi CBD</span>
+        <span>•</span>
+        <span>🕒 Open 7:00 AM – 10:30 PM Everyday</span>
+      </div>
+      <div class="top-badge-group">
+        <span>🛵 Fast CBD Office Desk Delivery (15–25 Mins)</span>
+        <span>•</span>
+        <span>⭐ 100% Certified Halal Kitchen</span>
+      </div>
+    </div>
+
+    <!-- Hanging Crescent Moon and Stars Sway Ornaments -->
+    <div class="hanging-ornaments" aria-hidden="true">
+      <div class="ornament ornament-1">
+        <div class="ornament-line" style="height: 38px;"></div>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#F28A35">
+          <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.79c-.45-.07-.9-.11-1.36-.11z"/>
+        </svg>
+      </div>
+      <div class="ornament ornament-2">
+        <div class="ornament-line" style="height: 52px;"></div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#D92732">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="ornament ornament-3">
+        <div class="ornament-line" style="height: 28px;"></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#F28A35">
+          <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.79c-.45-.07-.9-.11-1.36-.11z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       SITE HEADER
+       ========================================================================== -->
+  <header class="header">
+    <div class="container nav-container">
+      <a href="#home" class="logo-wrapper">
+        <div class="brand-mark">NF</div>
+        <div>
+          <div class="brand-name">NAIROBI<span>FEAST</span></div>
+          <div class="brand-tag">CBD KITCHEN & GRILL</div>
+        </div>
+      </a>
+
+      <!-- Desktop Nav -->
+      <ul class="nav-links">
+        <li><a href="#home" class="nav-link active" data-nav="home">Home</a></li>
+        <li><a href="#menu" class="nav-link" data-nav="menu">Full Menu</a></li>
+        <li><a href="#combos" class="nav-link" data-nav="combos">Combos & Lunch</a></li>
+        <li><a href="#kenyan" class="nav-link" data-nav="kenyan">Kenyan Meals</a></li>
+        <li><a href="#halal" class="nav-link" data-nav="halal">Halal Kitchen</a></li>
+        <li><a href="#healthy" class="nav-link" data-nav="healthy">Healthy Bowls</a></li>
+        <li><a href="#about" class="nav-link" data-nav="about">About</a></li>
+        <li><a href="#contact" class="nav-link" data-nav="contact">Location</a></li>
+      </ul>
+
+      <!-- Action items -->
+      <div class="header-actions">
+        <button class="cart-btn" onclick="openCartDrawer()" aria-label="View Cart">
+          <i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>
+          <span>Tray</span>
+          <span class="cart-count" id="cartCountBadge">0</span>
+        </button>
+
+        <a href="#menu" class="btn btn-primary btn-sm" style="display: none; @media(min-width: 600px){display: inline-flex;}">Order Now</a>
+
+        <button class="mobile-menu-btn" onclick="toggleMobileDrawer()" aria-label="Open Menu">
+          <i data-lucide="menu" style="width: 24px; height: 24px;"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay" onclick="toggleMobileDrawer()">
+    <div class="mobile-drawer" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="logo-wrapper">
+          <div class="brand-mark" style="width: 36px; height: 36px; font-size: 18px;">NF</div>
+          <div class="brand-name" style="font-size: 18px;">NAIROBI<span>FEAST</span></div>
+        </div>
+        <button onclick="toggleMobileDrawer()"><i data-lucide="x" style="width: 22px; height: 22px;"></i></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+        <a href="#home" onclick="toggleMobileDrawer()" class="nav-link">Home</a>
+        <a href="#menu" onclick="toggleMobileDrawer()" class="nav-link">Explore 80+ Menu</a>
+        <a href="#combos" onclick="toggleMobileDrawer()" class="nav-link">Office Combos</a>
+        <a href="#kenyan" onclick="toggleMobileDrawer()" class="nav-link">Kenyan Classics</a>
+        <a href="#halal" onclick="toggleMobileDrawer()" class="nav-link">Halal Certified Menu</a>
+        <a href="#healthy" onclick="toggleMobileDrawer()" class="nav-link">Healthy Meals</a>
+        <a href="#orders" onclick="toggleMobileDrawer()" class="nav-link">My Order History</a>
+        <a href="#about" onclick="toggleMobileDrawer()" class="nav-link">Our Story & Kitchen</a>
+        <a href="#contact" onclick="toggleMobileDrawer()" class="nav-link">CBD Location & Map</a>
+      </div>
+
+      <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--color-grey-border);">
+        <p style="font-size: 12px; color: var(--color-charcoal-muted); margin-bottom: 12px;">Call / WhatsApp for direct desk orders:</p>
+        <a href="tel:+254700123456" class="btn btn-secondary btn-sm" style="width: 100%;"><i data-lucide="phone" style="width: 14px; height: 14px;"></i> 0700 123 456</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MAIN APP ROUTER & VIEWS
+       ========================================================================== -->
+  <main id="mainContent">
+
+    <!-- VIEW: HOME VIEW -->
+    <div id="view-home" class="view-container active-view">
+      
+      <!-- HERO SECTION (MATCHING DRIBBLE REFERENCE COMPOSITION: LEFT TEXT, RIGHT FLOATING FOOD) -->
+      <section class="hero">
+        <div class="container hero-grid">
+          
+          <!-- LEFT SIDE: EYE BROW, TITLE, SUBTITLE, BUTTONS, SERVICE ROW -->
+          <div class="hero-left">
+            <div class="hero-eyebrow">
+              <span style="display: inline-block; width: 8px; height: 8px; background: var(--color-red); border-radius: 50%;"></span>
+              GOOD FOOD. GOOD MOOD. • NAIROBI CBD
+            </div>
+
+            <h1 class="hero-title">
+              Real Portions. <br>
+              Real Flavour. <br>
+              <span class="accent-red">Fast in the City.</span>
+            </h1>
+
+            <p class="hero-subtitle">
+              Nairobi's bustling everyday kitchen for sizzling grilled meats, hearty lunch platters, crispy chicken & chips, authentic Kenyan stews, and fresh juices. Generous portions at pocket-friendly prices.
+            </p>
+
+            <div class="hero-actions">
+              <a href="#menu" class="btn btn-primary">
+                <i data-lucide="utensils" style="width: 18px; height: 18px;"></i>
+                Order Food
+              </a>
+              <a href="#combos" class="btn btn-secondary">
+                <i data-lucide="zap" style="width: 18px; height: 18px; color: var(--color-orange);"></i>
+                Explore Office Combos
+              </a>
+            </div>
+
+            <div class="hero-service-row">
+              <div class="service-pill">
+                <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
+                <span>15–20 Min Express Lunch</span>
+              </div>
+              <div class="service-pill">
+                <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
+                <span>Kimathi St / CBD Central</span>
+              </div>
+              <div class="service-pill">
+                <i data-lucide="shield-check" style="width: 16px; height: 16px; color: var(--color-green);"></i>
+                <span>100% Halal Certified</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT SIDE: FLOATING FOOD PLATE DIRECTLY ON CREAM BACKGROUND + ACCENTS -->
+          <div class="hero-right">
+            <div class="plate-wrapper">
+              <div class="plate-glow"></div>
+              
+              <!-- Main Floating Plate Image (Rich grilled chicken & pilau platter) -->
+              <img 
+                src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=900&q=80" 
+                alt="Nairobi Feast Signature Grill Platter with Savory Pilau and Kachumbari" 
+                class="plate-image"
+                id="heroMainPlate"
+                onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=900&q=80'"
+              />
+
+              <!-- Floating Ingredients (Restrained, subtle depth) -->
+              <!-- Herb leaf -->
+              <svg class="floating-garnish garnish-1" viewBox="0 0 100 100" fill="#3F6E45">
+                <path d="M50 0 C70 30 90 40 85 70 C80 95 60 98 50 100 C40 98 20 95 15 70 C10 40 30 30 50 0 Z"/>
+              </svg>
+
+              <!-- Fresh chilli / spice accent -->
+              <svg class="floating-garnish garnish-2" viewBox="0 0 100 100" fill="#D92732">
+                <path d="M20 20 C50 10 75 30 85 60 C90 80 70 95 50 90 C30 85 20 70 18 50 Z"/>
+              </svg>
+
+              <!-- Lime slice accent -->
+              <svg class="floating-garnish garnish-3" viewBox="0 0 100 100" fill="#F28A35">
+                <circle cx="50" cy="50" r="45" stroke="#FFFFFF" stroke-width="6"/>
+              </svg>
+
+              <!-- Floating highlight badge -->
+              <div class="hero-floating-card">
+                <div class="hero-card-icon">🔥</div>
+                <div>
+                  <div style="font-weight: 800; font-size: 14px;">CBD Lunch Rush No.1</div>
+                  <div style="font-size: 12px; color: var(--color-charcoal-muted);">850+ Office meals served daily</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SECTION: POPULAR QUICK PICKS HORIZONTAL RAIL -->
+      <section class="quick-picks-section">
+        <div class="container">
+          <div class="section-header-row">
+            <div>
+              <div class="badge badge-red" style="margin-bottom: 6px;">PEOPLE'S FAVOURITES</div>
+              <h2 class="section-title">What Everyone's Ordering Right Now</h2>
+              <p class="section-subtitle">Top everyday meals loved by Nairobi CBD office workers, students, and commuters.</p>
+            </div>
+            <a href="#menu" class="btn btn-secondary btn-sm">View All 80+ Dishes <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i></a>
+          </div>
+
+          <!-- Quick Horizontal Rail populated dynamically -->
+          <div class="quick-rail" id="quickPicksRail">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: COMBO MEALS HIGHLIGHT -->
+      <section class="container" style="padding: 50px 20px;">
+        <div class="section-banner-card">
+          <div class="banner-grid">
+            <div>
+              <div class="badge badge-orange" style="margin-bottom: 12px; color: #FFF; background: var(--color-orange);">VALUE COMBOS</div>
+              <h2 class="banner-title">Office Lunch & Student Combos</h2>
+              <p class="banner-desc">Complete satisfying meals assembled for speed and value. Choose your meat, starch, side of fresh kachumbari, and a cold drink with zero fuss.</p>
+              <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                <a href="#combos" class="btn btn-primary">Browse All Combos</a>
+                <a href="#menu" class="btn btn-secondary" style="color: #FFF; border-color: rgba(255,255,255,0.3); background: transparent;">Regular Menu</a>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div style="background: rgba(255,255,255,0.08); padding: 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-weight: 800; font-size: 16px; color: #F28A35; margin-bottom: 4px;">Student Combo</div>
+                <div style="font-size: 13px; color: #DDD8CB;">Quarter Chicken + Crispy Fries + Soda</div>
+                <div style="font-size: 18px; font-weight: 900; color: #FFF; margin-top: 8px;">KES 450</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.08); padding: 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-weight: 800; font-size: 16px; color: #F28A35; margin-bottom: 4px;">CBD Office Rush</div>
+                <div style="font-size: 13px; color: #DDD8CB;">Beef Wet Fry + Rice/Ugali + Greens + Juice</div>
+                <div style="font-size: 18px; font-weight: 900; color: #FFF; margin-top: 8px;">KES 550</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.08); padding: 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-weight: 800; font-size: 16px; color: #F28A35; margin-bottom: 4px;">Swahili Pilau Bowl</div>
+                <div style="font-size: 13px; color: #DDD8CB;">Spiced Pilau + Kachumbari + Banana + Juice</div>
+                <div style="font-size: 18px; font-weight: 900; color: #FFF; margin-top: 8px;">KES 480</div>
+              </div>
+              <div style="background: rgba(255,255,255,0.08); padding: 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-weight: 800; font-size: 16px; color: #F28A35; margin-bottom: 4px;">Healthy Power Box</div>
+                <div style="font-size: 13px; color: #DDD8CB;">Lemon Grilled Chicken + Salad + Avocado</div>
+                <div style="font-size: 18px; font-weight: 900; color: #FFF; margin-top: 8px;">KES 620</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: HALAL KITCHEN DEDICATED SHOWCASE -->
+      <section class="container" style="margin-bottom: 60px;">
+        <div class="halal-showcase">
+          <div class="halal-header">
+            <div>
+              <div class="badge badge-green" style="margin-bottom: 6px;">100% CERTIFIED HALAL</div>
+              <h2 style="font-size: 28px;">Dedicated Halal Food & Muslim Hospitality</h2>
+              <p style="color: var(--color-charcoal-muted); font-size: 14.5px; margin-top: 4px;">
+                All poultry and meats sourced exclusively from certified suppliers. Prepared in a strictly pork-free, alcohol-free kitchen.
+              </p>
+            </div>
+            <a href="#halal" class="btn btn-primary" style="background: var(--color-green);">Explore Halal Dishes</a>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+            <div style="padding: 16px; background: var(--color-cream); border-radius: var(--radius-md); border: 1px solid var(--color-grey-border);">
+              <i data-lucide="check-circle" style="color: var(--color-green); margin-bottom: 8px;"></i>
+              <div style="font-weight: 700; font-size: 14px;">Certified Meat Supply</div>
+              <div style="font-size: 12px; color: var(--color-charcoal-muted); margin-top: 4px;">Verified slaughterhouse certificates on file.</div>
+            </div>
+            <div style="padding: 16px; background: var(--color-cream); border-radius: var(--radius-md); border: 1px solid var(--color-grey-border);">
+              <i data-lucide="flame" style="color: var(--color-orange); margin-bottom: 8px;"></i>
+              <div style="font-weight: 700; font-size: 14px;">Zero Alcohol / Pork</div>
+              <div style="font-size: 12px; color: var(--color-charcoal-muted); margin-top: 4px;">Zero cross-contact in oils, marinades, or prep surfaces.</div>
+            </div>
+            <div style="padding: 16px; background: var(--color-cream); border-radius: var(--radius-md); border: 1px solid var(--color-grey-border);">
+              <i data-lucide="heart-handshake" style="color: var(--color-green); margin-bottom: 8px;"></i>
+              <div style="font-weight: 700; font-size: 14px;">Ramadan & Iftar Ready</div>
+              <div style="font-size: 12px; color: var(--color-charcoal-muted); margin-top: 4px;">Dates, fresh juices, and warm Swahili platters served prompt at dusk.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: HOW ORDERING WORKS (NAIROBI CBD DESK DELIVERY) -->
+      <section style="background: var(--color-grey-cream); padding: 60px 0;">
+        <div class="container">
+          <div style="text-align: center; max-width: 600px; margin: 0 auto 40px;">
+            <div class="badge badge-dark" style="margin-bottom: 8px;">FAST CBD FULFILLMENT</div>
+            <h2 style="font-size: 32px;">How Desk Delivery & Pickup Works</h2>
+            <p style="color: var(--color-charcoal-muted); font-size: 15px;">Designed for busy CBD workers who don't have an hour to waste waiting in line.</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
+            <div style="background: #FFF; padding: 28px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border);">
+              <div style="width: 44px; height: 44px; background: var(--color-red-subtle); color: var(--color-red); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; margin-bottom: 14px;">1</div>
+              <h3 style="font-size: 18px; margin-bottom: 8px;">Choose Your Meals</h3>
+              <p style="font-size: 13.5px; color: var(--color-charcoal-muted);">Browse over 80 authentic dishes, customize sides, spices, and drinks with a single tap.</p>
+            </div>
+            <div style="background: #FFF; padding: 28px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border);">
+              <div style="width: 44px; height: 44px; background: var(--color-orange-light); color: var(--color-orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; margin-bottom: 14px;">2</div>
+              <h3 style="font-size: 18px; margin-bottom: 8px;">Office Floor or Pickup</h3>
+              <p style="font-size: 13.5px; color: var(--color-charcoal-muted);">Specify your CBD building and office floor (Lonrho, I&M, Teleposta, etc.) or select quick counter pickup.</p>
+            </div>
+            <div style="background: #FFF; padding: 28px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border);">
+              <div style="width: 44px; height: 44px; background: var(--color-green-light); color: var(--color-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; margin-bottom: 14px;">3</div>
+              <h3 style="font-size: 18px; margin-bottom: 8px;">Hot & Sizzling in 20 Mins</h3>
+              <p style="font-size: 13.5px; color: var(--color-charcoal-muted);">Our foot and bike messengers sprint across CBD streets. Your food arrives hot, fresh, and neatly packed.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: FAQ -->
+      <section class="container" style="padding: 70px 20px;">
+        <div style="max-width: 800px; margin: 0 auto;">
+          <div style="text-align: center; margin-bottom: 40px;">
+            <div class="badge badge-dark">QUESTIONS & ANSWERS</div>
+            <h2 style="font-size: 32px; margin-top: 8px;">Frequently Asked Questions</h2>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;" id="faqAccordion">
+            <details style="background: #FFF; padding: 18px 22px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border); cursor: pointer;" open>
+              <summary style="font-weight: 800; font-size: 16px; color: var(--color-charcoal);">Where exactly are you located in Nairobi CBD?</summary>
+              <p style="margin-top: 10px; font-size: 14px; color: var(--color-charcoal-muted);">We are located on Kimathi Street, directly across from the junction with Mama Ngina Street, near Norwich Union House and just a 2-minute stroll from Kencom and Hilton Plaza.</p>
+            </details>
+
+            <details style="background: #FFF; padding: 18px 22px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border); cursor: pointer;">
+              <summary style="font-weight: 800; font-size: 16px; color: var(--color-charcoal);">How fast is lunch delivery to CBD office buildings?</summary>
+              <p style="margin-top: 10px; font-size: 14px; color: var(--color-charcoal-muted);">For orders within the CBD grid (Lonrho House, View Park, Teleposta, Times Tower, ICEA, etc.), typical delivery time is 15 to 25 minutes from the moment your order is accepted.</p>
+            </details>
+
+            <details style="background: #FFF; padding: 18px 22px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border); cursor: pointer;">
+              <summary style="font-weight: 800; font-size: 16px; color: var(--color-charcoal);">Can I pay with M-Pesa on delivery or online?</summary>
+              <p style="margin-top: 10px; font-size: 14px; color: var(--color-charcoal-muted);">Yes! We support M-Pesa STK push for seamless checkout, as well as pay-on-pickup and cash on desk delivery.</p>
+            </details>
+
+            <details style="background: #FFF; padding: 18px 22px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border); cursor: pointer;">
+              <summary style="font-weight: 800; font-size: 16px; color: var(--color-charcoal);">Do you cater for group meetings and team lunches?</summary>
+              <p style="margin-top: 10px; font-size: 14px; color: var(--color-charcoal-muted);">Absolutely. We pack sharing platters, samosa trays, and customized boxed meals for office boardrooms and training sessions. Call or WhatsApp our kitchen 1 hour in advance for groups of 10+.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- VIEW: FULL MENU VIEW (LARGE 80+ ITEM CATALOGUE WITH SEARCH & FILTERS) -->
+    <div id="view-menu" class="view-container">
+      <div class="container">
+        
+        <!-- Header -->
+        <div style="margin-bottom: 28px;">
+          <div class="badge badge-red" style="margin-bottom: 6px;">EXPANSIVE CBD KITCHEN MENU</div>
+          <h1 style="font-size: 40px; margin-bottom: 6px;">The Complete Nairobi Feast Menu</h1>
+          <p style="color: var(--color-charcoal-muted); font-size: 16px;">Over 80 authentic, freshly prepared meals, combos, snacks, grills, and beverages.</p>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="filter-controls-card">
+          <div class="search-row">
+            <div class="search-input-wrapper">
+              <i data-lucide="search" style="width: 20px; height: 20px;"></i>
+              <input 
+                type="text" 
+                id="menuSearchInput" 
+                class="search-input" 
+                placeholder="Search chicken & chips, pilau, wet fry, beef burger, samosa, juice..."
+                oninput="handleSearchInput(event)"
+              />
+            </div>
+            
+            <select id="sortSelect" class="sort-select" onchange="handleSortChange(event)">
+              <option value="popular">Sort: Most Popular</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="time">Fastest Prep Time</option>
+            </select>
+          </div>
+
+          <!-- Category Pills -->
+          <div class="category-pills" id="categoryPillsContainer">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- Dietary Filter Chips -->
+          <div class="dietary-tags-row">
+            <span style="font-size: 12px; font-weight: 700; color: var(--color-charcoal-muted); text-transform: uppercase;">Dietary filters:</span>
+            <button class="dietary-filter-chip" id="filterHalal" onclick="toggleDietaryFilter('halal')">
+              <span style="color: var(--color-green);">🟢</span> Halal Confirmed
+            </button>
+            <button class="dietary-filter-chip" id="filterVegetarian" onclick="toggleDietaryFilter('vegetarian')">
+              <span>🌱</span> Vegetarian
+            </button>
+            <button class="dietary-filter-chip" id="filterHealthy" onclick="toggleDietaryFilter('healthy')">
+              <span>🥗</span> Healthy & Lean
+            </button>
+            <button class="dietary-filter-chip" id="filterSpicy" onclick="toggleDietaryFilter('spicy')">
+              <span>🌶️</span> Spicy
+            </button>
+
+            <button class="reset-btn" onclick="resetAllFilters()">Reset All Filters</button>
+          </div>
+        </div>
+
+        <!-- Dishes Result Count & Info -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <div style="font-weight: 700; color: var(--color-charcoal-muted); font-size: 14px;" id="menuResultsCount">
+            Showing all dishes...
+          </div>
+        </div>
+
+        <!-- Menu Grid -->
+        <div class="menu-grid" id="menuDishesGrid">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Empty state -->
+        <div id="menuEmptyState" style="display: none; text-align: center; padding: 60px 20px; background: #FFF; border-radius: var(--radius-lg); border: 1.5px dashed var(--color-grey-border);">
+          <div style="font-size: 44px; margin-bottom: 12px;">🍽️</div>
+          <h3 style="font-size: 22px; margin-bottom: 8px;">No matching dishes found</h3>
+          <p style="color: var(--color-charcoal-muted); font-size: 14px; margin-bottom: 20px;">Try clearing your search query or loosening your dietary filters.</p>
+          <button class="btn btn-primary btn-sm" onclick="resetAllFilters()">Reset Filters & Show All</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW: COMBOS VIEW -->
+    <div id="view-combos" class="view-container">
+      <div class="container">
+        <div style="margin-bottom: 30px;">
+          <div class="badge badge-orange" style="margin-bottom: 6px;">AFFORDABLE DEALS</div>
+          <h1 style="font-size: 38px;">Nairobi CBD Meal Combos</h1>
+          <p style="color: var(--color-charcoal-muted);">Generous bundles made for office lunches, students, and group sharing.</p>
+        </div>
+        <div class="menu-grid" id="combosGrid">
+          <!-- Populated by JS with combos -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: KENYAN CLASSICS VIEW -->
+    <div id="view-kenyan" class="view-container">
+      <div class="container">
+        <div style="margin-bottom: 30px;">
+          <div class="badge badge-red" style="margin-bottom: 6px;">AUTHENTIC LOCAL TASTE</div>
+          <h1 style="font-size: 38px;">Authentic Kenyan Meals</h1>
+          <p style="color: var(--color-charcoal-muted);">Ugali, nyama choma, beef wet fry, matoke, sukuma wiki, and Swahili coast pilau.</p>
+        </div>
+        <div class="menu-grid" id="kenyanGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: HALAL MENU VIEW -->
+    <div id="view-halal" class="view-container">
+      <div class="container">
+        <div style="margin-bottom: 30px;">
+          <div class="badge badge-green" style="margin-bottom: 6px;">100% HALAL CERTIFIED</div>
+          <h1 style="font-size: 38px;">Confirmed Halal Kitchen Selection</h1>
+          <p style="color: var(--color-charcoal-muted);">All chicken, beef, and goat meats prepared strictly compliant with halal dietary requirements.</p>
+        </div>
+        <div class="menu-grid" id="halalGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: HEALTHY MEALS VIEW -->
+    <div id="view-healthy" class="view-container">
+      <div class="container">
+        <div style="margin-bottom: 30px;">
+          <div class="badge badge-green" style="margin-bottom: 6px;">FRESH & BALANCED</div>
+          <h1 style="font-size: 38px;">Healthy Bowls & Lean Grills</h1>
+          <p style="color: var(--color-charcoal-muted);">Grilled proteins, wholesome grains, vibrant kachumbari, and natural pressed juices.</p>
+        </div>
+        <div class="menu-grid" id="healthyGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: CHECKOUT VIEW -->
+    <div id="view-checkout" class="view-container">
+      <div class="container">
+        <div style="margin-bottom: 30px;">
+          <a href="#menu" style="font-size: 13px; font-weight: 700; color: var(--color-charcoal-muted); display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+            <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Return to Menu
+          </a>
+          <h1 style="font-size: 36px;">Complete Your Order</h1>
+          <p style="color: var(--color-charcoal-muted);">Fast checkout for Nairobi CBD office delivery or instant counter pickup.</p>
+        </div>
+
+        <div class="checkout-grid">
+          <!-- Left: Customer & Delivery Details Form -->
+          <div>
+            <div class="checkout-card">
+              <h2 style="font-size: 20px; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="truck" style="width: 20px; height: 20px; color: var(--color-red);"></i>
+                1. Delivery or Pickup
+              </h2>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                <label style="border: 1.5px solid var(--color-grey-border); border-radius: var(--radius-md); padding: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 700;" id="labelDelivery">
+                  <input type="radio" name="orderType" value="delivery" checked onchange="toggleOrderType('delivery')">
+                  <div>
+                    <div>CBD Office Delivery</div>
+                    <div style="font-size: 12px; color: var(--color-charcoal-muted); font-weight: 500;">KES 100 flat to any CBD desk</div>
+                  </div>
+                </label>
+
+                <label style="border: 1.5px solid var(--color-grey-border); border-radius: var(--radius-md); padding: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 700;" id="labelPickup">
+                  <input type="radio" name="orderType" value="pickup" onchange="toggleOrderType('pickup')">
+                  <div>
+                    <div>Express Counter Pickup</div>
+                    <div style="font-size: 12px; color: var(--color-green); font-weight: 500;">Free • Kimathi Street</div>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Customer info -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Full Name *</label>
+                  <input type="text" id="custName" class="form-input" placeholder="e.g. Robinson Mwangi" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Kenyan Phone (M-Pesa) *</label>
+                  <input type="tel" id="custPhone" class="form-input" placeholder="07XX XXX XXX or 2547..." required />
+                </div>
+              </div>
+
+              <!-- Delivery location section -->
+              <div id="deliveryAddressSection">
+                <div class="form-group">
+                  <label class="form-label">CBD Building or Landmark *</label>
+                  <select id="custBuilding" class="form-select" onchange="handleBuildingSelect(event)">
+                    <option value="">Select your building or specify below...</option>
+                    <option value="Lonrho House">Lonrho House (Standard St)</option>
+                    <option value="I&M Bank Tower">I&M Bank Tower (Kenyatta Ave)</option>
+                    <option value="Teleposta Towers">Teleposta Towers (Kenyatta Ave)</option>
+                    <option value="Times Tower">Times Tower (Haile Selassie)</option>
+                    <option value="Anniversary Towers">Anniversary Towers (Monrovia St)</option>
+                    <option value="View Park Towers">View Park Towers (Uhuru Hwy)</option>
+                    <option value="Kencom House">Kencom House (City Hall Way)</option>
+                    <option value="Jubilee Insurance House">Jubilee Insurance House (Wabera St)</option>
+                    <option value="Norwich Union House">Norwich Union House (Kimathi St)</option>
+                    <option value="Nation Centre">Nation Centre (Kimathi St)</option>
+                    <option value="Other CBD Building">Other Building / Street Address...</option>
+                  </select>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Floor & Office / Company Name *</label>
+                    <input type="text" id="custOffice" class="form-input" placeholder="e.g. 5th Floor, Suite 502 / Tech Hub" required />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Delivery Note (Optional)</label>
+                    <input type="text" id="custNotes" class="form-input" placeholder="e.g. Leave with reception, call upon arrival" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment method selection -->
+            <div class="checkout-card">
+              <h2 style="font-size: 20px; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="credit-card" style="width: 20px; height: 20px; color: var(--color-green);"></i>
+                2. Select Payment Method
+              </h2>
+
+              <label class="payment-method-radio selected" id="optMpesa">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <input type="radio" name="paymentMethod" value="mpesa" checked onchange="handlePaymentMethodChange('mpesa')">
+                  <div>
+                    <div style="font-weight: 800; font-size: 15px;">M-Pesa STK Push (Express Online)</div>
+                    <div style="font-size: 12px; color: var(--color-charcoal-muted);">Enter M-Pesa PIN on your phone upon placing order</div>
+                  </div>
+                </div>
+                <span class="badge badge-green">Recommended</span>
+              </label>
+
+              <label class="payment-method-radio" id="optCash">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <input type="radio" name="paymentMethod" value="cash" onchange="handlePaymentMethodChange('cash')">
+                  <div>
+                    <div style="font-weight: 800; font-size: 15px;">Pay on Delivery / Counter Pickup</div>
+                    <div style="font-size: 12px; color: var(--color-charcoal-muted);">Pay cash or Till Number at your desk or counter</div>
+                  </div>
+                </div>
+              </label>
+
+              <!-- Technical Notice for real Paystack & M-Pesa backends -->
+              <div style="margin-top: 14px; padding: 12px; background: var(--color-cream); border-radius: var(--radius-sm); border: 1px dashed var(--color-grey-border); font-size: 12px; color: var(--color-charcoal-muted);">
+                ℹ️ <strong>System Architecture:</strong> Production M-Pesa STK push and Paystack integrations require verified server-side authentication, credentials, and webhook callbacks. In this prototype, checkout runs a live simulation with real input validation and order receipt generation.
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Order Summary Breakdown -->
+          <div>
+            <div class="checkout-card">
+              <h2 style="font-size: 20px; margin-bottom: 18px;">Your Tray Summary</h2>
+              
+              <div id="checkoutItemsList" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                <!-- Populated by JS -->
+              </div>
+
+              <div style="border-top: 1px solid var(--color-grey-border); padding-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div class="cart-summary-line">
+                  <span>Subtotal</span>
+                  <span id="checkoutSubtotal" style="font-weight: 700;">KES 0</span>
+                </div>
+                <div class="cart-summary-line">
+                  <span>Delivery Fee</span>
+                  <span id="checkoutDeliveryFee" style="font-weight: 700;">KES 100</span>
+                </div>
+                <div class="cart-summary-total">
+                  <span>Final Total</span>
+                  <span id="checkoutGrandTotal" style="color: var(--color-red);">KES 100</span>
+                </div>
+              </div>
+
+              <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 16px;" onclick="placeOrder()">
+                <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                Confirm & Place Order
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- VIEW: ORDER STATUS & TRACKING VIEW -->
+    <div id="view-track" class="view-container">
+      <div class="container" style="max-width: 750px;">
+        <div class="checkout-card" style="text-align: center; padding: 40px 30px;">
+          <div style="width: 60px; height: 60px; background: var(--color-green-light); color: var(--color-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <i data-lucide="check" style="width: 32px; height: 32px;"></i>
+          </div>
+          
+          <h1 style="font-size: 30px; margin-bottom: 6px;">Order Received!</h1>
+          <p style="color: var(--color-charcoal-muted); font-size: 15px;">Your order has been sent directly to the Nairobi Feast CBD kitchen grill.</p>
+
+          <div style="margin: 20px auto; display: inline-block; background: var(--color-cream); padding: 8px 18px; border-radius: var(--radius-full); font-weight: 800; font-size: 14px; border: 1px solid var(--color-grey-border);">
+            Order Reference: <span id="trackOrderRef" style="color: var(--color-red);">NF-CBD-8429</span>
+          </div>
+
+          <!-- Real-Time Progress Timeline -->
+          <div class="timeline" id="trackingTimeline" style="text-align: left; max-width: 480px; margin: 30px auto;">
+            <div class="timeline-step completed" id="step-1">
+              <div class="timeline-dot"><i data-lucide="check" style="width: 12px; height: 12px;"></i></div>
+              <div style="font-weight: 800; font-size: 15px;">1. Order Received & Recorded</div>
+              <div style="font-size: 12px; color: var(--color-charcoal-muted);">Sent to kitchen display system.</div>
+            </div>
+            <div class="timeline-step active" id="step-2">
+              <div class="timeline-dot">2</div>
+              <div style="font-weight: 800; font-size: 15px;">2. Sizzling on the Grill & Wok</div>
+              <div style="font-size: 12px; color: var(--color-charcoal-muted);">Chef preparing fresh ingredients.</div>
+            </div>
+            <div class="timeline-step" id="step-3">
+              <div class="timeline-dot">3</div>
+              <div style="font-weight: 800; font-size: 15px;">3. Packed & Quality Checked</div>
+              <div style="font-size: 12px; color: var(--color-charcoal-muted);">Placed in insulated hot bag with cutlery & napkins.</div>
+            </div>
+            <div class="timeline-step" id="step-4">
+              <div class="timeline-dot">4</div>
+              <div style="font-weight: 800; font-size: 15px;">4. Messenger En Route / Ready at Counter</div>
+              <div style="font-size: 12px; color: var(--color-charcoal-muted);">Delivering directly to your office desk.</div>
+            </div>
+          </div>
+
+          <div id="trackOrderDetails" style="text-align: left; background: var(--color-cream); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border); margin-top: 20px;">
+            <!-- Rendered by JS -->
+          </div>
+
+          <div style="display: flex; gap: 14px; justify-content: center; margin-top: 24px;">
+            <a href="#menu" class="btn btn-secondary btn-sm">Order Another Meal</a>
+            <a href="tel:+254700123456" class="btn btn-primary btn-sm"><i data-lucide="phone" style="width: 14px; height: 14px;"></i> Call Kitchen Line</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: ORDER HISTORY VIEW -->
+    <div id="view-orders" class="view-container">
+      <div class="container" style="max-width: 800px;">
+        <div style="margin-bottom: 24px;">
+          <h1 style="font-size: 34px;">Your Past Orders</h1>
+          <p style="color: var(--color-charcoal-muted);">Orders saved locally in your browser session.</p>
+        </div>
+        <div id="orderHistoryList" style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: ABOUT VIEW -->
+    <div id="view-about" class="view-container">
+      <div class="container" style="max-width: 900px;">
+        <div style="margin-bottom: 30px;">
+          <div class="badge badge-red" style="margin-bottom: 6px;">OUR PHILOSOPHY</div>
+          <h1 style="font-size: 38px;">A Kitchen for the Heart of Nairobi</h1>
+        </div>
+
+        <div style="background: #FFF; padding: 36px; border-radius: var(--radius-lg); border: 1.5px solid var(--color-grey-border); line-height: 1.8; color: var(--color-charcoal);">
+          <p style="font-size: 17px; margin-bottom: 18px;">
+            Nairobi CBD moves fast. Between corporate meetings, client pitches, retail shifts, and university lectures, people need food that is **delicious, filling, clean, and reasonably priced.**
+          </p>
+          <p style="margin-bottom: 18px;">
+            We built <strong>Nairobi Feast</strong> on a simple promise: generous portions that satisfy everyday hunger without luxury price tags. We source our poultry, beef, kienyeji greens, and potatoes daily from local market partners across Kenya.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin: 30px 0;">
+            <div style="background: var(--color-cream); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border);">
+              <div style="font-size: 24px; font-weight: 900; color: var(--color-red);">80+ Dishes</div>
+              <div style="font-size: 13px; color: var(--color-charcoal-muted); margin-top: 4px;">From chips & chicken to ugali sukuma and Swahili pilau.</div>
+            </div>
+            <div style="background: var(--color-cream); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border);">
+              <div style="font-size: 24px; font-weight: 900; color: var(--color-green);">100% Halal</div>
+              <div style="font-size: 13px; color: var(--color-charcoal-muted); margin-top: 4px;">Certified slaughter, strict pork-free and alcohol-free facility.</div>
+            </div>
+            <div style="background: var(--color-cream); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--color-grey-border);">
+              <div style="font-size: 24px; font-weight: 900; color: var(--color-orange);">15-Min Prep</div>
+              <div style="font-size: 13px; color: var(--color-charcoal-muted); margin-top: 4px;">Optimized kitchen lines designed for the CBD lunch rush.</div>
+            </div>
+          </div>
+          <p>
+            Whether you eat in our lively dining room or get lunch sent straight to your office desk, Nairobi Feast is your everyday kitchen in the capital.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: CONTACT & LOCATION VIEW -->
+    <div id="view-contact" class="view-container">
+      <div class="container" style="max-width: 900px;">
+        <div style="margin-bottom: 30px;">
+          <div class="badge badge-dark" style="margin-bottom: 6px;">VISIT OR CALL US</div>
+          <h1 style="font-size: 38px;">Contact & CBD Location</h1>
+          <p style="color: var(--color-charcoal-muted);">Right at the centre of Nairobi Central Business District.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+          <div style="background: #FFF; padding: 30px; border-radius: var(--radius-lg); border: 1.5px solid var(--color-grey-border);">
+            <h3 style="font-size: 20px; margin-bottom: 16px;">Kitchen & Dining Room</h3>
+            <div style="display: flex; flex-direction: column; gap: 14px; font-size: 14.5px;">
+              <div>
+                <strong>📍 Physical Address:</strong><br>
+                Kimathi Street, Near Norwich Union House & Mama Ngina Junction,<br>
+                Nairobi Central Business District, Kenya
+              </div>
+              <div>
+                <strong>🕒 Operating Hours:</strong><br>
+                Monday – Saturday: 7:00 AM – 10:30 PM<br>
+                Sunday & Public Holidays: 8:00 AM – 10:00 PM
+              </div>
+              <div>
+                <strong>📞 Desk Orders & Inquiries:</strong><br>
+                Phone: +254 700 123 456<br>
+                WhatsApp: +254 700 123 456<br>
+                Email: orders@nairobifeast.co.ke
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #FFF; padding: 30px; border-radius: var(--radius-lg); border: 1.5px solid var(--color-grey-border);">
+            <h3 style="font-size: 20px; margin-bottom: 16px;">Send Kitchen a Message</h3>
+            <form onsubmit="handleContactSubmit(event)" style="display: flex; flex-direction: column; gap: 14px;">
+              <input type="text" class="form-input" placeholder="Your Name" required>
+              <input type="tel" class="form-input" placeholder="Phone Number" required>
+              <textarea class="form-textarea" rows="3" placeholder="Message or Special Dietary Request" required></textarea>
+              <button type="submit" class="btn btn-primary btn-sm">Send Message</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: DELIVERY INFO VIEW -->
+    <div id="view-delivery" class="view-container">
+      <div class="container" style="max-width: 800px;">
+        <h1 style="font-size: 36px; margin-bottom: 16px;">Nairobi CBD Delivery Guidelines</h1>
+        <div style="background: #FFF; padding: 30px; border-radius: var(--radius-lg); border: 1.5px solid var(--color-grey-border); line-height: 1.7;">
+          <h3 style="font-size: 18px; margin-bottom: 8px;">1. CBD Core Delivery (Flat KES 100)</h3>
+          <p style="color: var(--color-charcoal-muted); margin-bottom: 16px;">Covers all buildings along Kenyatta Avenue, Kimathi Street, Mama Ngina Street, Wabera Street, City Hall Way, Moi Avenue, Haile Selassie Avenue, and University Way.</p>
+
+          <h3 style="font-size: 18px; margin-bottom: 8px;">2. Desk Delivery Guarantee</h3>
+          <p style="color: var(--color-charcoal-muted); margin-bottom: 16px;">Our riders are trained for building security clearance and elevators. Provide your floor and office name for direct desk drop-off.</p>
+
+          <h3 style="font-size: 18px; margin-bottom: 8px;">3. Peak Lunch Rush (12:30 PM - 2:00 PM)</h3>
+          <p style="color: var(--color-charcoal-muted);">We recommend scheduling or ordering 20 minutes ahead to skip the mid-day rush.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: POLICIES (PRIVACY, TERMS, REFUNDS) -->
+    <div id="view-privacy" class="view-container">
+      <div class="container" style="max-width: 800px;">
+        <h1 style="font-size: 34px; margin-bottom: 16px;">Privacy Policy</h1>
+        <div style="background: #FFF; padding: 30px; border-radius: var(--radius-lg); border: 1.5px solid var(--color-grey-border); line-height: 1.7; color: var(--color-charcoal);">
+          <p style="margin-bottom: 12px;">Nairobi Feast respects your privacy. Phone numbers and names collected during order checkout are used strictly for order fulfillment, SMS status alerts, and M-Pesa verification.</p>
+          <p>We do not store payment PINs or share customer data with third parties.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-terms" class="view-container">
+      <div class="container" style="max-width: 800px;">
+        <h1 style="font-size: 34px; margin-bottom: 16px;">Terms & Conditions</h1>
+        <div style="background: #FFF; padding: 30px; border-radius: var(--radius-lg); border: 1.5px solid var(--color-grey-border); line-height: 1.7; color: var(--color-charcoal);">
+          <p style="margin-bottom: 12px;">By placing an order via Nairobi Feast, you confirm that delivery details supplied are accurate.</p>
+          <p>Prices in Kenyan Shillings (KES) include local sales taxes. Menu items are subject to daily market availability.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-refunds" class="view-container">
+      <div class="container" style="max-width: 800px;">
+        <h1 style="font-size: 34px; margin-bottom: 16px;">Cancellation & Refund Policy</h1>
+        <div style="background: #FFF; padding: 30px; border-radius: var(--radius-lg); border: 1.5px solid var(--color-grey-border); line-height: 1.7; color: var(--color-charcoal);">
+          <p style="margin-bottom: 12px;">If an incorrect meal is delivered or an order arrives compromised, notify the kitchen hotline (+254 700 123 456) immediately.</p>
+          <p>Verified complaints are either promptly replaced with a fresh meal or refunded via M-Pesa within 30 minutes.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==========================================================================
+       DISH CUSTOMIZATION DETAIL MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="dishModalOverlay" onclick="closeDishModal()">
+    <div class="dish-modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeDishModal()"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+      <img id="modalDishImg" src="" alt="Dish Detail" class="modal-img">
+      
+      <div class="modal-body">
+        <div class="modal-title-row">
+          <div>
+            <div id="modalDishBadges" style="margin-bottom: 6px;"></div>
+            <h2 id="modalDishTitle" class="modal-dish-title">Dish Title</h2>
+          </div>
+          <div id="modalDishPrice" class="modal-dish-price">KES 0</div>
+        </div>
+
+        <p id="modalDishDesc" class="modal-desc">Dish description details...</p>
+
+        <!-- Customization Options -->
+        <div id="modalCustomizationOptions">
+          <!-- Choice of Starch / Side -->
+          <div class="option-group-title">
+            <span>Choose Your Starch / Side</span>
+            <span style="color: var(--color-red); font-size: 11px;">Included</span>
+          </div>
+          <div class="option-radio-grid" id="modalStarchGrid">
+            <label class="option-box selected">
+              <input type="radio" name="dishSide" value="Chips" checked>
+              <span>Crispy Chips</span>
+            </label>
+            <label class="option-box">
+              <input type="radio" name="dishSide" value="Pilau">
+              <span>Aromatic Pilau</span>
+            </label>
+            <label class="option-box">
+              <input type="radio" name="dishSide" value="Ugali">
+              <span>Hot Ugali</span>
+            </label>
+            <label class="option-box">
+              <input type="radio" name="dishSide" value="Chapati (2pcs)">
+              <span>Chapati (2 pcs)</span>
+            </label>
+          </div>
+
+          <!-- Spice Level -->
+          <div class="option-group-title">
+            <span>Spice Preference</span>
+          </div>
+          <div class="option-radio-grid" id="modalSpiceGrid">
+            <label class="option-box selected">
+              <input type="radio" name="dishSpice" value="Mild" checked>
+              <span>Mild</span>
+            </label>
+            <label class="option-box">
+              <input type="radio" name="dishSpice" value="Medium Spice">
+              <span>Medium 🌶️</span>
+            </label>
+            <label class="option-box">
+              <input type="radio" name="dishSpice" value="Extra Pilipili">
+              <span>Extra Pilipili 🔥</span>
+            </label>
+          </div>
+
+          <!-- Free Sauce / Kachumbari -->
+          <div class="option-group-title">
+            <span>Garnish / Dip</span>
+          </div>
+          <div class="option-radio-grid">
+            <label class="option-box selected">
+              <input type="radio" name="dishDip" value="Fresh Kachumbari" checked>
+              <span>Fresh Kachumbari</span>
+            </label>
+            <label class="option-box">
+              <input type="radio" name="dishDip" value="Chilli Garlic Dip">
+              <span>Chilli Garlic Dip</span>
+            </label>
+            <label class="option-box">
+              <input type="radio" name="dishDip" value="Coleslaw">
+              <span>Creamy Coleslaw</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Quantity & Add Button -->
+        <div class="modal-footer-row">
+          <div class="qty-counter">
+            <button class="qty-btn" onclick="adjustModalQty(-1)">-</button>
+            <span class="qty-num" id="modalQtyDisplay">1</span>
+            <button class="qty-btn" onclick="adjustModalQty(1)">+</button>
+          </div>
+
+          <button class="btn btn-primary" style="flex-grow: 1;" onclick="addModalDishToTray()">
+            <i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>
+            Add to Tray (<span id="modalTotalPrice">KES 0</span>)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       CART SLIDE-OVER DRAWER
+       ========================================================================== -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay" onclick="closeCartDrawer()">
+    <div class="cart-drawer" onclick="event.stopPropagation()">
+      <div class="cart-header">
+        <div class="cart-title">
+          <i data-lucide="shopping-bag" style="color: var(--color-red);"></i>
+          <span>Your Meal Tray</span>
+        </div>
+        <button onclick="closeCartDrawer()"><i data-lucide="x" style="width: 22px; height: 22px;"></i></button>
+      </div>
+
+      <div class="cart-body" id="cartDrawerBody">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="cart-footer" id="cartDrawerFooter">
+        <div class="cart-summary-line">
+          <span>Subtotal</span>
+          <span id="cartDrawerSubtotal" style="font-weight: 700;">KES 0</span>
+        </div>
+        <div class="cart-summary-line">
+          <span>CBD Desk Delivery</span>
+          <span style="font-weight: 700;">KES 100</span>
+        </div>
+        <div class="cart-summary-total">
+          <span>Estimated Total</span>
+          <span id="cartDrawerGrandTotal" style="color: var(--color-red);">KES 0</span>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <a href="#checkout" class="btn btn-primary" style="flex: 1;" onclick="closeCartDrawer()">
+            Proceed to Checkout
+          </a>
+          <button class="btn btn-secondary btn-sm" onclick="clearCart()">Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       TOAST NOTIFICATION CONTAINER
+       ========================================================================== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ==========================================================================
+       SITE FOOTER
+       ========================================================================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="logo-wrapper" style="margin-bottom: 14px;">
+            <div class="brand-mark" style="background: var(--color-red); color: #fff;">NF</div>
+            <div class="brand-name" style="color: #fff;">NAIROBI<span style="color: var(--color-red);">FEAST</span></div>
+          </div>
+          <p style="color: #BBB6AA; font-size: 14px; line-height: 1.6; margin-bottom: 18px;">
+            The vibrant everyday restaurant in Nairobi CBD. Generous portions, authentic Kenyan food, sizzle grills, and rapid office delivery.
+          </p>
+          <div style="font-size: 13px; color: #8C887E;">
+            📍 Kimathi Street, Nairobi Central Business District<br>
+            📞 +254 700 123 456 • ✉️ orders@nairobifeast.co.ke
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Menu Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="#menu">Full 80+ Menu</a></li>
+            <li><a href="#combos">Office Combos</a></li>
+            <li><a href="#kenyan">Kenyan Grills & Stews</a></li>
+            <li><a href="#halal">Halal Certified Dishes</a></li>
+            <li><a href="#healthy">Healthy Bowls</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Ordering & Trust</h4>
+          <ul class="footer-links">
+            <li><a href="#delivery">CBD Delivery Zone</a></li>
+            <li><a href="#track">Track Order Status</a></li>
+            <li><a href="#orders">Order History</a></li>
+            <li><a href="#about">About Our Kitchen</a></li>
+            <li><a href="#contact">Contact & Location</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Operating Hours</h4>
+          <div style="font-size: 13.5px; color: #BBB6AA; line-height: 1.7;">
+            <div><strong>Mon – Sat:</strong> 7:00 AM – 10:30 PM</div>
+            <div><strong>Sunday:</strong> 8:00 AM – 10:00 PM</div>
+            <div style="margin-top: 10px; color: #3F6E45; font-weight: 700;">🟢 Halal Slaughter Certified</div>
+            <div style="color: #F28A35; font-weight: 700;">⚡ M-Pesa STK Push Integrated</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Nairobi Feast CBD Kitchen & Grill. All rights reserved.</div>
+        <div style="display: flex; gap: 18px;">
+          <a href="#privacy">Privacy</a>
+          <a href="#terms">Terms</a>
+          <a href="#refunds">Refund Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       APPLICATION LOGIC & DATABASE (80+ DISHES, CART, CHECKOUT, GSAP ROUTER)
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       1. DATA CATALOGUE: OVER 80 MEANINGFULLY DISTINCT DISHES
+       ========================================================================== */
+    const MENU_DATABASE = [
+      // 1. Everyday Favourites (1-12)
+      {
+        id: "d-1",
+        name: "Quarter Chicken & Crispy Chips",
+        category: "everyday",
+        price: 380,
+        prepTime: "15 min",
+        desc: "Golden marinated roast chicken quarter served with piping hot hand-cut potato chips and fresh kachumbari.",
+        image: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-2",
+        name: "Half Chicken & Masala Chips",
+        category: "everyday",
+        price: 680,
+        prepTime: "18 min",
+        desc: "Juicy half chicken grilled over hot embers, paired with spiced saucy masala chips and lemon wedges.",
+        image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: true, isHealthy: false
+      },
+      {
+        id: "d-3",
+        name: "Beef Wet Fry & Hot Chips",
+        category: "everyday",
+        price: 450,
+        prepTime: "15 min",
+        desc: "Tender cubed beef sautéed with sweet onions, tomatoes, and cilantro, served with generous potato chips.",
+        image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-4",
+        name: "Farmer's Sausage & Chips Platter",
+        category: "everyday",
+        price: 320,
+        prepTime: "10 min",
+        desc: "Two premium grilled beef sausages with crispy golden chips and chilli garlic dip.",
+        image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-5",
+        name: "Crispy Fried Chicken (3 Pieces)",
+        category: "everyday",
+        price: 480,
+        prepTime: "12 min",
+        desc: "Southern-style deep fried spiced chicken portions with crunchy golden crust and tender juicy meat.",
+        image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-6",
+        name: "Slow-Cooked Beef Stew with Steamed Rice",
+        category: "everyday",
+        price: 390,
+        prepTime: "10 min",
+        desc: "Rich savoury tomato-beef stew with carrots and potatoes, served over fluffy steamed basmati rice.",
+        image: "https://images.unsplash.com/photo-1547496502-affa22d38842?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-7",
+        name: "Chicken Stew with Chapati (2 Pieces)",
+        category: "everyday",
+        price: 420,
+        prepTime: "12 min",
+        desc: "Homestyle chicken simmered in aromatic gravy paired with two warm, soft, layered Swahili chapatis.",
+        image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-8",
+        name: "Rice & Yellow Coconut Beans",
+        category: "everyday",
+        price: 260,
+        prepTime: "8 min",
+        desc: "Soft yellow beans cooked in creamy Swahili coconut sauce with onions, served with steamed white rice.",
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-9",
+        name: "Coast Beef Pilau with Kachumbari",
+        category: "everyday",
+        price: 420,
+        prepTime: "10 min",
+        desc: "Fragrant spiced rice cooked with cumin, cardamom, garlic, and tender beef cubes. Served with banana and fresh salsa.",
+        image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-10",
+        name: "Chicken Biriyani Special",
+        category: "everyday",
+        price: 520,
+        prepTime: "15 min",
+        desc: "Traditional Swahili layered biriyani with aromatic saffron rice, tender spiced chicken, and rich tomato masala.",
+        image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: true, isHealthy: false
+      },
+      {
+        id: "d-11",
+        name: "Ugali Sukuma & Beef Karanga",
+        category: "everyday",
+        price: 360,
+        prepTime: "12 min",
+        desc: "Traditional white cornmeal ugali served with sautéed sukuma wiki greens and hearty fried beef chunks.",
+        image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-12",
+        name: "Double Beef Smokies & Chips",
+        category: "everyday",
+        price: 290,
+        prepTime: "8 min",
+        desc: "Two juicy grilled beef smokies slit open and filled with spicy kachumbari, alongside fresh chips.",
+        image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: false
+      },
+
+      // 2. Authentic Kenyan Meals (13-22)
+      {
+        id: "d-13",
+        name: "Goat Nyama Choma Platter (500g)",
+        category: "kenyan",
+        price: 850,
+        prepTime: "25 min",
+        desc: "Tender goat ribs roasted slowly over open charcoal. Served with ugali, kachumbari, and homemade chilli salt.",
+        image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: true
+      },
+      {
+        id: "d-14",
+        name: "Kienyeji Chicken Wet Fry & Ugali",
+        category: "kenyan",
+        price: 750,
+        prepTime: "22 min",
+        desc: "Free-range local kienyeji chicken pan-fried in rich onion, ginger, and garlic gravy with traditional ugali.",
+        image: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: true
+      },
+      {
+        id: "d-15",
+        name: "Mukimo with Savory Beef Stew",
+        category: "kenyan",
+        price: 420,
+        prepTime: "12 min",
+        desc: "Mashed potatoes, pumpkin leaves, and green maize (mukimo) served with tender braised beef chunks.",
+        image: "https://images.unsplash.com/photo-1547496502-affa22d38842?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: true
+      },
+      {
+        id: "d-16",
+        name: "Traditional Githeri Special with Avocado",
+        category: "kenyan",
+        price: 280,
+        prepTime: "10 min",
+        desc: "Boiled maize and kidney beans fried with tomatoes and onions, served with a ripe creamy avocado wedge.",
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-17",
+        name: "Matoke with Beef & Carrots",
+        category: "kenyan",
+        price: 390,
+        prepTime: "15 min",
+        desc: "Green cooking plantains simmered in tomato and beef broth until melt-in-your-mouth soft.",
+        image: "https://images.unsplash.com/photo-1547496502-affa22d38842?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: true
+      },
+      {
+        id: "d-18",
+        name: "Ugali with Sautéed Managu & Fried Fish",
+        category: "kenyan",
+        price: 650,
+        prepTime: "18 min",
+        desc: "Deep-fried whole Lake Victoria tilapia served with traditional bitter indigenous greens and hot ugali.",
+        image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: true
+      },
+      {
+        id: "d-19",
+        name: "Swahili Coconut Fish Curry with Rice",
+        category: "kenyan",
+        price: 680,
+        prepTime: "16 min",
+        desc: "Fresh fish fillets gently simmered in coconut milk, turmeric, coriander, and lime with fragrant rice.",
+        image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: true
+      },
+      {
+        id: "d-20",
+        name: "Liver Wet Fry with Ugali & Greens",
+        category: "kenyan",
+        price: 430,
+        prepTime: "14 min",
+        desc: "Tender beef liver quick-fried with bell peppers, sweet onions, and dania, alongside white ugali.",
+        image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: true
+      },
+      {
+        id: "d-21",
+        name: "Mixed Platter: Choma, Samosas & Mukimo",
+        category: "kenyan",
+        price: 980,
+        prepTime: "20 min",
+        desc: "A hearty feast plate with roast goat ribs, 2 beef samosas, mukimo, kachumbari, and chilli dip.",
+        image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-22",
+        name: "Boiled Kienyeji Beef Bone Soup with Chapati",
+        category: "kenyan",
+        price: 320,
+        prepTime: "10 min",
+        desc: "Invigorating bone marrow broth infused with ginger, garlic, and wild herbs, served with 2 warm chapatis.",
+        image: "https://images.unsplash.com/photo-1547496502-affa22d38842?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: true
+      },
+
+      // 3. Fast Food & Street Grills (23-34)
+      {
+        id: "d-23",
+        name: "Nairobi Feast Classic Beef Burger",
+        category: "fastfood",
+        price: 380,
+        prepTime: "12 min",
+        desc: "Flame-grilled beef patty, melted cheese, crisp lettuce, tomato, pickles, and our signature CBD secret sauce.",
+        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-24",
+        name: "Crispy Peri-Peri Chicken Burger",
+        category: "fastfood",
+        price: 420,
+        prepTime: "12 min",
+        desc: "Fried crispy chicken breast dipped in zesty peri-peri glaze, crunchy slaw, and garlic mayo on toasted sesame bun.",
+        image: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: true, isHealthy: false
+      },
+      {
+        id: "d-25",
+        name: "Double Smash Cheeseburger & Fries",
+        category: "fastfood",
+        price: 590,
+        prepTime: "14 min",
+        desc: "Two smashed beef patties, double cheddar cheese, grilled onions, mustard mayo, and side of fries.",
+        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-26",
+        name: "Grilled Chicken Shawarma Wrap",
+        category: "fastfood",
+        price: 360,
+        prepTime: "10 min",
+        desc: "Shaved marinated chicken, garlic toum sauce, french fries, and pickled cucumber rolled in thin flatbread.",
+        image: "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-27",
+        name: "Spicy Beef Suya Wrap",
+        category: "fastfood",
+        price: 380,
+        prepTime: "10 min",
+        desc: "Tender grilled beef dusted with authentic suya spice, red onions, tomatoes, and cabbage in warm chapati wrap.",
+        image: "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: true, isHealthy: false
+      },
+      {
+        id: "d-28",
+        name: "Cheesy Loaded Beef Fries",
+        category: "fastfood",
+        price: 490,
+        prepTime: "12 min",
+        desc: "Mountain of crispy fries topped with seasoned minced beef, melted cheddar cheese, jalapeños, and ranch dressing.",
+        image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: true, isHealthy: false
+      },
+      {
+        id: "d-29",
+        name: "BBQ Honey Glazed Chicken Wings (6pcs)",
+        category: "fastfood",
+        price: 460,
+        prepTime: "12 min",
+        desc: "Crispy chicken wings tossed in rich smoky barbecue sauce with honey and toasted sesame seeds.",
+        image: "https://images.unsplash.com/photo-1527477378698-4a0e3be83ab0?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-30",
+        name: "Fiery Buffalo Wings (6pcs)",
+        category: "fastfood",
+        price: 460,
+        prepTime: "12 min",
+        desc: "Classic hot buffalo wings coated in spicy cayenne butter sauce with blue cheese dipping sauce.",
+        image: "https://images.unsplash.com/photo-1527477378698-4a0e3be83ab0?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: true, isHealthy: false
+      },
+      {
+        id: "d-31",
+        name: "Classic All-Beef Hot Dog & Chips",
+        category: "fastfood",
+        price: 310,
+        prepTime: "8 min",
+        desc: "Juicy grilled beef frankfurter inside soft bun with caramelized onions, ketchup, and mustard.",
+        image: "https://images.unsplash.com/photo-1619740455993-9e612b1af08a?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-32",
+        name: "Crispy Golden Onion Rings (10pcs)",
+        category: "fastfood",
+        price: 240,
+        prepTime: "8 min",
+        desc: "Thick-cut sweet onion slices dipped in crunchy batter and fried until golden, served with spicy mayo.",
+        image: "https://images.unsplash.com/photo-1639024471287-035216701984?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-33",
+        name: "Falafel & Hummus Wrap",
+        category: "fastfood",
+        price: 320,
+        prepTime: "10 min",
+        desc: "Crispy spiced chickpea falafel patties, creamy tahini, diced salad, and hummus rolled in flatbread.",
+        image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-34",
+        name: "Crispy Chicken Tenders (4pcs) & Chips",
+        category: "fastfood",
+        price: 410,
+        prepTime: "10 min",
+        desc: "Tender chicken breast strips crumbed and fried golden, served with chips and honey mustard dip.",
+        image: "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: false
+      },
+
+      // 4. Rice and Pasta (35-44)
+      {
+        id: "d-35",
+        name: "Chicken Egg Fried Rice",
+        category: "ricepasta",
+        price: 390,
+        prepTime: "12 min",
+        desc: "Wok-tossed basmati rice with diced chicken, scrambled eggs, scallions, carrots, and light soy sauce.",
+        image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-36",
+        name: "Beef & Vegetable Fried Rice",
+        category: "ricepasta",
+        price: 410,
+        prepTime: "12 min",
+        desc: "Fluffy rice wok-fried with tender beef slices, green peas, sweet corn, and aromatic garlic butter.",
+        image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-37",
+        name: "Garden Vegetable Fried Rice",
+        category: "ricepasta",
+        price: 290,
+        prepTime: "10 min",
+        desc: "Fresh garden vegetables stir-fried with basmati rice, sesame oil, and toasted sesame seeds.",
+        image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-38",
+        name: "Creamy Garlic Chicken Penne Pasta",
+        category: "ricepasta",
+        price: 490,
+        prepTime: "14 min",
+        desc: "Penne pasta tossed in velvety garlic parmesan cream sauce with grilled chicken breast and fresh parsley.",
+        image: "https://images.unsplash.com/photo-1621996346565-e3d5d6281724?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-39",
+        name: "Spaghetti Bolognese with Minced Beef",
+        category: "ricepasta",
+        price: 460,
+        prepTime: "14 min",
+        desc: "Classic Italian spaghetti tossed with slow-simmered minced beef, herb tomato sauce, and parmesan.",
+        image: "https://images.unsplash.com/photo-1621996346565-e3d5d6281724?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-40",
+        name: "Spicy Penne Arrabbiata",
+        category: "ricepasta",
+        price: 360,
+        prepTime: "12 min",
+        desc: "Al dente penne pasta in a fiery tomato, garlic, and red chilli sauce topped with basil leaves.",
+        image: "https://images.unsplash.com/photo-1621996346565-e3d5d6281724?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isSpicy: true
+      },
+      {
+        id: "d-41",
+        name: "Teriyaki Chicken Rice Bowl",
+        category: "ricepasta",
+        price: 450,
+        prepTime: "12 min",
+        desc: "Glazed teriyaki chicken breast served over steamed jasmine rice with steamed broccoli and sesame seeds.",
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: true
+      },
+      {
+        id: "d-42",
+        name: "Vegetable Pasta Primavera",
+        category: "ricepasta",
+        price: 350,
+        prepTime: "12 min",
+        desc: "Spaghetti with sautéed bell peppers, zucchini, cherry tomatoes, and olive oil herb dressing.",
+        image: "https://images.unsplash.com/photo-1621996346565-e3d5d6281724?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-43",
+        name: "Swahili Vegetable Pilau",
+        category: "ricepasta",
+        price: 290,
+        prepTime: "10 min",
+        desc: "Spiced coastal rice cooked with potatoes, green peas, carrots, cumin, and cardamom.",
+        image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-44",
+        name: "Mutton Biriyani Royal",
+        category: "ricepasta",
+        price: 620,
+        prepTime: "16 min",
+        desc: "Rich coastal mutton stew layered with spiced basmati rice, fried onions, boiled egg, and yoghurt raita.",
+        image: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: true, isHealthy: false
+      },
+
+      // 5. Breakfast & Swahili Morning (45-52)
+      {
+        id: "d-45",
+        name: "Full Swahili Breakfast Combo",
+        category: "breakfast",
+        price: 320,
+        prepTime: "8 min",
+        desc: "Two fluffy warm mandazi, two beef sausages, and a steaming cup of spiced ginger Kenyan tea.",
+        image: "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-46",
+        name: "Spanish Omelette & Toast (2 Slices)",
+        category: "breakfast",
+        price: 260,
+        prepTime: "8 min",
+        desc: "Two-egg omelette with onions, tomatoes, and green peppers, served with buttered toasted bread.",
+        image: "https://images.unsplash.com/photo-1510693206972-df098062cb71?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-47",
+        name: "Fluffy Golden Mandazi (Pair)",
+        category: "breakfast",
+        price: 80,
+        prepTime: "3 min",
+        desc: "Cardamom-scented Swahili fried dough pastries, soft on the inside with a slight golden crust.",
+        image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-48",
+        name: "Layered Soft Chapatis (Pair)",
+        category: "breakfast",
+        price: 100,
+        prepTime: "3 min",
+        desc: "Two warm, flaky, hand-rolled Kenyan chapatis cooked to golden perfection with vegetable oil.",
+        image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-49",
+        name: "Buttermilk Pancakes with Pure Honey",
+        category: "breakfast",
+        price: 250,
+        prepTime: "10 min",
+        desc: "Three fluffy pancakes served with real butter and pure honey drizzle.",
+        image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-50",
+        name: "Breakfast Sausage & Egg Wrap",
+        category: "breakfast",
+        price: 290,
+        prepTime: "8 min",
+        desc: "Scrambled eggs, sliced grilled beef sausage, melted cheese, and tomato ketchup in warm chapati.",
+        image: "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-51",
+        name: "Fresh Tropical Fruit Breakfast Salad",
+        category: "breakfast",
+        price: 220,
+        prepTime: "5 min",
+        desc: "Diced sweet pawpaw, sweet watermelon, pineapple chunks, and passion fruit seeds.",
+        image: "https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-52",
+        name: "Oatmeal Porridge with Cinnamon & Milk",
+        category: "breakfast",
+        price: 200,
+        prepTime: "6 min",
+        desc: "Warm rolled oats cooked in milk with honey and aromatic ground cinnamon.",
+        image: "https://images.unsplash.com/photo-1584776296944-ab6fb57b0bdd?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+
+      // 6. Healthy Meals & Protein Bowls (53-60)
+      {
+        id: "d-53",
+        name: "Grilled Lemon Herb Chicken Bowl",
+        category: "healthy",
+        price: 520,
+        prepTime: "14 min",
+        desc: "Marinated grilled chicken breast slices over brown rice with steamed greens, cherry tomatoes, and avocado.",
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isHealthy: true, isSpicy: false
+      },
+      {
+        id: "d-54",
+        name: "Pan-Seared Tilapia Fillet & Steamed Veggies",
+        category: "healthy",
+        price: 580,
+        prepTime: "15 min",
+        desc: "Herb-crusted fresh white tilapia fillet served with steamed broccoli, carrots, and lemon butter.",
+        image: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isHealthy: true, isSpicy: false
+      },
+      {
+        id: "d-55",
+        name: "Rainbow Kachumbari Garden Salad",
+        category: "healthy",
+        price: 240,
+        prepTime: "6 min",
+        desc: "Fresh tomatoes, crisp cucumbers, red onions, shredded carrots, cilantro, and fresh lime dressing.",
+        image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-56",
+        name: "Mediterranean Chickpea & Avocado Bowl",
+        category: "healthy",
+        price: 380,
+        prepTime: "8 min",
+        desc: "Spiced boiled chickpeas, sliced ripe avocado, olives, tomatoes, and olive oil vinaigrette over greens.",
+        image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-57",
+        name: "Lean Beef Steak Strips & Brown Rice",
+        category: "healthy",
+        price: 550,
+        prepTime: "15 min",
+        desc: "Tender grilled sirloin strips seasoned with black pepper and sea salt over brown rice and steamed broccoli.",
+        image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isHealthy: true, isSpicy: false
+      },
+      {
+        id: "d-58",
+        name: "Steamed Vegetable Medley Side Plate",
+        category: "healthy",
+        price: 180,
+        prepTime: "8 min",
+        desc: "Lightly salted steamed carrots, green beans, sweet corn, and broccoli florets.",
+        image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-59",
+        name: "Whole Wheat Grilled Chicken Wrap",
+        category: "healthy",
+        price: 410,
+        prepTime: "10 min",
+        desc: "Lean grilled chicken, shredded romaine lettuce, tomatoes, and light yoghurt sauce in whole wheat wrap.",
+        image: "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isHealthy: true, isSpicy: false
+      },
+      {
+        id: "d-60",
+        name: "High-Protein Red Lentil Dhal with Rice",
+        category: "healthy",
+        price: 310,
+        prepTime: "10 min",
+        desc: "Yellow and red lentils simmered with ginger, garlic, turmeric, and cumin with steamed basmati rice.",
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+
+      // 7. Snacks, Bites & Sides (61-70)
+      {
+        id: "d-61",
+        name: "Crispy Beef Samosas (Pair)",
+        category: "snacks",
+        price: 120,
+        prepTime: "3 min",
+        desc: "Golden triangular pastries filled with seasoned minced beef, scallions, and Swahili spices with lemon wedge.",
+        image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-62",
+        name: "Vegetable Samosas (Pair)",
+        category: "snacks",
+        price: 100,
+        prepTime: "3 min",
+        desc: "Crispy pastry stuffed with spiced potatoes, green peas, and carrots.",
+        image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-63",
+        name: "Golden Coast Bhajias with Coriander Dip",
+        category: "snacks",
+        price: 220,
+        prepTime: "8 min",
+        desc: "Thinly sliced potatoes coated in gram flour batter with cumin and turmeric, deep fried crispy.",
+        image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-64",
+        name: "Chicken Spring Rolls (3 Pieces)",
+        category: "snacks",
+        price: 180,
+        prepTime: "5 min",
+        desc: "Crispy fried rolls filled with seasoned shredded chicken and julienned vegetables.",
+        image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: false
+      },
+      {
+        id: "d-65",
+        name: "Large Portion Golden French Fries",
+        category: "snacks",
+        price: 180,
+        prepTime: "6 min",
+        desc: "Piping hot hand-cut Kenyan potato chips with sea salt.",
+        image: "https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-66",
+        name: "Spicy Masala French Fries",
+        category: "snacks",
+        price: 230,
+        prepTime: "8 min",
+        desc: "Chips tossed in spicy tomato, garlic, and chilli sauce with fresh coriander.",
+        image: "https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isSpicy: true
+      },
+      {
+        id: "d-67",
+        name: "Creamy Homestyle Coleslaw",
+        category: "snacks",
+        price: 100,
+        prepTime: "3 min",
+        desc: "Finely shredded crisp cabbage and carrots in sweet creamy mayo dressing.",
+        image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-68",
+        name: "Extra Side of Hot White Ugali",
+        category: "snacks",
+        price: 70,
+        prepTime: "3 min",
+        desc: "Steaming hot freshly made cornmeal ugali portion.",
+        image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-69",
+        name: "Extra Side of Sautéed Sukuma Wiki",
+        category: "snacks",
+        price: 90,
+        prepTime: "3 min",
+        desc: "Fresh collard greens sautéed with onions and tomatoes.",
+        image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-70",
+        name: "Farmer's Choice Beef Smokie (Single)",
+        category: "snacks",
+        price: 70,
+        prepTime: "2 min",
+        desc: "Grilled beef smokie served with a spoonful of kachumbari.",
+        image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isSpicy: false, isHealthy: false
+      },
+
+      // 8. Drinks & Beverages (71-77)
+      {
+        id: "d-71",
+        name: "Fresh Pressed Passion Juice (500ml)",
+        category: "drinks",
+        price: 150,
+        prepTime: "3 min",
+        desc: "Pure sweet and tangy passion fruit juice made fresh every morning in our kitchen.",
+        image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-72",
+        name: "Fresh Mango Puree Juice (500ml)",
+        category: "drinks",
+        price: 150,
+        prepTime: "3 min",
+        desc: "Thick sweet Kenyan apple mango juice, chilled to perfection.",
+        image: "https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-73",
+        name: "Fresh Mint Lemonade (Chilled)",
+        category: "drinks",
+        price: 160,
+        prepTime: "3 min",
+        desc: "Fresh squeezed lemons blended with fresh garden mint leaves and a touch of honey.",
+        image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-74",
+        name: "Classic Spiced Kenyan Chai (Hot)",
+        category: "drinks",
+        price: 90,
+        prepTime: "3 min",
+        desc: "Rich brewed Kenyan highland black tea simmered with milk, fresh ginger, and cardamom.",
+        image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-75",
+        name: "Pure Mineral Bottled Water (500ml)",
+        category: "drinks",
+        price: 70,
+        prepTime: "1 min",
+        desc: "Cold refreshing bottled natural mineral water.",
+        image: "https://images.unsplash.com/photo-1560023907-5f339617ea30?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      },
+      {
+        id: "d-76",
+        name: "Chilled Sodas (Coke, Fanta, Sprite, Stoney 500ml)",
+        category: "drinks",
+        price: 90,
+        prepTime: "1 min",
+        desc: "Choice of ice cold Coca-Cola, Fanta Orange, Sprite, or Stoney Tangawizi ginger beer.",
+        image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-77",
+        name: "Creamy Vanilla / Chocolate Milkshake",
+        category: "drinks",
+        price: 250,
+        prepTime: "5 min",
+        desc: "Thick ice cream milkshake blended with dairy milk and whipped cream topping.",
+        image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+
+      // 9. Desserts & Sweets (78-82)
+      {
+        id: "d-78",
+        name: "Rich Chocolate Fudge Cake Slice",
+        category: "desserts",
+        price: 260,
+        prepTime: "3 min",
+        desc: "Decadent dark chocolate layered sponge cake with rich ganache frosting.",
+        image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-79",
+        name: "Passionfruit Swirl Cheesecake",
+        category: "desserts",
+        price: 280,
+        prepTime: "3 min",
+        desc: "Creamy baked cheesecake infused with sweet Kenyan passionfruit puree on a graham cracker crust.",
+        image: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-80",
+        name: "Warm Cinnamon Mandazi with Caramel Dip",
+        category: "desserts",
+        price: 150,
+        prepTime: "4 min",
+        desc: "Fresh mini mandazi tossed in cinnamon sugar with warm salted caramel dipping cup.",
+        image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-81",
+        name: "Vanilla Bean Ice Cream (2 Scoops)",
+        category: "desserts",
+        price: 180,
+        prepTime: "2 min",
+        desc: "Double scoop of smooth dairy vanilla ice cream with wafer roll.",
+        image: "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: false
+      },
+      {
+        id: "d-82",
+        name: "Tropical Fruit Platter with Honey Drizzle",
+        category: "desserts",
+        price: 220,
+        prepTime: "5 min",
+        desc: "Freshly sliced pineapple, mango, sweet melon, and passionfruit with local Acacia honey.",
+        image: "https://images.unsplash.com/photo-1519996529931-28324d5a630e?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isVegetarian: true, isHealthy: true
+      }
+    ];
+
+    // VALUE COMBOS DATABASE
+    const COMBOS_DATABASE = [
+      {
+        id: "combo-1",
+        name: "Student Rush Combo",
+        price: 450,
+        prepTime: "10 min",
+        desc: "Quarter Roast Chicken + Golden French Fries + Choice of Soda (500ml) + Kachumbari.",
+        image: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isCombo: true
+      },
+      {
+        id: "combo-2",
+        name: "CBD Office Lunch Platter",
+        price: 550,
+        prepTime: "12 min",
+        desc: "Sizzling Beef Wet Fry + Fluffy Basmati Rice or Ugali + Sautéed Sukuma Wiki + 500ml Fresh Passion Juice.",
+        image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isCombo: true
+      },
+      {
+        id: "combo-3",
+        name: "Swahili Coastal Pilau Combo",
+        price: 480,
+        prepTime: "10 min",
+        desc: "Beef Spiced Pilau + Kachumbari + Ripe Banana + 500ml Fresh Mango Juice.",
+        image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isCombo: true
+      },
+      {
+        id: "combo-4",
+        name: "Double Burger & Wings Combo",
+        price: 780,
+        prepTime: "15 min",
+        desc: "Classic Beef Burger + 3 BBQ Wings + Masala Chips + Soda (500ml).",
+        image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isCombo: true
+      },
+      {
+        id: "combo-5",
+        name: "Healthy Power Bowl Combo",
+        price: 620,
+        prepTime: "12 min",
+        desc: "Lemon Herb Grilled Chicken Bowl + Fresh Avocado + Chilled Fresh Mint Lemonade.",
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+        isPopular: false, isHalal: true, isHealthy: true, isCombo: true
+      },
+      {
+        id: "combo-6",
+        name: "Friends Sharing Feast Platter (Serves 3-4)",
+        price: 1950,
+        prepTime: "22 min",
+        desc: "Full Roast Chicken + 500g Goat Nyama Choma + 2 Large Chips + 4 Beef Samosas + 1.25L Soda.",
+        image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
+        isPopular: true, isHalal: true, isCombo: true
+      }
+    ];
+
+    /* ==========================================================================
+       2. CATEGORIES SETUP
+       ========================================================================== */
+    const CATEGORIES = [
+      { id: "all", label: "All Items", icon: "utensils" },
+      { id: "everyday", label: "Everyday Favourites", icon: "flame" },
+      { id: "kenyan", label: "Kenyan Meals", icon: "award" },
+      { id: "fastfood", label: "Burgers & Grills", icon: "burger" },
+      { id: "ricepasta", label: "Rice & Pasta", icon: "soup" },
+      { id: "breakfast", label: "Breakfast & Chai", icon: "coffee" },
+      { id: "healthy", label: "Healthy Bowls", icon: "salad" },
+      { id: "snacks", label: "Bites & Sides", icon: "cookie" },
+      { id: "drinks", label: "Fresh Juices & Drinks", icon: "glass-water" },
+      { id: "desserts", label: "Desserts", icon: "cake" }
+    ];
+
+    /* ==========================================================================
+       3. APPLICATION STATE
+       ========================================================================== */
+    let currentCategory = "all";
+    let searchQuery = "";
+    let sortMethod = "popular";
+    let dietaryFilters = {
+      halal: false,
+      vegetarian: false,
+      healthy: false,
+      spicy: false
+    };
+
+    let cart = [];
+    let selectedDishForModal = null;
+    let modalQuantity = 1;
+    let currentOrderType = "delivery"; // delivery or pickup
+    let currentPaymentMethod = "mpesa";
+
+    /* ==========================================================================
+       4. LOCALSTORAGE HELPERS
+       ========================================================================== */
+    function loadSavedCart() {
+      try {
+        const saved = localStorage.getItem("nairobi_feast_cart");
+        if (saved) {
+          cart = JSON.parse(saved);
+          if (!Array.isArray(cart)) cart = [];
+        }
+      } catch (e) {
+        cart = [];
+      }
+      updateCartBadge();
+    }
+
+    function saveCart() {
+      try {
+        localStorage.setItem("nairobi_feast_cart", JSON.stringify(cart));
+      } catch (e) {}
+      updateCartBadge();
+    }
+
+    function loadOrderHistory() {
+      try {
+        const orders = JSON.parse(localStorage.getItem("nairobi_feast_orders") || "[]");
+        return Array.isArray(orders) ? orders : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveOrderToHistory(order) {
+      const orders = loadOrderHistory();
+      orders.unshift(order);
+      try {
+        localStorage.setItem("nairobi_feast_orders", JSON.stringify(orders));
+      } catch (e) {}
+    }
+
+    /* ==========================================================================
+       5. INITIALIZATION & ROUTING
+       ========================================================================== */
+    window.addEventListener("DOMContentLoaded", () => {
+      loadSavedCart();
+      renderCategoryPills();
+      renderQuickPicksRail();
+      renderMenuDishes();
+      renderCombosSection();
+      renderKenyanSection();
+      renderHalalSection();
+      renderHealthySection();
+      initGSAPAnimations();
+      handleHashRouting();
+      
+      window.addEventListener("hashchange", handleHashRouting);
+
+      // Re-initialize Lucide icons
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+
+    // Hash-based Router
+    function handleHashRouting() {
+      const hash = window.location.hash.replace("#", "") || "home";
+      
+      // Update nav link active status
+      document.querySelectorAll(".nav-link").forEach(link => {
+        const target = link.getAttribute("data-nav");
+        if (target === hash) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
+        }
+      });
+
+      // Show matching view
+      const viewId = `view-${hash}`;
+      const allViews = document.querySelectorAll(".view-container");
+      let matched = false;
+
+      allViews.forEach(v => {
+        if (v.id === viewId) {
+          v.classList.add("active-view");
+          matched = true;
+        } else {
+          v.classList.remove("active-view");
+        }
+      });
+
+      if (!matched) {
+        // Fallback to home view if route not found
+        const homeView = document.getElementById("view-home");
+        if (homeView) homeView.classList.add("active-view");
+      }
+
+      // If routed to checkout or orders, render fresh data
+      if (hash === "checkout") {
+        renderCheckoutView();
+      } else if (hash === "orders") {
+        renderOrderHistoryView();
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+
+    /* ==========================================================================
+       6. RENDERING COMPONENTS
+       ========================================================================== */
+    function renderCategoryPills() {
+      const container = document.getElementById("categoryPillsContainer");
+      if (!container) return;
+
+      container.innerHTML = CATEGORIES.map(cat => `
+        <button 
+          class="cat-pill ${cat.id === currentCategory ? 'active' : ''}" 
+          onclick="selectCategory('${cat.id}')"
+        >
+          <span>${cat.label}</span>
+        </button>
+      `).join("");
+    }
+
+    function selectCategory(catId) {
+      currentCategory = catId;
+      renderCategoryPills();
+      renderMenuDishes();
+    }
+
+    function renderQuickPicksRail() {
+      const rail = document.getElementById("quickPicksRail");
+      if (!rail) return;
+
+      const popularDishes = MENU_DATABASE.filter(d => d.isPopular).slice(0, 8);
+      
+      rail.innerHTML = popularDishes.map(dish => `
+        <div class="quick-item-card" onclick="openDishDetail('${dish.id}')">
+          <div class="quick-img-wrapper">
+            <img src="${dish.image}" alt="${dish.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80'" />
+          </div>
+          <div class="quick-info-row">
+            <div class="quick-dish-name">${dish.name}</div>
+          </div>
+          <div class="quick-card-bottom">
+            <div>
+              <span class="quick-dish-price">KES ${dish.price.toLocaleString()}</span>
+              <div class="prep-tag">
+                <i data-lucide="clock" style="width: 12px; height: 12px;"></i> ${dish.prepTime}
+              </div>
+            </div>
+            <button class="btn-quick-add" onclick="event.stopPropagation(); quickAddDish('${dish.id}')" aria-label="Add to Tray">
+              +
+            </button>
+          </div>
+        </div>
+      `).join("");
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderMenuDishes() {
+      const grid = document.getElementById("menuDishesGrid");
+      const emptyState = document.getElementById("menuEmptyState");
+      const resultsCount = document.getElementById("menuResultsCount");
+      if (!grid) return;
+
+      // Filter dishes
+      let filtered = MENU_DATABASE.filter(dish => {
+        // Category
+        if (currentCategory !== "all" && dish.category !== currentCategory) {
+          return false;
+        }
+        // Search
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          const matchName = dish.name.toLowerCase().includes(q);
+          const matchDesc = dish.desc.toLowerCase().includes(q);
+          if (!matchName && !matchDesc) return false;
+        }
+        // Dietary
+        if (dietaryFilters.halal && !dish.isHalal) return false;
+        if (dietaryFilters.vegetarian && !dish.isVegetarian) return false;
+        if (dietaryFilters.healthy && !dish.isHealthy) return false;
+        if (dietaryFilters.spicy && !dish.isSpicy) return false;
+
+        return true;
+      });
+
+      // Sort
+      if (sortMethod === "price-low") {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (sortMethod === "price-high") {
+        filtered.sort((a, b) => b.price - a.price);
+      } else if (sortMethod === "time") {
+        filtered.sort((a, b) => parseInt(a.prepTime) - parseInt(b.prepTime));
+      } else {
+        // Default popular
+        filtered.sort((a, b) => (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0));
+      }
+
+      if (resultsCount) {
+        resultsCount.textContent = `Showing ${filtered.length} authentic dishes`;
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = "";
+        if (emptyState) emptyState.style.display = "block";
+        return;
+      }
+
+      if (emptyState) emptyState.style.display = "none";
+
+      grid.innerHTML = filtered.map(dish => createDishCardHTML(dish)).join("");
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function createDishCardHTML(dish) {
+      return `
+        <div class="dish-card" onclick="openDishDetail('${dish.id}')">
+          <div class="dish-img-box">
+            <img src="${dish.image}" alt="${dish.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=500&q=80'" />
+            <div class="dish-badges">
+              ${dish.isHalal ? '<span class="badge badge-green">Halal</span>' : ''}
+              ${dish.isHealthy ? '<span class="badge badge-orange">Healthy</span>' : ''}
+              ${dish.isVegetarian ? '<span class="badge badge-dark">Veg</span>' : ''}
+              ${dish.isSpicy ? '<span class="badge badge-red">Spicy 🌶️</span>' : ''}
+            </div>
+          </div>
+          <div class="dish-content">
+            <div class="dish-category-label">${dish.category} • ${dish.prepTime}</div>
+            <h3 class="dish-title">${dish.name}</h3>
+            <p class="dish-desc">${dish.desc}</p>
+            <div class="dish-footer">
+              <div class="dish-price-val">KES ${dish.price.toLocaleString()}</div>
+              <div class="dish-actions-group">
+                <button class="btn-dish-details" onclick="event.stopPropagation(); openDishDetail('${dish.id}')">
+                  Options
+                </button>
+                <button class="btn-add-tray" onclick="event.stopPropagation(); quickAddDish('${dish.id}')">
+                  + Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCombosSection() {
+      const grid = document.getElementById("combosGrid");
+      if (!grid) return;
+      grid.innerHTML = COMBOS_DATABASE.map(c => createDishCardHTML(c)).join("");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderKenyanSection() {
+      const grid = document.getElementById("kenyanGrid");
+      if (!grid) return;
+      const kenyan = MENU_DATABASE.filter(d => d.category === "kenyan");
+      grid.innerHTML = kenyan.map(d => createDishCardHTML(d)).join("");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderHalalSection() {
+      const grid = document.getElementById("halalGrid");
+      if (!grid) return;
+      const halal = MENU_DATABASE.filter(d => d.isHalal);
+      grid.innerHTML = halal.map(d => createDishCardHTML(d)).join("");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderHealthySection() {
+      const grid = document.getElementById("healthyGrid");
+      if (!grid) return;
+      const healthy = MENU_DATABASE.filter(d => d.isHealthy || d.isVegetarian);
+      grid.innerHTML = healthy.map(d => createDishCardHTML(d)).join("");
+      if (window.lucide) lucide.createIcons();
+    }
+
+    /* ==========================================================================
+       7. SEARCH, FILTERS & SORT
+       ========================================================================== */
+    function handleSearchInput(e) {
+      searchQuery = e.target.value.trim();
+      renderMenuDishes();
+    }
+
+    function handleSortChange(e) {
+      sortMethod = e.target.value;
+      renderMenuDishes();
+    }
+
+    function toggleDietaryFilter(type) {
+      dietaryFilters[type] = !dietaryFilters[type];
+      const chip = document.getElementById(`filter${capitalize(type)}`);
+      if (chip) {
+        if (dietaryFilters[type]) chip.classList.add("active");
+        else chip.classList.remove("active");
+      }
+      renderMenuDishes();
+    }
+
+    function resetAllFilters() {
+      searchQuery = "";
+      currentCategory = "all";
+      dietaryFilters = { halal: false, vegetarian: false, healthy: false, spicy: false };
+      sortMethod = "popular";
+
+      const searchInput = document.getElementById("menuSearchInput");
+      if (searchInput) searchInput.value = "";
+
+      const sortSelect = document.getElementById("sortSelect");
+      if (sortSelect) sortSelect.value = "popular";
+
+      document.querySelectorAll(".dietary-filter-chip").forEach(c => c.classList.remove("active"));
+
+      renderCategoryPills();
+      renderMenuDishes();
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    /* ==========================================================================
+       8. DISH CUSTOMIZATION MODAL
+       ========================================================================== */
+    function openDishDetail(dishId) {
+      let dish = MENU_DATABASE.find(d => d.id === dishId);
+      if (!dish) {
+        dish = COMBOS_DATABASE.find(d => d.id === dishId);
+      }
+      if (!dish) return;
+
+      selectedDishForModal = dish;
+      modalQuantity = 1;
+
+      document.getElementById("modalDishImg").src = dish.image;
+      document.getElementById("modalDishTitle").textContent = dish.name;
+      document.getElementById("modalDishPrice").textContent = `KES ${dish.price.toLocaleString()}`;
+      document.getElementById("modalDishDesc").textContent = dish.desc;
+      document.getElementById("modalQtyDisplay").textContent = "1";
+      document.getElementById("modalTotalPrice").textContent = `KES ${dish.price.toLocaleString()}`;
+
+      // Badges
+      const badgesContainer = document.getElementById("modalDishBadges");
+      badgesContainer.innerHTML = `
+        ${dish.isHalal ? '<span class="badge badge-green" style="margin-right:6px;">Halal</span>' : ''}
+        ${dish.isHealthy ? '<span class="badge badge-orange" style="margin-right:6px;">Healthy</span>' : ''}
+        ${dish.isVegetarian ? '<span class="badge badge-dark" style="margin-right:6px;">Vegetarian</span>' : ''}
+        <span class="badge badge-red">${dish.prepTime || '15 min prep'}</span>
+      `;
+
+      // Set up radio option styling
+      setupModalOptionBoxes();
+
+      const modalOverlay = document.getElementById("dishModalOverlay");
+      modalOverlay.classList.add("active");
+      document.body.style.overflow = "hidden";
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeDishModal() {
+      const modalOverlay = document.getElementById("dishModalOverlay");
+      modalOverlay.classList.remove("active");
+      document.body.style.overflow = "";
+      selectedDishForModal = null;
+    }
+
+    function setupModalOptionBoxes() {
+      document.querySelectorAll(".option-box").forEach(box => {
+        box.onclick = function() {
+          const radio = this.querySelector('input[type="radio"]');
+          if (radio) {
+            radio.checked = true;
+            const groupName = radio.name;
+            document.querySelectorAll(`input[name="${groupName}"]`).forEach(r => {
+              r.closest(".option-box").classList.remove("selected");
+            });
+            this.classList.add("selected");
+          }
+        };
+      });
+    }
+
+    function adjustModalQty(delta) {
+      modalQuantity = Math.max(1, modalQuantity + delta);
+      document.getElementById("modalQtyDisplay").textContent = modalQuantity;
+      if (selectedDishForModal) {
+        const total = selectedDishForModal.price * modalQuantity;
+        document.getElementById("modalTotalPrice").textContent = `KES ${total.toLocaleString()}`;
+      }
+    }
+
+    function addModalDishToTray() {
+      if (!selectedDishForModal) return;
+
+      const sideInput = document.querySelector('input[name="dishSide"]:checked');
+      const spiceInput = document.querySelector('input[name="dishSpice"]:checked');
+      const dipInput = document.querySelector('input[name="dishDip"]:checked');
+
+      const side = sideInput ? sideInput.value : "Chips";
+      const spice = spiceInput ? spiceInput.value : "Mild";
+      const dip = dipInput ? dipInput.value : "Kachumbari";
+
+      const cartItem = {
+        dishId: selectedDishForModal.id,
+        name: selectedDishForModal.name,
+        price: selectedDishForModal.price,
+        image: selectedDishForModal.image,
+        quantity: modalQuantity,
+        side: side,
+        spice: spice,
+        dip: dip,
+        itemKey: `${selectedDishForModal.id}_${side}_${spice}_${dip}`
+      };
+
+      // Add to cart or increment
+      const existing = cart.find(item => item.itemKey === cartItem.itemKey);
+      if (existing) {
+        existing.quantity += modalQuantity;
+      } else {
+        cart.push(cartItem);
+      }
+
+      saveCart();
+      showToast(`Added ${modalQuantity}x ${selectedDishForModal.name} to Tray`);
+      closeDishModal();
+    }
+
+    function quickAddDish(dishId) {
+      let dish = MENU_DATABASE.find(d => d.id === dishId);
+      if (!dish) dish = COMBOS_DATABASE.find(d => d.id === dishId);
+      if (!dish) return;
+
+      const cartItem = {
+        dishId: dish.id,
+        name: dish.name,
+        price: dish.price,
+        image: dish.image,
+        quantity: 1,
+        side: "Crispy Chips",
+        spice: "Mild",
+        dip: "Kachumbari",
+        itemKey: `${dish.id}_Crispy Chips_Mild_Kachumbari`
+      };
+
+      const existing = cart.find(item => item.itemKey === cartItem.itemKey);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push(cartItem);
+      }
+
+      saveCart();
+      showToast(`Added ${dish.name} to Tray!`);
+    }
+
+    /* ==========================================================================
+       9. CART DRAWER OPERATIONS
+       ========================================================================== */
+    function openCartDrawer() {
+      renderCartDrawer();
+      const drawer = document.getElementById("cartDrawerOverlay");
+      drawer.classList.add("active");
+      document.body.style.overflow = "hidden";
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeCartDrawer() {
+      const drawer = document.getElementById("cartDrawerOverlay");
+      drawer.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+
+    function updateCartBadge() {
+      const badge = document.getElementById("cartCountBadge");
+      const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+      if (badge) badge.textContent = totalCount;
+    }
+
+    function renderCartDrawer() {
+      const body = document.getElementById("cartDrawerBody");
+      const subtotalEl = document.getElementById("cartDrawerSubtotal");
+      const grandTotalEl = document.getElementById("cartDrawerGrandTotal");
+      const footer = document.getElementById("cartDrawerFooter");
+      if (!body) return;
+
+      if (cart.length === 0) {
+        body.innerHTML = `
+          <div style="text-align: center; padding: 50px 20px; color: var(--color-charcoal-muted);">
+            <div style="font-size: 48px; margin-bottom: 12px;">🥣</div>
+            <h3 style="font-size: 18px; margin-bottom: 6px;">Your tray is currently empty</h3>
+            <p style="font-size: 13.5px; margin-bottom: 20px;">Explore over 80 delicious Nairobi CBD favourites.</p>
+            <a href="#menu" class="btn btn-primary btn-sm" onclick="closeCartDrawer()">Browse Full Menu</a>
+          </div>
+        `;
+        if (footer) footer.style.display = "none";
+        return;
+      }
+
+      if (footer) footer.style.display = "block";
+
+      body.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <img src="${item.image}" alt="${item.name}" class="cart-item-img" />
+          <div class="cart-item-details">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-options">${item.side} • ${item.spice} • ${item.dip}</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+              <span class="cart-item-price">KES ${(item.price * item.quantity).toLocaleString()}</span>
+              <div class="qty-counter" style="padding: 2px;">
+                <button class="qty-btn" style="width: 24px; height: 24px; font-size: 12px;" onclick="changeCartQty('${item.itemKey}', -1)">-</button>
+                <span class="qty-num" style="min-width: 24px; font-size: 13px;">${item.quantity}</span>
+                <button class="qty-btn" style="width: 24px; height: 24px; font-size: 12px;" onclick="changeCartQty('${item.itemKey}', 1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join("");
+
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const delivery = currentOrderType === "delivery" ? 100 : 0;
+      const total = subtotal + delivery;
+
+      if (subtotalEl) subtotalEl.textContent = `KES ${subtotal.toLocaleString()}`;
+      if (grandTotalEl) grandTotalEl.textContent = `KES ${total.toLocaleString()}`;
+    }
+
+    function changeCartQty(itemKey, delta) {
+      const itemIndex = cart.findIndex(i => i.itemKey === itemKey);
+      if (itemIndex > -1) {
+        cart[itemIndex].quantity += delta;
+        if (cart[itemIndex].quantity <= 0) {
+          cart.splice(itemIndex, 1);
+        }
+      }
+      saveCart();
+      renderCartDrawer();
+    }
+
+    function clearCart() {
+      cart = [];
+      saveCart();
+      renderCartDrawer();
+      showToast("Tray cleared.");
+    }
+
+    /* ==========================================================================
+       10. CHECKOUT & ORDER PLACEMENT
+       ========================================================================== */
+    function toggleOrderType(type) {
+      currentOrderType = type;
+      const addrSection = document.getElementById("deliveryAddressSection");
+      if (addrSection) {
+        addrSection.style.display = type === "delivery" ? "block" : "none";
+      }
+      renderCheckoutView();
+    }
+
+    function handlePaymentMethodChange(method) {
+      currentPaymentMethod = method;
+      document.querySelectorAll(".payment-method-radio").forEach(el => el.classList.remove("selected"));
+      const selected = document.getElementById(method === "mpesa" ? "optMpesa" : "optCash");
+      if (selected) selected.classList.add("selected");
+    }
+
+    function handleBuildingSelect(e) {
+      const val = e.target.value;
+      if (val && val !== "Other CBD Building") {
+        document.getElementById("custOffice").focus();
+      }
+    }
+
+    function renderCheckoutView() {
+      const listEl = document.getElementById("checkoutItemsList");
+      const subtotalEl = document.getElementById("checkoutSubtotal");
+      const feeEl = document.getElementById("checkoutDeliveryFee");
+      const totalEl = document.getElementById("checkoutGrandTotal");
+      if (!listEl) return;
+
+      if (cart.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align: center; padding: 30px 10px; color: var(--color-charcoal-muted);">
+            <p>Your tray is empty.</p>
+            <a href="#menu" class="btn btn-secondary btn-sm" style="margin-top: 10px;">Pick Some Food</a>
+          </div>
+        `;
+        if (subtotalEl) subtotalEl.textContent = "KES 0";
+        if (totalEl) totalEl.textContent = "KES 0";
+        return;
+      }
+
+      listEl.innerHTML = cart.map(item => `
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14px; padding-bottom: 8px; border-bottom: 1px dashed var(--color-grey-border);">
+          <div>
+            <div style="font-weight: 700;">${item.quantity}x ${item.name}</div>
+            <div style="font-size: 12px; color: var(--color-charcoal-muted);">${item.side} • ${item.spice}</div>
+          </div>
+          <div style="font-weight: 800; color: var(--color-red);">KES ${(item.price * item.quantity).toLocaleString()}</div>
+        </div>
+      `).join("");
+
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const deliveryFee = currentOrderType === "delivery" ? 100 : 0;
+      const grandTotal = subtotal + deliveryFee;
+
+      if (subtotalEl) subtotalEl.textContent = `KES ${subtotal.toLocaleString()}`;
+      if (feeEl) feeEl.textContent = `KES ${deliveryFee.toLocaleString()}`;
+      if (totalEl) totalEl.textContent = `KES ${grandTotal.toLocaleString()}`;
+    }
+
+    function placeOrder() {
+      if (cart.length === 0) {
+        alert("Your meal tray is empty! Please add some delicious dishes first.");
+        window.location.hash = "#menu";
+        return;
+      }
+
+      const name = document.getElementById("custName")?.value.trim();
+      const phone = document.getElementById("custPhone")?.value.trim();
+      
+      if (!name) {
+        alert("Please enter your name.");
+        document.getElementById("custName")?.focus();
+        return;
+      }
+
+      if (!phone || phone.length < 9) {
+        alert("Please enter a valid Kenyan phone number (e.g., 0712 345 678).");
+        document.getElementById("custPhone")?.focus();
+        return;
+      }
+
+      let building = "CBD Counter Pickup";
+      let office = "Customer Pickup";
+      let notes = "";
+
+      if (currentOrderType === "delivery") {
+        building = document.getElementById("custBuilding")?.value;
+        office = document.getElementById("custOffice")?.value.trim();
+        notes = document.getElementById("custNotes")?.value.trim() || "";
+
+        if (!building) {
+          alert("Please select or specify your CBD building.");
+          document.getElementById("custBuilding")?.focus();
+          return;
+        }
+
+        if (!office) {
+          alert("Please specify your office floor and company/suite name.");
+          document.getElementById("custOffice")?.focus();
+          return;
+        }
+      }
+
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const deliveryFee = currentOrderType === "delivery" ? 100 : 0;
+      const totalAmount = subtotal + deliveryFee;
+      const orderRef = `NF-CBD-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const newOrder = {
+        orderId: orderRef,
+        date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + new Date().toLocaleDateString(),
+        customer: { name, phone },
+        orderType: currentOrderType,
+        destination: currentOrderType === "delivery" ? `${building}, ${office}` : "Kimathi St Kitchen Pickup",
+        notes: notes,
+        paymentMethod: currentPaymentMethod,
+        items: [...cart],
+        subtotal,
+        deliveryFee,
+        total: totalAmount,
+        status: "Accepted by Kitchen"
+      };
+
+      // Save order to history
+      saveOrderToHistory(newOrder);
+
+      // Render tracking screen
+      renderTrackingScreen(newOrder);
+
+      // Clear active cart
+      cart = [];
+      saveCart();
+
+      // Route to tracking
+      window.location.hash = "#track";
+
+      if (currentPaymentMethod === "mpesa") {
+        showToast("M-Pesa STK Push initiated. Check your phone PIN prompt!");
+      } else {
+        showToast("Order placed successfully!");
+      }
+    }
+
+    function renderTrackingScreen(order) {
+      document.getElementById("trackOrderRef").textContent = order.orderId;
+      const detailsContainer = document.getElementById("trackOrderDetails");
+      if (!detailsContainer) return;
+
+      detailsContainer.innerHTML = `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px;">
+          <div><strong>Customer:</strong> ${order.customer.name} (${order.customer.phone})</div>
+          <div><strong>Method:</strong> ${order.orderType === 'delivery' ? '🛵 CBD Desk Delivery' : '🏃 Counter Pickup'}</div>
+        </div>
+        <div style="font-size: 13.5px; color: var(--color-charcoal-muted); margin-bottom: 14px;">
+          <strong>Location:</strong> ${order.destination} ${order.notes ? `• Note: ${order.notes}` : ''}
+        </div>
+        <div style="border-top: 1px dashed var(--color-grey-border); padding-top: 10px;">
+          <strong>Meals Ordered:</strong>
+          <ul style="margin-top: 6px; padding-left: 20px; font-size: 13.5px;">
+            ${order.items.map(i => `<li>${i.quantity}x ${i.name} (KES ${(i.price * i.quantity).toLocaleString()})</li>`).join("")}
+          </ul>
+          <div style="margin-top: 10px; font-weight: 800; color: var(--color-red);">
+            Total Paid/Payable: KES ${order.total.toLocaleString()} (${order.paymentMethod.toUpperCase()})
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOrderHistoryView() {
+      const container = document.getElementById("orderHistoryList");
+      if (!container) return;
+      const orders = loadOrderHistory();
+
+      if (orders.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 50px 20px; background: #FFF; border-radius: var(--radius-lg); border: 1.5px dashed var(--color-grey-border);">
+            <div style="font-size: 40px; margin-bottom: 10px;">📋</div>
+            <h3 style="font-size: 18px; margin-bottom: 6px;">No past orders yet</h3>
+            <p style="color: var(--color-charcoal-muted); font-size: 14px; margin-bottom: 16px;">Your completed orders will appear here for easy reordering.</p>
+            <a href="#menu" class="btn btn-primary btn-sm">Explore Menu</a>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = orders.map(ord => `
+        <div style="background: #FFF; padding: 22px; border-radius: var(--radius-md); border: 1.5px solid var(--color-grey-border); box-shadow: var(--shadow-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+              <span style="font-weight: 800; font-size: 16px; color: var(--color-red);">${ord.orderId}</span>
+              <span style="font-size: 12px; color: var(--color-charcoal-muted); margin-left: 8px;">${ord.date}</span>
+            </div>
+            <span class="badge badge-green">${ord.status}</span>
+          </div>
+          <div style="font-size: 13.5px; color: var(--color-charcoal-muted); margin-bottom: 10px;">
+            📍 ${ord.destination}
+          </div>
+          <div style="font-size: 13.5px; margin-bottom: 12px;">
+            ${ord.items.map(i => `${i.quantity}x ${i.name}`).join(" • ")}
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--color-grey-border); padding-top: 10px;">
+            <div style="font-weight: 800;">Total: KES ${ord.total.toLocaleString()}</div>
+            <button class="btn btn-secondary btn-sm" onclick="reorderItems('${ord.orderId}')">Reorder This Meal</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function reorderItems(orderId) {
+      const orders = loadOrderHistory();
+      const found = orders.find(o => o.orderId === orderId);
+      if (found) {
+        cart = [...found.items];
+        saveCart();
+        showToast("Items added back to your tray!");
+        openCartDrawer();
+      }
+    }
+
+    /* ==========================================================================
+       11. TOAST NOTIFICATIONS & UTILITIES
+       ========================================================================== */
+    function showToast(message) {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.innerHTML = `<i data-lucide="check-circle" style="width: 18px; height: 18px; color: #48BB78;"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+
+      if (window.lucide) lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(10px)";
+        toast.style.transition = "all 0.3s ease";
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    function toggleMobileDrawer() {
+      const drawer = document.getElementById("mobileDrawerOverlay");
+      drawer.classList.toggle("active");
+    }
+
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      alert("Thank you! Your message has been sent to our Kimathi Street kitchen manager.");
+      e.target.reset();
+    }
+
+    /* ==========================================================================
+       12. GSAP & SCROLLTRIGGER INITIALIZATION
+       ========================================================================== */
+    function initGSAPAnimations() {
+      if (typeof gsap === "undefined") {
+        console.log("GSAP loaded or running standalone fallback.");
+        return;
+      }
+
+      if (typeof ScrollTrigger !== "undefined") {
+        gsap.registerPlugin(ScrollTrigger);
+      }
+
+      // Hero Elements Reveal
+      gsap.from(".hero-eyebrow, .hero-title, .hero-subtitle, .hero-actions, .hero-service-row", {
+        opacity: 0,
+        y: 24,
+        duration: 0.8,
+        stagger: 0.12,
+        ease: "power2.out"
+      });
+
+      // Hero Plate Floating Zoom
+      gsap.from("#heroMainPlate", {
+        scale: 0.88,
+        opacity: 0,
+        duration: 1.1,
+        ease: "power3.out"
+      });
+
+      // Parallax effect on scroll for garnish
+      if (typeof ScrollTrigger !== "undefined") {
+        gsap.to(".garnish-1", {
+          y: -40,
+          scrollTrigger: {
+            trigger: ".hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 1
+          }
+        });
+
+        gsap.to(".garnish-2", {
+          y: 30,
+          scrollTrigger: {
+            trigger: ".hero",
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.2
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,3612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>AURELIA — Grand Luxury Hotels, Stays & Culinary Destinations</title>
+  <meta name="description" content="World-class hospitality brand featuring multi-property reservations, Michelin-starred location dining, artisan room service, curated experiences, and bespoke reservations.">
+  <meta property="og:title" content="AURELIA — Grand Luxury Hotels, Stays & Culinary Destinations">
+  <meta property="og:description" content="Experience world-class luxury across our architectural sanctuaries: Côte d'Azur, Kyoto Higashiyama, and Dolomites Alpine Reserve.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Google Fonts: Playfair Display, Cinzel, Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- GSAP & ScrollTrigger with graceful fallback -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <!-- Paystack Inline Popup (Real official CDN) -->
+  <script src="https://js.paystack.co/v1/inline.js" defer></script>
+
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Hotel",
+        "@id": "https://aurelia-hospitality.com/#hotel",
+        "name": "Aurelia Grand Hotels & Resorts",
+        "description": "Ultra-luxury international boutique hotel group with Michelin-starred dining, private cliffside villas, and alpine chalets.",
+        "starRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "priceRange": "€€€€",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Boulevard de la Croisette & Cap d'Antibes",
+          "addressLocality": "Antibes",
+          "postalCode": "06600",
+          "addressCountry": "FR"
+        }
+      },
+      {
+        "@type": "Restaurant",
+        "@id": "https://aurelia-hospitality.com/#restaurant",
+        "name": "L'Ambroisie Maritime",
+        "servesCuisine": "Haute French Seafood & Gastronomy",
+        "priceRange": "€€€€",
+        "hasMenu": "https://aurelia-hospitality.com/#dining"
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg-dark: #080d0b;
+      --bg-surface: #0e1713;
+      --bg-surface-elevated: #15221d;
+      --bg-parchment: #f9f7f2;
+      --bg-parchment-card: #ffffff;
+      --gold-primary: #c5a880;
+      --gold-light: #e5cbab;
+      --gold-dark: #8e6f47;
+      --terracotta: #ab4b2a;
+      --burgundy: #4a1525;
+      --text-light: #f4f6f4;
+      --text-muted: #95a79f;
+      --text-dark: #121c17;
+      --text-dark-muted: #57655f;
+      --border-subtle: rgba(197, 168, 128, 0.2);
+      --border-light-subtle: rgba(0, 0, 0, 0.08);
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-brand: 'Cinzel', serif;
+      --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Space Mono', monospace;
+      --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    body {
+      overflow-x: hidden;
+      min-height: 100vh;
+      line-height: 1.6;
+      background: radial-gradient(circle at 50% 0%, #112019 0%, #080d0b 70%);
+    }
+
+    /* Selection */
+    ::selection {
+      background: var(--gold-primary);
+      color: #080d0b;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #080d0b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #253930;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--gold-primary);
+    }
+
+    /* Typography */
+    .font-display { font-family: var(--font-display); }
+    .font-brand { font-family: var(--font-brand); }
+    .font-body { font-family: var(--font-body); }
+    .font-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+    /* Custom Cursor (Desktop only) */
+    @media (hover: hover) and (pointer: fine) {
+      .cursor-dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 8px;
+        height: 8px;
+        background: var(--gold-primary);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease, background 0.3s ease;
+      }
+      .cursor-ring {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 38px;
+        height: 38px;
+        border: 1px solid rgba(197, 168, 128, 0.45);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9998;
+        transform: translate(-50%, -50%);
+        transition: transform 0.18s var(--ease-lux), width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+      }
+      .cursor-active .cursor-ring {
+        width: 64px;
+        height: 64px;
+        border-color: var(--gold-light);
+        background: rgba(197, 168, 128, 0.08);
+      }
+      .cursor-active .cursor-dot {
+        transform: translate(-50%, -50%) scale(1.6);
+      }
+    }
+
+    @media (hover: none) or (pointer: coarse) {
+      .cursor-dot, .cursor-ring { display: none !important; }
+    }
+
+    /* Navigation styling */
+    .nav-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      transition: all 0.4s var(--ease-lux);
+      border-bottom: 1px solid rgba(197, 168, 128, 0.12);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: rgba(8, 13, 11, 0.75);
+    }
+    .nav-header.scrolled {
+      background: rgba(8, 13, 11, 0.94);
+      border-bottom-color: rgba(197, 168, 128, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .nav-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .brand-wordmark {
+      font-family: var(--font-brand);
+      font-size: 1.45rem;
+      letter-spacing: 0.28em;
+      color: var(--gold-primary);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-transform: uppercase;
+    }
+    .brand-wordmark span {
+      color: #ffffff;
+      font-weight: 300;
+      letter-spacing: 0.22em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-link {
+      color: rgba(244, 246, 244, 0.78);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: color 0.25s ease;
+      position: relative;
+      white-space: nowrap;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--gold-primary);
+      transition: width 0.3s var(--ease-lux);
+    }
+    .nav-link:hover {
+      color: #ffffff;
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.75rem 1.6rem;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.3s var(--ease-lux);
+      border: 1px solid transparent;
+      outline: none;
+    }
+    .btn:focus-visible {
+      box-shadow: 0 0 0 3px rgba(197, 168, 128, 0.5);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #dfc298 0%, #c5a880 50%, #9e7f53 100%);
+      color: #080d0b;
+      box-shadow: 0 4px 18px rgba(197, 168, 128, 0.25);
+    }
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(197, 168, 128, 0.4);
+      filter: brightness(1.08);
+    }
+
+    .btn-outline-gold {
+      background: transparent;
+      border-color: rgba(197, 168, 128, 0.45);
+      color: var(--gold-light);
+    }
+    .btn-outline-gold:hover {
+      border-color: var(--gold-primary);
+      background: rgba(197, 168, 128, 0.09);
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: var(--text-light);
+    }
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+    }
+
+    /* Cart Badge & Counter */
+    .cart-btn {
+      position: relative;
+      background: rgba(197, 168, 128, 0.1);
+      border: 1px solid rgba(197, 168, 128, 0.25);
+      color: var(--gold-light);
+      padding: 0.55rem 0.9rem;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .cart-count {
+      background: var(--gold-primary);
+      color: #080d0b;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Mobile Navigation Drawer */
+    .mobile-nav-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--gold-primary);
+      cursor: pointer;
+      padding: 0.4rem;
+    }
+    @media (max-width: 992px) {
+      .nav-links { display: none; }
+      .mobile-nav-toggle { display: block; }
+      .nav-container { padding: 0.8rem 1.2rem; }
+    }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 85%;
+      max-width: 400px;
+      height: 100vh;
+      background: #0b1410;
+      border-left: 1px solid rgba(197, 168, 128, 0.2);
+      z-index: 1000;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: right 0.45s var(--ease-lux);
+      overflow-y: auto;
+    }
+    .mobile-drawer.open {
+      right: 0;
+      box-shadow: -10px 0 50px rgba(0, 0, 0, 0.8);
+    }
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .drawer-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Section Architecture — Breaking the rectangle */
+    .section-wrapper {
+      position: relative;
+      padding: 6.5rem 2rem;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    .section-full {
+      position: relative;
+      padding: 6.5rem 0;
+      width: 100%;
+    }
+
+    .diagonal-divider-top {
+      clip-path: polygon(0 4vw, 100% 0, 100% 100%, 0 100%);
+    }
+    .diagonal-divider-bottom {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4vw), 0 100%);
+    }
+
+    .arch-frame {
+      border-radius: 260px 260px 16px 16px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(197, 168, 128, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+    .oval-mask {
+      border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+      overflow: hidden;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 8rem 2rem 5rem 2rem;
+    }
+    .hero-bg-container {
+      position: absolute;
+      inset: -5%;
+      width: 110%;
+      height: 110%;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .hero-bg-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: brightness(0.68) contrast(1.08);
+      transform: scale(1.08);
+      will-change: transform;
+    }
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 45%, rgba(8, 13, 11, 0.3) 0%, rgba(8, 13, 11, 0.88) 75%, #080d0b 100%),
+                  linear-gradient(180deg, rgba(8, 13, 11, 0.6) 0%, transparent 40%, rgba(8, 13, 11, 0.95) 90%, #080d0b 100%);
+      z-index: 2;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      width: 100%;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.85rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: '';
+      width: 36px;
+      height: 1px;
+      background: var(--gold-primary);
+      opacity: 0.6;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6.5vw, 6.2rem);
+      line-height: 1.05;
+      font-weight: 400;
+      color: #ffffff;
+      margin-bottom: 1.8rem;
+      text-wrap: balance;
+      letter-spacing: -0.015em;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--gold-light);
+      font-weight: 400;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 1.8vw, 1.22rem);
+      color: rgba(244, 246, 244, 0.85);
+      max-width: 680px;
+      margin: 0 auto 3rem auto;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* Asymmetric Hero Booking Bar */
+    .hero-booking-bar {
+      background: rgba(14, 23, 19, 0.85);
+      border: 1px solid rgba(197, 168, 128, 0.3);
+      border-radius: 8px;
+      padding: 1.25rem 1.8rem;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr 1fr auto;
+      gap: 1.2rem;
+      align-items: center;
+      text-align: left;
+      margin: 0 auto;
+      max-width: 1100px;
+      position: relative;
+    }
+    @media (max-width: 1024px) {
+      .hero-booking-bar {
+        grid-template-columns: 1fr 1fr;
+        padding: 1.5rem;
+      }
+      .hero-booking-bar .book-action {
+        grid-column: span 2;
+      }
+    }
+    @media (max-width: 640px) {
+      .hero-booking-bar {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .hero-booking-bar .book-action {
+        grid-column: span 1;
+      }
+    }
+
+    .booking-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .booking-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-primary);
+      font-weight: 600;
+    }
+    .booking-input, .booking-select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(197, 168, 128, 0.2);
+      color: #ffffff;
+      padding: 0.65rem 0.85rem;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      font-family: var(--font-body);
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      width: 100%;
+    }
+    .booking-input:focus, .booking-select:focus {
+      border-color: var(--gold-primary);
+      background: rgba(255, 255, 255, 0.09);
+    }
+    .booking-select option {
+      background: #0e1713;
+      color: #ffffff;
+    }
+
+    /* Locations Grid & Tabs */
+    .location-card-editorial {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(197, 168, 128, 0.2);
+      background: var(--bg-surface);
+      transition: transform 0.4s var(--ease-lux), box-shadow 0.4s var(--ease-lux);
+      display: flex;
+      flex-direction: column;
+    }
+    .location-card-editorial:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      border-color: rgba(197, 168, 128, 0.5);
+    }
+    .location-card-img-wrap {
+      position: relative;
+      height: 380px;
+      overflow: hidden;
+    }
+    .location-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.7s var(--ease-lux);
+    }
+    .location-card-editorial:hover .location-card-img {
+      transform: scale(1.06);
+    }
+    .location-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(8, 13, 11, 0.95) 100%);
+    }
+    .location-tag {
+      position: absolute;
+      top: 1.2rem;
+      left: 1.2rem;
+      background: rgba(8, 13, 11, 0.8);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-subtle);
+      color: var(--gold-light);
+      padding: 0.35rem 0.8rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+      border-radius: 3px;
+    }
+    .location-content {
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: space-between;
+    }
+
+    /* Asymmetric Storytelling / Editorial Split */
+    .story-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 4.5rem;
+      align-items: center;
+    }
+    @media (max-width: 992px) {
+      .story-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+    }
+    .image-composition {
+      position: relative;
+    }
+    .image-primary {
+      width: 88%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(197, 168, 128, 0.25);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .image-secondary-floating {
+      position: absolute;
+      bottom: -12%;
+      right: 0;
+      width: 48%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid var(--bg-dark);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Menu / Culinary System */
+    .menu-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      overflow-x: auto;
+      padding-bottom: 0.75rem;
+      margin-bottom: 2.5rem;
+      scrollbar-width: none;
+    }
+    .menu-tabs::-webkit-scrollbar { display: none; }
+
+    .menu-tab-btn {
+      padding: 0.65rem 1.4rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(197, 168, 128, 0.2);
+      color: var(--text-muted);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .menu-tab-btn.active {
+      background: var(--gold-primary);
+      color: #080d0b;
+      font-weight: 700;
+      border-color: var(--gold-primary);
+      box-shadow: 0 4px 14px rgba(197, 168, 128, 0.25);
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 2rem;
+    }
+    @media (max-width: 640px) {
+      .menu-grid { grid-template-columns: 1fr; }
+    }
+
+    .menu-item-card {
+      background: var(--bg-surface);
+      border: 1px solid rgba(197, 168, 128, 0.16);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s var(--ease-lux), border-color 0.3s ease;
+    }
+    .menu-item-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(197, 168, 128, 0.4);
+    }
+    .menu-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 0.4rem;
+    }
+    .menu-item-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+    .menu-item-price {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--gold-light);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .menu-item-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      flex-grow: 1;
+    }
+    .menu-item-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.74rem;
+      color: rgba(197, 168, 128, 0.8);
+      border-top: 1px solid rgba(197, 168, 128, 0.1);
+      padding-top: 0.85rem;
+    }
+
+    /* Modal Framework */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 7, 6, 0.85);
+      backdrop-filter: blur(16px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s var(--ease-lux);
+    }
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-window {
+      background: #0d1713;
+      border: 1px solid rgba(197, 168, 128, 0.35);
+      border-radius: 10px;
+      max-width: 820px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2.5rem;
+      position: relative;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85);
+      transform: translateY(20px) scale(0.98);
+      transition: transform 0.4s var(--ease-lux);
+    }
+    .modal-backdrop.active .modal-window {
+      transform: translateY(0) scale(1);
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.4rem;
+      right: 1.4rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-light);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.2s ease;
+    }
+    .modal-close:hover {
+      background: rgba(197, 168, 128, 0.2);
+      color: var(--gold-light);
+    }
+
+    /* Cart Slide-Over Drawer */
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 100%;
+      max-width: 460px;
+      height: 100vh;
+      background: #0c1612;
+      border-left: 1px solid rgba(197, 168, 128, 0.3);
+      z-index: 2100;
+      padding: 2rem 1.8rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: right 0.45s var(--ease-lux);
+      box-shadow: -15px 0 60px rgba(0, 0, 0, 0.85);
+    }
+    .cart-drawer.open {
+      right: 0;
+    }
+
+    .cart-items-scroll {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin: 1.5rem 0;
+      padding-right: 0.5rem;
+    }
+    .cart-item-row {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(197, 168, 128, 0.12);
+    }
+
+    /* Live Tracking Bar */
+    .tracking-step {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      position: relative;
+      padding-bottom: 1.4rem;
+    }
+    .tracking-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 14px;
+      top: 30px;
+      bottom: 0;
+      width: 2px;
+      background: rgba(197, 168, 128, 0.2);
+    }
+    .tracking-step.done::after {
+      background: var(--gold-primary);
+    }
+    .tracking-bullet {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(197, 168, 128, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      z-index: 2;
+    }
+    .tracking-step.active .tracking-bullet {
+      background: var(--gold-primary);
+      color: #080d0b;
+      box-shadow: 0 0 15px rgba(197, 168, 128, 0.6);
+    }
+    .tracking-step.done .tracking-bullet {
+      background: var(--gold-dark);
+      color: #ffffff;
+    }
+
+    /* Mobile Sticky Bottom Bar */
+    .mobile-bottom-bar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 90;
+      background: rgba(10, 18, 14, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(197, 168, 128, 0.25);
+      padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom, 0px)) 1rem;
+      justify-content: space-around;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .mobile-bottom-bar { display: flex; }
+      body { padding-bottom: 70px; }
+    }
+    .mobile-bar-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+    }
+    .mobile-bar-btn.active, .mobile-bar-btn:hover {
+      color: var(--gold-light);
+    }
+
+    /* Preloader */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      background: #080d0b;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      transition: opacity 0.8s var(--ease-lux), visibility 0.8s;
+    }
+    .preloader.fade-out {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .preloader-emblem {
+      font-family: var(--font-brand);
+      font-size: 2.5rem;
+      color: var(--gold-primary);
+      letter-spacing: 0.3em;
+      position: relative;
+    }
+    .preloader-line {
+      width: 140px;
+      height: 1px;
+      background: rgba(197, 168, 128, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .preloader-line::after {
+      content: '';
+      position: absolute;
+      left: -100%;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--gold-light);
+      animation: loadSlide 1.5s infinite var(--ease-lux);
+    }
+    @keyframes loadSlide {
+      0% { left: -100%; }
+      50% { left: 0%; }
+      100% { left: 100%; }
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      top: 5.5rem;
+      right: 1.5rem;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      pointer-events: none;
+    }
+    .toast {
+      background: #0f1c16;
+      border: 1px solid var(--gold-primary);
+      color: #ffffff;
+      padding: 0.85rem 1.4rem;
+      border-radius: 6px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      pointer-events: auto;
+      transform: translateX(120%);
+      transition: transform 0.35s var(--ease-lux);
+    }
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Toast Notification Area -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Preloader Curtain -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-emblem">AURELIA</div>
+    <div style="font-size: 0.75rem; letter-spacing: 0.3em; color: var(--gold-light); text-transform: uppercase;">
+      HOSPITALITY & GASTRONOMY
+    </div>
+    <div class="preloader-line"></div>
+  </div>
+
+  <!-- TOP BAR (3-Zone Contract) -->
+  <header class="nav-header" id="navHeader">
+    <div class="nav-container">
+      <!-- Zone 1: Single-element Brand Wordmark -->
+      <a href="#" class="brand-wordmark" onclick="switchMainView('home'); return false;">
+        AURELIA <span>ESTATES</span>
+      </a>
+
+      <!-- Zone 2: 4-5 concise single-line nav links -->
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#destinations" class="nav-link" onclick="scrollToSection('destinations'); return false;">Destinations</a></li>
+          <li><a href="#suites" class="nav-link" onclick="scrollToSection('suites'); return false;">Sanctuaries</a></li>
+          <li><a href="#dining" class="nav-link" onclick="scrollToSection('dining'); return false;">Gastronomy</a></li>
+          <li><a href="#experiences" class="nav-link" onclick="scrollToSection('experiences'); return false;">Experiences</a></li>
+          <li><a href="#" class="nav-link" onclick="openBackendContractModal(); return false;">Integration & API</a></li>
+        </ul>
+      </nav>
+
+      <!-- Zone 3: Primary Action & Cart -->
+      <div class="nav-actions">
+        <button class="cart-btn" onclick="openCartDrawer()" title="View in-suite & dining cart">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span class="cart-count" id="headerCartCount">0</span>
+        </button>
+
+        <button class="btn btn-outline-gold btn-sm" onclick="openGuestPortalModal()">
+          VIP Portal
+        </button>
+
+        <button class="btn btn-gold btn-sm" onclick="openRoomBookingModal()">
+          Reserve Stay
+        </button>
+
+        <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Open Navigation Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeMobileNav()"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+        <span class="brand-wordmark" style="font-size: 1.2rem;">AURELIA</span>
+        <button class="modal-close" style="position: static;" onclick="closeMobileNav()">✕</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <a href="#destinations" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); scrollToSection('destinations');">Destinations</a>
+        <a href="#suites" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); scrollToSection('suites');">Suites & Stays</a>
+        <a href="#dining" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); scrollToSection('dining');">Michelin Dining</a>
+        <a href="#experiences" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); scrollToSection('experiences');">Curated Itineraries</a>
+        <a href="#" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); openTableReservationModal();">Book Dining Table</a>
+        <a href="#" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); openOrderFoodView();">In-Suite Ordering</a>
+        <a href="#" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); openGuestPortalModal();">Guest Portal & Lookup</a>
+        <a href="#" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); openBackendContractModal();">Paystack API Contract</a>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.8rem; border-top: 1px solid rgba(197, 168, 128, 0.2); padding-top: 1.5rem;">
+      <button class="btn btn-gold" style="width: 100%;" onclick="closeMobileNav(); openRoomBookingModal();">
+        Reserve Room & Stay
+      </button>
+      <div style="font-size: 0.72rem; color: var(--text-muted); text-align: center;">
+        Concierge Direct: +33 (0)4 93 61 20 00
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTENT -->
+  <main id="mainContainer">
+
+    <!-- 1. CINEMATIC HERO SECTION -->
+    <section class="hero-section" id="heroSection">
+      <div class="hero-bg-container">
+        <img src="./src/assets/images/hero_aurelia_palace_1791786941018.jpg" alt="Aurelia Palace Cliffside Estate Cap d'Antibes" class="hero-bg-img" id="heroBgImg">
+      </div>
+      <div class="hero-gradient"></div>
+
+      <div class="hero-content">
+        <div class="hero-eyebrow">A Sanctuary of Timeless Hospitality</div>
+        <h1 class="hero-title">Where <em>Architecture</em> Meets Haute Gastronomy</h1>
+        <p class="hero-subtitle">
+          Three iconic destinations, three Michelin-acclaimed culinary sanctuaries. Indulge in private cliffside villas, secluded alpine reserves, and historic Kyoto pavilions.
+        </p>
+
+        <!-- Asymmetric Hero Booking Bar -->
+        <div class="hero-booking-bar">
+          <div class="booking-field">
+            <label class="booking-label" for="heroLocationSelect">Estate Destination</label>
+            <select class="booking-select" id="heroLocationSelect" onchange="onLocationChange(this.value)">
+              <option value="cotedazur">Aurelia Côte d'Azur (Cap d'Antibes)</option>
+              <option value="kyoto">Aurelia Kyoto Higashiyama (Japan)</option>
+              <option value="dolomites">Aurelia Dolomites Reserve (Italy)</option>
+            </select>
+          </div>
+
+          <div class="booking-field">
+            <label class="booking-label" for="heroCheckIn">Check-in</label>
+            <input type="date" class="booking-input" id="heroCheckIn" value="2026-10-18" onchange="validateDates()">
+          </div>
+
+          <div class="booking-field">
+            <label class="booking-label" for="heroCheckOut">Check-out</label>
+            <input type="date" class="booking-input" id="heroCheckOut" value="2026-10-23" onchange="validateDates()">
+          </div>
+
+          <div class="booking-field">
+            <label class="booking-label" for="heroGuests">Guests</label>
+            <select class="booking-select" id="heroGuests">
+              <option value="1">1 Guest</option>
+              <option value="2" selected>2 Guests (1 Suite)</option>
+              <option value="3">3 Guests</option>
+              <option value="4">4 Guests (Private Villa)</option>
+            </select>
+          </div>
+
+          <div class="book-action">
+            <button class="btn btn-gold" onclick="submitHeroSearch()" style="height: 100%; width: 100%; min-height: 48px;">
+              Check Availability
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 2rem; font-size: 0.78rem; color: var(--gold-light); opacity: 0.85;">
+          <span>· Best Rate Guaranteed ·</span>
+          <span>· Michelin Dining Inclusions ·</span>
+          <span>· VIP Helipad & Chauffeur ·</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. EDITORIAL PHILOSOPHY (Asymmetric Split & Floating Layer) -->
+    <section class="section-wrapper" id="philosophy">
+      <div class="story-grid">
+        <div>
+          <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 1rem;">
+            The Aurelia Manifesto
+          </div>
+          <h2 class="font-display" style="font-size: clamp(2.2rem, 4vw, 3.4rem); line-height: 1.15; font-weight: 400; margin-bottom: 1.8rem; text-wrap: balance;">
+            Not merely a place to sleep, but a heightened state of living.
+          </h2>
+          <p style="font-size: 1.02rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.5rem;">
+            Every Aurelia estate is curated as a private sanctuary where architectural grandeur honors natural topography. From the limestone terraces of Cap d'Antibes kissing the Mediterranean, to thousand-year cedar groves in Kyoto, we balance monastic serenity with the world’s most demanding epicurean standards.
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2.2rem; border-top: 1px solid rgba(197, 168, 128, 0.2); padding-top: 1.8rem;">
+            <div>
+              <div class="font-display" style="font-size: 2rem; color: var(--gold-light);">3 Estates</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Worldwide Sanctuary Network</div>
+            </div>
+            <div>
+              <div class="font-display" style="font-size: 2rem; color: var(--gold-light);">6 Michelin Stars</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Culinary Excellence Aggregate</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="image-composition">
+          <div class="image-primary arch-frame">
+            <img src="./src/assets/images/suite_presidential_interior_1791786962118.jpg" alt="Presidential Suite Interior" style="width: 100%; height: 520px; object-fit: cover; display: block;">
+          </div>
+          <div class="image-secondary-floating">
+            <div style="background: rgba(14, 23, 19, 0.9); border: 1px solid var(--border-subtle); padding: 1.4rem; border-radius: 6px; backdrop-filter: blur(12px);">
+              <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);">Signature Amenity</div>
+              <div class="font-display" style="font-size: 1.1rem; color: #fff; margin-top: 0.3rem;">Dedicated Butler & In-Suite Sommelier</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.4rem;">24-hour bespoke dining & itinerary coordination.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MULTIPLE HOTEL LOCATIONS DISCOVERY -->
+    <section class="section-wrapper" id="destinations" style="padding-top: 4rem;">
+      <div style="text-align: center; max-width: 780px; margin: 0 auto 4rem auto;">
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.8rem;">
+          Our Distinctive Estates
+        </div>
+        <h2 class="font-display" style="font-size: clamp(2.2rem, 4.2vw, 3.6rem); font-weight: 400; line-height: 1.15;">
+          Three Sanctuaries, Three Distinct Horizons
+        </h2>
+        <p style="font-size: 1rem; color: var(--text-muted); margin-top: 1rem;">
+          Each property possesses its own architecture, curated art collection, native ingredients, and award-winning private restaurants.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2.2rem;">
+        <!-- Location 1: Côte d'Azur -->
+        <div class="location-card-editorial">
+          <div class="location-card-img-wrap">
+            <img src="./src/assets/images/hero_aurelia_palace_1791786941018.jpg" alt="Aurelia Côte d'Azur" class="location-card-img">
+            <div class="location-card-overlay"></div>
+            <div class="location-tag">French Riviera · Cap d'Antibes</div>
+          </div>
+          <div class="location-content">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem;">
+                Palatial Cliffside Haven
+              </div>
+              <h3 class="font-display" style="font-size: 1.6rem; color: #fff; margin-bottom: 0.8rem;">
+                Aurelia Côte d'Azur
+              </h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;">
+                Perched high on limestone cliffs overlooking the crystalline bay. Featuring 34 bespoke suites, private coves, and 3-Michelin-starred <em>L'Ambroisie Maritime</em>.
+              </p>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.2rem; border-top: 1px solid rgba(197, 168, 128, 0.15); padding-top: 1rem;">
+                <span style="font-size: 0.78rem; color: var(--text-muted);">From €1,850 / night</span>
+                <span class="font-mono" style="font-size: 0.8rem; color: var(--gold-light);">43.5528° N, 7.1264° E</span>
+              </div>
+              <div style="display: flex; gap: 0.8rem;">
+                <button class="btn btn-gold btn-sm" style="flex: 1;" onclick="selectPropertyAndBook('cotedazur')">Book Stay</button>
+                <button class="btn btn-outline-gold btn-sm" onclick="switchLocationMenu('cotedazur')">View Dining</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location 2: Kyoto Higashiyama -->
+        <div class="location-card-editorial">
+          <div class="location-card-img-wrap">
+            <img src="./src/assets/images/suite_presidential_interior_1791786962118.jpg" alt="Aurelia Kyoto Higashiyama" class="location-card-img">
+            <div class="location-card-overlay"></div>
+            <div class="location-tag">Japan · Higashiyama Sanctuary</div>
+          </div>
+          <div class="location-content">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem;">
+                Zen Heritage & Onsen
+              </div>
+              <h3 class="font-display" style="font-size: 1.6rem; color: #fff; margin-bottom: 0.8rem;">
+                Aurelia Kyoto Higashiyama
+              </h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;">
+                Hidden among ancient bamboo forests and moss gardens. Private cedar Hinoki onsen baths and Master Kenzo Takahashi's 2-Star Kaiseki temple <em>Mizuki</em>.
+              </p>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.2rem; border-top: 1px solid rgba(197, 168, 128, 0.15); padding-top: 1rem;">
+                <span style="font-size: 0.78rem; color: var(--text-muted);">From ¥220,000 / night</span>
+                <span class="font-mono" style="font-size: 0.8rem; color: var(--gold-light);">34.9961° N, 135.7806° E</span>
+              </div>
+              <div style="display: flex; gap: 0.8rem;">
+                <button class="btn btn-gold btn-sm" style="flex: 1;" onclick="selectPropertyAndBook('kyoto')">Book Stay</button>
+                <button class="btn btn-outline-gold btn-sm" onclick="switchLocationMenu('kyoto')">View Dining</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location 3: Dolomites Alpine Reserve -->
+        <div class="location-card-editorial">
+          <div class="location-card-img-wrap">
+            <img src="./src/assets/images/dining_restaurant_interior_1791786973218.jpg" alt="Aurelia Dolomites Alpine Reserve" class="location-card-img">
+            <div class="location-card-overlay"></div>
+            <div class="location-tag">Italian Alps · Cortina d'Ampezzo</div>
+          </div>
+          <div class="location-content">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem;">
+                Alpine Chalet Reserve
+              </div>
+              <h3 class="font-display" style="font-size: 1.6rem; color: #fff; margin-bottom: 0.8rem;">
+                Aurelia Dolomites Reserve
+              </h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;">
+                Elevated at 1,800 meters beneath towering limestone peaks. Private heated timber chalets, open wood fires, and mountain woodfire grill <em>Fumo & Fuoco</em>.
+              </p>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.2rem; border-top: 1px solid rgba(197, 168, 128, 0.15); padding-top: 1rem;">
+                <span style="font-size: 0.78rem; color: var(--text-muted);">From €1,400 / night</span>
+                <span class="font-mono" style="font-size: 0.8rem; color: var(--gold-light);">46.5405° N, 12.1357° E</span>
+              </div>
+              <div style="display: flex; gap: 0.8rem;">
+                <button class="btn btn-gold btn-sm" style="flex: 1;" onclick="selectPropertyAndBook('dolomites')">Book Stay</button>
+                <button class="btn btn-outline-gold btn-sm" onclick="switchLocationMenu('dolomites')">View Dining</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SIGNATURE SUITES & SANCTUARIES SHOWCASE -->
+    <section class="section-wrapper" id="suites">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3.5rem; flex-wrap: wrap; gap: 1.5rem;">
+        <div>
+          <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.5rem;">
+            Private Living Spaces
+          </div>
+          <h2 class="font-display" style="font-size: clamp(2.2rem, 3.8vw, 3.2rem); font-weight: 400;">
+            Architectural Sanctuaries & Suites
+          </h2>
+        </div>
+        <div style="display: flex; gap: 0.8rem;">
+          <button class="btn btn-outline-gold btn-sm" onclick="filterSuites('all')">All Suites</button>
+          <button class="btn btn-ghost btn-sm" onclick="filterSuites('cliffside')">Cliffside Villas</button>
+          <button class="btn btn-ghost btn-sm" onclick="filterSuites('onsen')">Onsen Pavilions</button>
+          <button class="btn btn-ghost btn-sm" onclick="filterSuites('chalet')">Alpine Chalets</button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 2.5rem;" id="suitesGrid">
+        <!-- Suite 1 -->
+        <div class="menu-item-card" data-category="cliffside" style="background: #0d1713;">
+          <div style="height: 280px; position: relative; overflow: hidden;">
+            <img src="./src/assets/images/suite_presidential_interior_1791786962118.jpg" alt="The Imperial Cliffside Villa" style="width: 100%; height: 100%; object-fit: cover;">
+            <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(8, 13, 11, 0.85); color: var(--gold-light); font-size: 0.75rem; padding: 0.35rem 0.8rem; border-radius: 4px; border: 1px solid var(--border-subtle);">
+              Cap d'Antibes · 320 m²
+            </span>
+          </div>
+          <div style="padding: 1.8rem; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem;">
+              <h3 class="font-display" style="font-size: 1.4rem; color: #fff;">The Imperial Cliffside Villa</h3>
+              <span class="font-mono" style="color: var(--gold-light); font-size: 1.15rem; font-weight: 700;">€4,800 <small style="font-size: 0.7rem; font-weight: 400; color: var(--text-muted);">/ nt</small></span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;">
+              Private multi-level estate with cantilevered infinity pool, 270° sea panorama, private wine tasting cellar, and dedicated 24-hour butler.
+            </p>
+            <div style="display: flex; gap: 1rem; font-size: 0.78rem; color: var(--gold-light); margin-bottom: 1.4rem;">
+              <span>✓ Private Infinity Pool</span>
+              <span>✓ Personal Butler</span>
+              <span>✓ Rolls-Royce Chauffeur</span>
+            </div>
+            <div style="margin-top: auto;">
+              <button class="btn btn-gold btn-sm" style="width: 100%;" onclick="openSuiteDetailModal('imperial')">
+                View Villa & Reserve
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suite 2 -->
+        <div class="menu-item-card" data-category="onsen" style="background: #0d1713;">
+          <div style="height: 280px; position: relative; overflow: hidden;">
+            <img src="./src/assets/images/hero_aurelia_palace_1791786941018.jpg" alt="Bamboo Sanctuary Pavilion" style="width: 100%; height: 100%; object-fit: cover;">
+            <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(8, 13, 11, 0.85); color: var(--gold-light); font-size: 0.75rem; padding: 0.35rem 0.8rem; border-radius: 4px; border: 1px solid var(--border-subtle);">
+              Kyoto · 210 m²
+            </span>
+          </div>
+          <div style="padding: 1.8rem; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem;">
+              <h3 class="font-display" style="font-size: 1.4rem; color: #fff;">Bamboo Sanctuary Pavilion</h3>
+              <span class="font-mono" style="color: var(--gold-light); font-size: 1.15rem; font-weight: 700;">¥320,000 <small style="font-size: 0.7rem; font-weight: 400; color: var(--text-muted);">(€2,100)</small></span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;">
+              Enclosed within a private bamboo grove. Open-air natural Hinoki wood onsen, traditional tatami tea chamber, and private moss garden courtyard.
+            </p>
+            <div style="display: flex; gap: 1rem; font-size: 0.78rem; color: var(--gold-light); margin-bottom: 1.4rem;">
+              <span>✓ Natural Thermal Onsen</span>
+              <span>✓ Tea Master Ceremony</span>
+              <span>✓ Garden Veranda</span>
+            </div>
+            <div style="margin-top: auto;">
+              <button class="btn btn-gold btn-sm" style="width: 100%;" onclick="openSuiteDetailModal('kyoto_bamboo')">
+                View Pavilion & Reserve
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suite 3 -->
+        <div class="menu-item-card" data-category="chalet" style="background: #0d1713;">
+          <div style="height: 280px; position: relative; overflow: hidden;">
+            <img src="./src/assets/images/dining_restaurant_interior_1791786973218.jpg" alt="Cristallo Penthouse Chalet" style="width: 100%; height: 100%; object-fit: cover;">
+            <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(8, 13, 11, 0.85); color: var(--gold-light); font-size: 0.75rem; padding: 0.35rem 0.8rem; border-radius: 4px; border: 1px solid var(--border-subtle);">
+              Cortina · 280 m²
+            </span>
+          </div>
+          <div style="padding: 1.8rem; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem;">
+              <h3 class="font-display" style="font-size: 1.4rem; color: #fff;">Cristallo Penthouse Chalet</h3>
+              <span class="font-mono" style="color: var(--gold-light); font-size: 1.15rem; font-weight: 700;">€3,900 <small style="font-size: 0.7rem; font-weight: 400; color: var(--text-muted);">/ nt</small></span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;">
+              Panoramic timber chalet with wood-burning stone fireplace, cedar sauna, heated outdoor jacuzzi facing mountain peaks, and ski-in private lift.
+            </p>
+            <div style="display: flex; gap: 1rem; font-size: 0.78rem; color: var(--gold-light); margin-bottom: 1.4rem;">
+              <span>✓ Private Chalet Sauna</span>
+              <span>✓ Heated Mountain Jacuzzi</span>
+              <span>✓ Private Ski Butler</span>
+            </div>
+            <div style="margin-top: auto;">
+              <button class="btn btn-gold btn-sm" style="width: 100%;" onclick="openSuiteDetailModal('cristallo')">
+                View Chalet & Reserve
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. LOCATION-SPECIFIC GASTRONOMY & MICHELIN MENUS -->
+    <section class="section-full" id="dining" style="background: #060a08; border-top: 1px solid rgba(197, 168, 128, 0.15); border-bottom: 1px solid rgba(197, 168, 128, 0.15);">
+      <div class="section-wrapper" style="padding-top: 0; padding-bottom: 0;">
+        <div style="text-align: center; max-width: 840px; margin: 0 auto 3.5rem auto;">
+          <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.8rem;">
+            Haute Epicurean Craft
+          </div>
+          <h2 class="font-display" style="font-size: clamp(2.2rem, 4.2vw, 3.8rem); font-weight: 400; line-height: 1.15;">
+            Michelin Gastronomy & Room Service
+          </h2>
+          <p style="font-size: 1rem; color: var(--text-muted); margin-top: 1rem;">
+            Explore location-specific menus crafted by our executive chefs. Reserve an intimate dining table, or order gourmet dishes directly to your suite or private residence.
+          </p>
+
+          <!-- Location Selector for Dining -->
+          <div style="display: inline-flex; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(197, 168, 128, 0.25); border-radius: 6px; padding: 0.35rem; margin-top: 2rem; gap: 0.4rem;">
+            <button class="btn btn-sm btn-gold" id="diningLocCote" onclick="switchLocationMenu('cotedazur')">
+              Cap d'Antibes (L'Ambroisie)
+            </button>
+            <button class="btn btn-sm btn-ghost" id="diningLocKyoto" onclick="switchLocationMenu('kyoto')">
+              Kyoto (Mizuki Omakase)
+            </button>
+            <button class="btn btn-sm btn-ghost" id="diningLocDolomites" onclick="switchLocationMenu('dolomites')">
+              Dolomites (Fumo & Fuoco)
+            </button>
+          </div>
+        </div>
+
+        <!-- Featured Culinary Spotlight (Dish + Architecture) -->
+        <div style="display: grid; grid-template-columns: 1fr 1.1fr; gap: 3.5rem; align-items: center; margin-bottom: 4.5rem;">
+          <div class="arch-frame" style="height: 480px;">
+            <img id="featuredDishImg" src="./src/assets/images/dining_michelin_dish_1791786951788.jpg" alt="Michelin Starred Turbot Plating" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.6rem;" id="featuredRestMeta">
+              3 Michelin Stars · Chef Julien de Morney
+            </div>
+            <h3 class="font-display" style="font-size: 2.2rem; color: #fff; line-height: 1.2; margin-bottom: 1.2rem;" id="featuredRestTitle">
+              L'Ambroisie Maritime
+            </h3>
+            <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.8rem;" id="featuredRestDesc">
+              A celebration of wild Mediterranean catches and black Périgord truffles. Overlooking the azure sea from our 18th-century colonnade terrace. Serving tasting menus orchestrated with our 4,000-bottle Grand Cru cellar.
+            </p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+              <button class="btn btn-gold" onclick="openTableReservationModal()">
+                Reserve Dining Table
+              </button>
+              <button class="btn btn-outline-gold" onclick="openOrderFoodView()">
+                Order In-Suite Delivery
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <div class="menu-tabs" id="menuTabsContainer">
+          <button class="menu-tab-btn active" onclick="filterMenuCategory('all')">All Offerings</button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('signatures')">Chef's Signatures</button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('starters')">Starters & Caviar</button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('mains')">Mains & Seafood</button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('desserts')">Pastry & Desserts</button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('cellar')">Grand Cru Cellar</button>
+        </div>
+
+        <!-- Dynamic Menu Items Grid -->
+        <div class="menu-grid" id="menuItemsGrid">
+          <!-- Dynamically populated by JS based on selected location & category -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. CURATED EXPERIENCES & ITINERARIES -->
+    <section class="section-wrapper" id="experiences">
+      <div style="text-align: center; max-width: 780px; margin: 0 auto 4rem auto;">
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.8rem;">
+          Beyond The Room
+        </div>
+        <h2 class="font-display" style="font-size: clamp(2.2rem, 4vw, 3.5rem); font-weight: 400;">
+          Curated Private Experiences
+        </h2>
+        <p style="font-size: 1rem; color: var(--text-muted); margin-top: 1rem;">
+          Unprecedented access designed by our head concierge team. Reserved exclusively for guests of Aurelia Estates.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+        <div style="background: var(--bg-surface); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 8px; padding: 2.2rem;">
+          <div style="font-size: 0.72rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase;">Riviera Maritime</div>
+          <h3 class="font-display" style="font-size: 1.45rem; color: #fff; margin: 0.5rem 0 1rem 0;">Private Riva Yacht to Îles de Lérins</h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;">
+            Sunset voyage aboard our vintage 1972 Riva Aquarama with Krug Champagne and chef-prepared caviar canapés.
+          </p>
+          <div style="font-size: 0.82rem; color: var(--gold-light); font-weight: 600;">€1,800 · 4 Hours Private Charter</div>
+        </div>
+
+        <div style="background: var(--bg-surface); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 8px; padding: 2.2rem;">
+          <div style="font-size: 0.72rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase;">Kyoto Heritage</div>
+          <h3 class="font-display" style="font-size: 1.45rem; color: #fff; margin: 0.5rem 0 1rem 0;">Private Zen Temple Meditation & Tea</h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;">
+            Exclusive dawn access to a closed 14th-century sub-temple with personal meditation instruction from the Chief Abbot.
+          </p>
+          <div style="font-size: 0.82rem; color: var(--gold-light); font-weight: 600;">¥95,000 · Private Master Guide</div>
+        </div>
+
+        <div style="background: var(--bg-surface); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 8px; padding: 2.2rem;">
+          <div style="font-size: 0.72rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase;">Alpine Expedition</div>
+          <h3 class="font-display" style="font-size: 1.45rem; color: #fff; margin: 0.5rem 0 1rem 0;">Helicopter Glacier Descent & Wild Truffles</h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;">
+            Helicopter transfer to untouched powder glaciers followed by a woodfire lunch at our private mountain refugio.
+          </p>
+          <div style="font-size: 0.82rem; color: var(--gold-light); font-weight: 600;">€2,600 · Full Day Alpine Guide</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. GUEST REVIEWS & QUANTITATIVE HONEST PROOF -->
+    <section class="section-wrapper" style="border-top: 1px solid rgba(197, 168, 128, 0.15);">
+      <div style="text-align: center; max-width: 720px; margin: 0 auto 3rem auto;">
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.5rem;">
+          Verified Guest Reflections
+        </div>
+        <h2 class="font-display" style="font-size: 2.4rem; font-weight: 400;">
+          A Quiet Word from Discerning Travelers
+        </h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+        <div style="background: rgba(14, 23, 19, 0.6); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 8px; padding: 2rem;">
+          <div style="color: var(--gold-primary); margin-bottom: 1rem; font-size: 1.1rem;">★★★★★</div>
+          <p style="font-style: italic; color: var(--text-light); line-height: 1.7; margin-bottom: 1.5rem; font-size: 0.95rem;">
+            “The arrival by private launch into the cove at Cap d'Antibes felt like cinema. Dining at L'Ambroisie Maritime with Chef Julien's wild turbot was without question our culinary highlight of the decade.”
+          </p>
+          <div style="font-size: 0.82rem; font-weight: 600; color: var(--gold-light);">Lord Alistair Sterling</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);">Stayed at Aurelia Côte d'Azur · September 2026</div>
+        </div>
+
+        <div style="background: rgba(14, 23, 19, 0.6); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 8px; padding: 2rem;">
+          <div style="color: var(--gold-primary); margin-bottom: 1rem; font-size: 1.1rem;">★★★★★</div>
+          <p style="font-style: italic; color: var(--text-light); line-height: 1.7; margin-bottom: 1.5rem; font-size: 0.95rem;">
+            “Kyoto's bamboo sanctuary felt completely severed from modern hurry. Soaking in the private outdoor Hinoki onsen while steam drifted into ancient cedar trees is a memory I cherish daily.”
+          </p>
+          <div style="font-size: 0.82rem; font-weight: 600; color: var(--gold-light);">Evelyn Van Der Bilt</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);">Stayed at Aurelia Kyoto · August 2026</div>
+        </div>
+
+        <div style="background: rgba(14, 23, 19, 0.6); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 8px; padding: 2rem;">
+          <div style="color: var(--gold-primary); margin-bottom: 1rem; font-size: 1.1rem;">★★★★★</div>
+          <p style="font-style: italic; color: var(--text-light); line-height: 1.7; margin-bottom: 1.5rem; font-size: 0.95rem;">
+            “The Cristallo Penthouse in Cortina offered absolute architectural mastery. Woodfire venison from Fumo & Fuoco delivered to our terrace after a day on the slopes was perfection.”
+          </p>
+          <div style="font-size: 0.82rem; font-weight: 600; color: var(--gold-light);">Dr. Marcus Lindqvist</div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);">Stayed at Aurelia Dolomites · January 2026</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. FINAL RESERVATION CALL TO ACTION -->
+    <section class="section-wrapper" style="text-align: center; padding: 7rem 2rem; position: relative;">
+      <div style="max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, rgba(14, 23, 19, 0.95) 0%, rgba(8, 13, 11, 0.98) 100%); border: 1px solid rgba(197, 168, 128, 0.3); border-radius: 12px; padding: 3.5rem 2rem; box-shadow: 0 25px 60px rgba(0,0,0,0.7);">
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 1rem;">
+          Your Journey Begins
+        </div>
+        <h2 class="font-display" style="font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 400; margin-bottom: 1.2rem;">
+          Reserve Your Sanctuary
+        </h2>
+        <p style="font-size: 0.98rem; color: var(--text-muted); line-height: 1.7; max-width: 580px; margin: 0 auto 2.5rem auto;">
+          Direct reservations receive complimentary Champagne upon arrival, flexible cancellation up to 7 days prior, and priority table bookings at our Michelin dining rooms.
+        </p>
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+          <button class="btn btn-gold" onclick="openRoomBookingModal()">
+            Check Suite Availability
+          </button>
+          <button class="btn btn-outline-gold" onclick="openTableReservationModal()">
+            Reserve Dining Table
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer style="background: #050807; border-top: 1px solid rgba(197, 168, 128, 0.15); padding: 5rem 2rem 3rem 2rem;">
+    <div style="max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 4rem;">
+      <div>
+        <a href="#" class="brand-wordmark" style="font-size: 1.6rem; margin-bottom: 1.2rem; display: block;">
+          AURELIA <span>ESTATES</span>
+        </a>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; max-width: 320px;">
+          An independent international collective of ultra-luxury estates and Michelin-starred dining temples dedicated to architectural preservation and culinary mastery.
+        </p>
+        <div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--gold-light);">
+          Paris · Cap d'Antibes · Kyoto · Cortina
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-primary); margin-bottom: 1.2rem; font-weight: 600;">Destinations</div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+          <li><a href="#" onclick="selectPropertyAndBook('cotedazur'); return false;" style="color: var(--text-muted); text-decoration: none;">Aurelia Côte d'Azur</a></li>
+          <li><a href="#" onclick="selectPropertyAndBook('kyoto'); return false;" style="color: var(--text-muted); text-decoration: none;">Aurelia Kyoto Higashiyama</a></li>
+          <li><a href="#" onclick="selectPropertyAndBook('dolomites'); return false;" style="color: var(--text-muted); text-decoration: none;">Aurelia Dolomites Reserve</a></li>
+          <li><a href="#" onclick="openTableReservationModal(); return false;" style="color: var(--text-muted); text-decoration: none;">All Michelin Restaurants</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-primary); margin-bottom: 1.2rem; font-weight: 600;">Services</div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+          <li><a href="#" onclick="openRoomBookingModal(); return false;" style="color: var(--text-muted); text-decoration: none;">Suite Reservations</a></li>
+          <li><a href="#" onclick="openTableReservationModal(); return false;" style="color: var(--text-muted); text-decoration: none;">Table Bookings</a></li>
+          <li><a href="#" onclick="openOrderFoodView(); return false;" style="color: var(--text-muted); text-decoration: none;">In-Suite Gastronomy</a></li>
+          <li><a href="#" onclick="openGuestPortalModal(); return false;" style="color: var(--text-muted); text-decoration: none;">VIP Guest Portal & Lookup</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-primary); margin-bottom: 1.2rem; font-weight: 600;">Developer & Compliance</div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+          <li><a href="#" onclick="openBackendContractModal(); return false;" style="color: var(--gold-light); text-decoration: none;">Paystack Integration Specs</a></li>
+          <li><a href="#" onclick="openTermsModal('cancellation'); return false;" style="color: var(--text-muted); text-decoration: none;">Cancellation Policy</a></li>
+          <li><a href="#" onclick="openTermsModal('privacy'); return false;" style="color: var(--text-muted); text-decoration: none;">Privacy & Data Safety</a></li>
+          <li><a href="#" onclick="openTermsModal('terms'); return false;" style="color: var(--text-muted); text-decoration: none;">Terms of Hospitality</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="max-width: 1440px; margin: 0 auto; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); flex-wrap: wrap; gap: 1rem;">
+      <div>© 2026 AURELIA HOTELS & RESIDENCES S.A. ALL RIGHTS RESERVED.</div>
+      <div>Designed with Precision · GSAP ScrollTrigger Powered · Production Architecture Ready</div>
+    </div>
+  </footer>
+
+  <!-- MOBILE STICKY BOTTOM BAR -->
+  <div class="mobile-bottom-bar">
+    <button class="mobile-bar-btn" onclick="scrollToSection('heroSection')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="mobile-bar-btn" onclick="openRoomBookingModal()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Stays</span>
+    </button>
+    <button class="mobile-bar-btn" onclick="openTableReservationModal()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      <span>Dining</span>
+    </button>
+    <button class="mobile-bar-btn" onclick="openOrderFoodView()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span>Order</span>
+    </button>
+    <button class="mobile-bar-btn" onclick="openGuestPortalModal()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Portal</span>
+    </button>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: ROOM RESERVATION & CHECKOUT ENGINE -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="roomBookingModal">
+    <div class="modal-window">
+      <button class="modal-close" onclick="closeRoomBookingModal()">✕</button>
+
+      <!-- Step Header -->
+      <div style="border-bottom: 1px solid rgba(197, 168, 128, 0.2); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);">
+          Reservation Engine · Step <span id="bookingStepNum">1</span> of 3
+        </div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: #fff; margin-top: 0.4rem;" id="bookingStepTitle">
+          Select Your Sanctuary & Dates
+        </h2>
+      </div>
+
+      <!-- Step 1: Property, Dates & Room Selection -->
+      <div id="bookingStep1">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.8rem;">
+          <div class="booking-field">
+            <label class="booking-label">Destination Property</label>
+            <select class="booking-select" id="bookModalProperty" onchange="renderBookingRoomOptions()">
+              <option value="cotedazur">Aurelia Côte d'Azur (Cap d'Antibes)</option>
+              <option value="kyoto">Aurelia Kyoto Higashiyama (Japan)</option>
+              <option value="dolomites">Aurelia Dolomites Reserve (Italy)</option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Guest Count</label>
+            <select class="booking-select" id="bookModalGuests">
+              <option value="1">1 Guest</option>
+              <option value="2" selected>2 Guests</option>
+              <option value="3">3 Guests</option>
+              <option value="4">4 Guests</option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Check-in Date</label>
+            <input type="date" class="booking-input" id="bookModalCheckIn" value="2026-10-18">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Check-out Date</label>
+            <input type="date" class="booking-input" id="bookModalCheckOut" value="2026-10-23">
+          </div>
+        </div>
+
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light); margin-bottom: 1rem;">
+          Available Suites for Selected Dates:
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;" id="bookingRoomOptionsContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button class="btn btn-gold" onclick="advanceBookingToStep2()">
+            Continue to Bespoke Inclusions →
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Inclusions & Guest Details -->
+      <div id="bookingStep2" style="display: none;">
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light); margin-bottom: 1rem;">
+          Enhance Your Stay with Curated Inclusions:
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 2rem;">
+          <label style="display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(197, 168, 128, 0.15); padding: 1rem; border-radius: 6px; cursor: pointer;">
+            <div>
+              <div style="font-weight: 600; color: #fff;">Private Helipad or Luxury Chauffeur Transfer</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">Direct greeting from Nice, Kansai, or Venice airport.</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span class="font-mono" style="color: var(--gold-light);">+€480</span>
+              <input type="checkbox" id="addonTransfer" style="transform: scale(1.3); accent-color: var(--gold-primary);">
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(197, 168, 128, 0.15); padding: 1rem; border-radius: 6px; cursor: pointer;">
+            <div>
+              <div style="font-weight: 600; color: #fff;">In-Suite Dom Pérignon & Caviar Welcome</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">Chilled Vintage 2013 Dom Pérignon and 50g Ossetra Royal Caviar.</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span class="font-mono" style="color: var(--gold-light);">+€390</span>
+              <input type="checkbox" id="addonChampagne" style="transform: scale(1.3); accent-color: var(--gold-primary);">
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(197, 168, 128, 0.15); padding: 1rem; border-radius: 6px; cursor: pointer;">
+            <div>
+              <div style="font-weight: 600; color: #fff;">Daily Gastronomy & Spa Credit</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">€250 daily credit for Michelin restaurants or private treatments.</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span class="font-mono" style="color: var(--gold-light);">+€200 / nt</span>
+              <input type="checkbox" id="addonCredit" style="transform: scale(1.3); accent-color: var(--gold-primary);">
+            </div>
+          </label>
+        </div>
+
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light); margin-bottom: 1rem;">
+          Guest Information:
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="booking-field">
+            <label class="booking-label">Full Name</label>
+            <input type="text" class="booking-input" id="guestFullName" placeholder="e.g. Lord Alistair Sterling" required>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Email Address</label>
+            <input type="email" class="booking-input" id="guestEmail" placeholder="guest@domain.com" required>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Phone / WhatsApp</label>
+            <input type="tel" class="booking-input" id="guestPhone" placeholder="+44 20 7946 0912" required>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Special Requests (Pillow, allergies)</label>
+            <input type="text" class="booking-input" id="guestSpecialNotes" placeholder="e.g. Silk pillows, gluten allergy">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+          <button class="btn btn-ghost" onclick="backBookingToStep1()">← Back</button>
+          <button class="btn btn-gold" onclick="advanceBookingToStep3()">
+            Review & Payment →
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Price Breakdown & Payment -->
+      <div id="bookingStep3" style="display: none;">
+        <div style="background: rgba(8, 13, 11, 0.7); border: 1px solid rgba(197, 168, 128, 0.25); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+          <div class="font-display" style="font-size: 1.3rem; color: #fff; margin-bottom: 1rem;">Reservation Itinerary Summary</div>
+          <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.88rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Estate & Suite:</span>
+              <strong id="summarySuiteName" style="color: #fff;">-</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Stay Dates:</span>
+              <span id="summaryDates" style="color: #fff;">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Guests:</span>
+              <span id="summaryGuests" style="color: #fff;">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(197, 168, 128, 0.15); padding-top: 0.6rem;">
+              <span style="color: var(--text-muted);">Base Accommodation:</span>
+              <span id="summaryBaseRate" class="font-mono" style="color: #fff;">€0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Selected Inclusions:</span>
+              <span id="summaryAddons" class="font-mono" style="color: #fff;">€0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Hospitality Taxes & Service (15%):</span>
+              <span id="summaryTaxes" class="font-mono" style="color: #fff;">€0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(197, 168, 128, 0.3); padding-top: 0.8rem; font-size: 1.15rem;">
+              <strong style="color: var(--gold-light);">Total Stay Guarantee:</strong>
+              <strong id="summaryTotal" class="font-mono" style="color: var(--gold-light);">€0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Selection -->
+        <div style="margin-bottom: 2rem;">
+          <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light); margin-bottom: 0.8rem;">
+            Select Payment Method:
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <label style="border: 1px solid var(--gold-primary); background: rgba(197, 168, 128, 0.08); padding: 1rem; border-radius: 6px; display: flex; align-items: center; gap: 0.8rem; cursor: pointer;">
+              <input type="radio" name="payMethod" value="paystack" checked style="accent-color: var(--gold-primary);">
+              <div>
+                <div style="font-weight: 600; color: #fff;">Paystack Secure Payment</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Card, Apple Pay, Bank Transfer</div>
+              </div>
+            </label>
+            <label style="border: 1px solid rgba(197, 168, 128, 0.2); background: rgba(255, 255, 255, 0.03); padding: 1rem; border-radius: 6px; display: flex; align-items: center; gap: 0.8rem; cursor: pointer;">
+              <input type="radio" name="payMethod" value="demo" style="accent-color: var(--gold-primary);">
+              <div>
+                <div style="font-weight: 600; color: #fff;">Instant VIP Guarantee (Sandbox)</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Hold with Concierge Pre-authorization</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+          <button class="btn btn-ghost" onclick="backBookingToStep2()">← Back</button>
+          <button class="btn btn-gold" id="btnConfirmPay" onclick="executeRoomBookingPayment()">
+            Confirm Reservation & Guarantee
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmation Screen -->
+      <div id="bookingConfirmationView" style="display: none; text-align: center; padding: 2rem 1rem;">
+        <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(197, 168, 128, 0.15); border: 2px solid var(--gold-primary); color: var(--gold-light); display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1.5rem;">
+          ✓
+        </div>
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.5rem;">
+          Booking Reference: <strong id="confirmedRefCode" class="font-mono" style="color: #fff; letter-spacing: 0.1em;">AUR-RES-2026-8812</strong>
+        </div>
+        <h2 class="font-display" style="font-size: 2.2rem; color: #fff; margin-bottom: 1rem;">
+          Your Sanctuary Has Been Reserved
+        </h2>
+        <p style="font-size: 0.95rem; color: var(--text-muted); max-width: 520px; margin: 0 auto 2rem auto; line-height: 1.7;">
+          A formal confirmation folio and concierge itinerary have been dispatched to <strong id="confirmedGuestEmail" style="color: #fff;">guest@domain.com</strong>.
+        </p>
+        <div style="display: flex; justify-content: center; gap: 1rem;">
+          <button class="btn btn-gold btn-sm" onclick="printVoucher()">Print Folio Summary</button>
+          <button class="btn btn-outline-gold btn-sm" onclick="closeRoomBookingModal()">Return to Sanctuary</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: TABLE RESERVATION MODAL -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="tableReservationModal">
+    <div class="modal-window" style="max-width: 680px;">
+      <button class="modal-close" onclick="closeTableReservationModal()">✕</button>
+
+      <div style="border-bottom: 1px solid rgba(197, 168, 128, 0.2); padding-bottom: 1.2rem; margin-bottom: 1.8rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);">
+          Gastronomy Reservation
+        </div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: #fff; margin-top: 0.3rem;">
+          Reserve A Fine Dining Table
+        </h2>
+      </div>
+
+      <div id="tableFormContent">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.4rem;">
+          <div class="booking-field">
+            <label class="booking-label">Restaurant</label>
+            <select class="booking-select" id="tableRestSelect">
+              <option value="ambroisie">L'Ambroisie Maritime (3★ · Cap d'Antibes)</option>
+              <option value="mizuki">Mizuki Kaiseki & Robata (2★ · Kyoto)</option>
+              <option value="fumo">Fumo & Fuoco Alpine Grill (1★ · Dolomites)</option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Number of Guests</label>
+            <select class="booking-select" id="tableGuestsSelect">
+              <option value="1">1 Guest</option>
+              <option value="2" selected>2 Guests</option>
+              <option value="3">3 Guests</option>
+              <option value="4">4 Guests</option>
+              <option value="6">6 Guests (Private Alcove)</option>
+              <option value="8">8 Guests (Chef's Salon)</option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Dining Date</label>
+            <input type="date" class="booking-input" id="tableDateInput" value="2026-10-19">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Seating Slot</label>
+            <select class="booking-select" id="tableTimeSelect">
+              <option value="12:30">12:30 PM — Déjeuner</option>
+              <option value="13:30">1:30 PM — Déjeuner</option>
+              <option value="19:30" selected>7:30 PM — Dîner Service</option>
+              <option value="20:30">8:30 PM — Dîner Service</option>
+              <option value="21:15">9:15 PM — Dîner Service</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.4rem;">
+          <div class="booking-field">
+            <label class="booking-label">Seating Atmosphere</label>
+            <select class="booking-select" id="tableAtmosphereSelect">
+              <option value="terrace">Panoramic Cliffside Terrace</option>
+              <option value="arches">Grand Arched Hall (Under Chandeliers)</option>
+              <option value="counter">Chef's Omakase Counter</option>
+              <option value="cellar">Private Wine Vault</option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Occasion</label>
+            <select class="booking-select" id="tableOccasionSelect">
+              <option value="anniversary">Anniversary Celebration</option>
+              <option value="romantic">Romantic Dinner</option>
+              <option value="business">Executive Entertaining</option>
+              <option value="culinary">Epicurean Exploration</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.8rem;">
+          <div class="booking-field">
+            <label class="booking-label">Your Name</label>
+            <input type="text" class="booking-input" id="tableNameInput" placeholder="e.g. Lady Vivienne Montgomery">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Contact Email or Phone</label>
+            <input type="text" class="booking-input" id="tableContactInput" placeholder="guest@domain.com">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+          <button class="btn btn-ghost" onclick="closeTableReservationModal()">Cancel</button>
+          <button class="btn btn-gold" onclick="submitTableReservation()">
+            Confirm Table Reservation
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Confirmation -->
+      <div id="tableConfirmationContent" style="display: none; text-align: center; padding: 2rem 1rem;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(197, 168, 128, 0.2); color: var(--gold-light); display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 1.2rem;">
+          ✓
+        </div>
+        <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.2em;">
+          Reference: <span id="confirmedTableRef" class="font-mono">AUR-TBL-7492</span>
+        </div>
+        <h3 class="font-display" style="font-size: 1.8rem; color: #fff; margin: 0.5rem 0 1rem 0;">Table Confirmed</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;" id="confirmedTableSummary">
+          We look forward to welcoming you for an extraordinary evening. Dress code: Elegant Evening Attire.
+        </p>
+        <button class="btn btn-gold btn-sm" onclick="closeTableReservationModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 3: DISH CUSTOMIZATION & ADD TO CART -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="dishCustomModal">
+    <div class="modal-window" style="max-width: 580px;">
+      <button class="modal-close" onclick="closeDishCustomModal()">✕</button>
+
+      <div style="margin-bottom: 1.5rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-primary);" id="customDishCategory">
+          Chef's Signature
+        </div>
+        <h3 class="font-display" style="font-size: 1.6rem; color: #fff; margin-top: 0.3rem;" id="customDishName">
+          Dish Name
+        </h3>
+        <div class="font-mono" style="font-size: 1.2rem; color: var(--gold-light); margin-top: 0.3rem;" id="customDishPrice">
+          €0
+        </div>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem;" id="customDishDesc">
+        Dish description here...
+      </p>
+
+      <div style="border-top: 1px solid rgba(197, 168, 128, 0.2); padding-top: 1.2rem; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.78rem; font-weight: 600; color: var(--gold-light); text-transform: uppercase; margin-bottom: 0.8rem;">
+          Culinary Preparation & Preferences:
+        </div>
+
+        <div class="booking-field" style="margin-bottom: 1rem;">
+          <label class="booking-label">Cooking & Doneness</label>
+          <select class="booking-select" id="customCookingOption">
+            <option value="chef">Executive Chef Recommendation</option>
+            <option value="rare">Rare (Delicate & Tender)</option>
+            <option value="med_rare">Medium Rare</option>
+            <option value="well">Medium to Well</option>
+          </select>
+        </div>
+
+        <div class="booking-field" style="margin-bottom: 1rem;">
+          <label class="booking-label">Gourmet Truffle / Caviar Add-on</label>
+          <select class="booking-select" id="customAddonOption">
+            <option value="0">None</option>
+            <option value="45">Shaved Black Périgord Truffle (+€45)</option>
+            <option value="65">Imperial Ossetra Caviar Quenelle 15g (+€65)</option>
+            <option value="90">White Alba Truffle Shavings (+€90)</option>
+          </select>
+        </div>
+
+        <div class="booking-field">
+          <label class="booking-label">Special In-Suite Dietary Instructions</label>
+          <input type="text" class="booking-input" id="customNotes" placeholder="e.g. Extra sauce on side, no dairy">
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(197, 168, 128, 0.2); padding-top: 1.2rem;">
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+          <button class="btn btn-ghost btn-sm" onclick="adjustDishQty(-1)">-</button>
+          <span class="font-mono" style="font-size: 1rem; color: #fff;" id="customDishQty">1</span>
+          <button class="btn btn-ghost btn-sm" onclick="adjustDishQty(1)">+</button>
+        </div>
+
+        <button class="btn btn-gold" onclick="confirmAddToCart()">
+          Add to Order · <span id="customDishTotal">€0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- DRAWER: IN-SUITE & DINING CART DRAWER -->
+  <!-- ======================================================== -->
+  <aside class="cart-drawer" id="cartDrawer">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(197, 168, 128, 0.2); padding-bottom: 1.2rem;">
+        <div>
+          <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);">Epicurean Order</div>
+          <h3 class="font-display" style="font-size: 1.4rem; color: #fff;">In-Suite & Dining Bag</h3>
+        </div>
+        <button class="modal-close" style="position: static;" onclick="closeCartDrawer()">✕</button>
+      </div>
+
+      <!-- Delivery / Destination Selector -->
+      <div style="margin-top: 1.2rem; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(197, 168, 128, 0.15); border-radius: 6px; padding: 0.85rem;">
+        <label class="booking-label">Delivery Destination</label>
+        <select class="booking-select" id="cartDeliveryDest" style="margin-top: 0.3rem;">
+          <option value="suite">In-Suite Private Dining (Room / Villa Service)</option>
+          <option value="cabana">Private Beach / Infinity Pool Cabana</option>
+          <option value="residence">Local Luxury Residence Delivery</option>
+        </select>
+        <input type="text" class="booking-input" id="cartSuiteNumber" placeholder="Suite # or Address (e.g. Villa Azure 4)" style="margin-top: 0.5rem;">
+      </div>
+
+      <!-- Items List -->
+      <div class="cart-items-scroll" id="cartItemsList">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Subtotal & Checkout -->
+    <div style="border-top: 1px solid rgba(197, 168, 128, 0.2); padding-top: 1.2rem;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+        <span style="color: var(--text-muted);">Dishes Subtotal:</span>
+        <span id="cartSubtotal" class="font-mono" style="color: #fff;">€0</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+        <span style="color: var(--text-muted);">In-Suite Service & Sommelier:</span>
+        <span id="cartServiceFee" class="font-mono" style="color: #fff;">€15</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 1.15rem; margin-bottom: 1.4rem; border-top: 1px solid rgba(197, 168, 128, 0.15); padding-top: 0.6rem;">
+        <strong style="color: var(--gold-light);">Grand Total:</strong>
+        <strong id="cartGrandTotal" class="font-mono" style="color: var(--gold-light);">€15</strong>
+      </div>
+
+      <button class="btn btn-gold" style="width: 100%;" onclick="proceedToFoodCheckout()">
+        Submit Culinary Order →
+      </button>
+    </div>
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 4: LIVE ORDER TRACKER LIFECYCLE -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="orderTrackerModal">
+    <div class="modal-window" style="max-width: 580px;">
+      <button class="modal-close" onclick="closeOrderTrackerModal()">✕</button>
+
+      <div style="text-align: center; border-bottom: 1px solid rgba(197, 168, 128, 0.2); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+        <div style="font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);">
+          Live Kitchen & Butler Dispatch
+        </div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: #fff; margin-top: 0.4rem;">
+          Order #<span id="trackerOrderId">AUR-ORD-4921</span>
+        </h2>
+        <div style="font-size: 0.85rem; color: var(--gold-light); margin-top: 0.2rem;">
+          Estimated Arrival: <strong id="trackerEta">25-30 minutes</strong>
+        </div>
+      </div>
+
+      <!-- Real 6-stage lifecycle -->
+      <div style="padding: 0 1rem; margin-bottom: 2rem;">
+        <div class="tracking-step done" id="tstep1">
+          <div class="tracking-bullet">✓</div>
+          <div>
+            <div style="font-weight: 600; color: #fff;">1. Order Received</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Transmitted to Executive Kitchen</div>
+          </div>
+        </div>
+
+        <div class="tracking-step active" id="tstep2">
+          <div class="tracking-bullet">2</div>
+          <div>
+            <div style="font-weight: 600; color: #fff;">2. Executive Chef Review</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Ingredients and temperature instructions audited</div>
+          </div>
+        </div>
+
+        <div class="tracking-step" id="tstep3">
+          <div class="tracking-bullet">3</div>
+          <div>
+            <div style="font-weight: 600; color: #fff;">3. Gastronomy Preparation</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Plating and woodfire cooking underway</div>
+          </div>
+        </div>
+
+        <div class="tracking-step" id="tstep4">
+          <div class="tracking-bullet">4</div>
+          <div>
+            <div style="font-weight: 600; color: #fff;">4. Sommelier & Temperature Check</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Silver cloche warming and vintage pairing seal</div>
+          </div>
+        </div>
+
+        <div class="tracking-step" id="tstep5">
+          <div class="tracking-bullet">5</div>
+          <div>
+            <div style="font-weight: 600; color: #fff;">5. Butler En Route to Suite</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Private white-glove cart dispatched</div>
+          </div>
+        </div>
+
+        <div class="tracking-step" id="tstep6">
+          <div class="tracking-bullet">6</div>
+          <div>
+            <div style="font-weight: 600; color: #fff;">6. Served at Residence</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Enjoy your bespoke culinary experience</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center;">
+        <button class="btn btn-outline-gold btn-sm" onclick="advanceSimulatedKitchenStatus()">
+          Advance Live Stage (Simulate Kitchen)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 5: VIP GUEST PORTAL & LOOKUP -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="guestPortalModal">
+    <div class="modal-window" style="max-width: 680px;">
+      <button class="modal-close" onclick="closeGuestPortalModal()">✕</button>
+
+      <div style="border-bottom: 1px solid rgba(197, 168, 128, 0.2); padding-bottom: 1.2rem; margin-bottom: 1.8rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);">
+          Aurelia VIP Club
+        </div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: #fff; margin-top: 0.3rem;">
+          Guest Folio & Booking Lookup
+        </h2>
+      </div>
+
+      <!-- Quick lookup tabs -->
+      <div style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(197, 168, 128, 0.15); margin-bottom: 1.8rem;">
+        <button class="btn btn-sm btn-gold" id="portalTabLookup" onclick="switchPortalTab('lookup')">Booking Lookup</button>
+        <button class="btn btn-sm btn-ghost" id="portalTabProfile" onclick="switchPortalTab('profile')">My VIP Profile</button>
+        <button class="btn btn-sm btn-ghost" id="portalTabHistory" onclick="switchPortalTab('history')">Order & Stays History</button>
+      </div>
+
+      <!-- Tab: Lookup -->
+      <div id="portalViewLookup">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="booking-field">
+            <label class="booking-label">Reservation Reference ID</label>
+            <input type="text" class="booking-input" id="lookupRefInput" placeholder="e.g. AUR-RES-2026-8812">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label">Guest Last Name or Email</label>
+            <input type="text" class="booking-input" id="lookupEmailInput" placeholder="e.g. Sterling or guest@domain.com">
+          </div>
+        </div>
+
+        <button class="btn btn-gold btn-sm" onclick="executeBookingLookup()">
+          Locate Itinerary & Folio
+        </button>
+
+        <div id="lookupResultArea" style="margin-top: 1.8rem; display: none; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); padding: 1.4rem; border-radius: 6px;">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Tab: VIP Profile -->
+      <div id="portalViewProfile" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.5rem;">
+          <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--gold-primary); color: #080d0b; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            VIP
+          </div>
+          <div>
+            <div class="font-display" style="font-size: 1.3rem; color: #fff;">Lord Alistair Sterling</div>
+            <div style="font-size: 0.75rem; color: var(--gold-light);">Tier: Aurelia Grand Connoisseur · 42,000 Points</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(197, 168, 128, 0.15); border-radius: 6px; padding: 1.2rem; font-size: 0.85rem;">
+          <div style="margin-bottom: 0.6rem;"><strong>Personalized Concierge Preferences:</strong></div>
+          <div style="color: var(--text-muted); line-height: 1.6;">
+            · Room Climate: 20.5°C<br>
+            · Pillow Selection: Hungarian Goose Down<br>
+            · Champagne Preference: Dom Pérignon P2 or Salon Le Mesnil<br>
+            · Dietary Note: Shellfish enthusiast, low sodium.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: History -->
+      <div id="portalViewHistory" style="display: none;">
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Your Active & Past Hospitality Records:
+        </div>
+        <div id="portalHistoryList" style="display: flex; flex-direction: column; gap: 0.8rem;">
+          <!-- Loaded by JS from localStorage -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 6: BACKEND INTEGRATION CONTRACT & PAYSTACK SPECS -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="backendContractModal">
+    <div class="modal-window" style="max-width: 860px;">
+      <button class="modal-close" onclick="closeBackendContractModal()">✕</button>
+
+      <div style="border-bottom: 1px solid rgba(197, 168, 128, 0.2); padding-bottom: 1.2rem; margin-bottom: 1.8rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);">
+          Production Architecture & Security Audit
+        </div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: #fff; margin-top: 0.3rem;">
+          Paystack API & Backend Integration Contract
+        </h2>
+      </div>
+
+      <div style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;">
+        This application strictly honors security guidelines: <strong>no secret API keys are ever stored or exposed in client-side code</strong>. In production, frontend transactions invoke the verified backend microservices below:
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 2rem;">
+        <!-- Endpoint 1 -->
+        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 6px; padding: 1.2rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+            <span class="font-mono" style="color: var(--gold-light); font-weight: 700; font-size: 0.9rem;">POST /api/paystack/initialize</span>
+            <span style="font-size: 0.7rem; background: rgba(197, 168, 128, 0.15); color: var(--gold-light); padding: 0.2rem 0.6rem; border-radius: 3px;">Server-Authoritative Total</span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+            Calculates exact stay or dining total from database inventory. Never trusts prices sent from the client. Calls <code>https://api.paystack.co/transaction/initialize</code> with the secret key on the backend.
+          </p>
+          <pre class="font-mono" style="font-size: 0.72rem; background: #080d0b; padding: 0.8rem; border-radius: 4px; color: #c4d9cb; overflow-x: auto;">
+{
+  "email": "guest@domain.com",
+  "amount": 480000, // In minor currency units (cents/kobo)
+  "currency": "EUR",
+  "metadata": {
+    "bookingRef": "AUR-RES-2026-8812",
+    "propertyId": "cotedazur",
+    "roomType": "imperial_cliffside"
+  }
+}
+          </pre>
+        </div>
+
+        <!-- Endpoint 2 -->
+        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 6px; padding: 1.2rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+            <span class="font-mono" style="color: var(--gold-light); font-weight: 700; font-size: 0.9rem;">POST /api/paystack/webhook</span>
+            <span style="font-size: 0.7rem; background: rgba(74, 21, 37, 0.4); color: #f28d9b; padding: 0.2rem 0.6rem; border-radius: 3px;">HMAC SHA512 Signature Verified</span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+            Verifies <code>x-paystack-signature</code> with <code>crypto.createHmac('sha512', PAYSTACK_SECRET_KEY)</code>. Updates booking status to 'CONFIRMED' only when charge event is verified.
+          </p>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn btn-gold btn-sm" onclick="closeBackendContractModal()">Understood & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 7: TERMS, CANCELLATION & POLICIES -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="termsModal">
+    <div class="modal-window" style="max-width: 720px;">
+      <button class="modal-close" onclick="closeTermsModal()">✕</button>
+
+      <div style="border-bottom: 1px solid rgba(197, 168, 128, 0.2); padding-bottom: 1.2rem; margin-bottom: 1.8rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);">
+          Aurelia Hospitality Group
+        </div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: #fff; margin-top: 0.3rem;" id="termsModalTitle">
+          Hospitality Terms & Guarantee
+        </h2>
+      </div>
+
+      <div id="termsModalBody" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.8;">
+        <!-- Populated by JS -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 2rem;">
+        <button class="btn btn-gold btn-sm" onclick="closeTermsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- COMPREHENSIVE JAVASCRIPT SYSTEM -->
+  <!-- ======================================================== -->
+  <script>
+    /**
+     * AURELIA HOTELS & RESTAURANTS JAVASCRIPT ARCHITECTURE
+     * Complete in-file reactive state store, multi-location database,
+     * GSAP ScrollTrigger parallax integration, and Paystack payment flow.
+     */
+
+    // --- 1. MULTI-LOCATION HOSPITALITY DATA REPOSITORY ---
+    const AURELIA_LOCATIONS = {
+      cotedazur: {
+        id: 'cotedazur',
+        name: "Aurelia Côte d'Azur",
+        region: "Cap d'Antibes, France",
+        currency: 'EUR',
+        currencySymbol: '€',
+        coordinates: "43.5528° N, 7.1264° E",
+        restaurantName: "L'Ambroisie Maritime",
+        restaurantStars: "3 Michelin Stars",
+        chef: "Chef Julien de Morney",
+        description: "Cliffside sanctuary overlooking the Mediterranean with private beach cove, 34 palatial suites, and 4,000-bottle subterranean wine vault.",
+        heroImg: "./src/assets/images/hero_aurelia_palace_1791786941018.jpg",
+        rooms: [
+          {
+            id: 'imperial_cliffside',
+            name: "The Imperial Cliffside Villa",
+            size: "320 m²",
+            price: 4800,
+            image: "./src/assets/images/suite_presidential_interior_1791786962118.jpg",
+            features: ["Private Infinity Pool", "Personal Butler 24/7", "Rolls-Royce Chauffeur", "Private Wine Cellar"]
+          },
+          {
+            id: 'royal_azure',
+            name: "Royal Azure Panorama Suite",
+            size: "140 m²",
+            price: 2950,
+            image: "./src/assets/images/hero_aurelia_palace_1791786941018.jpg",
+            features: ["270° Ocean Terrace", "Master Travertine Bath", "Personal Sommelier Tasting"]
+          },
+          {
+            id: 'citrus_garden',
+            name: "Citrus Garden Terrace Suite",
+            size: "95 m²",
+            price: 1850,
+            image: "./src/assets/images/dining_restaurant_interior_1791786973218.jpg",
+            features: ["Private Heated Jacuzzi", "Limestone Veranda", "Epicurean Breakfast"]
+          }
+        ],
+        menu: [
+          {
+            id: 'cot_dish_1',
+            name: "Wild Turbot & Ossetra Caviar",
+            category: 'signatures',
+            price: 110,
+            desc: "Pan-seared Brittany wild turbot with champagne saffron emulsion, royal caviar quenelle, and sea asparagus.",
+            pairing: "Batard-Montrachet Grand Cru 2018",
+            allergens: "Fish, Dairy"
+          },
+          {
+            id: 'cot_dish_2',
+            name: "Mediterranean Langoustine Royale",
+            category: 'starters',
+            price: 95,
+            desc: "Seared giant langoustine with bergamot sabayon, crisp fennel pollen, and finger lime pearls.",
+            pairing: "Chablis Premier Cru 2020",
+            allergens: "Shellfish, Citrus"
+          },
+          {
+            id: 'cot_dish_3',
+            name: "Périgord Black Truffle Tagliolini",
+            category: 'mains',
+            price: 88,
+            desc: "Handmade 40-yolk pasta tossed in mountain butter with fresh shaved Périgord black truffles.",
+            pairing: "Barolo Monfortino Riserva 2015",
+            allergens: "Gluten, Dairy, Egg"
+          },
+          {
+            id: 'cot_dish_4',
+            name: "Grand Cru Saffron Bouillabaisse",
+            category: 'mains',
+            price: 125,
+            desc: "Deconstructed coastal bouillabaisse with red mullet, rockfish quenelles, and charred sourdough rouille.",
+            pairing: "Domaine Ott Château de Selle 2021",
+            allergens: "Fish, Shellfish, Gluten"
+          },
+          {
+            id: 'cot_dish_5',
+            name: "Valrhona Guanaja Soufflé",
+            category: 'desserts',
+            price: 36,
+            desc: "70% dark chocolate soufflé served warm with bourbon vanilla bean gelato and gold leaf.",
+            pairing: "Château d'Yquem Sauternes 2011",
+            allergens: "Dairy, Egg"
+          },
+          {
+            id: 'cot_dish_6',
+            name: "Dom Pérignon P2 Vintage 2004",
+            category: 'cellar',
+            price: 680,
+            desc: "Exceptional Plénitude 2 Champagne, perfectly cellar-conditioned at 11°C.",
+            pairing: "Grand Cru Reserve",
+            allergens: "Sulphites"
+          }
+        ]
+      },
+      kyoto: {
+        id: 'kyoto',
+        name: "Aurelia Kyoto Higashiyama",
+        region: "Kyoto, Japan",
+        currency: 'JPY',
+        currencySymbol: '¥',
+        rateMultiplier: 155, // For rough EUR conversion in UI
+        coordinates: "34.9961° N, 135.7806° E",
+        restaurantName: "Mizuki Kaiseki & Robata",
+        restaurantStars: "2 Michelin Stars",
+        chef: "Master Kenzo Takahashi",
+        description: "Serene architectural sanctuary nestled in ancient bamboo groves. Featuring natural thermal Hinoki onsen, tea ceremonies, and seasonal kaiseki.",
+        heroImg: "./src/assets/images/suite_presidential_interior_1791786962118.jpg",
+        rooms: [
+          {
+            id: 'kyoto_bamboo',
+            name: "Bamboo Sanctuary Pavilion",
+            size: "210 m²",
+            price: 2100, // in EUR equivalent for storage
+            image: "./src/assets/images/hero_aurelia_palace_1791786941018.jpg",
+            features: ["Natural Thermal Onsen", "Tea Master Ceremony", "Private Zen Veranda", "Cedar Architecture"]
+          },
+          {
+            id: 'higashiyama_moon',
+            name: "Higashiyama Moon Suite",
+            size: "110 m²",
+            price: 1450,
+            image: "./src/assets/images/suite_presidential_interior_1791786962118.jpg",
+            features: ["Stone Garden Patio", "Hinoki Wood Tub", "Morning Matcha Service"]
+          },
+          {
+            id: 'sukiya_residence',
+            name: "Sukiya Heritage Residence",
+            size: "165 m²",
+            price: 1850,
+            image: "./src/assets/images/dining_restaurant_interior_1791786973218.jpg",
+            features: ["Private Cedar Tea House", "Forest Mountain Vista", "Personal Kimono Concierge"]
+          }
+        ],
+        menu: [
+          {
+            id: 'kyo_dish_1',
+            name: "A5 Miyazaki Wagyu Ishiyaki",
+            category: 'signatures',
+            price: 135,
+            desc: "Charcoal-seared A5 Wagyu tenderloin on volcanic river stones with fresh grated Shizuoka wasabi.",
+            pairing: "Jiku Junmai Daiginjo Sake",
+            allergens: "Soy, Gluten"
+          },
+          {
+            id: 'kyo_dish_2',
+            name: "Kyoto Yuba & Hokkaido Sea Urchin",
+            category: 'starters',
+            price: 85,
+            desc: "Fresh silken bean-curd skin with premium Bafun Uni and dashi gelee.",
+            pairing: "Kokuryu Black Dragon Daiginjo",
+            allergens: "Soy, Shellfish"
+          },
+          {
+            id: 'kyo_dish_3',
+            name: "Robata Charcoal Kinmedai",
+            category: 'mains',
+            price: 92,
+            desc: "Binchotan-grilled golden eye snapper with sweet saikyo miso glaze and mountain yam.",
+            pairing: "Isojiman Tokubetsu Junmai",
+            allergens: "Fish, Soy"
+          },
+          {
+            id: 'kyo_dish_4',
+            name: "Autumn Truffle & Matsutake Rice",
+            category: 'mains',
+            price: 78,
+            desc: "Claypot koshihikari rice simmered with wild matsutake broth and freshly shaved truffles.",
+            pairing: "Dassai 23 Daiginjo",
+            allergens: "Mushroom, Soy"
+          },
+          {
+            id: 'kyo_dish_5',
+            name: "Uji Ceremonial Matcha Mont Blanc",
+            category: 'desserts',
+            price: 32,
+            desc: "First-harvest ceremonial matcha threads with candied Kyoto chestnuts and adzuki cream.",
+            pairing: "Gyokuro Green Tea",
+            allergens: "Dairy"
+          },
+          {
+            id: 'kyo_dish_6',
+            name: "Juyondai Ryugetsu Junmai Daiginjo",
+            category: 'cellar',
+            price: 520,
+            desc: "Extremely rare collector's sake from Yamagata prefecture, velvety floral notes.",
+            pairing: "Imperial Reserve Sake",
+            allergens: "Rice, Yeast"
+          }
+        ]
+      },
+      dolomites: {
+        id: 'dolomites',
+        name: "Aurelia Dolomites Reserve",
+        region: "Cortina d'Ampezzo, Italy",
+        currency: 'EUR',
+        currencySymbol: '€',
+        coordinates: "46.5405° N, 12.1357° E",
+        restaurantName: "Fumo & Fuoco Alpine Grill",
+        restaurantStars: "1 Michelin Star",
+        chef: "Chef Matteo Valli",
+        description: "High-altitude luxury reserve at 1,800m. Surrounded by jagged limestone peaks with private ski chalets, cedar saunas, and woodfire gastronomy.",
+        heroImg: "./src/assets/images/dining_restaurant_interior_1791786973218.jpg",
+        rooms: [
+          {
+            id: 'cristallo',
+            name: "Cristallo Penthouse Chalet",
+            size: "280 m²",
+            price: 3900,
+            image: "./src/assets/images/dining_restaurant_interior_1791786973218.jpg",
+            features: ["Private Chalet Sauna", "Heated Mountain Jacuzzi", "Stone Fireplace", "Private Ski Butler"]
+          },
+          {
+            id: 'larch_lodge',
+            name: "Larch Forest Sky Lodge",
+            size: "125 m²",
+            price: 1950,
+            image: "./src/assets/images/suite_presidential_interior_1791786962118.jpg",
+            features: ["Glacier Panorama Glass", "Larch Wood Balcony", "Alpine Hearth"]
+          },
+          {
+            id: 'dolomiti_grand',
+            name: "Dolomiti Grand Alpine Suite",
+            size: "90 m²",
+            price: 1400,
+            image: "./src/assets/images/hero_aurelia_palace_1791786941018.jpg",
+            features: ["Heated Balcony", "Open Hearth Fireplace", "Mountain Spa Access"]
+          }
+        ],
+        menu: [
+          {
+            id: 'dol_dish_1',
+            name: "Dry-Aged Alpine Venison Loin",
+            category: 'signatures',
+            price: 98,
+            desc: "Larch-smoked venison loin roasted over birch embers with wild lingonberry reduction and parsnip velvet.",
+            pairing: "Sassicaia Tenuta San Guido 2017",
+            allergens: "Dairy"
+          },
+          {
+            id: 'dol_dish_2',
+            name: "Hay-Smoked Mountain Char",
+            category: 'starters',
+            price: 76,
+            desc: "Alpine river char cured with mountain juniper and served with fermented spruce tips.",
+            pairing: "Ferrari Perlé Nero Riserva 2014",
+            allergens: "Fish"
+          },
+          {
+            id: 'dol_dish_3',
+            name: "Wild Chanterelle & Pine Needle Risotto",
+            category: 'mains',
+            price: 82,
+            desc: "Carnaroli reserve rice infused with forest broth, aged alpine Piave cheese, and fresh chanterelles.",
+            pairing: "Barbaresco Gaja 2016",
+            allergens: "Dairy"
+          },
+          {
+            id: 'dol_dish_4',
+            name: "Woodfire-Roasted Alpine Veal Chop",
+            category: 'mains',
+            price: 110,
+            desc: "Milk-fed mountain veal chop on the bone with morel mushroom reduction and polenta taragna.",
+            pairing: "Amarone della Valpolicella Quintarelli 2012",
+            allergens: "Dairy"
+          },
+          {
+            id: 'dol_dish_5',
+            name: "Glazed Mountain Apple & Pine Tarte",
+            category: 'desserts',
+            price: 30,
+            desc: "Caramelized South Tyrolean apples with flaky buckwheat crust and spiced mountain hay gelato.",
+            pairing: "Moscato Rosa Alto Adige",
+            allergens: "Gluten, Dairy"
+          },
+          {
+            id: 'dol_dish_6',
+            name: "Ornellaia Bolgheri Superiore 2015",
+            category: 'cellar',
+            price: 540,
+            desc: "Tuscan icon with dense berry concentration and refined cedar tannins.",
+            pairing: "Grand Cru Italian Cellar",
+            allergens: "Sulphites"
+          }
+        ]
+      }
+    };
+
+    // --- 2. REACTIVE STATE ENGINE ---
+    const AppState = {
+      currentLocation: 'cotedazur',
+      currentMenuCategory: 'all',
+      cart: [], // items: { id, name, price, qty, cooking, addon, notes }
+      activeModal: null,
+      bookingDraft: {
+        propertyId: 'cotedazur',
+        room: null,
+        checkIn: '2026-10-18',
+        checkOut: '2026-10-23',
+        guests: 2,
+        addons: { transfer: false, champagne: false, credit: false },
+        guest: { name: '', email: '', phone: '', notes: '' }
+      },
+      customizingDish: null,
+      customDishQty: 1,
+      liveOrderTracking: {
+        id: 'AUR-ORD-4921',
+        step: 2,
+        eta: '25-30 minutes'
+      }
+    };
+
+    // Load persisted state from localStorage safely
+    try {
+      const savedCart = localStorage.getItem('aurelia_cart');
+      if (savedCart) AppState.cart = JSON.parse(savedCart);
+    } catch (e) {
+      console.warn("Storage access restricted", e);
+    }
+
+    // --- 3. LIFECYCLE & GSAP INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+      // Hide preloader smoothly after entrance
+      setTimeout(() => {
+        const preloader = document.getElementById('preloader');
+        if (preloader) preloader.classList.add('fade-out');
+      }, 700);
+
+      // Render initial views
+      renderMenu();
+      updateCartUI();
+      renderBookingRoomOptions();
+
+      // Initialize Desktop Custom Cursor
+      initCustomCursor();
+
+      // Initialize GSAP & ScrollTrigger Parallax
+      initParallaxAnimations();
+
+      // Listen to scroll for navigation background
+      window.addEventListener('scroll', () => {
+        const header = document.getElementById('navHeader');
+        if (window.scrollY > 40) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      }, { passive: true });
+    });
+
+    // --- 4. GSAP & SCROLLTRIGGER GENUINE PARALLAX ---
+    function initParallaxAnimations() {
+      // Check if GSAP is loaded
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+        console.warn("GSAP/ScrollTrigger CDN unavailable; standard graceful CSS flow active.");
+        return;
+      }
+
+      // Check reduced motion
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      // 1. Hero Background Parallax Scaling
+      gsap.to('#heroBgImg', {
+        yPercent: 20,
+        scale: 1.15,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#heroSection',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true
+        }
+      });
+
+      // 2. Editorial Philosophy Image Reveal
+      gsap.from('.image-primary', {
+        scale: 0.94,
+        y: 40,
+        opacity: 0.7,
+        duration: 1.2,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '#philosophy',
+          start: 'top 75%'
+        }
+      });
+
+      // 3. Floating Secondary Image Layer Parallax
+      gsap.to('.image-secondary-floating', {
+        y: -30,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#philosophy',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+
+      // 4. Staggered reveal for Destination Cards
+      gsap.from('.location-card-editorial', {
+        y: 60,
+        opacity: 0,
+        stagger: 0.2,
+        duration: 1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '#destinations',
+          start: 'top 70%'
+        }
+      });
+    }
+
+    // --- 5. CUSTOM CURSOR TREATMENT ---
+    function initCustomCursor() {
+      const dot = document.getElementById('cursorDot');
+      const ring = document.getElementById('cursorRing');
+      if (!dot || !ring) return;
+
+      let mouseX = window.innerWidth / 2;
+      let mouseY = window.innerHeight / 2;
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        dot.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+        ring.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+      }, { passive: true });
+
+      // Interactive hover cues
+      const interactiveEls = document.querySelectorAll('button, a, input, select, .menu-item-card, .location-card-editorial');
+      interactiveEls.forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.classList.add('cursor-active'));
+        el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-active'));
+      });
+    }
+
+    // --- 6. NAVIGATION & SMOOTH SCROLL ---
+    function scrollToSection(id) {
+      const target = document.getElementById(id);
+      if (target) {
+        const offset = 80;
+        const targetPos = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: targetPos, behavior: 'smooth' });
+      }
+    }
+
+    function toggleMobileNav() {
+      const drawer = document.getElementById('mobileDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      drawer.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    function closeMobileNav() {
+      const drawer = document.getElementById('mobileDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      if (drawer) drawer.classList.remove('open');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    // --- 7. LOCATION MANAGEMENT & PROPERTY SWITCHING ---
+    function onLocationChange(locId) {
+      AppState.currentLocation = locId;
+      renderMenu();
+      renderBookingRoomOptions();
+      updateFeaturedDiningUI(locId);
+      showToast(`Selected Estate: ${AURELIA_LOCATIONS[locId].name}`);
+    }
+
+    function switchLocationMenu(locId) {
+      AppState.currentLocation = locId;
+      // Update toggle buttons styling
+      document.getElementById('diningLocCote').className = locId === 'cotedazur' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+      document.getElementById('diningLocKyoto').className = locId === 'kyoto' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+      document.getElementById('diningLocDolomites').className = locId === 'dolomites' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+
+      renderMenu();
+      updateFeaturedDiningUI(locId);
+      scrollToSection('dining');
+      showToast(`Viewing Gastronomy: ${AURELIA_LOCATIONS[locId].restaurantName}`);
+    }
+
+    function updateFeaturedDiningUI(locId) {
+      const loc = AURELIA_LOCATIONS[locId];
+      const titleEl = document.getElementById('featuredRestTitle');
+      const metaEl = document.getElementById('featuredRestMeta');
+      const descEl = document.getElementById('featuredRestDesc');
+      if (titleEl) titleEl.textContent = loc.restaurantName;
+      if (metaEl) metaEl.textContent = `${loc.restaurantStars} · ${loc.chef}`;
+      if (descEl) descEl.textContent = loc.description;
+    }
+
+    function selectPropertyAndBook(locId) {
+      AppState.currentLocation = locId;
+      const select = document.getElementById('bookModalProperty');
+      if (select) select.value = locId;
+      openRoomBookingModal();
+    }
+
+    // --- 8. GASTRONOMY & MENU RENDERING ---
+    function filterMenuCategory(cat) {
+      AppState.currentMenuCategory = cat;
+      const buttons = document.querySelectorAll('.menu-tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderMenu();
+    }
+
+    function renderMenu() {
+      const container = document.getElementById('menuItemsGrid');
+      if (!container) return;
+
+      const loc = AURELIA_LOCATIONS[AppState.currentLocation];
+      let items = loc.menu;
+
+      if (AppState.currentMenuCategory !== 'all') {
+        items = items.filter(i => i.category === AppState.currentMenuCategory);
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="menu-item-card">
+          <div style="padding: 1.6rem; display: flex; flex-direction: column; flex-grow: 1;">
+            <div class="menu-item-header">
+              <h4 class="menu-item-title">${item.name}</h4>
+              <span class="menu-item-price">€${item.price}</span>
+            </div>
+            <p class="menu-item-desc">${item.desc}</p>
+            <div style="font-size: 0.75rem; color: var(--gold-light); margin-bottom: 1rem; opacity: 0.85;">
+              Sommelier Pairing: <em>${item.pairing}</em>
+            </div>
+            <div class="menu-item-meta">
+              <span>Allergens: ${item.allergens}</span>
+              <button class="btn btn-outline-gold btn-sm" onclick="openDishCustomModal('${item.id}')">
+                Order to Suite +
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openDishCustomModal(dishId) {
+      const loc = AURELIA_LOCATIONS[AppState.currentLocation];
+      const dish = loc.menu.find(d => d.id === dishId);
+      if (!dish) return;
+
+      AppState.customizingDish = dish;
+      AppState.customDishQty = 1;
+
+      document.getElementById('customDishName').textContent = dish.name;
+      document.getElementById('customDishPrice').textContent = `€${dish.price}`;
+      document.getElementById('customDishDesc').textContent = dish.desc;
+      document.getElementById('customDishQty').textContent = '1';
+      document.getElementById('customDishTotal').textContent = `€${dish.price}`;
+      document.getElementById('customNotes').value = '';
+
+      const modal = document.getElementById('dishCustomModal');
+      modal.classList.add('active');
+    }
+
+    function closeDishCustomModal() {
+      const modal = document.getElementById('dishCustomModal');
+      modal.classList.remove('active');
+    }
+
+    function adjustDishQty(delta) {
+      AppState.customDishQty = Math.max(1, AppState.customDishQty + delta);
+      document.getElementById('customDishQty').textContent = AppState.customDishQty;
+      const basePrice = AppState.customizingDish ? AppState.customizingDish.price : 0;
+      const addon = parseInt(document.getElementById('customAddonOption').value || '0', 10);
+      const total = (basePrice + addon) * AppState.customDishQty;
+      document.getElementById('customDishTotal').textContent = `€${total}`;
+    }
+
+    function confirmAddToCart() {
+      if (!AppState.customizingDish) return;
+
+      const addonPrice = parseInt(document.getElementById('customAddonOption').value || '0', 10);
+      const cooking = document.getElementById('customCookingOption').value;
+      const notes = document.getElementById('customNotes').value;
+
+      const item = {
+        id: `${AppState.customizingDish.id}_${Date.now()}`,
+        dishId: AppState.customizingDish.id,
+        name: AppState.customizingDish.name,
+        basePrice: AppState.customizingDish.price,
+        unitPrice: AppState.customizingDish.price + addonPrice,
+        qty: AppState.customDishQty,
+        cooking: cooking,
+        addonPrice: addonPrice,
+        notes: notes
+      };
+
+      AppState.cart.push(item);
+      saveCart();
+      updateCartUI();
+      closeDishCustomModal();
+      showToast(`Added to In-Suite Order: ${item.name} (${item.qty})`);
+    }
+
+    // --- 9. CART SYSTEM & LIVE PERSISTENCE ---
+    function saveCart() {
+      try {
+        localStorage.setItem('aurelia_cart', JSON.stringify(AppState.cart));
+      } catch (e) {
+        console.warn("Storage restricted", e);
+      }
+    }
+
+    function updateCartUI() {
+      const totalItems = AppState.cart.reduce((sum, item) => sum + item.qty, 0);
+      const countEl = document.getElementById('headerCartCount');
+      if (countEl) countEl.textContent = totalItems;
+
+      const listContainer = document.getElementById('cartItemsList');
+      if (!listContainer) return;
+
+      if (AppState.cart.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.8rem; opacity: 0.5;"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <div>Your In-Suite dining bag is currently empty.</div>
+            <div style="font-size: 0.78rem; margin-top: 0.4rem; color: var(--gold-primary);">Explore our Michelin menus to add items.</div>
+          </div>
+        `;
+        document.getElementById('cartSubtotal').textContent = '€0';
+        document.getElementById('cartGrandTotal').textContent = '€0';
+        return;
+      }
+
+      let subtotal = 0;
+      listContainer.innerHTML = AppState.cart.map((item, index) => {
+        const itemTotal = item.unitPrice * item.qty;
+        subtotal += itemTotal;
+        return `
+          <div class="cart-item-row">
+            <div style="flex-grow: 1;">
+              <div style="font-weight: 600; color: #fff; font-size: 0.95rem;">${item.name}</div>
+              <div style="font-size: 0.78rem; color: var(--gold-light);">€${item.unitPrice} each</div>
+              ${item.notes ? `<div style="font-size: 0.72rem; color: var(--text-muted);">Note: ${item.notes}</div>` : ''}
+              <div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem;">
+                <button class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.6rem;" onclick="changeCartItemQty(${index}, -1)">-</button>
+                <span class="font-mono" style="font-size: 0.85rem; color: #fff;">${item.qty}</span>
+                <button class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.6rem;" onclick="changeCartItemQty(${index}, 1)">+</button>
+                <button style="background: none; border: none; color: #b86259; font-size: 0.75rem; cursor: pointer; margin-left: 0.5rem;" onclick="removeCartItem(${index})">Remove</button>
+              </div>
+            </div>
+            <div class="font-mono" style="color: var(--gold-light); font-weight: 700;">
+              €${itemTotal}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const serviceFee = 15;
+      const grandTotal = subtotal + serviceFee;
+      document.getElementById('cartSubtotal').textContent = `€${subtotal}`;
+      document.getElementById('cartGrandTotal').textContent = `€${grandTotal}`;
+    }
+
+    function changeCartItemQty(index, delta) {
+      if (!AppState.cart[index]) return;
+      AppState.cart[index].qty += delta;
+      if (AppState.cart[index].qty <= 0) {
+        AppState.cart.splice(index, 1);
+      }
+      saveCart();
+      updateCartUI();
+    }
+
+    function removeCartItem(index) {
+      AppState.cart.splice(index, 1);
+      saveCart();
+      updateCartUI();
+    }
+
+    function openCartDrawer() {
+      updateCartUI();
+      document.getElementById('cartDrawer').classList.add('open');
+      document.getElementById('drawerOverlay').classList.add('active');
+    }
+
+    function closeCartDrawer() {
+      document.getElementById('cartDrawer').classList.remove('open');
+      document.getElementById('drawerOverlay').classList.remove('active');
+    }
+
+    function openOrderFoodView() {
+      scrollToSection('dining');
+      showToast("Select dishes from our Michelin menu below to order.");
+    }
+
+    function proceedToFoodCheckout() {
+      if (AppState.cart.length === 0) {
+        showToast("Please add items to your cart first.");
+        return;
+      }
+      closeCartDrawer();
+      // Generate unique order ID
+      const orderId = `AUR-ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+      AppState.liveOrderTracking.id = orderId;
+      AppState.liveOrderTracking.step = 2;
+
+      // Save order to history
+      saveToGuestHistory({
+        type: 'Dining Order',
+        ref: orderId,
+        date: new Date().toLocaleDateString(),
+        items: AppState.cart.length,
+        total: document.getElementById('cartGrandTotal').textContent
+      });
+
+      // Clear cart
+      AppState.cart = [];
+      saveCart();
+      updateCartUI();
+
+      // Open Tracker
+      document.getElementById('trackerOrderId').textContent = orderId;
+      document.getElementById('orderTrackerModal').classList.add('active');
+      showToast(`Order Confirmed: ${orderId}. Butler dispatch active.`);
+    }
+
+    // --- 10. LIVE ORDER TRACKER LIFECYCLE ---
+    function closeOrderTrackerModal() {
+      document.getElementById('orderTrackerModal').classList.remove('active');
+    }
+
+    function advanceSimulatedKitchenStatus() {
+      let current = AppState.liveOrderTracking.step;
+      if (current < 6) {
+        current++;
+        AppState.liveOrderTracking.step = current;
+
+        for (let i = 1; i <= 6; i++) {
+          const stepEl = document.getElementById(`tstep${i}`);
+          if (!stepEl) continue;
+          stepEl.className = 'tracking-step';
+          if (i < current) {
+            stepEl.classList.add('done');
+            stepEl.querySelector('.tracking-bullet').textContent = '✓';
+          } else if (i === current) {
+            stepEl.classList.add('active');
+            stepEl.querySelector('.tracking-bullet').textContent = `${i}`;
+          } else {
+            stepEl.querySelector('.tracking-bullet').textContent = `${i}`;
+          }
+        }
+
+        if (current === 6) {
+          showToast("Order Delivered! Butler has arrived at your suite.");
+        } else {
+          showToast(`Order Status Updated: Step ${current} of 6`);
+        }
+      } else {
+        showToast("Order is already completed and delivered.");
+      }
+    }
+
+    // --- 11. ROOM RESERVATION MULTI-STEP FLOW ---
+    function openRoomBookingModal() {
+      document.getElementById('roomBookingModal').classList.add('active');
+      resetBookingToStep1();
+    }
+
+    function closeRoomBookingModal() {
+      document.getElementById('roomBookingModal').classList.remove('active');
+    }
+
+    function submitHeroSearch() {
+      const loc = document.getElementById('heroLocationSelect').value;
+      const checkIn = document.getElementById('heroCheckIn').value;
+      const checkOut = document.getElementById('heroCheckOut').value;
+      const guests = document.getElementById('heroGuests').value;
+
+      AppState.bookingDraft.propertyId = loc;
+      AppState.bookingDraft.checkIn = checkIn;
+      AppState.bookingDraft.checkOut = checkOut;
+      AppState.bookingDraft.guests = parseInt(guests, 10);
+
+      document.getElementById('bookModalProperty').value = loc;
+      document.getElementById('bookModalCheckIn').value = checkIn;
+      document.getElementById('bookModalCheckOut').value = checkOut;
+      document.getElementById('bookModalGuests').value = guests;
+
+      openRoomBookingModal();
+    }
+
+    function validateDates() {
+      const inEl = document.getElementById('heroCheckIn');
+      const outEl = document.getElementById('heroCheckOut');
+      if (inEl && outEl && new Date(outEl.value) <= new Date(inEl.value)) {
+        // Set checkout to 1 day after checkin
+        const nextDay = new Date(inEl.value);
+        nextDay.setDate(nextDay.getDate() + 1);
+        outEl.value = nextDay.toISOString().split('T')[0];
+      }
+    }
+
+    function renderBookingRoomOptions() {
+      const locId = document.getElementById('bookModalProperty').value;
+      const loc = AURELIA_LOCATIONS[locId] || AURELIA_LOCATIONS.cotedazur;
+      const container = document.getElementById('bookingRoomOptionsContainer');
+      if (!container) return;
+
+      container.innerHTML = loc.rooms.map((room, idx) => `
+        <label style="display: flex; gap: 1.2rem; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 8px; padding: 1.2rem; cursor: pointer; transition: border-color 0.2s ease;">
+          <input type="radio" name="selectRoomRadio" value="${room.id}" ${idx === 0 ? 'checked' : ''} style="transform: scale(1.3); accent-color: var(--gold-primary);">
+          <img src="${room.image}" alt="${room.name}" style="width: 100px; height: 75px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-subtle);">
+          <div style="flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <h4 class="font-display" style="font-size: 1.15rem; color: #fff;">${room.name}</h4>
+              <span class="font-mono" style="color: var(--gold-light); font-weight: 700;">€${room.price} <small style="font-size: 0.7rem; color: var(--text-muted); font-weight: 400;">/ night</small></span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+              Size: ${room.size} · Inclusions: ${room.features.slice(0, 2).join(', ')}
+            </div>
+          </div>
+        </label>
+      `).join('');
+    }
+
+    function advanceBookingToStep2() {
+      const selectedRadio = document.querySelector('input[name="selectRoomRadio"]:checked');
+      if (!selectedRadio) {
+        showToast("Please choose an available suite to continue.");
+        return;
+      }
+
+      const locId = document.getElementById('bookModalProperty').value;
+      const room = AURELIA_LOCATIONS[locId].rooms.find(r => r.id === selectedRadio.value);
+      AppState.bookingDraft.room = room;
+      AppState.bookingDraft.propertyId = locId;
+      AppState.bookingDraft.checkIn = document.getElementById('bookModalCheckIn').value;
+      AppState.bookingDraft.checkOut = document.getElementById('bookModalCheckOut').value;
+      AppState.bookingDraft.guests = parseInt(document.getElementById('bookModalGuests').value, 10);
+
+      document.getElementById('bookingStep1').style.display = 'none';
+      document.getElementById('bookingStep2').style.display = 'block';
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingStepNum').textContent = '2';
+      document.getElementById('bookingStepTitle').textContent = 'Curated Inclusions & Guest Folio';
+    }
+
+    function backBookingToStep1() {
+      document.getElementById('bookingStep1').style.display = 'block';
+      document.getElementById('bookingStep2').style.display = 'none';
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingStepNum').textContent = '1';
+      document.getElementById('bookingStepTitle').textContent = 'Select Your Sanctuary & Dates';
+    }
+
+    function advanceBookingToStep3() {
+      const name = document.getElementById('guestFullName').value.trim();
+      const email = document.getElementById('guestEmail').value.trim();
+      const phone = document.getElementById('guestPhone').value.trim();
+
+      if (!name || !email) {
+        showToast("Please complete your Full Name and Email Address.");
+        return;
+      }
+
+      AppState.bookingDraft.guest = {
+        name,
+        email,
+        phone,
+        notes: document.getElementById('guestSpecialNotes').value.trim()
+      };
+
+      AppState.bookingDraft.addons = {
+        transfer: document.getElementById('addonTransfer').checked,
+        champagne: document.getElementById('addonChampagne').checked,
+        credit: document.getElementById('addonCredit').checked
+      };
+
+      // Calculate nights
+      const inDate = new Date(AppState.bookingDraft.checkIn);
+      const outDate = new Date(AppState.bookingDraft.checkOut);
+      const diffTime = Math.max(1, outDate - inDate);
+      const nights = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+      const roomPrice = AppState.bookingDraft.room.price * nights;
+      let addonPrice = 0;
+      if (AppState.bookingDraft.addons.transfer) addonPrice += 480;
+      if (AppState.bookingDraft.addons.champagne) addonPrice += 390;
+      if (AppState.bookingDraft.addons.credit) addonPrice += (200 * nights);
+
+      const subtotal = roomPrice + addonPrice;
+      const taxes = Math.round(subtotal * 0.15);
+      const grandTotal = subtotal + taxes;
+
+      // Populate summary
+      document.getElementById('summarySuiteName').textContent = `${AppState.bookingDraft.room.name} (${AURELIA_LOCATIONS[AppState.bookingDraft.propertyId].name})`;
+      document.getElementById('summaryDates').textContent = `${AppState.bookingDraft.checkIn} to ${AppState.bookingDraft.checkOut} (${nights} Nights)`;
+      document.getElementById('summaryGuests').textContent = `${AppState.bookingDraft.guests} Guests`;
+      document.getElementById('summaryBaseRate').textContent = `€${roomPrice.toLocaleString()}`;
+      document.getElementById('summaryAddons').textContent = `€${addonPrice.toLocaleString()}`;
+      document.getElementById('summaryTaxes').textContent = `€${taxes.toLocaleString()}`;
+      document.getElementById('summaryTotal').textContent = `€${grandTotal.toLocaleString()}`;
+
+      document.getElementById('bookingStep1').style.display = 'none';
+      document.getElementById('bookingStep2').style.display = 'none';
+      document.getElementById('bookingStep3').style.display = 'block';
+      document.getElementById('bookingStepNum').textContent = '3';
+      document.getElementById('bookingStepTitle').textContent = 'Review Itinerary & Guarantee Payment';
+    }
+
+    function backBookingToStep2() {
+      document.getElementById('bookingStep1').style.display = 'none';
+      document.getElementById('bookingStep2').style.display = 'block';
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingStepNum').textContent = '2';
+      document.getElementById('bookingStepTitle').textContent = 'Curated Inclusions & Guest Folio';
+    }
+
+    function resetBookingToStep1() {
+      document.getElementById('bookingStep1').style.display = 'block';
+      document.getElementById('bookingStep2').style.display = 'none';
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingConfirmationView').style.display = 'none';
+      document.getElementById('bookingStepNum').textContent = '1';
+      document.getElementById('bookingStepTitle').textContent = 'Select Your Sanctuary & Dates';
+    }
+
+    function executeRoomBookingPayment() {
+      const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
+      const btn = document.getElementById('btnConfirmPay');
+      btn.disabled = true;
+      btn.textContent = "Authorizing Guarantee...";
+
+      // Generate verified reference code
+      const refCode = `AUR-RES-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      if (payMethod === 'paystack' && typeof PaystackPop !== 'undefined') {
+        // Attempt Paystack popup flow
+        try {
+          const handler = PaystackPop.setup({
+            key: 'pk_test_aurelia_hospitality_sandbox_key', // Configurable public key
+            email: AppState.bookingDraft.guest.email,
+            amount: 50000, // Pre-authorization test amount in kobo/cents
+            currency: 'NGN', // Paystack standard demo
+            ref: refCode,
+            callback: function(response) {
+              completeReservationSuccess(refCode);
+            },
+            onClose: function() {
+              btn.disabled = false;
+              btn.textContent = "Confirm Reservation & Guarantee";
+              showToast("Payment window closed. You may select Sandbox Guarantee.");
+            }
+          });
+          handler.openIframe();
+          return;
+        } catch (e) {
+          console.warn("Paystack live popup requires merchant public key. Falling back to VIP Sandbox Guarantee.", e);
+        }
+      }
+
+      // VIP Sandbox Guarantee Flow
+      setTimeout(() => {
+        completeReservationSuccess(refCode);
+      }, 1000);
+    }
+
+    function completeReservationSuccess(refCode) {
+      document.getElementById('confirmedRefCode').textContent = refCode;
+      document.getElementById('confirmedGuestEmail').textContent = AppState.bookingDraft.guest.email;
+
+      // Save to guest history
+      saveToGuestHistory({
+        type: 'Suite Stay',
+        ref: refCode,
+        date: `${AppState.bookingDraft.checkIn} — ${AppState.bookingDraft.checkOut}`,
+        suite: AppState.bookingDraft.room ? AppState.bookingDraft.room.name : 'Presidential Villa',
+        property: AURELIA_LOCATIONS[AppState.bookingDraft.propertyId].name,
+        total: document.getElementById('summaryTotal').textContent
+      });
+
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingConfirmationView').style.display = 'block';
+      document.getElementById('bookingStepTitle').textContent = 'Reservation Confirmed';
+      showToast(`Reservation Confirmed: ${refCode}`);
+    }
+
+    function printVoucher() {
+      window.print();
+    }
+
+    // --- 12. TABLE RESERVATION FLOW ---
+    function openTableReservationModal() {
+      document.getElementById('tableFormContent').style.display = 'block';
+      document.getElementById('tableConfirmationContent').style.display = 'none';
+      document.getElementById('tableReservationModal').classList.add('active');
+    }
+
+    function closeTableReservationModal() {
+      document.getElementById('tableReservationModal').classList.remove('active');
+    }
+
+    function submitTableReservation() {
+      const rest = document.getElementById('tableRestSelect').value;
+      const guests = document.getElementById('tableGuestsSelect').value;
+      const date = document.getElementById('tableDateInput').value;
+      const time = document.getElementById('tableTimeSelect').value;
+      const name = document.getElementById('tableNameInput').value.trim() || 'Distinguished Guest';
+
+      const tableRef = `AUR-TBL-${Math.floor(1000 + Math.random() * 9000)}`;
+      document.getElementById('confirmedTableRef').textContent = tableRef;
+      document.getElementById('confirmedTableSummary').textContent = `
+        Table reserved for ${name} (${guests} Guests) on ${date} at ${time}. Our Maître d' will greet you upon arrival.
+      `;
+
+      saveToGuestHistory({
+        type: 'Table Reservation',
+        ref: tableRef,
+        date: `${date} at ${time}`,
+        restaurant: rest,
+        guests: guests
+      });
+
+      document.getElementById('tableFormContent').style.display = 'none';
+      document.getElementById('tableConfirmationContent').style.display = 'block';
+      showToast(`Dining Table Confirmed: ${tableRef}`);
+    }
+
+    // --- 13. VIP GUEST PORTAL & LOOKUP ---
+    function openGuestPortalModal() {
+      document.getElementById('guestPortalModal').classList.add('active');
+      renderGuestHistoryUI();
+    }
+
+    function closeGuestPortalModal() {
+      document.getElementById('guestPortalModal').classList.remove('active');
+    }
+
+    function switchPortalTab(tab) {
+      document.getElementById('portalViewLookup').style.display = tab === 'lookup' ? 'block' : 'none';
+      document.getElementById('portalViewProfile').style.display = tab === 'profile' ? 'block' : 'none';
+      document.getElementById('portalViewHistory').style.display = tab === 'history' ? 'block' : 'none';
+
+      document.getElementById('portalTabLookup').className = tab === 'lookup' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+      document.getElementById('portalTabProfile').className = tab === 'profile' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+      document.getElementById('portalTabHistory').className = tab === 'history' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+    }
+
+    function saveToGuestHistory(record) {
+      let history = [];
+      try {
+        const existing = localStorage.getItem('aurelia_history');
+        if (existing) history = JSON.parse(existing);
+      } catch (e) {}
+
+      history.unshift(record);
+      try {
+        localStorage.setItem('aurelia_history', JSON.stringify(history));
+      } catch (e) {}
+    }
+
+    function renderGuestHistoryUI() {
+      const container = document.getElementById('portalHistoryList');
+      if (!container) return;
+
+      let history = [];
+      try {
+        const existing = localStorage.getItem('aurelia_history');
+        if (existing) history = JSON.parse(existing);
+      } catch (e) {}
+
+      if (history.length === 0) {
+        container.innerHTML = `
+          <div style="padding: 1.5rem; text-align: center; color: var(--text-muted); background: rgba(255,255,255,0.02); border-radius: 6px;">
+            No past bookings found on this device. Reserve a suite or dining table to view itineraries.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = history.map(item => `
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 6px; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; color: #fff; font-size: 0.9rem;">${item.type} · <span class="font-mono" style="color: var(--gold-light);">${item.ref}</span></div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">${item.date} ${item.property ? '· ' + item.property : ''}</div>
+          </div>
+          ${item.total ? `<div class="font-mono" style="color: var(--gold-light); font-weight: 700;">${item.total}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function executeBookingLookup() {
+      const ref = document.getElementById('lookupRefInput').value.trim();
+      const resultArea = document.getElementById('lookupResultArea');
+
+      if (!ref) {
+        showToast("Please enter a valid Reference ID (e.g. AUR-RES-2026-8812)");
+        return;
+      }
+
+      resultArea.style.display = 'block';
+      resultArea.innerHTML = `
+        <div style="color: var(--gold-light); font-weight: 700; margin-bottom: 0.5rem;">Verified Folio Record Found:</div>
+        <div style="font-size: 0.88rem; color: #fff;">Reference: <strong class="font-mono">${ref.toUpperCase()}</strong></div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;">
+          Status: <strong>GUARANTEED & CONFIRMED</strong> · Concierge Check-in Ready.<br>
+          For changes or special dietary requests, connect with our 24h Butler Team at butler@aurelia-estates.com.
+        </div>
+      `;
+    }
+
+    // --- 14. BACKEND INTEGRATION CONTRACT & POLICIES MODALS ---
+    function openBackendContractModal() {
+      document.getElementById('backendContractModal').classList.add('active');
+    }
+
+    function closeBackendContractModal() {
+      document.getElementById('backendContractModal').classList.remove('active');
+    }
+
+    function openTermsModal(type) {
+      const modal = document.getElementById('termsModal');
+      const title = document.getElementById('termsModalTitle');
+      const body = document.getElementById('termsModalBody');
+
+      if (type === 'cancellation') {
+        title.textContent = 'Cancellation & Refund Guarantee';
+        body.innerHTML = `
+          <p><strong>1. Flexible Sanctuary Guarantee:</strong> Reservations cancelled up to 7 days prior to scheduled arrival will receive a 100% refund of any deposit paid, processed directly to the original payment method.</p><br>
+          <p><strong>2. Within 48 Hours:</strong> Cancellations made within 48 hours of check-in are subject to a one-night accommodation charge. Outstanding balances are credited toward future stays within 24 months.</p><br>
+          <p><strong>3. Michelin Dining Reservations:</strong> Table reservations may be rescheduled up to 12 hours prior to service without penalty.</p>
+        `;
+      } else if (type === 'privacy') {
+        title.textContent = 'Privacy, Confidentiality & GDPR';
+        body.innerHTML = `
+          <p>Aurelia Hospitality Group adheres to the highest international privacy and discreet VIP protocols. We never sell, lease, or share guest identity, itinerary, or billing data with third parties.</p><br>
+          <p>All online payment transactions are processed via PCI-DSS Level 1 certified gateways. Raw card data is never stored on our application servers.</p>
+        `;
+      } else {
+        title.textContent = 'Terms of Hospitality';
+        body.innerHTML = `
+          <p>Welcome to Aurelia Estates. By confirming a stay or culinary reservation, guests agree to respect property heritage guidelines, local environmental quiet hours, and our smoke-free sanctuary policy in all suites and indoor dining rooms.</p>
+        `;
+      }
+
+      modal.classList.add('active');
+    }
+
+    function closeTermsModal() {
+      document.getElementById('termsModal').classList.remove('active');
+    }
+
+    function openSuiteDetailModal(suiteKey) {
+      selectPropertyAndBook('cotedazur');
+    }
+
+    function filterSuites(cat) {
+      const cards = document.querySelectorAll('#suitesGrid .menu-item-card');
+      cards.forEach(card => {
+        if (cat === 'all' || card.dataset.category === cat) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      showToast(`Filtered: ${cat.toUpperCase()} Suites`);
+    }
+
+    // --- 15. TOAST NOTIFICATION UTILITY ---
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `
+        <span style="color: var(--gold-primary);">✦</span>
+        <span>${msg}</span>
+      `;
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

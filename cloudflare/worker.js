@@ -1,4 +1,5 @@
 const MAX_CATALOG_BYTES = 900_000;
+const MAX_MEDIA_BYTES = 3_000_000;
 const MAX_RECORDS = 1000;
 const TENANT_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9_.-]{2,31}$/;
@@ -132,6 +133,16 @@ function cleanImageUrl(value) {
   }
 }
 
+function cleanSocialUrl(value) {
+  if (typeof value !== "string" || !value.trim()) return "";
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
 function cleanElementLink(value) {
   if (typeof value !== "string") return "";
   const link = value.trim().slice(0, 2000);
@@ -213,9 +224,11 @@ function cleanCatalog(input) {
   const elementEdits = Array.isArray(storeInput.element_edits)
     ? storeInput.element_edits.slice(0, 250).flatMap(edit => {
       if (!edit || typeof edit !== "object" ||
-          !/^#app > [a-z0-9-]+:nth-of-type\([1-9]\d*\)(?: > [a-z0-9-]+:nth-of-type\([1-9]\d*\))*$/i.test(edit.selector || "") ||
-          !["text", "image", "icon", "link"].includes(edit.kind)) return [];
+          !/^(?:#app|body) > [a-z0-9-]+:nth-of-type\([1-9]\d*\)(?: > [a-z0-9-]+:nth-of-type\([1-9]\d*\))*$/i.test(edit.selector || "") ||
+          !["text", "image", "icon", "link", "group"].includes(edit.kind)) return [];
       const rotation = Number(edit.rotation);
+      const offsetX = Number(edit.offsetX);
+      const offsetY = Number(edit.offsetY);
       const cleanLineage = lineage => Array.isArray(lineage)
         ? lineage.slice(0, 16).filter(step => step && /^[a-z][a-z0-9-]*$/i.test(step.tag || "")).map(step => ({
           tag: step.tag.toLowerCase(),
@@ -224,7 +237,9 @@ function cleanCatalog(input) {
           productId: cleanText(step.productId, 80),
           slide: cleanText(step.slide, 40),
           action: cleanText(step.action, 80),
-          label: cleanText(step.label, 200)
+          label: cleanText(step.label, 200),
+          href: cleanElementLink(step.href),
+          text: cleanText(step.text, 160)
         }))
         : [];
       return [{
@@ -241,11 +256,14 @@ function cleanCatalog(input) {
         lineage: cleanLineage(edit.lineage),
         linkLineage: cleanLineage(edit.linkLineage),
         linkSelector: typeof edit.linkSelector === "string" &&
-          /^#app > [a-z0-9-]+:nth-of-type\([1-9]\d*\)(?: > [a-z0-9-]+:nth-of-type\([1-9]\d*\))*$/i.test(edit.linkSelector)
+          /^(?:#app|body) > [a-z0-9-]+:nth-of-type\([1-9]\d*\)(?: > [a-z0-9-]+:nth-of-type\([1-9]\d*\))*$/i.test(edit.linkSelector)
           ? edit.linkSelector
           : "",
         href: cleanElementLink(edit.href),
         rotation: Number.isFinite(rotation) ? ((Math.trunc(rotation) % 360) + 360) % 360 : 0,
+        offsetX: Number.isFinite(offsetX) ? Math.max(-240, Math.min(240, Math.trunc(offsetX))) : 0,
+        offsetY: Number.isFinite(offsetY) ? Math.max(-240, Math.min(240, Math.trunc(offsetY))) : 0,
+        linkDeleted: !!edit.linkDeleted,
         deleted: edit.deleted ? 1 : 0
       }];
     })
@@ -258,17 +276,43 @@ function cleanCatalog(input) {
     location: cleanText(storeInput.location, 240),
     email: cleanText(storeInput.email, 240),
     phone: cleanText(storeInput.phone, 80),
+    whatsapp_enabled: storeInput.whatsapp_enabled ? 1 : 0,
+    whatsapp_url: cleanSocialUrl(storeInput.whatsapp_url),
+    chatbot_enabled: storeInput.chatbot_enabled ? 1 : 0,
+    instagram_url: cleanSocialUrl(storeInput.instagram_url),
+    facebook_url: cleanSocialUrl(storeInput.facebook_url),
+    tiktok_url: cleanSocialUrl(storeInput.tiktok_url),
+    youtube_url: cleanSocialUrl(storeInput.youtube_url),
+    x_url: cleanSocialUrl(storeInput.x_url),
+    chatbot_url: cleanSocialUrl(storeInput.chatbot_url),
+    location_name: cleanText(storeInput.location_name, 160),
+    location_address: cleanText(storeInput.location_address, 500),
+    location_map_embed_url: cleanSocialUrl(storeInput.location_map_embed_url),
+    location_map_link: cleanSocialUrl(storeInput.location_map_link),
     currency: cleanText(storeInput.currency, 8),
     currency_symbol: cleanText(storeInput.currency_symbol, 8),
     announcement: cleanText(storeInput.announcement, 500),
     announcement_active: storeInput.announcement_active ? 1 : 0,
     primary_color: /^#[0-9a-f]{6}$/i.test(storeInput.primary_color || "") ? storeInput.primary_color : "",
     background_color: /^#[0-9a-f]{6}$/i.test(storeInput.background_color || "") ? storeInput.background_color : "",
+    surface_color: /^#[0-9a-f]{6}$/i.test(storeInput.surface_color || "") ? storeInput.surface_color : "",
     text_color: /^#[0-9a-f]{6}$/i.test(storeInput.text_color || "") ? storeInput.text_color : "",
-    card_radius: cleanText(storeInput.card_radius, 30),
-    font_family: ["sans", "serif", "humanist", "geometric", "classic", "mono"].includes(storeInput.font_family)
-      ? storeInput.font_family
-      : "sans",
+    accent2_color: /^#[0-9a-f]{6}$/i.test(storeInput.accent2_color || "") ? storeInput.accent2_color : "",
+    accent3_color: /^#[0-9a-f]{6}$/i.test(storeInput.accent3_color || "") ? storeInput.accent3_color : "",
+    color_theme: /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(storeInput.color_theme || "") ? storeInput.color_theme : "",
+    design_theme: ["quiet-lounge", "tech-bento", "street-energy", "organic-editorial"].includes(storeInput.design_theme)
+      ? storeInput.design_theme
+      : "",
+    website_theme_id: /^[a-z0-9][a-z0-9-]{0,63}$/i.test(storeInput.website_theme_id || "")
+      ? storeInput.website_theme_id.toLowerCase()
+      : "classic",
+    card_radius: ["4px", "12px", "24px"].includes(storeInput.card_radius) ? storeInput.card_radius : "12px",
+    card_shape: ["edgy","rounded","rugged","pill","squircle","hairline","outlined","elevated","ticket","terminal","stacked","inset","slant"].includes(storeInput.card_shape)
+      ? storeInput.card_shape
+      : "edgy",
+    font_family: /^[a-z0-9 ]{1,50}$/i.test(storeInput.font_family || "") ? storeInput.font_family : "sans",
+    display_font_family: /^[a-z0-9 ]{1,50}$/i.test(storeInput.display_font_family || "") ? storeInput.display_font_family : "",
+    mono_font_family: /^[a-z0-9 ]{1,50}$/i.test(storeInput.mono_font_family || "") ? storeInput.mono_font_family : "",
     element_edits: elementEdits
   };
 
@@ -623,11 +667,15 @@ async function limitTenantSignups(request, env) {
 }
 
 async function authorizeTenantOwner(request, env, tenantId) {
-  const tenant = await env.TENANTS.get(`tenant:${tenantId}`, "json");
-  if (!tenant || typeof tenant.owner_token_hash !== "string") return false;
   const authorization = request.headers.get("Authorization") || "";
   const supplied = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-  if (!supplied) return false;
+  return authorizeTenantOwnerToken(env, tenantId, supplied);
+}
+
+async function authorizeTenantOwnerToken(env, tenantId, supplied) {
+  if (!supplied || supplied.length > 256) return false;
+  const tenant = await env.TENANTS.get(`tenant:${tenantId}`, "json");
+  if (!tenant || typeof tenant.owner_token_hash !== "string") return false;
   const suppliedHash = await sha256Hex(supplied);
   return [tenant.owner_token_hash, ...(Array.isArray(tenant.owner_token_hashes) ? tenant.owner_token_hashes : [])]
     .filter(Boolean)
@@ -649,7 +697,11 @@ async function authorizeTenantAccount(request, env, tenantId) {
 async function handleCatalog(request, env, tenantId) {
   const isTenantDomain = new URL(request.url).hostname.toLowerCase().endsWith(`.${DOMAIN_ROOT}`);
   const isPrivateRead = request.method === "GET" && new URL(request.url).searchParams.get("private") === "1";
-  if (tenantId !== "main" && !isTenantDomain && !await authorizeTenantOwner(request, env, tenantId)) {
+  const hasTenantAccess = tenantId !== "main" && (
+    await authorizeTenantOwner(request, env, tenantId) ||
+    await authorizeTenantAccount(request, env, tenantId)
+  );
+  if (tenantId !== "main" && !isTenantDomain && !hasTenantAccess) {
     return jsonResponse({ error: "Shop not found or owner key is invalid." }, 404);
   }
   const tenant = await requireTenant(request, env, tenantId);
@@ -664,7 +716,7 @@ async function handleCatalog(request, env, tenantId) {
     if (isPrivateRead) {
       const isOwner = tenantId === "main"
         ? await authorizeMainOwner(request, env)
-        : await authorizeTenantOwner(request, env, tenantId);
+        : hasTenantAccess;
       if (!isOwner && !await authorizeAdmin(request, env)) {
         return jsonResponse({ error: "Shop owner authorization required." }, 401);
       }
@@ -690,12 +742,73 @@ async function handleCatalog(request, env, tenantId) {
     return jsonResponse({ ...catalog, updated_at: row.updated_at });
   }
 
+  if (request.method === "PATCH") {
+    const isOwner = tenantId === "main"
+      ? await authorizeMainOwner(request, env)
+      : hasTenantAccess;
+    if (!isOwner && !await authorizeAdmin(request, env)) {
+      return jsonResponse({ error: "Shop owner authorization required." }, 401);
+    }
+    let input;
+    try {
+      const body = await request.text();
+      if (new TextEncoder().encode(body).byteLength > MAX_CATALOG_BYTES) {
+        return jsonResponse({ error: "Settings update is too large." }, 413);
+      }
+      input = JSON.parse(body);
+    } catch {
+      return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+    }
+    if (!input || !input.store || typeof input.store !== "object" || Array.isArray(input.store)) {
+      return jsonResponse({ error: "A store settings object is required." }, 400);
+    }
+    const row = await env.DB.prepare(
+      "SELECT payload, admin_payload FROM catalog_snapshots WHERE tenant_id = ?"
+    ).bind(tenantId).first();
+    if (!row) return jsonResponse({ error: "Publish the website catalog before publishing settings." }, 409);
+    let publicCatalog;
+    let privateCatalog;
+    try {
+      publicCatalog = JSON.parse(row.payload);
+      privateCatalog = row.admin_payload && row.admin_payload !== "{}"
+        ? JSON.parse(row.admin_payload)
+        : publicCatalog;
+    } catch {
+      return jsonResponse({ error: "The saved catalog is invalid; publish the full catalog to repair it." }, 500);
+    }
+    let cleaned;
+    try {
+      const source = privateCatalog;
+      cleaned = cleanCatalog({
+        products: source.products || publicCatalog.products || [],
+        categories: source.categories || publicCatalog.categories || [],
+        pages: source.pages || publicCatalog.pages || [],
+        store: { ...(source.store || publicCatalog.store || {}), ...input.store }
+      });
+    } catch (error) {
+      return jsonResponse({ error: error.message }, 400);
+    }
+    const payload = JSON.stringify(cleaned.publicCatalog);
+    const privatePayload = JSON.stringify(cleaned.privateCatalog);
+    const updatedAt = new Date().toISOString();
+    await env.DB.prepare(
+      `UPDATE catalog_snapshots SET payload = ?, admin_payload = ?, updated_at = ? WHERE tenant_id = ?`
+    ).bind(payload, privatePayload, updatedAt, tenantId).run();
+    return jsonResponse({
+      ok: true,
+      updated_at: updatedAt,
+      settings_only: true,
+      product_count: cleaned.publicCatalog.products.length,
+      category_count: cleaned.publicCatalog.categories.length
+    });
+  }
+
   if (request.method !== "PUT") {
-    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, PUT, OPTIONS" });
+    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, PUT, PATCH, OPTIONS" });
   }
   const isOwner = tenantId === "main"
     ? await authorizeMainOwner(request, env)
-    : await authorizeTenantOwner(request, env, tenantId);
+    : hasTenantAccess;
   if (!isOwner && !await authorizeAdmin(request, env)) {
     return jsonResponse({ error: "Shop owner authorization required." }, 401);
   }
@@ -735,6 +848,112 @@ async function handleCatalog(request, env, tenantId) {
     product_count: catalog.publicCatalog.products.length,
     category_count: catalog.publicCatalog.categories.length
   });
+}
+
+async function handleMediaUpload(request, env, tenantId) {
+  if (request.method !== "POST") {
+    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+  }
+  if (!env.BUSINESS_ARCHIVE) return jsonResponse({ error: "R2 image storage is not configured." }, 503);
+  if (tenantId !== "main" && (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId))) {
+    return jsonResponse({ error: "Invalid shop address." }, 400);
+  }
+  const isOwner = tenantId === "main"
+    ? await authorizeMainOwner(request, env)
+    : await authorizeTenantOwner(request, env, tenantId) ||
+      await authorizeTenantAccount(request, env, tenantId);
+  if (!isOwner && !await authorizeAdmin(request, env)) {
+    return jsonResponse({ error: "Shop owner authorization required." }, 401);
+  }
+  const contentType = (request.headers.get("Content-Type") || "").split(";")[0].trim().toLowerCase();
+  const extensionByType = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
+  const extension = extensionByType[contentType];
+  if (!extension) return jsonResponse({ error: "Upload a compressed WebP, JPEG, or PNG image." }, 415);
+  const contentLength = Number(request.headers.get("Content-Length") || 0);
+  if (contentLength > MAX_MEDIA_BYTES) return jsonResponse({ error: "Compressed images must be smaller than 3 MB." }, 413);
+  const body = await request.arrayBuffer();
+  if (!body.byteLength || body.byteLength > MAX_MEDIA_BYTES) {
+    return jsonResponse({ error: "Compressed images must be between 1 byte and 3 MB." }, body.byteLength ? 413 : 400);
+  }
+  const key = `media/${tenantId}/${crypto.randomUUID()}.${extension}`;
+  await env.BUSINESS_ARCHIVE.put(key, body, {
+    httpMetadata: { contentType, cacheControl: "public, max-age=31536000, immutable" },
+    customMetadata: { tenantId }
+  });
+  const hostname = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
+  return jsonResponse({
+    ok: true,
+    url: `https://${hostname}/${key}`
+  });
+}
+
+async function handlePublicMedia(request, env, tenantId, assetId) {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, HEAD, OPTIONS" });
+  }
+  if (!env.BUSINESS_ARCHIVE) return jsonResponse({ error: "R2 image storage is not configured." }, 503);
+  if (tenantId !== "main" && (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId))) {
+    return jsonResponse({ error: "Image not found." }, 404);
+  }
+  const match = assetId.match(/^([a-f0-9-]{36})\.(webp|jpg|png)$/i);
+  if (!match) return jsonResponse({ error: "Image not found." }, 404);
+  const object = await env.BUSINESS_ARCHIVE.get(`media/${tenantId}/${assetId}`);
+  if (!object) return jsonResponse({ error: "Image not found." }, 404);
+  const headers = new Headers({
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "public, max-age=31536000, immutable",
+    "Content-Type": object.httpMetadata?.contentType || ({ webp: "image/webp", jpg: "image/jpeg", png: "image/png" }[match[2].toLowerCase()]),
+    "X-Content-Type-Options": "nosniff"
+  });
+  if (request.method === "HEAD") return new Response(null, { headers });
+  return new Response(object.body, { headers });
+}
+
+async function handlePublicThemeAsset(request, env, themeId, assetPath) {
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, HEAD, OPTIONS" });
+  }
+  if (!env.BUSINESS_ARCHIVE) return jsonResponse({ error: "R2 theme storage is not configured." }, 503);
+  if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(themeId)) {
+    return jsonResponse({ error: "Theme asset not found." }, 404);
+  }
+  let decodedPath;
+  try {
+    decodedPath = assetPath.split("/").map(segment => decodeURIComponent(segment)).join("/");
+  } catch {
+    return jsonResponse({ error: "Theme asset not found." }, 404);
+  }
+  if (!decodedPath || decodedPath.startsWith("/") ||
+      decodedPath.split("/").some(segment => !segment || segment === "." || segment === ".." ||
+        !/^[a-z0-9._-]+$/i.test(segment))) {
+    return jsonResponse({ error: "Theme asset not found." }, 404);
+  }
+  const object = await env.BUSINESS_ARCHIVE.get(`themes/${themeId}/${decodedPath}`);
+  if (!object) return jsonResponse({ error: "Theme asset not found." }, 404);
+  const extension = decodedPath.split(".").pop().toLowerCase();
+  const contentTypes = {
+    css: "text/css; charset=utf-8",
+    gif: "image/gif",
+    html: "text/html; charset=utf-8",
+    jpeg: "image/jpeg",
+    jpg: "image/jpeg",
+    js: "text/javascript; charset=utf-8",
+    json: "application/json; charset=utf-8",
+    png: "image/png",
+    svg: "image/svg+xml",
+    webp: "image/webp",
+    woff: "font/woff",
+    woff2: "font/woff2"
+  };
+  const isHtml = extension === "html";
+  const headers = new Headers({
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": isHtml ? "public, max-age=300" : "public, max-age=86400",
+    "Content-Type": object.httpMetadata?.contentType || contentTypes[extension] || "application/octet-stream",
+    "X-Content-Type-Options": "nosniff"
+  });
+  if (request.method === "HEAD") return new Response(null, { headers });
+  return new Response(object.body, { headers });
 }
 
 function storefrontOrderResponse(row) {
@@ -896,7 +1115,135 @@ function paystackSetupResponse(row) {
   };
 }
 
+async function getEffectivePaystackSubaccount(env, tenantId) {
+  const tenant = await env.TENANTS?.get(`tenant:${tenantId}`, "json");
+  const ownerUsername = typeof tenant?.owner_username === "string" ? tenant.owner_username : "";
+  if (ownerUsername) {
+    const appDefault = await env.DB.prepare(
+      `SELECT account.subaccount_code,account.status,account.bank_name,account.account_last4,account.updated_at
+       FROM paystack_owner_defaults defaults
+       JOIN paystack_subaccounts account ON account.tenant_id=defaults.source_tenant_id
+       WHERE defaults.owner_username=?`
+    ).bind(ownerUsername).first();
+    if (appDefault?.subaccount_code && appDefault.status === "connected") return appDefault;
+  }
+  return await env.DB.prepare(
+    "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+  ).bind(tenantId).first();
+}
+
 async function handlePaystackSetup(request, env, tenantId, resource) {
+  if (resource === "default") {
+    if (!["GET", "POST"].includes(request.method)) {
+      return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, OPTIONS" });
+    }
+    if (!env.DB) return jsonResponse({ error: "Payment setup storage is not configured." }, 503);
+    const session = await accountSession(request, env);
+    if (!session) return jsonResponse({ error: "Sign in to manage your app-wide Paystack account." }, 401);
+    if (!await authorizeTenantAccount(request, env, tenantId)) {
+      return jsonResponse({ error: "You do not own this website." }, 403);
+    }
+    if (request.method === "GET") {
+      const preference = await env.DB.prepare(
+        "SELECT source_tenant_id FROM paystack_owner_defaults WHERE owner_username=?"
+      ).bind(session.username).first();
+      if (!preference) return jsonResponse({ default_account: null });
+      const account = await env.DB.prepare(
+        "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+      ).bind(preference.source_tenant_id).first();
+      return jsonResponse({
+        default_account: account?.status === "connected"
+          ? { tenant_id: preference.source_tenant_id, ...paystackSetupResponse(account) }
+          : null
+      });
+    }
+    let input;
+    try {
+      input = await request.json();
+    } catch {
+      return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+    }
+    const sourceTenantId = typeof input?.source_tenant_id === "string" ? input.source_tenant_id.trim() : "";
+    if (!TENANT_ID_PATTERN.test(sourceTenantId)) {
+      return jsonResponse({ error: "Choose a shop with an active Paystack account." }, 400);
+    }
+    const sourceOwnerToken = typeof input?.source_owner_token === "string" ? input.source_owner_token : "";
+    const sourceOwnedByAccount = await authorizeTenantAccount(request, env, sourceTenantId);
+    const sourceOwnedByToken = await authorizeTenantOwnerToken(env, sourceTenantId, sourceOwnerToken);
+    if (!sourceOwnedByAccount && !sourceOwnedByToken) {
+      return jsonResponse({ error: "You can only set an account from a shop you own as the app default." }, 403);
+    }
+    const source = await env.DB.prepare(
+      "SELECT subaccount_code,status FROM paystack_subaccounts WHERE tenant_id=?"
+    ).bind(sourceTenantId).first();
+    if (!source?.subaccount_code || source.status !== "connected") {
+      return jsonResponse({ error: "The selected shop does not have an active Paystack account." }, 409);
+    }
+    const now = new Date().toISOString();
+    await env.DB.prepare(
+      `INSERT INTO paystack_owner_defaults (owner_username,source_tenant_id,created_at,updated_at)
+       VALUES (?,?,?,?)
+       ON CONFLICT(owner_username) DO UPDATE SET
+         source_tenant_id=excluded.source_tenant_id,updated_at=excluded.updated_at`
+    ).bind(session.username, sourceTenantId, now, now).run();
+    const account = await env.DB.prepare(
+      "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+    ).bind(sourceTenantId).first();
+    return jsonResponse({
+      default_account: { tenant_id: sourceTenantId, ...paystackSetupResponse(account) }
+    });
+  }
+  if (resource === "link") {
+    if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+    if (!env.DB) return jsonResponse({ error: "Payment setup storage is not configured." }, 503);
+    const session = await accountSession(request, env);
+    if (!session) {
+      return jsonResponse({ error: "Sign in as the owner of this website to connect its Paystack account." }, 401);
+    }
+    if (!await authorizeTenantAccount(request, env, tenantId)) {
+      return jsonResponse({ error: "You do not own this website." }, 403);
+    }
+    let input;
+    try {
+      input = await request.json();
+    } catch {
+      return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+    }
+    const sourceTenantId = typeof input?.source_tenant_id === "string" ? input.source_tenant_id.trim() : "";
+    if (!TENANT_ID_PATTERN.test(sourceTenantId) || sourceTenantId === tenantId) {
+      return jsonResponse({ error: "Choose a different shop with a connected Paystack account." }, 400);
+    }
+    const sourceOwnerToken = typeof input?.source_owner_token === "string" ? input.source_owner_token : "";
+    if (!await authorizeTenantOwnerToken(env, sourceTenantId, sourceOwnerToken)) {
+      return jsonResponse({ error: "You can only reuse a Paystack account from a shop you own." }, 403);
+    }
+    const source = await env.DB.prepare(
+      "SELECT subaccount_code,status,bank_name,account_last4,created_at,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+    ).bind(sourceTenantId).first();
+    if (!source?.subaccount_code || source.status !== "connected") {
+      return jsonResponse({ error: "The selected shop does not have an active Paystack account." }, 409);
+    }
+    const existing = await env.DB.prepare(
+      "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+    ).bind(tenantId).first();
+    if (existing?.subaccount_code && existing.subaccount_code !== source.subaccount_code) {
+      return jsonResponse({ error: "This website already has a different Paystack account connected. Update it under Payments first." }, 409);
+    }
+    const updatedAt = new Date().toISOString();
+    await env.DB.prepare(
+      `INSERT INTO paystack_subaccounts
+        (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at)
+       VALUES (?,?,?,?,?,?,?)
+       ON CONFLICT(tenant_id) DO UPDATE SET
+         subaccount_code=excluded.subaccount_code,status=excluded.status,bank_name=excluded.bank_name,
+         account_last4=excluded.account_last4,updated_at=excluded.updated_at`
+    ).bind(tenantId, source.subaccount_code, "connected", source.bank_name, source.account_last4,
+      existing?.created_at || updatedAt, updatedAt).run();
+    const linked = await env.DB.prepare(
+      "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+    ).bind(tenantId).first();
+    return jsonResponse({ account: paystackSetupResponse(linked), reused: true });
+  }
   if (!["GET", "POST"].includes(request.method) || (resource === "banks" && request.method !== "GET")) {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: resource === "banks" ? "GET, OPTIONS" : "GET, POST, OPTIONS" });
   }
@@ -1112,11 +1459,9 @@ async function handlePaystackPayment(request, env, tenantId, action) {
     if (order.payment_status === "initializing") {
       return jsonResponse({ error: "Payment setup is already in progress for this order." }, 409);
     }
-    const subaccount = await env.DB.prepare(
-      "SELECT subaccount_code,status FROM paystack_subaccounts WHERE tenant_id=?"
-    ).bind(tenantId).first();
+    const subaccount = await getEffectivePaystackSubaccount(env, tenantId);
     if (!subaccount?.subaccount_code || subaccount.status !== "connected") {
-      return jsonResponse({ error: "This shop has not connected an active Paystack settlement account." }, 409);
+      return jsonResponse({ error: "This app account has not selected an active Paystack default. Connect or choose one in Payments in the E-Shop app." }, 409);
     }
 
     const reference = paystackReference();
@@ -1961,6 +2306,12 @@ function addCloudflareMode(html) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const themeMatch = url.pathname.match(/^\/themes\/([a-z0-9-]{1,64})\/(.+)$/i);
+    if (themeMatch) {
+      return await handlePublicThemeAsset(request, env, themeMatch[1].toLowerCase(), themeMatch[2]);
+    }
+    const mediaMatch = url.pathname.match(/^\/media\/([a-z0-9-]+)\/([^/]+)$/i);
+    if (mediaMatch) return await handlePublicMedia(request, env, mediaMatch[1].toLowerCase(), mediaMatch[2]);
     if (url.pathname.startsWith("/api/")) {
       if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
       try {
@@ -1977,6 +2328,11 @@ export default {
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
           return await handleCatalog(request, env, tenantId);
         }
+        if (url.pathname === "/api/media") {
+          const tenantId = tenantIdFromRequest(request, env);
+          if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
+          return await handleMediaUpload(request, env, tenantId);
+        }
         if (url.pathname === "/api/orders") {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
@@ -1985,11 +2341,11 @@ export default {
         if (url.pathname === "/api/payments/paystack/webhook") {
           return await handlePaystackWebhook(request, env);
         }
-        const paystackMatch = url.pathname.match(/^\/api\/payments\/paystack\/(banks|subaccount|initialize|verify)$/);
+        const paystackMatch = url.pathname.match(/^\/api\/payments\/paystack\/(banks|subaccount|link|default|initialize|verify)$/);
         if (paystackMatch) {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
-          return ["banks", "subaccount"].includes(paystackMatch[1])
+          return ["banks", "subaccount", "link", "default"].includes(paystackMatch[1])
             ? await handlePaystackSetup(request, env, tenantId, paystackMatch[1])
             : await handlePaystackPayment(request, env, tenantId, paystackMatch[1]);
         }
@@ -2056,6 +2412,71 @@ export default {
     const hostTenantId = tenantIdFromRequest(request, env);
     if (hostTenantId !== "main" && !await requireTenant(request, env, hostTenantId)) {
       return new Response("Shop not found.", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+    }
+    if (url.pathname === "/" && env.DB && env.BUSINESS_ARCHIVE) {
+      const snapshot = await env.DB.prepare(
+        "SELECT payload FROM catalog_snapshots WHERE tenant_id = ?"
+      ).bind(hostTenantId).first();
+      if (snapshot?.payload) {
+        const catalog = JSON.parse(snapshot.payload);
+        const themeId = catalog.store?.website_theme_id;
+        if (themeId && themeId !== "classic") {
+          if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(themeId)) {
+            return new Response("The published theme selection is invalid.", {
+              status: 500,
+              headers: { "Content-Type": "text/plain; charset=utf-8" }
+            });
+          }
+          const theme = await env.BUSINESS_ARCHIVE.get(`themes/${themeId}/index.html`);
+          if (!theme) {
+            return new Response("The published theme is unavailable.", {
+              status: 503,
+              headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
+            });
+          }
+          let html = await new Response(theme.body).text();
+          const base = `<base href="/themes/${themeId}/">`;
+          const store = { ...(catalog.store || {}) };
+          delete store.mobile_card_layout;
+          const catalogJson = JSON.stringify({
+            products: Array.isArray(catalog.products) ? catalog.products : [],
+            categories: Array.isArray(catalog.categories) ? catalog.categories : [],
+            store,
+            pages: Array.isArray(catalog.pages) ? catalog.pages : []
+          }).replace(/[<\u2028\u2029]/g, character =>
+            ({ "<": "\\u003c", "\u2028": "\\u2028", "\u2029": "\\u2029" })[character]);
+          const catalogBootstrap = `<script>window.__ESHOP_THEME_CATALOG__=${catalogJson};</script>`;
+          const catalogAdapter = `<script src="/theme-catalog-adapter.js" defer></script>`;
+          const designJson = JSON.stringify({
+            primaryColor: store.primary_color,
+            backgroundColor: store.background_color,
+            surfaceColor: store.surface_color,
+            textColor: store.text_color,
+            accent2Color: store.accent2_color,
+            accent3Color: store.accent3_color,
+            fontFamily: ({ sans: "DM Sans", serif: "Playfair Display", humanist: "Lato", geometric: "Inter", classic: "Playfair Display", mono: "JetBrains Mono" })[store.font_family] || store.font_family,
+            displayFontFamily: ({ sans: "DM Sans", serif: "Playfair Display", humanist: "Lato", geometric: "Inter", classic: "Playfair Display", mono: "JetBrains Mono" })[store.display_font_family] || store.display_font_family,
+            monoFontFamily: ({ sans: "DM Sans", serif: "Playfair Display", humanist: "Lato", geometric: "Inter", classic: "Playfair Display", mono: "JetBrains Mono" })[store.mono_font_family] || store.mono_font_family,
+            cardShape: store.card_shape,
+            cardRadius: store.card_radius,
+            elementEdits: Array.isArray(store.element_edits) ? store.element_edits : []
+          }).replace(/</g, "\\u003c");
+          const editor = `<script>(()=>{const design=${designJson};const apply=()=>{const d=document;const root=d.getElementById("app")||d.body;const validColor=value=>/^#[0-9a-f]{6}$/i.test(value||"");const accent=validColor(design.primaryColor)?design.primaryColor:"#18181B";const family=value=>/^[a-z0-9 ]{1,50}$/i.test(value||"")?"'"+value+"',sans-serif":"";const bodyFont=family(design.fontFamily);const displayFont=family(design.displayFontFamily||design.fontFamily);const monoFont=family(design.monoFontFamily||design.fontFamily);const shape=design.cardShape;const radius=shape==="edgy"?"4px":shape==="pill"?"999px":shape==="rounded"?"16px":shape==="squircle"?"28px":shape==="elevated"?"14px":shape==="inset"?"8px":"0px";const card="[data-eshop-product-id],[class*='product-card'],[class*='product-tile'],[class*='product-item']";const shapes={rugged:"clip-path:polygon(0 0,92% 0,96% 8%,100% 0,100% 92%,92% 96%,100% 100%,8% 100%,4% 92%,0 100%);",slant:"clip-path:polygon(0 0,100% 0,100% 100%,8% 100%);",outlined:"border:2px solid currentColor!important;",terminal:"border:1px dashed currentColor!important;",elevated:"border-color:transparent!important;box-shadow:0 8px 24px #0002!important;",stacked:"box-shadow:4px 4px 0 currentColor!important;",inset:"box-shadow:inset 0 2px 8px #0002!important;"};const style=d.createElement("style");style.textContent=":root{--accent:"+accent+";--primary-color:"+accent+";--radius:"+radius+";--radius-sm:"+radius+";--radius-lg:"+radius+";"+(validColor(design.surfaceColor)?"--surface:"+design.surfaceColor+";":"")+"}"+(validColor(design.backgroundColor)?"body{background-color:"+design.backgroundColor+"!important;}":"")+(validColor(design.textColor)?"body{color:"+design.textColor+"!important;}":"")+(bodyFont?"body,body *{font-family:"+bodyFont+"!important;}":"")+(displayFont?"h1,h2,h3,h4,h5,h6{font-family:"+displayFont+"!important;}":"")+(monoFont?"code,pre,.mono,[class*='label']{font-family:"+monoFont+"!important;}":"")+card+"{border-radius:"+radius+"!important;"+(shapes[shape]||"")+"}";d.head.append(style);if(validColor(design.accent2Color)||validColor(design.accent3Color)){const accent2=validColor(design.accent2Color)?design.accent2Color:accent;const accent3=validColor(design.accent3Color)?design.accent3Color:accent2;const signal=d.createElement("style");signal.textContent=":root{--eshop-accent-secondary:"+accent2+";--eshop-accent-tertiary:"+accent3+";--eshop-accent-gradient:linear-gradient(110deg,"+accent+","+accent2+","+accent3+");}[type=submit],.btn-primary,[class*=button-primary],[class*=primary-button]{background:"+accent+"!important;background-image:linear-gradient(110deg,"+accent+","+accent2+","+accent3+")!important;}";d.head.append(signal)}if(bodyFont){const link=d.createElement("link");link.rel="stylesheet";link.href="https://fonts.googleapis.com/css2?family="+[design.fontFamily,design.displayFontFamily,design.monoFontFamily].filter(Boolean).map(name=>encodeURIComponent(name).replace(/%20/g,"+")+":wght@400;500;600;700").join("&family=")+"&display=swap";d.head.append(link)}for(const edit of design.elementEdits){const element=d.querySelector(edit.selector);if(!element||!root.contains(element))continue;if(edit.deleted){element.remove();continue}if(edit.kind==="text")element.textContent=edit.text;if(edit.kind==="image"&&edit.src)element.setAttribute("src",edit.src);if(edit.linkSelector){const link=d.querySelector(edit.linkSelector);if(link&&root.contains(link)){if(edit.linkDeleted)link.removeAttribute("href");else if(edit.href)link.setAttribute("href",edit.href)}}const x=Math.max(-240,Math.min(240,Number(edit.offsetX)||0));const y=Math.max(-240,Math.min(240,Number(edit.offsetY)||0));if(x||y)element.style.translate=x+"px "+y+"px";if(Number(edit.rotation))element.style.rotate=Number(edit.rotation)+"deg"}};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply,{once:true});else apply()})();</script>`;
+          html = /<head\b[^>]*>/i.test(html)
+            ? html.replace(/<head\b[^>]*>/i, match => `${match}${base}${catalogBootstrap}${catalogAdapter}`)
+            : `${base}${catalogBootstrap}${catalogAdapter}${html}`;
+          html = /<\/body>/i.test(html)
+            ? html.replace(/<\/body>/i, `${editor}</body>`)
+            : `${html}${editor}`;
+          return new Response(addCloudflareMode(html), {
+            headers: {
+              "Cache-Control": "public, max-age=60",
+              "Content-Type": theme.httpMetadata?.contentType || "text/html; charset=utf-8",
+              "X-Content-Type-Options": "nosniff"
+            }
+          });
+        }
+      }
     }
     const isStorefrontPath = ["/", "/builder-storefront.html", "/builder-storefront"].includes(url.pathname);
     const isBrowserRegisterPath = url.pathname === "/register" || url.pathname === "/register/";

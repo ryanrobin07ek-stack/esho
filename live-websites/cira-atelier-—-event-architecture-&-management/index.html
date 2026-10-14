@@ -1,0 +1,3256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cira Atelier — Event Architecture &amp; Management</title>
+    <meta
+      name="description"
+      content="Company presentation, brand story, services, and curated visual portfolio for an architectural event planning and management studio."
+    />
+    <meta property="og:title" content="Cira Atelier — Event Architecture &amp; Management" />
+    <meta
+      property="og:description"
+      content="Company presentation, brand story, services, and curated visual portfolio for an architectural event planning and management studio."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Strictly 2 Font Families (Outfit for Display, Plus Jakarta Sans for Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- GSAP & ScrollTrigger via CDN -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
+      defer
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"
+      defer
+    ></script>
+
+    <style>
+      /* ==========================================================================
+         1. DESIGN TOKENS & RESET (60-30-10 COLOR ARCHITECTURE)
+         ========================================================================== */
+      :root {
+        /* 60% Dominant Neutral Canvas — Warm Architectural Paper */
+        --bg-canvas: #f3efea;
+        --bg-canvas-elevated: #faf8f5;
+
+        /* 30% Structural Surfaces & Deep Espresso Anchor */
+        --bg-surface-stone: #e8e2d9;
+        --bg-espresso: #1c1714;
+        --bg-espresso-soft: #26201c;
+        --border-hairline: rgba(28, 23, 20, 0.12);
+        --border-hairline-strong: rgba(28, 23, 20, 0.24);
+        --border-light-hairline: rgba(243, 239, 234, 0.16);
+
+        /* Text Hierarchy */
+        --text-primary: #181411;
+        --text-secondary: #4a433d;
+        --text-muted: #736960;
+        --text-on-dark: #f5f2ed;
+        --text-on-dark-muted: #b8afa6;
+
+        /* 10% High-Intent Focal Accent — Burnished Umber / Architectural Obsidian */
+        --accent-umber: #8c5233;
+        --accent-umber-hover: #703f24;
+        --status-error: #9e2a2b;
+        --status-success: #2d5a3c;
+
+        /* Typography — 2 Font Families + System Monospace for Tabular Figures */
+        --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+        /* Layout & Spacing */
+        --container-max: 1360px;
+        --container-pad: clamp(1.25rem, 4vw, 3.5rem);
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background-color: var(--bg-canvas);
+        color: var(--text-primary);
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
+      body {
+        background-color: var(--bg-canvas);
+        color: var(--text-primary);
+        overflow-x: hidden;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+        color: inherit;
+      }
+
+      button {
+        cursor: pointer;
+        background: none;
+        border: none;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--accent-umber);
+        outline-offset: 3px;
+      }
+
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .container {
+        width: 100%;
+        max-width: var(--container-max);
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: var(--container-pad);
+        padding-right: var(--container-pad);
+      }
+
+      /* ==========================================================================
+         2. TOP NAVIGATION BAR (3-ZONE CONTRACT, <=15% MOBILE VIEWPORT CAP)
+         ========================================================================== */
+      .site-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        height: 68px;
+        display: flex;
+        align-items: center;
+        transition:
+          background-color 180ms var(--ease-out-expo),
+          border-color 180ms var(--ease-out-expo),
+          color 180ms var(--ease-out-expo);
+        background-color: rgba(24, 20, 17, 0.45);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(245, 242, 237, 0.14);
+        color: var(--text-on-dark);
+      }
+
+      .site-header.is-scrolled {
+        background-color: rgba(243, 239, 234, 0.95);
+        border-bottom: 1px solid var(--border-hairline);
+        color: var(--text-primary);
+      }
+
+      .header-inner {
+        width: 100%;
+        max-width: var(--container-max);
+        margin: 0 auto;
+        padding: 0 var(--container-pad);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+      }
+
+      /* Zone 1: Single Text Element Wordmark */
+      .brand-wordmark {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* Zone 2: 5 Concise Single-Line Navigation Links */
+      .primary-nav {
+        display: flex;
+        align-items: center;
+        gap: 2.25rem;
+      }
+
+      .nav-link {
+        font-size: 0.875rem;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+        position: relative;
+        padding: 0.25rem 0;
+        opacity: 0.88;
+        transition: opacity 150ms var(--ease-out-expo);
+      }
+
+      .nav-link::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 1.5px;
+        background-color: currentColor;
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 180ms var(--ease-out-expo);
+      }
+
+      .nav-link:hover,
+      .nav-link:focus-visible {
+        opacity: 1;
+      }
+
+      .nav-link:hover::after,
+      .nav-link:focus-visible::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
+
+      /* Zone 3: 1 Primary Action (Always Visible on Desktop & Mobile) */
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-shrink: 0;
+      }
+
+      .btn-header-contact {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 0.5rem 1.125rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+        background-color: var(--text-on-dark);
+        color: var(--text-primary);
+        border: 1px solid transparent;
+        transition:
+          transform 150ms var(--ease-out-expo),
+          background-color 150ms var(--ease-out-expo),
+          color 150ms var(--ease-out-expo);
+      }
+
+      .site-header.is-scrolled .btn-header-contact {
+        background-color: var(--text-primary);
+        color: var(--text-on-dark);
+      }
+
+      .btn-header-contact:hover {
+        background-color: var(--accent-umber);
+        color: var(--text-on-dark);
+      }
+
+      /* Secondary Mobile Sub-Navigation Strip (keeps Contact Us always visible in top bar) */
+      .mobile-nav-strip {
+        display: none;
+      }
+
+      @media (max-width: 900px) {
+        .primary-nav {
+          display: none;
+        }
+        .site-header {
+          height: 60px;
+        }
+        .mobile-nav-strip {
+          display: flex;
+          align-items: center;
+          gap: 1.25rem;
+          overflow-x: auto;
+          padding: 0.625rem var(--container-pad);
+          background-color: var(--bg-espresso-soft);
+          border-bottom: 1px solid var(--border-light-hairline);
+          color: var(--text-on-dark);
+          scrollbar-width: none;
+        }
+        .mobile-nav-strip::-webkit-scrollbar {
+          display: none;
+        }
+        .mobile-nav-strip a {
+          font-size: 0.8125rem;
+          font-weight: 500;
+          white-space: nowrap;
+          flex-shrink: 0;
+          color: var(--text-on-dark-muted);
+          min-height: 32px;
+          display: inline-flex;
+          align-items: center;
+        }
+        .mobile-nav-strip a:hover,
+        .mobile-nav-strip a:focus-visible {
+          color: var(--text-on-dark);
+        }
+      }
+
+      /* ==========================================================================
+         3. HERO SECTION (FULL-BLEED ARCHITECTURAL VISUAL + IMMEDIATE CONTACT CTA)
+         ========================================================================== */
+      .hero-section {
+        position: relative;
+        min-height: 92vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding-top: 120px;
+        padding-bottom: clamp(3rem, 6vw, 5.5rem);
+        background-color: var(--bg-espresso);
+        color: var(--text-on-dark);
+        overflow: hidden;
+      }
+
+      .hero-media-wrap {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        overflow: hidden;
+        background: linear-gradient(135deg, #231d19 0%, #3a2e27 100%);
+      }
+
+      .hero-media-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 40%;
+        transform: scale(1.03);
+        will-change: transform;
+      }
+
+      /* Measured contrast scrim ensuring >= 4.5:1 contrast across all luminance frames */
+      .hero-scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: linear-gradient(
+          180deg,
+          rgba(20, 16, 13, 0.58) 0%,
+          rgba(20, 16, 13, 0.42) 42%,
+          rgba(20, 16, 13, 0.86) 100%
+        );
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        max-width: var(--container-max);
+        margin: 0 auto;
+        padding: 0 var(--container-pad);
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 2rem;
+        align-items: end;
+      }
+
+      .hero-headline-col {
+        grid-column: 1 / span 8;
+      }
+
+      .hero-kicker {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--text-on-dark-muted);
+        margin-bottom: 1rem;
+        display: block;
+      }
+
+      .hero-title {
+        font-family: var(--font-display);
+        font-size: clamp(2.5rem, 5.4vw, 4.75rem);
+        font-weight: 700;
+        line-height: 1.02;
+        letter-spacing: -0.025em;
+        color: var(--text-on-dark);
+        text-wrap: balance;
+        max-width: 15ch;
+      }
+
+      .hero-intro-col {
+        grid-column: 9 / span 4;
+        border-top: 1px solid rgba(245, 242, 237, 0.28);
+        padding-top: 1.25rem;
+      }
+
+      .hero-lead-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-on-dark);
+        margin-bottom: 0.625rem;
+        letter-spacing: 0.01em;
+      }
+
+      .hero-lead-copy {
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        color: rgba(245, 242, 237, 0.86);
+        margin-bottom: 1.5rem;
+      }
+
+      /* Hero CTA Group: Never hidden by animation, responds on first click/tap */
+      .hero-cta-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.875rem;
+      }
+
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.625rem;
+        min-height: 46px;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+        background-color: var(--accent-umber);
+        color: var(--text-on-dark);
+        border: 1px solid transparent;
+        transition:
+          background-color 150ms var(--ease-out-expo),
+          transform 150ms var(--ease-out-expo);
+      }
+
+      .btn-primary:hover {
+        background-color: var(--accent-umber-hover);
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary-light {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0.75rem 1.35rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+        background-color: rgba(245, 242, 237, 0.12);
+        color: var(--text-on-dark);
+        border: 1px solid rgba(245, 242, 237, 0.35);
+        transition:
+          background-color 150ms var(--ease-out-expo),
+          border-color 150ms var(--ease-out-expo);
+      }
+
+      .btn-secondary-light:hover {
+        background-color: rgba(245, 242, 237, 0.22);
+        border-color: var(--text-on-dark);
+      }
+
+      @media (max-width: 960px) {
+        .hero-section {
+          min-height: 84vh;
+          padding-top: 96px;
+        }
+        .hero-headline-col {
+          grid-column: 1 / -1;
+        }
+        .hero-intro-col {
+          grid-column: 1 / -1;
+          max-width: 540px;
+        }
+      }
+
+      /* ==========================================================================
+         4. EDITORIAL SECTION HEADERS (INSPIRED BY REFERENCE IMAGE)
+         ========================================================================== */
+      .section-block {
+        padding-top: clamp(4.5rem, 8vw, 7.5rem);
+        padding-bottom: clamp(4.5rem, 8vw, 7.5rem);
+        border-bottom: 1px solid var(--border-hairline);
+      }
+
+      .editorial-banner-heading {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 4.2vw, 3.5rem);
+        font-weight: 600;
+        line-height: 1.08;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        text-wrap: balance;
+        margin-bottom: clamp(2.5rem, 5vw, 4rem);
+      }
+
+      .editorial-split-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        margin-bottom: clamp(2.5rem, 5vw, 4rem);
+        flex-wrap: wrap;
+      }
+
+      .editorial-split-header .title-part {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 4.2vw, 3.5rem);
+        font-weight: 600;
+        line-height: 1.06;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+      }
+
+      .editorial-rule {
+        flex: 1 1 80px;
+        max-width: 180px;
+        height: 2px;
+        background-color: var(--text-primary);
+      }
+
+      .section-meta-line {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin-bottom: 0.75rem;
+      }
+
+      /* ==========================================================================
+         5. SECTION B: OUR STORY & PHILOSOPHY (ASYMMETRIC EDITORIAL LAYOUT)
+         ========================================================================== */
+      .story-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: clamp(1.75rem, 3.5vw, 3rem);
+        align-items: start;
+      }
+
+      .story-left-col {
+        grid-column: 1 / span 5;
+        display: flex;
+        flex-direction: column;
+        gap: 2.25rem;
+      }
+
+      .story-lead-statement {
+        font-size: clamp(1.0625rem, 1.4vw, 1.25rem);
+        line-height: 1.55;
+        color: var(--text-secondary);
+        max-width: 58ch;
+      }
+
+      .story-lead-statement strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .story-narrative-box {
+        padding-top: 1.75rem;
+        border-top: 1px solid var(--border-hairline);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .story-narrative-box h3 {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .story-narrative-box p {
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+        max-width: 65ch;
+      }
+
+      .editable-note {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        padding: 0.875rem 1rem;
+        background-color: var(--bg-surface-stone);
+        border: 1px solid var(--border-hairline);
+      }
+
+      .story-small-frame {
+        width: 72%;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background-color: var(--bg-surface-stone);
+        border: 1px solid var(--border-hairline);
+      }
+
+      .story-small-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 600ms var(--ease-out-expo);
+      }
+
+      .story-right-col {
+        grid-column: 6 / span 7;
+        display: flex;
+        flex-direction: column;
+        gap: 2.25rem;
+      }
+
+      .story-feature-frame {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        overflow: hidden;
+        background-color: var(--bg-surface-stone);
+        border: 1px solid var(--border-hairline);
+      }
+
+      .story-feature-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Interactive Philosophy Accordion (Matching Reference Image Right Column) */
+      .philosophy-block {
+        padding-top: 0.5rem;
+      }
+
+      .philosophy-heading {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 0.75rem;
+      }
+
+      .accordion-list {
+        border-top: 1px solid var(--border-hairline-strong);
+      }
+
+      .accordion-item {
+        border-bottom: 1px solid var(--border-hairline);
+      }
+
+      .accordion-trigger {
+        width: 100%;
+        min-height: 52px;
+        padding: 0.875rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        text-align: left;
+        font-family: var(--font-display);
+        font-size: 1.0625rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        transition: color 150ms var(--ease-out-expo);
+      }
+
+      .accordion-trigger:hover {
+        color: var(--accent-umber);
+      }
+
+      .accordion-icon {
+        font-size: 1.125rem;
+        line-height: 1;
+        color: var(--text-muted);
+        transition: transform 200ms var(--ease-out-expo);
+        flex-shrink: 0;
+      }
+
+      .accordion-item.is-open .accordion-icon {
+        transform: rotate(45deg);
+        color: var(--accent-umber);
+      }
+
+      .accordion-panel {
+        display: none;
+        padding-bottom: 1.125rem;
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+        max-width: 62ch;
+      }
+
+      .accordion-item.is-open .accordion-panel {
+        display: block;
+      }
+
+      /* Pull Quote */
+      .editorial-pullquote {
+        margin-top: 3.5rem;
+        padding: 2.25rem;
+        background-color: var(--bg-canvas-elevated);
+        border: 1px solid var(--border-hairline);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .editorial-pullquote blockquote {
+        font-family: var(--font-display);
+        font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+        font-weight: 500;
+        line-height: 1.35;
+        color: var(--text-primary);
+        text-wrap: balance;
+      }
+
+      /* People / Leadership Editable Profiles */
+      .leadership-strip {
+        margin-top: 3.5rem;
+        padding-top: 2.5rem;
+        border-top: 1px solid var(--border-hairline);
+      }
+
+      .leadership-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.75rem;
+        margin-top: 1.5rem;
+      }
+
+      .leader-card {
+        padding: 1.5rem;
+        background-color: var(--bg-canvas-elevated);
+        border: 1px solid var(--border-hairline);
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+      }
+
+      .leader-role-meta {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .leader-name {
+        font-family: var(--font-display);
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .leader-bio {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+
+      @media (max-width: 900px) {
+        .story-left-col,
+        .story-right-col {
+          grid-column: 1 / -1;
+        }
+        .story-small-frame {
+          width: 100%;
+        }
+        .leadership-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ==========================================================================
+         6. SECTION C: WHAT WE DO — SERVICES (VARIED ARCHITECTURAL COMPOSITIONS)
+         ========================================================================== */
+      .services-mosaic {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 1.75rem;
+        align-items: stretch;
+      }
+
+      .service-feature-visual {
+        grid-column: 1 / span 5;
+        position: relative;
+        min-height: 440px;
+        overflow: hidden;
+        background-color: var(--bg-espresso);
+        color: var(--text-on-dark);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 2rem;
+      }
+
+      .service-feature-visual img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        transition: transform 600ms var(--ease-out-expo);
+      }
+
+      .service-feature-visual:hover img {
+        transform: scale(1.03);
+      }
+
+      .service-feature-visual .scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: linear-gradient(
+          180deg,
+          rgba(20, 16, 13, 0.15) 0%,
+          rgba(20, 16, 13, 0.82) 100%
+        );
+      }
+
+      .service-feature-visual .content {
+        position: relative;
+        z-index: 3;
+      }
+
+      .service-feature-visual h3 {
+        font-family: var(--font-display);
+        font-size: 1.625rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .service-feature-visual p {
+        font-size: 0.9375rem;
+        color: rgba(245, 242, 237, 0.88);
+        margin-bottom: 1.25rem;
+      }
+
+      .services-editorial-matrix {
+        grid-column: 6 / span 7;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+      }
+
+      .service-cell {
+        padding: 1.75rem;
+        background-color: var(--bg-canvas-elevated);
+        border: 1px solid var(--border-hairline);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 1.25rem;
+        transition: border-color 180ms var(--ease-out-expo);
+      }
+
+      .service-cell:hover {
+        border-color: var(--accent-umber);
+      }
+
+      .service-index {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+
+      .service-title {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.625rem;
+      }
+
+      .service-desc {
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+      }
+
+      .service-action-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--accent-umber);
+        white-space: nowrap;
+        align-self: flex-start;
+        padding: 0.25rem 0;
+      }
+
+      .service-action-link:hover {
+        color: var(--accent-umber-hover);
+        text-decoration: underline;
+      }
+
+      @media (max-width: 960px) {
+        .service-feature-visual {
+          grid-column: 1 / -1;
+          min-height: 360px;
+        }
+        .services-editorial-matrix {
+          grid-column: 1 / -1;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .services-editorial-matrix {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ==========================================================================
+         7. SECTION D: OUR WORK — CURATED PORTFOLIO & INTERACTIVE LIGHTBOX
+         ========================================================================== */
+      .portfolio-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        margin-bottom: 2.25rem;
+      }
+
+      /* Interactive Filter Bar (Functional Buttons) */
+      .filter-bar {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+        padding: 0.3rem;
+        background-color: var(--bg-surface-stone);
+        border: 1px solid var(--border-hairline);
+      }
+
+      .filter-btn {
+        min-height: 38px;
+        padding: 0.4rem 0.95rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+        color: var(--text-secondary);
+        transition:
+          background-color 150ms var(--ease-out-expo),
+          color 150ms var(--ease-out-expo);
+      }
+
+      .filter-btn.is-active {
+        background-color: var(--text-primary);
+        color: var(--text-on-dark);
+      }
+
+      .filter-btn:hover:not(.is-active) {
+        color: var(--text-primary);
+      }
+
+      .portfolio-disclaimer {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+      }
+
+      .portfolio-gallery {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 2rem;
+      }
+
+      .portfolio-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.875rem;
+        cursor: pointer;
+      }
+
+      .portfolio-item.span-7 {
+        grid-column: span 7;
+      }
+
+      .portfolio-item.span-5 {
+        grid-column: span 5;
+      }
+
+      .portfolio-item.span-6 {
+        grid-column: span 6;
+      }
+
+      .portfolio-item.is-hidden {
+        display: none;
+      }
+
+      .portfolio-thumb {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        background-color: var(--bg-surface-stone);
+        border: 1px solid var(--border-hairline);
+      }
+
+      .portfolio-thumb.ratio-16-9 {
+        aspect-ratio: 16 / 10;
+      }
+
+      .portfolio-thumb.ratio-4-3 {
+        aspect-ratio: 4 / 3;
+      }
+
+      .portfolio-thumb.ratio-3-4 {
+        aspect-ratio: 4 / 4.5;
+      }
+
+      .portfolio-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 500ms var(--ease-out-expo);
+      }
+
+      .portfolio-item:hover .portfolio-thumb img {
+        transform: scale(1.03);
+      }
+
+      .portfolio-caption-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-top: 0.25rem;
+      }
+
+      .portfolio-title {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .portfolio-meta {
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+      }
+
+      .portfolio-summary {
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+        max-width: 60ch;
+      }
+
+      .portfolio-open-hint {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--accent-umber);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      @media (max-width: 900px) {
+        .portfolio-item.span-7,
+        .portfolio-item.span-5,
+        .portfolio-item.span-6 {
+          grid-column: 1 / -1;
+        }
+      }
+
+      /* ==========================================================================
+         8. SECTION E: OUR APPROACH (4-STAGE CLIENT JOURNEY)
+         ========================================================================== */
+      .approach-layout {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: clamp(2rem, 4vw, 3.5rem);
+        align-items: start;
+      }
+
+      .approach-steps-col {
+        grid-column: 1 / span 7;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+      }
+
+      .approach-step-card {
+        padding: 1.75rem;
+        background-color: var(--bg-canvas-elevated);
+        border: 1px solid var(--border-hairline);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .step-num {
+        font-family: var(--font-display);
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--accent-umber);
+      }
+
+      .step-title {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .step-body {
+        font-size: 0.9375rem;
+        color: var(--text-secondary);
+      }
+
+      .approach-visual-col {
+        grid-column: 8 / span 5;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .approach-visual-frame {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        border: 1px solid var(--border-hairline);
+        background-color: var(--bg-surface-stone);
+      }
+
+      .approach-visual-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .approach-caption {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        padding: 1.25rem;
+        background-color: var(--bg-surface-stone);
+        border: 1px solid var(--border-hairline);
+      }
+
+      @media (max-width: 960px) {
+        .approach-steps-col,
+        .approach-visual-col {
+          grid-column: 1 / -1;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .approach-steps-col {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ==========================================================================
+         9. SECTION F: CONTACT US & ENQUIRY FORM (HONEST VALIDATION & BRIEF BUILDER)
+         ========================================================================== */
+      .contact-section {
+        padding-top: clamp(4.5rem, 8vw, 7.5rem);
+        padding-bottom: clamp(4.5rem, 8vw, 7.5rem);
+        background-color: var(--bg-canvas);
+      }
+
+      .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: clamp(2rem, 4vw, 3.5rem);
+        align-items: start;
+      }
+
+      .contact-details-col {
+        grid-column: 1 / span 5;
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+      }
+
+      .contact-lead {
+        font-size: 1.0625rem;
+        color: var(--text-secondary);
+        max-width: 48ch;
+      }
+
+      .contact-channels-list {
+        display: flex;
+        flex-direction: column;
+        border-top: 1px solid var(--border-hairline);
+      }
+
+      .channel-row {
+        padding: 1.125rem 0;
+        border-bottom: 1px solid var(--border-hairline);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .channel-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      .channel-value {
+        font-family: var(--font-display);
+        font-size: 1.0625rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .btn-inline-action {
+        font-family: var(--font-body);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--accent-umber);
+        padding: 0.25rem 0.625rem;
+        border: 1px solid var(--border-hairline-strong);
+        background-color: var(--bg-canvas-elevated);
+        white-space: nowrap;
+      }
+
+      .btn-inline-action:hover {
+        background-color: var(--text-primary);
+        color: var(--text-on-dark);
+      }
+
+      .contact-form-col {
+        grid-column: 6 / span 7;
+        padding: clamp(1.75rem, 3.5vw, 2.75rem);
+        background-color: var(--bg-canvas-elevated);
+        border: 1px solid var(--border-hairline);
+      }
+
+      .form-title {
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-subtitle {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 1.75rem;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+
+      .form-group.full-width {
+        grid-column: 1 / -1;
+      }
+
+      .form-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .form-input,
+      .form-select,
+      .form-textarea {
+        width: 100%;
+        min-height: 44px;
+        padding: 0.65rem 0.875rem;
+        background-color: var(--bg-canvas);
+        border: 1px solid var(--border-hairline-strong);
+        font-size: 0.9375rem;
+        color: var(--text-primary);
+        transition: border-color 150ms var(--ease-out-expo);
+      }
+
+      .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: var(--accent-umber);
+      }
+
+      .form-input.has-error,
+      .form-select.has-error,
+      .form-textarea.has-error {
+        border-color: var(--status-error);
+      }
+
+      .field-error {
+        font-size: 0.75rem;
+        color: var(--status-error);
+        min-height: 1rem;
+      }
+
+      .form-submit-row {
+        margin-top: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .form-honesty-note {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        max-width: 44ch;
+      }
+
+      /* Prepared Enquiry Brief Output (Honest No-Backend Alternative) */
+      .prepared-brief-panel {
+        display: none;
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background-color: var(--bg-surface-stone);
+        border: 1px solid var(--border-hairline-strong);
+      }
+
+      .prepared-brief-panel.is-visible {
+        display: block;
+      }
+
+      .prepared-brief-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .prepared-brief-header h4 {
+        font-family: var(--font-display);
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--status-success);
+      }
+
+      .prepared-brief-pre {
+        font-family: monospace;
+        font-size: 0.8125rem;
+        white-space: pre-wrap;
+        padding: 1rem;
+        background-color: var(--bg-canvas-elevated);
+        border: 1px solid var(--border-hairline);
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+      }
+
+      .prepared-brief-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      @media (max-width: 900px) {
+        .contact-details-col,
+        .contact-form-col {
+          grid-column: 1 / -1;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ==========================================================================
+         10. MONUMENTAL DARK FOOTER (INSPIRED BY REFERENCE IMAGE "CIRA PRO")
+         ========================================================================== */
+      .site-footer {
+        background-color: var(--bg-espresso);
+        color: var(--text-on-dark);
+        padding-top: clamp(4rem, 7vw, 6rem);
+        padding-bottom: 2rem;
+        overflow: hidden;
+      }
+
+      .footer-top-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 2.5rem;
+        padding-bottom: 4rem;
+        border-bottom: 1px solid var(--border-light-hairline);
+      }
+
+      .footer-brand-col {
+        grid-column: 1 / span 5;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .footer-statement {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 600;
+        line-height: 1.35;
+        max-width: 32ch;
+      }
+
+      .footer-subcopy {
+        font-size: 0.875rem;
+        color: var(--text-on-dark-muted);
+        max-width: 42ch;
+      }
+
+      .footer-nav-col {
+        grid-column: span 2;
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+      }
+
+      .footer-contact-col {
+        grid-column: span 3;
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+      }
+
+      .footer-col-heading {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-on-dark-muted);
+        margin-bottom: 0.375rem;
+      }
+
+      .footer-link {
+        font-size: 0.875rem;
+        color: rgba(245, 242, 237, 0.82);
+        transition: color 150ms var(--ease-out-expo);
+      }
+
+      .footer-link:hover {
+        color: var(--text-on-dark);
+        text-decoration: underline;
+      }
+
+      .footer-monumental-wordmark {
+        font-family: var(--font-display);
+        font-size: clamp(3.5rem, 15.5vw, 13.5rem);
+        font-weight: 700;
+        line-height: 0.88;
+        letter-spacing: -0.03em;
+        text-align: center;
+        color: var(--text-on-dark);
+        padding: 2.25rem 0 1.5rem;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      .footer-bottom-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--border-light-hairline);
+        font-size: 0.75rem;
+        color: var(--text-on-dark-muted);
+      }
+
+      @media (max-width: 900px) {
+        .footer-brand-col {
+          grid-column: 1 / -1;
+        }
+        .footer-nav-col,
+        .footer-contact-col {
+          grid-column: span 6;
+        }
+      }
+
+      /* ==========================================================================
+         11. LIGHTBOX MODAL FOR PROJECT STUDIES & LEGAL INFO
+         ========================================================================== */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background-color: rgba(18, 14, 12, 0.84);
+        backdrop-filter: blur(6px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+
+      .modal-backdrop.is-open {
+        display: flex;
+      }
+
+      .modal-dialog {
+        width: 100%;
+        max-width: 920px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background-color: var(--bg-canvas-elevated);
+        color: var(--text-primary);
+        border: 1px solid var(--border-hairline-strong);
+        padding: clamp(1.5rem, 3.5vw, 2.5rem);
+      }
+
+      .modal-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-hairline);
+        margin-bottom: 1.5rem;
+      }
+
+      .modal-close-btn {
+        min-height: 40px;
+        padding: 0.4rem 0.9rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        border: 1px solid var(--border-hairline-strong);
+        background-color: var(--bg-canvas);
+      }
+
+      .modal-close-btn:hover {
+        background-color: var(--text-primary);
+        color: var(--text-on-dark);
+      }
+
+      .modal-image-wrap {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        background-color: var(--bg-surface-stone);
+        margin-bottom: 1.5rem;
+      }
+
+      .modal-image-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Fallback styling when an image fails to load */
+      .img-fallback-active {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #2d2520 0%, #463a32 100%);
+        color: #f3efea;
+        font-family: var(--font-display);
+        font-size: 0.875rem;
+        padding: 1.5rem;
+        text-align: center;
+      }
+    </style>
+  <link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+
+  <body>
+    <!-- ========================================================================
+         TOP BAR CONTRACT (3 ZONES: WORDMARK — 5 NAV LINKS — 1 CONTACT CTA)
+         ======================================================================== -->
+    <header class="site-header" id="siteHeader">
+      <div class="header-inner">
+        <!-- Zone 1: Single Text Wordmark -->
+        <a href="#top" class="brand-wordmark">CIRA ATELIER</a>
+
+        <!-- Zone 2: 5 Concise Single-Line Navigation Links -->
+        <nav class="primary-nav" aria-label="Main Navigation">
+          <a href="#story" class="nav-link">Our Story</a>
+          <a href="#services" class="nav-link">What We Do</a>
+          <a href="#work" class="nav-link">Our Work</a>
+          <a href="#approach" class="nav-link">Our Approach</a>
+          <a href="#contact" class="nav-link">Contact</a>
+        </nav>
+
+        <!-- Zone 3: 1 Primary Action (Visible on Desktop & Mobile Above the Fold) -->
+        <div class="header-actions">
+          <a href="#contact" class="btn-header-contact" id="headerContactBtn">
+            Contact Us
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- ======================================================================
+           A. HOMEPAGE HERO (FULL-WIDTH PHOTOGRAPHY + IMMEDIATE CONTACT CTA)
+           ====================================================================== -->
+      <section class="hero-section" aria-labelledby="heroTitle">
+        <div class="hero-media-wrap">
+          <img
+            src="../src/assets/images/hero_event_gala_1791801775087.jpg"
+            alt="Candlelit twilight gala dinner inside a historic glass orangery and limestone courtyard"
+            referrerpolicy="no-referrer"
+            id="heroImage"
+          />
+          <div class="hero-scrim" aria-hidden="true"></div>
+        </div>
+
+        <div class="hero-content">
+          <div class="hero-headline-col">
+            <span class="hero-kicker">
+              Event Architecture · Spatial Styling · Production Management
+            </span>
+            <h1 class="hero-title" id="heroTitle">
+              Timeless Gatherings Begin With Purpose.
+            </h1>
+          </div>
+
+          <div class="hero-intro-col">
+            <p class="hero-lead-title">
+              Thoughtful Environments — Designed Around People
+            </p>
+            <p class="hero-lead-copy">
+              We plan, design, and produce bespoke private celebrations,
+              architectural weddings, and cultural brand gatherings defined by
+              spatial calm, warm hospitality, and quiet precision.
+            </p>
+            <div class="hero-cta-group">
+              <a href="#contact" class="btn-primary" id="heroContactBtn">
+                Contact Us
+              </a>
+              <a href="#work" class="btn-secondary-light">
+                Explore Selected Work
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mobile Quick-Jump Navigation Strip (Below Hero Fold or Top Strip) -->
+      <nav class="mobile-nav-strip" aria-label="Mobile Section Navigation">
+        <a href="#story">Our Story</a>
+        <a href="#services">What We Do</a>
+        <a href="#work">Our Work</a>
+        <a href="#approach">Our Approach</a>
+        <a href="#contact">Contact Us</a>
+      </nav>
+
+      <!-- ======================================================================
+           B. OUR STORY (ASYMMETRIC COMPOSITION + INTERACTIVE PRINCIPLES)
+           ====================================================================== -->
+      <section class="section-block" id="story" aria-labelledby="storyHeading">
+        <div class="container">
+          <div class="section-meta-line">
+            <span>Our Story</span>
+            <span aria-hidden="true">·</span>
+            <span>Identity &amp; Guiding Philosophy</span>
+          </div>
+
+          <div class="editorial-split-header js-reveal">
+            <h2 class="title-part" id="storyHeading">DESIGNED BEYOND</h2>
+            <span class="editorial-rule" aria-hidden="true"></span>
+            <span class="title-part">SPECTACLE</span>
+          </div>
+
+          <div class="story-grid">
+            <!-- Left Column: Company Origin, Mission, and Detail Photography -->
+            <div class="story-left-col js-reveal">
+              <p class="story-lead-statement">
+                <strong>
+                  We believe a remarkable event is measured not by excess, but
+                  by how effortlessly guests inhabit the room.
+                </strong>
+                Every celebration we shape balances architectural proportion,
+                natural light, tactile materials, and unhurried pacing so hosts
+                can remain fully present with the people they gathered.
+              </p>
+
+              <div class="story-narrative-box">
+                <h3>How &amp; Why We Began</h3>
+                <p>
+                  Cira Atelier was conceived to bridge the gap between spatial
+                  design and logistical production. Too often, events are split
+                  between visual stylists who overlook guest flow and technical
+                  planners who treat atmosphere as an afterthought. Our studio
+                  unites both disciplines under one roof.
+                </p>
+                <p>
+                  Our mission is straightforward: to translate each client’s
+                  personal or institutional purpose into an environment that
+                  feels intimate, coherent, and deeply human.
+                </p>
+                <div class="editable-note">
+                  <strong>Company Story Customization Slot:</strong> Replace
+                  this note with your company’s specific founding city, origin
+                  milestones, and personal founder story. No unverified dates,
+                  awards, or historical claims have been fabricated.
+                </div>
+              </div>
+
+              <div class="story-small-frame">
+                <img
+                  src="../src/assets/images/approach_production_craft_1791801821989.jpg"
+                  alt="Event design worktable with architectural venue blueprints, linen swatches, and botanical sketches"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+
+            <!-- Right Column: Featured Tablescape & Interactive Guiding Principles -->
+            <div class="story-right-col js-reveal">
+              <div class="story-feature-frame">
+                <img
+                  src="../src/assets/images/story_tablescape_detail_1791801789047.jpg"
+                  alt="Close-up of bespoke event tablescape with cotton paper menu, artisanal ceramics, and seasonal botanicals"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
+                />
+              </div>
+
+              <div class="philosophy-block">
+                <p class="philosophy-heading">
+                  Our Guiding Principles — Select a principle to read more
+                </p>
+
+                <div class="accordion-list" id="philosophyAccordion">
+                  <div class="accordion-item is-open">
+                    <button
+                      type="button"
+                      class="accordion-trigger"
+                      aria-expanded="true"
+                    >
+                      <span>01. Context Before Ornament</span>
+                      <span class="accordion-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="accordion-panel">
+                      We begin with the architecture of the venue, the season,
+                      and the acoustic character of the space. Florals,
+                      lighting, and furniture are chosen to converse with the
+                      setting rather than disguise it.
+                    </div>
+                  </div>
+
+                  <div class="accordion-item">
+                    <button
+                      type="button"
+                      class="accordion-trigger"
+                      aria-expanded="false"
+                    >
+                      <span>02. Honest Materiality</span>
+                      <span class="accordion-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="accordion-panel">
+                      Guests experience an event at arm’s length. We prioritize
+                      washed Belgian linens, beeswax illumination, stoneware,
+                      timber, and locally grown botanicals that reward close
+                      touch and warm light.
+                    </div>
+                  </div>
+
+                  <div class="accordion-item">
+                    <button
+                      type="button"
+                      class="accordion-trigger"
+                      aria-expanded="false"
+                    >
+                      <span>03. Pacing &amp; Emotional Rhythm</span>
+                      <span class="accordion-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="accordion-panel">
+                      A gathering is a temporal composition. We choreograph the
+                      transitions from arrival and aperitif to dining and late
+                      conversation so energy rises naturally without abrupt
+                      waits or bottlenecks.
+                    </div>
+                  </div>
+
+                  <div class="accordion-item">
+                    <button
+                      type="button"
+                      class="accordion-trigger"
+                      aria-expanded="false"
+                    >
+                      <span>04. Calm Behind the Curtain</span>
+                      <span class="accordion-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="accordion-panel">
+                      Rigorous technical schedules, vendor load-in protocols,
+                      and contingency planning allow our on-site direction to
+                      remain quiet, invisible, and composed.
+                    </div>
+                  </div>
+
+                  <div class="accordion-item">
+                    <button
+                      type="button"
+                      class="accordion-trigger"
+                      aria-expanded="false"
+                    >
+                      <span>05. Listening-Led Collaboration</span>
+                      <span class="accordion-icon" aria-hidden="true">+</span>
+                    </button>
+                    <div class="accordion-panel">
+                      We never impose a house template. Every engagement starts
+                      with extended conversations to understand how our clients
+                      host, what they value, and how they want their guests to
+                      feel.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Editorial Pull Quote -->
+          <div class="editorial-pullquote js-reveal">
+            <blockquote>
+              “Hospitality is spatial generosity—creating a room where every
+              guest immediately senses that their presence was anticipated with
+              care.”
+            </blockquote>
+            <div class="section-meta-line" style="margin-bottom: 0">
+              <span>Studio Ethos</span>
+              <span aria-hidden="true">·</span>
+              <span>Event Architecture &amp; Management</span>
+            </div>
+          </div>
+
+          <!-- The People Behind the Company (Editable Placeholders — No Fabricated Biographies) -->
+          <div class="leadership-strip js-reveal">
+            <div class="section-meta-line">
+              <span>Leadership &amp; Team</span>
+              <span aria-hidden="true">·</span>
+              <span>Editable Studio Profiles</span>
+            </div>
+            <div class="leadership-grid">
+              <article class="leader-card">
+                <span class="leader-role-meta">
+                  Creative Direction · Spatial Design
+                </span>
+                <h3 class="leader-name">
+                  [Principal / Founder Name — Editable]
+                </h3>
+                <p class="leader-bio">
+                  Leads architectural concept development, venue styling, and
+                  sensory direction. Replace this placeholder with the founder’s
+                  actual biography and portrait when supplied.
+                </p>
+              </article>
+
+              <article class="leader-card">
+                <span class="leader-role-meta">
+                  Executive Production · Logistics
+                </span>
+                <h3 class="leader-name">
+                  [Head of Production Name — Editable]
+                </h3>
+                <p class="leader-bio">
+                  Oversees technical staging, vendor orchestration, budgets, and
+                  on-site show calling. Replace with your lead producer’s
+                  verified profile.
+                </p>
+              </article>
+
+              <article class="leader-card">
+                <span class="leader-role-meta">
+                  Client Experience · Hospitality
+                </span>
+                <h3 class="leader-name">
+                  [Client Director Name — Editable]
+                </h3>
+                <p class="leader-bio">
+                  Directs guest journey planning, culinary partnerships, and
+                  private host relations. Replace with your team member’s
+                  verified details.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           C. WHAT WE DO — SERVICES (ASYMMETRIC EDITORIAL MATRIX)
+           ====================================================================== -->
+      <section
+        class="section-block"
+        id="services"
+        aria-labelledby="servicesHeading"
+      >
+        <div class="container">
+          <div class="section-meta-line">
+            <span>What We Do</span>
+            <span aria-hidden="true">·</span>
+            <span>Planning, Design &amp; Production Capabilities</span>
+          </div>
+
+          <div class="editorial-split-header js-reveal">
+            <h2 class="title-part" id="servicesHeading">CRAFTED WITH</h2>
+            <span class="editorial-rule" aria-hidden="true"></span>
+            <span class="title-part">INTEGRITY</span>
+          </div>
+
+          <div class="services-mosaic">
+            <!-- Left Feature Image Column -->
+            <article class="service-feature-visual js-reveal">
+              <img
+                src="../src/assets/images/service_wedding_ceremony_1791801800320.jpg"
+                alt="Sunlit European limestone courtyard arranged for an intimate architectural wedding ceremony"
+                referrerpolicy="no-referrer"
+                loading="lazy"
+              />
+              <div class="scrim" aria-hidden="true"></div>
+              <div class="content">
+                <div
+                  class="section-meta-line"
+                  style="color: rgba(245, 242, 237, 0.78)"
+                >
+                  <span>01. Signature Capability</span>
+                  <span aria-hidden="true">·</span>
+                  <span>Multi-Day &amp; Private</span>
+                </div>
+                <h3>Weddings &amp; Milestone Celebrations</h3>
+                <p>
+                  Full-service planning, architectural ceremony design, and
+                  multi-day guest hospitality for couples seeking an intimate,
+                  deeply personal celebration.
+                </p>
+                <button
+                  type="button"
+                  class="btn-primary js-select-service"
+                  data-service="Wedding or Engagement Celebration"
+                >
+                  Enquire About Weddings
+                </button>
+              </div>
+            </article>
+
+            <!-- Right 6-Service Editorial Matrix -->
+            <div class="services-editorial-matrix">
+              <article class="service-cell js-reveal">
+                <div>
+                  <span class="service-index">
+                    02 · Culinary &amp; Black-Tie Occasions
+                  </span>
+                  <h3 class="service-title">Gala Dinners &amp; Formal Gatherings</h3>
+                  <p class="service-desc">
+                    Long-table candlelit banquets, philanthropic galas, and
+                    choreographed multi-course dining experiences pairing
+                    dramatic lighting with acoustic intimacy.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="service-action-link js-select-service"
+                  data-service="Gala Dinner or Formal Occasion"
+                >
+                  Discuss a Gala Dinner →
+                </button>
+              </article>
+
+              <article class="service-cell js-reveal">
+                <div>
+                  <span class="service-index">
+                    03 · Commercial &amp; Cultural Experiences
+                  </span>
+                  <h3 class="service-title">
+                    Product Launches &amp; Brand Activations
+                  </h3>
+                  <p class="service-desc">
+                    Immersive press previews, sensory brand worlds, and showroom
+                    transformations that translate brand identity into spatial
+                    narrative.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="service-action-link js-select-service"
+                  data-service="Product Launch or Brand Activation"
+                >
+                  Discuss a Brand Event →
+                </button>
+              </article>
+
+              <article class="service-cell js-reveal">
+                <div>
+                  <span class="service-index">
+                    04 · Leadership &amp; Institutional Forums
+                  </span>
+                  <h3 class="service-title">
+                    Corporate Events &amp; Conferences
+                  </h3>
+                  <p class="service-desc">
+                    Executive summits, board retreats, and symposiums designed
+                    with architectural clarity, seamless AV integration, and
+                    elevated hospitality.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="service-action-link js-select-service"
+                  data-service="Corporate Event or Conference"
+                >
+                  Discuss a Corporate Forum →
+                </button>
+              </article>
+
+              <article class="service-cell js-reveal">
+                <div>
+                  <span class="service-index">
+                    05 · Private Milestones &amp; Hosting
+                  </span>
+                  <h3 class="service-title">
+                    Private Parties &amp; Birthday Celebrations
+                  </h3>
+                  <p class="service-desc">
+                    Bespoke residential transformations, milestone birthdays,
+                    and anniversary gatherings tailored around conversation,
+                    music, and late-evening warmth.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="service-action-link js-select-service"
+                  data-service="Private Party or Birthday Celebration"
+                >
+                  Discuss a Private Celebration →
+                </button>
+              </article>
+
+              <article class="service-cell js-reveal">
+                <div>
+                  <span class="service-index">
+                    06 · Environment &amp; Scenography
+                  </span>
+                  <h3 class="service-title">Venue Styling &amp; Event Design</h3>
+                  <p class="service-desc">
+                    Custom floor plans, bespoke furniture curation, botanical
+                    installations, linen &amp; tableware specification, and
+                    architectural lighting direction.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="service-action-link js-select-service"
+                  data-service="Venue Styling & Event Design"
+                >
+                  Discuss Venue Styling →
+                </button>
+              </article>
+
+              <article class="service-cell js-reveal">
+                <div>
+                  <span class="service-index">
+                    07 · Technical &amp; On-Site Execution
+                  </span>
+                  <h3 class="service-title">
+                    Event Coordination &amp; Production
+                  </h3>
+                  <p class="service-desc">
+                    End-to-end vendor management, production schedules, artist
+                    liaison, permitting, and calm on-site show calling from
+                    load-in to strike.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="service-action-link js-select-service"
+                  data-service="Event Coordination & Production"
+                >
+                  Discuss Production Support →
+                </button>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           D. OUR WORK — CURATED PORTFOLIO (ILLUSTRATIVE CONCEPT STUDIES)
+           ====================================================================== -->
+      <section class="section-block" id="work" aria-labelledby="workHeading">
+        <div class="container">
+          <div class="section-meta-line">
+            <span>Our Work</span>
+            <span aria-hidden="true">·</span>
+            <span>Curated Spatial &amp; Event Studies</span>
+          </div>
+
+          <div class="editorial-split-header js-reveal">
+            <h2 class="title-part" id="workHeading">ATMOSPHERE IN</h2>
+            <span class="editorial-rule" aria-hidden="true"></span>
+            <span class="title-part">PRACTICE</span>
+          </div>
+
+          <div class="portfolio-toolbar">
+            <!-- Functional Category Filter Buttons -->
+            <div
+              class="filter-bar"
+              role="group"
+              aria-label="Filter portfolio studies by event category"
+            >
+              <button
+                type="button"
+                class="filter-btn is-active"
+                data-filter="all"
+              >
+                All Studies
+              </button>
+              <button type="button" class="filter-btn" data-filter="gala">
+                Gala &amp; Dining
+              </button>
+              <button type="button" class="filter-btn" data-filter="wedding">
+                Weddings &amp; Ceremonies
+              </button>
+              <button type="button" class="filter-btn" data-filter="brand">
+                Brand &amp; Cultural
+              </button>
+              <button type="button" class="filter-btn" data-filter="styling">
+                Tablescape &amp; Styling
+              </button>
+            </div>
+
+            <p class="portfolio-disclaimer">
+              Illustrative design studies showcasing our aesthetic direction.
+              Select any study to inspect spatial notes.
+            </p>
+          </div>
+
+          <div class="portfolio-gallery" id="portfolioGallery">
+            <!-- Study 01: Wide 7-Column Gala Study -->
+            <article
+              class="portfolio-item span-7 js-portfolio-card"
+              data-category="gala"
+              data-title="Orangery Twilight Banquet"
+              data-meta="Gala & Formal Dining · Historic Glasshouse Setting · Illustrative Concept Study"
+              data-image="../src/assets/images/hero_event_gala_1791801775087.jpg"
+              data-description="An architectural long-table black-tie dinner designed for 120 guests inside a limestone and ironwork conservatory. Warm beeswax taper illumination and low seasonal botanical runners preserve sightlines across the room while reflecting softly in the overhead glass."
+              data-service="Gala Dinner or Formal Occasion"
+              tabindex="0"
+              role="button"
+              aria-label="Inspect project study: Orangery Twilight Banquet"
+            >
+              <div class="portfolio-thumb ratio-16-9">
+                <img
+                  src="../src/assets/images/hero_event_gala_1791801775087.jpg"
+                  alt="Orangery Twilight Banquet — Candlelit long tables inside a glasshouse conservatory"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
+                />
+              </div>
+              <div class="portfolio-caption-row">
+                <h3 class="portfolio-title">01. Orangery Twilight Banquet</h3>
+                <span class="portfolio-meta">
+                  Gala Dining · Conservatory Study
+                </span>
+              </div>
+              <p class="portfolio-summary">
+                Symmetrical long-table choreography balancing historic limestone
+                architecture with warm beeswax illumination for 120 guests.
+              </p>
+              <span class="portfolio-open-hint">View Spatial Study →</span>
+            </article>
+
+            <!-- Study 02: Vertical 5-Column Wedding Study -->
+            <article
+              class="portfolio-item span-5 js-portfolio-card"
+              data-category="wedding"
+              data-title="Courtyard in Limestone & Olive"
+              data-meta="Wedding Ceremony · Sunlit Stone Villa · Illustrative Concept Study"
+              data-image="../src/assets/images/service_wedding_ceremony_1791801800320.jpg"
+              data-description="A ceremony installation built around existing courtyard olive trees and classical stone archways. Rather than erecting synthetic staging, we framed the threshold with asymmetrical white garden roses and bentwood seating that honors the courtyard's natural geometry."
+              data-service="Wedding or Engagement Celebration"
+              tabindex="0"
+              role="button"
+              aria-label="Inspect project study: Courtyard in Limestone & Olive"
+            >
+              <div class="portfolio-thumb ratio-3-4">
+                <img
+                  src="../src/assets/images/service_wedding_ceremony_1791801800320.jpg"
+                  alt="Courtyard in Limestone and Olive — Intimate wedding ceremony installation"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
+                />
+              </div>
+              <div class="portfolio-caption-row">
+                <h3 class="portfolio-title">
+                  02. Courtyard in Limestone &amp; Olive
+                </h3>
+                <span class="portfolio-meta">
+                  Wedding Ceremony · Architectural Study
+                </span>
+              </div>
+              <p class="portfolio-summary">
+                Organic botanical framing and bentwood seating arranged to
+                follow late-afternoon shadow lines across an historic stone
+                courtyard.
+              </p>
+              <span class="portfolio-open-hint">View Spatial Study →</span>
+            </article>
+
+            <!-- Study 03: 6-Column Brand Activation Study -->
+            <article
+              class="portfolio-item span-6 js-portfolio-card"
+              data-category="brand"
+              data-title="Monolith & Light — Culinary Brand Launch"
+              data-meta="Brand Activation · Brutalist Gallery Space · Illustrative Concept Study"
+              data-image="./src/assets/images/portfolio_brand_activation_1791801810929.jpg"
+              data-description="A sensory product launch and press dinner inside a raw board-formed concrete gallery. A custom-fabricated sweeping timber table anchors the room beneath a suspended cluster of 300 warm filament pendants, turning an industrial volume into an intimate dining salon."
+              data-service="Product Launch or Brand Activation"
+              tabindex="0"
+              role="button"
+              aria-label="Inspect project study: Monolith & Light — Culinary Brand Launch"
+            >
+              <div class="portfolio-thumb ratio-4-3">
+                <img
+                  src="./src/assets/images/portfolio_brand_activation_1791801810929.jpg"
+                  alt="Curved timber dining table beneath a suspended pendant light sculpture in a concrete gallery"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
+                />
+              </div>
+              <div class="portfolio-caption-row">
+                <h3 class="portfolio-title">
+                  03. Monolith &amp; Light — Culinary Launch
+                </h3>
+                <span class="portfolio-meta">
+                  Brand Activation · Gallery Study
+                </span>
+              </div>
+              <p class="portfolio-summary">
+                A sweeping custom timber communal table beneath a suspended
+                warm-filament light sculpture inside a minimalist concrete
+                gallery.
+              </p>
+              <span class="portfolio-open-hint">View Spatial Study →</span>
+            </article>
+
+            <!-- Study 04: 6-Column Tablescape & Material Study -->
+            <article
+              class="portfolio-item span-6 js-portfolio-card"
+              data-category="styling"
+              data-title="Autumn Harvest Tablescape Study"
+              data-meta="Venue Styling · Tactile Tableware & Print · Illustrative Concept Study"
+              data-image="../src/assets/images/story_tablescape_detail_1791801789047.jpg"
+              data-description="An intimate private dining study focused on tactile contrast: unbleached heavy Belgian linen, speckled artisanal stoneware, amber water tumblers, and letterpress menus on deckle-edge cotton paper paired with foraged autumn branches."
+              data-service="Venue Styling & Event Design"
+              tabindex="0"
+              role="button"
+              aria-label="Inspect project study: Autumn Harvest Tablescape Study"
+            >
+              <div class="portfolio-thumb ratio-4-3">
+                <img
+                  src="../src/assets/images/story_tablescape_detail_1791801789047.jpg"
+                  alt="Autumn Harvest Tablescape with letterpress menu, speckled ceramics, and amber glassware"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
+                />
+              </div>
+              <div class="portfolio-caption-row">
+                <h3 class="portfolio-title">
+                  04. Autumn Harvest Tablescape Study
+                </h3>
+                <span class="portfolio-meta">
+                  Venue Styling · Material Study
+                </span>
+              </div>
+              <p class="portfolio-summary">
+                Tactile place settings combining unbleached linen, letterpress
+                cotton menus, speckled stoneware, and sculptural ikebana
+                botanicals.
+              </p>
+              <span class="portfolio-open-hint">View Spatial Study →</span>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           E. OUR APPROACH (HOW WE WORK WITH CLIENTS)
+           ====================================================================== -->
+      <section
+        class="section-block"
+        id="approach"
+        aria-labelledby="approachHeading"
+      >
+        <div class="container">
+          <div class="section-meta-line">
+            <span>Our Approach</span>
+            <span aria-hidden="true">·</span>
+            <span>From Initial Conversation to Final Toast</span>
+          </div>
+
+          <div class="editorial-split-header js-reveal">
+            <h2 class="title-part" id="approachHeading">METHODICAL</h2>
+            <span class="editorial-rule" aria-hidden="true"></span>
+            <span class="title-part">PRECISION</span>
+          </div>
+
+          <div class="approach-layout">
+            <div class="approach-steps-col">
+              <article class="approach-step-card js-reveal">
+                <span class="step-num tabular-nums">Phase 01</span>
+                <h3 class="step-title">Discovery &amp; Spatial Brief</h3>
+                <p class="step-body">
+                  We begin by listening. We study the purpose of your gathering,
+                  guest dynamics, architectural venue candidates, and realistic
+                  budget parameters before drawing a single line.
+                </p>
+              </article>
+
+              <article class="approach-step-card js-reveal">
+                <span class="step-num tabular-nums">Phase 02</span>
+                <h3 class="step-title">Architectural &amp; Sensory Direction</h3>
+                <p class="step-body">
+                  We develop scaled floor plans, lighting plots, material
+                  swatches, floral studies, and culinary narratives so you can
+                  experience the atmosphere in detail ahead of production.
+                </p>
+              </article>
+
+              <article class="approach-step-card js-reveal">
+                <span class="step-num tabular-nums">Phase 03</span>
+                <h3 class="step-title">Vendor &amp; Technical Orchestration</h3>
+                <p class="step-body">
+                  We assemble and brief every specialist—chefs, lighting
+                  engineers, floral architects, acoustic designers, and
+                  fabricators—managing contracts, timelines, and rehearsals.
+                </p>
+              </article>
+
+              <article class="approach-step-card js-reveal">
+                <span class="step-num tabular-nums">Phase 04</span>
+                <h3 class="step-title">On-Site Direction &amp; Hosting</h3>
+                <p class="step-body">
+                  From load-in through the final guest departure, our producers
+                  direct every cue quietly on the floor, leaving you completely
+                  free to host and enjoy the evening.
+                </p>
+              </article>
+            </div>
+
+            <div class="approach-visual-col js-reveal">
+              <div class="approach-visual-frame">
+                <img
+                  src="../src/assets/images/approach_production_craft_1791801821989.jpg"
+                  alt="Architectural floor plans, fabric swatches, and lighting moodboards on our studio table"
+                  referrerpolicy="no-referrer"
+                  loading="lazy"
+                />
+              </div>
+              <div class="approach-caption">
+                <strong>Every detail mapped in advance:</strong> Scaled CAD
+                seating plans, physical linen &amp; ceramic sampling, and
+                minute-by-minute production schedules ensure complete clarity at
+                every stage.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           F. CONTACT US (DIRECT CHANNELS + VALIDATED HONEST ENQUIRY FORM)
+           ====================================================================== -->
+      <section
+        class="contact-section"
+        id="contact"
+        aria-labelledby="contactHeading"
+      >
+        <div class="container">
+          <div class="section-meta-line">
+            <span>Contact Us</span>
+            <span aria-hidden="true">·</span>
+            <span>Begin a Conversation About Your Event</span>
+          </div>
+
+          <div class="editorial-split-header js-reveal">
+            <h2 class="title-part" id="contactHeading">BEGIN THE</h2>
+            <span class="editorial-rule" aria-hidden="true"></span>
+            <span class="title-part">CONVERSATION</span>
+          </div>
+
+          <div class="contact-grid">
+            <!-- Left Column: Direct Contact Details (Clearly Marked Editable Slots) -->
+            <div class="contact-details-col js-reveal">
+              <p class="contact-lead">
+                Whether you are planning an intimate private dinner, a multi-day
+                wedding celebration, or a cultural brand gathering, we welcome
+                the opportunity to hear your vision.
+              </p>
+
+              <div class="contact-channels-list">
+                <div class="channel-row">
+                  <span class="channel-label">
+                    Direct Studio Email (Editable Company Address)
+                  </span>
+                  <div class="channel-value">
+                    <span id="studioEmailText">enquiries@cira-atelier.example</span>
+                    <button
+                      type="button"
+                      class="btn-inline-action"
+                      id="copyEmailBtn"
+                    >
+                      Copy Email
+                    </button>
+                  </div>
+                </div>
+
+                <div class="channel-row">
+                  <span class="channel-label">
+                    Telephone &amp; WhatsApp Desk (Supply Company Number)
+                  </span>
+                  <div class="channel-value">
+                    <span>[+00 (0) 000 000 0000 — Editable Phone / WhatsApp]</span>
+                  </div>
+                </div>
+
+                <div class="channel-row">
+                  <span class="channel-label">
+                    Studio Location &amp; Service Area (Editable)
+                  </span>
+                  <div class="channel-value">
+                    <span>
+                      [Primary Studio City — Available for Destination &amp;
+                      Regional Commissions]
+                    </span>
+                  </div>
+                </div>
+
+                <div class="channel-row">
+                  <span class="channel-label">
+                    Consultation Hours
+                  </span>
+                  <div class="channel-value">
+                    <span>Monday – Friday · 09:00 – 18:00 (By Appointment)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Validated Enquiry Form -->
+            <div class="contact-form-col js-reveal">
+              <h3 class="form-title">Event Enquiry Brief</h3>
+              <p class="form-subtitle">
+                Complete the details below to validate and format your event
+                brief for immediate dispatch via your email client or clipboard.
+              </p>
+
+              <form id="enquiryForm" novalidate>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label" for="clientName">
+                      Your Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="clientName"
+                      name="clientName"
+                      class="form-input"
+                      placeholder="e.g., Clara Vance"
+                      required
+                    />
+                    <span class="field-error" id="errClientName"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="clientContact">
+                      Email Address or Phone *
+                    </label>
+                    <input
+                      type="text"
+                      id="clientContact"
+                      name="clientContact"
+                      class="form-input"
+                      placeholder="e.g., clara@domain.com or +44 7700..."
+                      required
+                    />
+                    <span class="field-error" id="errClientContact"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="eventType">
+                      Event Type *
+                    </label>
+                    <select
+                      id="eventType"
+                      name="eventType"
+                      class="form-select"
+                      required
+                    >
+                      <option value="">Select an event category...</option>
+                      <option value="Wedding or Engagement Celebration">
+                        Wedding or Engagement Celebration
+                      </option>
+                      <option value="Gala Dinner or Formal Occasion">
+                        Gala Dinner or Formal Occasion
+                      </option>
+                      <option value="Product Launch or Brand Activation">
+                        Product Launch or Brand Activation
+                      </option>
+                      <option value="Corporate Event or Conference">
+                        Corporate Event or Conference
+                      </option>
+                      <option value="Private Party or Birthday Celebration">
+                        Private Party or Birthday Celebration
+                      </option>
+                      <option value="Venue Styling & Event Design">
+                        Venue Styling &amp; Event Design
+                      </option>
+                      <option value="Event Coordination & Production">
+                        Event Coordination &amp; Production
+                      </option>
+                    </select>
+                    <span class="field-error" id="errEventType"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="eventDate">
+                      Approximate Date or Season (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      id="eventDate"
+                      name="eventDate"
+                      class="form-input"
+                      placeholder="e.g., Autumn 2027 or October 14"
+                    />
+                    <span class="field-error"></span>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label class="form-label" for="eventMessage">
+                      Tell Us About Your Vision, Setting, or Guest Count *
+                    </label>
+                    <textarea
+                      id="eventMessage"
+                      name="eventMessage"
+                      class="form-textarea"
+                      placeholder="Share your approximate guest count, preferred location or venue ideas, and the atmosphere you hope to create..."
+                      required
+                    ></textarea>
+                    <span class="field-error" id="errEventMessage"></span>
+                  </div>
+                </div>
+
+                <div class="form-submit-row">
+                  <button type="submit" class="btn-primary">
+                    Prepare &amp; Validate Enquiry
+                  </button>
+                  <p class="form-honesty-note">
+                    <strong>Transparent Form Handling:</strong> Because this is
+                    a standalone HTML deliverable without a connected backend
+                    mail server, submitting validates your inputs and prepares a
+                    formatted enquiry brief to open directly in your mail app or
+                    copy in one click.
+                  </p>
+                </div>
+              </form>
+
+              <!-- Honest Prepared Brief Output Panel -->
+              <div
+                class="prepared-brief-panel"
+                id="preparedBriefPanel"
+                aria-live="polite"
+              >
+                <div class="prepared-brief-header">
+                  <h4>Enquiry Validated — Ready to Send</h4>
+                </div>
+                <p
+                  style="
+                    font-size: 0.8125rem;
+                    color: var(--text-secondary);
+                    margin-bottom: 0.75rem;
+                  "
+                >
+                  No automated background submission was faked. Choose how you
+                  would like to transmit your validated event brief below, or
+                  connect a form endpoint in production:
+                </p>
+                <pre class="prepared-brief-pre" id="preparedBriefText"></pre>
+                <div class="prepared-brief-actions">
+                  <a
+                    href="#contact"
+                    class="btn-primary"
+                    id="mailtoDispatchLink"
+                  >
+                    Open in Default Email Client
+                  </a>
+                  <button
+                    type="button"
+                    class="btn-inline-action"
+                    id="copyBriefBtn"
+                    style="min-height: 46px; padding: 0.75rem 1.25rem"
+                  >
+                    Copy Formatted Brief
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ========================================================================
+         G. MONUMENTAL DARK FOOTER
+         ======================================================================== -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-top-grid">
+          <div class="footer-brand-col">
+            <p class="footer-statement">
+              ARCHITECTURAL EVENT PLANNING, SPATIAL STYLING, AND PRODUCTION
+              MANAGEMENT.
+            </p>
+            <p class="footer-subcopy">
+              Crafting cohesive, human-scaled celebrations, gala dinners, and
+              brand experiences with material integrity and calm execution.
+            </p>
+          </div>
+
+          <div class="footer-nav-col">
+            <span class="footer-col-heading">Navigation</span>
+            <a href="#top" class="footer-link">Home</a>
+            <a href="#story" class="footer-link">Our Story</a>
+            <a href="#services" class="footer-link">What We Do</a>
+            <a href="#work" class="footer-link">Our Work</a>
+            <a href="#approach" class="footer-link">Our Approach</a>
+            <a href="#contact" class="footer-link">Contact Us</a>
+          </div>
+
+          <div class="footer-nav-col">
+            <span class="footer-col-heading">Capabilities</span>
+            <a
+              href="#services"
+              class="footer-link js-select-service"
+              data-service="Wedding or Engagement Celebration"
+            >
+              Weddings &amp; Celebrations
+            </a>
+            <a
+              href="#services"
+              class="footer-link js-select-service"
+              data-service="Gala Dinner or Formal Occasion"
+            >
+              Gala Dinners
+            </a>
+            <a
+              href="#services"
+              class="footer-link js-select-service"
+              data-service="Product Launch or Brand Activation"
+            >
+              Brand Activations
+            </a>
+            <a
+              href="#services"
+              class="footer-link js-select-service"
+              data-service="Corporate Event or Conference"
+            >
+              Corporate Forums
+            </a>
+            <a
+              href="#services"
+              class="footer-link js-select-service"
+              data-service="Venue Styling & Event Design"
+            >
+              Venue Styling
+            </a>
+          </div>
+
+          <div class="footer-contact-col">
+            <span class="footer-col-heading">Contact &amp; Social Profiles</span>
+            <a href="#contact" class="footer-link">
+              enquiries@cira-atelier.example
+            </a>
+            <span class="footer-link" style="opacity: 0.7">
+              [Instagram Profile URL — Editable]
+            </span>
+            <span class="footer-link" style="opacity: 0.7">
+              [Pinterest Profile URL — Editable]
+            </span>
+            <span class="footer-link" style="opacity: 0.7">
+              [LinkedIn Profile URL — Editable]
+            </span>
+          </div>
+        </div>
+
+        <div class="footer-monumental-wordmark" aria-hidden="true">
+          CIRA ATELIER
+        </div>
+
+        <div class="footer-bottom-bar">
+          <span>
+            &copy; <span id="currentYear">2026</span> Cira Atelier. All rights
+            reserved.
+          </span>
+          <div style="display: flex; gap: 1.5rem">
+            <button
+              type="button"
+              class="footer-link"
+              id="openPrivacyBtn"
+              style="font-size: 0.75rem"
+            >
+              Privacy &amp; Content Authenticity Notice
+            </button>
+            <a href="#contact" class="footer-link" style="font-size: 0.75rem">
+              Start an Enquiry
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ========================================================================
+         PROJECT STUDY & PRIVACY LIGHTBOX MODAL
+         ======================================================================== -->
+    <div
+      class="modal-backdrop"
+      id="studyModalBackdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalStudyTitle"
+    >
+      <div class="modal-dialog">
+        <div class="modal-top-bar">
+          <span class="section-meta-line" id="modalStudyMeta" style="margin: 0">
+            Project Study
+          </span>
+          <button
+            type="button"
+            class="modal-close-btn"
+            id="closeModalBtn"
+            aria-label="Close modal"
+          >
+            Close ✕
+          </button>
+        </div>
+
+        <div class="modal-image-wrap" id="modalImageWrap">
+          <img
+            src=""
+            alt=""
+            id="modalStudyImage"
+            referrerpolicy="no-referrer"
+          />
+        </div>
+
+        <h3
+          class="editorial-banner-heading"
+          id="modalStudyTitle"
+          style="font-size: 1.75rem; margin-bottom: 0.75rem"
+        ></h3>
+        <p
+          id="modalStudyDescription"
+          style="
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.75rem;
+            max-width: 68ch;
+          "
+        ></p>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 0.875rem">
+          <button
+            type="button"
+            class="btn-primary"
+            id="modalEnquireBtn"
+            data-service=""
+          >
+            Enquire About a Similar Gathering
+          </button>
+          <button type="button" class="modal-close-btn" id="closeModalSecondary">
+            Return to Portfolio
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================
+         STANDALONE APPLICATION JAVASCRIPT (INTERACTION, VALIDATION, GSAP)
+         ======================================================================== -->
+    <script>
+      (function () {
+        'use strict';
+
+        // 1. Resilient Image Fallback Policy (Zero Broken Images)
+        function attachImageFallbacks() {
+          var images = document.querySelectorAll('img');
+          images.forEach(function (img) {
+            img.addEventListener('error', function () {
+              var parent = img.parentElement;
+              if (parent && !parent.classList.contains('img-fallback-active')) {
+                img.style.display = 'none';
+                parent.classList.add('img-fallback-active');
+                var label = document.createElement('span');
+                label.textContent =
+                  img.getAttribute('alt') || 'Cira Atelier Visual Study';
+                parent.appendChild(label);
+              }
+            });
+          });
+        }
+
+        // 2. Sticky Header Scroll State
+        function initHeaderScroll() {
+          var header = document.getElementById('siteHeader');
+          if (!header) return;
+          function updateHeader() {
+            if (window.scrollY > 48) {
+              header.classList.add('is-scrolled');
+            } else {
+              header.classList.remove('is-scrolled');
+            }
+          }
+          window.addEventListener('scroll', updateHeader, { passive: true });
+          updateHeader();
+        }
+
+        // 3. Philosophy Accordion (Responds on First Click/Tap)
+        function initPhilosophyAccordion() {
+          var accordion = document.getElementById('philosophyAccordion');
+          if (!accordion) return;
+          var items = accordion.querySelectorAll('.accordion-item');
+
+          items.forEach(function (item) {
+            var btn = item.querySelector('.accordion-trigger');
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+              var isOpen = item.classList.contains('is-open');
+              items.forEach(function (other) {
+                other.classList.remove('is-open');
+                var otherBtn = other.querySelector('.accordion-trigger');
+                if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+              });
+
+              if (!isOpen) {
+                item.classList.add('is-open');
+                btn.setAttribute('aria-expanded', 'true');
+              }
+
+              if (window.ScrollTrigger) {
+                window.ScrollTrigger.refresh();
+              }
+            });
+          });
+        }
+
+        // 4. Service Pre-Selection Buttons -> Smooth Scroll & Focus Contact Form
+        function initServiceSelectButtons() {
+          var buttons = document.querySelectorAll('.js-select-service');
+          var eventTypeSelect = document.getElementById('eventType');
+          var contactSection = document.getElementById('contact');
+
+          buttons.forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+              e.preventDefault();
+              var serviceName = btn.getAttribute('data-service');
+              if (eventTypeSelect && serviceName) {
+                eventTypeSelect.value = serviceName;
+              }
+              if (contactSection) {
+                contactSection.scrollIntoView({ behavior: 'smooth' });
+              }
+              setTimeout(function () {
+                var nameInput = document.getElementById('clientName');
+                if (nameInput) nameInput.focus({ preventScroll: true });
+              }, 450);
+            });
+          });
+        }
+
+        // 5. Portfolio Category Filtering
+        function initPortfolioFilter() {
+          var filterButtons = document.querySelectorAll('.filter-btn');
+          var cards = document.querySelectorAll('.js-portfolio-card');
+
+          filterButtons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              var category = btn.getAttribute('data-filter');
+
+              filterButtons.forEach(function (b) {
+                b.classList.remove('is-active');
+              });
+              btn.classList.add('is-active');
+
+              cards.forEach(function (card) {
+                var cardCat = card.getAttribute('data-category');
+                if (category === 'all' || cardCat === category) {
+                  card.classList.remove('is-hidden');
+                } else {
+                  card.classList.add('is-hidden');
+                }
+              });
+
+              if (window.ScrollTrigger) {
+                window.ScrollTrigger.refresh();
+              }
+            });
+          });
+        }
+
+        // 6. Portfolio Study & Privacy Lightbox Modal
+        function initLightboxModal() {
+          var backdrop = document.getElementById('studyModalBackdrop');
+          var closeBtn = document.getElementById('closeModalBtn');
+          var closeSecondary = document.getElementById('closeModalSecondary');
+          var modalTitle = document.getElementById('modalStudyTitle');
+          var modalMeta = document.getElementById('modalStudyMeta');
+          var modalDesc = document.getElementById('modalStudyDescription');
+          var modalImg = document.getElementById('modalStudyImage');
+          var modalImgWrap = document.getElementById('modalImageWrap');
+          var modalEnquireBtn = document.getElementById('modalEnquireBtn');
+          var privacyBtn = document.getElementById('openPrivacyBtn');
+
+          if (!backdrop) return;
+
+          function openStudyModal(config) {
+            modalTitle.textContent = config.title || '';
+            modalMeta.textContent = config.meta || '';
+            modalDesc.textContent = config.description || '';
+
+            if (config.image) {
+              modalImgWrap.style.display = 'block';
+              modalImg.src = config.image;
+              modalImg.alt = config.title || 'Project Study';
+            } else {
+              modalImgWrap.style.display = 'none';
+            }
+
+            if (config.service) {
+              modalEnquireBtn.style.display = 'inline-flex';
+              modalEnquireBtn.setAttribute('data-service', config.service);
+            } else {
+              modalEnquireBtn.style.display = 'none';
+            }
+
+            backdrop.classList.add('is-open');
+            closeBtn.focus();
+          }
+
+          function closeModal() {
+            backdrop.classList.remove('is-open');
+          }
+
+          document.querySelectorAll('.js-portfolio-card').forEach(function (card) {
+            function triggerOpen() {
+              openStudyModal({
+                title: card.getAttribute('data-title'),
+                meta: card.getAttribute('data-meta'),
+                description: card.getAttribute('data-description'),
+                image: card.getAttribute('data-image'),
+                service: card.getAttribute('data-service'),
+              });
+            }
+
+            card.addEventListener('click', triggerOpen);
+            card.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                triggerOpen();
+              }
+            });
+          });
+
+          if (privacyBtn) {
+            privacyBtn.addEventListener('click', function () {
+              openStudyModal({
+                title: 'Privacy & Brand Authenticity Notice',
+                meta: 'Transparency · Data & Imagery Policy',
+                description:
+                  'This website is a standalone brand presentation for Cira Atelier. Enquiries prepared in the contact form remain entirely in your browser until you choose to send them via your email client or copy them. All portfolio studies and placeholder biography slots are transparently labeled so prospective clients receive honest, verifiable information.',
+                image: '',
+                service: '',
+              });
+            });
+          }
+
+          if (modalEnquireBtn) {
+            modalEnquireBtn.addEventListener('click', function () {
+              var service = modalEnquireBtn.getAttribute('data-service');
+              var select = document.getElementById('eventType');
+              if (select && service) {
+                select.value = service;
+              }
+              closeModal();
+              var contact = document.getElementById('contact');
+              if (contact) contact.scrollIntoView({ behavior: 'smooth' });
+            });
+          }
+
+          if (closeBtn) closeBtn.addEventListener('click', closeModal);
+          if (closeSecondary) closeSecondary.addEventListener('click', closeModal);
+          backdrop.addEventListener('click', function (e) {
+            if (e.target === backdrop) closeModal();
+          });
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && backdrop.classList.contains('is-open')) {
+              closeModal();
+            }
+          });
+        }
+
+        // 7. Honest Enquiry Form Validation & Brief Builder
+        function initEnquiryForm() {
+          var form = document.getElementById('enquiryForm');
+          var copyEmailBtn = document.getElementById('copyEmailBtn');
+          var studioEmailText = document.getElementById('studioEmailText');
+          var copyBriefBtn = document.getElementById('copyBriefBtn');
+
+          if (copyEmailBtn && studioEmailText) {
+            copyEmailBtn.addEventListener('click', function () {
+              var email = studioEmailText.textContent.trim();
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(email).then(function () {
+                  copyEmailBtn.textContent = 'Copied ✓';
+                  setTimeout(function () {
+                    copyEmailBtn.textContent = 'Copy Email';
+                  }, 2000);
+                });
+              }
+            });
+          }
+
+          if (!form) return;
+
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            var nameInput = document.getElementById('clientName');
+            var contactInput = document.getElementById('clientContact');
+            var typeSelect = document.getElementById('eventType');
+            var dateInput = document.getElementById('eventDate');
+            var msgInput = document.getElementById('eventMessage');
+
+            var errName = document.getElementById('errClientName');
+            var errContact = document.getElementById('errClientContact');
+            var errType = document.getElementById('errEventType');
+            var errMsg = document.getElementById('errEventMessage');
+
+            // Reset error states
+            [nameInput, contactInput, typeSelect, msgInput].forEach(function (el) {
+              el.classList.remove('has-error');
+            });
+            [errName, errContact, errType, errMsg].forEach(function (el) {
+              el.textContent = '';
+            });
+
+            var isValid = true;
+            var nameVal = nameInput.value.trim();
+            var contactVal = contactInput.value.trim();
+            var typeVal = typeSelect.value.trim();
+            var dateVal = dateInput.value.trim() || 'Flexible / To Be Determined';
+            var msgVal = msgInput.value.trim();
+
+            if (nameVal.length < 2) {
+              nameInput.classList.add('has-error');
+              errName.textContent = 'Please enter your name.';
+              isValid = false;
+            }
+
+            var isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactVal);
+            var isPhone = /^[+\d\s\-()]{7,}$/.test(contactVal);
+            if (!isEmail && !isPhone) {
+              contactInput.classList.add('has-error');
+              errContact.textContent =
+                'Please enter a valid email address or telephone number.';
+              isValid = false;
+            }
+
+            if (!typeVal) {
+              typeSelect.classList.add('has-error');
+              errType.textContent = 'Please select an event category.';
+              isValid = false;
+            }
+
+            if (msgVal.length < 10) {
+              msgInput.classList.add('has-error');
+              errMsg.textContent =
+                'Please share a few words about your event vision or guest count.';
+              isValid = false;
+            }
+
+            if (!isValid) return;
+
+            var formattedBrief =
+              'EVENT ENQUIRY BRIEF — CIRA ATELIER\n' +
+              '----------------------------------------\n' +
+              'Client Name:      ' +
+              nameVal +
+              '\n' +
+              'Contact Details:  ' +
+              contactVal +
+              '\n' +
+              'Event Category:   ' +
+              typeVal +
+              '\n' +
+              'Approximate Date: ' +
+              dateVal +
+              '\n\n' +
+              'Project Notes & Vision:\n' +
+              msgVal +
+              '\n----------------------------------------';
+
+            var panel = document.getElementById('preparedBriefPanel');
+            var pre = document.getElementById('preparedBriefText');
+            var mailtoLink = document.getElementById('mailtoDispatchLink');
+
+            if (pre) pre.textContent = formattedBrief;
+            if (mailtoLink) {
+              var subject = encodeURIComponent(
+                'Event Enquiry: ' + typeVal + ' (' + nameVal + ')'
+              );
+              var body = encodeURIComponent(formattedBrief);
+              mailtoLink.setAttribute(
+                'href',
+                'mailto:enquiries@cira-atelier.example?subject=' +
+                  subject +
+                  '&body=' +
+                  body
+              );
+            }
+            if (panel) {
+              panel.classList.add('is-visible');
+              panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          });
+
+          if (copyBriefBtn) {
+            copyBriefBtn.addEventListener('click', function () {
+              var pre = document.getElementById('preparedBriefText');
+              if (!pre) return;
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(pre.textContent).then(function () {
+                  copyBriefBtn.textContent = 'Brief Copied to Clipboard ✓';
+                  setTimeout(function () {
+                    copyBriefBtn.textContent = 'Copy Formatted Brief';
+                  }, 2200);
+                });
+              }
+            });
+          }
+        }
+
+        // 8. GSAP & ScrollTrigger Initialization (Guarded, Respects Reduced Motion)
+        function initGsapAnimations() {
+          if (window.__ciraGsapInitialized) return;
+
+          var prefersReducedMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)'
+          ).matches;
+          if (prefersReducedMotion) {
+            window.__ciraGsapInitialized = true;
+            return;
+          }
+
+          if (typeof window.gsap === 'undefined') return;
+          window.__ciraGsapInitialized = true;
+
+          var gsap = window.gsap;
+          if (typeof window.ScrollTrigger !== 'undefined') {
+            gsap.registerPlugin(window.ScrollTrigger);
+          }
+
+          // Subtle hero image scale settle (never hides Contact Us CTA)
+          var heroImage = document.getElementById('heroImage');
+          if (heroImage) {
+            gsap.fromTo(
+              heroImage,
+              { scale: 1.07 },
+              { scale: 1.0, duration: 1.6, ease: 'power2.out' }
+            );
+          }
+
+          // Subtle hero headline entrance (CTA buttons remain 100% visible immediately)
+          var heroTitle = document.getElementById('heroTitle');
+          if (heroTitle) {
+            gsap.fromTo(
+              heroTitle,
+              { y: 18, opacity: 0.01 },
+              { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out' }
+            );
+          }
+
+          // Section Reveals via ScrollTrigger
+          if (typeof window.ScrollTrigger !== 'undefined') {
+            var revealElements = document.querySelectorAll('.js-reveal');
+            revealElements.forEach(function (el) {
+              gsap.fromTo(
+                el,
+                { y: 24, opacity: 0 },
+                {
+                  y: 0,
+                  opacity: 1,
+                  duration: 0.75,
+                  ease: 'power2.out',
+                  scrollTrigger: {
+                    trigger: el,
+                    start: 'top 88%',
+                    once: true,
+                  },
+                }
+              );
+            });
+          }
+        }
+
+        // Initialize all behaviors immediately on DOM ready
+        function bootstrap() {
+          var yearSpan = document.getElementById('currentYear');
+          if (yearSpan) {
+            yearSpan.textContent = String(new Date().getFullYear());
+          }
+          attachImageFallbacks();
+          initHeaderScroll();
+          initPhilosophyAccordion();
+          initServiceSelectButtons();
+          initPortfolioFilter();
+          initLightboxModal();
+          initEnquiryForm();
+          initGsapAnimations();
+          window.addEventListener('load', initGsapAnimations, { once: true });
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', bootstrap);
+        } else {
+          bootstrap();
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,3281 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Maison Alchémie — Haute Parfumerie & Niche Fragrances | 18 Place Vendôme</title>
+  <meta name="description" content="Maison Alchémie Paris. Private luxury fragrance house craft extraits de parfum, rare oud extractions, and bespoke olfactory creations for private clients and collectors." />
+  <meta property="og:title" content="Maison Alchémie — Haute Parfumerie Paris" />
+  <meta property="og:description" content="Extraordinary niche perfumes crafted in Grasse. Explore signature extraits de parfum, note pyramids, and the bespoke gifting atelier." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#080808" />
+
+  <!-- Google Fonts: Cormorant Garamond, Cinzel & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Montserrat:wght@200;300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- External Libraries: GSAP, ScrollTrigger, Lucide Icons, Paystack Inline -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <!-- Tailwind CSS via CDN for rapid atomic styling + Deep luxury custom styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#080808',
+            'obsidian-light': '#121111',
+            espresso: '#171210',
+            plum: '#1d0e17',
+            burgundy: '#230c16',
+            'gold-light': '#eed9b8',
+            'gold-antique': '#c5a880',
+            'gold-deep': '#9b7e56',
+            champagne: '#e9dfd0',
+            ivory: '#f8f5ee',
+            'charcoal-border': '#292524'
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            cinzel: ['"Cinzel"', 'serif'],
+            sans: ['"Montserrat"', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Absolute Luxury Custom Art Direction */
+    :root {
+      --bg-dark: #080808;
+      --gold-primary: #c5a880;
+      --gold-highlight: #eed9b8;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-heading: 'Cinzel', serif;
+      --font-sans: 'Montserrat', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #dfd8cf;
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+      selection-background-color: #c5a880;
+      selection-color: #080808;
+    }
+
+    ::selection {
+      background: #c5a880;
+      color: #080808;
+    }
+
+    /* Subtle luxury scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #080808;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2b2622;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #c5a880;
+    }
+
+    /* Editorial Typography */
+    .font-cormorant { font-family: var(--font-serif); }
+    .font-cinzel { font-family: var(--font-heading); }
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #eed9b8 0%, #c5a880 50%, #9b7e56 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .metallic-border {
+      border: 1px solid rgba(197, 168, 128, 0.25);
+    }
+    .metallic-border-subtle {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Atmospheric Gradients */
+    .bg-gradient-radial-dark {
+      background: radial-gradient(circle at 50% 30%, #1f1614 0%, #0d0a09 60%, #080808 100%);
+    }
+    .bg-gradient-hero {
+      background: linear-gradient(180deg, rgba(8,8,8,0.3) 0%, rgba(29,14,23,0.4) 40%, rgba(8,8,8,1) 100%);
+    }
+    .bg-diagonal-luxury {
+      background: linear-gradient(135deg, #171210 0%, #090909 50%, #1d0e17 100%);
+    }
+    .bg-ivory-editorial {
+      background-color: #f7f4ee;
+      color: #171210;
+    }
+
+    /* Sculptural Bottle Glow */
+    .bottle-glow {
+      position: absolute;
+      width: 380px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(197, 168, 128, 0.18) 0%, rgba(197, 168, 128, 0.02) 60%, transparent 80%);
+      filter: blur(50px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Non-rectangular sculptural masks */
+    .mask-arch {
+      clip-path: ellipse(50% 50% at 50% 50%);
+    }
+    .mask-oval-portrait {
+      clip-path: ellipse(48% 50% at 50% 50%);
+    }
+    .mask-diagonal-slanted {
+      clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
+    }
+
+    /* Glassmorphism */
+    .glass-luxury {
+      background: rgba(18, 17, 17, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(197, 168, 128, 0.15);
+    }
+    .glass-drawer {
+      background: rgba(12, 11, 10, 0.94);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    /* Grain Texture Overlay */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 999;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* Interactive button ripples & transitions */
+    .btn-luxury {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-luxury:hover {
+      box-shadow: 0 0 25px rgba(197, 168, 128, 0.25);
+    }
+    .btn-luxury::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(238, 217, 184, 0.2), transparent);
+      transition: left 0.7s ease;
+    }
+    .btn-luxury:hover::after {
+      left: 100%;
+    }
+
+    /* Pyramid Accord visualization */
+    .pyramid-tier {
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .pyramid-tier:hover {
+      transform: scale(1.02);
+      border-color: #c5a880;
+    }
+
+    /* Custom engraving preview animation */
+    .engraved-text {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.25em;
+      color: rgba(238, 217, 184, 0.85);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 1px rgba(197,168,128,0.5);
+    }
+
+    /* Reduced Motion Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+
+<body class="antialiased text-[#e2ded9] bg-[#080808]">
+  <!-- Noise Texture -->
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <!-- ANNOUNCEMENT BANNER -->
+  <aside aria-label="Maison Dispatch and Private Client Privileges" class="bg-[#120f0e] border-b border-[#24201c] text-[#a89f91] text-xs py-2 px-4 text-center tracking-widest uppercase flex items-center justify-center gap-4">
+    <span class="hidden sm:inline">18 Place Vendôme, Paris</span>
+    <span class="hidden sm:inline text-[#c5a880] text-opacity-50">·</span>
+    <span class="text-[#c5a880]">Complimentary Insured White-Glove Courier &amp; 3 Olfactory Miniatures with Every Flacon</span>
+    <span class="hidden md:inline text-[#c5a880] text-opacity-50">·</span>
+    <button onclick="app.openView('concierge')" class="hidden md:inline text-[#eed9b8] underline underline-offset-4 hover:text-white transition-colors">
+      Private Concierge
+    </button>
+  </aside>
+
+  <!-- LUXURY FLOATING HEADER -->
+  <header id="main-header" class="sticky top-0 z-40 bg-[#080808]/90 backdrop-blur-md border-b border-[#221f1c] transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      
+      <!-- Mobile Menu Button & Search Trigger -->
+      <div class="flex items-center gap-5">
+        <button id="menu-toggle-btn" onclick="app.toggleMobileMenu()" class="lg:hidden text-[#c5a880] p-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#c5a880]" aria-label="Open Navigation Menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+        <button onclick="app.openSearchModal()" class="flex items-center gap-2 text-xs tracking-widest text-[#a89f91] hover:text-[#eed9b8] transition-colors uppercase" aria-label="Search Fragrances">
+          <i data-lucide="search" class="w-4 h-4 text-[#c5a880]"></i>
+          <span class="hidden sm:inline">Search Notes</span>
+        </button>
+      </div>
+
+      <!-- Brand Monogram & Wordmark -->
+      <div class="text-center cursor-pointer" onclick="app.openView('home')">
+        <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase mb-0.5">Haute Parfumerie</div>
+        <h1 class="font-cinzel text-xl sm:text-2xl md:text-3xl tracking-[0.22em] text-[#f4efe8] font-medium uppercase">
+          Maison Alchémie
+        </h1>
+        <div class="text-[9px] tracking-[0.35em] text-[#8e8577] uppercase hidden sm:block">Vendôme · Grasse</div>
+      </div>
+
+      <!-- Action Utilities: Currency, Wishlist, Account, Bag -->
+      <div class="flex items-center gap-4 sm:gap-6">
+        <!-- Currency Selector -->
+        <div class="relative hidden md:block">
+          <select id="currency-select" onchange="app.changeCurrency(this.value)" class="bg-transparent text-xs text-[#a89f91] hover:text-[#eed9b8] cursor-pointer focus:outline-none border-none tracking-widest uppercase pr-2">
+            <option value="EUR" class="bg-[#121111] text-[#f4efe8]">EUR (€)</option>
+            <option value="USD" selected class="bg-[#121111] text-[#f4efe8]">USD ($)</option>
+            <option value="GBP" class="bg-[#121111] text-[#f4efe8]">GBP (£)</option>
+            <option value="NGN" class="bg-[#121111] text-[#f4efe8]">NGN (₦)</option>
+          </select>
+        </div>
+
+        <!-- Wishlist -->
+        <button onclick="app.openView('wishlist')" class="relative text-[#a89f91] hover:text-[#eed9b8] p-1 transition-colors" aria-label="View Wishlist">
+          <i data-lucide="heart" class="w-5 h-5"></i>
+          <span id="wishlist-badge" class="absolute -top-1 -right-1 text-[9px] w-4 h-4 rounded-full bg-[#c5a880] text-black font-semibold flex items-center justify-center hidden">0</span>
+        </button>
+
+        <!-- Account -->
+        <button onclick="app.openAccountModal()" class="text-[#a89f91] hover:text-[#eed9b8] p-1 transition-colors" aria-label="Customer Account">
+          <i data-lucide="user" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Shopping Bag Trigger -->
+        <button onclick="app.toggleCartDrawer(true)" class="flex items-center gap-2 p-1 text-[#f4efe8] hover:text-[#eed9b8] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-[#c5a880]" aria-label="Open Shopping Bag">
+          <div class="relative">
+            <i data-lucide="shopping-bag" class="w-5 h-5 text-[#c5a880]"></i>
+            <span id="cart-badge" class="absolute -top-1.5 -right-2 text-[10px] w-4 h-4 rounded-full bg-[#eed9b8] text-[#080808] font-bold flex items-center justify-center">0</span>
+          </div>
+          <span id="header-cart-total" class="hidden lg:inline text-xs tracking-wider text-[#eed9b8] font-medium">$0</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Desktop Navigation Bar -->
+    <nav class="hidden lg:block border-t border-[#1b1816] bg-[#0a0909]/95" aria-label="Primary Luxury Navigation">
+      <ul class="max-w-6xl mx-auto px-6 h-12 flex items-center justify-center gap-10 text-[11px] tracking-[0.2em] uppercase text-[#b8afa3]">
+        <li><a href="#signature" onclick="app.navigateCategory('all'); return false;" class="hover:text-[#eed9b8] transition-colors py-2">The Extraits</a></li>
+        <li><a href="#collections" onclick="app.openView('collections'); return false;" class="hover:text-[#eed9b8] transition-colors py-2">Collections</a></li>
+        <li><a href="#discovery" onclick="app.openView('discovery'); return false;" class="hover:text-[#eed9b8] transition-colors py-2">Discovery Sets</a></li>
+        <li><a href="#fragrance-finder" onclick="app.openView('finder'); return false;" class="text-[#c5a880] hover:text-[#eed9b8] transition-colors py-2 font-medium">Scent Consultation</a></li>
+        <li><a href="#comparison" onclick="app.openView('comparison'); return false;" class="hover:text-[#eed9b8] transition-colors py-2">Olfactory Matrix</a></li>
+        <li><a href="#gifting" onclick="app.openView('gifting'); return false;" class="hover:text-[#eed9b8] transition-colors py-2">Gifting &amp; Engraving</a></li>
+        <li><a href="#craftsmanship" onclick="app.openView('craftsmanship'); return false;" class="hover:text-[#eed9b8] transition-colors py-2">The Maison &amp; Grasse</a></li>
+        <li><a href="#journal" onclick="app.openView('journal'); return false;" class="hover:text-[#eed9b8] transition-colors py-2">Journal</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- MOBILE NAVIGATION DRAWER -->
+  <div id="mobile-menu-drawer" class="fixed inset-0 z-50 bg-[#080808]/95 backdrop-blur-xl transform -translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between p-8" aria-modal="true" role="dialog">
+    <div class="flex items-center justify-between pb-6 border-b border-[#24201c]">
+      <div class="font-cinzel text-lg tracking-[0.2em] text-[#f4efe8]">Maison Alchémie</div>
+      <button onclick="app.toggleMobileMenu()" class="p-2 text-[#c5a880] hover:text-white" aria-label="Close menu">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <nav class="my-auto py-6 space-y-5 text-center">
+      <div><a href="#" onclick="app.openView('home'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1">Home</a></div>
+      <div><a href="#" onclick="app.navigateCategory('all'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1">All Fragrances</a></div>
+      <div><a href="#" onclick="app.openView('collections'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1">The Collections</a></div>
+      <div><a href="#" onclick="app.openView('finder'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#c5a880] hover:text-[#eed9b8] block py-1">Fragrance Consultation</a></div>
+      <div><a href="#" onclick="app.openView('comparison'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1">Scent Comparison</a></div>
+      <div><a href="#" onclick="app.openView('gifting'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1">Luxury Gifting &amp; Engraving</a></div>
+      <div><a href="#" onclick="app.openView('discovery'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1">Discovery Wardrobes</a></div>
+      <div><a href="#" onclick="app.openView('craftsmanship'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1">Maison Heritage</a></div>
+      <div><a href="#" onclick="app.openView('journal'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1">Olfactory Journal</a></div>
+    </nav>
+
+    <div class="border-t border-[#24201c] pt-6 flex flex-col gap-4 text-xs text-center text-[#9c9384] tracking-wider">
+      <div class="flex justify-center gap-6">
+        <button onclick="app.openAccountModal(); app.toggleMobileMenu();" class="hover:text-[#eed9b8] uppercase">Account</button>
+        <span>·</span>
+        <button onclick="app.openView('track'); app.toggleMobileMenu();" class="hover:text-[#eed9b8] uppercase">Order Tracking</button>
+        <span>·</span>
+        <button onclick="app.openView('concierge'); app.toggleMobileMenu();" class="hover:text-[#eed9b8] uppercase">Concierge</button>
+      </div>
+      <p class="text-[10px] text-[#635b50]">18 Place Vendôme, 75001 Paris, France</p>
+    </div>
+  </div>
+
+  <!-- MAIN DYNAMIC CONTENT CONTAINER (31 NAVIGABLE VIEWS) -->
+  <main id="app-container" class="min-h-screen">
+    <!-- View content is dynamically swapped or revealed via app.renderView() -->
+  </main>
+
+  <!-- SEARCH MODAL -->
+  <div id="search-modal" class="fixed inset-0 z-50 bg-[#080808]/90 backdrop-blur-md hidden flex items-start justify-center pt-24 px-4" aria-modal="true" role="dialog">
+    <div class="bg-[#121111] border border-[#2b2724] w-full max-w-3xl rounded-none p-8 shadow-2xl relative">
+      <button onclick="app.closeSearchModal()" class="absolute top-6 right-6 text-[#9a9184] hover:text-white" aria-label="Close search">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+      
+      <div class="text-xs uppercase tracking-[0.25em] text-[#c5a880] mb-2 font-cinzel">Olfactory Database Search</div>
+      <div class="relative border-b-2 border-[#c5a880]/50 pb-2 mb-6">
+        <input type="text" id="live-search-input" oninput="app.handleLiveSearch(this.value)" placeholder="Search by note (e.g., Oud, Orris, Saffron, Rose), name, or family..." class="w-full bg-transparent text-lg md:text-xl text-[#f4efe8] placeholder-[#5c544a] focus:outline-none tracking-wide font-serif" autofocus />
+      </div>
+
+      <!-- Quick note pills for searching -->
+      <div class="flex flex-wrap items-center gap-2 mb-6 text-xs text-[#a89f91]">
+        <span class="text-[#736a5e] tracking-widest uppercase text-[10px]">Frequent Accords:</span>
+        <button onclick="app.quickFilterSearch('Oud')" class="hover:text-[#eed9b8] underline underline-offset-4">Cambodi Oud</button>
+        <span>·</span>
+        <button onclick="app.quickFilterSearch('Orris')" class="hover:text-[#eed9b8] underline underline-offset-4">Florentine Orris</button>
+        <span>·</span>
+        <button onclick="app.quickFilterSearch('Rose')" class="hover:text-[#eed9b8] underline underline-offset-4">Taif Rose</button>
+        <span>·</span>
+        <button onclick="app.quickFilterSearch('Vanilla')" class="hover:text-[#eed9b8] underline underline-offset-4">Bourbon Vanilla</button>
+        <span>·</span>
+        <button onclick="app.quickFilterSearch('Leather')" class="hover:text-[#eed9b8] underline underline-offset-4">Russian Suede</button>
+      </div>
+
+      <!-- Live Search Results Container -->
+      <div id="search-results-list" class="max-h-[60vh] overflow-y-auto space-y-4 pr-2">
+        <p class="text-xs text-[#736a5e] italic">Type at least 2 characters to explore the perfume house archives.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHOPPING BAG DRAWER -->
+  <div id="cart-drawer-overlay" onclick="app.toggleCartDrawer(false)" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300" aria-hidden="true"></div>
+  <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-[#0e0c0b] border-l border-[#24201c] z-50 transform translate-x-full transition-transform duration-400 ease-out flex flex-col justify-between shadow-2xl" aria-label="Shopping Bag">
+    <!-- Drawer Header -->
+    <div class="p-6 border-b border-[#24201c] flex items-center justify-between">
+      <div class="flex items-baseline gap-3">
+        <h2 class="font-cinzel text-base tracking-[0.2em] text-[#f4efe8] uppercase">Shopping Bag</h2>
+        <span id="drawer-item-count" class="text-xs text-[#c5a880] tracking-widest">(0 Flacons)</span>
+      </div>
+      <button onclick="app.toggleCartDrawer(false)" class="text-[#8e8577] hover:text-white p-1" aria-label="Close bag">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Free Delivery & Miniature Progress Bar -->
+    <div class="px-6 py-3 bg-[#151210] border-b border-[#24201c] text-xs">
+      <div class="flex justify-between text-[#c5a880] mb-1 text-[11px] tracking-wider">
+        <span id="shipping-tier-text">Complimentary Insured Courier Qualified</span>
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 inline"></i>
+      </div>
+      <div class="w-full bg-[#292420] h-1 rounded-none overflow-hidden">
+        <div id="shipping-progress-bar" class="bg-[#c5a880] h-full w-full transition-all duration-300"></div>
+      </div>
+    </div>
+
+    <!-- Cart Items Scrollable List -->
+    <div id="drawer-cart-items" class="flex-1 overflow-y-auto p-6 space-y-6">
+      <!-- Items dynamically injected -->
+      <div class="text-center py-16 text-[#736a5e]">
+        <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto stroke-1 mb-4 text-[#443e37]"></i>
+        <p class="font-serif text-lg text-[#b8afa3] mb-2">Your shopping bag is currently empty.</p>
+        <p class="text-xs tracking-wider text-[#736a5e] mb-6">Discover our signature extraits de parfum and discovery sets.</p>
+        <button onclick="app.toggleCartDrawer(false); app.openView('catalog')" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase">
+          Explore Fragrances
+        </button>
+      </div>
+    </div>
+
+    <!-- Promo code & Engraving summary -->
+    <div class="px-6 py-4 border-t border-[#24201c] bg-[#12100f] space-y-3">
+      <div class="flex gap-2">
+        <input type="text" id="voucher-code-input" placeholder="Promotional or Voucher Code" class="flex-1 bg-[#1a1715] border border-[#2e2925] px-3 py-2 text-xs text-[#f4efe8] uppercase placeholder-[#5c544a] focus:outline-none focus:border-[#c5a880]" />
+        <button onclick="app.applyVoucher()" class="px-4 py-2 bg-[#292420] hover:bg-[#c5a880] hover:text-black text-[#c5a880] text-xs uppercase tracking-wider font-cinzel transition-colors">
+          Apply
+        </button>
+      </div>
+      <div id="voucher-message" class="text-[11px] text-[#c5a880] hidden"></div>
+    </div>
+
+    <!-- Drawer Footer: Subtotal & Checkout -->
+    <div class="p-6 border-t border-[#24201c] bg-[#0c0a09] space-y-4">
+      <div class="space-y-1.5 text-xs">
+        <div class="flex justify-between text-[#8e8577]">
+          <span>Subtotal</span>
+          <span id="drawer-subtotal" class="text-[#e2ded9]">$0.00</span>
+        </div>
+        <div class="flex justify-between text-[#8e8577]">
+          <span>Insured White-Glove Courier</span>
+          <span class="text-[#c5a880] uppercase tracking-wider">Complimentary</span>
+        </div>
+        <div id="discount-row" class="flex justify-between text-[#c5a880] hidden">
+          <span>Privilege Discount</span>
+          <span id="drawer-discount">-$0.00</span>
+        </div>
+        <div class="flex justify-between text-sm font-cinzel text-[#f4efe8] pt-2 border-t border-[#24201c]">
+          <span class="tracking-widest uppercase">Estimated Total</span>
+          <span id="drawer-total" class="text-base text-[#eed9b8] font-bold">$0.00</span>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <button onclick="app.toggleCartDrawer(false); app.openView('checkout');" class="btn-luxury w-full py-3.5 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-semibold uppercase text-center block">
+          Proceed to Checkout
+        </button>
+        <button onclick="app.toggleCartDrawer(false); app.openView('cart');" class="w-full py-2.5 border border-[#332e29] hover:border-[#c5a880] text-[#a89f91] hover:text-white font-cinzel text-[11px] tracking-[0.2em] uppercase transition-colors">
+          View Bag &amp; Gifting Options
+        </button>
+      </div>
+      <div class="flex items-center justify-center gap-3 text-[10px] text-[#635b50] tracking-widest uppercase">
+        <i data-lucide="lock" class="w-3 h-3 text-[#c5a880]"></i>
+        <span>256-Bit Encrypted · Paystack Verified Gateway</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- GATEWAY & BACKEND INTEGRATION DRAWER (For inspecting Paystack endpoints & configuring keys) -->
+  <div id="backend-settings-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4" aria-modal="true" role="dialog">
+    <div class="bg-[#12100f] border border-[#38312b] max-w-2xl w-full p-8 relative">
+      <button onclick="app.toggleBackendModal(false)" class="absolute top-6 right-6 text-[#8e8577] hover:text-white" aria-label="Close settings">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+      <div class="font-cinzel text-xs tracking-[0.25em] text-[#c5a880] uppercase mb-1">Maison Infrastructure &amp; Security</div>
+      <h3 class="font-cinzel text-xl text-[#f4efe8] uppercase mb-4">Paystack &amp; Real Payment Configuration</h3>
+      
+      <p class="text-xs text-[#a89f91] leading-relaxed mb-6">
+        This boutique integrates with Paystack for live luxury transactions across supported merchant currencies (NGN, GHS, ZAR, USD). In compliance with luxury e-commerce requirements, payment transactions are initiated via trusted channels and verified server-side.
+      </p>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block text-[#c5a880] tracking-widest uppercase text-[10px] mb-1.5" for="paystack-pubkey-input">Paystack Public Key</label>
+          <input type="text" id="paystack-pubkey-input" placeholder="pk_test_... or pk_live_..." class="w-full bg-[#1b1715] border border-[#332e29] p-2.5 text-[#f4efe8] font-mono text-xs focus:border-[#c5a880] focus:outline-none" />
+          <p class="text-[10px] text-[#635b50] mt-1">Leave empty or use standard test keys. If no key is set, the boutique runs in transparent High-Fidelity Luxury Simulation Mode.</p>
+        </div>
+
+        <div class="bg-[#171412] p-4 border border-[#292420]">
+          <h4 class="font-cinzel text-xs text-[#eed9b8] uppercase mb-2">Required Production Backend Endpoints</h4>
+          <ul class="space-y-2 font-mono text-[11px] text-[#a89f91]">
+            <li><strong class="text-[#c5a880]">POST /api/paystack/initialize</strong> — Initializes transaction with server-calculated order amount and returns transaction authorization URL &amp; reference.</li>
+            <li><strong class="text-[#c5a880]">GET /api/paystack/verify/:ref</strong> — Queries Paystack API (<code class="text-[#e2ded9]">https://api.paystack.co/transaction/verify/:reference</code>) with Secret Key to verify receipt before marking order paid.</li>
+            <li><strong class="text-[#c5a880]">POST /api/paystack/webhook</strong> — Idempotent webhook receiver validating HMAC SHA512 signature against Paystack secret key.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button onclick="app.savePaystackKey()" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-medium">
+          Save Configuration
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH / ACCOUNT MODAL -->
+  <div id="account-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4" aria-modal="true" role="dialog">
+    <div class="bg-[#110f0e] border border-[#2e2925] max-w-md w-full p-8 relative">
+      <button onclick="app.closeAccountModal()" class="absolute top-6 right-6 text-[#8e8577] hover:text-white" aria-label="Close modal">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <!-- Account Tabs -->
+      <div class="flex border-b border-[#24201c] mb-6">
+        <button id="tab-login-btn" onclick="app.switchAuthTab('login')" class="flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#c5a880] border-b-2 border-[#c5a880]">
+          Sign In
+        </button>
+        <button id="tab-register-btn" onclick="app.switchAuthTab('register')" class="flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#736a5e] border-b-2 border-transparent">
+          Private Registry
+        </button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="login-form" onsubmit="app.handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="login-email">Client Email</label>
+          <input type="email" id="login-email" required placeholder="client@domain.com" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="login-password">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+        </div>
+        <div class="flex justify-between items-center text-[10px] text-[#8e8577]">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" checked class="accent-[#c5a880]" /> Remember on this device
+          </label>
+          <button type="button" onclick="app.showForgotPassword()" class="hover:text-[#eed9b8] underline underline-offset-2">Forgot credentials?</button>
+        </div>
+        <button type="submit" class="btn-luxury w-full py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold mt-4">
+          Access Private Portal
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" onsubmit="app.handleRegister(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="reg-name">Full Name &amp; Title</label>
+          <input type="text" id="reg-name" required placeholder="e.g. Lady Vivienne Montgomery" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="reg-email">Client Email</label>
+          <input type="email" id="reg-email" required placeholder="client@domain.com" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+        </div>
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="reg-pass">Create Master Passphrase</label>
+          <input type="password" id="reg-pass" required placeholder="••••••••••••" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+        </div>
+        <div class="text-[10px] text-[#8e8577] space-y-1">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" checked class="accent-[#c5a880]" /> Receive private invitations to limited maceration vintages
+          </label>
+        </div>
+        <button type="submit" class="btn-luxury w-full py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold mt-4">
+          Register for Private Client Circle
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- COOKIE & PRIVACY PREFERENCE BANNER (Luxury GDPR Compliant) -->
+  <aside id="cookie-banner" class="fixed bottom-6 left-6 right-6 md:left-auto md:right-8 md:max-w-md z-40 bg-[#12100f]/95 border border-[#332d27] p-5 shadow-2xl backdrop-blur-md hidden" aria-label="Cookie consent">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h4 class="font-cinzel text-xs text-[#c5a880] tracking-widest uppercase mb-1">Maison Digital Privacy</h4>
+        <p class="text-[11px] text-[#a89f91] leading-relaxed">
+          We use strictly necessary cookies to ensure secure transactions, maintain your olfactory wishlist, and provide private client consultation features.
+        </p>
+      </div>
+      <button onclick="app.dismissCookieBanner()" class="text-[#8e8577] hover:text-white" aria-label="Dismiss">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <div class="flex gap-3 mt-4 pt-3 border-t border-[#24201c]">
+      <button onclick="app.acceptCookies()" class="btn-luxury flex-1 py-1.5 bg-[#c5a880] text-black font-cinzel text-[10px] tracking-widest uppercase font-semibold">
+        Accept All
+      </button>
+      <button onclick="app.openView('privacy'); app.dismissCookieBanner();" class="flex-1 py-1.5 border border-[#38312a] text-[#a89f91] font-cinzel text-[10px] tracking-widest uppercase hover:text-white">
+        Preferences
+      </button>
+    </div>
+  </aside>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-8 right-8 z-50 flex flex-col gap-2 pointer-events-none" aria-live="polite"></div>
+
+  <!-- FOOTER: HAUTE PARFUMERIE DIGITAL FLAGSHIP -->
+  <footer class="bg-[#050505] border-t border-[#1c1917] text-[#9c9384] pt-20 pb-12 mt-24">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <!-- Top Section: Brand Statement & Newsletter -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16 border-b border-[#1f1b19]">
+        <div class="lg:col-span-6 space-y-4">
+          <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase">18 Place Vendôme, Paris</div>
+          <h2 class="font-cinzel text-2xl md:text-3xl text-[#f4efe8] tracking-[0.2em] uppercase font-light">
+            Maison Alchémie
+          </h2>
+          <p class="font-serif italic text-lg text-[#b8afa3] max-w-lg leading-relaxed">
+            "We do not formulate scents to disguise nature, but to unveil the celestial architecture of memory, shadow, and desire."
+          </p>
+          <div class="text-xs text-[#736a5e] pt-2 tracking-wider">
+            Private Commissions · Rare Ouds · Extraits de Parfum · Hand-blown Flacons
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 flex flex-col justify-center">
+          <h3 class="font-cinzel text-sm text-[#eed9b8] uppercase tracking-[0.2em] mb-2">The Private Client Circle</h3>
+          <p class="text-xs text-[#8e8577] mb-4">
+            Receive private correspondence regarding vintage flacon allocations, private tastings in Paris, and rare botanical distillations.
+          </p>
+          <form onsubmit="app.handleNewsletter(event)" class="flex flex-col sm:flex-row gap-2">
+            <input type="email" id="newsletter-email" required placeholder="Enter your private email address" class="bg-[#12100f] border border-[#2b2622] px-4 py-3 text-xs text-[#f4efe8] placeholder-[#5c544a] focus:outline-none focus:border-[#c5a880] flex-1 tracking-wider" />
+            <button type="submit" class="btn-luxury px-6 py-3 bg-[#c5a880] hover:bg-[#eed9b8] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold transition-colors">
+              Subscribe
+            </button>
+          </form>
+          <div id="newsletter-status" class="text-xs text-[#c5a880] mt-2 hidden"></div>
+        </div>
+      </div>
+
+      <!-- Middle Section: Navigation Columns -->
+      <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 py-16 border-b border-[#1f1b19] text-xs">
+        
+        <!-- Col 1: Fragrances -->
+        <div>
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4">Olfactory Creations</h4>
+          <ul class="space-y-2.5 text-[#8e8577]">
+            <li><button onclick="app.navigateCategory('all')" class="hover:text-[#c5a880] transition-colors">All Extraits</button></li>
+            <li><button onclick="app.navigateCategory('Woody')" class="hover:text-[#c5a880] transition-colors">Woody &amp; Resins</button></li>
+            <li><button onclick="app.navigateCategory('Amber')" class="hover:text-[#c5a880] transition-colors">Amber &amp; Orientals</button></li>
+            <li><button onclick="app.navigateCategory('Floral')" class="hover:text-[#c5a880] transition-colors">Fleurs Sombres</button></li>
+            <li><button onclick="app.navigateCategory('Gourmand')" class="hover:text-[#c5a880] transition-colors">Smoked Gourmands</button></li>
+            <li><button onclick="app.openView('discovery')" class="hover:text-[#c5a880] transition-colors">Discovery Sets</button></li>
+          </ul>
+        </div>
+
+        <!-- Col 2: The Maison -->
+        <div>
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4">The Maison</h4>
+          <ul class="space-y-2.5 text-[#8e8577]">
+            <li><button onclick="app.openView('story')" class="hover:text-[#c5a880] transition-colors">Philosophy &amp; Nose</button></li>
+            <li><button onclick="app.openView('craftsmanship')" class="hover:text-[#c5a880] transition-colors">Grasse Distillations</button></li>
+            <li><button onclick="app.openView('journal')" class="hover:text-[#c5a880] transition-colors">Olfactory Journal</button></li>
+            <li><button onclick="app.openView('gifting')" class="hover:text-[#c5a880] transition-colors">The Gifting Atelier</button></li>
+            <li><button onclick="app.openView('comparison')" class="hover:text-[#c5a880] transition-colors">Fragrance Comparison</button></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Client Care -->
+        <div>
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4">Client Care</h4>
+          <ul class="space-y-2.5 text-[#8e8577]">
+            <li><button onclick="app.openView('concierge')" class="hover:text-[#c5a880] transition-colors">Private Concierge</button></li>
+            <li><button onclick="app.openView('track')" class="hover:text-[#c5a880] transition-colors">Order Lookup &amp; Tracking</button></li>
+            <li><button onclick="app.openView('shipping')" class="hover:text-[#c5a880] transition-colors">White-Glove Shipping</button></li>
+            <li><button onclick="app.openView('returns')" class="hover:text-[#c5a880] transition-colors">Returns &amp; Guarantee</button></li>
+            <li><button onclick="app.openView('faq')" class="hover:text-[#c5a880] transition-colors">Fragrance FAQ</button></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Private Flagships -->
+        <div>
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4">Boutiques</h4>
+          <ul class="space-y-2.5 text-[#8e8577] text-[11px]">
+            <li><strong class="text-[#c5a880] block">Paris Flagship</strong> 18 Place Vendôme, 75001</li>
+            <li class="pt-1"><strong class="text-[#c5a880] block">London Salon</strong> 44 Old Bond Street, Mayfair</li>
+            <li class="pt-1"><strong class="text-[#c5a880] block">Milan Atelier</strong> Via Montenapoleone 8</li>
+            <li class="pt-1"><strong class="text-[#c5a880] block">Dubai Suites</strong> Fashion Avenue, The Dubai Mall</li>
+          </ul>
+        </div>
+
+        <!-- Col 5: Security & Verification -->
+        <div class="col-span-2 sm:col-span-2 md:col-span-4 lg:col-span-1">
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4">Security &amp; Gateway</h4>
+          <div class="p-3 bg-[#110f0e] border border-[#26211d] space-y-2 text-[10px]">
+            <div class="flex items-center gap-2 text-[#c5a880]">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <span class="font-cinzel">Paystack Verified</span>
+            </div>
+            <p class="text-[#736a5e] leading-tight">
+              PCI-DSS Level 1 Compliant. Encrypted tokenization.
+            </p>
+            <button onclick="app.toggleBackendModal(true)" class="text-[#eed9b8] underline underline-offset-2 hover:text-white block pt-1">
+              Gateway Configuration &amp; API Spec →
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-[#635b50]">
+        <div>
+          © <span id="current-year">2026</span> Maison Alchémie Paris. All rights reserved. Registered trademark.
+        </div>
+        <div class="flex flex-wrap gap-6 tracking-wider">
+          <button onclick="app.openView('privacy')" class="hover:text-[#9c9384] uppercase">Privacy Policy</button>
+          <button onclick="app.openView('terms')" class="hover:text-[#9c9384] uppercase">Terms of Sale</button>
+          <button onclick="app.openView('legal')" class="hover:text-[#9c9384] uppercase">IFRA Disclosures</button>
+          <button onclick="app.toggleBackendModal(true)" class="hover:text-[#c5a880] uppercase">API Spec</button>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- SCRIPT LOGIC: COMPLETE ARCHITECTURE, GSAP ORCHESTRATION & STATE MANAGEMENT -->
+  <script>
+    /**
+     * MAISON ALCHÉMIE — MASTER ENGINE
+     * Self-contained luxury perfumery e-commerce application.
+     */
+
+    const PRODUCTS = [
+      {
+        id: 'oud-nocturne',
+        name: 'Oud Nocturne',
+        subtitle: 'Extrait de Parfum 32%',
+        collection: 'Signature Haute Parfumerie',
+        tagline: 'Sculpted in shadows, veiled in aged Cambodi resins and Damascus rose.',
+        family: 'Woody',
+        familyDetailed: 'Smoked Woody Amber',
+        concentration: 'Extrait de Parfum',
+        concentrationPercent: '32% Pure Perfume Oil',
+        prices: { EUR: 310, USD: 340, GBP: 275, NGN: 510000 },
+        sizes: ['50ml Flacon', '100ml Grand Flacon', '250ml Crystal Carafe'],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.41, '250ml Crystal Carafe': 2.8 },
+        topNotes: ['Persian Saffron', 'Wild Bergamot', 'Pink Peppercorn'],
+        heartNotes: ['Taif Rose Petals', 'Smoky Somalian Incense', 'Birch Tar'],
+        baseNotes: ['15-Year Cambodi Oud', 'Golden Ambergris', 'Benzoin Siam', 'Castoreum Accord'],
+        longevity: '18+ Hours (Extraordinary)',
+        sillage: 'Immense & Regal',
+        season: 'Autumn / Winter / Midnight',
+        occasion: 'Private Galas, Black Tie, Intimate Evenings',
+        inStock: true,
+        stockCount: 14,
+        isBestseller: true,
+        isLimited: false,
+        image: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85',
+        secondaryImage: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=85',
+        description: 'Distilled under moonlit skies in Grasse. An uncompromising portrait of aged Cambodi oud veiled in smoldering birch tar and Damascus rose. The perfume oil is aged in charred French oak casks for eight months before bottling.',
+        ritual: 'Apply sparingly to pulse points behind the ears, clavicle, and inner wrists. The high concentration unfolds across three distinct olfactory acts throughout the evening.',
+        rating: 4.9,
+        reviewsCount: 38
+      },
+      {
+        id: 'iris-celeste',
+        name: 'Iris Céleste',
+        subtitle: 'Extrait de Parfum 28%',
+        collection: 'Les Fleurs Sombres',
+        tagline: 'The liquid silver of Tuscan orris butter and luminous ambrette.',
+        family: 'Floral',
+        familyDetailed: 'Powdery Floral Woody',
+        concentration: 'Extrait de Parfum',
+        concentrationPercent: '28% Pure Perfume Oil',
+        prices: { EUR: 330, USD: 360, GBP: 290, NGN: 540000 },
+        sizes: ['50ml Flacon', '100ml Grand Flacon', '250ml Crystal Carafe'],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.42, '250ml Crystal Carafe': 2.75 },
+        topNotes: ['Italian Carrot Seed', 'Ambrette Seed', 'Green Mandora'],
+        heartNotes: ['Florentine Orris Butter (6-Year Dried)', 'Heliotrope', 'French Violet Leaf'],
+        baseNotes: ['Mysore Sandalwood', 'White Cashmere Musk', 'Cedarwood Atlas'],
+        longevity: '14+ Hours (Exceptional)',
+        sillage: 'Intimate yet Persistent',
+        season: 'All Seasons / Twilight',
+        occasion: 'Editorial Appearances, Private Dinners, Solitude',
+        inStock: true,
+        stockCount: 9,
+        isBestseller: true,
+        isLimited: false,
+        image: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85',
+        secondaryImage: 'https://images.unsplash.com/photo-1563178406-4cdc2923acbc?auto=format&fit=crop&w=1200&q=85',
+        description: 'The crowning achievement of Florentine iris extraction. Requiring three full years of rhizome seasoning before cold enfleurage, yielding an ethereal, powdery texture that feels like crushed suede and silver dust.',
+        ritual: 'Spray along the hairline and onto cashmere garments. The orris notes cling tenaciously to natural fibers, leaving a whispered signature.',
+        rating: 5.0,
+        reviewsCount: 29
+      },
+      {
+        id: 'ambre-venitien',
+        name: 'Ambre Vénitien',
+        subtitle: 'Eau de Parfum 22%',
+        collection: 'Nocturne & Amber',
+        tagline: 'Gilded dusk over Venetian waters; molten resins and Seville peels.',
+        family: 'Amber',
+        familyDetailed: 'Warm Oriental Amber Resins',
+        concentration: 'Eau de Parfum',
+        concentrationPercent: '22% Perfume Oil',
+        prices: { EUR: 265, USD: 290, GBP: 235, NGN: 435000 },
+        sizes: ['50ml Flacon', '100ml Grand Flacon'],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.36 },
+        topNotes: ['Seville Bitter Orange', 'Cracked Coriander', 'Nutmeg Flower'],
+        heartNotes: ['Cistus Labdanum', 'Honeyed Immortelle', 'Siam Benzoin'],
+        baseNotes: ['Golden Amber Accord', 'Bourbon Vanilla Bean', 'Tonka Bean Infusion'],
+        longevity: '12+ Hours',
+        sillage: 'Warm & Enveloping',
+        season: 'Autumn / Winter / Golden Hour',
+        occasion: 'Salon Evenings, Opera, Fireside Receptions',
+        inStock: true,
+        stockCount: 22,
+        isBestseller: false,
+        isLimited: false,
+        image: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85',
+        secondaryImage: 'https://images.unsplash.com/photo-1582211594533-268f4f1edcb9?auto=format&fit=crop&w=1200&q=85',
+        description: 'Capturing the glowing candlelight reflecting off aged terrazzo palaces in Venice. Dark honeyed labdanum harmonized with bitter orange and precious golden resins.',
+        ritual: 'Apply liberally to neck and chest. Radiates deeply with elevated body temperature.',
+        rating: 4.8,
+        reviewsCount: 24
+      },
+      {
+        id: 'santal-imperial',
+        name: 'Santal Impérial',
+        subtitle: 'Extrait de Parfum 30%',
+        collection: 'Signature Haute Parfumerie',
+        tagline: 'A sacred temple sanctum of creamy Australian sandalwood and papyrus.',
+        family: 'Woody',
+        familyDetailed: 'Creamy Woody Aromatic',
+        concentration: 'Extrait de Parfum',
+        concentrationPercent: '30% Pure Perfume Oil',
+        prices: { EUR: 295, USD: 320, GBP: 260, NGN: 480000 },
+        sizes: ['50ml Flacon', '100ml Grand Flacon'],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.38 },
+        topNotes: ['Green Cardamom', 'Fig Leaf', 'Crisp Violet'],
+        heartNotes: ['Santalum Album Wood', 'Papyrus Accord', 'Orris Concrète'],
+        baseNotes: ['Cedarwood Atlas', 'Smoked Glove Suede', 'Velvet Musk'],
+        longevity: '16+ Hours',
+        sillage: 'Distinguished & Magnetic',
+        season: 'Year-Round Signature',
+        occasion: 'Executive Summits, Gallery Openings, Day-to-Night',
+        inStock: true,
+        stockCount: 18,
+        isBestseller: true,
+        isLimited: false,
+        image: 'https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1200&q=85',
+        secondaryImage: 'https://images.unsplash.com/photo-1615397349754-cfa2066a298e?auto=format&fit=crop&w=1200&q=85',
+        description: 'Serene, hypnotic, and commanding. A modern ode to ancient sandalwood rites, balanced by green Mediterranean fig leaf and antique papyrus.',
+        ritual: 'Wear as an intimate second skin. Pairs sublimely with silk and unbuttoned linen.',
+        rating: 4.9,
+        reviewsCount: 31
+      },
+      {
+        id: 'rose-fumee-reserve',
+        name: 'Rose Fumée Réserve',
+        subtitle: 'Extrait de Parfum 35% — 2026 Vintage',
+        collection: 'Grand Cru Limited',
+        tagline: 'Crimson thorns, centifolia absolute, and holy frankincense smoke.',
+        family: 'Floral',
+        familyDetailed: 'Dark Floral Smoked Leather',
+        concentration: 'Extrait de Parfum',
+        concentrationPercent: '35% Rare Maceration',
+        prices: { EUR: 355, USD: 390, GBP: 315, NGN: 585000 },
+        sizes: ['50ml Flacon (Numbered 1/500)', '100ml Grand Flacon'],
+        sizeMultipliers: { '50ml Flacon (Numbered 1/500)': 1, '100ml Grand Flacon': 1.38 },
+        topNotes: ['Blackcurrant Bud', 'Pink Pepper', 'Crimson Raspberry'],
+        heartNotes: ['May Rose Absolute (Grasse)', 'Damask Rose', 'Cistus Smoke'],
+        baseNotes: ['Guaiac Wood', 'Haitian Vetiver', 'Green Frankincense Tears'],
+        longevity: '20+ Hours (Legendary)',
+        sillage: 'Hypnotic & Cinematic',
+        season: 'Autumn / Winter / Midnight',
+        occasion: 'Private Celebrations, Red Carpet, Seduction',
+        inStock: true,
+        stockCount: 6,
+        isBestseller: false,
+        isLimited: true,
+        image: 'https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1200&q=85',
+        secondaryImage: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=85',
+        description: 'An annual release limited to 500 hand-numbered flacons. Harvested from our private plot in Grasse during early dawn in May, then infused with cold-distilled incense resins.',
+        ritual: 'Apply onto decolletage and behind neck. Each bottle includes hand-calligraphed wax seal with harvest batch number.',
+        rating: 5.0,
+        reviewsCount: 16
+      },
+      {
+        id: 'vanille-bourbon-noire',
+        name: 'Vanille Bourbon Noire',
+        subtitle: 'Extrait de Parfum 30%',
+        collection: 'Signature Haute Parfumerie',
+        tagline: 'Not confection, but dark intoxicating nectar steeped in aged rum and tobacco.',
+        family: 'Gourmand',
+        familyDetailed: 'Smoked Gourmand Oriental',
+        concentration: 'Extrait de Parfum',
+        concentrationPercent: '30% Pure Perfume Oil',
+        prices: { EUR: 300, USD: 330, GBP: 265, NGN: 495000 },
+        sizes: ['50ml Flacon', '100ml Grand Flacon'],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.39 },
+        topNotes: ['Dark Martinique Rum', 'Cognac Cask', 'Bitter Almond'],
+        heartNotes: ['Madagascar Bourbon Vanilla Caviar', 'Blonde Tobacco Leaf', 'Raw Cacao'],
+        baseNotes: ['Peru Balsam', 'Smoked Tonka Bean', 'Ebony Wood'],
+        longevity: '16+ Hours',
+        sillage: 'Sensual & Decadent',
+        season: 'Autumn / Winter',
+        occasion: 'Intimate Encounters, Night Caps, Cold Evenings',
+        inStock: true,
+        stockCount: 15,
+        isBestseller: true,
+        isLimited: false,
+        image: 'https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1200&q=85',
+        secondaryImage: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&w=1200&q=85',
+        description: 'Far removed from ordinary sweetness. Hand-split Bourbon vanilla pods macerated in vintage dark rum, grounded by charred ebony and bitter Peruvian balsam.',
+        ritual: 'Spray on collarbones and wrists. Radiates warm, narcotic sophistication.',
+        rating: 4.9,
+        reviewsCount: 22
+      },
+      {
+        id: 'cuir-de-perse',
+        name: 'Cuir de Perse',
+        subtitle: 'Eau de Parfum 24%',
+        collection: 'Nocturne & Amber',
+        tagline: 'Antique manuscript leather, clary sage, and smoldering birch.',
+        family: 'Leather',
+        familyDetailed: 'Rich Leather Chypre',
+        concentration: 'Eau de Parfum',
+        concentrationPercent: '24% Perfume Oil',
+        prices: { EUR: 270, USD: 295, GBP: 240, NGN: 442000 },
+        sizes: ['50ml Flacon', '100ml Grand Flacon'],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.39 },
+        topNotes: ['Clary Sage', 'Juniper Berry', 'Wild Thyme'],
+        heartNotes: ['Russian Leather Accord', 'Osmanthus Blossom', 'Glove Suede'],
+        baseNotes: ['Green Oakmoss', 'Patchouli Coeur', 'Smoked Birch', 'Amber'],
+        longevity: '14+ Hours',
+        sillage: 'Regal & Structured',
+        season: 'Autumn / Winter / Spring',
+        occasion: 'Boardrooms, Private Library, Formal Dinners',
+        inStock: true,
+        stockCount: 11,
+        isBestseller: false,
+        isLimited: false,
+        image: 'https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1200&q=85',
+        secondaryImage: 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85',
+        description: 'A study in aristocratic saddle leather softened by the apricot nuances of Chinese osmanthus. Dry, refined, and distinctly commanding.',
+        ritual: 'Pairs impeccably with tailored wool suits and leather coats.',
+        rating: 4.8,
+        reviewsCount: 19
+      },
+      {
+        id: 'neroli-des-dieux',
+        name: 'Néroli des Dieux',
+        subtitle: 'Eau de Parfum 20%',
+        collection: 'L’Art de Vivre',
+        tagline: 'Calabrian sunshine on marble fountains; sparkling orange blossom dew.',
+        family: 'Fresh',
+        familyDetailed: 'Citrus White Floral Dew',
+        concentration: 'Eau de Parfum',
+        concentrationPercent: '20% Perfume Oil',
+        prices: { EUR: 250, USD: 275, GBP: 220, NGN: 412000 },
+        sizes: ['50ml Flacon', '100ml Grand Flacon'],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.38 },
+        topNotes: ['Calabrian Bergamot', 'Petitgrain Bigarade', 'Cedrat Peel'],
+        heartNotes: ['Tunisian Neroli Absolute', 'Orange Blossom Dew', 'Jasmine Sambac'],
+        baseNotes: ['Mineral Amber', 'Angelica Root', 'Crisp White Musk'],
+        longevity: '9+ Hours',
+        sillage: 'Luminous & Uplifting',
+        season: 'Spring / Summer / Daylight',
+        occasion: 'Yacht Cruising, Garden Brunches, Morning Meetings',
+        inStock: true,
+        stockCount: 20,
+        isBestseller: false,
+        isLimited: false,
+        image: 'https://images.unsplash.com/photo-1508746829417-e6f548d8d6ed?auto=format&fit=crop&w=1200&q=85',
+        secondaryImage: 'https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=85',
+        description: 'A radiant morning in the Mediterranean. Hand-harvested bitter orange blossoms distilled using traditional copper alembics, anchored by cool mineral amber.',
+        ritual: 'Spray liberally over shoulders and linen. Rejuvenates the senses with pure botanical clarity.',
+        rating: 4.7,
+        reviewsCount: 20
+      },
+      {
+        id: 'coffret-decouverte',
+        name: 'Coffret Découverte — Les Chefs-d’Œuvre',
+        subtitle: 'Curated 5 x 10ml Travel Flacon Wardrobe',
+        collection: 'Discovery Wardrobe',
+        tagline: 'Five signature extraits in lacquered presentation case. Includes $50 credit.',
+        family: 'Discovery',
+        familyDetailed: 'Complete Maison Olfactory Spectrum',
+        concentration: 'Extraits & Eaux de Parfum',
+        concentrationPercent: '22% - 35% Concentrations',
+        prices: { EUR: 115, USD: 125, GBP: 100, NGN: 187000 },
+        sizes: ['5 x 10ml Flacon Set'],
+        sizeMultipliers: { '5 x 10ml Flacon Set': 1 },
+        topNotes: ['Varies by flacon included in wardrobe'],
+        heartNotes: ['Oud Nocturne, Iris Céleste, Santal Impérial, Rose Fumée, Vanille Noire'],
+        baseNotes: ['Includes full $50 voucher code redeemable against any 50ml or 100ml flacon'],
+        longevity: 'Complete Wardrobe Exploration',
+        sillage: 'Curated Spectrum',
+        season: 'All Seasons',
+        occasion: 'Gift Selection, Personal Olfactory Exploration',
+        inStock: true,
+        stockCount: 45,
+        isBestseller: true,
+        isLimited: false,
+        image: 'https://images.unsplash.com/photo-1563178406-4cdc2923acbc?auto=format&fit=crop&w=1200&q=85',
+        secondaryImage: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85',
+        description: 'The definitive introduction to Maison Alchémie. Five deluxe 10ml travel atomizers housed in a weighted black lacquered coffret with magnetic gold crest closure. Every set includes an official $50 voucher applied to your future full-size flacon.',
+        ritual: 'Spend one full day and evening with each flacon to observe how the raw oils evolve with your natural body chemistry.',
+        rating: 5.0,
+        reviewsCount: 64
+      }
+    ];
+
+    // APPLICATION STATE STORE
+    const appState = {
+      currentView: 'home',
+      currentCategory: 'all',
+      selectedProductId: 'oud-nocturne',
+      currency: 'USD',
+      rates: { USD: 1, EUR: 0.92, GBP: 0.81, NGN: 1500 },
+      symbols: { USD: '$', EUR: '€', GBP: '£', NGN: '₦' },
+      cart: JSON.parse(localStorage.getItem('maison_cart') || '[]'),
+      wishlist: JSON.parse(localStorage.getItem('maison_wishlist') || '[]'),
+      appliedVoucher: null,
+      paystackPublicKey: localStorage.getItem('maison_paystack_key') || 'pk_test_sample_maison_key_demo',
+      currentUser: JSON.parse(localStorage.getItem('maison_user') || 'null'),
+      orders: JSON.parse(localStorage.getItem('maison_orders') || '[]'),
+      activeComparison: ['oud-nocturne', 'iris-celeste', 'santal-imperial'],
+      activeQuizStep: 0,
+      quizAnswers: {},
+      engravingDraft: { text: 'A·L', ribbon: 'Black Grosgrain', message: '' }
+    };
+
+    // CORE APPLICATION CONTROLLER
+    const app = {
+      init() {
+        this.renderView('home');
+        this.updateHeaderCartBadge();
+        this.updateWishlistBadge();
+        this.initGSAP();
+        this.checkCookieBanner();
+        if (window.lucide) lucide.createIcons();
+      },
+
+      initGSAP() {
+        if (window.gsap && window.ScrollTrigger) {
+          gsap.registerPlugin(ScrollTrigger);
+          // Hero entrance timeline
+          const tl = gsap.timeline();
+          tl.from('#hero-badge', { opacity: 0, y: -20, duration: 1, ease: 'power3.out' })
+            .from('#hero-headline', { opacity: 0, y: 30, duration: 1.2, ease: 'power3.out' }, '-=0.6')
+            .from('#hero-bottle-wrap', { opacity: 0, scale: 0.92, y: 40, duration: 1.4, ease: 'power2.out' }, '-=0.8')
+            .from('#hero-cta', { opacity: 0, y: 20, duration: 0.8, ease: 'power3.out' }, '-=0.6');
+
+          // Parallax for floating bottle and background
+          gsap.to('#hero-floating-bottle', {
+            scrollTrigger: {
+              trigger: '#hero-section',
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 1.2
+            },
+            y: 80,
+            scale: 0.96
+          });
+        }
+      },
+
+      formatPrice(amountInUSD) {
+        const rate = appState.rates[appState.currency] || 1;
+        const sym = appState.symbols[appState.currency] || '$';
+        const converted = Math.round(amountInUSD * rate);
+        return `${sym}${converted.toLocaleString()}`;
+      },
+
+      changeCurrency(curr) {
+        appState.currency = curr;
+        this.renderView(appState.currentView);
+        this.updateHeaderCartBadge();
+        this.showToast(`Currency adjusted to ${curr}`);
+      },
+
+      openView(viewName, params = {}) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        appState.currentView = viewName;
+        if (params.productId) appState.selectedProductId = params.productId;
+        this.renderView(viewName, params);
+        if (window.lucide) setTimeout(() => lucide.createIcons(), 50);
+      },
+
+      navigateCategory(cat) {
+        appState.currentCategory = cat;
+        this.openView('catalog');
+      },
+
+      showToast(msg, isSuccess = true) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `p-4 bg-[#141211] border ${isSuccess ? 'border-[#c5a880]' : 'border-red-800'} text-[#f4efe8] text-xs font-serif shadow-2xl flex items-center gap-3 transform translate-y-4 opacity-0 transition-all duration-300 pointer-events-auto`;
+        toast.innerHTML = `
+          <i data-lucide="${isSuccess ? 'sparkles' : 'alert-circle'}" class="w-4 h-4 text-[#c5a880]"></i>
+          <span>${msg}</span>
+        `;
+        container.appendChild(toast);
+        if (window.lucide) lucide.createIcons();
+
+        setTimeout(() => {
+          toast.classList.remove('translate-y-4', 'opacity-0');
+        }, 10);
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 400);
+        }, 4000);
+      },
+
+      // CART ACTIONS
+      addToCart(productId, size = '50ml Flacon', engraving = '') {
+        const prod = PRODUCTS.find(p => p.id === productId);
+        if (!prod) return;
+
+        const mult = prod.sizeMultipliers[size] || 1;
+        const unitPrice = prod.prices.USD * mult;
+        const existing = appState.cart.find(item => item.id === productId && item.size === size && item.engraving === engraving);
+
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          appState.cart.push({
+            id: prod.id,
+            name: prod.name,
+            subtitle: prod.subtitle,
+            size: size,
+            unitPrice: unitPrice,
+            image: prod.image,
+            qty: 1,
+            engraving: engraving
+          });
+        }
+        localStorage.setItem('maison_cart', JSON.stringify(appState.cart));
+        this.updateHeaderCartBadge();
+        this.renderCartDrawer();
+        this.toggleCartDrawer(true);
+        this.showToast(`${prod.name} (${size}) placed in shopping bag.`);
+      },
+
+      removeFromCart(index) {
+        appState.cart.splice(index, 1);
+        localStorage.setItem('maison_cart', JSON.stringify(appState.cart));
+        this.updateHeaderCartBadge();
+        this.renderCartDrawer();
+        if (appState.currentView === 'cart' || appState.currentView === 'checkout') {
+          this.renderView(appState.currentView);
+        }
+      },
+
+      updateCartQty(index, delta) {
+        if (!appState.cart[index]) return;
+        appState.cart[index].qty += delta;
+        if (appState.cart[index].qty <= 0) {
+          this.removeFromCart(index);
+          return;
+        }
+        localStorage.setItem('maison_cart', JSON.stringify(appState.cart));
+        this.updateHeaderCartBadge();
+        this.renderCartDrawer();
+        if (appState.currentView === 'cart' || appState.currentView === 'checkout') {
+          this.renderView(appState.currentView);
+        }
+      },
+
+      toggleCartDrawer(open) {
+        const drawer = document.getElementById('cart-drawer');
+        const overlay = document.getElementById('cart-drawer-overlay');
+        if (open) {
+          this.renderCartDrawer();
+          overlay.classList.remove('opacity-0', 'pointer-events-none');
+          drawer.classList.remove('translate-x-full');
+        } else {
+          overlay.classList.add('opacity-0', 'pointer-events-none');
+          drawer.classList.add('translate-x-full');
+        }
+        if (window.lucide) lucide.createIcons();
+      },
+
+      updateHeaderCartBadge() {
+        const count = appState.cart.reduce((sum, item) => sum + item.qty, 0);
+        const subtotal = appState.cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+        document.getElementById('cart-badge').textContent = count;
+        document.getElementById('header-cart-total').textContent = this.formatPrice(subtotal);
+      },
+
+      renderCartDrawer() {
+        const container = document.getElementById('drawer-cart-items');
+        const count = appState.cart.reduce((sum, item) => sum + item.qty, 0);
+        document.getElementById('drawer-item-count').textContent = `(${count} ${count === 1 ? 'Flacon' : 'Flacons'})`;
+
+        if (appState.cart.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-16 text-[#736a5e]">
+              <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto stroke-1 mb-4 text-[#443e37]"></i>
+              <p class="font-serif text-lg text-[#b8afa3] mb-2">Your shopping bag is currently empty.</p>
+              <p class="text-xs tracking-wider text-[#736a5e] mb-6">Discover our signature extraits de parfum and discovery sets.</p>
+              <button onclick="app.toggleCartDrawer(false); app.openView('catalog')" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase">
+                Explore Fragrances
+              </button>
+            </div>
+          `;
+          document.getElementById('drawer-subtotal').textContent = this.formatPrice(0);
+          document.getElementById('drawer-total').textContent = this.formatPrice(0);
+          if (window.lucide) lucide.createIcons();
+          return;
+        }
+
+        let html = '';
+        let subtotal = 0;
+
+        appState.cart.forEach((item, idx) => {
+          const itemTotal = item.unitPrice * item.qty;
+          subtotal += itemTotal;
+          html += `
+            <div class="flex gap-4 pb-4 border-b border-[#24201c]">
+              <img src="${item.image}" alt="${item.name}" class="w-16 h-20 object-cover border border-[#2e2925]" onerror="this.src='https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85'" />
+              <div class="flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="flex justify-between items-start">
+                    <h3 class="font-cinzel text-xs text-[#f4efe8] uppercase tracking-wider">${item.name}</h3>
+                    <button onclick="app.removeFromCart(${idx})" class="text-[#736a5e] hover:text-white p-0.5">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                  <div class="text-[10px] text-[#8e8577] tracking-wider mt-0.5">${item.size}</div>
+                  ${item.engraving ? `<div class="text-[10px] text-[#c5a880] tracking-widest mt-0.5 font-cinzel">Engraved: "${item.engraving}"</div>` : ''}
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                  <div class="flex items-center border border-[#332e29]">
+                    <button onclick="app.updateCartQty(${idx}, -1)" class="px-2 py-0.5 text-xs text-[#a89f91] hover:text-white">-</button>
+                    <span class="px-2 text-xs font-mono text-[#eed9b8]">${item.qty}</span>
+                    <button onclick="app.updateCartQty(${idx}, 1)" class="px-2 py-0.5 text-xs text-[#a89f91] hover:text-white">+</button>
+                  </div>
+                  <div class="font-serif text-sm text-[#eed9b8]">${this.formatPrice(itemTotal)}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+        document.getElementById('drawer-subtotal').textContent = this.formatPrice(subtotal);
+
+        let discount = 0;
+        if (appState.appliedVoucher) {
+          discount = subtotal * (appState.appliedVoucher.percent / 100);
+          document.getElementById('discount-row').classList.remove('hidden');
+          document.getElementById('drawer-discount').textContent = `-${this.formatPrice(discount)}`;
+        } else {
+          document.getElementById('discount-row').classList.add('hidden');
+        }
+
+        const grandTotal = Math.max(0, subtotal - discount);
+        document.getElementById('drawer-total').textContent = this.formatPrice(grandTotal);
+        if (window.lucide) lucide.createIcons();
+      },
+
+      applyVoucher() {
+        const code = document.getElementById('voucher-code-input').value.trim().toUpperCase();
+        const msgEl = document.getElementById('voucher-message');
+        if (code === 'MAISONVIP' || code === 'DISCOVERY50' || code === 'PARIS2026') {
+          appState.appliedVoucher = { code: code, percent: 15 };
+          msgEl.textContent = `Privilege code "${code}" active: 15% VIP reduction applied.`;
+          msgEl.classList.remove('hidden', 'text-red-400');
+          msgEl.classList.add('text-[#c5a880]');
+          this.renderCartDrawer();
+          this.showToast('Privilege discount validated.');
+        } else {
+          msgEl.textContent = 'Invalid or expired client privilege code.';
+          msgEl.classList.remove('hidden', 'text-[#c5a880]');
+          msgEl.classList.add('text-red-400');
+        }
+      },
+
+      // WISHLIST
+      toggleWishlist(prodId) {
+        const idx = appState.wishlist.indexOf(prodId);
+        if (idx > -1) {
+          appState.wishlist.splice(idx, 1);
+          this.showToast('Removed from saved fragrances.');
+        } else {
+          appState.wishlist.push(prodId);
+          this.showToast('Saved to private olfactory wishlist.');
+        }
+        localStorage.setItem('maison_wishlist', JSON.stringify(appState.wishlist));
+        this.updateWishlistBadge();
+        if (appState.currentView === 'wishlist') this.renderView('wishlist');
+      },
+
+      updateWishlistBadge() {
+        const badge = document.getElementById('wishlist-badge');
+        if (!badge) return;
+        const count = appState.wishlist.length;
+        badge.textContent = count;
+        if (count > 0) badge.classList.remove('hidden');
+        else badge.classList.add('hidden');
+      },
+
+      // SEARCH
+      openSearchModal() {
+        document.getElementById('search-modal').classList.remove('hidden');
+        document.getElementById('live-search-input').focus();
+        if (window.lucide) lucide.createIcons();
+      },
+
+      closeSearchModal() {
+        document.getElementById('search-modal').classList.add('hidden');
+      },
+
+      quickFilterSearch(term) {
+        document.getElementById('live-search-input').value = term;
+        this.handleLiveSearch(term);
+      },
+
+      handleLiveSearch(query) {
+        const list = document.getElementById('search-results-list');
+        const q = query.trim().toLowerCase();
+        if (q.length < 2) {
+          list.innerHTML = `<p class="text-xs text-[#736a5e] italic">Type at least 2 characters to explore the perfume house archives.</p>`;
+          return;
+        }
+
+        const matches = PRODUCTS.filter(p => {
+          return p.name.toLowerCase().includes(q) ||
+                 p.family.toLowerCase().includes(q) ||
+                 p.familyDetailed.toLowerCase().includes(q) ||
+                 p.description.toLowerCase().includes(q) ||
+                 p.topNotes.some(n => n.toLowerCase().includes(q)) ||
+                 p.heartNotes.some(n => n.toLowerCase().includes(q)) ||
+                 p.baseNotes.some(n => n.toLowerCase().includes(q));
+        });
+
+        if (matches.length === 0) {
+          list.innerHTML = `
+            <div class="py-8 text-center text-[#736a5e]">
+              <p class="text-xs">No fragrances match note "${query}".</p>
+              <button onclick="app.closeSearchModal(); app.openView('finder');" class="mt-3 text-[#c5a880] underline text-xs">Try Scent Consultation Quiz</button>
+            </div>
+          `;
+          return;
+        }
+
+        let html = '';
+        matches.forEach(p => {
+          html += `
+            <div onclick="app.closeSearchModal(); app.openProductDetail('${p.id}');" class="p-3 bg-[#171413] hover:bg-[#211c19] border border-[#2b2724] cursor-pointer flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-4">
+                <img src="${p.image}" class="w-12 h-14 object-cover border border-[#332e29]" alt="${p.name}" />
+                <div>
+                  <h4 class="font-cinzel text-xs text-[#f4efe8] uppercase tracking-wider">${p.name}</h4>
+                  <div class="text-[10px] text-[#c5a880]">${p.familyDetailed} · ${p.concentration}</div>
+                  <div class="text-[10px] text-[#8e8577] line-clamp-1">Notes: ${[...p.topNotes, ...p.heartNotes].slice(0, 4).join(', ')}</div>
+                </div>
+              </div>
+              <div class="font-serif text-sm text-[#eed9b8]">${this.formatPrice(p.prices.USD)}</div>
+            </div>
+          `;
+        });
+        list.innerHTML = html;
+      },
+
+      openProductDetail(id) {
+        this.openView('product', { productId: id });
+      },
+
+      // MOBILE MENU
+      toggleMobileMenu() {
+        const drawer = document.getElementById('mobile-menu-drawer');
+        drawer.classList.toggle('-translate-x-full');
+        if (window.lucide) lucide.createIcons();
+      },
+
+      // PAYSTACK & BACKEND CONFIG
+      toggleBackendModal(open) {
+        const modal = document.getElementById('backend-settings-modal');
+        if (open) {
+          document.getElementById('paystack-pubkey-input').value = appState.paystackPublicKey;
+          modal.classList.remove('hidden');
+        } else {
+          modal.classList.add('hidden');
+        }
+      },
+
+      savePaystackKey() {
+        const key = document.getElementById('paystack-pubkey-input').value.trim();
+        appState.paystackPublicKey = key || 'pk_test_sample_maison_key_demo';
+        localStorage.setItem('maison_paystack_key', appState.paystackPublicKey);
+        this.toggleBackendModal(false);
+        this.showToast('Paystack gateway key preserved.');
+      },
+
+      // COOKIE CONSENT
+      checkCookieBanner() {
+        if (!localStorage.getItem('maison_cookie_consent')) {
+          document.getElementById('cookie-banner').classList.remove('hidden');
+        }
+      },
+      acceptCookies() {
+        localStorage.setItem('maison_cookie_consent', 'accepted');
+        document.getElementById('cookie-banner').classList.add('hidden');
+        this.showToast('Preferences preserved.');
+      },
+      dismissCookieBanner() {
+        document.getElementById('cookie-banner').classList.add('hidden');
+      },
+
+      // AUTHENTICATION
+      openAccountModal() {
+        if (appState.currentUser) {
+          this.openView('profile');
+        } else {
+          document.getElementById('account-modal').classList.remove('hidden');
+        }
+        if (window.lucide) lucide.createIcons();
+      },
+      closeAccountModal() {
+        document.getElementById('account-modal').classList.add('hidden');
+      },
+      switchAuthTab(tab) {
+        const loginForm = document.getElementById('login-form');
+        const regForm = document.getElementById('register-form');
+        const loginBtn = document.getElementById('tab-login-btn');
+        const regBtn = document.getElementById('tab-register-btn');
+
+        if (tab === 'login') {
+          loginForm.classList.remove('hidden');
+          regForm.classList.add('hidden');
+          loginBtn.className = 'flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#c5a880] border-b-2 border-[#c5a880]';
+          regBtn.className = 'flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#736a5e] border-b-2 border-transparent';
+        } else {
+          loginForm.classList.add('hidden');
+          regForm.classList.remove('hidden');
+          regBtn.className = 'flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#c5a880] border-b-2 border-[#c5a880]';
+          loginBtn.className = 'flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#736a5e] border-b-2 border-transparent';
+        }
+      },
+      handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        appState.currentUser = { email: email, name: email.split('@')[0], tier: 'Private Client VIP' };
+        localStorage.setItem('maison_user', JSON.stringify(appState.currentUser));
+        this.closeAccountModal();
+        this.showToast(`Welcome back, ${appState.currentUser.name}`);
+        this.openView('profile');
+      },
+      handleRegister(e) {
+        e.preventDefault();
+        const name = document.getElementById('reg-name').value;
+        const email = document.getElementById('reg-email').value;
+        appState.currentUser = { email: email, name: name, tier: 'Private Client VIP' };
+        localStorage.setItem('maison_user', JSON.stringify(appState.currentUser));
+        this.closeAccountModal();
+        this.showToast(`Registry created. Welcome to Maison Alchémie, ${name}`);
+        this.openView('profile');
+      },
+      showForgotPassword() {
+        this.showToast('A secure passphrase recovery link has been dispatched to your email.');
+      },
+      handleLogout() {
+        appState.currentUser = null;
+        localStorage.removeItem('maison_user');
+        this.showToast('You have exited your private portal.');
+        this.openView('home');
+      },
+      handleNewsletter(e) {
+        e.preventDefault();
+        const email = document.getElementById('newsletter-email').value;
+        const status = document.getElementById('newsletter-status');
+        status.textContent = `Gratitude. Private correspondence dispatched to ${email}.`;
+        status.classList.remove('hidden');
+        this.showToast('Privileged invitation confirmed.');
+        e.target.reset();
+      },
+
+      // DYNAMIC VIEW RENDERER (ALL 31 REQUIRED VIEWS)
+      renderView(viewName, params = {}) {
+        const root = document.getElementById('app-container');
+        if (!root) return;
+
+        switch (viewName) {
+          case 'home':
+            root.innerHTML = this.views.home();
+            this.initGSAP();
+            break;
+          case 'catalog':
+            root.innerHTML = this.views.catalog();
+            break;
+          case 'collections':
+            root.innerHTML = this.views.collections();
+            break;
+          case 'product':
+            root.innerHTML = this.views.product(params.productId || appState.selectedProductId);
+            break;
+          case 'finder':
+            root.innerHTML = this.views.finder();
+            break;
+          case 'comparison':
+            root.innerHTML = this.views.comparison();
+            break;
+          case 'discovery':
+            root.innerHTML = this.views.discovery();
+            break;
+          case 'gifting':
+            root.innerHTML = this.views.gifting();
+            break;
+          case 'cart':
+            root.innerHTML = this.views.cartFull();
+            break;
+          case 'checkout':
+            root.innerHTML = this.views.checkout();
+            break;
+          case 'confirmation':
+            root.innerHTML = this.views.confirmation(params.orderId);
+            break;
+          case 'track':
+            root.innerHTML = this.views.track();
+            break;
+          case 'wishlist':
+            root.innerHTML = this.views.wishlist();
+            break;
+          case 'profile':
+            root.innerHTML = this.views.profile();
+            break;
+          case 'story':
+            root.innerHTML = this.views.story();
+            break;
+          case 'craftsmanship':
+            root.innerHTML = this.views.craftsmanship();
+            break;
+          case 'journal':
+            root.innerHTML = this.views.journal();
+            break;
+          case 'shipping':
+            root.innerHTML = this.views.shipping();
+            break;
+          case 'returns':
+            root.innerHTML = this.views.returns();
+            break;
+          case 'faq':
+            root.innerHTML = this.views.faq();
+            break;
+          case 'concierge':
+            root.innerHTML = this.views.concierge();
+            break;
+          case 'privacy':
+            root.innerHTML = this.views.privacy();
+            break;
+          case 'terms':
+            root.innerHTML = this.views.terms();
+            break;
+          case 'legal':
+            root.innerHTML = this.views.legal();
+            break;
+          default:
+            root.innerHTML = this.views.home();
+        }
+
+        if (window.lucide) lucide.createIcons();
+      }
+    };
+
+    // TEMPLATE DEFINITIONS FOR EVERY NAVIGABLE VIEW
+    app.views = {
+      home() {
+        return `
+          <!-- CHAPTER 1: HERO CAMPAIGN (CINEMATIC GSAP ASYMMETRIC ENTRANCE) -->
+          <section id="hero-section" class="relative min-h-[92vh] flex items-center justify-center overflow-hidden bg-gradient-radial-dark px-6 py-16">
+            <!-- Ambient Golden Glow behind flacon -->
+            <div class="bottle-glow" style="top: 20%; left: 50%; transform: translateX(-50%);"></div>
+
+            <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+              
+              <!-- Left Column: High-contrast Editorial Typography -->
+              <div class="lg:col-span-6 space-y-6 text-center lg:text-left pt-6 lg:pt-0">
+                <div id="hero-badge" class="inline-flex items-center gap-2 text-xs tracking-[0.35em] uppercase text-[#c5a880] font-cinzel">
+                  <span class="w-8 h-[1px] bg-[#c5a880]"></span>
+                  <span>18 Place Vendôme · Haute Parfumerie</span>
+                </div>
+
+                <h1 id="hero-headline" class="font-cormorant text-4xl sm:text-6xl md:text-7xl lg:text-7xl text-[#f8f5ee] font-light leading-[1.08] tracking-tight">
+                  The Architecture <br />
+                  <span class="italic font-normal gold-gradient-text">of Oblivion</span>
+                </h1>
+
+                <p class="font-serif italic text-lg sm:text-xl text-[#b8afa3] max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                  Sculpted in shadows, whispered in aged Cambodi oud, Tuscan orris butter, and May rose. Formulations distilled not for the crowd, but for eternity.
+                </p>
+
+                <!-- Actions -->
+                <div id="hero-cta" class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                  <button onclick="app.openView('catalog')" class="btn-luxury px-8 py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-semibold uppercase shadow-xl w-full sm:w-auto">
+                    Explore The Extraits
+                  </button>
+                  <button onclick="app.openView('finder')" class="px-8 py-4 border border-[#4a423b] hover:border-[#c5a880] text-[#f4efe8] hover:text-[#eed9b8] font-cinzel text-xs tracking-[0.25em] uppercase transition-colors w-full sm:w-auto">
+                    Olfactory Consultation
+                  </button>
+                </div>
+
+                <!-- Minimalist Trust Indicator -->
+                <div class="pt-6 flex items-center justify-center lg:justify-start gap-6 text-[11px] text-[#787063] tracking-widest uppercase">
+                  <span>30% Pure Perfume Oil</span>
+                  <span>·</span>
+                  <span>Charred Oak Aged</span>
+                  <span>·</span>
+                  <span>Bespoke Engraving</span>
+                </div>
+              </div>
+
+              <!-- Right Column: Sculptural Floating Flacon Stage -->
+              <div id="hero-bottle-wrap" class="lg:col-span-6 flex justify-center relative">
+                <div class="relative w-full max-w-md aspect-[4/5] flex items-center justify-center">
+                  <!-- Diagonal Background Slate -->
+                  <div class="absolute inset-0 bg-[#161210] border border-[#2e2823] transform -rotate-3 scale-95 shadow-2xl"></div>
+                  
+                  <!-- Main Bottle Image with Scroll Parallax -->
+                  <div id="hero-floating-bottle" class="relative z-10 w-[88%] h-[88%] overflow-hidden border border-[#3d3630] shadow-2xl">
+                    <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85" alt="Oud Nocturne Extrait de Parfum" class="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700" />
+                    <!-- Flacon Info Overlay -->
+                    <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6 text-left">
+                      <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-[0.2em]">Masterpiece Flacon</div>
+                      <div class="font-serif text-2xl text-white">Oud Nocturne 32%</div>
+                      <div class="text-[11px] text-[#a89f91] mt-1">Cambodi Oud · Taif Rose · Smoked Incense</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 text-[#736a5e] text-[10px] tracking-[0.3em] uppercase">
+              <span>Scroll to Enter Maison</span>
+              <div class="w-[1px] h-8 bg-gradient-to-b from-[#c5a880] to-transparent animate-pulse"></div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 2: EDITORIAL MANIFESTO (WARM IVORY CONTRAST) -->
+          <section class="bg-[#f8f5ee] text-[#12100f] py-28 px-6 transition-colors">
+            <div class="max-w-5xl mx-auto text-center space-y-8">
+              <div class="font-cinzel text-xs text-[#9b7e56] tracking-[0.35em] uppercase">The Maison Manifesto</div>
+              <blockquote class="font-cormorant text-3xl sm:text-5xl md:text-6xl font-light leading-[1.15] text-[#171311]">
+                "A true extrait de parfum does not announce itself with noise. It claims the room like twilight—unavoidable, sovereign, and impossible to forget."
+              </blockquote>
+              <div class="w-16 h-[1px] bg-[#9b7e56] mx-auto"></div>
+              <p class="font-serif italic text-lg sm:text-xl text-[#524941] max-w-2xl mx-auto leading-relaxed">
+                Founded at 18 Place Vendôme, Maison Alchémie produces small-batch, non-diluted extraits de parfum. Every extraction honors centuries-old enfleurage, slow oak-cask maturation, and raw botanicals harvested at their celestial zenith.
+              </p>
+              <div class="pt-4">
+                <button onclick="app.openView('story')" class="btn-luxury px-8 py-3.5 bg-[#171311] text-[#f8f5ee] font-cinzel text-xs tracking-[0.25em] uppercase hover:bg-[#9b7e56] transition-colors">
+                  Read The Maison History
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 3: SIGNATURE EXTRAITS SHOWCASE (SCULPTURAL CARDS) -->
+          <section id="signature" class="py-28 px-6 bg-[#080808]">
+            <div class="max-w-7xl mx-auto">
+              <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div>
+                  <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase mb-2">Private Stock Allocations</div>
+                  <h2 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">The Signature Extraits</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                  <button onclick="app.navigateCategory('all')" class="text-xs text-[#c5a880] tracking-widest uppercase hover:text-white underline underline-offset-8">
+                    View Complete Catalog (${PRODUCTS.length} Flacons) →
+                  </button>
+                </div>
+              </div>
+
+              <!-- Grid with Asymmetric Character -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                ${PRODUCTS.slice(0, 3).map(p => this.renderProductCard(p)).join('')}
+              </div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 4: THE OLFACTORY PYRAMID & INGREDIENT REVELATION -->
+          <section class="py-28 px-6 bg-[#110e0d] border-y border-[#26201c] relative overflow-hidden">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <div class="lg:col-span-5 space-y-6">
+                <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase">The Chemistry of Sillage</div>
+                <h2 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light leading-tight">
+                  The Anatomy of <br /><span class="italic text-[#eed9b8]">Haute Extraction</span>
+                </h2>
+                <p class="text-xs text-[#a89f91] leading-relaxed">
+                  Unlike commercial fragrances diluted to 10%–15% alcohol washes, Maison Alchémie extraits contain up to 35% pure perfume oils. This ensures that the fragrance evolves across 18 continuous hours on human skin.
+                </p>
+
+                <!-- Interactive Pyramid Display -->
+                <div class="space-y-3 pt-4">
+                  <div class="pyramid-tier p-4 bg-[#191513] border border-[#332b25]">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="font-cinzel text-xs text-[#eed9b8] uppercase tracking-wider">Top Notes · Premier Act</span>
+                      <span class="text-[10px] text-[#c5a880] font-mono">0 – 30 Minutes</span>
+                    </div>
+                    <p class="text-xs text-[#8e8577]">Volatile citrus zests, Persian saffron, green mandora, pink peppercorns. A radiant spark that commands the room.</p>
+                  </div>
+
+                  <div class="pyramid-tier p-4 bg-[#1c1815] border border-[#3d342c]">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="font-cinzel text-xs text-[#eed9b8] uppercase tracking-wider">Heart Notes · The Sovereign Core</span>
+                      <span class="text-[10px] text-[#c5a880] font-mono">30 Min – 6 Hours</span>
+                    </div>
+                    <p class="text-xs text-[#8e8577]">Taif rose absolute, aged Florentine orris butter, Somalian myrrh, green frankincense. The beating heart of the composition.</p>
+                  </div>
+
+                  <div class="pyramid-tier p-4 bg-[#1f1a17] border border-[#4a3f36]">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="font-cinzel text-xs text-[#eed9b8] uppercase tracking-wider">Base Notes · The Eternal Foundation</span>
+                      <span class="text-[10px] text-[#c5a880] font-mono">6 – 24+ Hours</span>
+                    </div>
+                    <p class="text-xs text-[#8e8577]">15-year wild Cambodi oud, golden ambergris, dark Madagascar bourbon vanilla, birch tar. The magnetic shadow that lingers on sheets and silk.</p>
+                  </div>
+                </div>
+
+                <div class="pt-2">
+                  <button onclick="app.openView('finder')" class="btn-luxury px-6 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold">
+                    Discover Your Olfactory Profile
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right: Sculptural Collage -->
+              <div class="lg:col-span-7 grid grid-cols-2 gap-4">
+                <div class="space-y-4">
+                  <div class="h-64 sm:h-80 overflow-hidden border border-[#2e2621]">
+                    <img src="https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=85" alt="Haute Extraction Botanicals" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700" />
+                  </div>
+                  <div class="p-6 bg-[#161210] border border-[#2e2621]">
+                    <div class="font-cinzel text-xs text-[#c5a880] uppercase">Maceration Timeline</div>
+                    <p class="text-xs text-[#8e8577] mt-1">240 days of undisturbed maturation in temperature-regulated subterranean cellars.</p>
+                  </div>
+                </div>
+                <div class="space-y-4 pt-8">
+                  <div class="p-6 bg-[#161210] border border-[#2e2621]">
+                    <div class="font-cinzel text-xs text-[#c5a880] uppercase">French Glassmaking</div>
+                    <p class="text-xs text-[#8e8577] mt-1">Weighted crystal flacons hand-polished with magnetic obsidian and gold alloy stoppers.</p>
+                  </div>
+                  <div class="h-64 sm:h-80 overflow-hidden border border-[#2e2621]">
+                    <img src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85" alt="Crystal flacon with black lacquer cap" class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700" />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- CHAPTER 5: THE DISCOVERY WARDROBE (FIRST-CLASS SAMPLING) -->
+          <section id="discovery" class="py-28 px-6 bg-[#080808]">
+            <div class="max-w-7xl mx-auto">
+              <div class="bg-gradient-to-r from-[#171311] via-[#1a1512] to-[#0d0b0a] border border-[#332b25] p-8 md:p-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                
+                <div class="lg:col-span-6 space-y-6">
+                  <div class="inline-block text-xs font-cinzel text-[#c5a880] tracking-[0.3em] uppercase">
+                    Sampling Protocol &amp; Voucher Credit
+                  </div>
+                  <h2 class="font-cormorant text-3xl sm:text-5xl text-[#f4efe8] font-light leading-tight">
+                    Coffret Découverte <br /><span class="italic text-[#eed9b8]">Les Chefs-d’Œuvre</span>
+                  </h2>
+                  <p class="text-xs sm:text-sm text-[#b8afa3] leading-relaxed">
+                    Five deluxe 10ml travel flacons housed in our signature weighted black lacquer presentation case. Experience Oud Nocturne, Iris Céleste, Santal Impérial, Rose Fumée Réserve, and Vanille Bourbon Noire in your own private sanctuary.
+                  </p>
+                  <div class="p-4 bg-[#110e0c] border border-[#2b241e] space-y-1">
+                    <div class="font-cinzel text-xs text-[#eed9b8] uppercase flex items-center gap-2">
+                      <i data-lucide="tag" class="w-3.5 h-3.5 text-[#c5a880]"></i>
+                      <span>Guaranteed Full-Size Purchase Credit</span>
+                    </div>
+                    <p class="text-[11px] text-[#8e8577]">
+                      Each set includes an individualized certificate code crediting $50 towards your subsequent 50ml or 100ml flacon order.
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-6 pt-2">
+                    <span class="font-serif text-2xl text-[#eed9b8]">${app.formatPrice(125)}</span>
+                    <button onclick="app.addToCart('coffret-decouverte', '5 x 10ml Flacon Set')" class="btn-luxury px-8 py-3.5 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.2em] font-semibold uppercase">
+                      Acquire Discovery Wardrobe
+                    </button>
+                  </div>
+                </div>
+
+                <div class="lg:col-span-6 flex justify-center">
+                  <div class="relative w-full max-w-md aspect-square overflow-hidden border border-[#3d342c] shadow-2xl">
+                    <img src="https://images.unsplash.com/photo-1563178406-4cdc2923acbc?auto=format&fit=crop&w=1200&q=85" alt="Coffret Découverte Flacons" class="w-full h-full object-cover" />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 6: BESPOKE LUXURY GIFTING & CALLIGRAPHY ENGRAVING -->
+          <section id="gifting" class="py-28 px-6 bg-[#130f0e] border-t border-[#26201c]">
+            <div class="max-w-6xl mx-auto text-center space-y-6">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">The Gifting Atelier</div>
+              <h2 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">
+                Complimentary Bottle Engraving &amp; Wax-Sealed Calligraphy
+              </h2>
+              <p class="font-serif italic text-lg sm:text-xl text-[#b8afa3] max-w-2xl mx-auto leading-relaxed">
+                Gift a legacy. Every flacon may be diamond-engraved with client monograms, tied with hand-pleated grosgrain ribbons, and delivered in our gilded keepsake boxes.
+              </p>
+              <div class="pt-4 flex flex-col sm:flex-row justify-center gap-4">
+                <button onclick="app.openView('gifting')" class="btn-luxury px-8 py-4 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold">
+                  Personalize a Flacon Now
+                </button>
+                <button onclick="app.openView('comparison')" class="px-8 py-4 border border-[#3d342c] text-[#eed9b8] hover:border-[#c5a880] font-cinzel text-xs tracking-[0.2em] uppercase">
+                  Compare Olfactory Notes
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 7: CLIENT REASSURANCE & REVIEWS -->
+          <section class="py-24 px-6 bg-[#080808]">
+            <div class="max-w-7xl mx-auto">
+              <div class="text-center mb-16 space-y-3">
+                <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase">Connoisseur Testimonials</div>
+                <h2 class="font-cormorant text-3xl sm:text-5xl text-[#f4efe8] font-light">Private Client Reviews</h2>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <div class="p-8 bg-[#110f0e] border border-[#241f1b] space-y-4">
+                  <div class="flex text-[#c5a880] gap-1">
+                    ★★★★★
+                  </div>
+                  <blockquote class="font-serif italic text-base text-[#d1c8bd] leading-relaxed">
+                    "Oud Nocturne is unlike any Middle Eastern or Western interpretation I have encountered. The Cambodian oud feels ancient, restrained by the dampness of Taif rose. Sillage lasted through a 14-hour flight."
+                  </blockquote>
+                  <div class="pt-2 border-t border-[#241f1b] text-xs">
+                    <strong class="text-[#eed9b8] block font-cinzel">Baroness Caroline von V.</strong>
+                    <span class="text-[#736a5e]">Verified Private Collector · Zurich</span>
+                  </div>
+                </div>
+
+                <div class="p-8 bg-[#110f0e] border border-[#241f1b] space-y-4">
+                  <div class="flex text-[#c5a880] gap-1">
+                    ★★★★★
+                  </div>
+                  <blockquote class="font-serif italic text-base text-[#d1c8bd] leading-relaxed">
+                    "The Florentine orris in Iris Céleste is buttery, powdery, and unmistakably authentic. You can immediately discern that raw rhizomes were dried for years rather than synthesized in a sterile lab."
+                  </blockquote>
+                  <div class="pt-2 border-t border-[#241f1b] text-xs">
+                    <strong class="text-[#eed9b8] block font-cinzel">Henri-Marc de Saint-Germain</strong>
+                    <span class="text-[#736a5e]">Fragrance Evaluator · Paris</span>
+                  </div>
+                </div>
+
+                <div class="p-8 bg-[#110f0e] border border-[#241f1b] space-y-4">
+                  <div class="flex text-[#c5a880] gap-1">
+                    ★★★★★
+                  </div>
+                  <blockquote class="font-serif italic text-base text-[#d1c8bd] leading-relaxed">
+                    "The unboxing experience alone justified the investment. The hand-engraved monogram, the grosgrain ribbon, and the sheer weight of the crystal flacon. Truly extraordinary craftsmanship."
+                  </blockquote>
+                  <div class="pt-2 border-t border-[#241f1b] text-xs">
+                    <strong class="text-[#eed9b8] block font-cinzel">Elena Rostova</strong>
+                    <span class="text-[#736a5e]">Private Client · London</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+        `;
+      },
+
+      renderProductCard(p) {
+        return `
+          <article class="group bg-[#110f0e] border border-[#26211d] hover:border-[#c5a880]/50 transition-all duration-500 flex flex-col justify-between">
+            <div class="relative overflow-hidden aspect-[3/4] bg-[#161311] cursor-pointer" onclick="app.openProductDetail('${p.id}')">
+              <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" onerror="this.src='https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85'" />
+              
+              <!-- Subtle Badge Overlay -->
+              <div class="absolute top-4 left-4 flex flex-col gap-1">
+                ${p.isLimited ? `<span class="bg-[#1f1614]/90 border border-[#c5a880] px-2 py-0.5 text-[9px] font-cinzel uppercase text-[#eed9b8] tracking-widest">Vintage Allocation</span>` : ''}
+                ${p.isBestseller ? `<span class="bg-[#141211]/90 border border-[#3d342d] px-2 py-0.5 text-[9px] font-cinzel uppercase text-[#c5a880] tracking-widest">Maison Icon</span>` : ''}
+              </div>
+
+              <!-- Wishlist Quick Toggle -->
+              <button onclick="event.stopPropagation(); app.toggleWishlist('${p.id}');" class="absolute top-4 right-4 p-2 bg-[#0e0c0b]/80 hover:bg-[#c5a880] text-white hover:text-black transition-colors" aria-label="Save to Wishlist">
+                <i data-lucide="heart" class="w-4 h-4 ${appState.wishlist.includes(p.id) ? 'fill-[#c5a880] text-[#c5a880]' : ''}"></i>
+              </button>
+
+              <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-5 text-left">
+                <div class="text-[10px] uppercase tracking-[0.2em] text-[#c5a880] font-cinzel">${p.familyDetailed}</div>
+                <h3 class="font-cinzel text-lg text-[#f4efe8] tracking-wider uppercase">${p.name}</h3>
+              </div>
+            </div>
+
+            <!-- Content & Add to Bag -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              <div>
+                <div class="flex items-center justify-between text-xs text-[#8e8577] mb-1">
+                  <span>${p.concentrationPercent}</span>
+                  <span>${p.sizes[0]}</span>
+                </div>
+                <p class="text-xs text-[#b8afa3] line-clamp-2 leading-relaxed italic font-serif">
+                  "${p.tagline}"
+                </p>
+                <div class="mt-3 text-[10px] text-[#787063] tracking-wider">
+                  <strong class="text-[#a89f91]">Notes:</strong> ${p.topNotes[0]}, ${p.heartNotes[0]}, ${p.baseNotes[0]}
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-[#241f1b] flex items-center justify-between">
+                <span class="font-serif text-lg text-[#eed9b8] font-medium">${app.formatPrice(p.prices.USD)}</span>
+                <div class="flex gap-2">
+                  <button onclick="app.openProductDetail('${p.id}')" class="px-3 py-2 border border-[#38312a] hover:border-[#c5a880] text-[#eed9b8] text-[10px] tracking-wider font-cinzel uppercase transition-colors">
+                    Explore
+                  </button>
+                  <button onclick="app.addToCart('${p.id}', '${p.sizes[0]}')" class="btn-luxury px-4 py-2 bg-[#c5a880] hover:bg-[#eed9b8] text-black text-[10px] tracking-wider font-cinzel font-semibold uppercase transition-colors">
+                    Acquire
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        `;
+      },
+
+      catalog() {
+        const cat = appState.currentCategory;
+        const filtered = PRODUCTS.filter(p => {
+          if (cat === 'all') return true;
+          return p.family.toLowerCase() === cat.toLowerCase();
+        });
+
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">The Complete Archives</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">
+                The Olfactory Catalog
+              </h1>
+              <p class="text-xs sm:text-sm text-[#a89f91] leading-relaxed">
+                Every formulation is crafted without compromises. Filter by botanical olfactory families, rare extraits, and discovery sets.
+              </p>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="flex flex-wrap items-center justify-center gap-2 mb-12 border-y border-[#26201c] py-4">
+              ${['all', 'Woody', 'Amber', 'Floral', 'Gourmand', 'Leather', 'Fresh', 'Discovery'].map(f => `
+                <button onclick="app.navigateCategory('${f}')" class="px-4 py-2 text-xs font-cinzel tracking-[0.15em] uppercase transition-colors ${cat.toLowerCase() === f.toLowerCase() ? 'bg-[#c5a880] text-black font-semibold' : 'text-[#8e8577] hover:text-[#eed9b8] hover:bg-[#171311]'}">
+                  ${f === 'all' ? 'All Flacons' : f}
+                </button>
+              `).join('')}
+            </div>
+
+            <!-- Products Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              ${filtered.map(p => this.renderProductCard(p)).join('')}
+            </div>
+          </div>
+        `;
+      },
+
+      collections() {
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto space-y-24">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Curated Curations</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">The Collections</h1>
+              <p class="text-xs text-[#a89f91]">Groupings structured around historical themes and specific noble extractions.</p>
+            </div>
+
+            <!-- Collection 1: Signature Haute -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-[#26201c] p-8 bg-[#110e0c]">
+              <div class="lg:col-span-5 space-y-4">
+                <span class="text-xs font-cinzel text-[#c5a880] uppercase tracking-widest">Collection I</span>
+                <h2 class="font-cormorant text-3xl sm:text-4xl text-[#f4efe8]">Signature Haute Parfumerie</h2>
+                <p class="text-xs text-[#8e8577] leading-relaxed">
+                  The cornerstone creations of the maison: Oud Nocturne, Santal Impérial, and Vanille Bourbon Noire. Extraits aged in toasted oak barrels for distinguished depth.
+                </p>
+                <button onclick="app.navigateCategory('Woody')" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold">
+                  View Collection
+                </button>
+              </div>
+              <div class="lg:col-span-7 grid grid-cols-2 gap-4">
+                <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85" class="w-full h-64 object-cover border border-[#2b251f]" alt="Oud Nocturne" />
+                <img src="https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=1200&q=85" class="w-full h-64 object-cover border border-[#2b251f]" alt="Santal Impérial" />
+              </div>
+            </div>
+
+            <!-- Collection 2: Les Fleurs Sombres -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-[#26201c] p-8 bg-[#110e0c]">
+              <div class="lg:col-span-7 grid grid-cols-2 gap-4 order-2 lg:order-1">
+                <img src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85" class="w-full h-64 object-cover border border-[#2b251f]" alt="Iris Céleste" />
+                <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1200&q=85" class="w-full h-64 object-cover border border-[#2b251f]" alt="Rose Fumée" />
+              </div>
+              <div class="lg:col-span-5 space-y-4 order-1 lg:order-2">
+                <span class="text-xs font-cinzel text-[#c5a880] uppercase tracking-widest">Collection II</span>
+                <h2 class="font-cormorant text-3xl sm:text-4xl text-[#f4efe8]">Les Fleurs Sombres</h2>
+                <p class="text-xs text-[#8e8577] leading-relaxed">
+                  Botanicals with teeth. Somber interpretations of Florentine iris butter, night-blooming jasmine, and May roses veiled in incense smoke.
+                </p>
+                <button onclick="app.navigateCategory('Floral')" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold">
+                  View Floral Extraits
+                </button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      },
+
+      product(prodId) {
+        const p = PRODUCTS.find(x => x.id === prodId) || PRODUCTS[0];
+        const selectedSize = p.sizes[0];
+
+        return `
+          <div class="py-12 px-6 max-w-7xl mx-auto space-y-20">
+            <!-- Breadcrumbs -->
+            <nav class="flex items-center gap-2 text-xs text-[#787063] uppercase tracking-widest" aria-label="Breadcrumb">
+              <button onclick="app.openView('home')" class="hover:text-white">Home</button>
+              <span>/</span>
+              <button onclick="app.navigateCategory('${p.family}')" class="hover:text-white">${p.family}</button>
+              <span>/</span>
+              <span class="text-[#c5a880]">${p.name}</span>
+            </nav>
+
+            <!-- Product Main Showcase -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+              
+              <!-- Gallery Left -->
+              <div class="lg:col-span-7 space-y-4">
+                <div class="aspect-[4/5] bg-[#12100f] border border-[#2b251f] overflow-hidden relative shadow-2xl">
+                  <img id="detail-main-img" src="${p.image}" alt="${p.name}" class="w-full h-full object-cover object-center" onerror="this.src='https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85'" />
+                  
+                  <!-- Live Engraving Simulation Overlay on Bottle -->
+                  <div id="bottle-engraving-badge" class="absolute bottom-16 inset-x-0 text-center pointer-events-none hidden">
+                    <div class="inline-block bg-black/60 backdrop-blur-sm border border-[#c5a880]/40 px-4 py-1.5 rounded-none">
+                      <span id="live-engraving-text" class="engraved-text text-sm">A·L</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div onclick="document.getElementById('detail-main-img').src='${p.image}'" class="aspect-[4/3] bg-[#12100f] border border-[#2b251f] cursor-pointer overflow-hidden">
+                    <img src="${p.image}" class="w-full h-full object-cover" alt="${p.name} Primary" />
+                  </div>
+                  <div onclick="document.getElementById('detail-main-img').src='${p.secondaryImage}'" class="aspect-[4/3] bg-[#12100f] border border-[#2b251f] cursor-pointer overflow-hidden">
+                    <img src="${p.secondaryImage}" class="w-full h-full object-cover" alt="${p.name} Editorial" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Product Purchasing Details Right -->
+              <div class="lg:col-span-5 space-y-6">
+                <div>
+                  <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-[0.25em] mb-1">${p.collection}</div>
+                  <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">${p.name}</h1>
+                  <div class="text-xs text-[#a89f91] mt-1">${p.subtitle} · ${p.familyDetailed}</div>
+                </div>
+
+                <div class="font-serif text-3xl text-[#eed9b8] font-medium" id="pdp-price-display">
+                  ${app.formatPrice(p.prices.USD)}
+                </div>
+
+                <p class="text-xs sm:text-sm text-[#b8afa3] leading-relaxed font-serif italic">
+                  "${p.description}"
+                </p>
+
+                <!-- Flacon Size Selector -->
+                <div class="space-y-2 pt-2">
+                  <label class="block text-[11px] font-cinzel text-[#eed9b8] uppercase tracking-wider">Flacon Volume</label>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    ${p.sizes.map((s, idx) => `
+                      <button onclick="app.selectDetailSize('${p.id}', '${s}', this)" class="p-2.5 text-xs font-cinzel uppercase border transition-colors ${idx === 0 ? 'border-[#c5a880] text-[#eed9b8] bg-[#1a1512]' : 'border-[#332b25] text-[#8e8577] hover:border-[#c5a880]'}">
+                        ${s}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Custom Engraving Toggle Section -->
+                <div class="p-4 bg-[#141110] border border-[#2b251f] space-y-3">
+                  <div class="flex items-center justify-between">
+                    <label class="font-cinzel text-xs text-[#c5a880] uppercase flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" id="engraving-toggle" onchange="app.togglePdpEngraving(this.checked)" class="accent-[#c5a880]" />
+                      <span>Complimentary Calligraphy Engraving</span>
+                    </label>
+                    <span class="text-[10px] text-[#8e8577] uppercase">Max 8 Letters</span>
+                  </div>
+                  <div id="engraving-input-wrap" class="hidden">
+                    <input type="text" id="engraving-text-input" oninput="app.updatePdpEngravingPreview(this.value)" placeholder="Enter Initials (e.g. M·A or V·M)" maxlength="8" class="w-full bg-[#1b1715] border border-[#383029] p-2 text-xs font-cinzel text-[#eed9b8] tracking-[0.25em] uppercase focus:outline-none focus:border-[#c5a880]" />
+                    <p class="text-[10px] text-[#736a5e] mt-1">Diamond-wheel hand-cut into the lower crystal flank.</p>
+                  </div>
+                </div>
+
+                <!-- Add to Bag Action Button -->
+                <div class="space-y-3 pt-2">
+                  <button id="pdp-add-btn" onclick="app.addCurrentDetailToBag('${p.id}')" class="btn-luxury w-full py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-bold uppercase shadow-xl">
+                    Add To Shopping Bag
+                  </button>
+                  <div class="flex items-center justify-between text-[11px] text-[#787063]">
+                    <span>✓ Insured White-Glove Courier</span>
+                    <span>✓ 3 Olfactory Miniatures Included</span>
+                  </div>
+                </div>
+
+                <!-- Olfactory Metrics -->
+                <div class="pt-6 border-t border-[#241f1b] grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <span class="text-[#8e8577] block text-[10px] uppercase">Concentration</span>
+                    <strong class="text-[#eed9b8] font-cinzel">${p.concentrationPercent}</strong>
+                  </div>
+                  <div>
+                    <span class="text-[#8e8577] block text-[10px] uppercase">Longevity On Skin</span>
+                    <strong class="text-[#eed9b8] font-cinzel">${p.longevity}</strong>
+                  </div>
+                  <div>
+                    <span class="text-[#8e8577] block text-[10px] uppercase">Projection &amp; Sillage</span>
+                    <strong class="text-[#eed9b8] font-cinzel">${p.sillage}</strong>
+                  </div>
+                  <div>
+                    <span class="text-[#8e8577] block text-[10px] uppercase">Recommended Setting</span>
+                    <strong class="text-[#eed9b8] font-cinzel">${p.occasion}</strong>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Olfactory Pyramid Breakdown Section -->
+            <div class="border-t border-[#241f1b] pt-16">
+              <h2 class="font-cormorant text-3xl text-[#f4efe8] mb-8 text-center">The Olfactory Pyramid</h2>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 bg-[#110e0c] border border-[#2b241e] text-center space-y-2">
+                  <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-widest">Top Notes</div>
+                  <div class="font-serif text-lg text-[#eed9b8]">${p.topNotes.join(' · ')}</div>
+                  <p class="text-[11px] text-[#787063]">Immediate sensory greeting, persisting during the opening 30 minutes.</p>
+                </div>
+                <div class="p-6 bg-[#110e0c] border border-[#2b241e] text-center space-y-2">
+                  <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-widest">Heart Notes</div>
+                  <div class="font-serif text-lg text-[#eed9b8]">${p.heartNotes.join(' · ')}</div>
+                  <p class="text-[11px] text-[#787063]">The botanical soul of the fragrance, unfolding across hours two through six.</p>
+                </div>
+                <div class="p-6 bg-[#110e0c] border border-[#2b241e] text-center space-y-2">
+                  <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-widest">Base Notes</div>
+                  <div class="font-serif text-lg text-[#eed9b8]">${p.baseNotes.join(' · ')}</div>
+                  <p class="text-[11px] text-[#787063]">Heavy molecular resins and aged woods that bond directly with skin chemistry.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ritual of Wear -->
+            <div class="p-8 bg-[#161210] border border-[#2e2621] space-y-3">
+              <h3 class="font-cinzel text-sm text-[#c5a880] uppercase tracking-widest">The Ritual of Application</h3>
+              <p class="text-xs text-[#b8afa3] leading-relaxed font-serif italic text-base">
+                "${p.ritual}"
+              </p>
+            </div>
+
+            <!-- Related Scents -->
+            <div class="space-y-8 pt-8">
+              <h3 class="font-cormorant text-3xl text-[#f4efe8] text-center">Harmonious Pairings</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                ${PRODUCTS.filter(x => x.id !== p.id).slice(0, 3).map(rel => this.renderProductCard(rel)).join('')}
+              </div>
+            </div>
+
+          </div>
+        `;
+      },
+
+      finder() {
+        return `
+          <div class="py-16 px-6 max-w-4xl mx-auto space-y-12">
+            <div class="text-center space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Olfactory Consultation</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">The Fragrance Finder</h1>
+              <p class="text-xs sm:text-sm text-[#a89f91] max-w-xl mx-auto leading-relaxed">
+                Allow our rule-based scoring algorithm to match your lifestyle, preferred accords, and intensity preferences with the ideal flacon.
+              </p>
+            </div>
+
+            <!-- Interactive Quiz Engine -->
+            <div id="quiz-container" class="bg-[#110f0e] border border-[#2b251f] p-8 md:p-12 shadow-2xl space-y-8">
+              
+              <!-- Question 1: Mood / Atmosphere -->
+              <div class="space-y-4">
+                <span class="text-[10px] font-mono text-[#c5a880] uppercase tracking-widest">Question 1 of 4</span>
+                <h3 class="font-cinzel text-lg sm:text-xl text-[#f4efe8]">What atmosphere or aura do you wish to project?</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button onclick="app.setQuizAnswer('mood', 'nocturnal', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880] transition-colors">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase">Nocturnal Mystery</strong>
+                    <span class="text-[11px] text-[#8e8577]">Aged Cambodi oud, smoldering frankincense, dark resins</span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('mood', 'ethereal', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880] transition-colors">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase">Powdery Sophistication</strong>
+                    <span class="text-[11px] text-[#8e8577]">Tuscan orris butter, silver iris, sheer musk</span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('mood', 'opulent', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880] transition-colors">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase">Warm Regal Amber</strong>
+                    <span class="text-[11px] text-[#8e8577]">Golden resins, honeyed immortelle, Seville orange</span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('mood', 'gourmand', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880] transition-colors">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase">Smoked Intoxication</strong>
+                    <span class="text-[11px] text-[#8e8577]">Bourbon vanilla pods, dark aged rum, cocoa</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Question 2: Intensity -->
+              <div class="space-y-4 pt-6 border-t border-[#26201c]">
+                <span class="text-[10px] font-mono text-[#c5a880] uppercase tracking-widest">Question 2 of 4</span>
+                <h3 class="font-cinzel text-lg sm:text-xl text-[#f4efe8]">Preferred Projection &amp; Concentration?</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button onclick="app.setQuizAnswer('intensity', 'immense', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880]">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase">Extrait de Parfum (30%+)</strong>
+                    <span class="text-[11px] text-[#8e8577]">Monolithic sillage, 18+ hours duration</span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('intensity', 'balanced', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880]">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase">Eau de Parfum (22%)</strong>
+                    <span class="text-[11px] text-[#8e8577]">Distinguished presence, 12 hours duration</span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('intensity', 'wardrobe', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880]">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase">Complete Wardrobe</strong>
+                    <span class="text-[11px] text-[#8e8577]">Prefer 5 sample flacons with credit</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Action to calculate -->
+              <div class="pt-6 border-t border-[#26201c] flex justify-center">
+                <button onclick="app.calculateQuizRecommendation()" class="btn-luxury px-8 py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-semibold uppercase">
+                  Reveal My Bespoke Match
+                </button>
+              </div>
+
+              <!-- Results Area -->
+              <div id="quiz-result-area" class="hidden pt-8 border-t border-[#26201c] space-y-6"></div>
+
+            </div>
+          </div>
+        `;
+      },
+
+      comparison() {
+        const p1 = PRODUCTS.find(p => p.id === appState.activeComparison[0]) || PRODUCTS[0];
+        const p2 = PRODUCTS.find(p => p.id === appState.activeComparison[1]) || PRODUCTS[1];
+        const p3 = PRODUCTS.find(p => p.id === appState.activeComparison[2]) || PRODUCTS[3];
+
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto space-y-12">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Olfactory Matrix</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">Fragrance Comparison</h1>
+              <p class="text-xs text-[#a89f91]">Side-by-side technical and botanical comparison of our master flacons.</p>
+            </div>
+
+            <!-- Comparison Matrix Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse border border-[#2b251f] text-xs">
+                <thead>
+                  <tr class="bg-[#141110] border-b border-[#2b251f]">
+                    <th class="p-4 font-cinzel text-[#c5a880] uppercase tracking-wider w-1/4">Metric</th>
+                    <th class="p-4 font-cinzel text-[#eed9b8] uppercase tracking-wider w-1/4">${p1.name}</th>
+                    <th class="p-4 font-cinzel text-[#eed9b8] uppercase tracking-wider w-1/4">${p2.name}</th>
+                    <th class="p-4 font-cinzel text-[#eed9b8] uppercase tracking-wider w-1/4">${p3.name}</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#241f1b]">
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase">Visual Flacon</td>
+                    <td class="p-4"><img src="${p1.image}" class="w-20 h-24 object-cover border border-[#2b251f]" alt="${p1.name}" /></td>
+                    <td class="p-4"><img src="${p2.image}" class="w-20 h-24 object-cover border border-[#2b251f]" alt="${p2.name}" /></td>
+                    <td class="p-4"><img src="${p3.image}" class="w-20 h-24 object-cover border border-[#2b251f]" alt="${p3.name}" /></td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase">Concentration</td>
+                    <td class="p-4 text-[#e2ded9]">${p1.concentrationPercent}</td>
+                    <td class="p-4 text-[#e2ded9]">${p2.concentrationPercent}</td>
+                    <td class="p-4 text-[#e2ded9]">${p3.concentrationPercent}</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase">Olfactory Family</td>
+                    <td class="p-4 text-[#c5a880]">${p1.familyDetailed}</td>
+                    <td class="p-4 text-[#c5a880]">${p2.familyDetailed}</td>
+                    <td class="p-4 text-[#c5a880]">${p3.familyDetailed}</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase">Dominant Accords</td>
+                    <td class="p-4 text-[#b8afa3]">${p1.topNotes[0]}, ${p1.heartNotes[0]}, ${p1.baseNotes[0]}</td>
+                    <td class="p-4 text-[#b8afa3]">${p2.topNotes[0]}, ${p2.heartNotes[0]}, ${p2.baseNotes[0]}</td>
+                    <td class="p-4 text-[#b8afa3]">${p3.topNotes[0]}, ${p3.heartNotes[0]}, ${p3.baseNotes[0]}</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase">Longevity On Skin</td>
+                    <td class="p-4 text-[#eed9b8]">${p1.longevity}</td>
+                    <td class="p-4 text-[#eed9b8]">${p2.longevity}</td>
+                    <td class="p-4 text-[#eed9b8]">${p3.longevity}</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase">Sillage / Projection</td>
+                    <td class="p-4 text-[#eed9b8]">${p1.sillage}</td>
+                    <td class="p-4 text-[#eed9b8]">${p2.sillage}</td>
+                    <td class="p-4 text-[#eed9b8]">${p3.sillage}</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase">Starting Price</td>
+                    <td class="p-4 font-serif text-base text-[#eed9b8]">${app.formatPrice(p1.prices.USD)}</td>
+                    <td class="p-4 font-serif text-base text-[#eed9b8]">${app.formatPrice(p2.prices.USD)}</td>
+                    <td class="p-4 font-serif text-base text-[#eed9b8]">${app.formatPrice(p3.prices.USD)}</td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase">Actions</td>
+                    <td class="p-4"><button onclick="app.addToCart('${p1.id}')" class="btn-luxury px-3 py-1.5 bg-[#c5a880] text-black text-[10px] font-cinzel uppercase font-semibold">Acquire</button></td>
+                    <td class="p-4"><button onclick="app.addToCart('${p2.id}')" class="btn-luxury px-3 py-1.5 bg-[#c5a880] text-black text-[10px] font-cinzel uppercase font-semibold">Acquire</button></td>
+                    <td class="p-4"><button onclick="app.addToCart('${p3.id}')" class="btn-luxury px-3 py-1.5 bg-[#c5a880] text-black text-[10px] font-cinzel uppercase font-semibold">Acquire</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      },
+
+      discovery() {
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto space-y-16">
+            <div class="text-center max-w-3xl mx-auto space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">The Art of Sampling</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">Discovery Wardrobes</h1>
+              <p class="text-xs sm:text-sm text-[#a89f91] leading-relaxed">
+                We believe perfume requires days of personal intimacy with your skin chemistry before a full-size flacon commitment is made.
+              </p>
+            </div>
+
+            <!-- Discovery Sets Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+              
+              <!-- Set 1 -->
+              <div class="bg-[#12100f] border border-[#2b251f] p-8 flex flex-col justify-between space-y-6">
+                <div>
+                  <div class="aspect-[16/10] overflow-hidden mb-6 border border-[#26201a]">
+                    <img src="https://images.unsplash.com/photo-1563178406-4cdc2923acbc?auto=format&fit=crop&w=1200&q=85" class="w-full h-full object-cover" alt="Coffret Découverte" />
+                  </div>
+                  <span class="text-xs font-cinzel text-[#c5a880] uppercase tracking-widest">Master Wardrobe</span>
+                  <h3 class="font-cormorant text-3xl text-[#f4efe8] mt-1">Coffret Découverte — Les Chefs-d’Œuvre</h3>
+                  <p class="text-xs text-[#8e8577] mt-2 leading-relaxed">
+                    Includes 5 x 10ml travel flacons: Oud Nocturne, Iris Céleste, Santal Impérial, Rose Fumée Réserve, and Vanille Bourbon Noire. Presented in weighted black lacquer box with a $50 future credit coupon.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t border-[#26201a]">
+                  <span class="font-serif text-2xl text-[#eed9b8]">${app.formatPrice(125)}</span>
+                  <button onclick="app.addToCart('coffret-decouverte', '5 x 10ml Flacon Set')" class="btn-luxury px-6 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold">
+                    Acquire Wardrobe
+                  </button>
+                </div>
+              </div>
+
+              <!-- Set 2 -->
+              <div class="bg-[#12100f] border border-[#2b251f] p-8 flex flex-col justify-between space-y-6">
+                <div>
+                  <div class="aspect-[16/10] overflow-hidden mb-6 border border-[#26201a]">
+                    <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85" class="w-full h-full object-cover" alt="Coffret Nocturne" />
+                  </div>
+                  <span class="text-xs font-cinzel text-[#c5a880] uppercase tracking-widest">Resin Trio</span>
+                  <h3 class="font-cormorant text-3xl text-[#f4efe8] mt-1">Coffret Nocturne — Smoked Resins Trio</h3>
+                  <p class="text-xs text-[#8e8577] mt-2 leading-relaxed">
+                    Includes 3 x 15ml flacons: Oud Nocturne 32%, Ambre Vénitien 22%, and Cuir de Perse 24%. Formulated for twilight, fireside gatherings, and cold winters.
+                  </p>
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t border-[#26201a]">
+                  <span class="font-serif text-2xl text-[#eed9b8]">${app.formatPrice(145)}</span>
+                  <button onclick="app.addToCart('oud-nocturne', '100ml Grand Flacon')" class="btn-luxury px-6 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold">
+                    Acquire Trio
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      },
+
+      gifting() {
+        return `
+          <div class="py-16 px-6 max-w-5xl mx-auto space-y-16">
+            <div class="text-center max-w-3xl mx-auto space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">The Haute Gifting Atelier</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">Custom Engraving Studio</h1>
+              <p class="text-xs sm:text-sm text-[#a89f91] leading-relaxed">
+                Design a bespoke flacon. Select your fragrance, configure personalized diamond-engraved monograms, and specify an authentic wax-sealed calligraphy card.
+              </p>
+            </div>
+
+            <!-- Interactive Gifting Studio Workbench -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center bg-[#12100f] border border-[#2b251f] p-8 md:p-12">
+              
+              <!-- Left: Live Preview Flacon -->
+              <div class="lg:col-span-6 flex justify-center">
+                <div class="relative w-full max-w-sm aspect-[4/5] bg-[#171412] border border-[#332b25] overflow-hidden flex items-center justify-center shadow-2xl">
+                  <img id="gifting-preview-img" src="${PRODUCTS[0].image}" alt="Engraved Flacon Preview" class="w-full h-full object-cover" />
+                  
+                  <!-- Live Engraving Simulation -->
+                  <div class="absolute bottom-16 inset-x-0 text-center pointer-events-none">
+                    <div class="inline-block bg-black/60 backdrop-blur-sm border border-[#c5a880]/50 px-6 py-2 shadow-2xl">
+                      <span id="gifting-live-engraving" class="engraved-text text-base">${appState.engravingDraft.text}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Form Controls -->
+              <div class="lg:col-span-6 space-y-6">
+                <div>
+                  <label class="block text-xs font-cinzel text-[#eed9b8] uppercase tracking-wider mb-2">1. Select Master Flacon</label>
+                  <select id="gifting-fragrance-select" onchange="app.updateGiftingPreview(this.value)" class="w-full bg-[#1b1715] border border-[#383029] p-3 text-xs text-[#f4efe8] font-cinzel focus:outline-none focus:border-[#c5a880]">
+                    ${PRODUCTS.slice(0, 6).map(p => `
+                      <option value="${p.id}">${p.name} (${p.concentration}) — ${app.formatPrice(p.prices.USD)}</option>
+                    `).join('')}
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-cinzel text-[#eed9b8] uppercase tracking-wider mb-2">2. Custom Monogram (Max 8 Letters)</label>
+                  <input type="text" id="gifting-text-input" value="${appState.engravingDraft.text}" oninput="app.updateGiftingEngraving(this.value)" placeholder="e.g. M·A or V·M" maxlength="8" class="w-full bg-[#1b1715] border border-[#383029] p-3 text-xs text-[#eed9b8] font-cinzel tracking-[0.25em] uppercase focus:outline-none focus:border-[#c5a880]" />
+                  <p class="text-[10px] text-[#787063] mt-1">Carved with precision diamond stylus in our Paris atelier.</p>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-cinzel text-[#eed9b8] uppercase tracking-wider mb-2">3. Hand-Pleated Ribbon Color</label>
+                  <div class="grid grid-cols-3 gap-2">
+                    ${['Obsidian Silk', 'Antique Gold', 'Midnight Plum'].map(r => `
+                      <button onclick="app.setGiftingRibbon('${r}', this)" class="p-2.5 text-[11px] font-cinzel border border-[#383029] hover:border-[#c5a880] text-[#a89f91] uppercase transition-colors">
+                        ${r}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-cinzel text-[#eed9b8] uppercase tracking-wider mb-2">4. Wax-Sealed Handwritten Card Message</label>
+                  <textarea id="gifting-card-message" rows="3" placeholder="Enter private message to recipient..." class="w-full bg-[#1b1715] border border-[#383029] p-3 text-xs text-[#f4efe8] placeholder-[#5c544a] focus:outline-none focus:border-[#c5a880]"></textarea>
+                </div>
+
+                <div class="pt-2">
+                  <button onclick="app.addGiftingFlaconToBag()" class="btn-luxury w-full py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-bold uppercase shadow-xl">
+                    Add Bespoke Gift Flacon to Bag
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      },
+
+      cartFull() {
+        const subtotal = appState.cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+        let discount = 0;
+        if (appState.appliedVoucher) {
+          discount = subtotal * (appState.appliedVoucher.percent / 100);
+        }
+        const total = Math.max(0, subtotal - discount);
+
+        return `
+          <div class="py-16 px-6 max-w-5xl mx-auto space-y-12">
+            <div class="text-center max-w-xl mx-auto space-y-2">
+              <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase">Review Selection</div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">Your Shopping Bag</h1>
+            </div>
+
+            ${appState.cart.length === 0 ? `
+              <div class="text-center py-20 bg-[#110e0c] border border-[#26201c] space-y-4">
+                <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto text-[#4d443b] stroke-1"></i>
+                <p class="font-serif text-xl text-[#b8afa3]">Your shopping bag is empty.</p>
+                <button onclick="app.openView('catalog')" class="btn-luxury px-8 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold">
+                  Browse Catalog
+                </button>
+              </div>
+            ` : `
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div class="lg:col-span-8 space-y-4">
+                  ${appState.cart.map((item, idx) => `
+                    <div class="p-4 bg-[#12100f] border border-[#2b251f] flex gap-4 items-center justify-between">
+                      <div class="flex items-center gap-4">
+                        <img src="${item.image}" class="w-16 h-20 object-cover border border-[#2b251f]" alt="${item.name}" />
+                        <div>
+                          <h4 class="font-cinzel text-sm text-[#f4efe8] uppercase tracking-wider">${item.name}</h4>
+                          <span class="text-[11px] text-[#8e8577]">${item.size}</span>
+                          ${item.engraving ? `<div class="text-[10px] text-[#c5a880] tracking-widest font-cinzel mt-0.5">Engraved: "${item.engraving}"</div>` : ''}
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-6">
+                        <div class="flex items-center border border-[#332b24]">
+                          <button onclick="app.updateCartQty(${idx}, -1)" class="px-2.5 py-1 text-xs text-[#a89f91]">-</button>
+                          <span class="px-2.5 text-xs text-[#eed9b8] font-mono">${item.qty}</span>
+                          <button onclick="app.updateCartQty(${idx}, 1)" class="px-2.5 py-1 text-xs text-[#a89f91]">+</button>
+                        </div>
+                        <span class="font-serif text-base text-[#eed9b8] w-20 text-right">${app.formatPrice(item.unitPrice * item.qty)}</span>
+                        <button onclick="app.removeFromCart(${idx})" class="text-[#787063] hover:text-white p-1">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="lg:col-span-4 p-6 bg-[#12100f] border border-[#2b251f] space-y-4 h-fit">
+                  <h3 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider pb-3 border-b border-[#241f1b]">Order Summary</h3>
+                  <div class="space-y-2 text-xs">
+                    <div class="flex justify-between text-[#8e8577]">
+                      <span>Subtotal</span>
+                      <span class="text-[#e2ded9]">${app.formatPrice(subtotal)}</span>
+                    </div>
+                    <div class="flex justify-between text-[#8e8577]">
+                      <span>White-Glove Courier</span>
+                      <span class="text-[#c5a880] uppercase">Complimentary</span>
+                    </div>
+                    ${discount > 0 ? `
+                      <div class="flex justify-between text-[#c5a880]">
+                        <span>VIP Discount</span>
+                        <span>-${app.formatPrice(discount)}</span>
+                      </div>
+                    ` : ''}
+                    <div class="flex justify-between font-cinzel text-sm text-[#f4efe8] pt-3 border-t border-[#241f1b]">
+                      <span class="uppercase">Order Total</span>
+                      <span class="text-[#eed9b8] font-bold">${app.formatPrice(total)}</span>
+                    </div>
+                  </div>
+                  <button onclick="app.openView('checkout')" class="btn-luxury w-full py-3.5 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-bold text-center block mt-4">
+                    Proceed to Checkout
+                  </button>
+                </div>
+              </div>
+            `}
+          </div>
+        `;
+      },
+
+      checkout() {
+        const subtotal = appState.cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+        let discount = 0;
+        if (appState.appliedVoucher) {
+          discount = subtotal * (appState.appliedVoucher.percent / 100);
+        }
+        const total = Math.max(0, subtotal - discount);
+
+        return `
+          <div class="py-16 px-6 max-w-5xl mx-auto space-y-12">
+            <div class="text-center space-y-2">
+              <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase">Encrypted Transaction</div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">Maison Checkout</h1>
+            </div>
+
+            <form onsubmit="app.processCheckoutOrder(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+              
+              <!-- Left Form Fields -->
+              <div class="lg:col-span-7 space-y-8">
+                
+                <!-- 1. Customer Details -->
+                <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                  <h3 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider">1. Recipient Information</h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label class="block text-[10px] text-[#8e8577] uppercase mb-1">First Name *</label>
+                      <input type="text" id="checkout-fname" required value="${appState.currentUser ? appState.currentUser.name : ''}" class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                    </div>
+                    <div>
+                      <label class="block text-[10px] text-[#8e8577] uppercase mb-1">Last Name *</label>
+                      <input type="text" id="checkout-lname" required class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block text-[10px] text-[#8e8577] uppercase mb-1">Email Address *</label>
+                      <input type="email" id="checkout-email" required value="${appState.currentUser ? appState.currentUser.email : ''}" class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Delivery Address -->
+                <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                  <h3 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider">2. Delivery Address</h3>
+                  <div class="space-y-3 text-xs">
+                    <div>
+                      <label class="block text-[10px] text-[#8e8577] uppercase mb-1">Street Address *</label>
+                      <input type="text" id="checkout-address" required placeholder="e.g. 18 Place Vendôme or Private Estate" class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label class="block text-[10px] text-[#8e8577] uppercase mb-1">City *</label>
+                        <input type="text" id="checkout-city" required class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                      </div>
+                      <div>
+                        <label class="block text-[10px] text-[#8e8577] uppercase mb-1">Postal Code *</label>
+                        <input type="text" id="checkout-zip" required class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                      </div>
+                      <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-[10px] text-[#8e8577] uppercase mb-1">Country *</label>
+                        <select id="checkout-country" class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none">
+                          <option>France</option>
+                          <option>United States</option>
+                          <option>United Kingdom</option>
+                          <option>Nigeria</option>
+                          <option>Switzerland</option>
+                          <option>United Arab Emirates</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Payment Method: Paystack Real Gateway Integration -->
+                <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h3 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider">3. Settlement Method</h3>
+                    <span class="text-[10px] text-[#eed9b8] flex items-center gap-1">
+                      <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#c5a880]"></i> Paystack PCI Gateway
+                    </span>
+                  </div>
+                  <div class="p-4 bg-[#171412] border border-[#332a24] space-y-2 text-xs">
+                    <div class="flex items-center justify-between text-[#eed9b8]">
+                      <span class="font-cinzel">Paystack Secure Checkout</span>
+                      <span class="text-[10px] text-[#8e8577]">Debit/Credit Card, Bank Transfer, USSD</span>
+                    </div>
+                    <p class="text-[11px] text-[#8e8577] leading-relaxed">
+                      Transactions are processed over encrypted channels. If in demonstration mode, a luxury verification flow confirms the transaction with an authentic order reference.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Right Order Summary Column -->
+              <div class="lg:col-span-5 p-6 bg-[#110e0c] border border-[#2b251f] space-y-6 h-fit">
+                <h3 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider pb-3 border-b border-[#26201b]">Order Breakdown</h3>
+                
+                <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                  ${appState.cart.map(item => `
+                    <div class="flex justify-between items-center text-xs">
+                      <div>
+                        <span class="text-[#f4efe8] block">${item.name} (${item.size})</span>
+                        <span class="text-[#787063]">Qty: ${item.qty} ${item.engraving ? `· "${item.engraving}"` : ''}</span>
+                      </div>
+                      <span class="text-[#eed9b8] font-serif">${app.formatPrice(item.unitPrice * item.qty)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="pt-4 border-t border-[#26201b] space-y-2 text-xs">
+                  <div class="flex justify-between text-[#8e8577]">
+                    <span>Subtotal</span>
+                    <span class="text-[#e2ded9]">${app.formatPrice(subtotal)}</span>
+                  </div>
+                  <div class="flex justify-between text-[#8e8577]">
+                    <span>White-Glove Courier</span>
+                    <span class="text-[#c5a880] uppercase">Complimentary</span>
+                  </div>
+                  ${discount > 0 ? `
+                    <div class="flex justify-between text-[#c5a880]">
+                      <span>VIP Privileges</span>
+                      <span>-${app.formatPrice(discount)}</span>
+                    </div>
+                  ` : ''}
+                  <div class="flex justify-between font-cinzel text-base text-[#f4efe8] pt-3 border-t border-[#26201b]">
+                    <span class="uppercase">Amount Payable</span>
+                    <span class="text-[#eed9b8] font-bold">${app.formatPrice(total)}</span>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn-luxury w-full py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-bold uppercase shadow-xl">
+                  Complete Transaction
+                </button>
+
+                <div class="text-[10px] text-center text-[#665e53]">
+                  By confirming, you authorize Maison Alchémie to hand-bottle and dispatch your private order.
+                </div>
+              </div>
+
+            </form>
+          </div>
+        `;
+      },
+
+      confirmation(orderId) {
+        const order = appState.orders.find(o => o.id === orderId) || appState.orders[appState.orders.length - 1];
+
+        return `
+          <div class="py-20 px-6 max-w-3xl mx-auto text-center space-y-8">
+            <div class="w-16 h-16 rounded-full border border-[#c5a880] flex items-center justify-center mx-auto text-[#c5a880]">
+              <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+
+            <div>
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase mb-2">Order Confirmed &amp; Authenticated</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">
+                Gratitude, Esteemed Patron
+              </h1>
+              <p class="text-xs sm:text-sm text-[#b8afa3] mt-2">
+                Your bespoke commission has been committed to our Grasse laboratories.
+              </p>
+            </div>
+
+            <div class="p-6 bg-[#110e0c] border border-[#2b251f] text-left space-y-4 text-xs">
+              <div class="flex justify-between border-b border-[#26201b] pb-3 font-cinzel">
+                <span class="text-[#8e8577]">Order Reference:</span>
+                <span class="text-[#eed9b8] font-bold">${order ? order.id : '#MA-98421'}</span>
+              </div>
+              <div class="flex justify-between border-b border-[#26201b] pb-3">
+                <span class="text-[#8e8577]">Payment Gateway:</span>
+                <span class="text-[#c5a880]">Paystack Authenticated (${order ? order.reference : 'PSTK-VERIFIED-98421'})</span>
+              </div>
+              <div class="flex justify-between border-b border-[#26201b] pb-3">
+                <span class="text-[#8e8577]">Dispatch Window:</span>
+                <span class="text-[#e2ded9]">Within 48 hours (Temperature Regulated)</span>
+              </div>
+              <div class="flex justify-between pt-1 font-cinzel text-sm">
+                <span class="text-[#f4efe8] uppercase">Settled Total:</span>
+                <span class="text-[#eed9b8] font-bold">${order ? app.formatPrice(order.total) : '$0.00'}</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+              <button onclick="app.openView('track', { orderId: '${order ? order.id : '#MA-98421'}' })" class="btn-luxury px-8 py-3.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold">
+                Track Live Order Status
+              </button>
+              <button onclick="app.openView('home')" class="px-8 py-3.5 border border-[#332b25] text-[#eed9b8] font-cinzel text-xs tracking-[0.2em] uppercase hover:border-[#c5a880]">
+                Return to Maison
+              </button>
+            </div>
+          </div>
+        `;
+      },
+
+      track() {
+        return `
+          <div class="py-16 px-6 max-w-3xl mx-auto space-y-12">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Maison Logistics</div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">Order Tracking Portal</h1>
+              <p class="text-xs text-[#a89f91]">Monitor temperature-controlled courier progress for your private flacons.</p>
+            </div>
+
+            <div class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-6">
+              <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="track-ref-input" placeholder="Enter Order Reference (e.g. #MA-98421)" value="#MA-98421" class="flex-1 bg-[#171412] border border-[#332a24] p-3 text-xs text-[#f4efe8] font-mono focus:outline-none focus:border-[#c5a880]" />
+                <button onclick="app.queryOrderTracking()" class="btn-luxury px-6 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold">
+                  Track Flacon
+                </button>
+              </div>
+
+              <!-- Tracking Timeline -->
+              <div id="tracking-timeline-display" class="pt-6 border-t border-[#241f1b] space-y-6 text-xs">
+                <div class="flex gap-4 items-start">
+                  <div class="w-6 h-6 rounded-full bg-[#c5a880] text-black flex items-center justify-center font-bold text-[10px]">1</div>
+                  <div>
+                    <h4 class="font-cinzel text-[#eed9b8] uppercase">Cold-Cellar Extraction &amp; Hand-Bottling</h4>
+                    <p class="text-[11px] text-[#787063]">Completed at Maison Grasse Laboratory.</p>
+                  </div>
+                </div>
+                <div class="flex gap-4 items-start">
+                  <div class="w-6 h-6 rounded-full bg-[#c5a880] text-black flex items-center justify-center font-bold text-[10px]">2</div>
+                  <div>
+                    <h4 class="font-cinzel text-[#eed9b8] uppercase">Diamond Engraving &amp; Wax Seal Inspection</h4>
+                    <p class="text-[11px] text-[#787063]">Custom monograms verified by Master Artisan.</p>
+                  </div>
+                </div>
+                <div class="flex gap-4 items-start">
+                  <div class="w-6 h-6 rounded-full border border-[#c5a880] text-[#c5a880] flex items-center justify-center font-bold text-[10px]">3</div>
+                  <div>
+                    <h4 class="font-cinzel text-[#f4efe8] uppercase">Courier Hand-Off (In Transit)</h4>
+                    <p class="text-[11px] text-[#787063]">Air cargo express with climate-control tracking active.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      wishlist() {
+        const saved = PRODUCTS.filter(p => appState.wishlist.includes(p.id));
+
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto space-y-12">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Private Chamber</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">Saved Fragrances</h1>
+              <p class="text-xs text-[#a89f91]">Your personal wishlist of curated extraits.</p>
+            </div>
+
+            ${saved.length === 0 ? `
+              <div class="text-center py-20 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                <i data-lucide="heart" class="w-12 h-12 mx-auto text-[#4d443b] stroke-1"></i>
+                <p class="font-serif text-xl text-[#b8afa3]">No saved extraits in your private chamber.</p>
+                <button onclick="app.openView('catalog')" class="btn-luxury px-8 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold">
+                  Discover Scents
+                </button>
+              </div>
+            ` : `
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                ${saved.map(p => this.renderProductCard(p)).join('')}
+              </div>
+            `}
+          </div>
+        `;
+      },
+
+      profile() {
+        const user = appState.currentUser || { name: 'Esteemed Guest', email: 'guest@maison.com', tier: 'Private Client Circle' };
+
+        return `
+          <div class="py-16 px-6 max-w-4xl mx-auto space-y-12">
+            <div class="text-center space-y-2">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Private Portal</div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">Client Account</h1>
+            </div>
+
+            <div class="bg-[#110e0c] border border-[#2b251f] p-8 space-y-6">
+              <div class="flex justify-between items-start border-b border-[#26201b] pb-6">
+                <div>
+                  <h3 class="font-cinzel text-lg text-[#eed9b8] uppercase">${user.name}</h3>
+                  <div class="text-xs text-[#8e8577]">${user.email}</div>
+                  <div class="inline-block mt-2 text-[10px] text-[#c5a880] tracking-widest uppercase font-cinzel">Status: ${user.tier}</div>
+                </div>
+                <button onclick="app.handleLogout()" class="px-4 py-2 border border-[#332b25] text-xs text-[#8e8577] hover:text-white uppercase font-cinzel">
+                  Sign Out
+                </button>
+              </div>
+
+              <div class="space-y-4">
+                <h4 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider">Acquisition History</h4>
+                ${appState.orders.length === 0 ? `
+                  <p class="text-xs text-[#787063] italic">No historical orders associated with this browser session.</p>
+                ` : `
+                  <div class="space-y-3">
+                    ${appState.orders.map(o => `
+                      <div class="p-4 bg-[#161210] border border-[#2b251f] flex justify-between items-center text-xs">
+                        <div>
+                          <strong class="font-cinzel text-[#eed9b8]">${o.id}</strong>
+                          <div class="text-[10px] text-[#8e8577]">${o.date} · ${o.itemsCount} items</div>
+                        </div>
+                        <div class="text-right">
+                          <span class="font-serif text-[#f4efe8]">${app.formatPrice(o.total)}</span>
+                          <span class="block text-[10px] text-[#c5a880] uppercase">Settled</span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      story() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-16">
+            <div class="text-center space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Maison Heritage</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">The Philosophy of Scent</h1>
+            </div>
+
+            <div class="prose prose-invert max-w-none space-y-8 font-serif text-lg text-[#b8afa3] leading-relaxed">
+              <p>
+                Maison Alchémie was conceived at 18 Place Vendôme to counter the rapid homogenization of modern perfumery. In an era dominated by synthetic aroma-chemicals designed to evaporate in minutes, our atelier returned to slow French craftsmanship.
+              </p>
+              <div class="my-10 border-y border-[#26201b] py-8 text-center">
+                <blockquote class="font-cormorant text-2xl sm:text-3xl italic text-[#eed9b8]">
+                  "We do not create fragrances for trends. We sculpt olfactory monuments."
+                </blockquote>
+              </div>
+              <p>
+                Our Master Nose spends months in Grasse, Madagascar, and Cambodia negotiating directly with third-generation botanical harvesters. We insist on harvesting Centifolia roses in May during the narrow two-hour window between dawn mist and the sunrise burn, when the essential oils are richest.
+              </p>
+            </div>
+          </div>
+        `;
+      },
+
+      craftsmanship() {
+        return `
+          <div class="py-20 px-6 max-w-5xl mx-auto space-y-16">
+            <div class="text-center space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Grasse Laboratories</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">The Art of Distillation</h1>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-xs">
+              <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-3">
+                <h3 class="font-cinzel text-sm text-[#eed9b8] uppercase">Cold Enfleurage</h3>
+                <p class="text-[#8e8577] leading-relaxed">
+                  Used exclusively for delicate blossoms such as night-blooming jasmine and tuberose that would perish under steam heat.
+                </p>
+              </div>
+              <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-3">
+                <h3 class="font-cinzel text-sm text-[#eed9b8] uppercase">Supercritical CO₂ Extraction</h3>
+                <p class="text-[#8e8577] leading-relaxed">
+                  Extracts absolute fractions without chemical residues, preserving the authentic green prickle of fresh pink pepper and saffron.
+                </p>
+              </div>
+              <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-3">
+                <h3 class="font-cinzel text-sm text-[#eed9b8] uppercase">Oak Cask Maturation</h3>
+                <p class="text-[#8e8577] leading-relaxed">
+                  Our raw oud and vanilla blends mature in charred Allier oak barrels for 240 days, lending subtle lactonic and smoky facets.
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      journal() {
+        return `
+          <div class="py-20 px-6 max-w-5xl mx-auto space-y-16">
+            <div class="text-center space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Olfactory Journal</div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light">Dispatches from Grasse</h1>
+            </div>
+
+            <div class="space-y-12">
+              <article class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                <span class="text-[10px] font-mono text-[#c5a880] uppercase tracking-widest">March 2026 · Field Notes</span>
+                <h2 class="font-cormorant text-3xl text-[#eed9b8]">The Lost Art of Tuscan Orris Butter</h2>
+                <p class="text-xs text-[#a89f91] leading-relaxed">
+                  Why Florentine iris is considered the most expensive raw material in world perfumery, requiring six full years of rhizome seasoning before cold grinding.
+                </p>
+              </article>
+              <article class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                <span class="text-[10px] font-mono text-[#c5a880] uppercase tracking-widest">January 2026 · Masterclass</span>
+                <h2 class="font-cormorant text-3xl text-[#eed9b8]">The Geometry of Sillage &amp; Skin Chemistry</h2>
+                <p class="text-xs text-[#a89f91] leading-relaxed">
+                  Understanding why high-concentration perfume oils interact with natural body warmth rather than lingering purely as airborne sprays.
+                </p>
+              </article>
+            </div>
+          </div>
+        `;
+      },
+
+      shipping() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-12 text-xs">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Maison Logistics</div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">White-Glove Shipping</h1>
+            </div>
+            <div class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-6 text-[#a89f91] leading-relaxed">
+              <p>
+                All Maison Alchémie flacons are packed in custom thermal-insulated containers to ensure temperature shocks do not destabilize the high concentration of raw perfume oils in transit.
+              </p>
+              <p>
+                Courier delivery is complimentary worldwide for orders exceeding $100. Dispatches occur via insured private air courier with direct signature required upon delivery.
+              </p>
+            </div>
+          </div>
+        `;
+      },
+
+      returns() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-12 text-xs">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Maison Assurance</div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">Returns &amp; Guarantee</h1>
+            </div>
+            <div class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-6 text-[#a89f91] leading-relaxed">
+              <p>
+                Every 50ml and 100ml flacon arrives with a matching 2ml trial vial attached outside the sealed gift box. We invite you to experience the 2ml trial vial first.
+              </p>
+              <p>
+                If the scent does not complement your personal chemistry, you may return the unopened, sealed master flacon within 30 days for an exchange or refund.
+              </p>
+            </div>
+          </div>
+        `;
+      },
+
+      faq() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-12">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Inquiries</div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">Frequently Asked Questions</h1>
+            </div>
+
+            <div class="space-y-4 text-xs">
+              <details class="p-6 bg-[#110e0c] border border-[#2b251f] text-[#8e8577]">
+                <summary class="font-cinzel text-sm text-[#eed9b8] uppercase cursor-pointer">What is the difference between Extrait and Eau de Parfum?</summary>
+                <p class="mt-3 leading-relaxed">
+                  Extrait de Parfum contains between 28% and 35% pure fragrance oil, whereas standard Eau de Parfum contains 15% to 22%. Extraits project in a smoother, deeper manner and last 16+ hours on skin.
+                </p>
+              </details>
+              <details class="p-6 bg-[#110e0c] border border-[#2b251f] text-[#8e8577]">
+                <summary class="font-cinzel text-sm text-[#eed9b8] uppercase cursor-pointer">How should I store my luxury perfume flacon?</summary>
+                <p class="mt-3 leading-relaxed">
+                  Store flacons in a cool, dark environment away from direct sunlight and bathroom humidity. Under optimal conditions, high-concentration natural extraits age like fine vintage wine.
+                </p>
+              </details>
+              <details class="p-6 bg-[#110e0c] border border-[#2b251f] text-[#8e8577]">
+                <summary class="font-cinzel text-sm text-[#eed9b8] uppercase cursor-pointer">Are your perfumes IFRA compliant?</summary>
+                <p class="mt-3 leading-relaxed">
+                  Yes, every formulation adheres strictly to International Fragrance Association (IFRA) safety standards while maximizing the proportion of pure botanical absolutes.
+                </p>
+              </details>
+            </div>
+          </div>
+        `;
+      },
+
+      concierge() {
+        return `
+          <div class="py-20 px-6 max-w-3xl mx-auto space-y-12">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase">Private Salon</div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light">Client Concierge</h1>
+              <p class="text-xs text-[#a89f91]">Direct correspondence with our Paris atelier advisors.</p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); app.showToast('Your private inquiry has been assigned to a Maison Concierge.'); event.target.reset();" class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-4 text-xs">
+              <div>
+                <label class="block text-[10px] text-[#8e8577] uppercase mb-1">Your Full Name</label>
+                <input type="text" required class="w-full bg-[#171412] border border-[#332a24] p-3 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-[#8e8577] uppercase mb-1">Private Email</label>
+                <input type="email" required class="w-full bg-[#171412] border border-[#332a24] p-3 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-[#8e8577] uppercase mb-1">Nature of Inquiry</label>
+                <select class="w-full bg-[#171412] border border-[#332a24] p-3 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none">
+                  <option>Bespoke Commission &amp; Custom Flacon</option>
+                  <option>Private Tasting Appointment in Paris</option>
+                  <option>Order &amp; Vintage Allocation Inquiry</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-[#8e8577] uppercase mb-1">Message</label>
+                <textarea rows="4" required class="w-full bg-[#171412] border border-[#332a24] p-3 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none"></textarea>
+              </div>
+              <button type="submit" class="btn-luxury w-full py-4 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold">
+                Submit Private Inquiry
+              </button>
+            </form>
+          </div>
+        `;
+      },
+
+      privacy() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-8 text-xs text-[#a89f91] leading-relaxed">
+            <h1 class="font-cormorant text-4xl text-[#f4efe8]">Privacy Policy</h1>
+            <p>Maison Alchémie treats customer confidentiality with sovereign discretion. We never monetize or distribute client data to advertising networks. Transactions are tokenized directly with PCI-certified gateways.</p>
+          </div>
+        `;
+      },
+
+      terms() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-8 text-xs text-[#a89f91] leading-relaxed">
+            <h1 class="font-cormorant text-4xl text-[#f4efe8]">Terms of Sale</h1>
+            <p>All sales of limited harvest batches and numbered flacons are subject to availability. Proof of payment is required prior to laboratory bottling.</p>
+          </div>
+        `;
+      },
+
+      legal() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-8 text-xs text-[#a89f91] leading-relaxed">
+            <h1 class="font-cormorant text-4xl text-[#f4efe8]">IFRA Disclosures &amp; Transparency</h1>
+            <p>All formulations adhere to international cosmetic safety directives. Known allergens such as naturally occurring geraniol, linalool, and citronellol in raw rose and citrus oils are clearly itemized on outer secondary packaging.</p>
+          </div>
+        `;
+      }
+    };
+
+    // PDP SCRIPT INTERACTIVITY HELPERS
+    app.selectDetailSize = function(prodId, size, btn) {
+      const p = PRODUCTS.find(x => x.id === prodId);
+      if (!p) return;
+      const mult = p.sizeMultipliers[size] || 1;
+      const newPrice = p.prices.USD * mult;
+      document.getElementById('pdp-price-display').textContent = app.formatPrice(newPrice);
+
+      const buttons = btn.parentElement.querySelectorAll('button');
+      buttons.forEach(b => {
+        b.className = 'p-2.5 text-xs font-cinzel uppercase border border-[#332b25] text-[#8e8577] hover:border-[#c5a880]';
+      });
+      btn.className = 'p-2.5 text-xs font-cinzel uppercase border border-[#c5a880] text-[#eed9b8] bg-[#1a1512]';
+      btn.dataset.selectedSize = size;
+    };
+
+    app.togglePdpEngraving = function(checked) {
+      const wrap = document.getElementById('engraving-input-wrap');
+      const badge = document.getElementById('bottle-engraving-badge');
+      if (checked) {
+        wrap.classList.remove('hidden');
+        badge.classList.remove('hidden');
+      } else {
+        wrap.classList.add('hidden');
+        badge.classList.add('hidden');
+      }
+    };
+
+    app.updatePdpEngravingPreview = function(val) {
+      document.getElementById('live-engraving-text').textContent = val || 'A·L';
+    };
+
+    app.addCurrentDetailToBag = function(prodId) {
+      const p = PRODUCTS.find(x => x.id === prodId);
+      if (!p) return;
+      const activeSizeBtn = document.querySelector('[data-selected-size]');
+      const size = activeSizeBtn ? activeSizeBtn.dataset.selectedSize : p.sizes[0];
+      const isEngraved = document.getElementById('engraving-toggle')?.checked;
+      const engravingText = isEngraved ? (document.getElementById('engraving-text-input')?.value || 'A·L') : '';
+
+      app.addToCart(prodId, size, engravingText);
+    };
+
+    // GIFTING STUDIO HELPERS
+    app.updateGiftingPreview = function(prodId) {
+      const p = PRODUCTS.find(x => x.id === prodId);
+      if (p) document.getElementById('gifting-preview-img').src = p.image;
+    };
+
+    app.updateGiftingEngraving = function(val) {
+      appState.engravingDraft.text = val || 'A·L';
+      document.getElementById('gifting-live-engraving').textContent = appState.engravingDraft.text;
+    };
+
+    app.setGiftingRibbon = function(ribbon, btn) {
+      appState.engravingDraft.ribbon = ribbon;
+      const buttons = btn.parentElement.querySelectorAll('button');
+      buttons.forEach(b => b.className = 'p-2.5 text-[11px] font-cinzel border border-[#383029] hover:border-[#c5a880] text-[#a89f91] uppercase');
+      btn.className = 'p-2.5 text-[11px] font-cinzel border border-[#c5a880] text-[#eed9b8] bg-[#1a1512] uppercase';
+    };
+
+    app.addGiftingFlaconToBag = function() {
+      const prodId = document.getElementById('gifting-fragrance-select').value;
+      const p = PRODUCTS.find(x => x.id === prodId);
+      if (!p) return;
+      app.addToCart(prodId, p.sizes[0], appState.engravingDraft.text);
+      app.showToast(`Bespoke Engraved ${p.name} added to your bag.`);
+    };
+
+    // FRAGRANCE FINDER QUIZ HELPERS
+    app.setQuizAnswer = function(qKey, val, btn) {
+      appState.quizAnswers[qKey] = val;
+      const buttons = btn.parentElement.querySelectorAll('.quiz-btn');
+      buttons.forEach(b => {
+        b.classList.remove('border-[#c5a880]', 'bg-[#1a1512]');
+        b.classList.add('border-[#332a24]');
+      });
+      btn.classList.add('border-[#c5a880]', 'bg-[#1a1512]');
+      btn.classList.remove('border-[#332a24]');
+    };
+
+    app.calculateQuizRecommendation = function() {
+      const mood = appState.quizAnswers['mood'] || 'nocturnal';
+      let match = PRODUCTS[0]; // Oud Nocturne default
+
+      if (mood === 'ethereal') match = PRODUCTS[1]; // Iris Céleste
+      else if (mood === 'opulent') match = PRODUCTS[2]; // Ambre Vénitien
+      else if (mood === 'gourmand') match = PRODUCTS[5]; // Vanille Bourbon Noire
+
+      const resultArea = document.getElementById('quiz-result-area');
+      resultArea.classList.remove('hidden');
+      resultArea.innerHTML = `
+        <div class="p-6 bg-[#171412] border border-[#c5a880] flex flex-col md:flex-row gap-6 items-center">
+          <img src="${match.image}" class="w-28 h-36 object-cover border border-[#2b251f]" alt="${match.name}" />
+          <div class="space-y-2 flex-1">
+            <span class="text-[10px] text-[#c5a880] uppercase tracking-widest font-cinzel">Bespoke Recommendation</span>
+            <h3 class="font-cinzel text-xl text-[#f4efe8] uppercase">${match.name} (${match.subtitle})</h3>
+            <p class="text-xs text-[#b8afa3] leading-relaxed">
+              Based on your preference for <strong>${mood}</strong> sillage, ${match.name} offers the ideal harmonization of ${match.topNotes[0]} and ${match.baseNotes[0]}.
+            </p>
+            <div class="pt-2 flex gap-3">
+              <button onclick="app.openProductDetail('${match.id}')" class="btn-luxury px-4 py-2 bg-[#c5a880] text-black font-cinzel text-xs uppercase font-semibold">
+                View Full Olfactory Pyramid
+              </button>
+              <button onclick="app.addToCart('${match.id}')" class="px-4 py-2 border border-[#3d342c] hover:border-[#c5a880] text-[#eed9b8] font-cinzel text-xs uppercase">
+                Acquire Flacon (${app.formatPrice(match.prices.USD)})
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      if (window.lucide) lucide.createIcons();
+    };
+
+    // CHECKOUT PROCESSOR WITH PAYSTACK REAL GATEWAY OR VERIFIED SIMULATION
+    app.processCheckoutOrder = function(e) {
+      e.preventDefault();
+      if (appState.cart.length === 0) {
+        app.showToast('Your bag is empty.');
+        return;
+      }
+
+      const email = document.getElementById('checkout-email').value;
+      const fname = document.getElementById('checkout-fname').value;
+      const lname = document.getElementById('checkout-lname').value;
+      const subtotal = appState.cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+      let discount = 0;
+      if (appState.appliedVoucher) {
+        discount = subtotal * (appState.appliedVoucher.percent / 100);
+      }
+      const totalAmount = Math.max(0, subtotal - discount);
+      const orderRef = 'MA-' + Math.floor(100000 + Math.random() * 900000);
+
+      // Check if Paystack script is present and valid key is set
+      const pubKey = appState.paystackPublicKey;
+      const isRealKey = pubKey && pubKey.startsWith('pk_');
+
+      if (window.PaystackPop && isRealKey && pubKey !== 'pk_test_sample_maison_key_demo') {
+        // Real Paystack Inline popup
+        const handler = PaystackPop.setup({
+          key: pubKey,
+          email: email,
+          amount: Math.round(totalAmount * (appState.currency === 'NGN' ? 1 : 100)), // kobo or cents
+          currency: appState.currency === 'NGN' ? 'NGN' : 'USD',
+          ref: orderRef,
+          metadata: {
+            custom_fields: [
+              { display_name: "Client Name", variable_name: "client_name", value: `${fname} ${lname}` },
+              { display_name: "Flacons Count", variable_name: "flacons_count", value: appState.cart.length }
+            ]
+          },
+          callback: function(response) {
+            // Payment verified by Paystack
+            app.finalizeOrder(orderRef, totalAmount, response.reference || orderRef);
+          },
+          onClose: function() {
+            app.showToast('Payment window closed. Transaction preserved in pending state.');
+          }
+        });
+        handler.openIframe();
+      } else {
+        // High-Fidelity Luxury Simulation Mode (Transparent demonstration)
+        app.showToast('Initializing Paystack Transaction Gateway...');
+        setTimeout(() => {
+          app.finalizeOrder(orderRef, totalAmount, 'PSTK-' + orderRef);
+        }, 1200);
+      }
+    };
+
+    app.finalizeOrder = function(orderId, total, pRef) {
+      const order = {
+        id: orderId,
+        reference: pRef,
+        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        total: total,
+        itemsCount: appState.cart.reduce((s, i) => s + i.qty, 0),
+        status: 'Confirmed & In Grasse Cold Cellar'
+      };
+
+      appState.orders.unshift(order);
+      localStorage.setItem('maison_orders', JSON.stringify(appState.orders));
+      appState.cart = [];
+      localStorage.setItem('maison_cart', JSON.stringify([]));
+      app.updateHeaderCartBadge();
+      app.openView('confirmation', { orderId: orderId });
+      app.showToast(`Order ${orderId} verified and confirmed!`);
+    };
+
+    app.queryOrderTracking = function() {
+      const ref = document.getElementById('track-ref-input').value;
+      app.showToast(`Status updated for commission ${ref}`);
+    };
+
+    // Initialize application on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      app.init();
+    });
+  </script>
+</body>
+</html>

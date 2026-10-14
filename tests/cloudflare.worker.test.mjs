@@ -17,6 +17,11 @@ function createDatabase() {
             async first() {
               if (query.includes("FROM catalog_snapshots")) return rows.get(values[0]) || null;
               if (query.includes("FROM accounts")) return accounts.get(values[0]) || null;
+              if (query.includes("FROM account_tenants")) {
+                return accountTenants.find(row => row.username === values[0] && row.tenant_id === values[1])
+                  ? { owned: 1 }
+                  : null;
+              }
               throw new Error(`Unsupported first query: ${query}`);
             },
             async all() {
@@ -55,6 +60,12 @@ function createDatabase() {
                 rows.set(values[0], { payload: values[1], admin_payload: values[2], updated_at: values[3] });
                 return { success: true, meta: { changes: 1 } };
               }
+              if (query.includes("UPDATE catalog_snapshots SET payload")) {
+                const current = rows.get(values[3]);
+                assert.ok(current, 'A partial settings publish should update an existing catalog.');
+                rows.set(values[3], { payload: values[0], admin_payload: values[1], updated_at: values[2] });
+                return { success: true, meta: { changes: 1 } };
+              }
               throw new Error(`Unsupported run query: ${query}`);
             }
           };
@@ -71,6 +82,7 @@ function createDatabase() {
 function createStorefrontOrderDatabase() {
   const orders = new Map();
   const paystackSubaccounts = new Map();
+  const paystackOwnerDefaults = new Map();
   const catalog = {
     store: { currency: 'KES' },
     products: [{ id: 7, name: 'Canvas Tote', sku: 'TOTE-7', price: 12.5, stock: 8 }]
@@ -78,12 +90,17 @@ function createStorefrontOrderDatabase() {
   return {
     orders,
     paystackSubaccounts,
+    paystackOwnerDefaults,
     prepare(query) {
       return {
         bind(...values) {
           return {
             async first() {
               if (query.includes('FROM catalog_snapshots')) return { payload: JSON.stringify(catalog) };
+              if (query.includes('FROM paystack_owner_defaults defaults')) {
+                const selected = paystackOwnerDefaults.get(values[0]);
+                return selected ? paystackSubaccounts.get(selected.source_tenant_id) || null : null;
+              }
               if (query.includes('FROM paystack_subaccounts')) return paystackSubaccounts.get(values[0]) || null;
               if (query.includes('WHERE tenant_id=? AND idempotency_key=?')) {
                 return orders.get(`${values[0]}:${values[1]}`) || null;
@@ -162,17 +179,39 @@ function createStorefrontOrderDatabase() {
 
 function createPaystackDatabase() {
   const rows = new Map();
+  const defaults = new Map();
+  const accountTenants = new Set();
   return {
     rows,
+    defaults,
+    accountTenants,
     prepare(query) {
       return {
         bind(...values) {
           return {
             async first() {
+              if (query.includes('FROM paystack_owner_defaults defaults')) {
+                const selected = defaults.get(values[0]);
+                return selected ? rows.get(selected.source_tenant_id) || null : null;
+              }
+              if (query.includes('FROM paystack_owner_defaults')) {
+                return defaults.has(values[0]) ? defaults.get(values[0]) : null;
+              }
               if (query.includes('FROM paystack_subaccounts')) return rows.get(values[0]) || null;
+              if (query.includes('FROM account_tenants')) {
+                return accountTenants.has(`${values[0]}:${values[1]}`) ? { owned: 1 } : null;
+              }
               throw new Error(`Unsupported Paystack first query: ${query}`);
             },
             async run() {
+              if (query.includes('INSERT INTO paystack_owner_defaults')) {
+                const [owner_username, source_tenant_id, created_at, updated_at] = values;
+                const previous = defaults.get(owner_username);
+                defaults.set(owner_username, {
+                  owner_username, source_tenant_id, created_at: previous?.created_at || created_at, updated_at
+                });
+                return { meta: { changes: 1 } };
+              }
               if (query.includes('INSERT OR IGNORE INTO paystack_subaccounts')) {
                 if (rows.has(values[0])) return { meta: { changes: 0 } };
                 rows.set(values[0], {
@@ -501,6 +540,96 @@ test('Cloudflare Worker serves the shared HTML in storefront mode', async () => 
   assert.equal(response.status, 200);
   assert.equal(assetPath, '/builder-storefront');
   assert.match(await response.text(), /__ESHOP_CLOUDFLARE_STOREFRONT__ = true/);
+});
+
+test('Cloudflare Worker serves the published R2 theme at the shop root', async () => {
+  const themeId = 'woodora-modern-furniture-luxury-home-interiors-kenya';
+  let assetPath;
+  const DB = {
+    prepare(query) {
+      assert.match(query, /SELECT payload FROM catalog_snapshots/);
+      return {
+        bind(tenantId) {
+          assert.equal(tenantId, 'main');
+          return {
+            async first() {
+              return {
+                payload: JSON.stringify({
+                  store: {
+                    website_theme_id: themeId,
+                    primary_color: '#7C3AED',
+                    background_color: '#F4F1FF',
+                    surface_color: '#FFFFFF',
+                    text_color: '#17172F',
+                    accent2_color: '#F06445',
+                    accent3_color: '#8FD14F',
+                    font_family: 'DM Sans',
+                    display_font_family: 'Playfair Display',
+                    card_shape: 'rounded',
+                    whatsapp_enabled: 1,
+                    whatsapp_url: 'https://wa.me/254700000000',
+                    instagram_url: 'https://instagram.com/example',
+                    location_name: 'Main shop',
+                    location_address: 'Nairobi, Kenya',
+                    mobile_card_layout: { columns: 3, scope: 'selected', sections: ['new-arrivals-1'] },
+                    element_edits: [{
+                      selector: 'body > main:nth-of-type(1) > h1:nth-of-type(1)',
+                      kind: 'text',
+                      text: 'Updated <script>alert(1)</script> heading',
+                      offsetX: 12
+                    }]
+                  },
+                  products: [{ id: 12, name: '</script><script>alert(1)</script>', category_id: 4, price: 35 }],
+                  categories: [{ id: 4, name: 'Owner category', slug: 'owner-category' }]
+                })
+              };
+            }
+          };
+        }
+      };
+    }
+  };
+  const response = await worker.fetch(new Request('https://shop.example/'), {
+    DB,
+    BUSINESS_ARCHIVE: {
+      async get(key) {
+        assetPath = key;
+        return {
+          body: '<!doctype html><html><head><title>Theme</title></head><body><main><h1>Woodora</h1></main></body></html>',
+          httpMetadata: { contentType: 'text/html; charset=utf-8' }
+        };
+      }
+    },
+    ASSETS: {
+      async fetch() {
+        throw new Error('The shared storefront must not be loaded for a published theme.');
+      }
+    }
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(assetPath, `themes/${themeId}/index.html`);
+  const html = await response.text();
+  assert.match(html, new RegExp(`<base href="/themes/${themeId}/">`));
+  assert.match(html, /Woodora/);
+  assert.match(html, /primary_color|#7C3AED/);
+  assert.match(html, /Updated \\u003cscript>alert\(1\)\\u003c\/script> heading/);
+  assert.match(html, /d\.querySelector\(edit\.selector\)/);
+  assert.match(html, /window\.__ESHOP_THEME_CATALOG__=/);
+  assert.match(html, /<script src="\/theme-catalog-adapter\.js" defer><\/script>/);
+  assert.match(html, /"name":"\\u003c\/script>\\u003cscript>alert\(1\)\\u003c\/script>"/);
+  assert.match(html, /"name":"Owner category"/);
+  assert.match(html, /"whatsapp_enabled":1/);
+  assert.match(html, /"accent2Color":"#F06445"/);
+  assert.match(html, /"accent3Color":"#8FD14F"/);
+  assert.match(html, /--eshop-accent-gradient:linear-gradient\(110deg,/);
+  assert.match(html, /background-image:linear-gradient\(110deg,/);
+  assert.match(html, /"instagram_url":"https:\/\/instagram\.com\/example"/);
+  assert.match(html, /"location_name":"Main shop"/);
+  assert.match(html, /displayFontFamily/);
+  assert.match(html, /shape==="rounded"\?"16px"/);
+  assert.match(html, /fonts\.googleapis\.com/);
+  assert.doesNotMatch(html, /mobile_card_layout/);
 });
 
 test('Cloudflare Worker serves the browser POS app at /register without replacing the storefront root', async () => {
@@ -935,6 +1064,185 @@ test('Paystack setup sends bank details only upstream and persists masked connec
   }
 });
 
+test('a shop owner can reuse a connected Paystack subaccount on another owned website', async () => {
+  const DB = createPaystackDatabase();
+  const TENANTS = createTenantStore();
+  const sessionToken = 'paystack-reuse-account-session';
+  await TENANTS.put(
+    `session:${await sha256HexForTest(sessionToken)}`,
+    JSON.stringify({ username: 'shop-owner' })
+  );
+  assert.deepEqual(
+    await TENANTS.get(`session:${await sha256HexForTest(sessionToken)}`, 'json'),
+    { username: 'shop-owner' }
+  );
+  const sourceOwnerToken = 'source-shop-owner-key';
+  const mainOwnerToken = 'main-shop-owner-key';
+  await TENANTS.put('tenant:source-shop', JSON.stringify({
+    id: 'source-shop', owner_username: 'shop-owner',
+    owner_token_hash: await sha256HexForTest(sourceOwnerToken)
+  }));
+  await TENANTS.put('tenant:main', JSON.stringify({
+    id: 'main', owner_token_hash: await sha256HexForTest(mainOwnerToken)
+  }));
+  await TENANTS.put('tenant:new-store', JSON.stringify({ id: 'new-store', owner_username: 'shop-owner' }));
+  await TENANTS.put('tenant:new-main-store', JSON.stringify({ id: 'new-main-store', owner_username: 'shop-owner' }));
+  await TENANTS.put('tenant:other-owner-store', JSON.stringify({ id: 'other-owner-store', owner_username: 'other-owner' }));
+  DB.accountTenants.add('shop-owner:source-shop');
+  DB.accountTenants.add('shop-owner:new-store');
+  DB.rows.set('source-shop', {
+    tenant_id: 'source-shop', subaccount_code: 'ACCT_shared123', status: 'connected',
+    bank_name: 'Example Bank', account_last4: '6789', created_at: '2026-10-10T00:00:00.000Z',
+    updated_at: '2026-10-10T00:00:00.000Z'
+  });
+  DB.rows.set('main', {
+    tenant_id: 'main', subaccount_code: 'ACCT_main123', status: 'connected',
+    bank_name: 'Main Bank', account_last4: '4321', created_at: '2026-10-10T00:00:00.000Z',
+    updated_at: '2026-10-10T00:00:00.000Z'
+  });
+  DB.rows.set('source-shop-2', {
+    tenant_id: 'source-shop-2', subaccount_code: 'ACCT_shared456', status: 'connected',
+    bank_name: 'Second Bank', account_last4: '2468', created_at: '2026-10-10T00:00:00.000Z',
+    updated_at: '2026-10-10T00:00:00.000Z'
+  });
+  await TENANTS.put('tenant:source-shop-2', JSON.stringify({
+    id: 'source-shop-2', owner_username: 'shop-owner',
+    owner_token_hash: await sha256HexForTest('second-source-key')
+  }));
+  DB.accountTenants.add('shop-owner:source-shop-2');
+  const baseUrl = 'https://eshop-storefront.workers.dev/api/payments/paystack/link';
+  const request = (tenantId, sessionCredential, sourceTenantId, sourceOwnerCredential) => {
+    const headers = new Headers({ 'Content-Type': 'application/json' });
+    headers.set('Authorization', ['Bearer', sessionCredential].join(' '));
+    return worker.fetch(new Request(
+      `${baseUrl}?tenant=${encodeURIComponent(tenantId)}`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          source_tenant_id: sourceTenantId,
+          source_owner_token: sourceOwnerCredential
+        })
+      }
+    ), { DB, TENANTS });
+  };
+
+  const unauthorized = await request('other-owner-store', sessionToken, 'source-shop', sourceOwnerToken);
+  assert.equal(unauthorized.status, 403);
+  assert.equal(DB.rows.has('other-owner-store'), false);
+
+  const linked = await request('new-store', sessionToken, 'source-shop', sourceOwnerToken);
+  assert.equal(linked.status, 200, await linked.clone().text());
+  assert.deepEqual((await linked.json()).account, {
+    configured: true, connected: true, status: 'connected', bank_name: 'Example Bank',
+    account_last4: '6789', updated_at: DB.rows.get('new-store').updated_at
+  });
+  assert.equal(DB.rows.get('new-store').subaccount_code, DB.rows.get('source-shop').subaccount_code);
+
+  const mainSource = await request('new-main-store', sessionToken, 'main', mainOwnerToken);
+  assert.equal(mainSource.status, 200);
+  assert.equal(DB.rows.get('new-main-store').subaccount_code, 'ACCT_main123');
+
+  const cannotBorrow = await request('new-store', sessionToken, 'other-owner-store', 'not-their-owner-key');
+  assert.equal(cannotBorrow.status, 403);
+
+  const defaultUrl = 'https://eshop-storefront.workers.dev/api/payments/paystack/default';
+  const setDefault = sourceTenantId => worker.fetch(new Request(`${defaultUrl}?tenant=new-store`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${sessionToken}`
+    },
+    body: JSON.stringify({
+      source_tenant_id: sourceTenantId,
+      source_owner_token: sourceTenantId === 'source-shop' ? sourceOwnerToken : 'second-source-key'
+    })
+  }), { DB, TENANTS });
+  const firstDefault = await setDefault('source-shop');
+  assert.equal(firstDefault.status, 200, await firstDefault.clone().text());
+  assert.equal(DB.defaults.get('shop-owner').source_tenant_id, 'source-shop');
+  const defaultRead = await worker.fetch(new Request(`${defaultUrl}?tenant=new-store`, {
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  }), { DB, TENANTS });
+  const defaultResponse = await defaultRead.json();
+  assert.equal(defaultResponse.default_account.tenant_id, 'source-shop');
+  assert.equal(defaultResponse.default_account.account_last4, '6789');
+
+  const switchedDefault = await setDefault('source-shop-2');
+  assert.equal(switchedDefault.status, 200, await switchedDefault.clone().text());
+  assert.equal(DB.defaults.get('shop-owner').source_tenant_id, 'source-shop-2');
+
+  const foreignDefault = await worker.fetch(new Request(`${defaultUrl}?tenant=other-owner-store`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${sessionToken}`
+    },
+    body: JSON.stringify({
+      source_tenant_id: 'source-shop-2',
+      source_owner_token: 'second-source-key'
+    })
+  }), { DB, TENANTS });
+  assert.equal(foreignDefault.status, 403);
+});
+
+test('websites under one app account use its shared default Paystack account at checkout', async () => {
+  const DB = createStorefrontOrderDatabase();
+  const TENANTS = createTenantStore();
+  await TENANTS.put('tenant:website-two', JSON.stringify({
+    id: 'website-two', owner_username: 'shop-owner'
+  }));
+  DB.paystackSubaccounts.set('website-two', {
+    tenant_id: 'website-two', subaccount_code: 'ACCT_olderSite', status: 'connected'
+  });
+  DB.paystackSubaccounts.set('website-one', {
+    tenant_id: 'website-one', subaccount_code: 'ACCT_appDefault', status: 'connected'
+  });
+  DB.paystackOwnerDefaults.set('shop-owner', { source_tenant_id: 'website-one' });
+  const created = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/orders?tenant=website-two',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        idempotency_key: '526a8092-8825-4285-854e-e96bcd958ee5',
+        customer_name: 'Test Customer',
+        customer_email: 'customer@example.test',
+        items: [{ product_id: 7, quantity: 1 }]
+      })
+    }
+  ), { DB, TENANTS });
+  const createdOrder = (await created.json()).order;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init = {}) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith('/transaction/initialize')) {
+      const body = JSON.parse(init.body);
+      assert.equal(body.subaccount, 'ACCT_appDefault');
+      assert.equal(body.amount, 1250);
+      return Response.json({
+        status: true,
+        data: { reference: body.reference, authorization_url: 'https://checkout.paystack.com/default' }
+      });
+    }
+    throw new Error(`Unexpected payment fetch: ${url.pathname}`);
+  };
+  try {
+    const initialized = await worker.fetch(new Request(
+      `https://eshop-storefront.workers.dev/api/payments/paystack/initialize?tenant=website-two`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_number: createdOrder.order_number })
+      }
+    ), { DB, TENANTS, PAYSTACK_SECRET_KEY: 'test-paystack-secret' });
+    assert.equal(initialized.status, 200, await initialized.clone().text());
+    assert.equal((await initialized.json()).authorization_url, 'https://checkout.paystack.com/default');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('Paystack checkout uses the shop subaccount and verifies signed payments idempotently', async () => {
   const DB = createStorefrontOrderDatabase();
   const TENANTS = createTenantStore();
@@ -1073,12 +1381,22 @@ test('Paystack migration stores only tenant-scoped references and masked account
   const db = new SQL.Database();
   try {
     db.exec(await readFile(new URL('../cloudflare/migrations/0009_paystack_subaccounts.sql', import.meta.url), 'utf8'));
+    db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at) VALUES ('shop-a','ACCT_test123','connected','Example Bank','6789','now','now')");
+    db.exec(await readFile(new URL('../cloudflare/migrations/0013_reusable_paystack_subaccounts.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0014_allow_pending_paystack_setup.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0015_app_default_paystack_account.sql', import.meta.url), 'utf8'));
     const columns = db.exec('PRAGMA table_info(paystack_subaccounts)')[0].values.map(row => row[1]);
     assert.deepEqual(columns, [
       'tenant_id', 'subaccount_code', 'status', 'bank_name', 'account_last4', 'created_at', 'updated_at'
     ]);
-    db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at) VALUES ('shop-a','ACCT_test123','connected','Example Bank','6789','now','now')");
-    assert.throws(() => db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at) VALUES ('shop-b','ACCT_test123','connected','Example Bank','6789','now','now')"), /UNIQUE constraint failed/);
+    assert.equal(db.exec("SELECT subaccount_code FROM paystack_subaccounts WHERE tenant_id='shop-a'")[0].values[0][0], 'ACCT_test123');
+    db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at) VALUES ('shop-b','ACCT_test123','connected','Example Bank','6789','now','now')");
+    db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at) VALUES ('shop-c',NULL,'setup_in_progress','','','now','now')");
+    assert.equal(db.exec("SELECT COUNT(*) FROM paystack_subaccounts WHERE subaccount_code='ACCT_test123'")[0].values[0][0], 2);
+    db.run("INSERT INTO paystack_owner_defaults (owner_username,source_tenant_id,created_at,updated_at) VALUES ('owner-a','shop-a','now','now')");
+    db.run("INSERT INTO paystack_owner_defaults (owner_username,source_tenant_id,created_at,updated_at) VALUES ('owner-b','shop-b','now','now')");
+    assert.equal(db.exec("SELECT COUNT(*) FROM paystack_owner_defaults")[0].values[0][0], 2);
+    assert.throws(() => db.run("INSERT INTO paystack_owner_defaults (owner_username,source_tenant_id,created_at,updated_at) VALUES ('owner-a','shop-b','now','now')"));
   } finally {
     db.close();
   }
@@ -1262,6 +1580,7 @@ test('catalog publishing is authenticated and stores only public fields and link
       primary_color: '#7C3AED',
       background_color: '#FAFAF8',
       text_color: '#141413',
+      website_theme_id: 'woodora-luxury-furniture',
       font_family: 'humanist',
       element_edits: [
         {
@@ -1288,10 +1607,25 @@ test('catalog publishing is authenticated and stores only public fields and link
           selector: '#app > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1) > svg:nth-of-type(1)',
           kind: 'icon',
           rotation: 15,
+          offsetX: 999,
+          offsetY: -16,
+          linkDeleted: true,
           href: '/collections',
           linkSelector: '#app > main:nth-of-type(1) > nav:nth-of-type(1) > a:nth-of-type(1)',
           lineage: [{ tag: 'svg', classes: '', id: '', productId: '', slide: '' }],
           linkLineage: [{ tag: 'a', classes: 'nav-link', id: '', productId: '', slide: '' }]
+        },
+        {
+          selector: '#app > main:nth-of-type(1) > section:nth-of-type(1) > div:nth-of-type(1)',
+          kind: 'group',
+          offsetX: -18,
+          offsetY: 32,
+          lineage: [{ tag: 'div', classes: 'hero-slide', id: '', productId: '', slide: '0', href: '', text: '' }]
+        },
+        {
+          selector: 'body > main:nth-of-type(1) > h1:nth-of-type(1)',
+          kind: 'text',
+          text: 'Body-based theme edit'
         }
       ]
     },
@@ -1322,6 +1656,7 @@ test('catalog publishing is authenticated and stores only public fields and link
   assert.equal(result.categories[0].image, '');
   assert.equal(result.store.email, 'hello@example.com');
   assert.equal(result.store.primary_color, '#7C3AED');
+  assert.equal(result.store.website_theme_id, 'woodora-luxury-furniture');
   assert.equal(result.store.font_family, 'humanist');
   assert.equal(result.store.element_edits[0].text, 'Edited heading');
   assert.equal(result.store.element_edits[0].identity, 'text:abc:def:80');
@@ -1332,7 +1667,48 @@ test('catalog publishing is authenticated and stores only public fields and link
   assert.equal(result.store.element_edits[1].rotation, 345);
   assert.equal(result.store.element_edits[2].kind, 'icon');
   assert.equal(result.store.element_edits[2].href, '/collections');
+  assert.equal(result.store.element_edits[2].offsetX, 240);
+  assert.equal(result.store.element_edits[2].offsetY, -16);
+  assert.equal(result.store.element_edits[2].linkDeleted, true);
+  assert.equal(result.store.element_edits[3].kind, 'group');
+  assert.equal(result.store.element_edits[3].offsetX, -18);
+  assert.equal(result.store.element_edits[3].lineage[0].href, '');
+  assert.equal(result.store.element_edits[4].selector, 'body > main:nth-of-type(1) > h1:nth-of-type(1)');
+  assert.equal(result.store.element_edits[4].text, 'Body-based theme edit');
   assert.deepEqual(result.pages.map(page => page.slug), ['about']);
+
+  const partialPublish = await worker.fetch(new Request('https://shop.example/api/catalog?tenant=main', {
+    method: 'PATCH',
+    headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ store: {
+      whatsapp_enabled: 1,
+      whatsapp_url: 'https://wa.me/254700000000',
+      location_name: 'Nairobi shop',
+      color_theme: 'chromatic-studio',
+      primary_color: '#5B5CF0',
+      background_color: '#F4F1FF',
+      surface_color: '#FFFFFF',
+      text_color: '#17172F',
+      accent2_color: '#F06445',
+      accent3_color: '#8FD14F',
+      design_theme: 'quiet-lounge'
+    } })
+  }), env);
+  assert.equal(partialPublish.status, 200);
+  assert.equal((await partialPublish.json()).settings_only, true);
+  const afterPartial = await (await worker.fetch(new Request('https://rrobin.co.ke/api/catalog'), env)).json();
+  assert.equal(afterPartial.products[0].name, 'Runner');
+  assert.equal(afterPartial.store.email, 'hello@example.com');
+  assert.equal(afterPartial.store.whatsapp_enabled, 1);
+  assert.equal(afterPartial.store.whatsapp_url, 'https://wa.me/254700000000');
+  assert.equal(afterPartial.store.location_name, 'Nairobi shop');
+  assert.equal(afterPartial.store.color_theme, 'chromatic-studio');
+  assert.equal(afterPartial.store.primary_color, '#5B5CF0');
+  assert.equal(afterPartial.store.accent2_color, '#F06445');
+  assert.equal(afterPartial.store.accent3_color, '#8FD14F');
+  assert.equal(afterPartial.store.design_theme, 'quiet-lounge');
+  assert.equal(afterPartial.products.length, 1);
+  assert.equal(afterPartial.categories.length, 1);
   assert.match(result.updated_at, /^\d{4}-\d\d-\d\dT/);
 
   const workerDomainPublicCatalog = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog'), env);
@@ -1364,6 +1740,107 @@ test('catalog API provides CORS preflight and rejects oversized payloads', async
     body: JSON.stringify({ products: [], categories: [], padding: 'x'.repeat(910_000) })
   }), env);
   assert.equal(tooLarge.status, 413);
+});
+
+test('R2 media uploads require shop ownership and are publicly served from an isolated tenant prefix', async () => {
+  const TENANTS = createTenantStore();
+  const ownerToken = 'test-main-owner';
+  await TENANTS.put('tenant:main', JSON.stringify({
+    id: 'main',
+    owner_token_hash: await sha256HexForTest(ownerToken)
+  }));
+  const objects = new Map();
+  const env = {
+    TENANTS,
+    BUSINESS_ARCHIVE: {
+      async put(key, value, options) { objects.set(key, { value, options }); },
+      async get(key) {
+        const object = objects.get(key);
+        if (!object) return null;
+        return {
+          body: object.value,
+          httpMetadata: object.options.httpMetadata
+        };
+      }
+    }
+  };
+  const unauthorized = await worker.fetch(new Request('https://rrobin.co.ke/api/media?tenant=main', {
+    method: 'POST',
+    headers: { 'Content-Type': 'image/webp' },
+    body: new Uint8Array([1, 2, 3])
+  }), env);
+  assert.equal(unauthorized.status, 401);
+
+  const uploaded = await worker.fetch(new Request('https://rrobin.co.ke/api/media?tenant=main', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${ownerToken}`,
+      'Content-Type': 'image/webp'
+    },
+    body: new Uint8Array([1, 2, 3])
+  }), env);
+  assert.equal(uploaded.status, 200);
+  const asset = await uploaded.json();
+  assert.equal(asset.ok, true);
+  assert.match(asset.url, /^https:\/\/rrobin\.co\.ke\/media\/main\/[a-f0-9-]{36}\.webp$/);
+  const mediaKey = new URL(asset.url).pathname;
+  const publicImage = await worker.fetch(new Request(asset.url), env);
+  assert.equal(publicImage.status, 200);
+  assert.equal(publicImage.headers.get('Content-Type'), 'image/webp');
+  assert.equal(publicImage.headers.get('Cache-Control'), 'public, max-age=31536000, immutable');
+  assert.deepEqual([...new Uint8Array(await publicImage.arrayBuffer())], [1, 2, 3]);
+
+  const privateArchivePath = await worker.fetch(new Request('https://rrobin.co.ke/media/main/not-a-media-key.jpg'), env);
+  assert.equal(privateArchivePath.status, 404);
+  const unsupportedType = await worker.fetch(new Request('https://rrobin.co.ke/api/media?tenant=main', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${ownerToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: '{}'
+  }), env);
+  assert.equal(unsupportedType.status, 415);
+  const oversized = await worker.fetch(new Request('https://rrobin.co.ke/api/media?tenant=main', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${ownerToken}`,
+      'Content-Type': 'image/webp'
+    },
+    body: new Uint8Array(3_000_001)
+  }), env);
+  assert.equal(oversized.status, 413);
+  assert.match(mediaKey, /^\/media\/main\//);
+});
+
+test('R2 theme assets are publicly served from a theme-only prefix with safe cache headers', async () => {
+  const objects = new Map([
+    ['themes/woodora/index.html', {
+      body: '<html>theme</html>',
+      httpMetadata: { contentType: 'text/html; charset=utf-8' }
+    }],
+    ['themes/woodora/assets/hero.webp', {
+      body: new Uint8Array([1, 2, 3]),
+      httpMetadata: { contentType: 'image/webp' }
+    }]
+  ]);
+  const env = { BUSINESS_ARCHIVE: { async get(key) { return objects.get(key) || null; } } };
+  const page = await worker.fetch(new Request('https://shop.rrobin.co.ke/themes/woodora/index.html'), env);
+  assert.equal(page.status, 200);
+  assert.equal(page.headers.get('Content-Type'), 'text/html; charset=utf-8');
+  assert.equal(page.headers.get('Cache-Control'), 'public, max-age=300');
+  assert.equal(await page.text(), '<html>theme</html>');
+
+  const image = await worker.fetch(new Request('https://shop.rrobin.co.ke/themes/woodora/assets/hero.webp'), env);
+  assert.equal(image.status, 200);
+  assert.equal(image.headers.get('Content-Type'), 'image/webp');
+  assert.equal(image.headers.get('Cache-Control'), 'public, max-age=86400');
+  assert.deepEqual([...new Uint8Array(await image.arrayBuffer())], [1, 2, 3]);
+
+  const traversal = await worker.fetch(new Request('https://shop.rrobin.co.ke/themes/woodora/%2e%2e/media/main/archive.json'), env);
+  assert.equal(traversal.status, 404);
+  const missing = await worker.fetch(new Request('https://shop.rrobin.co.ke/themes/woodora/missing.html'), env);
+  assert.equal(missing.status, 404);
 });
 
 test('tenant records and product catalogs are isolated by wildcard subdomain', async () => {
@@ -1405,8 +1882,39 @@ test('tenant records and product catalogs are isolated by wildcard subdomain', a
   }), env);
   assert.equal(published.status, 200);
 
+  const accountPublished = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/catalog?tenant=new-shop',
+    {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${account.session_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        categories: [{ id: 1, name: 'Updated category' }],
+        products: [{ id: 1, name: 'Account-published product', category_id: 1, price: 12 }],
+        store: { name: 'Updated Shop' }
+      })
+    }
+  ), env);
+  assert.equal(accountPublished.status, 200);
+  const accountPublishedCatalog = await worker.fetch(new Request('https://new-shop.rrobin.co.ke/api/catalog'), env);
+  assert.equal((await accountPublishedCatalog.json()).products[0].name, 'Account-published product');
+
+  const unrelatedSessionToken = 'unrelated-account-session';
+  await env.TENANTS.put(
+    `session:${await sha256HexForTest(unrelatedSessionToken)}`,
+    JSON.stringify({ username: 'unrelated-owner' })
+  );
+  const unrelatedPublish = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/catalog?tenant=new-shop',
+    {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${unrelatedSessionToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ products: [], categories: [] })
+    }
+  ), env);
+  assert.equal(unrelatedPublish.status, 404);
+
   const newShopCatalog = await worker.fetch(new Request('https://new-shop.rrobin.co.ke/api/catalog'), env);
-  assert.equal((await newShopCatalog.json()).products[0].name, 'New Shop product');
+  assert.equal((await newShopCatalog.json()).products[0].name, 'Account-published product');
   const unauthorizedWrite = await worker.fetch(new Request('https://new-shop.rrobin.co.ke/api/catalog', {
     method: 'PUT',
     headers: { Authorization: 'Bearer wrong-key', 'Content-Type': 'application/json' },
@@ -1416,7 +1924,7 @@ test('tenant records and product catalogs are isolated by wildcard subdomain', a
   const privateCatalog = await worker.fetch(new Request('https://new-shop.rrobin.co.ke/api/catalog?private=1', {
     headers: { Authorization: `Bearer ${createdShop.owner_token}` }
   }), env);
-  assert.equal((await privateCatalog.json()).store.name, 'New Shop');
+  assert.equal((await privateCatalog.json()).store.name, 'Updated Shop');
   const rootCatalog = await worker.fetch(new Request('https://rrobin.co.ke/api/catalog'), env);
   assert.deepEqual(await rootCatalog.json(), { products: [], categories: [], store: {}, updated_at: null });
 

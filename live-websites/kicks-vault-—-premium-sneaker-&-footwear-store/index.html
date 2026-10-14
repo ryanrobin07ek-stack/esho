@@ -1,0 +1,2588 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KICKS VAULT — Curated Sneaker & Footwear Archive</title>
+    <meta name="description" content="Discover premium sneakers, running shoes, retro court classics, and everyday footwear in Kenya. Fast delivery, secure M-Pesa checkout, and guaranteed authenticity." />
+    
+    <!-- OpenGraph & Social Cards -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="KICKS VAULT — Curated Sneaker & Footwear Archive" />
+    <meta property="og:description" content="Curated sneaker culture and high-performance footwear. Shop Nike, Adidas, New Balance, ASICS, Jordan, and more with delivery across Kenya." />
+    <meta property="og:site_name" content="Kicks Vault" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="KICKS VAULT — Curated Sneaker & Footwear Archive" />
+    <meta name="twitter:description" content="Curated sneaker culture and high-performance footwear in Kenya." />
+
+    <!-- Google Fonts: Bebas Neue for tall editorial display + Plus Jakarta Sans & DM Sans for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- GSAP & ScrollTrigger from reliable CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ShoeStore",
+      "name": "Kicks Vault",
+      "description": "Authentic sneaker and performance footwear retailer offering curated silhouettes, running shoes, and street style in Kenya.",
+      "currenciesAccepted": "KES",
+      "paymentAccepted": "M-Pesa, Credit Card, Debit Card, Cash on Delivery",
+      "priceRange": "KES 4,500 - 32,000",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Kenya"
+      }
+    }
+    </script>
+
+    <style>
+      :root {
+        --color-black: #111214;
+        --color-charcoal: #292B30;
+        --color-white: #FFFFFF;
+        --color-smoky: #F4F5F7;
+        --color-grey-light: #E8EAEF;
+        --color-grey-mid: #858991;
+        --color-yellow: #E8E4A2;
+        --color-yellow-hover: #DDD88E;
+        --color-blue: #355FE8;
+        --font-display: 'Bebas Neue', sans-serif;
+        --font-body: 'DM Sans', sans-serif;
+        --font-heading: 'Plus Jakarta Sans', sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-body);
+        color: var(--color-black);
+        background-color: var(--color-white);
+        line-height: 1.5;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Typography Utilities */
+      .font-display {
+        font-family: var(--font-display);
+        letter-spacing: 0.04em;
+        line-height: 0.95;
+      }
+      .font-heading {
+        font-family: var(--font-heading);
+      }
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Container */
+      .container-max {
+        max-width: 1440px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+      @media (min-width: 768px) {
+        .container-max {
+          padding-left: 2.5rem;
+          padding-right: 2.5rem;
+        }
+      }
+
+      /* Reference visual identity: faded shoe edges and masks */
+      .faded-backdrop {
+        background: radial-gradient(circle at 60% 50%, #ECEEF2 0%, #F8F9FA 50%, #FFFFFF 100%);
+      }
+      .shoe-gradient-bottom {
+        mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 82%, rgba(0,0,0,0) 100%);
+        -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 82%, rgba(0,0,0,0) 100%);
+      }
+      .shoe-gradient-radial {
+        mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%);
+        -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%);
+      }
+
+      /* Buttons & Chips */
+      .btn-primary {
+        background-color: var(--color-black);
+        color: var(--color-white);
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.75rem 1.75rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+      }
+      .btn-primary:hover {
+        background-color: #26282E;
+        transform: translateY(-1px);
+      }
+      .btn-yellow {
+        background-color: var(--color-yellow);
+        color: var(--color-black);
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.75rem 1.75rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+      }
+      .btn-yellow:hover {
+        background-color: var(--color-yellow-hover);
+      }
+      .btn-outline {
+        background-color: transparent;
+        color: var(--color-black);
+        border: 1px solid var(--color-black);
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.75rem 1.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+      }
+      .btn-outline:hover {
+        background-color: var(--color-black);
+        color: var(--color-white);
+      }
+
+      /* Clean Navigation Tab Bar (Zero-pill, refined rectangular tabs) */
+      .brand-tab-btn, .cat-tab-btn {
+        padding: 0.5rem 1rem;
+        font-family: var(--font-heading);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-grey-mid);
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+      .brand-tab-btn:hover, .cat-tab-btn:hover {
+        color: var(--color-black);
+      }
+      .brand-tab-btn.active, .cat-tab-btn.active {
+        color: var(--color-black);
+        border-bottom-color: var(--color-black);
+      }
+
+      /* Product Card styling */
+      .product-card {
+        background-color: #FFFFFF;
+        position: relative;
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ECEEF2;
+      }
+      .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 32px rgba(17, 18, 20, 0.06);
+        border-color: #DDE0E6;
+      }
+      .card-media {
+        background-color: #F6F7F9;
+        position: relative;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .card-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        filter: drop-shadow(0 10px 14px rgba(0,0,0,0.08));
+      }
+      .product-card:hover .card-media img {
+        transform: scale(1.06) rotate(-2deg);
+      }
+      .wishlist-btn {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(0,0,0,0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 5;
+        transition: all 0.2s;
+      }
+      .wishlist-btn:hover {
+        background: #FFFFFF;
+        transform: scale(1.1);
+      }
+      .wishlist-btn.active svg {
+        fill: #E53E3E;
+        stroke: #E53E3E;
+      }
+
+      /* Subtle badge */
+      .kicks-tag {
+        font-family: var(--font-heading);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.25rem 0.625rem;
+      }
+      .kicks-tag-yellow {
+        background-color: var(--color-yellow);
+        color: var(--color-black);
+      }
+      .kicks-tag-black {
+        background-color: var(--color-black);
+        color: var(--color-white);
+      }
+      .kicks-tag-blue {
+        background-color: var(--color-blue);
+        color: var(--color-white);
+      }
+
+      /* Sliders & Rails */
+      .horizontal-rail {
+        display: flex;
+        gap: 1.25rem;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        scrollbar-width: thin;
+        scrollbar-color: #CBD0D8 transparent;
+      }
+      .horizontal-rail::-webkit-scrollbar {
+        height: 5px;
+      }
+      .horizontal-rail::-webkit-scrollbar-thumb {
+        background: #CBD0D8;
+      }
+
+      /* Overlay Drawers & Modals */
+      .drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(17, 18, 20, 0.65);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      .drawer-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .drawer-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 480px;
+        background: #FFFFFF;
+        z-index: 101;
+        transform: translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+      }
+      .drawer-overlay.active .drawer-panel {
+        transform: translateX(0);
+      }
+
+      .modal-box {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -48%) scale(0.96);
+        width: 92%;
+        max-width: 900px;
+        max-height: 90vh;
+        background: #FFFFFF;
+        z-index: 102;
+        opacity: 0;
+        pointer-events: none;
+        overflow-y: auto;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      }
+      .modal-box.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      /* Size Buttons */
+      .size-btn {
+        height: 2.75rem;
+        min-width: 2.75rem;
+        border: 1px solid #D6DAE1;
+        background: #FFFFFF;
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 0.8125rem;
+        color: var(--color-black);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .size-btn:hover:not(:disabled) {
+        border-color: var(--color-black);
+      }
+      .size-btn.active {
+        background: var(--color-black);
+        color: var(--color-white);
+        border-color: var(--color-black);
+      }
+      .size-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        text-decoration: line-through;
+        background: #F4F5F7;
+      }
+
+      /* Form controls */
+      .input-field {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #D1D5DB;
+        font-family: var(--font-body);
+        font-size: 0.875rem;
+        background: #FFFFFF;
+        color: var(--color-black);
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .input-field:focus {
+        border-color: var(--color-black);
+      }
+
+      /* Grid systems */
+      .catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1.5rem;
+      }
+      @media (min-width: 640px) {
+        .catalog-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (min-width: 1024px) {
+        .catalog-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      @media (min-width: 1280px) {
+        .catalog-grid {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+
+      /* Editorial Hero layout based on reference */
+      .hero-section {
+        background-color: var(--color-smoky);
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid #E2E5EA;
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: center;
+        min-height: calc(88vh - 80px);
+      }
+      @media (min-width: 1024px) {
+        .hero-grid {
+          grid-template-columns: 1.15fr 1fr;
+        }
+      }
+
+      /* Accessibility & Reduced Motion */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  <link rel="stylesheet" href="./eshop-mobile.css?v=3">
+</head>
+  <body>
+    <!-- 1. ANNOUNCEMENT BAR -->
+    <div style="background-color: #111214; color: #FFFFFF; font-family: var(--font-heading); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.5rem 1rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 1rem;">
+      <span>Complimentary Delivery Across Kenya on Orders Above KES 10,000</span>
+      <span style="opacity: 0.4;">·</span>
+      <span style="display: none;" class="md-inline">100% Authentic Sneaker Archive</span>
+      <span style="opacity: 0.4; display: none;" class="md-inline">·</span>
+      <span style="color: #E8E4A2; font-weight: 700;">Code: VAULT10 for 10% Off</span>
+    </div>
+
+    <!-- 2. MAIN HEADER (Zero-Pill, 3-Zone Contract) -->
+    <header style="background: #FFFFFF; border-bottom: 1px solid #ECEEF2; position: sticky; top: 0; z-index: 50;">
+      <div class="container-max" style="display: flex; align-items: center; justify-content: space-between; height: 4.5rem; gap: 2rem;">
+        
+        <!-- Zone 1: Brand Wordmark -->
+        <a href="#home" onclick="showCatalogView('all')" style="text-decoration: none; display: flex; align-items: baseline; gap: 0.25rem;">
+          <span class="font-display" style="font-size: 2.25rem; color: #111214; letter-spacing: 0.03em;">KICKS VAULT</span>
+          <span style="display: inline-block; width: 6px; height: 6px; background-color: var(--color-blue);"></span>
+        </a>
+
+        <!-- Zone 2: Primary Nav Links -->
+        <nav style="display: none;" class="lg-flex gap-8 text-sm font-semibold uppercase tracking-wider">
+          <a href="#catalog" onclick="filterByCategory('Sneakers')" style="text-decoration: none; color: #111214; font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'">Sneakers</a>
+          <a href="#catalog" onclick="filterByCategory('Running')" style="text-decoration: none; color: #111214; font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'">Running</a>
+          <a href="#catalog" onclick="filterByCategory('Basketball')" style="text-decoration: none; color: #111214; font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'">Basketball</a>
+          <a href="#catalog" onclick="filterByCategory('Boots')" style="text-decoration: none; color: #111214; font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'">Boots & Outdoor</a>
+          <a href="#catalog" onclick="filterByCategory('Slides')" style="text-decoration: none; color: #111214; font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'">Slides & Sandals</a>
+          <a href="#catalog" onclick="filterBySale()" style="text-decoration: none; color: #D97706; font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; font-weight: 700;">Sale Archive</a>
+        </nav>
+
+        <!-- Zone 3: Interactive Affordances (Search, Wishlist, Bag) -->
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <!-- Search trigger -->
+          <button onclick="toggleSearchOverlay(true)" style="background: transparent; border: none; cursor: pointer; padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: #111214;" title="Search catalogue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span style="display: none; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;" class="md-inline">Search</span>
+          </button>
+
+          <!-- Wishlist trigger -->
+          <button onclick="toggleWishlistDrawer(true)" style="background: transparent; border: none; cursor: pointer; padding: 0.5rem; position: relative; color: #111214;" title="View Saved">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            <span id="wishlist-badge" style="position: absolute; top: 0; right: 0; background: #111214; color: #FFFFFF; font-size: 0.625rem; font-weight: 700; width: 1.1rem; height: 1.1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center;">0</span>
+          </button>
+
+          <!-- Cart trigger -->
+          <button onclick="toggleCartDrawer(true)" class="btn-primary" style="padding: 0.6rem 1.25rem;" title="View Shopping Bag">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <span>BAG</span>
+            <span id="cart-badge" style="background: #E8E4A2; color: #111214; font-size: 0.75rem; font-weight: 800; padding: 0.1rem 0.45rem; border-radius: 2px;">0</span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <main id="app-root">
+      <!-- 3. EDITORIAL HERO (REFERENCE DESIGN COMPOSITION) -->
+      <section id="home" class="hero-section">
+        <div class="container-max hero-grid" style="padding-top: 3rem; padding-bottom: 3.5rem;">
+          
+          <!-- Left Column: Confident Typography & Narrative -->
+          <div style="z-index: 2;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+              <span class="kicks-tag kicks-tag-black">SEASON 2026 ARCHIVE</span>
+              <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748B;">Curated Silhouettes</span>
+            </div>
+
+            <h1 class="font-display hero-title" style="font-size: clamp(3.75rem, 8.5vw, 7.5rem); line-height: 0.9; margin-bottom: 1.5rem; color: #111214;">
+              UNRIVALED<br />
+              <span style="color: #355FE8;">CUSHIONING</span><br />
+              REDEFINED.
+            </h1>
+
+            <p style="font-size: 1.125rem; color: #475569; max-width: 520px; margin-bottom: 2rem; line-height: 1.6;">
+              Engineered street culture and athletic dominance. From court-proven retro classics to cutting-edge carbon road racers, discover 150+ verified footwear models.
+            </p>
+
+            <!-- Action buttons -->
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+              <a href="#catalog" onclick="filterByCategory('all')" class="btn-primary" style="padding: 1rem 2.25rem; font-size: 0.9375rem;">
+                SHOP FULL ARCHIVE
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+              <button onclick="filterByTag('Retro')" class="btn-yellow" style="padding: 1rem 2rem; font-size: 0.9375rem;">
+                EXPLORE RETRO DROPS
+              </button>
+            </div>
+
+            <!-- Trust / Micro specs under Hero -->
+            <div style="display: flex; gap: 2rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #D6DAE2;">
+              <div>
+                <div class="font-display tabular-nums" style="font-size: 2rem; color: #111214;">150+</div>
+                <div style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: #64748B;">Distinct Silhouettes</div>
+              </div>
+              <div>
+                <div class="font-display tabular-nums" style="font-size: 2rem; color: #111214;">24H</div>
+                <div style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: #64748B;">Nairobi Express Dispatch</div>
+              </div>
+              <div>
+                <div class="font-display tabular-nums" style="font-size: 2rem; color: #355FE8;">100%</div>
+                <div style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: #64748B;">Verified Authenticity</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Featured Shoe Composition with Faded Mask -->
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; min-height: 440px;">
+            <!-- Big Faded Graphic Backing from Reference -->
+            <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0.08;">
+              <span class="font-display" style="font-size: clamp(10rem, 24vw, 22rem); color: #111214; letter-spacing: -0.05em; user-select: none;">AIR</span>
+            </div>
+
+            <!-- Shoe Card Hero Focus -->
+            <div id="hero-shoe-stage" style="position: relative; width: 100%; max-width: 580px; text-align: center;">
+              <div style="position: relative; display: inline-block; width: 100%;">
+                <img id="hero-shoe-img" src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1000&q=80" alt="Nike Air Max Crimson Core Edition" class="shoe-gradient-bottom" style="width: 100%; max-height: 480px; object-fit: contain; filter: drop-shadow(0 25px 35px rgba(0,0,0,0.18)); cursor: pointer;" onclick="openProductDetail(1)" />
+              </div>
+
+              <!-- Floating Spec Card 1 (Top Left) -->
+              <div style="position: absolute; top: 10%; left: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border: 1px solid #E2E8F0; padding: 0.75rem 1rem; text-align: left; box-shadow: 0 10px 20px rgba(0,0,0,0.06);">
+                <div style="font-family: var(--font-heading); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; color: #64748B;">Featured Silhouette</div>
+                <div style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 800; color: #111214;">Nike Air Max 270 Infrared</div>
+                <div class="tabular-nums" style="font-size: 0.8125rem; font-weight: 700; color: #355FE8; margin-top: 0.25rem;">KES 18,500</div>
+              </div>
+
+              <!-- Floating Spec Card 2 (Bottom Right) -->
+              <div style="position: absolute; bottom: 8%; right: 4%; background: #111214; color: #FFFFFF; padding: 0.75rem 1.25rem; text-align: left; box-shadow: 0 12px 24px rgba(0,0,0,0.15);">
+                <div style="font-family: var(--font-heading); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; color: #E8E4A2;">Dual Air-Sole Pod</div>
+                <div style="font-size: 0.75rem; color: #CBD5E1; margin-top: 0.15rem;">Maximum Impact Absorption</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 4. BRAND SELECTOR RAIL -->
+      <section style="background: #FFFFFF; border-bottom: 1px solid #ECEEF2; padding-top: 1.25rem; padding-bottom: 1.25rem;">
+        <div class="container-max" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;">
+          <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94A3B8; white-space: nowrap; padding-right: 0.5rem;">BRANDS:</span>
+          <div id="brand-selector-rail" style="display: flex; align-items: center; gap: 0.5rem;">
+            <!-- Brand tabs populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. CURATED SPOTLIGHT / NEW DROPS CAROUSEL -->
+      <section style="padding-top: 4.5rem; padding-bottom: 4.5rem; background: #FFFFFF;">
+        <div class="container-max">
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.25rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span class="kicks-tag kicks-tag-yellow">NEW DROPS</span>
+                <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748B;">Latest Arrivals</span>
+              </div>
+              <h2 class="font-display" style="font-size: clamp(2.5rem, 5vw, 4rem); color: #111214;">THE CURATED ARCHIVE</h2>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button onclick="scrollRail('drops-rail', -340)" class="btn-outline" style="padding: 0.6rem 0.9rem;" title="Previous">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <button onclick="scrollRail('drops-rail', 340)" class="btn-outline" style="padding: 0.6rem 0.9rem;" title="Next">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Horizontal rail of spotlight products -->
+          <div id="drops-rail" class="horizontal-rail">
+            <!-- Injected by JavaScript -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. WIDE EDITORIAL CAMPAIGN SECTION (FROM REFERENCE) -->
+      <section style="background-color: #111214; color: #FFFFFF; position: relative; overflow: hidden; padding-top: 5rem; padding-bottom: 5rem;">
+        <div class="container-max" style="display: grid; grid-template-columns: 1fr; align-items: center; gap: 3rem;">
+          <div style="display: grid; grid-template-columns: 1fr; gap: 3rem;" class="lg-grid-2">
+            <div>
+              <span class="kicks-tag kicks-tag-yellow" style="margin-bottom: 1.5rem; display: inline-block;">PERFORMANCE & CULTURE</span>
+              <h2 class="font-display" style="font-size: clamp(3rem, 6.5vw, 5.5rem); line-height: 0.95; margin-bottom: 1.5rem;">
+                ENGINEERED FOR ASPHALT & TRAIL.
+              </h2>
+              <p style="color: #94A3B8; font-size: 1.0625rem; line-height: 1.7; margin-bottom: 2rem; max-width: 500px;">
+                Every stitch, sole unit, and responsive foam compound is vetted for Kenyan terrain and street mobility. Experience ultralight carbon plates alongside timeless premium leather court silhouettes.
+              </p>
+              <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button onclick="filterByCategory('Running')" class="btn-yellow">
+                  SHOP RUNNING SHOES
+                </button>
+                <button onclick="filterByCategory('Boots')" class="btn-outline" style="border-color: #FFFFFF; color: #FFFFFF;">
+                  DISCOVER OUTDOOR & BOOTS
+                </button>
+              </div>
+            </div>
+
+            <!-- Campaign Visual -->
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #24272E 0%, #111214 70%); padding: 2rem; border: 1px solid #2A2D35;">
+              <img src="https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80" alt="Engineered Footwear Campaign" style="max-width: 100%; max-height: 400px; object-fit: contain; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.6));" />
+              <div style="position: absolute; bottom: 1.5rem; left: 1.5rem; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); padding: 0.5rem 1rem; border-left: 2px solid #E8E4A2;">
+                <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #E8E4A2;">ASICS GEL-KAYANO 31</span>
+                <span style="font-size: 0.75rem; color: #CBD5E1; display: block;">4D Guidance System™</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. MAIN SHOPPING CATALOGUE & FILTER ENGINE (150+ PRODUCTS) -->
+      <section id="catalog" style="padding-top: 5rem; padding-bottom: 6rem; background: #F8F9FB;">
+        <div class="container-max">
+
+          <!-- Section Headline & Metadata -->
+          <div style="display: flex; flex-direction: column; md-flex-row; justify-content: space-between; align-items: flex-start; md-items-end; gap: 1rem; margin-bottom: 2rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span class="kicks-tag kicks-tag-black">FULL CATALOGUE</span>
+                <span id="results-count-label" class="tabular-nums" style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 700; color: #64748B;">Showing 154 Models</span>
+              </div>
+              <h2 class="font-display" style="font-size: clamp(2.5rem, 5vw, 4.25rem); color: #111214;">THE ENTIRE SELECTION</h2>
+            </div>
+
+            <!-- Sort dropdown & mobile filter trigger -->
+            <div style="display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 380px;">
+              <select id="sort-select" onchange="applySort(this.value)" class="input-field" style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 700; text-transform: uppercase;">
+                <option value="featured">Sort: Curated Editorial</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="newest">Newest Drops First</option>
+                <option value="name">Alphabetical (A - Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Comprehensive Category Nav Tabs -->
+          <div style="border-bottom: 1px solid #D9DEE7; margin-bottom: 1.5rem; overflow-x: auto; display: flex; gap: 0.5rem;">
+            <button class="cat-tab-btn active" onclick="filterByCategory('all')">All Shoes (154)</button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Sneakers')">Sneakers</button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Running')">Running & Training</button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Basketball')">Basketball</button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Casual')">Casual & Loafers</button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Boots')">Boots & Outdoor</button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Slides')">Slides & Sandals</button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Formal')">Formal & Dress</button>
+          </div>
+
+          <!-- Secondary Filter Toolbar (Sizes, Price Bracket, Stock, Clear) -->
+          <div style="background: #FFFFFF; border: 1px solid #E2E5EA; padding: 1.25rem; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;" class="lg-grid-4">
+              
+              <!-- Filter by Brand -->
+              <div>
+                <label style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: #64748B; display: block; margin-bottom: 0.5rem;">Brand</label>
+                <select id="filter-brand" onchange="applyFilters()" class="input-field" style="padding: 0.5rem; font-size: 0.8125rem;">
+                  <option value="all">All Brands (Nike, Adidas, etc.)</option>
+                  <option value="Nike">Nike</option>
+                  <option value="Adidas">Adidas</option>
+                  <option value="New Balance">New Balance</option>
+                  <option value="ASICS">ASICS</option>
+                  <option value="Jordan">Jordan</option>
+                  <option value="Puma">Puma</option>
+                  <option value="Salomon">Salomon</option>
+                  <option value="Converse">Converse</option>
+                  <option value="Vans">Vans</option>
+                  <option value="Hoka">Hoka</option>
+                  <option value="Timberland">Timberland</option>
+                  <option value="Clarks">Clarks</option>
+                  <option value="Reebok">Reebok</option>
+                  <option value="Bata">Bata Heritage</option>
+                  <option value="Dr. Martens">Dr. Martens</option>
+                </select>
+              </div>
+
+              <!-- Filter by Size -->
+              <div>
+                <label style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: #64748B; display: block; margin-bottom: 0.5rem;">Size (EU System)</label>
+                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;" id="size-filter-chips">
+                  <!-- Sizes 39, 40, 41, 42, 43, 44, 45 -->
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(39)">39</button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(40)">40</button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(41)">41</button>
+                  <button type="button" class="size-chip-btn active-size-any" onclick="toggleSizeFilter('any')">ANY</button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(42)">42</button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(43)">43</button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(44)">44</button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(45)">45</button>
+                </div>
+              </div>
+
+              <!-- Filter by Price -->
+              <div>
+                <label style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: #64748B; display: block; margin-bottom: 0.5rem;">Price Budget (KES)</label>
+                <select id="filter-price" onchange="applyFilters()" class="input-field" style="padding: 0.5rem; font-size: 0.8125rem;">
+                  <option value="all">Any Price Bracket</option>
+                  <option value="under-8k">Under KES 8,000</option>
+                  <option value="8k-15k">KES 8,000 - 15,000</option>
+                  <option value="15k-22k">KES 15,000 - 22,000</option>
+                  <option value="above-22k">Above KES 22,000 (Premium/Rare)</option>
+                </select>
+              </div>
+
+              <!-- Status Toggles & Clear -->
+              <div style="display: flex; flex-direction: column; justify-content: flex-end; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" id="filter-sale-only" onchange="applyFilters()" />
+                    Sale Items Only
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" id="filter-instock-only" onchange="applyFilters()" checked />
+                    In Stock Only
+                  </label>
+                </div>
+                <button type="button" onclick="resetAllFilters()" style="background: none; border: none; text-align: left; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; color: #DC2626; text-transform: uppercase; cursor: pointer; padding-top: 0.25rem;">
+                  ↺ Reset All Filters
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Active Filter Tags indicator -->
+          <div id="active-filter-indicators" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; display: none;">
+            <!-- Injected dynamically -->
+          </div>
+
+          <!-- Product Grid -->
+          <div id="catalog-grid" class="catalog-grid">
+            <!-- Dynamically populated 150+ products -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="catalog-empty" style="display: none; background: #FFFFFF; border: 1px dashed #CBD5E1; padding: 4rem 2rem; text-align: center;">
+            <div class="font-display" style="font-size: 2.5rem; color: #111214; margin-bottom: 0.5rem;">NO MATCHING SILHOUETTES FOUND</div>
+            <p style="color: #64748B; margin-bottom: 1.5rem;">Try relaxing your brand, size, or price filters to see more of the catalogue.</p>
+            <button onclick="resetAllFilters()" class="btn-primary">CLEAR ALL FILTERS</button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 8. BASKETBALL & RETRO SHOWCASE SECTION -->
+      <section style="background-color: #FFFFFF; padding-top: 4.5rem; padding-bottom: 4.5rem; border-top: 1px solid #ECEEF2;">
+        <div class="container-max">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+            <div>
+              <span class="kicks-tag kicks-tag-black" style="margin-bottom: 0.5rem; display: inline-block;">HARDWOOD HERITAGE</span>
+              <h2 class="font-display" style="font-size: clamp(2.25rem, 4.5vw, 3.75rem); color: #111214;">RETRO BASKETBALL & HIGH-TOPS</h2>
+            </div>
+            <button onclick="filterByCategory('Basketball')" class="btn-outline" style="font-size: 0.75rem; padding: 0.5rem 1rem;">
+              VIEW ALL BASKETBALL
+            </button>
+          </div>
+          <div id="basketball-rail" class="horizontal-rail">
+            <!-- Injected by script -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. RUNNING & CARBON ROAD RACERS SECTION -->
+      <section style="background-color: #F4F5F7; padding-top: 4.5rem; padding-bottom: 4.5rem; border-top: 1px solid #E2E5EA;">
+        <div class="container-max">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+            <div>
+              <span class="kicks-tag kicks-tag-blue" style="margin-bottom: 0.5rem; display: inline-block;">HIGH MILEAGE MARATHON</span>
+              <h2 class="font-display" style="font-size: clamp(2.25rem, 4.5vw, 3.75rem); color: #111214;">ROAD & TRAIL RUNNING</h2>
+            </div>
+            <button onclick="filterByCategory('Running')" class="btn-outline" style="font-size: 0.75rem; padding: 0.5rem 1rem;">
+              VIEW ALL RUNNERS
+            </button>
+          </div>
+          <div id="running-rail" class="horizontal-rail">
+            <!-- Injected by script -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. RECOVERY, SLIDES & OUTDOOR BOOTS -->
+      <section style="background-color: #FFFFFF; padding-top: 4.5rem; padding-bottom: 4.5rem; border-top: 1px solid #ECEEF2;">
+        <div class="container-max">
+          <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;" class="lg-grid-2">
+            
+            <!-- Outdoor Boots Column -->
+            <div style="background: #F8F9FA; border: 1px solid #E2E5EA; padding: 2.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <span class="kicks-tag kicks-tag-yellow" style="margin-bottom: 1rem; display: inline-block;">RUGGED LEATHER & TRAIL</span>
+                <h3 class="font-display" style="font-size: 2.75rem; line-height: 0.95; margin-bottom: 1rem;">BOOTS & ALL-WEATHER</h3>
+                <p style="color: #64748B; font-size: 0.9375rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                  Premium waterproof nubuck, Goodyear-welted soles, Chelsea silhouettes, and trail hikers ready for Rift Valley adventures and rainy Nairobi streets.
+                </p>
+              </div>
+              <button onclick="filterByCategory('Boots')" class="btn-primary" style="align-self: flex-start;">
+                EXPLORE BOOTS COLLECTION
+              </button>
+            </div>
+
+            <!-- Recovery Slides Column -->
+            <div style="background: #F8F9FA; border: 1px solid #E2E5EA; padding: 2.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <span class="kicks-tag kicks-tag-black" style="margin-bottom: 1rem; display: inline-block;">POST-RUN COMFORT</span>
+                <h3 class="font-display" style="font-size: 2.75rem; line-height: 0.95; margin-bottom: 1rem;">SLIDES & CASUAL RECOVERY</h3>
+                <p style="color: #64748B; font-size: 0.9375rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                  Ergonomic footbeds, injected EVA foam, and streetwear slides from Yeezy, Adilette, Crocs Pollex, and Jordan Hydro.
+                </p>
+              </div>
+              <button onclick="filterByCategory('Slides')" class="btn-primary" style="align-self: flex-start;">
+                EXPLORE SLIDES & RECOVERY
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- 11. SIZING GUIDE ACCORDION & FAQ SECTION -->
+      <section style="background-color: #F8F9FB; padding-top: 4.5rem; padding-bottom: 4.5rem; border-top: 1px solid #E2E5EA;">
+        <div class="container-max" style="max-width: 960px;">
+          <div style="text-align: center; margin-bottom: 3rem;">
+            <span class="kicks-tag kicks-tag-black" style="margin-bottom: 0.75rem; display: inline-block;">BUYER GUIDELINES</span>
+            <h2 class="font-display" style="font-size: clamp(2.5rem, 5vw, 4rem);">FOOTWEAR SIZING & AUTHENTICITY</h2>
+            <p style="color: #64748B;">Everything you need to know about purchasing genuine sneakers in Kenya.</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- FAQ 1 -->
+            <div style="background: #FFFFFF; border: 1px solid #E2E5EA; padding: 1.5rem;">
+              <h4 style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: #111214;">How does sneaker sizing translate between EU, UK, and US?</h4>
+              <p style="color: #64748B; font-size: 0.875rem; line-height: 1.6;">
+                Most athletic brands adhere to standard metrics, but slight variances exist: Nike fits true to size to slightly snug, Adidas often fits half a size larger in lifestyle classics, and New Balance offers true-to-size toe box widths. Click the "Size Guide" button on any product detail modal to view millimeter foot measurements.
+              </p>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div style="background: #FFFFFF; border: 1px solid #E2E5EA; padding: 1.5rem;">
+              <h4 style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: #111214;">Are all shoes in Kicks Vault 100% genuine?</h4>
+              <p style="color: #64748B; font-size: 0.875rem; line-height: 1.6;">
+                Yes. Every single pair passes a rigorous 12-point authentication checkpoint checking SKU codes, stitching tension, sole density, UV typography, and insole adhesives before packaging.
+              </p>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div style="background: #FFFFFF; border: 1px solid #E2E5EA; padding: 1.5rem;">
+              <h4 style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: #111214;">What payment methods are supported in Kenya?</h4>
+              <p style="color: #64748B; font-size: 0.875rem; line-height: 1.6;">
+                We support instant Lipa Na M-Pesa STK push, Paystack (Visa, Mastercard), and Cash / M-Pesa on Delivery for verified Nairobi addresses.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 12. LARGE FINAL SHOPPING CALL TO ACTION -->
+      <section style="background-color: #111214; color: #FFFFFF; padding-top: 6rem; padding-bottom: 6rem; text-align: center; position: relative; overflow: hidden;">
+        <div class="container-max" style="position: relative; z-index: 2; max-width: 800px;">
+          <span class="kicks-tag kicks-tag-yellow" style="margin-bottom: 1.5rem; display: inline-block;">LIMITED RELEASES & DEADSTOCK</span>
+          <h2 class="font-display" style="font-size: clamp(3.25rem, 7vw, 6.5rem); line-height: 0.95; margin-bottom: 1.5rem;">
+            STEP INTO CULTURE.
+          </h2>
+          <p style="color: #94A3B8; font-size: 1.125rem; line-height: 1.6; margin-bottom: 2.5rem;">
+            Browse over 150 authentic pairs ready for dispatch. Guaranteed fit, pristine condition, and rapid shipping countrywide.
+          </p>
+          <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <a href="#catalog" onclick="filterByCategory('all')" class="btn-yellow" style="padding: 1rem 2.5rem;">
+              EXPLORE ALL 150+ MODELS
+            </a>
+            <button onclick="toggleSearchOverlay(true)" class="btn-outline" style="border-color: #FFFFFF; color: #FFFFFF; padding: 1rem 2rem;">
+              SEARCH BY MODEL NAME
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer style="background-color: #0A0B0D; color: #858991; border-top: 1px solid #1E2024; padding-top: 4.5rem; padding-bottom: 3rem; font-size: 0.875rem;">
+      <div class="container-max">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 3rem; margin-bottom: 3.5rem;" class="lg-grid-4">
+          
+          <!-- Col 1: Brand -->
+          <div>
+            <div class="font-display" style="font-size: 2rem; color: #FFFFFF; margin-bottom: 1rem;">KICKS VAULT</div>
+            <p style="line-height: 1.6; margin-bottom: 1.5rem; color: #94A3B8;">
+              Kenya's dedicated footwear and sneaker culture marketplace. Authentic stock, honest sizing, and nationwide express distribution.
+            </p>
+            <div style="display: flex; gap: 0.75rem;">
+              <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: #E8E4A2; background: rgba(232, 228, 162, 0.1); padding: 0.25rem 0.5rem;">NAIROBI HQ</span>
+              <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: #355FE8; background: rgba(53, 95, 232, 0.1); padding: 0.25rem 0.5rem;">KENYA WIDE</span>
+            </div>
+          </div>
+
+          <!-- Col 2: Categories -->
+          <div>
+            <div style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 800; text-transform: uppercase; color: #FFFFFF; margin-bottom: 1.25rem; letter-spacing: 0.05em;">CATEGORIES</div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem;">
+              <li><a href="#catalog" onclick="filterByCategory('Sneakers')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'">Retro & Lifestyle Sneakers</a></li>
+              <li><a href="#catalog" onclick="filterByCategory('Running')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'">Marathon & Road Running</a></li>
+              <li><a href="#catalog" onclick="filterByCategory('Basketball')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'">Performance Basketball</a></li>
+              <li><a href="#catalog" onclick="filterByCategory('Boots')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'">Outdoor & Leather Boots</a></li>
+              <li><a href="#catalog" onclick="filterByCategory('Slides')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'">Recovery Slides & Sandals</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Customer Care -->
+          <div>
+            <div style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 800; text-transform: uppercase; color: #FFFFFF; margin-bottom: 1.25rem; letter-spacing: 0.05em;">CUSTOMER SUPPORT</div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem;">
+              <li><span style="color: #CBD5E1;">Phone / WhatsApp:</span> +254 700 000 000 (Configurable)</li>
+              <li><span style="color: #CBD5E1;">Dispatch Schedule:</span> Mon - Sat, 8:00 AM - 6:00 PM</li>
+              <li><a href="#home" onclick="openSizeGuideModal()" style="color: #E8E4A2; text-decoration: none;">Interactive Size System Guide</a></li>
+              <li><span style="color: #94A3B8;">Delivery to: Nairobi, Mombasa, Kisumu, Nakuru, Eldoret</span></li>
+            </ul>
+          </div>
+
+          <!-- Col 4: Payment & Security Transparency -->
+          <div>
+            <div style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 800; text-transform: uppercase; color: #FFFFFF; margin-bottom: 1.25rem; letter-spacing: 0.05em;">PAYMENTS & TRUST</div>
+            <p style="font-size: 0.8125rem; line-height: 1.6; color: #94A3B8; margin-bottom: 1rem;">
+              Fully architected for Kenyan digital payments. Supports Safaricom M-Pesa STK push, Paystack card processing, and cash on verified delivery.
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <span style="background: #191B20; border: 1px solid #2B2F36; padding: 0.4rem 0.75rem; font-size: 0.75rem; color: #E8E4A2; font-weight: 700;">M-PESA READY</span>
+              <span style="background: #191B20; border: 1px solid #2B2F36; padding: 0.4rem 0.75rem; font-size: 0.75rem; color: #FFFFFF; font-weight: 700;">PAYSTACK READY</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="border-top: 1px solid #1E2024; padding-top: 2rem; display: flex; flex-direction: column; md-flex-row; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="font-size: 0.75rem;">
+            &copy; 2026 Kicks Vault Kenya. All rights reserved. Editorial sneaker curation inspired by modern footwear culture.
+          </div>
+          <div style="display: flex; gap: 1.5rem; font-size: 0.75rem;">
+            <span>Privacy Policy</span>
+            <span>Terms of Service</span>
+            <span>Kenya Delivery Schedule</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- OVERLAYS & MODALS -->
+
+    <!-- A. PRODUCT DETAIL MODAL (PDP) -->
+    <div id="pdp-modal" class="drawer-overlay" onclick="handlePdpBackdropClick(event)">
+      <div class="modal-box" id="pdp-modal-box">
+        <div style="display: flex; justify-content: flex-end; padding: 1rem 1.5rem 0 1.5rem;">
+          <button onclick="closeProductDetail()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #111214; padding: 0.25rem;" title="Close">✕</button>
+        </div>
+        <div id="pdp-content-container" style="padding: 1.5rem 2rem 2.5rem 2rem;">
+          <!-- Dynamically populated PDP -->
+        </div>
+      </div>
+    </div>
+
+    <!-- B. SIZE GUIDE MODAL -->
+    <div id="size-guide-modal" class="drawer-overlay" onclick="closeSizeGuideModal()">
+      <div class="modal-box" style="max-width: 650px; padding: 2.5rem;" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div class="font-display" style="font-size: 2rem;">FOOTWEAR SIZE TRANSLATION GUIDE</div>
+          <button onclick="closeSizeGuideModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;">✕</button>
+        </div>
+        <p style="font-size: 0.875rem; color: #64748B; margin-bottom: 1.5rem;">
+          Measure from the back of your heel to the tip of your longest toe on a flat surface in centimeters (CM).
+        </p>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.8125rem; text-align: left;">
+          <thead>
+            <tr style="background: #F4F5F7; border-bottom: 2px solid #E2E5EA;">
+              <th style="padding: 0.75rem;">EU Size</th>
+              <th style="padding: 0.75rem;">UK Size</th>
+              <th style="padding: 0.75rem;">US Men</th>
+              <th style="padding: 0.75rem;">US Women</th>
+              <th style="padding: 0.75rem;">Foot Length (CM)</th>
+            </tr>
+          </thead>
+          <tbody class="tabular-nums">
+            <tr style="border-bottom: 1px solid #ECEEF2;"><td style="padding: 0.6rem;">39</td><td style="padding: 0.6rem;">5.5</td><td style="padding: 0.6rem;">6.5</td><td style="padding: 0.6rem;">8.0</td><td style="padding: 0.6rem;">24.5 cm</td></tr>
+            <tr style="border-bottom: 1px solid #ECEEF2;"><td style="padding: 0.6rem;">40</td><td style="padding: 0.6rem;">6.0</td><td style="padding: 0.6rem;">7.0</td><td style="padding: 0.6rem;">8.5</td><td style="padding: 0.6rem;">25.0 cm</td></tr>
+            <tr style="border-bottom: 1px solid #ECEEF2;"><td style="padding: 0.6rem;">41</td><td style="padding: 0.6rem;">7.0</td><td style="padding: 0.6rem;">8.0</td><td style="padding: 0.6rem;">9.5</td><td style="padding: 0.6rem;">26.0 cm</td></tr>
+            <tr style="border-bottom: 1px solid #ECEEF2; font-weight: 700; background: #FAFBFD;"><td style="padding: 0.6rem;">42</td><td style="padding: 0.6rem;">7.5</td><td style="padding: 0.6rem;">8.5</td><td style="padding: 0.6rem;">10.0</td><td style="padding: 0.6rem;">26.5 cm</td></tr>
+            <tr style="border-bottom: 1px solid #ECEEF2;"><td style="padding: 0.6rem;">43</td><td style="padding: 0.6rem;">8.5</td><td style="padding: 0.6rem;">9.5</td><td style="padding: 0.6rem;">11.0</td><td style="padding: 0.6rem;">27.5 cm</td></tr>
+            <tr style="border-bottom: 1px solid #ECEEF2;"><td style="padding: 0.6rem;">44</td><td style="padding: 0.6rem;">9.5</td><td style="padding: 0.6rem;">10.5</td><td style="padding: 0.6rem;">12.0</td><td style="padding: 0.6rem;">28.0 cm</td></tr>
+            <tr style="border-bottom: 1px solid #ECEEF2;"><td style="padding: 0.6rem;">45</td><td style="padding: 0.6rem;">10.5</td><td style="padding: 0.6rem;">11.5</td><td style="padding: 0.6rem;">13.0</td><td style="padding: 0.6rem;">29.0 cm</td></tr>
+            <tr><td style="padding: 0.6rem;">46</td><td style="padding: 0.6rem;">11.0</td><td style="padding: 0.6rem;">12.0</td><td style="padding: 0.6rem;">13.5</td><td style="padding: 0.6rem;">29.5 cm</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top: 1.5rem; text-align: right;">
+          <button onclick="closeSizeGuideModal()" class="btn-primary" style="padding: 0.5rem 1.25rem;">GOT IT</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- C. SHOPPING CART DRAWER -->
+    <div id="cart-drawer" class="drawer-overlay" onclick="toggleCartDrawer(false)">
+      <div class="drawer-panel" onclick="event.stopPropagation()">
+        <!-- Drawer Header -->
+        <div style="padding: 1.5rem; border-bottom: 1px solid #ECEEF2; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <div class="font-display" style="font-size: 1.75rem;">YOUR SHOPPING BAG</div>
+            <span id="cart-drawer-count" class="tabular-nums" style="font-size: 0.8125rem; color: #64748B;">(0 items)</span>
+          </div>
+          <button onclick="toggleCartDrawer(false)" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #111214;">✕</button>
+        </div>
+
+        <!-- Free shipping indicator -->
+        <div style="background: #F4F5F7; padding: 0.75rem 1.5rem; font-size: 0.75rem; border-bottom: 1px solid #E8EAEF;">
+          <div id="free-shipping-progress-text" style="font-weight: 700; margin-bottom: 0.25rem;">Add KES 10,000 for FREE delivery across Kenya</div>
+          <div style="background: #E2E5EA; height: 4px; width: 100%; border-radius: 2px; overflow: hidden;">
+            <div id="free-shipping-progress-bar" style="background: #355FE8; height: 100%; width: 0%; transition: width 0.3s;"></div>
+          </div>
+        </div>
+
+        <!-- Drawer Body: Items List -->
+        <div id="cart-items-list" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+          <!-- Dynamically populated items -->
+        </div>
+
+        <!-- Drawer Footer: Subtotals & Checkout Button -->
+        <div style="padding: 1.5rem; border-top: 1px solid #ECEEF2; background: #FFFFFF;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+            <span style="color: #64748B;">Subtotal</span>
+            <span id="cart-subtotal" class="tabular-nums" style="font-weight: 700; color: #111214;">KES 0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+            <span style="color: #64748B;">Est. Delivery (Kenya)</span>
+            <span id="cart-shipping" class="tabular-nums" style="font-weight: 700; color: #111214;">KES 500</span>
+          </div>
+          <div id="cart-discount-row" style="display: none; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem; color: #059669;">
+            <span>Discount (VAULT10)</span>
+            <span id="cart-discount-val" class="tabular-nums" style="font-weight: 700;">- KES 0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 0.75rem; margin-bottom: 1.25rem; font-size: 1.125rem; font-weight: 800; border-top: 1px solid #ECEEF2; padding-top: 0.75rem;">
+            <span>Total</span>
+            <span id="cart-total" class="tabular-nums" style="color: #111214;">KES 0</span>
+          </div>
+
+          <!-- Promo Code Input -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <input type="text" id="coupon-input" placeholder="Promo Code (e.g. VAULT10)" class="input-field" style="padding: 0.5rem 0.75rem; font-size: 0.75rem; text-transform: uppercase;" />
+            <button onclick="applyCoupon()" class="btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem;">APPLY</button>
+          </div>
+
+          <button id="cart-checkout-btn" onclick="startCheckout()" class="btn-primary" style="width: 100%; padding: 0.9rem;">
+            PROCEED TO CHECKOUT
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- D. WISHLIST DRAWER -->
+    <div id="wishlist-drawer" class="drawer-overlay" onclick="toggleWishlistDrawer(false)">
+      <div class="drawer-panel" onclick="event.stopPropagation()">
+        <div style="padding: 1.5rem; border-bottom: 1px solid #ECEEF2; display: flex; align-items: center; justify-content: space-between;">
+          <div class="font-display" style="font-size: 1.75rem;">SAVED SILHOUETTES</div>
+          <button onclick="toggleWishlistDrawer(false)" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+        </div>
+        <div id="wishlist-items-list" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- E. SEARCH OVERLAY -->
+    <div id="search-overlay" class="drawer-overlay" onclick="toggleSearchOverlay(false)">
+      <div style="background: #FFFFFF; max-width: 800px; margin: 3rem auto; padding: 2rem; border-radius: 0; box-shadow: 0 20px 40px rgba(0,0,0,0.15);" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div class="font-display" style="font-size: 2rem;">SEARCH FOOTWEAR ARCHIVE</div>
+          <button onclick="toggleSearchOverlay(false)" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+        </div>
+        <input type="text" id="global-search-input" oninput="handleSearchInput(this.value)" placeholder="Search by model, brand, color, or silhouette (e.g. Jordan 4, Gel-Kayano, Samba)..." class="input-field" style="font-size: 1.125rem; padding: 1rem;" autofocus />
+        
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem; align-items: center; flex-wrap: wrap;">
+          <span style="font-size: 0.75rem; color: #64748B; font-weight: 700; text-transform: uppercase;">Quick Queries:</span>
+          <button type="button" onclick="setSearchQuery('Air Jordan')" class="search-tag-chip">Air Jordan</button>
+          <button type="button" onclick="setSearchQuery('GEL-Kayano')" class="search-tag-chip">GEL-Kayano</button>
+          <button type="button" onclick="setSearchQuery('Samba')" class="search-tag-chip">Samba</button>
+          <button type="button" onclick="setSearchQuery('Ultraboost')" class="search-tag-chip">Ultraboost</button>
+          <button type="button" onclick="setSearchQuery('Timberland')" class="search-tag-chip">Timberland</button>
+          <button type="button" onclick="setSearchQuery('Salomon')" class="search-tag-chip">Salomon</button>
+        </div>
+
+        <div id="search-results-box" style="margin-top: 1.5rem; max-height: 50vh; overflow-y: auto;">
+          <!-- Results list -->
+        </div>
+      </div>
+    </div>
+
+    <!-- F. CHECKOUT MODAL (3-STEP WITH M-PESA & PAYSTACK TRANSPARENCY) -->
+    <div id="checkout-modal" class="drawer-overlay" onclick="closeCheckoutModal()">
+      <div class="modal-box" style="max-width: 800px; padding: 2.5rem;" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #ECEEF2; padding-bottom: 1rem;">
+          <div>
+            <div class="font-display" style="font-size: 2.25rem;">CHECKOUT & DELIVERY</div>
+            <span style="font-size: 0.8125rem; color: #64748B;">Express Shipping Across Kenya</span>
+          </div>
+          <button onclick="closeCheckoutModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+        </div>
+
+        <form id="checkout-form" onsubmit="handlePlaceOrder(event)">
+          <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;" class="md-grid-2">
+            
+            <!-- Left: Delivery & Contact details -->
+            <div>
+              <h4 style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem; color: #111214;">
+                1. Customer & Delivery Address
+              </h4>
+              
+              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <input type="text" id="cust-name" required placeholder="Full Name" class="input-field" />
+                <input type="email" id="cust-email" required placeholder="Email Address (for receipt & tracking)" class="input-field" />
+                
+                <div>
+                  <input type="tel" id="cust-phone" required placeholder="Phone Number (e.g. 0712 345 678)" class="input-field" pattern="^(?:0|\+?254)?([17]\d{8})$" title="Valid Kenyan Phone Number required" />
+                  <span style="font-size: 0.6875rem; color: #64748B; margin-top: 0.2rem; display: block;">Used for M-Pesa STK Push and dispatch SMS updates.</span>
+                </div>
+
+                <select id="cust-county" required class="input-field">
+                  <option value="">Select County / Delivery Hub</option>
+                  <option value="Nairobi">Nairobi (Same-Day / Next-Day)</option>
+                  <option value="Kiambu">Kiambu County</option>
+                  <option value="Mombasa">Mombasa (1-2 Days)</option>
+                  <option value="Kisumu">Kisumu (1-2 Days)</option>
+                  <option value="Nakuru">Nakuru (Next-Day)</option>
+                  <option value="Eldoret">Eldoret (1-2 Days)</option>
+                  <option value="Machakos">Machakos County</option>
+                  <option value="Other">Other Region in Kenya</option>
+                </select>
+
+                <textarea id="cust-address" required placeholder="Specific Physical Delivery Location / Street / Estate / Door No." rows="2" class="input-field"></textarea>
+              </div>
+            </div>
+
+            <!-- Right: Payment Method & Order Summary -->
+            <div>
+              <h4 style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem; color: #111214;">
+                2. Payment Method
+              </h4>
+
+              <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <label style="border: 1px solid #111214; padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; background: #FAFBFD;">
+                  <input type="radio" name="paymethod" value="mpesa" checked />
+                  <div>
+                    <div style="font-weight: 800; font-size: 0.875rem;">Safaricom M-PESA (STK Push)</div>
+                    <div style="font-size: 0.6875rem; color: #64748B;">Receive instant prompt on your phone to enter M-Pesa PIN</div>
+                  </div>
+                </label>
+
+                <label style="border: 1px solid #D6DAE1; padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                  <input type="radio" name="paymethod" value="card" />
+                  <div>
+                    <div style="font-weight: 800; font-size: 0.875rem;">Paystack (Visa / Mastercard)</div>
+                    <div style="font-size: 0.6875rem; color: #64748B;">Secure encrypted card checkout gateway</div>
+                  </div>
+                </label>
+
+                <label style="border: 1px solid #D6DAE1; padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                  <input type="radio" name="paymethod" value="cod" />
+                  <div>
+                    <div style="font-weight: 800; font-size: 0.875rem;">Cash / M-Pesa on Delivery</div>
+                    <div style="font-size: 0.6875rem; color: #64748B;">Available within Nairobi Metropolitan Zone only</div>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Order Summary in Checkout -->
+              <div style="background: #F4F5F7; padding: 1.25rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.35rem;">
+                  <span>Items Subtotal</span>
+                  <span id="checkout-subtotal" class="tabular-nums" style="font-weight: 700;">KES 0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.35rem;">
+                  <span>Delivery Cost</span>
+                  <span id="checkout-shipping" class="tabular-nums" style="font-weight: 700;">KES 500</span>
+                </div>
+                <div id="checkout-discount-row" style="display: none; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.35rem; color: #059669;">
+                  <span>Discount</span>
+                  <span id="checkout-discount-val" class="tabular-nums" style="font-weight: 700;">- KES 0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.125rem; font-weight: 800; border-top: 1px solid #E2E5EA; padding-top: 0.75rem; margin-top: 0.5rem;">
+                  <span>Total Amount Due</span>
+                  <span id="checkout-total" class="tabular-nums" style="color: #355FE8;">KES 0</span>
+                </div>
+              </div>
+
+              <!-- Real Integration Notice in accordance with Section 15 of Prompt -->
+              <div style="font-size: 0.6875rem; color: #64748B; background: #FFFFFF; border: 1px solid #E2E5EA; padding: 0.6rem; margin-bottom: 1rem; line-height: 1.5;">
+                <strong style="color: #111214;">Payment Architecture Status:</strong> In this standalone frontend environment, submitting dispatches an authoritative demo receipt payload. For production live M-Pesa STK push and Paystack secrets, configure server proxy credentials.
+              </div>
+
+              <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem;">
+                PLACE VERIFIED ORDER
+              </button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- G. ORDER SUCCESS MODAL -->
+    <div id="order-success-modal" class="drawer-overlay">
+      <div class="modal-box" style="max-width: 600px; padding: 3rem 2rem; text-align: center;">
+        <div style="width: 4rem; height: 4rem; background: #ECFDF5; color: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <div class="font-display" style="font-size: 2.75rem; line-height: 1; margin-bottom: 0.5rem;">ORDER CONFIRMED</div>
+        <p id="order-ref-number" class="tabular-nums" style="font-family: var(--font-heading); font-weight: 800; color: #355FE8; margin-bottom: 1.5rem;">ORDER #KV-2026-8841</p>
+        <p style="color: #64748B; font-size: 0.9375rem; line-height: 1.6; margin-bottom: 2rem;">
+          Thank you for choosing Kicks Vault Kenya. We have sent the confirmation invoice to your email. Our logistics team will contact your phone shortly for dispatch verification.
+        </p>
+        <div style="background: #F4F5F7; padding: 1.25rem; text-align: left; margin-bottom: 2rem; font-size: 0.8125rem;">
+          <div style="font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: #111214;">Next Steps:</div>
+          <div style="color: #64748B; line-height: 1.6;">
+            1. Dispatch confirmation SMS sent to your Kenyan number.<br />
+            2. Package inspected and sealed in double-boxed protective vault carton.<br />
+            3. Rider or G4S tracking code issued.
+          </div>
+        </div>
+        <button onclick="closeOrderSuccessModal()" class="btn-primary" style="padding: 0.875rem 2rem;">
+          CONTINUE SHOPPING
+        </button>
+      </div>
+    </div>
+
+    <!-- UTILITY STYLES FOR RESPONSIVENESS INLINE HELPER -->
+    <style>
+      .md-inline { display: none; }
+      @media (min-width: 768px) {
+        .md-inline { display: inline !important; }
+        .md-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+        .md-flex-row { flex-direction: row !important; }
+        .md-items-end { align-items: flex-end !important; }
+      }
+      .lg-flex { display: none; }
+      @media (min-width: 1024px) {
+        .lg-flex { display: flex !important; }
+        .lg-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+        .lg-grid-4 { grid-template-columns: repeat(4, 1fr) !important; }
+      }
+      .size-chip-btn {
+        height: 2rem;
+        min-width: 2rem;
+        border: 1px solid #D6DAE1;
+        background: #FFFFFF;
+        font-family: var(--font-heading);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 0 0.35rem;
+        transition: all 0.15s;
+      }
+      .size-chip-btn:hover {
+        border-color: #111214;
+      }
+      .size-chip-btn.active-size {
+        background: #111214;
+        color: #FFFFFF;
+        border-color: #111214;
+      }
+      .size-chip-btn.active-size-any {
+        background: #F4F5F7;
+        color: #111214;
+      }
+      .search-tag-chip {
+        background: #F4F5F7;
+        border: 1px solid #E2E5EA;
+        font-family: var(--font-heading);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        text-transform: uppercase;
+      }
+      .search-tag-chip:hover {
+        background: #111214;
+        color: #FFFFFF;
+      }
+    </style>
+
+    <!-- COMPLETE APPLICATION JAVASCRIPT & 150+ PRODUCT DATASET -->
+    <script>
+      /* --- 1. CORE APPLICATION DATASET: 150+ DISTINCT FOOTWEAR ENTRIES --- */
+      const BRANDS_LIST = [
+        "Nike", "Adidas", "New Balance", "ASICS", "Jordan", 
+        "Puma", "Salomon", "Converse", "Vans", "Hoka", 
+        "Timberland", "Clarks", "Reebok", "Bata", "Dr. Martens"
+      ];
+
+      const CATEGORIES_LIST = [
+        "Sneakers", "Running", "Basketball", "Casual", 
+        "Boots", "Slides", "Formal"
+      ];
+
+      // Curated real sneaker imagery pool (reliable, high-contrast, clean footwear photography)
+      const SHOE_PHOTOS = [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80", // Red Nike Air Max
+        "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=700&q=80", // Puma Suede
+        "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=700&q=80", // Nike Air Force pastel
+        "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=700&q=80", // Nike Flyknit
+        "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?auto=format&fit=crop&w=700&q=80", // Converse All Star
+        "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=700&q=80", // Vans Old Skool
+        "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?auto=format&fit=crop&w=700&q=80", // Nike React
+        "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=700&q=80", // Nike Lime Green
+        "https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=700&q=80", // New Balance 990
+        "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=700&q=80", // Ultraboost White
+        "https://images.unsplash.com/photo-1575537302964-96cd47c06b1b?auto=format&fit=crop&w=700&q=80", // Black runner
+        "https://images.unsplash.com/photo-1514989940723-e8e51635b782?auto=format&fit=crop&w=700&q=80", // Leather boot
+        "https://images.unsplash.com/photo-1520639888713-7851133b1ed0?auto=format&fit=crop&w=700&q=80", // Clarks / Desert boot
+        "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?auto=format&fit=crop&w=700&q=80", // Trail sneaker
+        "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=700&q=80", // Clean white sneaker
+        "https://images.unsplash.com/photo-1588117260148-b47818741c74?auto=format&fit=crop&w=700&q=80", // Chunky runner
+        "https://images.unsplash.com/photo-1605348532760-6753d2c43329?auto=format&fit=crop&w=700&q=80", // Nike Jordan silhouette
+        "https://images.unsplash.com/photo-1512374382149-233c42b6a83b?auto=format&fit=crop&w=700&q=80", // White low court
+        "https://images.unsplash.com/photo-1582588678413-dbf45f4823e9?auto=format&fit=crop&w=700&q=80", // Road running shoe
+        "https://images.unsplash.com/photo-1618677831708-0e7fda3148b4?auto=format&fit=crop&w=700&q=80"  // Casual slide / mule
+      ];
+
+      // Curated model templates to generate 154 meaningful, authentic sneaker & footwear items
+      const MODEL_BLUEPRINTS = [
+        // Nike (18 items)
+        { brand: "Nike", name: "Air Max 270 Infrared Core", cat: "Sneakers", price: 18500, orig: 21000, tag: "Popular", desc: "Featuring Nike's biggest heel Air unit yet, engineered for super-soft cushioning that feels as impossible as it looks." },
+        { brand: "Nike", name: "Air Force 1 '07 Triple White", cat: "Sneakers", price: 14500, orig: null, tag: "Classic", desc: "The radiance lives on with crisp leather overlays, bold accents, and court-to-street heritage." },
+        { brand: "Nike", name: "Dunk Low Retro 'Panda'", cat: "Sneakers", price: 17500, orig: null, tag: "Grail", desc: "Classic two-tone black and white color blocking crafted in premium smooth leather." },
+        { brand: "Nike", name: "Air Max 90 Infrared OG", cat: "Sneakers", price: 19000, orig: 22000, tag: "Retro", desc: "Nothing as fly, nothing as comfortable, nothing as proven. The Air Max 90 stays true to its OG running roots." },
+        { brand: "Nike", name: "ZoomX Vaporfly Next% 3", cat: "Running", price: 29500, orig: null, tag: "Marathon", desc: "Elite carbon-plated road racing shoe built for personal bests from 10k to marathon distances." },
+        { brand: "Nike", name: "Air Zoom Pegasus 41 ReactX", cat: "Running", price: 16800, orig: 19000, tag: "Daily Trainer", desc: "Responsive cushioning for everyday runs with ReactX foam providing 13% more energy return." },
+        { brand: "Nike", name: "Invincible 3 ZoomX Cushion", cat: "Running", price: 23500, orig: null, tag: "Max Cushion", desc: "Maximum cushioning to support every mile with ultra-lightweight ZoomX foam rocker geometry." },
+        { brand: "Nike", name: "LeBron XXI 'Dragon Pearl'", cat: "Basketball", price: 26000, orig: 29000, tag: "Signature", desc: "Low-profile design with cabling system and Zoom Air in the heel and forefoot for high-speed court attacks." },
+        { brand: "Nike", name: "KD 17 'Sunrise Court'", cat: "Basketball", price: 21500, orig: null, tag: "Court", desc: "Forefoot Air Zoom unit combined with Nike Air cushioning for Kevin Durant's signature fluid scoring." },
+        { brand: "Nike", name: "Ja 1 'Scratch' Signature", cat: "Basketball", price: 16000, orig: 18500, tag: "Explosive", desc: "Built for Ja Morant's explosive vertical leap with landing containment and snappy responsiveness." },
+        { brand: "Nike", name: "Killshot 2 Leather Court", cat: "Casual", price: 12500, orig: null, tag: "Everyday", desc: "Vintage low-profile tennis style combining mixed leathers with gum rubber sole traction." },
+        { brand: "Nike", name: "Blazer Mid '77 Vintage", cat: "Sneakers", price: 13500, orig: 15500, tag: "Retro", desc: "Old-school basketball styling with exposed foam on the tongue and vintage midsole finish." },
+        { brand: "Nike", name: "ACG Mountain Fly 2 Low", cat: "Boots", price: 22000, orig: null, tag: "All-Conditions", desc: "Built for rugged wilderness trails and rocky trails with reinforced toe caps and sticky rubber traction." },
+        { brand: "Nike", name: "SFB Field 2 8-Inch Tactical", cat: "Boots", price: 24500, orig: 27000, tag: "Tactical", desc: "Heavy-duty tactical boot built for athletic traction, puncture resistance, and ankle stability." },
+        { brand: "Nike", name: "Calm Slide Minimal Foam", cat: "Slides", price: 7500, orig: null, tag: "Minimal", desc: "Seamless contoured water-friendly slide made from soft yet responsive foam." },
+        { brand: "Nike", name: "Victori One Shower Slide", cat: "Slides", price: 4800, orig: 5500, tag: "Essential", desc: "Lightweight single-bandage comfort slide with mechanical grip channels." },
+        { brand: "Nike", name: "Vomero 5 'Photon Dust'", cat: "Sneakers", price: 21000, orig: null, tag: "Y2K Runner", desc: "Richly layered runner featuring textiles, synthetic suede, and plastic cage accents." },
+        { brand: "Nike", name: "Mannequin Leather Oxford Sneaker", cat: "Formal", price: 18000, orig: null, tag: "Smart Casual", desc: "Tailored minimalist leather hybrid suitable for creative corporate and dinner wear." },
+
+        // Adidas (16 items)
+        { brand: "Adidas", name: "Samba OG Cloud White / Black", cat: "Sneakers", price: 15500, orig: null, tag: "Trend", desc: "The definitive indoor soccer heritage silhouette now dominating global streetwear." },
+        { brand: "Adidas", name: "Gazelle Indoor Collegiate Green", cat: "Sneakers", price: 16000, orig: 18000, tag: "Classic", desc: "Rich suede upper on a translucent gum rubber cupsole with iconic serrated 3-Stripes." },
+        { brand: "Adidas", name: "Handball Spezial Clear Blue", cat: "Sneakers", price: 15000, orig: null, tag: "Retro", desc: "1979 elite handball heritage reborn with premium pigskin suede and reinforced heel panel." },
+        { brand: "Adidas", name: "Campus 00s Core Black", cat: "Sneakers", price: 14500, orig: 16500, tag: "Chunky Skate", desc: "Y2K skate proportions with exaggerated padded tongue, wide laces, and suede upper." },
+        { brand: "Adidas", name: "Ultraboost Light Marathon", cat: "Running", price: 23000, orig: 26000, tag: "Max Energy", desc: "Lightest BOOST foam ever produced with Primeknit+ textile for marathon energy retention." },
+        { brand: "Adidas", name: "Adizero Adios Pro 3 Carbon", cat: "Running", price: 31000, orig: null, tag: "Elite Race", desc: "Record-shattering road racer with ENERGYRODS 2.0 carbon infusion and Lightstrike Pro." },
+        { brand: "Adidas", name: "Boston 12 Performance Trainer", cat: "Running", price: 19500, orig: 22000, tag: "Tempo", desc: "Mid-to-long distance race trainer engineered with glass-fiber rods and dual-density foam." },
+        { brand: "Adidas", name: "Trae Young 3 Signature Court", cat: "Basketball", price: 18500, orig: 21000, tag: "Court Grip", desc: "Engineered for lethal quickness, deep stepbacks, and directional stopping power." },
+        { brand: "Adidas", name: "Harden Volume 8 'Flamingo'", cat: "Basketball", price: 24000, orig: null, tag: "Sculpted", desc: "Futuristic molded EVA cage with Jet Boost core for James Harden's signature shiftiness." },
+        { brand: "Adidas", name: "Stan Smith Lux White Leather", cat: "Casual", price: 16500, orig: null, tag: "Luxury Minimal", desc: "Elevated iteration crafted from ultra-soft butter leather with folded edges." },
+        { brand: "Adidas", name: "Terrex Free Hiker 2 GORE-TEX", cat: "Boots", price: 27500, orig: 30000, tag: "Waterproof", desc: "Continental™ Rubber grip meets BOOST comfort and breathable waterproof GORE-TEX lining." },
+        { brand: "Adidas", name: "Terrex Swift R3 Mid Hiker", cat: "Boots", price: 23000, orig: null, tag: "Trail", desc: "Multi-sport hiking boot with rock protection plate and external heel cup." },
+        { brand: "Adidas", name: "Adilette 22 Futuristic Slide", cat: "Slides", price: 8200, orig: 9500, tag: "Topographical", desc: "3D-printed topographical design inspired by Martian expeditions, crafted with sugarcane bio-foam." },
+        { brand: "Adidas", name: "Yeezy Slide 'Onyx' Vault", cat: "Slides", price: 16500, orig: null, tag: "Grail Slide", desc: "Minimalist injected EVA foam silhouette with strategic groove placement for seamless traction." },
+        { brand: "Adidas", name: "Superstar Vintage 82 Shelltoe", cat: "Sneakers", price: 14000, orig: 16000, tag: "OG Heritage", desc: "The iconic rubber shell-toe court sneaker that defined hip-hop and basketball." },
+        { brand: "Adidas", name: "Rivalry Low 86 Court Classic", cat: "Casual", price: 13000, orig: 15000, tag: "Heritage", desc: "Prestigious retro court low-top combining basketball clout with modern comfort." },
+
+        // Jordan (14 items)
+        { brand: "Jordan", name: "Air Jordan 1 Retro High OG 'Chicago'", cat: "Basketball", price: 28000, orig: 32000, tag: "Legendary", desc: "The sneaker that changed athletic footwear forever. Premium leather in historic varsity red and white." },
+        { brand: "Jordan", name: "Air Jordan 4 Retro 'Bred Reimagined'", cat: "Basketball", price: 31000, orig: null, tag: "Grail", desc: "Supple black leather makeover on the 1989 Tinker Hatfield classic with visible Air unit." },
+        { brand: "Jordan", name: "Air Jordan 3 Retro 'White Cement'", cat: "Basketball", price: 29000, orig: null, tag: "Elephant Print", desc: "The silhouette that convinced Michael Jordan to stay with Nike, complete with iconic elephant print." },
+        { brand: "Jordan", name: "Air Jordan 11 Retro 'Concord'", cat: "Basketball", price: 32000, orig: null, tag: "Patent Leather", desc: "Shining black patent leather, translucent icy outsole, and carbon fiber shank plate." },
+        { brand: "Jordan", name: "Air Jordan 1 Low OG 'Mocha'", cat: "Sneakers", price: 21500, orig: 24000, tag: "Street Essential", desc: "Rich dark mocha nubuck overlays on crisp sail leather base with encapsulated Air cushioning." },
+        { brand: "Jordan", name: "Air Jordan 5 Retro 'Grape'", cat: "Basketball", price: 27500, orig: 30000, tag: "Retro", desc: "Inspired by WWII Mustang fighter planes with shark-tooth midsole graphics and lace locks." },
+        { brand: "Jordan", name: "Jordan Tatum 2 'Vortex'", cat: "Basketball", price: 19500, orig: 22000, tag: "Ultra Light", desc: "Jayson Tatum's lightest signature game shoe with frame wrapping for explosive court cuts." },
+        { brand: "Jordan", name: "Luka 2 'Trick Shot' Edition", cat: "Basketball", price: 18500, orig: null, tag: "Step Back", desc: "Engineered for Luka Dončić's multidirectional deceleration and step-back three pointers." },
+        { brand: "Jordan", name: "Air Jordan 6 Retro 'Infrared'", cat: "Basketball", price: 28500, orig: null, tag: "Championship", desc: "The silhouette MJ wore en route to his first NBA championship in 1991." },
+        { brand: "Jordan", name: "Jordan Stadium 90 Low", cat: "Sneakers", price: 17000, orig: 19500, tag: "Hybrid", desc: "Fuses elements from the AJ1 and AJ5 with modern Formula 23 foam underfoot comfort." },
+        { brand: "Jordan", name: "Jordan Spizike Low 'Black Cat'", cat: "Sneakers", price: 22500, orig: null, tag: "Spike Lee", desc: "Iconic mashup honoring Spike Lee, combining elements from the AJ3, 4, 5, 6, and 20." },
+        { brand: "Jordan", name: "Jordan Roam Recovery Slide", cat: "Slides", price: 9200, orig: null, tag: "Dual Density", desc: "Sculpted dual-density foam with elephant print textured traction bed for post-match chill." },
+        { brand: "Jordan", name: "Air Jordan 1 Mid 'Gym Red'", cat: "Sneakers", price: 17500, orig: 19500, tag: "Popular", desc: "Everyday mid-top ankle support with classic Wings branding on the collar." },
+        { brand: "Jordan", name: "Jordan Hydro XI Retro Slide", cat: "Slides", price: 8800, orig: 10000, tag: "Patent Slide", desc: "Adjustable midfoot strap with AJ11 patent leather styling and massaging footbed." },
+
+        // New Balance (16 items)
+        { brand: "New Balance", name: "990v6 Made in USA Castlerock", cat: "Sneakers", price: 29500, orig: 33000, tag: "Made in USA", desc: "The pinnacle of dad-shoe royalty. FuelCell foam midsole meets pigskin suede craftsmanship." },
+        { brand: "New Balance", name: "550 White / Green Heritage Court", cat: "Sneakers", price: 16500, orig: null, tag: "Retro Court", desc: "1989 basketball shoe resurrected with clean leather construction and vintage aesthetic." },
+        { brand: "New Balance", name: "1906R Protection Pack Titanium", cat: "Sneakers", price: 22500, orig: 25000, tag: "Deconstructed", desc: "Y2K technical runner with distressed raw-edge overlays, N-ergy sole, and ACTEVA LITE." },
+        { brand: "New Balance", name: "2002R 'Rain Cloud' Suede", cat: "Sneakers", price: 21000, orig: 23500, tag: "Comfort King", desc: "Throwback runner featuring Stability Web arch support and ABZORB heel pods." },
+        { brand: "New Balance", name: "Fresh Foam X 1080v13", cat: "Running", price: 22000, orig: 24500, tag: "Plush Run", desc: "Pinnacle max-cushion daily running shoe with rocker transition and engineered mesh upper." },
+        { brand: "New Balance", name: "FuelCell SuperComp Elite v4", cat: "Running", price: 32000, orig: null, tag: "Carbon Racer", desc: "Full PEBA foam midsole with Energy Arc carbon fiber plate for marathon racing." },
+        { brand: "New Balance", name: "Fresh Foam Hierro v8 Trail", cat: "Running", price: 20500, orig: 23000, tag: "Vibram Trail", desc: "Vibram® Megagrip outsole with toe protect guard for rugged trails and mountain dirt." },
+        { brand: "New Balance", name: "9060 'Sea Salt' Sculpted", cat: "Sneakers", price: 22000, orig: null, tag: "Futuristic", desc: "Warped Y2K silhouette with exaggerated wavy midsole and ABZORB SBS cushioning." },
+        { brand: "New Balance", name: "574 Core Classic Grey", cat: "Casual", price: 11500, orig: 13000, tag: "Timeless", desc: "The most New Balance shoe ever. Versatile suede and mesh with ENCAP midsole support." },
+        { brand: "New Balance", name: "TWO WXY v4 Basketball", cat: "Basketball", price: 18000, orig: 20500, tag: "Dual Foam", desc: "Split-second responsiveness combining FuelCell and Fresh Foam X in one sole unit." },
+        { brand: "New Balance", name: "Fresh Foam 1000 Silver Metallic", cat: "Sneakers", price: 21500, orig: null, tag: "Retro Y2K", desc: "1999 heritage model revived with futuristic metallic paneling and segmented sole." },
+        { brand: "New Balance", name: "991v2 Made in UK Navy", cat: "Sneakers", price: 32500, orig: null, tag: "Made in UK", desc: "Handcrafted in Flimby, Cumbria, featuring full-length FuelCell cushioning." },
+        { brand: "New Balance", name: "610v1 Trail Outdoor", cat: "Boots", price: 17500, orig: 19500, tag: "All Terrain", desc: "Rugged technical silhouette inspired by 2000s trail runners with C-CAP cushioning." },
+        { brand: "New Balance", name: "200 Slide Post-Workout", cat: "Slides", price: 5500, orig: 6500, tag: "Plush Slide", desc: "Soft ground-contact foam slide with padded foot strap for active recovery." },
+        { brand: "New Balance", name: "327 Vintage Suede Wedge", cat: "Casual", price: 13500, orig: null, tag: "70s Heritage", desc: "Asymmetrical oversized 'N' branding on a flared midsole with trail-inspired stud outsole." },
+        { brand: "New Balance", name: "RC30 Low Profile Leather", cat: "Casual", price: 14500, orig: 16500, tag: "Streamlined", desc: "Low-slung minimalist profile with curved rippled outsole inspired by 1970s track spikes." },
+
+        // ASICS (14 items)
+        { brand: "ASICS", name: "GEL-KAYANO 14 Metallic Plum", cat: "Sneakers", price: 22500, orig: null, tag: "Cult Runner", desc: "Award-winning 2008 running shoe reimagined as the ultimate fashion-forward street silhouette." },
+        { brand: "ASICS", name: "GEL-NYC Graphite Grey", cat: "Sneakers", price: 21000, orig: 23500, tag: "Modern Archive", desc: "Blends the upper of the GEL-NIMBUS 3 with tooling from the MC-PLUS V for superior urban comfort." },
+        { brand: "ASICS", name: "GEL-1130 Pure Silver / Blue", cat: "Sneakers", price: 16500, orig: null, tag: "Retro Runner", desc: "Spanning decades of design evolution with iconic GEL cushioning pods and TRUSSTIC support." },
+        { brand: "ASICS", name: "GEL-NIMBUS 26 Pure Platinum", cat: "Running", price: 23500, orig: 26000, tag: "Cloud Comfort", desc: "PureGEL™ technology and lightweight FF BLAST™ PLUS ECO foam for soft landings." },
+        { brand: "ASICS", name: "METASPEED Sky Paris Carbon", cat: "Running", price: 32000, orig: null, tag: "Olympic Racer", desc: "Elite carbon racing shoe designed for stride-style runners pushing sub-2:10 marathons." },
+        { brand: "ASICS", name: "GEL-KAYANO 31 Stability", cat: "Running", price: 24000, orig: 27000, tag: "Adaptive Support", desc: "Revolutionary 4D GUIDANCE SYSTEM™ provides adaptive stability on Kenyan road routes." },
+        { brand: "ASICS", name: "GEL-SONOMA 7 Trail Mudrock", cat: "Running", price: 14500, orig: 16500, tag: "Trail Ready", desc: "Rugged trail outsole with multidirectional lugs for steep hillclimbs and loose gravel." },
+        { brand: "ASICS", name: "GT-2160 White / Shamrock", cat: "Sneakers", price: 18000, orig: null, tag: "Heritage", desc: "Honors the technical design language from the GT-2000 series in the early 2010s." },
+        { brand: "ASICS", name: "EX89 Retro Court Low", cat: "Casual", price: 14500, orig: 16500, tag: "1989 Court", desc: "Inspired by the 1989 GEL-EXTREME basketball shoe with sculpted FF BLAST heel cushioning." },
+        { brand: "ASICS", name: "GEL-QUANTUM 360 VIII", cat: "Sneakers", price: 25000, orig: 28000, tag: "Full Gel", desc: "Full 360-degree visible DIVISION SPACE™ GEL technology offering high-impact dampening." },
+        { brand: "ASICS", name: "NOOSA TRI 16 Triathlon", cat: "Running", price: 19000, orig: 21500, tag: "Color Pop", desc: "Energetic color palette with curved GUIDESOLE™ technology reducing ankle flexion." },
+        { brand: "ASICS", name: "SKY ELITE FF 3 Indoor Court", cat: "Basketball", price: 20000, orig: null, tag: "Vertical Jump", desc: "Curved heel design enables smooth cuts while TWISTRUSS technology powers vertical leap." },
+        { brand: "ASICS", name: "GEL-VENTURE 9 All-Terrain", cat: "Boots", price: 13500, orig: 15000, tag: "Rugged", desc: "Modified lug pattern on outsole for transitioning from Nairobi city pavement to dirt trails." },
+        { brand: "ASICS", name: "ACTIBREEZE 3D Printed Slide", cat: "Slides", price: 11000, orig: null, tag: "3D Lattice", desc: "Parametrically designed 3D honeycomb lattice structure allowing maximum airflow and foot recovery." },
+
+        // Puma (10 items)
+        { brand: "Puma", name: "Suede Classic XXI Black / White", cat: "Sneakers", price: 11500, orig: 13000, tag: "Timeless", desc: "The definitive 1968 classic that made history at the Olympics and in 80s B-boy culture." },
+        { brand: "Puma", name: "Palermo Special Alpine Snow", cat: "Sneakers", price: 14000, orig: null, tag: "Terrace Trend", desc: "Revived 80s terrace legend with distinctive T-toe construction and classic gum rubber sole." },
+        { brand: "Puma", name: "Speedcat OG Sparco Red", cat: "Sneakers", price: 16500, orig: null, tag: "Motorsport", desc: "Motorsport icon with low-profile suede silhouette and rounded driver's heel." },
+        { brand: "Puma", name: "Deviate NITRO Elite 3 Carbon", cat: "Running", price: 28000, orig: 31000, tag: "Carbon Plate", desc: "NITROFOAM™ Elite combined with INNOPLATE carbon spoon for marathon speed." },
+        { brand: "Puma", name: "Velocity NITRO 3 Daily", cat: "Running", price: 16000, orig: 18000, tag: "Versatile", desc: "Reliable lightweight running shoe with PUMAGRIP durable rubber compound outsole." },
+        { brand: "Puma", name: "MB.03 'Toxic' LaMelo Ball", cat: "Basketball", price: 21000, orig: 24000, tag: "Signature", desc: "LaMelo Ball's extraterrestrial signature shoe featuring NITRO foam and claw mark cutouts." },
+        { brand: "Puma", name: "All-Pro NITRO Basketball", cat: "Basketball", price: 19500, orig: null, tag: "Court Grip", desc: "Dual-layer NITRO™ foam midsole with cord lock lockdown lacing for quick perimeter guards." },
+        { brand: "Puma", name: "Slipstream Leather Court", cat: "Casual", price: 13500, orig: 15500, tag: "80s Court", desc: "Heritage 1987 basketball sneaker reworked with modern leather panelling and soft collar." },
+        { brand: "Puma", name: "Desierto v3 Warm Boot", cat: "Boots", price: 17500, orig: 20000, tag: "Weatherproof", desc: "Winterized weather-resistant high-top with rugged tread and warm fleece interior lining." },
+        { brand: "Puma", name: "Leadcat 2.0 Padded Slide", cat: "Slides", price: 4500, orig: 5200, tag: "Value", desc: "Molded EVA footbed with padded synthetic leather strap for post-game relaxation." },
+
+        // Salomon (10 items)
+        { brand: "Salomon", name: "XT-6 Gore-Tex Black / Phantom", cat: "Sneakers", price: 27500, orig: 31000, tag: "Gorpcore", desc: "Iconic ultra-distance trail silhouette adopted by high fashion, now featuring waterproof GORE-TEX." },
+        { brand: "Salomon", name: "ACS Pro Advanced Metal", cat: "Sneakers", price: 26000, orig: null, tag: "Technical", desc: "Agile Chassis™ System provides trail stability with breathable Kurim cage envelope." },
+        { brand: "Salomon", name: "Speedcross 6 Forces Camo", cat: "Running", price: 21000, orig: 23500, tag: "Mud & Trail", desc: "Legendary aggressive chevron tread pattern for mud shedding and steep hill descents." },
+        { brand: "Salomon", name: "Genesis Trail Competition", cat: "Running", price: 22500, orig: 25000, tag: "Ultra Runner", desc: "Dynamic Energy Foam midsole with Matryx® woven upper for razor-sharp rocky foot protection." },
+        { brand: "Salomon", name: "Quest 4 GORE-TEX Backpacking", cat: "Boots", price: 32000, orig: 35000, tag: "Expedition", desc: "Full leather and textile hiking boot designed for long treks with heavy backpacks." },
+        { brand: "Salomon", name: "X Ultra 4 Mid Hiking Boot", cat: "Boots", price: 25000, orig: 28000, tag: "Agile Boot", desc: "Lightweight chassis protects sensitive joints on technical descents while locking the midfoot." },
+        { brand: "Salomon", name: "XT-Wings 2 Silver / Black", cat: "Sneakers", price: 21500, orig: 24000, tag: "Archive", desc: "Wings chassis technology cradles the heel and midfoot for seamless transition across terrains." },
+        { brand: "Salomon", name: "RX Slide 3.0 Recovery Mule", cat: "Slides", price: 9500, orig: 11000, tag: "Post Hike", desc: "Breathable stretch mesh upper with oversized EVA midsole giving tired feet instant relief." },
+        { brand: "Salomon", name: "Pulsar Trail Pro 2 Carbon", cat: "Running", price: 24500, orig: 27000, tag: "Propulsive", desc: "Energy Blade carbon composite plate gives energetic trail propulsion on rugged paths." },
+        { brand: "Salomon", name: "Techamphibian 5 Water Hiker", cat: "Casual", price: 16000, orig: null, tag: "River & Rock", desc: "Collapsible heel allows wearing as a mule or snug sports shoe in wet conditions." },
+
+        // Converse (8 items)
+        { brand: "Converse", name: "Chuck 70 Vintage High Top Black", cat: "Sneakers", price: 11000, orig: null, tag: "Icon", desc: "Heavyweight 12oz organic canvas, winged tongue stitching, and varnished egret foxing tape." },
+        { brand: "Converse", name: "Chuck Taylor All Star Low White", cat: "Casual", price: 8500, orig: 9500, tag: "Essential", desc: "The timeless American canvas low-top with classic diamond pattern rubber outsole." },
+        { brand: "Converse", name: "One Star Pro Vintage Suede", cat: "Sneakers", price: 12500, orig: 14000, tag: "Skate", desc: "Die-cut star motif with CX foam sockliner for impact cushioning during skate sessions." },
+        { brand: "Converse", name: "Weapon Low 86 Retro Basketball", cat: "Basketball", price: 15500, orig: 17500, tag: "Magic vs Bird", desc: "1986 hardwood classic that dominated the golden era of professional basketball." },
+        { brand: "Converse", name: "Run Star Motion Canvas Platform", cat: "Sneakers", price: 17000, orig: 19500, tag: "Wavy Chunky", desc: "Bold architectural CX foam midsole with exaggerated wavy lugged rubber outsole." },
+        { brand: "Converse", name: "Chuck 70 AT-CX Trail Boot", cat: "Boots", price: 16500, orig: 18500, tag: "All Terrain", desc: "Heavy-duty canvas upper with diamond-lugged traction and bosey toe bumper." },
+        { brand: "Converse", name: "All Star BB Trilliant Basketball", cat: "Basketball", price: 17500, orig: null, tag: "Air Zoom", desc: "Nike Air Zoom unit in the forefoot with convertible heel shroud for modern court play." },
+        { brand: "Converse", name: "Chuck 70 Mule Slip-On", cat: "Slides", price: 9200, orig: 10500, tag: "Slip On", desc: "Backless slip-on design of the premium Chuck 70 for instant effortless wear." },
+
+        // Vans (8 items)
+        { brand: "Vans", name: "Old Skool Core Black / White", cat: "Sneakers", price: 9800, orig: null, tag: "Skate Icon", desc: "The first shoe to bare the iconic jazz side stripe. Suede and canvas with vulcanized waffle sole." },
+        { brand: "Vans", name: "Classic Slip-On Checkerboard", cat: "Casual", price: 8900, orig: 10000, tag: "Slip On", desc: "Low profile slip-on canvas silhouette with elastic side accents and signature checker print." },
+        { brand: "Vans", name: "Knu Skool Puffy 90s Suede", cat: "Sneakers", price: 13500, orig: 15500, tag: "Puffy Y2K", desc: "1998 reissue with exaggerated puffy tongue, 3D molded Sidestripe, and chunky fat laces." },
+        { brand: "Vans", name: "Sk8-Hi MTE-2 Waterproof Boot", cat: "Boots", price: 19000, orig: 22000, tag: "HydroGuard", desc: "HydroGuard 360° waterproof membrane with PrimaLoft® zonal insulation and All-Trac rubber." },
+        { brand: "Vans", name: "Authentic Original Canvas Navy", cat: "Casual", price: 7900, orig: 9000, tag: "Heritage", desc: "The simple low-top lace-up shoe that started the entire Vans legacy in Anaheim in 1966." },
+        { brand: "Vans", name: "Half Cab '92 Steve Caballero", cat: "Sneakers", price: 13000, orig: null, tag: "Heritage Skate", desc: "Cut-down mid-top skate legend with DURACAP underlays and POPCUSH impact footbeds." },
+        { brand: "Vans", name: "UltraRange EXO Trail MTE", cat: "Boots", price: 18000, orig: 20500, tag: "All Day", desc: "UltraCush Lite midsole with full rubber-wrapped reverse lug outsole for all-day trekking." },
+        { brand: "Vans", name: "La Costa Slide-On Check", cat: "Slides", price: 5200, orig: 6000, tag: "Beach Slide", desc: "Soft synthetic nubuck strap with ultra-cushioned waffle texture footbed." },
+
+        // Hoka (8 items)
+        { brand: "Hoka", name: "Clifton 9 Cloud White", cat: "Running", price: 21500, orig: 24000, tag: "Plush Trainer", desc: "Eliminates weight while adding 3mm in stack height with responsive new CMEVA foam." },
+        { brand: "Hoka", name: "Bondi 8 Triple Black Max Cushion", cat: "Running", price: 23000, orig: 25500, tag: "Max Stack", desc: "The ultra-cushioned road warrior with rear billowed crash pad for billowy soft landings." },
+        { brand: "Hoka", name: "Cielo X1 Carbon Marathon Super", cat: "Running", price: 33000, orig: null, tag: "Elite Super", desc: "Dual-layer PEBA foam sandwiching a winged carbon fiber plate with aggressive forefoot rocker." },
+        { brand: "Hoka", name: "Speedgoat 5 Vibram Trail", cat: "Running", price: 22000, orig: 24500, tag: "Trail Beast", desc: "Vibram® Megagrip with Traction Lug for enhanced grip on loose soil and scree slopes." },
+        { brand: "Hoka", name: "Tor Ultra Hi GORE-TEX Boot", cat: "Boots", price: 34000, orig: null, tag: "Cult Hiker", desc: "Aggressive vibram tooling meets premium Sierra leather and GORE-TEX bootie membrane." },
+        { brand: "Hoka", name: "Anacapa 2 Mid Waterproof Hiker", cat: "Boots", price: 27000, orig: 30000, tag: "Light Hiker", desc: "LWG Gold-rated nubuck leather with GORE-TEX Invisible Fit and SwallowTail™ heel." },
+        { brand: "Hoka", name: "Ora Recovery Slide 3", cat: "Slides", price: 8500, orig: 9800, tag: "Recovery", desc: "Four air flow channels for superior breathability with dual-density sugarcane EVA sole." },
+        { brand: "Hoka", name: "Transport Everyday Commuter", cat: "Casual", price: 19500, orig: 22000, tag: "Commuter", desc: "Designed for city walking with quick-toggle speed laces and 360-degree reflectivity." },
+
+        // Timberland & Heritage Boots (10 items)
+        { brand: "Timberland", name: "Premium 6-Inch Waterproof Wheat", cat: "Boots", price: 26000, orig: 29000, tag: "Original Yellow", desc: "The original waterproof yellow boot made from premium nubuck leather with sealed seams." },
+        { brand: "Timberland", name: "6-Inch Premium Black Nubuck", cat: "Boots", price: 26000, orig: null, tag: "Stealth Classic", desc: "All-black waterproof leather with 400g PrimaLoft® insulation and rustproof hardware." },
+        { brand: "Timberland", name: "Euro Hiker Leather Boot", cat: "Boots", price: 22500, orig: 25000, tag: "Trail Heritage", desc: "Lightweight trail comfort with steel shank arch support and EVA blend midsole." },
+        { brand: "Timberland", name: "Authentic 3-Eye Classic Lug", cat: "Casual", price: 21000, orig: 24000, tag: "Handsewn", desc: "Handsewn boat shoe moccasin with thick rubber lug outsole and 360-degree rawhide lacing." },
+        { brand: "Timberland", name: "Field Boot Beef & Broccoli", cat: "Boots", price: 24000, orig: 27000, tag: "NYC Classic", desc: "Legendary green and brown waterproof leather and nylon high-top field boot." },
+        { brand: "Dr. Martens", name: "1460 Smooth Leather 8-Eye Boot", cat: "Boots", price: 24500, orig: 27500, tag: "Punk Heritage", desc: "The original Dr. Martens boot with yellow welt stitching, grooved edges, and AirWair sole." },
+        { brand: "Dr. Martens", name: "1461 Smooth 3-Eye Oxford", cat: "Formal", price: 21000, orig: null, tag: "Classic Oxford", desc: "Subcultural dress shoe built with Goodyear-welted oil and fat resistant bouncing soles." },
+        { brand: "Dr. Martens", name: "2976 Chelsea Boot Smooth Leather", cat: "Boots", price: 23500, orig: 26000, tag: "Chelsea", desc: "Sleek pull-on Chelsea silhouette with elastic side gusset and heel loop." },
+        { brand: "Dr. Martens", name: "Adrian Tassel Loafer Cherry Red", cat: "Formal", price: 22000, orig: 24500, tag: "Tassel Loafer", desc: "Double tassel and kiltie fringe on polished smooth leather with yellow welt stitch." },
+        { brand: "Dr. Martens", name: "Jorge II Suede Slingback Mule", cat: "Casual", price: 18500, orig: null, tag: "Suede Mule", desc: "Handcrafted suede mule with buckle adjustments and classic cushioned Shore sole." },
+
+        // Clarks & Dress Classics (8 items)
+        { brand: "Clarks", name: "Originals Desert Boot Beeswax", cat: "Casual", price: 19500, orig: 22000, tag: "Nathan Clark", desc: "Designed in 1949 by Nathan Clark. Supple beeswax leather with plantation crepe sole." },
+        { brand: "Clarks", name: "Wallabee Boot Maple Suede", cat: "Casual", price: 23000, orig: 26000, tag: "Moccasin", desc: "Moccasin construction with clean structural lines in water-resistant suede." },
+        { brand: "Clarks", name: "Desert Trek 'Bank Robber' Suede", cat: "Casual", price: 21500, orig: null, tag: "Center Seam", desc: "Recognizable center seam detail and Trek Man embossed heel emblem." },
+        { brand: "Clarks", name: "Tilden Cap Leather Oxford", cat: "Formal", price: 16500, orig: 19000, tag: "Corporate", desc: "Refined cap-toe dress shoe with discreet elastic gore panels and OrthoLite® footbed." },
+        { brand: "Clarks", name: "Oliver Wingtip Brogue Tan", cat: "Formal", price: 18500, orig: 21000, tag: "Brogue", desc: "Rich full-grain hand-burnished tan leather with decorative wingtip perforations." },
+        { brand: "Clarks", name: "Batcombe Lord Chelsea Boot", cat: "Boots", price: 22000, orig: null, tag: "Rugged Chelsea", desc: "Cleated rubber sole meets burnished leather for wet weather office commutes." },
+        { brand: "Clarks", name: "Howard Penny Loafer Black", cat: "Formal", price: 17500, orig: 19500, tag: "Penny Loafer", desc: "Classic slip-on formal penny loafer with Cushion Plus™ targeted underfoot padding." },
+        { brand: "Clarks", name: "Torhill Hi Chunky Suede", cat: "Sneakers", price: 20500, orig: 23000, tag: "Archive Chunky", desc: "Chunky ribbed 90s Big Gripper outsole paired with refined Wallabee upper." },
+
+        // Reebok & Bata Heritage (12 items)
+        { brand: "Reebok", name: "Club C 85 Vintage Chalk / Green", cat: "Sneakers", price: 12000, orig: 14000, tag: "Court Classic", desc: "Clean minimalist tennis shoe with garment leather upper and vintage terry lining." },
+        { brand: "Reebok", name: "Classic Leather OG White", cat: "Sneakers", price: 11000, orig: null, tag: "Essential", desc: "Soft garment leather with die-cut EVA midsole cushioning and high-abrasion outsole." },
+        { brand: "Reebok", name: "Question Mid 'Red Toe' Iverson", cat: "Basketball", price: 21000, orig: 24000, tag: "AI Signature", desc: "Allen Iverson's legendary rookie shoe with visible Hexalite honeycomb cushioning pods." },
+        { brand: "Reebok", name: "Instapump Fury 94 OG Citron", cat: "Sneakers", price: 24000, orig: 27500, tag: "Pump Tech", desc: "No laces. Custom pump-to-fit air bladder and carbon fiber split sole architecture." },
+        { brand: "Reebok", name: "Floatride Energy 5 Marathon", cat: "Running", price: 15500, orig: 17500, tag: "Best Value Run", desc: "Floatride Energy Foam provides lightweight, smooth, and energetic road transition." },
+        { brand: "Reebok", name: "Nano X4 Cross-Training Gym", cat: "Running", price: 18500, orig: 21000, tag: "CrossFit", desc: "FLEXWEAVE upper with lift and run chassis system for heavy lifts and box jumps." },
+        { brand: "Reebok", name: "Beatnik Cordura Strap Mule", cat: "Slides", price: 14500, orig: null, tag: "Cult Mule", desc: "Rugged CORDURA® textile upper with adjustable heel and midfoot velcro straps." },
+        { brand: "Bata", name: "Safari Boot Original Kenyan Suede", cat: "Boots", price: 6800, orig: 7500, tag: "Kenyan Heritage", desc: "The legendary Kenyan bush boot crafted in Limuru from genuine heavy suede and crepe sole." },
+        { brand: "Bata", name: "Safari Chukka Dark Brown Waxed", cat: "Boots", price: 7500, orig: null, tag: "Limuru Made", desc: "Waxed pull-up leather safari chukka built for all Kenyan terrains and daily durability." },
+        { brand: "Bata", name: "Bata Bullet Canvas Sneaker", cat: "Sneakers", price: 4500, orig: 5200, tag: "Retro Canvas", desc: "Historic Kenyan sports canvas shoe resurrected with vulcanized grip and retro stripes." },
+        { brand: "Bata", name: "Toungi Leather Formal Derby", cat: "Formal", price: 8200, orig: 9500, tag: "Executive", desc: "Polished black Kenyan leather derby shoe with reinforced shank for daily office comfort." },
+        { brand: "Bata", name: "Comfit Genuine Leather Slide", cat: "Slides", price: 4800, orig: null, tag: "All Day Rest", desc: "Orthopedic footbed with dual cross-straps crafted from supple brown leather." }
+      ];
+
+      // Build out full 154 dataset with complete variation, sizes, stock states, and ratings
+      let PRODUCTS = [];
+      let nextId = 1;
+
+      // Seed all models with distinct attributes
+      MODEL_BLUEPRINTS.forEach((model, idx) => {
+        const photoIndex = idx % SHOE_PHOTOS.length;
+        const baseSizes = [39, 40, 41, 42, 43, 44, 45, 46];
+        // realistic stock availability: some sizes out of stock
+        const stockBySize = {
+          39: Math.random() > 0.15 ? Math.floor(Math.random() * 6) + 1 : 0,
+          40: Math.random() > 0.1 ? Math.floor(Math.random() * 8) + 2 : 0,
+          41: Math.floor(Math.random() * 9) + 3,
+          42: Math.floor(Math.random() * 12) + 4,
+          43: Math.floor(Math.random() * 10) + 2,
+          44: Math.floor(Math.random() * 8) + 1,
+          45: Math.random() > 0.2 ? Math.floor(Math.random() * 5) + 1 : 0,
+          46: Math.random() > 0.4 ? Math.floor(Math.random() * 4) + 1 : 0
+        };
+
+        const totalStock = Object.values(stockBySize).reduce((a, b) => a + b, 0);
+
+        PRODUCTS.push({
+          id: nextId++,
+          name: model.name,
+          brand: model.brand,
+          category: model.cat,
+          price: model.price,
+          origPrice: model.orig,
+          image: SHOE_PHOTOS[photoIndex],
+          tag: model.tag,
+          desc: model.desc,
+          sizes: baseSizes,
+          stockBySize: stockBySize,
+          inStock: totalStock > 0,
+          isNew: idx % 4 === 0,
+          isSale: model.orig !== null,
+          colors: ["Original Colorway", "Core Black", "Triple White"]
+        });
+      });
+
+      // Expand to reach 154 items with special edition colorways
+      const EXTRA_VARIANTS = [
+        { brand: "Nike", base: "Air Max 270", suffix: "Triple Black Stealth", cat: "Sneakers", price: 18500, orig: null, tag: "Stealth" },
+        { brand: "Nike", base: "Air Force 1", suffix: "Flax Wheat Nubuck", cat: "Sneakers", price: 16000, orig: 18500, tag: "Autumn" },
+        { brand: "Adidas", base: "Samba OG", suffix: "Core Black / Cloud White", cat: "Sneakers", price: 15500, orig: null, tag: "Classic" },
+        { brand: "New Balance", base: "550", suffix: "Sea Salt / Burgundy", cat: "Sneakers", price: 16500, orig: 19000, tag: "Vintage" },
+        { brand: "Jordan", base: "Air Jordan 4", suffix: "Military Blue OG", cat: "Basketball", price: 31000, orig: null, tag: "Grail" },
+        { brand: "ASICS", base: "GEL-NYC", suffix: "Oatmeal / Obsidian", cat: "Sneakers", price: 21000, orig: null, tag: "Lifestyle" },
+        { brand: "Salomon", base: "XT-6", suffix: "Vanilla Ice / Fiery Red", cat: "Sneakers", price: 27500, orig: 30000, tag: "Trail Fashion" },
+        { brand: "Puma", base: "Palermo", suffix: "Cobalt Blue / Clementine", cat: "Sneakers", price: 14000, orig: null, tag: "Retro" },
+        { brand: "Converse", base: "Chuck 70", suffix: "Parchment Egret", cat: "Sneakers", price: 11000, orig: 12500, tag: "Classic" },
+        { brand: "Vans", base: "Old Skool", suffix: "Navy / White Canvas", cat: "Sneakers", price: 9800, orig: null, tag: "Essential" },
+        { brand: "Hoka", base: "Clifton 9", suffix: "All Black Triple", cat: "Running", price: 21500, orig: null, tag: "Daily" },
+        { brand: "Timberland", base: "Euro Hiker", suffix: "Jacquard Olive Trail", cat: "Boots", price: 21000, orig: 23500, tag: "Outdoor" },
+        { brand: "Dr. Martens", base: "1460", suffix: "Crazy Horse Leather", cat: "Boots", price: 25000, orig: null, tag: "Distressed" },
+        { brand: "Clarks", base: "Wallabee", suffix: "Black Suede Classic", cat: "Casual", price: 23000, orig: null, tag: "Original" },
+        { brand: "Reebok", base: "Club C 85", suffix: "Vintage Navy Accent", cat: "Sneakers", price: 12000, orig: null, tag: "Court" },
+        { brand: "Bata", base: "Safari Boot", suffix: "Oxblood Leather Edition", cat: "Boots", price: 7200, orig: 8000, tag: "Limuru" },
+        { brand: "Nike", base: "Dunk Low", suffix: "UNC University Blue", cat: "Sneakers", price: 19000, orig: null, tag: "Court Heritage" },
+        { brand: "Adidas", base: "Gazelle", suffix: "Bold Platform Black", cat: "Sneakers", price: 16500, orig: 18500, tag: "Platform" },
+        { brand: "Jordan", base: "Air Jordan 1 Low", suffix: "Black Toe Retro", cat: "Sneakers", price: 21000, orig: null, tag: "Retro Low" },
+        { brand: "New Balance", base: "1906R", suffix: "Cordura Desert Tan", cat: "Sneakers", price: 23000, orig: 25500, tag: "Technical" },
+        { brand: "ASICS", base: "GEL-KAYANO 14", suffix: "Cream / Pure Silver", cat: "Sneakers", price: 22500, orig: null, tag: "Hype" },
+        { brand: "Salomon", base: "ACS Pro", suffix: "Safari / Kelp", cat: "Sneakers", price: 26000, orig: null, tag: "Gorpcore" }
+      ];
+
+      EXTRA_VARIANTS.forEach((ext, idx) => {
+        const photoIndex = (idx * 3 + 1) % SHOE_PHOTOS.length;
+        const stockBySize = {
+          39: 2, 40: 4, 41: 5, 42: 7, 43: 6, 44: 3, 45: 2, 46: 1
+        };
+        PRODUCTS.push({
+          id: nextId++,
+          name: `${ext.base} '${ext.suffix}'`,
+          brand: ext.brand,
+          category: ext.cat,
+          price: ext.price,
+          origPrice: ext.orig,
+          image: SHOE_PHOTOS[photoIndex],
+          tag: ext.tag,
+          desc: `Limited edition ${ext.suffix} colorway of the celebrated ${ext.base}. Verified authentication inspection guaranteed before countrywide dispatch.`,
+          sizes: [39, 40, 41, 42, 43, 44, 45, 46],
+          stockBySize: stockBySize,
+          inStock: true,
+          isNew: true,
+          isSale: ext.orig !== null,
+          colors: ["Special Edition", "Core Stealth"]
+        });
+      });
+
+      console.log(`Initialized Kicks Vault catalogue with ${PRODUCTS.length} distinct footwear items.`);
+
+      /* --- 2. STATE MANAGEMENT --- */
+      let state = {
+        categoryFilter: 'all',
+        brandFilter: 'all',
+        sizeFilter: 'any',
+        priceFilter: 'all',
+        saleOnly: false,
+        inStockOnly: true,
+        sortBy: 'featured',
+        searchQuery: '',
+        cart: JSON.parse(localStorage.getItem('kv_cart') || '[]'),
+        wishlist: JSON.parse(localStorage.getItem('kv_wishlist') || '[]'),
+        discountRate: 0, // e.g. 0.1 for 10%
+        activeCoupon: null
+      };
+
+      /* --- 3. RENDERING ENGINE --- */
+      function formatPrice(val) {
+        return 'KES ' + Number(val).toLocaleString();
+      }
+
+      function createProductCardHTML(p) {
+        const isWish = state.wishlist.includes(p.id);
+        const discountBadge = p.origPrice ? `<span class="kicks-tag kicks-tag-yellow">SALE</span>` : (p.isNew ? `<span class="kicks-tag kicks-tag-black">NEW DROP</span>` : '');
+        
+        return `
+          <div class="product-card" data-id="${p.id}">
+            <div class="card-media" onclick="openProductDetail(${p.id})" style="cursor: pointer;">
+              <button type="button" class="wishlist-btn ${isWish ? 'active' : ''}" onclick="toggleWishlistItem(event, ${p.id})" title="${isWish ? 'Remove from wishlist' : 'Save to wishlist'}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="${isWish ? '#E53E3E' : 'none'}" stroke="${isWish ? '#E53E3E' : '#111214'}" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+              </button>
+              <div style="position: absolute; top: 0.75rem; left: 0.75rem; display: flex; gap: 0.25rem;">
+                ${discountBadge}
+              </div>
+              <img src="${p.image}" alt="${p.name}" loading="lazy" />
+            </div>
+
+            <div style="padding: 1.25rem; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+                  <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: #858991; letter-spacing: 0.05em;">${p.brand} · ${p.category}</span>
+                  ${p.inStock ? '<span style="font-size: 0.625rem; font-weight: 700; color: #059669; text-transform: uppercase;">In Stock</span>' : '<span style="font-size: 0.625rem; font-weight: 700; color: #DC2626; text-transform: uppercase;">Sold Out</span>'}
+                </div>
+                <h3 onclick="openProductDetail(${p.id})" style="font-family: var(--font-heading); font-size: 0.9375rem; font-weight: 700; color: #111214; margin-bottom: 0.5rem; line-height: 1.3; cursor: pointer;">
+                  ${p.name}
+                </h3>
+              </div>
+
+              <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #ECEEF2; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div class="tabular-nums" style="font-family: var(--font-heading); font-size: 1rem; font-weight: 800; color: #111214;">
+                    ${formatPrice(p.price)}
+                  </div>
+                  ${p.origPrice ? `<div class="tabular-nums" style="font-size: 0.75rem; color: #94A3B8; text-decoration: line-through;">${formatPrice(p.origPrice)}</div>` : ''}
+                </div>
+                <button type="button" onclick="openProductDetail(${p.id})" class="btn-primary" style="padding: 0.45rem 0.85rem; font-size: 0.75rem;">
+                  VIEW SIZES
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderCatalog() {
+        const grid = document.getElementById('catalog-grid');
+        const emptyBox = document.getElementById('catalog-empty');
+        const countLabel = document.getElementById('results-count-label');
+
+        let filtered = PRODUCTS.filter(p => {
+          // Category
+          if (state.categoryFilter !== 'all' && p.category.toLowerCase() !== state.categoryFilter.toLowerCase()) {
+            return false;
+          }
+          // Brand
+          if (state.brandFilter !== 'all' && p.brand.toLowerCase() !== state.brandFilter.toLowerCase()) {
+            return false;
+          }
+          // Size
+          if (state.sizeFilter !== 'any') {
+            const requestedSize = Number(state.sizeFilter);
+            if (!p.stockBySize[requestedSize] || p.stockBySize[requestedSize] <= 0) {
+              return false;
+            }
+          }
+          // Price
+          if (state.priceFilter === 'under-8k' && p.price >= 8000) return false;
+          if (state.priceFilter === '8k-15k' && (p.price < 8000 || p.price > 15000)) return false;
+          if (state.priceFilter === '15k-22k' && (p.price < 15000 || p.price > 22000)) return false;
+          if (state.priceFilter === 'above-22k' && p.price <= 22000) return false;
+
+          // Sale items
+          if (state.saleOnly && !p.isSale) return false;
+          // In stock
+          if (state.inStockOnly && !p.inStock) return false;
+
+          // Search query
+          if (state.searchQuery.trim() !== '') {
+            const q = state.searchQuery.toLowerCase();
+            const matchName = p.name.toLowerCase().includes(q);
+            const matchBrand = p.brand.toLowerCase().includes(q);
+            const matchCat = p.category.toLowerCase().includes(q);
+            const matchTag = p.tag.toLowerCase().includes(q);
+            if (!matchName && !matchBrand && !matchCat && !matchTag) return false;
+          }
+
+          return true;
+        });
+
+        // Sorting
+        if (state.sortBy === 'price-asc') {
+          filtered.sort((a, b) => a.price - b.price);
+        } else if (state.sortBy === 'price-desc') {
+          filtered.sort((a, b) => b.price - a.price);
+        } else if (state.sortBy === 'newest') {
+          filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+        } else if (state.sortBy === 'name') {
+          filtered.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        countLabel.textContent = `Showing ${filtered.length} of ${PRODUCTS.length} Models`;
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '';
+          emptyBox.style.display = 'block';
+        } else {
+          emptyBox.style.display = 'none';
+          grid.innerHTML = filtered.map(createProductCardHTML).join('');
+        }
+
+        renderActiveFilterChips();
+      }
+
+      function renderActiveFilterChips() {
+        const container = document.getElementById('active-filter-indicators');
+        let chips = [];
+
+        if (state.categoryFilter !== 'all') {
+          chips.push(`Category: ${state.categoryFilter}`);
+        }
+        if (state.brandFilter !== 'all') {
+          chips.push(`Brand: ${state.brandFilter}`);
+        }
+        if (state.sizeFilter !== 'any') {
+          chips.push(`Size: EU ${state.sizeFilter}`);
+        }
+        if (state.priceFilter !== 'all') {
+          chips.push(`Budget Filter`);
+        }
+        if (state.saleOnly) {
+          chips.push(`Sale Only`);
+        }
+        if (state.searchQuery.trim() !== '') {
+          chips.push(`Query: "${state.searchQuery}"`);
+        }
+
+        if (chips.length > 0) {
+          container.style.display = 'flex';
+          container.innerHTML = `
+            <span style="font-size: 0.6875rem; font-weight: 700; color: #858991; text-transform: uppercase;">Active Filters:</span>
+            ${chips.map(c => `
+              <span style="background: #E8EAEF; color: #111214; font-size: 0.6875rem; font-weight: 700; padding: 0.2rem 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
+                ${c}
+              </span>
+            `).join('')}
+            <button onclick="resetAllFilters()" style="background: none; border: none; font-size: 0.6875rem; color: #DC2626; font-weight: 700; cursor: pointer; text-decoration: underline;">Clear All</button>
+          `;
+        } else {
+          container.style.display = 'none';
+        }
+      }
+
+      function renderRails() {
+        // Featured drops rail
+        const drops = PRODUCTS.filter(p => p.isNew || p.tag === 'Grail').slice(0, 10);
+        document.getElementById('drops-rail').innerHTML = drops.map(p => `
+          <div style="min-width: 280px; max-width: 280px; flex-shrink: 0;">
+            ${createProductCardHTML(p)}
+          </div>
+        `).join('');
+
+        // Basketball rail
+        const bball = PRODUCTS.filter(p => p.category === 'Basketball').slice(0, 8);
+        document.getElementById('basketball-rail').innerHTML = bball.map(p => `
+          <div style="min-width: 280px; max-width: 280px; flex-shrink: 0;">
+            ${createProductCardHTML(p)}
+          </div>
+        `).join('');
+
+        // Running rail
+        const running = PRODUCTS.filter(p => p.category === 'Running').slice(0, 8);
+        document.getElementById('running-rail').innerHTML = running.map(p => `
+          <div style="min-width: 280px; max-width: 280px; flex-shrink: 0;">
+            ${createProductCardHTML(p)}
+          </div>
+        `).join('');
+      }
+
+      function renderBrandSelector() {
+        const rail = document.getElementById('brand-selector-rail');
+        rail.innerHTML = `
+          <button class="brand-tab-btn active" onclick="filterByBrand('all')">ALL BRANDS</button>
+          ${BRANDS_LIST.map(b => `
+            <button class="brand-tab-btn" onclick="filterByBrand('${b}')">${b.toUpperCase()}</button>
+          `).join('')}
+        `;
+      }
+
+      /* --- 4. FILTER ACTIONS --- */
+      function filterByCategory(cat) {
+        state.categoryFilter = cat;
+        // update tab styles
+        document.querySelectorAll('.cat-tab-btn').forEach(btn => {
+          if (btn.textContent.toLowerCase().includes(cat.toLowerCase()) || (cat === 'all' && btn.textContent.includes('All'))) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+        renderCatalog();
+        const catalogEl = document.getElementById('catalog');
+        if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function filterByBrand(brand) {
+        state.brandFilter = brand;
+        const brandSelect = document.getElementById('filter-brand');
+        if (brandSelect) brandSelect.value = brand;
+
+        document.querySelectorAll('.brand-tab-btn').forEach(btn => {
+          if (btn.textContent.trim().toLowerCase() === (brand === 'all' ? 'all brands' : brand.toLowerCase())) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        renderCatalog();
+        const catalogEl = document.getElementById('catalog');
+        if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function filterByTag(tag) {
+        state.searchQuery = tag;
+        renderCatalog();
+        document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function filterBySale() {
+        state.saleOnly = true;
+        document.getElementById('filter-sale-only').checked = true;
+        renderCatalog();
+        document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function toggleSizeFilter(size) {
+        state.sizeFilter = size;
+        document.querySelectorAll('.size-chip-btn').forEach(btn => {
+          btn.classList.remove('active-size');
+          if (String(size) === 'any' && btn.textContent === 'ANY') {
+            btn.classList.add('active-size');
+          } else if (btn.textContent === String(size)) {
+            btn.classList.add('active-size');
+          }
+        });
+        renderCatalog();
+      }
+
+      function applyFilters() {
+        state.brandFilter = document.getElementById('filter-brand').value;
+        state.priceFilter = document.getElementById('filter-price').value;
+        state.saleOnly = document.getElementById('filter-sale-only').checked;
+        state.inStockOnly = document.getElementById('filter-instock-only').checked;
+        renderCatalog();
+      }
+
+      function applySort(val) {
+        state.sortBy = val;
+        renderCatalog();
+      }
+
+      function resetAllFilters() {
+        state.categoryFilter = 'all';
+        state.brandFilter = 'all';
+        state.sizeFilter = 'any';
+        state.priceFilter = 'all';
+        state.saleOnly = false;
+        state.inStockOnly = true;
+        state.searchQuery = '';
+
+        document.getElementById('filter-brand').value = 'all';
+        document.getElementById('filter-price').value = 'all';
+        document.getElementById('filter-sale-only').checked = false;
+        document.getElementById('filter-instock-only').checked = true;
+
+        document.querySelectorAll('.cat-tab-btn').forEach((b, i) => i === 0 ? b.classList.add('active') : b.classList.remove('active'));
+        document.querySelectorAll('.brand-tab-btn').forEach((b, i) => i === 0 ? b.classList.add('active') : b.classList.remove('active'));
+        document.querySelectorAll('.size-chip-btn').forEach(b => {
+          b.classList.remove('active-size');
+          if (b.textContent === 'ANY') b.classList.add('active-size');
+        });
+
+        renderCatalog();
+      }
+
+      function scrollRail(id, delta) {
+        const el = document.getElementById(id);
+        if (el) el.scrollBy({ left: delta, behavior: 'smooth' });
+      }
+
+      /* --- 5. PRODUCT DETAIL MODAL (PDP) --- */
+      let currentPdpProduct = null;
+      let selectedPdpSize = null;
+      let selectedPdpColor = null;
+
+      function openProductDetail(id) {
+        const p = PRODUCTS.find(x => x.id === id);
+        if (!p) return;
+        currentPdpProduct = p;
+        selectedPdpColor = p.colors[0];
+
+        // Find first available size
+        selectedPdpSize = null;
+        for (let s of p.sizes) {
+          if (p.stockBySize[s] && p.stockBySize[s] > 0) {
+            selectedPdpSize = s;
+            break;
+          }
+        }
+
+        const container = document.getElementById('pdp-content-container');
+        container.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr; gap: 2.5rem;" class="md-grid-2">
+            <!-- Left: Gallery & Zoom Showcase -->
+            <div style="background: #F6F7F9; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+              <span class="kicks-tag kicks-tag-black" style="position: absolute; top: 1rem; left: 1rem;">100% AUTHENTIC VERIFIED</span>
+              <img id="pdp-main-image" src="${p.image}" alt="${p.name}" style="width: 100%; max-height: 380px; object-fit: contain; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.12));" />
+              <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+                <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: #64748B;">SKU: KV-${p.id.toString().padStart(4, '0')}</span>
+                <span style="color: #CBD5E1;">·</span>
+                <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: #059669;">NAIROBI VAULT PACKAGED</span>
+              </div>
+            </div>
+
+            <!-- Right: Product Purchase Module -->
+            <div style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <!-- Brand & Tag -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #858991;">${p.brand} · ${p.category}</span>
+                  ${p.isSale ? '<span class="kicks-tag kicks-tag-yellow">SPECIAL PRICE</span>' : ''}
+                </div>
+
+                <h2 class="font-display" style="font-size: clamp(2rem, 4vw, 2.75rem); color: #111214; line-height: 1; margin-bottom: 0.75rem;">
+                  ${p.name}
+                </h2>
+
+                <!-- Price row -->
+                <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.25rem;">
+                  <span class="tabular-nums" style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: #111214;">
+                    ${formatPrice(p.price)}
+                  </span>
+                  ${p.origPrice ? `<span class="tabular-nums" style="font-size: 1rem; color: #94A3B8; text-decoration: line-through;">${formatPrice(p.origPrice)}</span>` : ''}
+                </div>
+
+                <p style="font-size: 0.875rem; color: #475569; line-height: 1.6; margin-bottom: 1.5rem; border-bottom: 1px solid #ECEEF2; padding-bottom: 1.25rem;">
+                  ${p.desc}
+                </p>
+
+                <!-- Color Selection -->
+                <div style="margin-bottom: 1.25rem;">
+                  <div style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: #111214;">
+                    Colorway: <span id="pdp-selected-color-label" style="color: #64748B;">${selectedPdpColor}</span>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    ${p.colors.map((c, i) => `
+                      <button type="button" onclick="selectPdpColor('${c}')" class="btn-outline" style="padding: 0.4rem 0.85rem; font-size: 0.75rem; ${i === 0 ? 'background: #111214; color: #FFF;' : ''}">
+                        ${c}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Size Selection Module -->
+                <div style="margin-bottom: 1.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+                    <div style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #111214;">
+                      Select Size (EU System):
+                    </div>
+                    <button type="button" onclick="openSizeGuideModal()" style="background: none; border: none; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; color: #355FE8; text-decoration: underline; cursor: pointer;">
+                      Size Guide & Fit Chart
+                    </button>
+                  </div>
+
+                  <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;" id="pdp-size-buttons">
+                    ${p.sizes.map(s => {
+                      const stock = p.stockBySize[s] || 0;
+                      const isSelected = s === selectedPdpSize;
+                      const isDisabled = stock === 0;
+                      return `
+                        <button type="button" class="size-btn ${isSelected ? 'active' : ''}" ${isDisabled ? 'disabled' : ''} onclick="selectPdpSize(${s})" title="${isDisabled ? 'Out of Stock' : `${stock} pairs left`}">
+                          ${s}
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                  
+                  <div id="pdp-stock-notice" style="font-size: 0.75rem; margin-top: 0.5rem; font-weight: 600; color: #059669;">
+                    ${selectedPdpSize ? `EU ${selectedPdpSize} is In Stock for Immediate Dispatch` : 'Please select an available size'}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action buttons & Purchase guarantee -->
+              <div>
+                <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                  <button id="pdp-add-to-cart-btn" onclick="addCurrentProductToCart()" class="btn-primary" style="flex: 1; padding: 1rem;">
+                    ADD TO BAG · ${formatPrice(p.price)}
+                  </button>
+                  <button onclick="toggleWishlistItem(event, ${p.id})" class="btn-outline" style="padding: 1rem 1.25rem;">
+                    SAVED
+                  </button>
+                </div>
+
+                <div style="background: #F8F9FA; padding: 0.75rem 1rem; border: 1px solid #E8EAEF; font-size: 0.75rem; color: #64748B; display: flex; align-items: center; justify-content: space-between;">
+                  <span>🚚 24-48h Express Shipping across Kenya</span>
+                  <span>🔒 Lipa Na M-Pesa & Card Ready</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('pdp-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function selectPdpSize(s) {
+        selectedPdpSize = s;
+        document.querySelectorAll('#pdp-size-buttons .size-btn').forEach(btn => {
+          if (btn.textContent.trim() === String(s)) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        const stock = currentPdpProduct.stockBySize[s] || 0;
+        const notice = document.getElementById('pdp-stock-notice');
+        if (stock <= 2 && stock > 0) {
+          notice.textContent = `Only ${stock} pairs remaining in size EU ${s} - Act fast`;
+          notice.style.color = '#D97706';
+        } else if (stock > 0) {
+          notice.textContent = `EU ${s} is In Stock for Immediate Dispatch`;
+          notice.style.color = '#059669';
+        } else {
+          notice.textContent = `Size EU ${s} is currently out of stock`;
+          notice.style.color = '#DC2626';
+        }
+      }
+
+      function selectPdpColor(c) {
+        selectedPdpColor = c;
+        const lbl = document.getElementById('pdp-selected-color-label');
+        if (lbl) lbl.textContent = c;
+      }
+
+      function closeProductDetail() {
+        document.getElementById('pdp-modal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        currentPdpProduct = null;
+      }
+
+      function handlePdpBackdropClick(e) {
+        if (e.target.id === 'pdp-modal') {
+          closeProductDetail();
+        }
+      }
+
+      /* --- 6. SHOPPING CART LOGIC --- */
+      function addCurrentProductToCart() {
+        if (!currentPdpProduct) return;
+        if (!selectedPdpSize) {
+          alert('Please select an available shoe size before adding to bag.');
+          return;
+        }
+
+        addToCart(currentPdpProduct.id, selectedPdpSize, selectedPdpColor);
+        closeProductDetail();
+        toggleCartDrawer(true);
+      }
+
+      function addToCart(productId, size, color) {
+        const product = PRODUCTS.find(p => p.id === productId);
+        if (!product) return;
+
+        // Check if matching item exists
+        const existingIdx = state.cart.findIndex(item => item.id === productId && item.size === size && item.color === color);
+
+        if (existingIdx > -1) {
+          state.cart[existingIdx].qty += 1;
+        } else {
+          state.cart.push({
+            id: product.id,
+            name: product.name,
+            brand: product.brand,
+            price: product.price,
+            image: product.image,
+            size: size,
+            color: color || "Original",
+            qty: 1
+          });
+        }
+
+        saveCart();
+        updateCartUI();
+      }
+
+      function updateCartItemQty(idx, delta) {
+        if (state.cart[idx]) {
+          state.cart[idx].qty += delta;
+          if (state.cart[idx].qty <= 0) {
+            state.cart.splice(idx, 1);
+          }
+          saveCart();
+          updateCartUI();
+        }
+      }
+
+      function removeCartItem(idx) {
+        state.cart.splice(idx, 1);
+        saveCart();
+        updateCartUI();
+      }
+
+      function saveCart() {
+        localStorage.setItem('kv_cart', JSON.stringify(state.cart));
+      }
+
+      function updateCartUI() {
+        const count = state.cart.reduce((sum, item) => sum + item.qty, 0);
+        document.getElementById('cart-badge').textContent = count;
+        document.getElementById('cart-drawer-count').textContent = `(${count} items)`;
+
+        const container = document.getElementById('cart-items-list');
+
+        if (state.cart.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 3rem 1rem; color: #858991;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 1rem auto;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+              <div class="font-display" style="font-size: 1.5rem; color: #111214; margin-bottom: 0.5rem;">YOUR BAG IS EMPTY</div>
+              <p style="font-size: 0.875rem;">Discover our 150+ footwear archive to add your first pair.</p>
+            </div>
+          `;
+        } else {
+          container.innerHTML = state.cart.map((item, idx) => `
+            <div style="display: flex; gap: 1rem; border-bottom: 1px solid #ECEEF2; padding-bottom: 1rem;">
+              <div style="width: 80px; height: 80px; background: #F6F7F9; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <img src="${item.image}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;" />
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: #858991;">${item.brand}</span>
+                    <button onclick="removeCartItem(${idx})" style="background: none; border: none; font-size: 0.75rem; color: #DC2626; cursor: pointer;">Remove</button>
+                  </div>
+                  <h4 style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 700; color: #111214;">${item.name}</h4>
+                  <div style="font-size: 0.75rem; color: #64748B;">Size: EU ${item.size} · ${item.color}</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                  <!-- Stepper -->
+                  <div style="display: flex; align-items: center; border: 1px solid #D6DAE1;">
+                    <button onclick="updateCartItemQty(${idx}, -1)" style="width: 1.75rem; height: 1.75rem; background: none; border: none; cursor: pointer; font-weight: 700;">-</button>
+                    <span class="tabular-nums" style="padding: 0 0.5rem; font-size: 0.8125rem; font-weight: 700;">${item.qty}</span>
+                    <button onclick="updateCartItemQty(${idx}, 1)" style="width: 1.75rem; height: 1.75rem; background: none; border: none; cursor: pointer; font-weight: 700;">+</button>
+                  </div>
+                  <span class="tabular-nums" style="font-family: var(--font-heading); font-size: 0.9375rem; font-weight: 800; color: #111214;">
+                    ${formatPrice(item.price * item.qty)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Calculations
+        const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const freeDeliveryThreshold = 10000;
+        const shippingFee = (subtotal >= freeDeliveryThreshold || subtotal === 0) ? 0 : 500;
+        const discountAmount = Math.round(subtotal * state.discountRate);
+        const total = Math.max(0, subtotal - discountAmount + shippingFee);
+
+        // Progress bar for free shipping
+        const progressEl = document.getElementById('free-shipping-progress-bar');
+        const progressTxt = document.getElementById('free-shipping-progress-text');
+        if (subtotal >= freeDeliveryThreshold) {
+          progressEl.style.width = '100%';
+          progressEl.style.background = '#059669';
+          progressTxt.textContent = '🎉 You qualified for FREE delivery across Kenya!';
+        } else {
+          const pct = Math.min(100, Math.round((subtotal / freeDeliveryThreshold) * 100));
+          progressEl.style.width = pct + '%';
+          progressEl.style.background = '#355FE8';
+          progressTxt.textContent = `Add ${formatPrice(freeDeliveryThreshold - subtotal)} more for FREE delivery`;
+        }
+
+        document.getElementById('cart-subtotal').textContent = formatPrice(subtotal);
+        document.getElementById('cart-shipping').textContent = shippingFee === 0 ? 'FREE' : formatPrice(shippingFee);
+
+        const discountRow = document.getElementById('cart-discount-row');
+        if (discountAmount > 0) {
+          discountRow.style.display = 'flex';
+          document.getElementById('cart-discount-val').textContent = `- ${formatPrice(discountAmount)}`;
+        } else {
+          discountRow.style.display = 'none';
+        }
+
+        document.getElementById('cart-total').textContent = formatPrice(total);
+
+        // Checkout Button state
+        const checkoutBtn = document.getElementById('cart-checkout-btn');
+        if (state.cart.length === 0) {
+          checkoutBtn.disabled = true;
+          checkoutBtn.style.opacity = '0.5';
+          checkoutBtn.style.cursor = 'not-allowed';
+        } else {
+          checkoutBtn.disabled = false;
+          checkoutBtn.style.opacity = '1';
+          checkoutBtn.style.cursor = 'pointer';
+        }
+      }
+
+      function toggleCartDrawer(open) {
+        const drawer = document.getElementById('cart-drawer');
+        if (open) {
+          updateCartUI();
+          drawer.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        } else {
+          drawer.classList.remove('active');
+          document.body.style.overflow = 'auto';
+        }
+      }
+
+      function applyCoupon() {
+        const input = document.getElementById('coupon-input');
+        const code = input.value.trim().toUpperCase();
+
+        if (code === 'VAULT10' || code === 'KENYA2026') {
+          state.discountRate = 0.10;
+          state.activeCoupon = code;
+          alert(`Coupon "${code}" applied: 10% Discount activated!`);
+          updateCartUI();
+        } else if (code === '') {
+          state.discountRate = 0;
+          state.activeCoupon = null;
+          updateCartUI();
+        } else {
+          alert('Invalid promo code. Use VAULT10 for 10% off.');
+        }
+      }
+
+      /* --- 7. WISHLIST MANAGEMENT --- */
+      function toggleWishlistItem(e, id) {
+        if (e) e.stopPropagation();
+        const idx = state.wishlist.indexOf(id);
+        if (idx > -1) {
+          state.wishlist.splice(idx, 1);
+        } else {
+          state.wishlist.push(id);
+        }
+        localStorage.setItem('kv_wishlist', JSON.stringify(state.wishlist));
+        updateWishlistBadge();
+        renderCatalog();
+        renderWishlistUI();
+      }
+
+      function updateWishlistBadge() {
+        document.getElementById('wishlist-badge').textContent = state.wishlist.length;
+      }
+
+      function toggleWishlistDrawer(open) {
+        const drawer = document.getElementById('wishlist-drawer');
+        if (open) {
+          renderWishlistUI();
+          drawer.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        } else {
+          drawer.classList.remove('active');
+          document.body.style.overflow = 'auto';
+        }
+      }
+
+      function renderWishlistUI() {
+        const container = document.getElementById('wishlist-items-list');
+        const items = PRODUCTS.filter(p => state.wishlist.includes(p.id));
+
+        if (items.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 3rem 1rem; color: #858991;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 1rem auto;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+              <div class="font-display" style="font-size: 1.5rem; color: #111214;">NO SAVED SILHOUETTES</div>
+              <p style="font-size: 0.875rem;">Heart pairs from the catalogue to save them for later review.</p>
+            </div>
+          `;
+        } else {
+          container.innerHTML = items.map(p => `
+            <div style="display: flex; gap: 1rem; border-bottom: 1px solid #ECEEF2; padding-bottom: 1rem; align-items: center;">
+              <img src="${p.image}" alt="${p.name}" style="width: 70px; height: 70px; object-fit: contain; background: #F6F7F9; padding: 0.25rem;" />
+              <div style="flex: 1;">
+                <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: #858991; text-transform: uppercase;">${p.brand}</span>
+                <h4 style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 700;">${p.name}</h4>
+                <div class="tabular-nums" style="font-weight: 800; font-size: 0.875rem;">${formatPrice(p.price)}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                <button onclick="openProductDetail(${p.id}); toggleWishlistDrawer(false);" class="btn-primary" style="padding: 0.4rem 0.6rem; font-size: 0.6875rem;">BUY</button>
+                <button onclick="toggleWishlistItem(null, ${p.id})" style="background: none; border: none; font-size: 0.6875rem; color: #DC2626; cursor: pointer;">Remove</button>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      /* --- 8. SEARCH OVERLAY ENGINE --- */
+      function toggleSearchOverlay(open) {
+        const overlay = document.getElementById('search-overlay');
+        if (open) {
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          const input = document.getElementById('global-search-input');
+          input.value = '';
+          input.focus();
+          handleSearchInput('');
+        } else {
+          overlay.classList.remove('active');
+          document.body.style.overflow = 'auto';
+        }
+      }
+
+      function setSearchQuery(q) {
+        document.getElementById('global-search-input').value = q;
+        handleSearchInput(q);
+      }
+
+      function handleSearchInput(query) {
+        const resultsBox = document.getElementById('search-results-box');
+        const q = query.trim().toLowerCase();
+
+        if (q === '') {
+          resultsBox.innerHTML = `
+            <div style="padding: 1.5rem; text-align: center; color: #858991; font-size: 0.875rem;">
+              Type a sneaker name or brand to search across all 150+ footwear models.
+            </div>
+          `;
+          return;
+        }
+
+        const matches = PRODUCTS.filter(p => 
+          p.name.toLowerCase().includes(q) || 
+          p.brand.toLowerCase().includes(q) || 
+          p.category.toLowerCase().includes(q) ||
+          p.tag.toLowerCase().includes(q)
+        ).slice(0, 8);
+
+        if (matches.length === 0) {
+          resultsBox.innerHTML = `
+            <div style="padding: 2rem; text-align: center;">
+              <div class="font-display" style="font-size: 1.5rem; color: #111214;">NO MATCHES FOUND FOR "${query}"</div>
+              <p style="color: #64748B; font-size: 0.875rem; margin-top: 0.25rem;">Try searching for broad terms like "Air", "Samba", "Runner", or "Nike".</p>
+            </div>
+          `;
+        } else {
+          resultsBox.innerHTML = `
+            <div style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #858991; margin-bottom: 0.75rem;">
+              Found ${matches.length} matching footwear silhouettes:
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              ${matches.map(p => `
+                <div onclick="openProductDetail(${p.id}); toggleSearchOverlay(false);" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border: 1px solid #ECEEF2; cursor: pointer; background: #FFFFFF; transition: all 0.2s;" onmouseover="this.style.borderColor='#111214'" onmouseout="this.style.borderColor='#ECEEF2'">
+                  <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="${p.image}" alt="${p.name}" style="width: 50px; height: 50px; object-fit: contain; background: #F6F7F9;" />
+                    <div>
+                      <span style="font-size: 0.6875rem; font-weight: 700; color: #858991; text-transform: uppercase;">${p.brand} · ${p.category}</span>
+                      <h4 style="font-size: 0.875rem; font-weight: 700; color: #111214;">${p.name}</h4>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <span class="tabular-nums" style="font-weight: 800; font-size: 0.9375rem; color: #111214;">${formatPrice(p.price)}</span>
+                    <span style="display: block; font-size: 0.6875rem; color: #355FE8; font-weight: 700;">VIEW &rarr;</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+      }
+
+      /* --- 9. CHECKOUT & REAL PAYMENT TRANSPARENCY --- */
+      function startCheckout() {
+        if (state.cart.length === 0) return;
+        toggleCartDrawer(false);
+
+        // Populate summary
+        const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const freeDeliveryThreshold = 10000;
+        const shippingFee = (subtotal >= freeDeliveryThreshold) ? 0 : 500;
+        const discountAmount = Math.round(subtotal * state.discountRate);
+        const total = Math.max(0, subtotal - discountAmount + shippingFee);
+
+        document.getElementById('checkout-subtotal').textContent = formatPrice(subtotal);
+        document.getElementById('checkout-shipping').textContent = shippingFee === 0 ? 'FREE' : formatPrice(shippingFee);
+
+        const discountRow = document.getElementById('checkout-discount-row');
+        if (discountAmount > 0) {
+          discountRow.style.display = 'flex';
+          document.getElementById('checkout-discount-val').textContent = `- ${formatPrice(discountAmount)}`;
+        } else {
+          discountRow.style.display = 'none';
+        }
+
+        document.getElementById('checkout-total').textContent = formatPrice(total);
+
+        document.getElementById('checkout-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeCheckoutModal() {
+        document.getElementById('checkout-modal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+
+      function handlePlaceOrder(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+        const county = document.getElementById('cust-county').value;
+        const address = document.getElementById('cust-address').value;
+        const method = document.querySelector('input[name="paymethod"]:checked').value;
+
+        // Generate distinctive order reference
+        const orderRef = 'KV-2026-' + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('order-ref-number').textContent = `ORDER #${orderRef}`;
+
+        // Clear cart
+        state.cart = [];
+        saveCart();
+        updateCartUI();
+
+        closeCheckoutModal();
+        document.getElementById('order-success-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeOrderSuccessModal() {
+        document.getElementById('order-success-modal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+
+      /* --- 10. SIZE GUIDE MODAL --- */
+      function openSizeGuideModal() {
+        document.getElementById('size-guide-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSizeGuideModal() {
+        document.getElementById('size-guide-modal').classList.remove('active');
+        if (!document.getElementById('pdp-modal').classList.contains('active')) {
+          document.body.style.overflow = 'auto';
+        }
+      }
+
+      /* --- 11. GSAP & SCROLLTRIGGER INITIALIZATION --- */
+      function initGSAPAnimations() {
+        if (typeof gsap === 'undefined') return;
+
+        // Respect prefers-reduced-motion
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion) return;
+
+        if (typeof ScrollTrigger !== 'undefined') {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Hero entrance
+        gsap.from('.hero-title', {
+          opacity: 0,
+          y: 40,
+          duration: 1,
+          ease: 'power3.out'
+        });
+
+        gsap.from('#hero-shoe-img', {
+          opacity: 0,
+          scale: 0.88,
+          rotation: 4,
+          duration: 1.2,
+          ease: 'power3.out',
+          delay: 0.2
+        });
+
+        // Floating hero badge triggers
+        gsap.to('#hero-shoe-img', {
+          y: -12,
+          duration: 2.4,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        });
+      }
+
+      /* --- 12. INITIALIZATION ON DOM READY --- */
+      document.addEventListener('DOMContentLoaded', () => {
+        renderBrandSelector();
+        renderCatalog();
+        renderRails();
+        updateCartUI();
+        updateWishlistBadge();
+        initGSAPAnimations();
+
+        // Keyboard navigation escape support
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeProductDetail();
+            closeSizeGuideModal();
+            toggleCartDrawer(false);
+            toggleWishlistDrawer(false);
+            toggleSearchOverlay(false);
+            closeCheckoutModal();
+            closeOrderSuccessModal();
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
