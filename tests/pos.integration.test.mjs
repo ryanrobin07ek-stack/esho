@@ -170,9 +170,9 @@ test('nearby Wi-Fi pairing needs one phone scan and asks the PC operator before 
 test('browser register is a separate Capacitor-free POS entry with persistent browser storage', async () => {
   const page = await readFile(new URL('../register.html', import.meta.url), 'utf8');
   const browserEntry = await readFile(new URL('../src/browser-register.js', import.meta.url), 'utf8');
-  assert.match(page, /E-Shop Register/);
+  assert.match(page, /Craft Register/);
   assert.match(page, /Connect this register to your shop.s Cloudflare sync/);
-  assert.match(page, /E-Shop account username/);
+  assert.match(page, /Craft account username/);
   assert.match(page, /pattern="\[a-z0-9\\-]\+"/);
   assert.match(page, /id="browser-cloud-form" method="post"/);
   assert.match(page, /id="browser-sync-state"/);
@@ -631,7 +631,7 @@ test('published storefront checkout creates server orders and sends customers to
   assert.match(checkout, /Continue to Paystack/);
   assert.match(checkout, /Paystack unavailable for \$\{AppUtils\.escapeHTML\(currency\)\}/);
   assert.match(checkout, /disabled aria-describedby="checkout-status"/);
-  assert.match(checkout, /E-Shop mobile app under Payments[\s\S]*?publish the catalog/);
+  assert.match(checkout, /Craft mobile app under Payments[\s\S]*?publish the catalog/);
   assert.match(storefront, /\.btn-primary:disabled,[\s\S]*?cursor: not-allowed;[\s\S]*?transform: none;/);
   assert.match(checkout, /data-checkout-status/);
   assert.doesNotMatch(checkout, /name="cardNumber"|name="cardCvc"|tab-payment-momo|value="Julian"/);
@@ -796,7 +796,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(storeMarkup, />All</);
     assert.doesNotMatch(storeMarkup, />Filter</);
     const overviewMarkup = app.render('/pos/overview');
-    assert.match(overviewMarkup, /href="\/" data-route="\/" data-home-screen class="pos-brand pos-brand-overview" aria-label="E-Shop home"[^>]*>[\s\S]*?<span>Overview<\/span>/);
+    assert.match(overviewMarkup, /href="\/" data-route="\/" data-home-screen class="pos-brand pos-brand-overview" aria-label="Craft home"[^>]*>[\s\S]*?<span>Overview<\/span>/);
     assert.doesNotMatch(overviewMarkup, /<span>POS<\/span>/);
     assert.doesNotMatch(overviewMarkup, /<h2>Overview<\/h2>/);
     assert.match(overviewMarkup, /class="pos-overview-controls"/);
@@ -874,12 +874,12 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /href="\/account\/tenants" data-route="\/account\/tenants"/);
     assert.match(pageSource, /path === "\/account\/tenants"/);
     assert.match(pageSource, /renderTenantsManager\(\)/);
-    assert.match(pageSource, /renderAppAccount\(\)[\s\S]*?E-Shop app account[\s\S]*?id="app-account-form"[\s\S]*?Cloudflare human verification/);
+    assert.match(pageSource, /renderAppAccount\(\)[\s\S]*?Craft app account[\s\S]*?id="app-account-form"[\s\S]*?Cloudflare human verification/);
     const launchpad = pageSource.match(/renderLaunchpad\(\)\s*\{[\s\S]*?return `([\s\S]*?)`;\s*\n\s*\},/)?.[1];
     assert.ok(launchpad, 'The app should render a dedicated Home screen.');
     const homeRoutes = [...launchpad.matchAll(/class="home-credit-card-link" href="([^"]+)" data-route=/g)].map(([, route]) => route);
     assert.deepEqual(homeRoutes, ['/account/web', '/pos']);
-    assert.match(launchpad, /<img class="home-screen-logo" src="\/eshop-logo\.png" alt="E-Shop">/);
+    assert.match(launchpad, /<img class="home-screen-logo" src="\/eshop-logo\.png" alt="Craft">/);
     assert.match(launchpad, /class="home-screen-profile" href="\/app-account" data-route="\/app-account" aria-label="Account"/);
     assert.match(launchpad, /class="home-credit-card" role="group"/);
     assert.match(launchpad, /class="home-store-card" href="\/account\/main-shop" data-route="\/account\/main-shop" aria-label="Main Store">\s*<strong>Main Store<\/strong>/);
@@ -920,12 +920,12 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /\.home-credit-card-heading\s*\{[^}]*gap:\s*12px/);
     assert.match(pageSource, /\.home-screen-header\s*\{[^}]*border-bottom:\s*2px solid #000/);
     assert.match(pageSource, /\.home-store-card\s*\{[^}]*min-height:\s*48px[^}]*border-radius:\s*999px[^}]*background:\s*#000/);
-    assert.match(launchpad, /home-credit-card-eyebrow">E-SHOP · BUSINESS/);
+    assert.match(launchpad, /home-credit-card-eyebrow">CRAFT · BUSINESS/);
     assert.doesNotMatch(launchpad, /home-credit-card-chip|Workspace access|Web Studio \+ POS|WEB &nbsp; •••• &nbsp; POS/);
-    assert.match(launchpad, /href="\/account\/web" data-route="\/account\/web" aria-label="E-Shop Web Studio"[\s\S]*?src="\/eshop-mark\.png"[\s\S]*?home-credit-card-label">E-Shop/);
+    assert.match(launchpad, /href="\/account\/web" data-route="\/account\/web" aria-label="Craft Web Studio"[\s\S]*?src="\/eshop-mark\.png"[\s\S]*?home-credit-card-label">Craft/);
     assert.match(launchpad, /href="\/pos" data-route="\/pos" aria-label="Point of Sale"[\s\S]*?home-credit-card-label">POS[\s\S]*?<svg viewBox="0 0 24 24"[\s\S]*?M3 4h2l2\.2 11\.1/);
     assert.doesNotMatch(launchpad, /Where would you like to go|Manage your online shop/);
-    assert.match(pageSource, /renderLaunchpad\(\)\s*\{\s*document\.title = "Home — E-Shop"/);
+    assert.match(pageSource, /renderLaunchpad\(\)\s*\{\s*document\.title = "Home — Craft"/);
     assert.match(webManifest, /icons\/eshop-icon\.png/);
     assert.match(androidManifest, /android:icon="@mipmap\/ic_launcher"/);
     assert.match(pageSource, /path === "\/app-account"[\s\S]*?renderAppAccount\(\)/);
@@ -976,7 +976,7 @@ test('POS persists products, manual payments, invoices and business instances in
       "Shops & Tenants",
       "Plans & Tiering"
     ]);
-    assert.match(pageSource, /title: "Live Web", description: "Preview the customer-facing E-Shop website\.", route: "\/web"/);
+    assert.match(pageSource, /title: "Live Web", description: "Preview the customer-facing Craft website\.", route: "\/web"/);
     assert.match(pageSource, /studio-profile-btn[\s\S]*?aria-label="Profile"/);
     assert.match(pageSource, /profile-sidebar[\s\S]*?Recommended actions[\s\S]*?Link devices[\s\S]*?Privacy/);
     assert.match(pageSource, /\.profile-menu-overlay\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*0;[^}]*justify-content:\s*flex-end;[^}]*background:\s*rgba\(0,\s*0,\s*0,\s*\.56\)/);
@@ -1107,7 +1107,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /pages: SQLiteEngine\.getPages\(\)/);
     assert.match(pageSource, /SQLiteEngine\.updateStore\(\{\s*primary_color,\s*background_color,\s*text_color,\s*font_family,\s*element_edits:/);
     assert.match(pageSource, /newWebsiteForm\.onsubmit = async event =>/);
-    assert.match(pageSource, /Website setup uses your E-Shop app account/);
+    assert.match(pageSource, /Website setup uses your Craft app account/);
     assert.match(pageSource, /this\.cloudflareRequest\("\/api\/tenants"[\s\S]*?sessionToken/);
     assert.match(pageSource, /continueTo\.startsWith\("\/account\/web\/site\?new=1&theme="\)[\s\S]*?this\.navigate\(continueTo\)/);
     assert.match(pageSource, /preview_appearance:\s*\{\s*primary_color:\s*"#18181B"/);
@@ -1131,7 +1131,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /type="color" id="custom-store-color"/);
     assert.match(pageSource, /customColorRadio\.value = customColorInput\.value\.toUpperCase\(\);\s*customColorRadio\.checked = true/);
     assert.match(pageSource, /<h1 class="section-heading">Settings<\/h1>/);
-    assert.doesNotMatch(pageSource, /These choices style your customer-facing website, not the E-Shop app\./);
+    assert.doesNotMatch(pageSource, /These choices style your customer-facing website, not the Craft app\./);
     assert.match(pageSource, /<h3 class="form-card-title">App appearance<\/h3>/);
     assert.match(pageSource, /<span class="form-label">App accent color<\/span>/);
     assert.match(pageSource, /--launch-blue: var\(--accent\)/);
@@ -1190,8 +1190,8 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /\.pos-overview-controls\s*\{[^}]*gap:\s*3px/);
     assert.match(pageSource, /navigate\(path,\s*openWorkspaceHome\s*=\s*false\)/);
     assert.match(pageSource, /this\.navigate\(route,\s*link\.hasAttribute\("data-home-screen"\)\)/);
-    assert.match(pageSource, /class="brand-logo studio-module-brand" data-route="\/" data-home-screen aria-label="E-Shop home"/);
-    assert.match(pageSource, /class="brand-logo" data-route="\$\{storefrontHome\}" \$\{options\.builderPreview \? "" : "data-home-screen"\} aria-label="E-Shop home"/);
+    assert.match(pageSource, /class="brand-logo studio-module-brand" data-route="\/" data-home-screen aria-label="Craft home"/);
+    assert.match(pageSource, /class="brand-logo" data-route="\$\{storefrontHome\}" \$\{options\.builderPreview \? "" : "data-home-screen"\} aria-label="Craft home"/);
     assert.match(pageSource, /\.studio-module-navbar \.studio-profile-btn\s*\{[^}]*border-radius:\s*50%[^}]*background:\s*#000[^}]*color:\s*#fff/);
     assert.match(pageSource, /\.pos-overview-controls\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
     assert.match(pageSource, /\.pos-overview-tabs\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0[^}]*overflow-x:\s*auto[^}]*touch-action:\s*pan-x/);

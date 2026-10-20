@@ -41,14 +41,14 @@ async function requestCloud(tenantId, method, data = {}) {
     throw new Error('Connect this register with the shop owner key first.');
   }
   if (!isAllowedEndpoint(cloudConnection.endpoint)) {
-    throw new Error('The saved Cloudflare Worker URL is not allowed. Reconnect using the E-Shop site.');
+    throw new Error('The saved Cloudflare Worker URL is not allowed. Reconnect using the Craft site.');
   }
   const headers = { Authorization: `Bearer ${cloudConnection.token}` };
   if (cloudConnection.authType === 'account') {
     const sessionResponse = await fetch(`${cloudConnection.endpoint}/api/auth/session`, { headers });
     const session = await sessionResponse.json().catch(() => ({}));
     if (!sessionResponse.ok) {
-      throw new Error(session.error || 'Your E-Shop account session expired. Sign in again.');
+      throw new Error(session.error || 'Your Craft account session expired. Sign in again.');
     }
   }
   const query = method === 'GET'
@@ -81,7 +81,7 @@ async function requestNearbyPairing(tenantId, method, data = {}) {
     throw new Error('Connect this register to the same shop as your phone before pairing.');
   }
   if (!isAllowedEndpoint(cloudConnection.endpoint)) {
-    throw new Error('The saved Cloudflare Worker URL is not allowed. Reconnect using the E-Shop site.');
+    throw new Error('The saved Cloudflare Worker URL is not allowed. Reconnect using the Craft site.');
   }
   const headers = {
     Authorization: `Bearer ${cloudConnection.token}`,
@@ -90,7 +90,7 @@ async function requestNearbyPairing(tenantId, method, data = {}) {
   if (cloudConnection.authType === 'account') {
     const sessionResponse = await fetch(`${cloudConnection.endpoint}/api/auth/session`, { headers });
     const session = await sessionResponse.json().catch(() => ({}));
-    if (!sessionResponse.ok) throw new Error(session.error || 'Your E-Shop account session expired. Sign in again.');
+    if (!sessionResponse.ok) throw new Error(session.error || 'Your Craft account session expired. Sign in again.');
   }
   const id = data.id ? `&id=${encodeURIComponent(data.id)}` : '';
   const response = await fetch(
@@ -309,11 +309,11 @@ function setupCloudConnection() {
         setAccountShops(tenants, tenant);
         tenant = form.elements.tenant.value;
         if (!availableAccountShops.size) {
-          throw new Error('This E-Shop account has no linked shops. Use the private shop owner key instead.');
+          throw new Error('This Craft account has no linked shops. Use the private shop owner key instead.');
         }
         token = loginResult.session_token;
         authType = 'account';
-        if (!token) throw new Error('E-Shop sign-in did not provide a secure session. Try signing in again.');
+        if (!token) throw new Error('Craft sign-in did not provide a secure session. Try signing in again.');
       }
       if (manualToken) tenant = form.elements.manualTenant.value.trim();
       if (!token && !username && !password) {
@@ -321,7 +321,7 @@ function setupCloudConnection() {
         authType = cloudConnection.authType || 'owner';
       }
       if (!/^[a-z0-9-]{1,80}$/.test(tenant)) throw new Error('Enter the shop ID, for example main.');
-      if (!token) throw new Error('Sign in with your E-Shop account or enter the private shop owner key.');
+      if (!token) throw new Error('Sign in with your Craft account or enter the private shop owner key.');
       const candidate = { endpoint: endpoint.origin, tenant, token, authType };
       const previous = cloudConnection;
       cloudConnection = candidate;

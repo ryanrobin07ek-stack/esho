@@ -1133,7 +1133,7 @@ export function createPosApp() {
     return `
     <main class="container pos-main ${hasSectionNav ? 'pos-main-with-tabs' : ''}">
       <header class="pos-header">
-        <a href="/" data-route="/" data-home-screen class="pos-brand ${path === '/pos/overview' ? 'pos-brand-overview' : ''}" aria-label="E-Shop home">
+        <a href="/" data-route="/" data-home-screen class="pos-brand ${path === '/pos/overview' ? 'pos-brand-overview' : ''}" aria-label="Craft home">
           <img src="/eshop-logo.png" alt="">
           ${title ? `<span>${escapeHtml(title)}</span>` : ''}
         </a>
@@ -4242,7 +4242,7 @@ export function createPosApp() {
           const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
           const customer = escapeHtml(String(data.customerName || '').trim());
           const lines = items.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${money(item.unitPrice, state.settings.currency)}</td><td>${money(item.unitPrice * item.quantity, state.settings.currency)}</td></tr>`).join('');
-          printDocument(`Quotation · ${customer}`, `<h1>E-Shop · Quotation</h1><p>Prepared ${new Date().toLocaleDateString()}</p><p>Customer: ${customer}</p><p>${escapeHtml(String(data.customerContact || ''))}</p><table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${lines}</tbody></table><p class=\"total\">Quoted total · ${money(subtotal, state.settings.currency)}</p><p>Quotation only · not a tax invoice or completed sale.</p>`);
+          printDocument(`Quotation · ${customer}`, `<h1>Craft · Quotation</h1><p>Prepared ${new Date().toLocaleDateString()}</p><p>Customer: ${customer}</p><p>${escapeHtml(String(data.customerContact || ''))}</p><table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${lines}</tbody></table><p class=\"total\">Quoted total · ${money(subtotal, state.settings.currency)}</p><p>Quotation only · not a tax invoice or completed sale.</p>`);
           return;
         }
         case 'instance':
@@ -5215,7 +5215,7 @@ export function createPosApp() {
   }
 
   function receiptHtml(sale) {
-    return `<h1>E-Shop · Receipt</h1><p>${escapeHtml(sale.receipt_number)} · ${new Date(sale.created_at).toLocaleString()}</p>
+    return `<h1>Craft · Receipt</h1><p>${escapeHtml(sale.receipt_number)} · ${new Date(sale.created_at).toLocaleString()}</p>
       <p>${escapeHtml(sale.customer_name || '')} ${escapeHtml(sale.customer_phone || '')}</p>
       <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${sale.items.map((item) =>
         `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
@@ -5224,7 +5224,7 @@ export function createPosApp() {
   }
 
   function invoiceHtml(invoice) {
-    return `<h1>E-Shop · Invoice</h1><p>${escapeHtml(invoice.invoice_number)} · ${new Date(invoice.created_at).toLocaleDateString()}</p>
+    return `<h1>Craft · Invoice</h1><p>${escapeHtml(invoice.invoice_number)} · ${new Date(invoice.created_at).toLocaleDateString()}</p>
       <p>Bill to: ${escapeHtml(invoice.customer_name)} ${escapeHtml(invoice.customer_contact)}</p>
       ${invoice.due_date ? `<p>Due: ${escapeHtml(invoice.due_date)}</p>` : ''}
       <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${invoice.items.map((item) =>
