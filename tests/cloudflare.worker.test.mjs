@@ -16,6 +16,10 @@ function createDatabase() {
           return {
             async first() {
               if (query.includes("FROM catalog_snapshots")) return rows.get(values[0]) || null;
+              if (query.includes("FROM accounts WHERE email")) {
+                return [...accounts.values()].find(account => account.email === values[0]
+                  && (!query.includes("username !=") || account.username !== values[1])) || null;
+              }
               if (query.includes("FROM accounts")) return accounts.get(values[0]) || null;
               if (query.includes("FROM account_tenants")) {
                 return accountTenants.find(row => row.username === values[0] && row.tenant_id === values[1])
@@ -34,12 +38,29 @@ function createDatabase() {
             async run() {
               if (query.includes("INSERT OR IGNORE INTO accounts")) {
                 if (accounts.has(values[0])) return { success: true, meta: { changes: 0 } };
+                if ([...accounts.values()].some(account => account.email === values[3])) {
+                  return { success: true, meta: { changes: 0 } };
+                }
                 accounts.set(values[0], {
                   username: values[0],
                   password_salt: values[1],
                   password_hash: values[2],
-                  created_at: values[3]
+                  email: values[3],
+                  created_at: values[4]
                 });
+                return { success: true, meta: { changes: 1 } };
+              }
+              if (query.includes("UPDATE accounts SET password_salt")) {
+                const account = accounts.get(values[2]);
+                if (!account) return { success: true, meta: { changes: 0 } };
+                account.password_salt = values[0];
+                account.password_hash = values[1];
+                return { success: true, meta: { changes: 1 } };
+              }
+              if (query.includes("UPDATE accounts SET email")) {
+                const account = accounts.get(values[1]);
+                if (!account) return { success: true, meta: { changes: 0 } };
+                account.email = values[0];
                 return { success: true, meta: { changes: 1 } };
               }
               if (query.includes("INSERT OR IGNORE INTO account_tenants")) {
@@ -254,7 +275,7 @@ async function registerTestAccount(env, username = 'test-shopper', password = 'c
     const response = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, turnstile_token: 'test-turnstile-token' })
+      body: JSON.stringify({ username, password, email: `${username}@example.com`, turnstile_token: 'test-turnstile-token' })
     }), env);
     assert.equal(response.status, 200);
     return response.json();
@@ -542,12 +563,15 @@ test('Cloudflare Worker serves the shared HTML in storefront mode', async () => 
   assert.match(await response.text(), /__ESHOP_CLOUDFLARE_STOREFRONT__ = true/);
 });
 
-test('Cloudflare Worker serves the published R2 theme at the shop root', async () => {
-  const themeId = 'woodora-modern-furniture-luxury-home-interiors-kenya';
+test('Cloudflare Worker serves only the filled published theme at the shop root', async () => {
+  const themeId = 'cira-atelier-event-architecture-management';
+  const updatedAt = '2026-10-15T07:00:00.000Z';
+  const key = `published-sites/main/${themeId}/20261015070000000.html`;
+  const publishedHtml = `<!doctype html><html><head><meta name="eshop-filled-theme" content="${themeId}"></head><body><main><h1>Filled shop theme</h1></main></body></html>`;
   let assetPath;
   const DB = {
     prepare(query) {
-      assert.match(query, /SELECT payload FROM catalog_snapshots/);
+      assert.match(query, /SELECT payload, updated_at FROM catalog_snapshots/);
       return {
         bind(tenantId) {
           assert.equal(tenantId, 'main');
@@ -581,7 +605,8 @@ test('Cloudflare Worker serves the published R2 theme at the shop root', async (
                   },
                   products: [{ id: 12, name: '</script><script>alert(1)</script>', category_id: 4, price: 35 }],
                   categories: [{ id: 4, name: 'Owner category', slug: 'owner-category' }]
-                })
+                }),
+                updated_at: updatedAt
               };
             }
           };
@@ -590,13 +615,24 @@ test('Cloudflare Worker serves the published R2 theme at the shop root', async (
     }
   };
   const response = await worker.fetch(new Request('https://shop.example/'), {
+    TENANTS: {
+      async get(name) {
+        if (name === 'tenant:main') return { id: 'main', name: 'Main shop', catalog_updated_at: updatedAt };
+        if (name === 'published-theme:main') {
+          return { key, themeId, catalogUpdatedAt: updatedAt };
+        }
+        return null;
+      },
+      async put() {}
+    },
     DB,
     BUSINESS_ARCHIVE: {
       async get(key) {
         assetPath = key;
         return {
-          body: '<!doctype html><html><head><title>Theme</title></head><body><main><h1>Woodora</h1></main></body></html>',
-          httpMetadata: { contentType: 'text/html; charset=utf-8' }
+          body: publishedHtml,
+          httpMetadata: { contentType: 'text/html; charset=utf-8' },
+          customMetadata: { themeId, catalogUpdatedAt: updatedAt }
         };
       }
     },
@@ -608,28 +644,123 @@ test('Cloudflare Worker serves the published R2 theme at the shop root', async (
   });
 
   assert.equal(response.status, 200);
-  assert.equal(assetPath, `themes/${themeId}/index.html`);
+  assert.equal(assetPath, key);
   const html = await response.text();
-  assert.match(html, new RegExp(`<base href="/themes/${themeId}/">`));
-  assert.match(html, /Woodora/);
-  assert.match(html, /primary_color|#7C3AED/);
+  assert.match(html, /Filled shop theme/);
+  assert.match(html, /#7C3AED/);
   assert.match(html, /Updated \\u003cscript>alert\(1\)\\u003c\/script> heading/);
   assert.match(html, /d\.querySelector\(edit\.selector\)/);
-  assert.match(html, /window\.__ESHOP_THEME_CATALOG__=/);
-  assert.match(html, /<script src="\/theme-catalog-adapter\.js" defer><\/script>/);
-  assert.match(html, /"name":"\\u003c\/script>\\u003cscript>alert\(1\)\\u003c\/script>"/);
-  assert.match(html, /"name":"Owner category"/);
-  assert.match(html, /"whatsapp_enabled":1/);
+  assert.doesNotMatch(html, /window\.__ESHOP_THEME_CATALOG__=|theme-catalog-adapter\.js/);
   assert.match(html, /"accent2Color":"#F06445"/);
   assert.match(html, /"accent3Color":"#8FD14F"/);
   assert.match(html, /--eshop-accent-gradient:linear-gradient\(110deg,/);
   assert.match(html, /background-image:linear-gradient\(110deg,/);
-  assert.match(html, /"instagram_url":"https:\/\/instagram\.com\/example"/);
-  assert.match(html, /"location_name":"Main shop"/);
   assert.match(html, /displayFontFamily/);
   assert.match(html, /shape==="rounded"\?"16px"/);
   assert.match(html, /fonts\.googleapis\.com/);
   assert.doesNotMatch(html, /mobile_card_layout/);
+});
+
+test('published storefront HTML is cached by host and catalog version without repeat D1 or R2 reads', async () => {
+  const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches');
+  const cacheEntries = new Map();
+  const cacheKeys = [];
+  let cacheMatchCount = 0;
+  globalThis.caches = {
+    default: {
+      async match(request) {
+        cacheMatchCount += 1;
+        return cacheEntries.get(request.url)?.clone() || undefined;
+      },
+      async put(request, response) {
+        cacheKeys.push(request.url);
+        cacheEntries.set(request.url, response.clone());
+      }
+    }
+  };
+  let catalogUpdatedAt = '2026-10-14T09:29:36.380Z';
+  let catalogReads = 0;
+  let themeReads = 0;
+  const themeId = 'cira-atelier-event-architecture-management';
+  const tenant = { id: 'rayoo', name: 'Rayoo', catalog_updated_at: catalogUpdatedAt };
+  const env = {
+    TENANTS: {
+      async get(key, type) {
+        assert.equal(type, 'json');
+        if (key === 'tenant:rayoo') return { ...tenant, catalog_updated_at: catalogUpdatedAt };
+        if (key === 'published-theme:rayoo') return {
+          key: `published-sites/rayoo/${themeId}/${catalogUpdatedAt.replace(/[^a-zA-Z0-9-]/g, '')}.html`,
+          themeId,
+          catalogUpdatedAt
+        };
+        return null;
+      },
+      async put(key, value) {
+        assert.equal(key, 'tenant:rayoo');
+        Object.assign(tenant, JSON.parse(value));
+      }
+    },
+    DB: {
+      prepare(query) {
+        assert.match(query, /SELECT payload, updated_at FROM catalog_snapshots/);
+        return {
+          bind(id) {
+            assert.equal(id, 'rayoo');
+            return {
+              async first() {
+                catalogReads += 1;
+                return {
+                  payload: JSON.stringify({
+                    store: { website_theme_id: themeId },
+                    products: [{ id: 1, name: `version-${catalogReads}` }],
+                    categories: []
+                  }),
+                  updated_at: catalogUpdatedAt
+                };
+              }
+            };
+          }
+        };
+      }
+    },
+    BUSINESS_ARCHIVE: {
+      async get(key) {
+        themeReads += 1;
+        assert.equal(key, `published-sites/rayoo/${themeId}/${catalogUpdatedAt.replace(/[^a-zA-Z0-9-]/g, '')}.html`);
+        return {
+          body: `<!doctype html><html><head><meta name="eshop-filled-theme" content="${themeId}"></head><body>version-${catalogReads}</body></html>`,
+          customMetadata: { themeId, catalogUpdatedAt }
+        };
+      }
+    },
+    ASSETS: { async fetch() { throw new Error('A published theme must come from R2.'); } }
+  };
+  try {
+    const request = () => new Request('https://rayoo.rrobin.co.ke/');
+    const first = await worker.fetch(request(), env);
+    assert.equal(first.status, 200);
+    assert.equal(first.headers.get('Cache-Control'), 'public, max-age=60');
+    assert.match(await first.text(), /version-1/);
+    const second = await worker.fetch(request(), env);
+    assert.equal(second.status, 200);
+    assert.match(await second.text(), /version-1/);
+    assert.equal(catalogReads, 1);
+    assert.equal(themeReads, 1);
+    assert.equal(cacheMatchCount, 2);
+    assert.match(cacheKeys[0], /rayoo\.rrobin\.co\.ke/);
+    assert.match(cacheKeys[0], /2026-10-14T09%3A29%3A36\.380Z/);
+    assert.equal(cacheEntries.get(cacheKeys[0]).headers.get('Cache-Control'), 'public, max-age=3600');
+
+    catalogUpdatedAt = '2026-10-14T10:29:36.380Z';
+    const afterPublish = await worker.fetch(request(), env);
+    assert.match(await afterPublish.text(), /version-2/);
+    assert.equal(catalogReads, 2);
+    assert.equal(themeReads, 2);
+    assert.equal(cacheKeys.length, 2);
+  } finally {
+    if (originalCaches) Object.defineProperty(globalThis, 'caches', originalCaches);
+    else delete globalThis.caches;
+  }
 });
 
 test('Cloudflare Worker serves the browser POS app at /register without replacing the storefront root', async () => {
@@ -1549,6 +1680,10 @@ async function hkdfForTest(input, salt, info, length) {
 test('catalog publishing is authenticated and stores only public fields and linked images', async () => {
   const DB = createDatabase();
   const env = { DB, TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
+  await env.TENANTS.put('tenant:main', JSON.stringify({
+    id: 'main', name: 'Main shop', owner_token_hash: 'preserved-owner-hash',
+    owner_token_hashes: ['preserved-owner-hash']
+  }));
   const unauthorized = await worker.fetch(new Request('https://shop.example/api/catalog', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -1648,6 +1783,9 @@ test('catalog publishing is authenticated and stores only public fields and link
   assert.equal(publishResult.product_count, 1);
   assert.equal(publishResult.category_count, 1);
   assert.match(publishResult.updated_at, /^\d{4}-\d\d-\d\dT/);
+  const mainTenant = await env.TENANTS.get('tenant:main', 'json');
+  assert.equal(mainTenant.catalog_updated_at, publishResult.updated_at);
+  assert.equal(mainTenant.owner_token_hash, 'preserved-owner-hash');
 
   const loaded = await worker.fetch(new Request('https://rrobin.co.ke/api/catalog'), env);
   const result = await loaded.json();
@@ -1813,7 +1951,7 @@ test('R2 media uploads require shop ownership and are publicly served from an is
   assert.match(mediaKey, /^\/media\/main\//);
 });
 
-test('R2 theme assets are publicly served from a theme-only prefix with safe cache headers', async () => {
+test('raw theme HTML is private while theme media remains publicly served', async () => {
   const objects = new Map([
     ['themes/woodora/index.html', {
       body: '<html>theme</html>',
@@ -1826,10 +1964,7 @@ test('R2 theme assets are publicly served from a theme-only prefix with safe cac
   ]);
   const env = { BUSINESS_ARCHIVE: { async get(key) { return objects.get(key) || null; } } };
   const page = await worker.fetch(new Request('https://shop.rrobin.co.ke/themes/woodora/index.html'), env);
-  assert.equal(page.status, 200);
-  assert.equal(page.headers.get('Content-Type'), 'text/html; charset=utf-8');
-  assert.equal(page.headers.get('Cache-Control'), 'public, max-age=300');
-  assert.equal(await page.text(), '<html>theme</html>');
+  assert.equal(page.status, 404);
 
   const image = await worker.fetch(new Request('https://shop.rrobin.co.ke/themes/woodora/assets/hero.webp'), env);
   assert.equal(image.status, 200);
@@ -1961,6 +2096,46 @@ test('tenant records and product catalogs are isolated by wildcard subdomain', a
   assert.equal(deletedDomain.status, 404);
 });
 
+test('shop creation limit stays at five per hour unless local dev vars enable the bypass', async () => {
+  const wranglerConfig = JSON.parse(await readFile(
+    new URL('../cloudflare/wrangler.jsonc', import.meta.url), 'utf8'
+  ));
+  assert.equal(wranglerConfig.vars?.DEV_SKIP_SHOP_CREATE_LIMIT, undefined);
+  assert.deepEqual(wranglerConfig.assets?.run_worker_first, ['/', '/api/*', '/media/*', '/themes/*', '/theme-skeletons/*']);
+
+  const makeEnvironment = () => ({
+    DB: createDatabase(),
+    TENANTS: createTenantStore(),
+    TURNSTILE_SITE_KEY: 'test-site-key',
+    TURNSTILE_SECRET_KEY: 'test-turnstile-secret'
+  });
+  const createShop = (env, token, id) => worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/tenants',
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        'CF-Connecting-IP': '192.0.2.90'
+      },
+      body: JSON.stringify({ id, name: `Shop ${id}` })
+    }
+  ), env);
+
+  const productionEnv = makeEnvironment();
+  const productionAccount = await registerTestAccount(productionEnv, 'production-limit-user');
+  for (let index = 0; index < 5; index += 1) {
+    assert.equal((await createShop(productionEnv, productionAccount.session_token, `prod-${index}`)).status, 201);
+  }
+  assert.equal((await createShop(productionEnv, productionAccount.session_token, 'prod-over-limit')).status, 429);
+
+  const devEnv = { ...makeEnvironment(), DEV_SKIP_SHOP_CREATE_LIMIT: 'true' };
+  const devAccount = await registerTestAccount(devEnv, 'dev-bypass-user');
+  for (let index = 0; index < 6; index += 1) {
+    assert.equal((await createShop(devEnv, devAccount.session_token, `dev-${index}`)).status, 201);
+  }
+});
+
 test('account registration requires Turnstile once, while sign-in refreshes sessions without a challenge', async () => {
   const DB = createDatabase();
   const TENANTS = createTenantStore();
@@ -1987,6 +2162,7 @@ test('account registration requires Turnstile once, while sign-in refreshes sess
       body: JSON.stringify({
         username: 'new-owner',
         password: 'correct-horse-battery-staple',
+        email: 'new-owner@example.com',
         turnstile_token: 'invalid'
       })
     }), env);
@@ -2047,12 +2223,153 @@ test('account registration requires Turnstile once, while sign-in refreshes sess
       headers: { Authorization: `Bearer ${credentials.session_token}` }
     }), env);
     assert.deepEqual(await refreshedSession.json(), {
-      ok: true, username: 'new-owner', tenants: [{ id: 'owner-shop', name: 'Owner Shop' }]
+      ok: true, username: 'new-owner', email: 'new-owner@example.com',
+      tenants: [{ id: 'owner-shop', name: 'Owner Shop' }]
     });
     const expiredSession = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/auth/session'), env);
     assert.equal(expiredSession.status, 401);
   } finally {
     globalThis.fetch = originalFetch;
+  }
+});
+
+test('account recovery emails a short-lived code and allows one password reset', async () => {
+  const env = {
+    DB: createDatabase(),
+    TENANTS: createTenantStore(),
+    PUBLISH_TOKEN: 'test-token',
+    TURNSTILE_SITE_KEY: 'test-site-key',
+    TURNSTILE_SECRET_KEY: 'test-turnstile-secret',
+    RESEND_API_KEY: 'test-resend-key',
+    EMAIL_FROM: 'Craft <noreply@example.com>'
+  };
+  const registered = await registerTestAccount(env, 'recovery-user');
+  const originalFetch = globalThis.fetch;
+  let sentCode = '';
+  let sentEmail = '';
+  globalThis.fetch = async (input, init) => {
+    if (String(input) === 'https://api.resend.com/emails') {
+      const body = JSON.parse(init.body);
+      assert.equal(init.headers.Authorization, 'Bearer test-resend-key');
+      assert.equal(body.from, env.EMAIL_FROM);
+      sentEmail = body.to[0];
+      sentCode = body.text.match(/\b\d{6}\b/)?.[0] || '';
+      return Response.json({ id: 'test-email-id' });
+    }
+    return originalFetch(input, init);
+  };
+  const postAuth = (action, body) => worker.fetch(new Request(
+    `https://eshop-storefront.workers.dev/api/auth/${action}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+  ), env);
+  try {
+    const unknownEmail = await postAuth('request-reset-code', { email: 'unknown@example.com' });
+    const unknownResult = await unknownEmail.json();
+    assert.equal(unknownEmail.status, 200);
+    assert.match(unknownResult.message, /If an account uses that email/);
+    assert.equal(sentEmail, '');
+
+    const requested = await postAuth('request-reset-code', { email: 'RECOVERY-USER@example.com' });
+    assert.equal(requested.status, 200);
+    assert.equal(sentEmail, 'recovery-user@example.com');
+    assert.match(sentCode, /^\d{6}$/);
+
+    const invalidCode = await postAuth('verify-reset-code', {
+      email: sentEmail,
+      code: sentCode === '999999' ? '000000' : '999999'
+    });
+    assert.equal(invalidCode.status, 400);
+
+    const verified = await postAuth('verify-reset-code', { email: sentEmail, code: sentCode });
+    assert.equal(verified.status, 200);
+    const { reset_token: resetToken } = await verified.json();
+    assert.ok(resetToken);
+    const reset = await postAuth('reset-password', {
+      reset_token: resetToken,
+      password: 'new-correct-horse-battery-staple'
+    });
+    assert.equal(reset.status, 200);
+    assert.equal((await postAuth('reset-password', {
+      reset_token: resetToken,
+      password: 'another-correct-horse-battery-staple'
+    })).status, 400);
+    assert.equal((await postAuth('login', {
+      username: 'recovery-user',
+      password: 'new-correct-horse-battery-staple'
+    })).status, 200);
+    assert.equal((await postAuth('login', {
+      username: 'recovery-user',
+      password: 'correct-horse-battery-staple'
+    })).status, 401);
+    const updatedEmail = await worker.fetch(new Request(
+      'https://eshop-storefront.workers.dev/api/auth/set-recovery-email',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${registered.session_token}`
+        },
+        body: JSON.stringify({
+          email: 'new-recovery@example.com',
+          password: 'new-correct-horse-battery-staple'
+        })
+      }
+    ), env);
+    assert.equal(updatedEmail.status, 401, 'Password reset revokes earlier account sessions.');
+    const expiredSession = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/auth/session', {
+      headers: { Authorization: `Bearer ${registered.session_token}` }
+    }), env);
+    assert.equal(expiredSession.status, 401);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('signed-in accounts can update their recovery email after confirming the password', async () => {
+  const env = {
+    DB: createDatabase(),
+    TENANTS: createTenantStore(),
+    PUBLISH_TOKEN: 'test-token',
+    TURNSTILE_SITE_KEY: 'test-site-key',
+    TURNSTILE_SECRET_KEY: 'test-turnstile-secret'
+  };
+  const registered = await registerTestAccount(env, 'email-update-user');
+  const updated = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/auth/set-recovery-email',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${registered.session_token}`
+      },
+      body: JSON.stringify({
+        email: '  RECOVERY@example.com ',
+        password: 'correct-horse-battery-staple'
+      })
+    }
+  ), env);
+  assert.equal(updated.status, 200);
+  assert.equal((await updated.json()).email, 'recovery@example.com');
+  const refreshed = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/auth/session',
+    { headers: { Authorization: `Bearer ${registered.session_token}` } }
+  ), env);
+  assert.equal((await refreshed.json()).email, 'recovery@example.com');
+});
+
+test('account recovery migration adds nullable, unique email addresses without breaking existing accounts', async () => {
+  const SQL = await initSqlJs();
+  const db = new SQL.Database();
+  try {
+    db.exec(await readFile(new URL('../cloudflare/migrations/0004_accounts.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0016_account_recovery_email.sql', import.meta.url), 'utf8'));
+    const columns = db.exec('PRAGMA table_info(accounts)')[0].values.map(row => row[1]);
+    assert.ok(columns.includes('email'));
+    db.run("INSERT INTO accounts (username, password_salt, password_hash, created_at) VALUES ('legacy', 'salt', 'hash', 'now')");
+    db.run("INSERT INTO accounts (username, password_salt, password_hash, email, created_at) VALUES ('new-owner', 'salt', 'hash', 'owner@example.com', 'now')");
+    assert.throws(() => db.run("INSERT INTO accounts (username, password_salt, password_hash, email, created_at) VALUES ('other-owner', 'salt', 'hash', 'owner@example.com', 'now')"));
+  } finally {
+    db.close();
   }
 });
 

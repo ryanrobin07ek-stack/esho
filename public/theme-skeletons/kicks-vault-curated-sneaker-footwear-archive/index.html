@@ -1,0 +1,2217 @@
+<!doctype html>
+<html lang="en" data-eshop-skeleton-preview=""><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-slot="store.name"></title>
+    <meta name="description" content="" data-slot="store.description" data-slot-attr="content">
+    
+    <!-- OpenGraph & Social Cards -->
+    <meta property="og:type" content="" data-slot="store.name" data-slot-attr="content">
+    <meta property="og:title" content="" data-slot="store.name" data-slot-attr="content">
+    <meta property="og:description" content="" data-slot="store.description" data-slot-attr="content">
+    <meta property="og:site_name" content="" data-slot="store.name" data-slot-attr="content">
+    <meta name="twitter:card" content="" data-slot="store.name" data-slot-attr="content">
+    <meta name="twitter:title" content="" data-slot="store.name" data-slot-attr="content">
+    <meta name="twitter:description" content="" data-slot="store.description" data-slot-attr="content">
+
+    <!-- Google Fonts: Bebas Neue for tall editorial display + Plus Jakarta Sans & DM Sans for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+
+    <!-- GSAP & ScrollTrigger from reliable CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Schema.org Structured Data -->
+    
+
+    <style>
+      :root {
+        --color-black: var(--theme-kicks-color-01);
+        --color-charcoal: var(--theme-kicks-color-02);
+        --color-white: var(--theme-kicks-color-03);
+        --color-smoky: var(--theme-kicks-color-04);
+        --color-grey-light: var(--theme-kicks-color-05);
+        --color-grey-mid: var(--theme-kicks-color-06);
+        --color-yellow: var(--theme-kicks-color-07);
+        --color-yellow-hover: var(--theme-kicks-color-08);
+        --color-blue: var(--theme-kicks-color-09);
+        --font-display: 'Bebas Neue', sans-serif;
+        --font-body: 'DM Sans', sans-serif;
+        --font-heading: 'Plus Jakarta Sans', sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font-body);
+        color: var(--color-black);
+        background-color: var(--color-white);
+        line-height: 1.5;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Typography Utilities */
+      .font-display {
+        font-family: var(--font-display);
+        letter-spacing: 0.04em;
+        line-height: 0.95;
+      }
+      .font-heading {
+        font-family: var(--font-heading);
+      }
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Container */
+      .container-max {
+        max-width: 1440px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+      @media (min-width: 768px) {
+        .container-max {
+          padding-left: 2.5rem;
+          padding-right: 2.5rem;
+        }
+      }
+
+      /* Reference visual identity: faded shoe edges and masks */
+      .faded-backdrop {
+        background: radial-gradient(circle at 60% 50%, var(--theme-kicks-color-10) 0%, var(--theme-kicks-color-11) 50%, var(--theme-kicks-color-03) 100%);
+      }
+      .shoe-gradient-bottom {
+        mask-image: linear-gradient(to bottom, var(--theme-kicks-color-12) 82%, var(--theme-kicks-color-13) 100%);
+        -webkit-mask-image: linear-gradient(to bottom, var(--theme-kicks-color-12) 82%, var(--theme-kicks-color-13) 100%);
+      }
+      .shoe-gradient-radial {
+        mask-image: radial-gradient(ellipse at center, var(--theme-kicks-color-12) 65%, var(--theme-kicks-color-13) 100%);
+        -webkit-mask-image: radial-gradient(ellipse at center, var(--theme-kicks-color-12) 65%, var(--theme-kicks-color-13) 100%);
+      }
+
+      /* Buttons & Chips */
+      .btn-primary {
+        background-color: var(--color-black);
+        color: var(--color-white);
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.75rem 1.75rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+      }
+      .btn-primary:hover {
+        background-color: var(--theme-kicks-color-14);
+        transform: translateY(-1px);
+      }
+      .btn-yellow {
+        background-color: var(--color-yellow);
+        color: var(--color-black);
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.75rem 1.75rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+      }
+      .btn-yellow:hover {
+        background-color: var(--color-yellow-hover);
+      }
+      .btn-outline {
+        background-color: transparent;
+        color: var(--color-black);
+        border: 1px solid var(--color-black);
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.75rem 1.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+      }
+      .btn-outline:hover {
+        background-color: var(--color-black);
+        color: var(--color-white);
+      }
+
+      /* Clean Navigation Tab Bar (Zero-pill, refined rectangular tabs) */
+      .brand-tab-btn, .cat-tab-btn {
+        padding: 0.5rem 1rem;
+        font-family: var(--font-heading);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-grey-mid);
+        border-bottom: 2px solid transparent;
+        background: transparent;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+      .brand-tab-btn:hover, .cat-tab-btn:hover {
+        color: var(--color-black);
+      }
+      .brand-tab-btn.active, .cat-tab-btn.active {
+        color: var(--color-black);
+        border-bottom-color: var(--color-black);
+      }
+
+      /* Product Card styling */
+      .product-card {
+        background-color: var(--theme-kicks-color-03);
+        position: relative;
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--theme-kicks-color-10);
+      }
+      .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 32px var(--theme-kicks-color-15);
+        border-color: var(--theme-kicks-color-16);
+      }
+      .card-media {
+        background-color: var(--theme-kicks-color-17);
+        position: relative;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .card-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        filter: drop-shadow(0 10px 14px var(--theme-kicks-color-18));
+      }
+      .product-card:hover .card-media img {
+        transform: scale(1.06) rotate(-2deg);
+      }
+      .wishlist-btn {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 50%;
+        background: var(--theme-kicks-color-19);
+        border: 1px solid var(--theme-kicks-color-20);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 5;
+        transition: all 0.2s;
+      }
+      .wishlist-btn:hover {
+        background: var(--theme-kicks-color-03);
+        transform: scale(1.1);
+      }
+      .wishlist-btn.active svg {
+        fill: var(--theme-kicks-color-21);
+        stroke: var(--theme-kicks-color-21);
+      }
+
+      /* Subtle badge */
+      .kicks-tag {
+        font-family: var(--font-heading);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.25rem 0.625rem;
+      }
+      .kicks-tag-yellow {
+        background-color: var(--color-yellow);
+        color: var(--color-black);
+      }
+      .kicks-tag-black {
+        background-color: var(--color-black);
+        color: var(--color-white);
+      }
+      .kicks-tag-blue {
+        background-color: var(--color-blue);
+        color: var(--color-white);
+      }
+
+      /* Sliders & Rails */
+      .horizontal-rail {
+        display: flex;
+        gap: 1.25rem;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--theme-kicks-color-22) transparent;
+      }
+      .horizontal-rail::-webkit-scrollbar {
+        height: 5px;
+      }
+      .horizontal-rail::-webkit-scrollbar-thumb {
+        background: var(--theme-kicks-color-22);
+      }
+
+      /* Overlay Drawers & Modals */
+      .drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: var(--theme-kicks-color-23);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      .drawer-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .drawer-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 480px;
+        background: var(--theme-kicks-color-03);
+        z-index: 101;
+        transform: translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+      }
+      .drawer-overlay.active .drawer-panel {
+        transform: translateX(0);
+      }
+
+      .modal-box {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -48%) scale(0.96);
+        width: 92%;
+        max-width: 900px;
+        max-height: 90vh;
+        background: var(--theme-kicks-color-03);
+        z-index: 102;
+        opacity: 0;
+        pointer-events: none;
+        overflow-y: auto;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 25px 50px -12px var(--theme-kicks-color-24);
+      }
+      .modal-box.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      /* Size Buttons */
+      .size-btn {
+        height: 2.75rem;
+        min-width: 2.75rem;
+        border: 1px solid var(--theme-kicks-color-25);
+        background: var(--theme-kicks-color-03);
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 0.8125rem;
+        color: var(--color-black);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .size-btn:hover:not(:disabled) {
+        border-color: var(--color-black);
+      }
+      .size-btn.active {
+        background: var(--color-black);
+        color: var(--color-white);
+        border-color: var(--color-black);
+      }
+      .size-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        text-decoration: line-through;
+        background: var(--theme-kicks-color-04);
+      }
+
+      /* Form controls */
+      .input-field {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--theme-kicks-color-26);
+        font-family: var(--font-body);
+        font-size: 0.875rem;
+        background: var(--theme-kicks-color-03);
+        color: var(--color-black);
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .input-field:focus {
+        border-color: var(--color-black);
+      }
+
+      /* Grid systems */
+      .catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1.5rem;
+      }
+      @media (min-width: 640px) {
+        .catalog-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (min-width: 1024px) {
+        .catalog-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      @media (min-width: 1280px) {
+        .catalog-grid {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+
+      /* Editorial Hero layout based on reference */
+      .hero-section {
+        background-color: var(--color-smoky);
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid var(--theme-kicks-color-27);
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: center;
+        min-height: calc(88vh - 80px);
+      }
+      @media (min-width: 1024px) {
+        .hero-grid {
+          grid-template-columns: 1.15fr 1fr;
+        }
+      }
+
+      /* Accessibility & Reduced Motion */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  <link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-theme-tokens="">:root{--theme-kicks-color-01:#111214;--theme-kicks-color-02:#292b30;--theme-kicks-color-03:#ffffff;--theme-kicks-color-04:#f4f5f7;--theme-kicks-color-05:#e8eaef;--theme-kicks-color-06:#858991;--theme-kicks-color-07:#e8e4a2;--theme-kicks-color-08:#ddd88e;--theme-kicks-color-09:#355fe8;--theme-kicks-color-10:#eceef2;--theme-kicks-color-11:#f8f9fa;--theme-kicks-color-12:rgba(0,0,0,1);--theme-kicks-color-13:rgba(0,0,0,0);--theme-kicks-color-14:#26282e;--theme-kicks-color-15:rgba(17,18,20,0.06);--theme-kicks-color-16:#dde0e6;--theme-kicks-color-17:#f6f7f9;--theme-kicks-color-18:rgba(0,0,0,0.08);--theme-kicks-color-19:rgba(255,255,255,0.9);--theme-kicks-color-20:rgba(0,0,0,0.06);--theme-kicks-color-21:#e53e3e;--theme-kicks-color-22:#cbd0d8;--theme-kicks-color-23:rgba(17,18,20,0.65);--theme-kicks-color-24:rgba(0,0,0,0.25);--theme-kicks-color-25:#d6dae1;--theme-kicks-color-26:#d1d5db;--theme-kicks-color-27:#e2e5ea;--theme-kicks-color-28:#d97706;--theme-kicks-color-29:#64748b;--theme-kicks-color-30:#475569;--theme-kicks-color-31:#d6dae2;--theme-kicks-color-32:rgba(0,0,0,0.18);--theme-kicks-color-33:rgba(255,255,255,0.95);--theme-kicks-color-34:#e2e8f0;--theme-kicks-color-35:rgba(0,0,0,0.15);--theme-kicks-color-36:#cbd5e1;--theme-kicks-color-37:#94a3b8;--theme-kicks-color-38:#24272e;--theme-kicks-color-39:#2a2d35;--theme-kicks-color-40:rgba(0,0,0,0.6);--theme-kicks-color-41:rgba(0,0,0,0.7);--theme-kicks-color-42:#f8f9fb;--theme-kicks-color-43:#d9dee7;--theme-kicks-color-44:#dc2626;--theme-kicks-color-45:#0a0b0d;--theme-kicks-color-46:#1e2024;--theme-kicks-color-47:rgba(232,228,162,0.1);--theme-kicks-color-48:rgba(53,95,232,0.1);--theme-kicks-color-49:#191b20;--theme-kicks-color-50:#2b2f36;--theme-kicks-color-51:#fafbfd;--theme-kicks-color-52:#059669;--theme-kicks-color-53:#ecfdf5;}</style><script type="application/ld+json" data-eshop-jsonld=""></script><style data-eshop-skeleton-styles="">
+    .eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:#d1d5db;vertical-align:middle}
+    .eshop-placeholder-media{background:linear-gradient(135deg,var(--theme-placeholder-start,#d1d5db),var(--theme-placeholder-end,#f3f4f6));object-fit:cover}
+    [data-skeleton-text][hidden]{display:none!important}
+  </style></head>
+  <body>
+    <!-- 1. ANNOUNCEMENT BAR -->
+    <div style="background-color: var(--theme-kicks-color-01); color: var(--theme-kicks-color-03); font-family: var(--font-heading); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.5rem 1rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 1rem;">
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+      <span style="opacity: 0.4;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+      <span style="display: none;" class="md-inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></span>
+      <span style="opacity: 0.4; display: none;" class="md-inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+      <span style="color: var(--theme-kicks-color-07); font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></span>
+    </div>
+
+    <!-- 2. MAIN HEADER (Zero-Pill, 3-Zone Contract) -->
+    <header style="background: var(--theme-kicks-color-03); border-bottom: 1px solid var(--theme-kicks-color-10); position: sticky; top: 0; z-index: 50;">
+      <div class="container-max" style="display: flex; align-items: center; justify-content: space-between; height: 4.5rem; gap: 2rem;">
+        
+        <!-- Zone 1: Brand Wordmark -->
+        <a href="#home" onclick="showCatalogView('all')" style="text-decoration: none; display: flex; align-items: baseline; gap: 0.25rem;">
+          <span class="font-display" style="font-size: 2.25rem; color: var(--theme-kicks-color-01); letter-spacing: 0.03em;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></span>
+          <span style="display: inline-block; width: 6px; height: 6px; background-color: var(--color-blue);"></span>
+        </a>
+
+        <!-- Zone 2: Primary Nav Links -->
+        <nav style="display: none;" class="lg-flex gap-8 text-sm font-semibold uppercase tracking-wider">
+          <a href="#catalog" onclick="filterByCategory('Sneakers')" style="text-decoration: none; color: var(--theme-kicks-color-01); font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a>
+          <a href="#catalog" onclick="filterByCategory('Running')" style="text-decoration: none; color: var(--theme-kicks-color-01); font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></a>
+          <a href="#catalog" onclick="filterByCategory('Basketball')" style="text-decoration: none; color: var(--theme-kicks-color-01); font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a>
+          <a href="#catalog" onclick="filterByCategory('Boots')" style="text-decoration: none; color: var(--theme-kicks-color-01); font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+          <a href="#catalog" onclick="filterByCategory('Slides')" style="text-decoration: none; color: var(--theme-kicks-color-01); font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; transition: color 0.2s;" onmouseover="this.style.color='#355FE8'" onmouseout="this.style.color='#111214'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a>
+          <a href="#catalog" onclick="filterBySale()" style="text-decoration: none; color: var(--theme-kicks-color-28); font-family: var(--font-heading); font-size: 0.8125rem; letter-spacing: 0.05em; font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+        </nav>
+
+        <!-- Zone 3: Interactive Affordances (Search, Wishlist, Bag) -->
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <!-- Search trigger -->
+          <button onclick="toggleSearchOverlay(true)" style="background: transparent; border: none; cursor: pointer; padding: 0.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--theme-kicks-color-01);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span style="display: none; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;" class="md-inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+          </button>
+
+          <!-- Wishlist trigger -->
+          <button onclick="toggleWishlistDrawer(true)" style="background: transparent; border: none; cursor: pointer; padding: 0.5rem; position: relative; color: var(--theme-kicks-color-01);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            <span id="wishlist-badge" style="position: absolute; top: 0; right: 0; background: var(--theme-kicks-color-01); color: var(--theme-kicks-color-03); font-size: 0.625rem; font-weight: 700; width: 1.1rem; height: 1.1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </button>
+
+          <!-- Cart trigger -->
+          <button onclick="toggleCartDrawer(true)" class="btn-primary" style="padding: 0.6rem 1.25rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            <span id="cart-badge" style="background: var(--theme-kicks-color-07); color: var(--theme-kicks-color-01); font-size: 0.75rem; font-weight: 800; padding: 0.1rem 0.45rem; border-radius: 2px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <main id="app-root">
+      <!-- 3. EDITORIAL HERO (REFERENCE DESIGN COMPOSITION) -->
+      <section id="home" class="hero-section">
+        <div class="container-max hero-grid" style="padding-top: 3rem; padding-bottom: 3.5rem;">
+          
+          <!-- Left Column: Confident Typography & Narrative -->
+          <div style="z-index: 2;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+              <span class="kicks-tag kicks-tag-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+              <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+            </div>
+
+            <h1 class="font-display hero-title" style="font-size: clamp(3.75rem, 8.5vw, 7.5rem); line-height: 0.9; margin-bottom: 1.5rem; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span><br>
+              <span style="color: var(--theme-kicks-color-09);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></span><br><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></h1>
+
+            <p style="font-size: 1.125rem; color: var(--theme-kicks-color-30); max-width: 520px; margin-bottom: 2rem; line-height: 1.6;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+
+            <!-- Action buttons -->
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+              <a href="#catalog" onclick="filterByCategory('all')" class="btn-primary" style="padding: 1rem 2.25rem; font-size: 0.9375rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
+              </a>
+              <button onclick="filterByTag('Retro')" class="btn-yellow" style="padding: 1rem 2rem; font-size: 0.9375rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button>
+            </div>
+
+            <!-- Trust / Micro specs under Hero -->
+            <div style="display: flex; gap: 2rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--theme-kicks-color-31);">
+              <div>
+                <div class="font-display tabular-nums" style="font-size: 2rem; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></div>
+                <div style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></div>
+              </div>
+              <div>
+                <div class="font-display tabular-nums" style="font-size: 2rem; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+                <div style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></div>
+              </div>
+              <div>
+                <div class="font-display tabular-nums" style="font-size: 2rem; color: var(--theme-kicks-color-09);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></div>
+                <div style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Featured Shoe Composition with Faded Mask -->
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; min-height: 440px;">
+            <!-- Big Faded Graphic Backing from Reference -->
+            <div style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0.08;">
+              <span class="font-display" style="font-size: clamp(10rem, 24vw, 22rem); color: var(--theme-kicks-color-01); letter-spacing: -0.05em; user-select: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            </div>
+
+            <!-- Shoe Card Hero Focus -->
+            <div id="hero-shoe-stage" style="position: relative; width: 100%; max-width: 580px; text-align: center;">
+              <div style="position: relative; display: inline-block; width: 100%;">
+                <img id="hero-shoe-img" class="shoe-gradient-bottom eshop-placeholder-media" style="width: 100%; max-height: 480px; object-fit: contain; filter: drop-shadow(0 25px 35px var(--theme-kicks-color-32)); cursor: pointer;" onclick="openProductDetail(1)" data-skeleton-media="">
+              </div>
+
+              <!-- Floating Spec Card 1 (Top Left) -->
+              <div style="position: absolute; top: 10%; left: 0; background: var(--theme-kicks-color-33); backdrop-filter: blur(8px); border: 1px solid var(--theme-kicks-color-34); padding: 0.75rem 1rem; text-align: left; box-shadow: 0 10px 20px var(--theme-kicks-color-20);">
+                <div style="font-family: var(--font-heading); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></div>
+                <div style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 800; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></div>
+                <div class="tabular-nums" style="font-size: 0.8125rem; font-weight: 700; color: var(--theme-kicks-color-09); margin-top: 0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></div>
+              </div>
+
+              <!-- Floating Spec Card 2 (Bottom Right) -->
+              <div style="position: absolute; bottom: 8%; right: 4%; background: var(--theme-kicks-color-01); color: var(--theme-kicks-color-03); padding: 0.75rem 1.25rem; text-align: left; box-shadow: 0 12px 24px var(--theme-kicks-color-35);">
+                <div style="font-family: var(--font-heading); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; color: var(--theme-kicks-color-07);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></div>
+                <div style="font-size: 0.75rem; color: var(--theme-kicks-color-36); margin-top: 0.15rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 4. BRAND SELECTOR RAIL -->
+      <section style="background: var(--theme-kicks-color-03); border-bottom: 1px solid var(--theme-kicks-color-10); padding-top: 1.25rem; padding-bottom: 1.25rem;">
+        <div class="container-max" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;">
+          <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--theme-kicks-color-37); white-space: nowrap; padding-right: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+          <div id="brand-selector-rail" style="display: flex; align-items: center; gap: 0.5rem;">
+            <!-- Brand tabs populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. CURATED SPOTLIGHT / NEW DROPS CAROUSEL -->
+      <section style="padding-top: 4.5rem; padding-bottom: 4.5rem; background: var(--theme-kicks-color-03);">
+        <div class="container-max">
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.25rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span class="kicks-tag kicks-tag-yellow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></span>
+                <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></span>
+              </div>
+              <h2 class="font-display" style="font-size: clamp(2.5rem, 5vw, 4rem); color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></h2>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button onclick="scrollRail('drops-rail', -340)" class="btn-outline" style="padding: 0.6rem 0.9rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg>
+              </button>
+              <button onclick="scrollRail('drops-rail', 340)" class="btn-outline" style="padding: 0.6rem 0.9rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"></path></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Horizontal rail of spotlight products -->
+          <div id="drops-rail" class="horizontal-rail">
+            <!-- Injected by JavaScript -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. WIDE EDITORIAL CAMPAIGN SECTION (FROM REFERENCE) -->
+      <section style="background-color: var(--theme-kicks-color-01); color: var(--theme-kicks-color-03); position: relative; overflow: hidden; padding-top: 5rem; padding-bottom: 5rem;">
+        <div class="container-max" style="display: grid; grid-template-columns: 1fr; align-items: center; gap: 3rem;">
+          <div style="display: grid; grid-template-columns: 1fr; gap: 3rem;" class="lg-grid-2">
+            <div>
+              <span class="kicks-tag kicks-tag-yellow" style="margin-bottom: 1.5rem; display: inline-block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+              <h2 class="font-display" style="font-size: clamp(3rem, 6.5vw, 5.5rem); line-height: 0.95; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 84%;"></span></h2>
+              <p style="color: var(--theme-kicks-color-37); font-size: 1.0625rem; line-height: 1.7; margin-bottom: 2rem; max-width: 500px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button onclick="filterByCategory('Running')" class="btn-yellow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></button>
+                <button onclick="filterByCategory('Boots')" class="btn-outline" style="border-color: var(--theme-kicks-color-03); color: var(--theme-kicks-color-03);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></button>
+              </div>
+            </div>
+
+            <!-- Campaign Visual -->
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, var(--theme-kicks-color-38) 0%, var(--theme-kicks-color-01) 70%); padding: 2rem; border: 1px solid var(--theme-kicks-color-39);">
+              <img style="max-width: 100%; max-height: 400px; object-fit: contain; filter: drop-shadow(0 20px 30px var(--theme-kicks-color-40));" data-skeleton-media="" class="eshop-placeholder-media">
+              <div style="position: absolute; bottom: 1.5rem; left: 1.5rem; background: var(--theme-kicks-color-41); backdrop-filter: blur(4px); padding: 0.5rem 1rem; border-left: 2px solid var(--theme-kicks-color-07);">
+                <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--theme-kicks-color-07);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+                <span style="font-size: 0.75rem; color: var(--theme-kicks-color-36); display: block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. MAIN SHOPPING CATALOGUE & FILTER ENGINE (150+ PRODUCTS) -->
+      <section id="catalog" style="padding-top: 5rem; padding-bottom: 6rem; background: var(--theme-kicks-color-42);">
+        <div class="container-max">
+
+          <!-- Section Headline & Metadata -->
+          <div style="display: flex; flex-direction: column; md-flex-row; justify-content: space-between; align-items: flex-start; md-items-end; gap: 1rem; margin-bottom: 2rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span class="kicks-tag kicks-tag-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span>
+                <span id="results-count-label" class="tabular-nums" style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 700; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+              </div>
+              <h2 class="font-display" style="font-size: clamp(2.5rem, 5vw, 4.25rem); color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></h2>
+            </div>
+
+            <!-- Sort dropdown & mobile filter trigger -->
+            <div style="display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 380px;">
+              <select id="sort-select" onchange="applySort(this.value)" class="input-field" style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 700; text-transform: uppercase;"><option></option></select>
+            </div>
+          </div>
+
+          <!-- Comprehensive Category Nav Tabs -->
+          <div style="border-bottom: 1px solid var(--theme-kicks-color-43); margin-bottom: 1.5rem; overflow-x: auto; display: flex; gap: 0.5rem;">
+            <button class="cat-tab-btn active" onclick="filterByCategory('all')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Sneakers')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Running')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Basketball')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Casual')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Boots')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Slides')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button>
+            <button class="cat-tab-btn" onclick="filterByCategory('Formal')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+          </div>
+
+          <!-- Secondary Filter Toolbar (Sizes, Price Bracket, Stock, Clear) -->
+          <div style="background: var(--theme-kicks-color-03); border: 1px solid var(--theme-kicks-color-27); padding: 1.25rem; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;" class="lg-grid-4">
+              
+              <!-- Filter by Brand -->
+              <div>
+                <label style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: var(--theme-kicks-color-29); display: block; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></label>
+                <select id="filter-brand" onchange="applyFilters()" class="input-field" style="padding: 0.5rem; font-size: 0.8125rem;"><option></option></select>
+              </div>
+
+              <!-- Filter by Size -->
+              <div>
+                <label style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: var(--theme-kicks-color-29); display: block; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></label>
+                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;" id="size-filter-chips">
+                  <!-- Sizes 39, 40, 41, 42, 43, 44, 45 -->
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(39)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(40)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(41)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+                  <button type="button" class="size-chip-btn active-size-any" onclick="toggleSizeFilter('any')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(42)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(43)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(44)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+                  <button type="button" class="size-chip-btn" onclick="toggleSizeFilter(45)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+                </div>
+              </div>
+
+              <!-- Filter by Price -->
+              <div>
+                <label style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: var(--theme-kicks-color-29); display: block; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></label>
+                <select id="filter-price" onchange="applyFilters()" class="input-field" style="padding: 0.5rem; font-size: 0.8125rem;"><option></option></select>
+              </div>
+
+              <!-- Status Toggles & Clear -->
+              <div style="display: flex; flex-direction: column; justify-content: flex-end; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" id="filter-sale-only" onchange="applyFilters()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></label>
+                  <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" id="filter-instock-only" onchange="applyFilters()" checked=""><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></label>
+                </div>
+                <button type="button" onclick="resetAllFilters()" style="background: none; border: none; text-align: left; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; color: var(--theme-kicks-color-44); text-transform: uppercase; cursor: pointer; padding-top: 0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Active Filter Tags indicator -->
+          <div id="active-filter-indicators" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; display: none;">
+            <!-- Injected dynamically -->
+          </div>
+
+          <!-- Product Grid -->
+          <div id="catalog-grid" class="catalog-grid">
+            <!-- Dynamically populated 150+ products -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="catalog-empty" style="display: none; background: var(--theme-kicks-color-03); border: 1px dashed var(--theme-kicks-color-36); padding: 4rem 2rem; text-align: center;">
+            <div class="font-display" style="font-size: 2.5rem; color: var(--theme-kicks-color-01); margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></div>
+            <p style="color: var(--theme-kicks-color-29); margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <button onclick="resetAllFilters()" class="btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 8. BASKETBALL & RETRO SHOWCASE SECTION -->
+      <section style="background-color: var(--theme-kicks-color-03); padding-top: 4.5rem; padding-bottom: 4.5rem; border-top: 1px solid var(--theme-kicks-color-10);">
+        <div class="container-max">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+            <div>
+              <span class="kicks-tag kicks-tag-black" style="margin-bottom: 0.5rem; display: inline-block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+              <h2 class="font-display" style="font-size: clamp(2.25rem, 4.5vw, 3.75rem); color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></h2>
+            </div>
+            <button onclick="filterByCategory('Basketball')" class="btn-outline" style="font-size: 0.75rem; padding: 0.5rem 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button>
+          </div>
+          <div id="basketball-rail" class="horizontal-rail">
+            <!-- Injected by script -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. RUNNING & CARBON ROAD RACERS SECTION -->
+      <section style="background-color: var(--theme-kicks-color-04); padding-top: 4.5rem; padding-bottom: 4.5rem; border-top: 1px solid var(--theme-kicks-color-27);">
+        <div class="container-max">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+            <div>
+              <span class="kicks-tag kicks-tag-blue" style="margin-bottom: 0.5rem; display: inline-block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+              <h2 class="font-display" style="font-size: clamp(2.25rem, 4.5vw, 3.75rem); color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></h2>
+            </div>
+            <button onclick="filterByCategory('Running')" class="btn-outline" style="font-size: 0.75rem; padding: 0.5rem 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button>
+          </div>
+          <div id="running-rail" class="horizontal-rail">
+            <!-- Injected by script -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. RECOVERY, SLIDES & OUTDOOR BOOTS -->
+      <section style="background-color: var(--theme-kicks-color-03); padding-top: 4.5rem; padding-bottom: 4.5rem; border-top: 1px solid var(--theme-kicks-color-10);">
+        <div class="container-max">
+          <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;" class="lg-grid-2">
+            
+            <!-- Outdoor Boots Column -->
+            <div style="background: var(--theme-kicks-color-11); border: 1px solid var(--theme-kicks-color-27); padding: 2.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <span class="kicks-tag kicks-tag-yellow" style="margin-bottom: 1rem; display: inline-block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span>
+                <h3 class="font-display" style="font-size: 2.75rem; line-height: 0.95; margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></h3>
+                <p style="color: var(--theme-kicks-color-29); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              </div>
+              <button onclick="filterByCategory('Boots')" class="btn-primary" style="align-self: flex-start;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></button>
+            </div>
+
+            <!-- Recovery Slides Column -->
+            <div style="background: var(--theme-kicks-color-11); border: 1px solid var(--theme-kicks-color-27); padding: 2.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <span class="kicks-tag kicks-tag-black" style="margin-bottom: 1rem; display: inline-block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+                <h3 class="font-display" style="font-size: 2.75rem; line-height: 0.95; margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></h3>
+                <p style="color: var(--theme-kicks-color-29); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              </div>
+              <button onclick="filterByCategory('Slides')" class="btn-primary" style="align-self: flex-start;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- 11. SIZING GUIDE ACCORDION & FAQ SECTION -->
+      <section style="background-color: var(--theme-kicks-color-42); padding-top: 4.5rem; padding-bottom: 4.5rem; border-top: 1px solid var(--theme-kicks-color-27);">
+        <div class="container-max" style="max-width: 960px;">
+          <div style="text-align: center; margin-bottom: 3rem;">
+            <span class="kicks-tag kicks-tag-black" style="margin-bottom: 0.75rem; display: inline-block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+            <h2 class="font-display" style="font-size: clamp(2.5rem, 5vw, 4rem);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></h2>
+            <p style="color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- FAQ 1 -->
+            <div style="background: var(--theme-kicks-color-03); border: 1px solid var(--theme-kicks-color-27); padding: 1.5rem;">
+              <h4 style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h4>
+              <p style="color: var(--theme-kicks-color-29); font-size: 0.875rem; line-height: 1.6;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div style="background: var(--theme-kicks-color-03); border: 1px solid var(--theme-kicks-color-27); padding: 1.5rem;">
+              <h4 style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h4>
+              <p style="color: var(--theme-kicks-color-29); font-size: 0.875rem; line-height: 1.6;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div style="background: var(--theme-kicks-color-03); border: 1px solid var(--theme-kicks-color-27); padding: 1.5rem;">
+              <h4 style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h4>
+              <p style="color: var(--theme-kicks-color-29); font-size: 0.875rem; line-height: 1.6;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 12. LARGE FINAL SHOPPING CALL TO ACTION -->
+      <section style="background-color: var(--theme-kicks-color-01); color: var(--theme-kicks-color-03); padding-top: 6rem; padding-bottom: 6rem; text-align: center; position: relative; overflow: hidden;">
+        <div class="container-max" style="position: relative; z-index: 2; max-width: 800px;">
+          <span class="kicks-tag kicks-tag-yellow" style="margin-bottom: 1.5rem; display: inline-block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></span>
+          <h2 class="font-display" style="font-size: clamp(3.25rem, 7vw, 6.5rem); line-height: 0.95; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></h2>
+          <p style="color: var(--theme-kicks-color-37); font-size: 1.125rem; line-height: 1.6; margin-bottom: 2.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <a href="#catalog" onclick="filterByCategory('all')" class="btn-yellow" style="padding: 1rem 2.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a>
+            <button onclick="toggleSearchOverlay(true)" class="btn-outline" style="border-color: var(--theme-kicks-color-03); color: var(--theme-kicks-color-03); padding: 1rem 2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer style="background-color: var(--theme-kicks-color-45); color: var(--theme-kicks-color-06); border-top: 1px solid var(--theme-kicks-color-46); padding-top: 4.5rem; padding-bottom: 3rem; font-size: 0.875rem;">
+      <div class="container-max">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 3rem; margin-bottom: 3.5rem;" class="lg-grid-4">
+          
+          <!-- Col 1: Brand -->
+          <div>
+            <div class="font-display" style="font-size: 2rem; color: var(--theme-kicks-color-03); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></div>
+            <p style="line-height: 1.6; margin-bottom: 1.5rem; color: var(--theme-kicks-color-37);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <div style="display: flex; gap: 0.75rem;">
+              <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: var(--theme-kicks-color-07); background: var(--theme-kicks-color-47); padding: 0.25rem 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></span>
+              <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: var(--theme-kicks-color-09); background: var(--theme-kicks-color-48); padding: 0.25rem 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></span>
+            </div>
+          </div>
+
+          <!-- Col 2: Categories -->
+          <div>
+            <div style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 800; text-transform: uppercase; color: var(--theme-kicks-color-03); margin-bottom: 1.25rem; letter-spacing: 0.05em;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem;">
+              <li><a href="#catalog" onclick="filterByCategory('Sneakers')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></a></li>
+              <li><a href="#catalog" onclick="filterByCategory('Running')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a></li>
+              <li><a href="#catalog" onclick="filterByCategory('Basketball')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+              <li><a href="#catalog" onclick="filterByCategory('Boots')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a></li>
+              <li><a href="#catalog" onclick="filterByCategory('Slides')" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='#FFFFFF'" onmouseout="this.style.color='#858991'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Customer Care -->
+          <div>
+            <div style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 800; text-transform: uppercase; color: var(--theme-kicks-color-03); margin-bottom: 1.25rem; letter-spacing: 0.05em;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem;">
+              <li><span style="color: var(--theme-kicks-color-36);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 84%;"></span></li>
+              <li><span style="color: var(--theme-kicks-color-36);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></li>
+              <li><a href="#home" onclick="openSizeGuideModal()" style="color: var(--theme-kicks-color-07); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></a></li>
+              <li><span style="color: var(--theme-kicks-color-37);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+            </ul>
+          </div>
+
+          <!-- Col 4: Payment & Security Transparency -->
+          <div>
+            <div style="font-family: var(--font-heading); font-size: 0.8125rem; font-weight: 800; text-transform: uppercase; color: var(--theme-kicks-color-03); margin-bottom: 1.25rem; letter-spacing: 0.05em;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></div>
+            <p style="font-size: 0.8125rem; line-height: 1.6; color: var(--theme-kicks-color-37); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <span style="background: var(--theme-kicks-color-49); border: 1px solid var(--theme-kicks-color-50); padding: 0.4rem 0.75rem; font-size: 0.75rem; color: var(--theme-kicks-color-07); font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span>
+              <span style="background: var(--theme-kicks-color-49); border: 1px solid var(--theme-kicks-color-50); padding: 0.4rem 0.75rem; font-size: 0.75rem; color: var(--theme-kicks-color-03); font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="border-top: 1px solid var(--theme-kicks-color-46); padding-top: 2rem; display: flex; flex-direction: column; md-flex-row; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="font-size: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+          <div style="display: flex; gap: 1.5rem; font-size: 0.75rem;">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span>
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- OVERLAYS & MODALS -->
+
+    <!-- A. PRODUCT DETAIL MODAL (PDP) -->
+    <div id="pdp-modal" class="drawer-overlay" onclick="handlePdpBackdropClick(event)">
+      <div class="modal-box" id="pdp-modal-box">
+        <div style="display: flex; justify-content: flex-end; padding: 1rem 1.5rem 0 1.5rem;">
+          <button onclick="closeProductDetail()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--theme-kicks-color-01); padding: 0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        </div>
+        <div id="pdp-content-container" style="padding: 1.5rem 2rem 2.5rem 2rem;">
+          <!-- Dynamically populated PDP -->
+        </div>
+      </div>
+    </div>
+
+    <!-- B. SIZE GUIDE MODAL -->
+    <div id="size-guide-modal" class="drawer-overlay" onclick="closeSizeGuideModal()">
+      <div class="modal-box" style="max-width: 650px; padding: 2.5rem;" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div class="font-display" style="font-size: 2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 84%;"></span></div>
+          <button onclick="closeSizeGuideModal()" style="background: none; border: none; font-size: 1.25rem; cursor: pointer;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        </div>
+        <p style="font-size: 0.875rem; color: var(--theme-kicks-color-29); margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.8125rem; text-align: left;">
+          <thead>
+            <tr style="background: var(--theme-kicks-color-04); border-bottom: 2px solid var(--theme-kicks-color-27);">
+              <th style="padding: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></th>
+              <th style="padding: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></th>
+              <th style="padding: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></th>
+              <th style="padding: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></th>
+              <th style="padding: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></th>
+            </tr>
+          </thead>
+          <tbody class="tabular-nums">
+            <tr style="border-bottom: 1px solid var(--theme-kicks-color-10);"><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></td></tr>
+            <tr style="border-bottom: 1px solid var(--theme-kicks-color-10);"><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></td></tr>
+            <tr style="border-bottom: 1px solid var(--theme-kicks-color-10);"><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></td></tr>
+            <tr style="border-bottom: 1px solid var(--theme-kicks-color-10); font-weight: 700; background: var(--theme-kicks-color-51);"><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></td></tr>
+            <tr style="border-bottom: 1px solid var(--theme-kicks-color-10);"><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></td></tr>
+            <tr style="border-bottom: 1px solid var(--theme-kicks-color-10);"><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></td></tr>
+            <tr style="border-bottom: 1px solid var(--theme-kicks-color-10);"><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></td></tr>
+            <tr><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></td><td style="padding: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top: 1.5rem; text-align: right;">
+          <button onclick="closeSizeGuideModal()" class="btn-primary" style="padding: 0.5rem 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- C. SHOPPING CART DRAWER -->
+    <div id="cart-drawer" class="drawer-overlay" onclick="toggleCartDrawer(false)">
+      <div class="drawer-panel" onclick="event.stopPropagation()">
+        <!-- Drawer Header -->
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--theme-kicks-color-10); display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+            <div class="font-display" style="font-size: 1.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></div>
+            <span id="cart-drawer-count" class="tabular-nums" style="font-size: 0.8125rem; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></span>
+          </div>
+          <button onclick="toggleCartDrawer(false)" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        </div>
+
+        <!-- Free shipping indicator -->
+        <div style="background: var(--theme-kicks-color-04); padding: 0.75rem 1.5rem; font-size: 0.75rem; border-bottom: 1px solid var(--theme-kicks-color-05);">
+          <div id="free-shipping-progress-text" style="font-weight: 700; margin-bottom: 0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+          <div style="background: var(--theme-kicks-color-27); height: 4px; width: 100%; border-radius: 2px; overflow: hidden;">
+            <div id="free-shipping-progress-bar" style="background: var(--theme-kicks-color-09); height: 100%; width: 0%; transition: width 0.3s;"></div>
+          </div>
+        </div>
+
+        <!-- Drawer Body: Items List -->
+        <div id="cart-items-list" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+          <!-- Dynamically populated items -->
+        </div>
+
+        <!-- Drawer Footer: Subtotals & Checkout Button -->
+        <div style="padding: 1.5rem; border-top: 1px solid var(--theme-kicks-color-10); background: var(--theme-kicks-color-03);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+            <span style="color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+            <span id="cart-subtotal" class="tabular-nums" style="font-weight: 700; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+            <span style="color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+            <span id="cart-shipping" class="tabular-nums" style="font-weight: 700; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+          </div>
+          <div id="cart-discount-row" style="display: none; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--theme-kicks-color-52);">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+            <span id="cart-discount-val" class="tabular-nums" style="font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 0.75rem; margin-bottom: 1.25rem; font-size: 1.125rem; font-weight: 800; border-top: 1px solid var(--theme-kicks-color-10); padding-top: 0.75rem;">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+            <span id="cart-total" class="tabular-nums" style="color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+          </div>
+
+          <!-- Promo Code Input -->
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <input type="text" id="coupon-input" class="input-field" style="padding: 0.5rem 0.75rem; font-size: 0.75rem; text-transform: uppercase;">
+            <button onclick="applyCoupon()" class="btn-outline" style="padding: 0.5rem 1rem; font-size: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></button>
+          </div>
+
+          <button id="cart-checkout-btn" onclick="startCheckout()" class="btn-primary" style="width: 100%; padding: 0.9rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- D. WISHLIST DRAWER -->
+    <div id="wishlist-drawer" class="drawer-overlay" onclick="toggleWishlistDrawer(false)">
+      <div class="drawer-panel" onclick="event.stopPropagation()">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--theme-kicks-color-10); display: flex; align-items: center; justify-content: space-between;">
+          <div class="font-display" style="font-size: 1.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></div>
+          <button onclick="toggleWishlistDrawer(false)" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        </div>
+        <div id="wishlist-items-list" style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- E. SEARCH OVERLAY -->
+    <div id="search-overlay" class="drawer-overlay" onclick="toggleSearchOverlay(false)">
+      <div style="background: var(--theme-kicks-color-03); max-width: 800px; margin: 3rem auto; padding: 2rem; border-radius: 0; box-shadow: 0 20px 40px var(--theme-kicks-color-35);" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div class="font-display" style="font-size: 2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></div>
+          <button onclick="toggleSearchOverlay(false)" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        </div>
+        <input type="text" id="global-search-input" oninput="handleSearchInput(this.value)" class="input-field" style="font-size: 1.125rem; padding: 1rem;" autofocus="">
+        
+        <div style="display: flex; gap: 0.5rem; margin-top: 1rem; align-items: center; flex-wrap: wrap;">
+          <span style="font-size: 0.75rem; color: var(--theme-kicks-color-29); font-weight: 700; text-transform: uppercase;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span>
+          <button type="button" onclick="setSearchQuery('Air Jordan')" class="search-tag-chip"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+          <button type="button" onclick="setSearchQuery('GEL-Kayano')" class="search-tag-chip"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+          <button type="button" onclick="setSearchQuery('Samba')" class="search-tag-chip"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></button>
+          <button type="button" onclick="setSearchQuery('Ultraboost')" class="search-tag-chip"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+          <button type="button" onclick="setSearchQuery('Timberland')" class="search-tag-chip"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+          <button type="button" onclick="setSearchQuery('Salomon')" class="search-tag-chip"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></button>
+        </div>
+
+        <div id="search-results-box" style="margin-top: 1.5rem; max-height: 50vh; overflow-y: auto;">
+          <!-- Results list -->
+        </div>
+      </div>
+    </div>
+
+    <!-- F. CHECKOUT MODAL (3-STEP WITH M-PESA & PAYSTACK TRANSPARENCY) -->
+    <div id="checkout-modal" class="drawer-overlay" onclick="closeCheckoutModal()">
+      <div class="modal-box" style="max-width: 800px; padding: 2.5rem;" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--theme-kicks-color-10); padding-bottom: 1rem;">
+          <div>
+            <div class="font-display" style="font-size: 2.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></div>
+            <span style="font-size: 0.8125rem; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></span>
+          </div>
+          <button onclick="closeCheckoutModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        </div>
+
+        <form id="checkout-form" onsubmit="handlePlaceOrder(event)">
+          <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;" class="md-grid-2">
+            
+            <!-- Left: Delivery & Contact details -->
+            <div>
+              <h4 style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></h4>
+              
+              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <input type="text" id="cust-name" required="" class="input-field">
+                <input type="email" id="cust-email" required="" class="input-field">
+                
+                <div>
+                  <input type="tel" id="cust-phone" required="" class="input-field" pattern="^(?:0|\+?254)?([17]\d{8})$">
+                  <span style="font-size: 0.6875rem; color: var(--theme-kicks-color-29); margin-top: 0.2rem; display: block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+                </div>
+
+                <select id="cust-county" required="" class="input-field"><option></option></select>
+
+                <textarea id="cust-address" required="" rows="2" class="input-field"></textarea>
+              </div>
+            </div>
+
+            <!-- Right: Payment Method & Order Summary -->
+            <div>
+              <h4 style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></h4>
+
+              <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <label style="border: 1px solid var(--theme-kicks-color-01); padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; background: var(--theme-kicks-color-51);">
+                  <input type="radio" name="paymethod" checked="">
+                  <div>
+                    <div style="font-weight: 800; font-size: 0.875rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></div>
+                    <div style="font-size: 0.6875rem; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+                  </div>
+                </label>
+
+                <label style="border: 1px solid var(--theme-kicks-color-25); padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                  <input type="radio" name="paymethod">
+                  <div>
+                    <div style="font-weight: 800; font-size: 0.875rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></div>
+                    <div style="font-size: 0.6875rem; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+                  </div>
+                </label>
+
+                <label style="border: 1px solid var(--theme-kicks-color-25); padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                  <input type="radio" name="paymethod">
+                  <div>
+                    <div style="font-weight: 800; font-size: 0.875rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></div>
+                    <div style="font-size: 0.6875rem; color: var(--theme-kicks-color-29);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Order Summary in Checkout -->
+              <div style="background: var(--theme-kicks-color-04); padding: 1.25rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.35rem;">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span>
+                  <span id="checkout-subtotal" class="tabular-nums" style="font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.35rem;">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></span>
+                  <span id="checkout-shipping" class="tabular-nums" style="font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+                </div>
+                <div id="checkout-discount-row" style="display: none; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.35rem; color: var(--theme-kicks-color-52);">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+                  <span id="checkout-discount-val" class="tabular-nums" style="font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.125rem; font-weight: 800; border-top: 1px solid var(--theme-kicks-color-27); padding-top: 0.75rem; margin-top: 0.5rem;">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+                  <span id="checkout-total" class="tabular-nums" style="color: var(--theme-kicks-color-09);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+                </div>
+              </div>
+
+              <!-- Real Integration Notice in accordance with Section 15 of Prompt -->
+              <div style="font-size: 0.6875rem; color: var(--theme-kicks-color-29); background: var(--theme-kicks-color-03); border: 1px solid var(--theme-kicks-color-27); padding: 0.6rem; margin-bottom: 1rem; line-height: 1.5;">
+                <strong style="color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+
+              <button type="submit" class="btn-primary" style="width: 100%; padding: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- G. ORDER SUCCESS MODAL -->
+    <div id="order-success-modal" class="drawer-overlay">
+      <div class="modal-box" style="max-width: 600px; padding: 3rem 2rem; text-align: center;">
+        <div style="width: 4rem; height: 4rem; background: var(--theme-kicks-color-53); color: var(--theme-kicks-color-52); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <div class="font-display" style="font-size: 2.75rem; line-height: 1; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></div>
+        <p id="order-ref-number" class="tabular-nums" style="font-family: var(--font-heading); font-weight: 800; color: var(--theme-kicks-color-09); margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></p>
+        <p style="color: var(--theme-kicks-color-29); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        <div style="background: var(--theme-kicks-color-04); padding: 1.25rem; text-align: left; margin-bottom: 2rem; font-size: 0.8125rem;">
+          <div style="font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--theme-kicks-color-01);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></div>
+          <div style="color: var(--theme-kicks-color-29); line-height: 1.6;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><br><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><br><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        </div>
+        <button onclick="closeOrderSuccessModal()" class="btn-primary" style="padding: 0.875rem 2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button>
+      </div>
+    </div>
+
+    <!-- UTILITY STYLES FOR RESPONSIVENESS INLINE HELPER -->
+    <style>
+      .md-inline { display: none; }
+      @media (min-width: 768px) {
+        .md-inline { display: inline !important; }
+        .md-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+        .md-flex-row { flex-direction: row !important; }
+        .md-items-end { align-items: flex-end !important; }
+      }
+      .lg-flex { display: none; }
+      @media (min-width: 1024px) {
+        .lg-flex { display: flex !important; }
+        .lg-grid-2 { grid-template-columns: repeat(2, 1fr) !important; }
+        .lg-grid-4 { grid-template-columns: repeat(4, 1fr) !important; }
+      }
+      .size-chip-btn {
+        height: 2rem;
+        min-width: 2rem;
+        border: 1px solid var(--theme-kicks-color-25);
+        background: var(--theme-kicks-color-03);
+        font-family: var(--font-heading);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 0 0.35rem;
+        transition: all 0.15s;
+      }
+      .size-chip-btn:hover {
+        border-color: var(--theme-kicks-color-01);
+      }
+      .size-chip-btn.active-size {
+        background: var(--theme-kicks-color-01);
+        color: var(--theme-kicks-color-03);
+        border-color: var(--theme-kicks-color-01);
+      }
+      .size-chip-btn.active-size-any {
+        background: var(--theme-kicks-color-04);
+        color: var(--theme-kicks-color-01);
+      }
+      .search-tag-chip {
+        background: var(--theme-kicks-color-04);
+        border: 1px solid var(--theme-kicks-color-27);
+        font-family: var(--font-heading);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        text-transform: uppercase;
+      }
+      .search-tag-chip:hover {
+        background: var(--theme-kicks-color-01);
+        color: var(--theme-kicks-color-03);
+      }
+    </style>
+
+    <!-- COMPLETE APPLICATION JAVASCRIPT & 150+ PRODUCT DATASET -->
+    <script>
+      /* --- 1. CORE APPLICATION DATASET: 150+ DISTINCT FOOTWEAR ENTRIES --- */
+      const BRANDS_LIST = /*__ESHOP_DATA_kicksBrands__*/[""];
+
+      const CATEGORIES_LIST = /*__ESHOP_DATA_kicksCategories__*/[""];
+
+      // Curated real sneaker imagery pool (reliable, high-contrast, clean footwear photography)
+      const SHOE_PHOTOS = /*__ESHOP_DATA_kicksPhotos__*/["","","",""];
+
+      // Curated model templates to generate 154 meaningful, authentic sneaker & footwear items
+      const MODEL_BLUEPRINTS = /*__ESHOP_DATA_kicksBlueprints__*/[{"id":"skeleton-1","brand":"","name":"","cat":"","price":1,"orig":null,"tag":"","desc":"","stock":16,"isNew":false},{"id":"skeleton-2","brand":"","name":"","cat":"","price":1,"orig":null,"tag":"","desc":"","stock":16,"isNew":false},{"id":"skeleton-3","brand":"","name":"","cat":"","price":1,"orig":null,"tag":"","desc":"","stock":16,"isNew":false},{"id":"skeleton-4","brand":"","name":"","cat":"","price":1,"orig":null,"tag":"","desc":"","stock":16,"isNew":false}];
+
+      // Build out full 154 dataset with complete variation, sizes, stock states, and ratings
+      let PRODUCTS = [];
+      let nextId = 1;
+
+      // Seed all models with distinct attributes
+      MODEL_BLUEPRINTS.forEach((model, idx) => {
+        const photoIndex = idx % SHOE_PHOTOS.length;
+        const baseSizes = [39, 40, 41, 42, 43, 44, 45, 46];
+        // realistic stock availability: some sizes out of stock
+        const availableStock = Math.max(0, Number(model.stock) || 0);
+        const stockBySize = Object.fromEntries(baseSizes.map((size, index) => [
+          size, Math.floor(availableStock / baseSizes.length) + (index < availableStock % baseSizes.length ? 1 : 0)
+        ]));
+        const totalStock = availableStock;
+
+        PRODUCTS.push({
+          id: model.id || nextId++, name: model.name,
+          brand: model.brand,
+          category: model.cat,
+          price: model.price,
+          origPrice: model.orig,
+          image: SHOE_PHOTOS[photoIndex],
+          tag: model.tag,
+          desc: model.desc,
+          sizes: baseSizes,
+          stockBySize: stockBySize,
+          inStock: totalStock > 0,
+          isNew: Boolean(model.isNew),
+          isSale: Boolean(model.orig),
+          colors: ["Original Colorway", "Core Black", "Triple White"]
+        });
+      });
+
+      // Expand to reach 154 items with special edition colorways
+      const EXTRA_VARIANTS = /*__ESHOP_DATA_kicksExtraVariants__*/[];
+
+      EXTRA_VARIANTS.forEach((ext, idx) => {
+        const photoIndex = (idx * 3 + 1) % SHOE_PHOTOS.length;
+        const stockBySize = {
+          39: 2, 40: 4, 41: 5, 42: 7, 43: 6, 44: 3, 45: 2, 46: 1
+        };
+        PRODUCTS.push({
+          id: nextId++,
+          name: `${ext.base} '${ext.suffix}'`,
+          brand: ext.brand,
+          category: ext.cat,
+          price: ext.price,
+          origPrice: ext.orig,
+          image: SHOE_PHOTOS[photoIndex],
+          tag: ext.tag,
+          desc: `Limited edition ${ext.suffix} colorway of the celebrated ${ext.base}. Verified authentication inspection guaranteed before countrywide dispatch.`,
+          sizes: [39, 40, 41, 42, 43, 44, 45, 46],
+          stockBySize: stockBySize,
+          inStock: true,
+          isNew: true,
+          isSale: ext.orig !== null,
+          colors: ["Special Edition", "Core Stealth"]
+        });
+      });
+
+      console.log(`Initialized theme catalogue with ${PRODUCTS.length} items.`);
+
+      /* --- 2. STATE MANAGEMENT --- */
+      let state = {
+        categoryFilter: 'all',
+        brandFilter: 'all',
+        sizeFilter: 'any',
+        priceFilter: 'all',
+        saleOnly: false,
+        inStockOnly: true,
+        sortBy: 'featured',
+        searchQuery: '',
+        cart: JSON.parse(localStorage.getItem('kv_cart') || '[]'),
+        wishlist: JSON.parse(localStorage.getItem('kv_wishlist') || '[]'),
+        discountRate: 0, // e.g. 0.1 for 10%
+        activeCoupon: null
+      };
+
+      /* --- 3. RENDERING ENGINE --- */
+      function formatPrice(val) {
+        return 'KES ' + Number(val).toLocaleString();
+      }
+
+      function createProductCardHTML(p) {
+        const isWish = state.wishlist.includes(p.id);
+        const discountBadge = p.origPrice ? `<span class="kicks-tag kicks-tag-yellow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></span>` : (p.isNew ? `<span class="kicks-tag kicks-tag-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>` : '');
+        
+        return `
+          <div class="product-card" data-id="${p.id}">
+            <div class="card-media" onclick="openProductDetail(${p.id})" style="cursor: pointer;">
+              <button type="button" class="wishlist-btn ${isWish ? 'active' : ''}" onclick="toggleWishlistItem(event, ${p.id})" title="${isWish ? 'Remove from wishlist' : 'Save to wishlist'}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="${isWish ? '#E53E3E' : 'none'}" stroke="${isWish ? '#E53E3E' : '#111214'}" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+              </button>
+              <div style="position: absolute; top: 0.75rem; left: 0.75rem; display: flex; gap: 0.25rem;">
+                ${discountBadge}
+              </div>
+              <img src="${p.image}" alt="${p.name}" loading="lazy" />
+            </div>
+
+            <div style="padding: 1.25rem; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+                  <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; color: #858991; letter-spacing: 0.05em;">${p.brand} · ${p.category}</span>
+                  ${p.inStock ? '<span style="font-size: 0.625rem; font-weight: 700; color: #059669; text-transform: uppercase;">In Stock</span>' : '<span style="font-size: 0.625rem; font-weight: 700; color: #DC2626; text-transform: uppercase;">Sold Out</span>'}
+                </div>
+                <h3 onclick="openProductDetail(${p.id})" style="font-family: var(--font-heading); font-size: 0.9375rem; font-weight: 700; color: #111214; margin-bottom: 0.5rem; line-height: 1.3; cursor: pointer;">
+                  ${p.name}
+                </h3>
+              </div>
+
+              <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #ECEEF2; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div class="tabular-nums" style="font-family: var(--font-heading); font-size: 1rem; font-weight: 800; color: #111214;">
+                    ${formatPrice(p.price)}
+                  </div>
+                  ${p.origPrice ? `<div class="tabular-nums" style="font-size: 0.75rem; color: #94A3B8; text-decoration: line-through;">${formatPrice(p.origPrice)}</div>` : ''}
+                </div>
+                <button type="button" onclick="openProductDetail(${p.id})" class="btn-primary" style="padding: 0.45rem 0.85rem; font-size: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderCatalog() {
+        const grid = document.getElementById('catalog-grid');
+        const emptyBox = document.getElementById('catalog-empty');
+        const countLabel = document.getElementById('results-count-label');
+
+        let filtered = PRODUCTS.filter(p => {
+          // Category
+          if (state.categoryFilter !== 'all' && p.category.toLowerCase() !== state.categoryFilter.toLowerCase()) {
+            return false;
+          }
+          // Brand
+          if (state.brandFilter !== 'all' && p.brand.toLowerCase() !== state.brandFilter.toLowerCase()) {
+            return false;
+          }
+          // Size
+          if (state.sizeFilter !== 'any') {
+            const requestedSize = Number(state.sizeFilter);
+            if (!p.stockBySize[requestedSize] || p.stockBySize[requestedSize] <= 0) {
+              return false;
+            }
+          }
+          // Price
+          if (state.priceFilter === 'under-8k' && p.price >= 8000) return false;
+          if (state.priceFilter === '8k-15k' && (p.price < 8000 || p.price > 15000)) return false;
+          if (state.priceFilter === '15k-22k' && (p.price < 15000 || p.price > 22000)) return false;
+          if (state.priceFilter === 'above-22k' && p.price <= 22000) return false;
+
+          // Sale items
+          if (state.saleOnly && !p.isSale) return false;
+          // In stock
+          if (state.inStockOnly && !p.inStock) return false;
+
+          // Search query
+          if (state.searchQuery.trim() !== '') {
+            const q = state.searchQuery.toLowerCase();
+            const matchName = p.name.toLowerCase().includes(q);
+            const matchBrand = p.brand.toLowerCase().includes(q);
+            const matchCat = p.category.toLowerCase().includes(q);
+            const matchTag = p.tag.toLowerCase().includes(q);
+            if (!matchName && !matchBrand && !matchCat && !matchTag) return false;
+          }
+
+          return true;
+        });
+
+        // Sorting
+        if (state.sortBy === 'price-asc') {
+          filtered.sort((a, b) => a.price - b.price);
+        } else if (state.sortBy === 'price-desc') {
+          filtered.sort((a, b) => b.price - a.price);
+        } else if (state.sortBy === 'newest') {
+          filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+        } else if (state.sortBy === 'name') {
+          filtered.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        countLabel.textContent = `Showing ${filtered.length} of ${PRODUCTS.length} Models`;
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '';
+          emptyBox.style.display = 'block';
+        } else {
+          emptyBox.style.display = 'none';
+          grid.innerHTML = filtered.map(createProductCardHTML).join('');
+        }
+
+        renderActiveFilterChips();
+      }
+
+      function renderActiveFilterChips() {
+        const container = document.getElementById('active-filter-indicators');
+        let chips = [];
+
+        if (state.categoryFilter !== 'all') {
+          chips.push(`Category: ${state.categoryFilter}`);
+        }
+        if (state.brandFilter !== 'all') {
+          chips.push(`Brand: ${state.brandFilter}`);
+        }
+        if (state.sizeFilter !== 'any') {
+          chips.push(`Size: EU ${state.sizeFilter}`);
+        }
+        if (state.priceFilter !== 'all') {
+          chips.push(`Budget Filter`);
+        }
+        if (state.saleOnly) {
+          chips.push(`Sale Only`);
+        }
+        if (state.searchQuery.trim() !== '') {
+          chips.push(`Query: "${state.searchQuery}"`);
+        }
+
+        if (chips.length > 0) {
+          container.style.display = 'flex';
+          container.innerHTML = `
+            <span style="font-size: 0.6875rem; font-weight: 700; color: #858991; text-transform: uppercase;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+            ${chips.map(c => `
+              <span style="background: #E8EAEF; color: #111214; font-size: 0.6875rem; font-weight: 700; padding: 0.2rem 0.5rem; display: flex; align-items: center; gap: 0.35rem;">
+                ${c}
+              </span>
+            `).join('')}
+            <button onclick="resetAllFilters()" style="background: none; border: none; font-size: 0.6875rem; color: #DC2626; font-weight: 700; cursor: pointer; text-decoration: underline;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></button>
+          `;
+        } else {
+          container.style.display = 'none';
+        }
+      }
+
+      function renderRails() {
+        // Featured drops rail
+        const drops = PRODUCTS.filter(p => p.isNew || p.tag === 'Grail').slice(0, 10);
+        document.getElementById('drops-rail').innerHTML = drops.map(p => `
+          <div style="min-width: 280px; max-width: 280px; flex-shrink: 0;">
+            ${createProductCardHTML(p)}
+          </div>
+        `).join('');
+
+        // Basketball rail
+        const bball = PRODUCTS.filter(p => p.category === 'Basketball').slice(0, 8);
+        document.getElementById('basketball-rail').innerHTML = bball.map(p => `
+          <div style="min-width: 280px; max-width: 280px; flex-shrink: 0;">
+            ${createProductCardHTML(p)}
+          </div>
+        `).join('');
+
+        // Running rail
+        const running = PRODUCTS.filter(p => p.category === 'Running').slice(0, 8);
+        document.getElementById('running-rail').innerHTML = running.map(p => `
+          <div style="min-width: 280px; max-width: 280px; flex-shrink: 0;">
+            ${createProductCardHTML(p)}
+          </div>
+        `).join('');
+      }
+
+      function renderBrandSelector() {
+        const rail = document.getElementById('brand-selector-rail');
+        rail.innerHTML = `
+          <button class="brand-tab-btn active" onclick="filterByBrand('all')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></button>
+          ${BRANDS_LIST.map(b => `
+            <button class="brand-tab-btn" onclick="filterByBrand('${b}')">${b.toUpperCase()}</button>
+          `).join('')}
+        `;
+      }
+
+      /* --- 4. FILTER ACTIONS --- */
+      function filterByCategory(cat) {
+        state.categoryFilter = cat;
+        // update tab styles
+        document.querySelectorAll('.cat-tab-btn').forEach(btn => {
+          if (btn.textContent.toLowerCase().includes(cat.toLowerCase()) || (cat === 'all' && btn.textContent.includes('All'))) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+        renderCatalog();
+        const catalogEl = document.getElementById('catalog');
+        if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function filterByBrand(brand) {
+        state.brandFilter = brand;
+        const brandSelect = document.getElementById('filter-brand');
+        if (brandSelect) brandSelect.value = brand;
+
+        document.querySelectorAll('.brand-tab-btn').forEach(btn => {
+          if (btn.textContent.trim().toLowerCase() === (brand === 'all' ? 'all brands' : brand.toLowerCase())) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        renderCatalog();
+        const catalogEl = document.getElementById('catalog');
+        if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function filterByTag(tag) {
+        state.searchQuery = tag;
+        renderCatalog();
+        document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function filterBySale() {
+        state.saleOnly = true;
+        document.getElementById('filter-sale-only').checked = true;
+        renderCatalog();
+        document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+      }
+
+      function toggleSizeFilter(size) {
+        state.sizeFilter = size;
+        document.querySelectorAll('.size-chip-btn').forEach(btn => {
+          btn.classList.remove('active-size');
+          if (String(size) === 'any' && btn.textContent === 'ANY') {
+            btn.classList.add('active-size');
+          } else if (btn.textContent === String(size)) {
+            btn.classList.add('active-size');
+          }
+        });
+        renderCatalog();
+      }
+
+      function applyFilters() {
+        state.brandFilter = document.getElementById('filter-brand').value;
+        state.priceFilter = document.getElementById('filter-price').value;
+        state.saleOnly = document.getElementById('filter-sale-only').checked;
+        state.inStockOnly = document.getElementById('filter-instock-only').checked;
+        renderCatalog();
+      }
+
+      function applySort(val) {
+        state.sortBy = val;
+        renderCatalog();
+      }
+
+      function resetAllFilters() {
+        state.categoryFilter = 'all';
+        state.brandFilter = 'all';
+        state.sizeFilter = 'any';
+        state.priceFilter = 'all';
+        state.saleOnly = false;
+        state.inStockOnly = true;
+        state.searchQuery = '';
+
+        document.getElementById('filter-brand').value = 'all';
+        document.getElementById('filter-price').value = 'all';
+        document.getElementById('filter-sale-only').checked = false;
+        document.getElementById('filter-instock-only').checked = true;
+
+        document.querySelectorAll('.cat-tab-btn').forEach((b, i) => i === 0 ? b.classList.add('active') : b.classList.remove('active'));
+        document.querySelectorAll('.brand-tab-btn').forEach((b, i) => i === 0 ? b.classList.add('active') : b.classList.remove('active'));
+        document.querySelectorAll('.size-chip-btn').forEach(b => {
+          b.classList.remove('active-size');
+          if (b.textContent === 'ANY') b.classList.add('active-size');
+        });
+
+        renderCatalog();
+      }
+
+      function scrollRail(id, delta) {
+        const el = document.getElementById(id);
+        if (el) el.scrollBy({ left: delta, behavior: 'smooth' });
+      }
+
+      /* --- 5. PRODUCT DETAIL MODAL (PDP) --- */
+      let currentPdpProduct = null;
+      let selectedPdpSize = null;
+      let selectedPdpColor = null;
+
+      function openProductDetail(id) {
+        const p = PRODUCTS.find(x => x.id === id);
+        if (!p) return;
+        currentPdpProduct = p;
+        selectedPdpColor = p.colors[0];
+
+        // Find first available size
+        selectedPdpSize = null;
+        for (let s of p.sizes) {
+          if (p.stockBySize[s] && p.stockBySize[s] > 0) {
+            selectedPdpSize = s;
+            break;
+          }
+        }
+
+        const container = document.getElementById('pdp-content-container');
+        container.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr; gap: 2.5rem;" class="md-grid-2">
+            <!-- Left: Gallery & Zoom Showcase -->
+            <div style="background: #F6F7F9; padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+              <span class="kicks-tag kicks-tag-black" style="position: absolute; top: 1rem; left: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+              <img id="pdp-main-image" src="${p.image}" alt="${p.name}" style="width: 100%; max-height: 380px; object-fit: contain; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.12));" />
+              <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+                <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: #64748B;">SKU: KV-${p.id.toString().padStart(4, '0')}</span>
+                <span style="color: #CBD5E1;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: #059669;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+              </div>
+            </div>
+
+            <!-- Right: Product Purchase Module -->
+            <div style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <!-- Brand & Tag -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <span style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #858991;">${p.brand} · ${p.category}</span>
+                  ${p.isSale ? '<span class="kicks-tag kicks-tag-yellow">SPECIAL PRICE</span>' : ''}
+                </div>
+
+                <h2 class="font-display" style="font-size: clamp(2rem, 4vw, 2.75rem); color: #111214; line-height: 1; margin-bottom: 0.75rem;">
+                  ${p.name}
+                </h2>
+
+                <!-- Price row -->
+                <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.25rem;">
+                  <span class="tabular-nums" style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: #111214;">
+                    ${formatPrice(p.price)}
+                  </span>
+                  ${p.origPrice ? `<span class="tabular-nums" style="font-size: 1rem; color: #94A3B8; text-decoration: line-through;">${formatPrice(p.origPrice)}</span>` : ''}
+                </div>
+
+                <p style="font-size: 0.875rem; color: #475569; line-height: 1.6; margin-bottom: 1.5rem; border-bottom: 1px solid #ECEEF2; padding-bottom: 1.25rem;">
+                  ${p.desc}
+                </p>
+
+                <!-- Color Selection -->
+                <div style="margin-bottom: 1.25rem;">
+                  <div style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: #111214;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span><span id="pdp-selected-color-label" style="color: #64748B;">${selectedPdpColor}</span>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    ${p.colors.map((c, i) => `
+                      <button type="button" onclick="selectPdpColor('${c}')" class="btn-outline" style="padding: 0.4rem 0.85rem; font-size: 0.75rem; ${i === 0 ? 'background: #111214; color: #FFF;' : ''}">
+                        ${c}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Size Selection Module -->
+                <div style="margin-bottom: 1.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+                    <div style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #111214;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></div>
+                    <button type="button" onclick="openSizeGuideModal()" style="background: none; border: none; font-family: var(--font-heading); font-size: 0.75rem; font-weight: 700; color: #355FE8; text-decoration: underline; cursor: pointer;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></button>
+                  </div>
+
+                  <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;" id="pdp-size-buttons">
+                    ${p.sizes.map(s => {
+                      const stock = p.stockBySize[s] || 0;
+                      const isSelected = s === selectedPdpSize;
+                      const isDisabled = stock === 0;
+                      return `
+                        <button type="button" class="size-btn ${isSelected ? 'active' : ''}" ${isDisabled ? 'disabled' : ''} onclick="selectPdpSize(${s})" title="${isDisabled ? 'Out of Stock' : `${stock} pairs left`}">
+                          ${s}
+                        </button>
+                      `;
+                    }).join('')}
+                  </div>
+                  
+                  <div id="pdp-stock-notice" style="font-size: 0.75rem; margin-top: 0.5rem; font-weight: 600; color: #059669;">
+                    ${selectedPdpSize ? `EU ${selectedPdpSize} is In Stock for Immediate Dispatch` : 'Please select an available size'}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action buttons & Purchase guarantee -->
+              <div>
+                <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+                  <button id="pdp-add-to-cart-btn" onclick="addCurrentProductToCart()" class="btn-primary" style="flex: 1; padding: 1rem;">
+                    ADD TO BAG · ${formatPrice(p.price)}
+                  </button>
+                  <button onclick="toggleWishlistItem(event, ${p.id})" class="btn-outline" style="padding: 1rem 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></button>
+                </div>
+
+                <div style="background: #F8F9FA; padding: 0.75rem 1rem; border: 1px solid #E8EAEF; font-size: 0.75rem; color: #64748B; display: flex; align-items: center; justify-content: space-between;">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('pdp-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function selectPdpSize(s) {
+        selectedPdpSize = s;
+        document.querySelectorAll('#pdp-size-buttons .size-btn').forEach(btn => {
+          if (btn.textContent.trim() === String(s)) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+
+        const stock = currentPdpProduct.stockBySize[s] || 0;
+        const notice = document.getElementById('pdp-stock-notice');
+        if (stock <= 2 && stock > 0) {
+          notice.textContent = `Only ${stock} pairs remaining in size EU ${s} - Act fast`;
+          notice.style.color = '#D97706';
+        } else if (stock > 0) {
+          notice.textContent = `EU ${s} is In Stock for Immediate Dispatch`;
+          notice.style.color = '#059669';
+        } else {
+          notice.textContent = `Size EU ${s} is currently out of stock`;
+          notice.style.color = '#DC2626';
+        }
+      }
+
+      function selectPdpColor(c) {
+        selectedPdpColor = c;
+        const lbl = document.getElementById('pdp-selected-color-label');
+        if (lbl) lbl.textContent = c;
+      }
+
+      function closeProductDetail() {
+        document.getElementById('pdp-modal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        currentPdpProduct = null;
+      }
+
+      function handlePdpBackdropClick(e) {
+        if (e.target.id === 'pdp-modal') {
+          closeProductDetail();
+        }
+      }
+
+      /* --- 6. SHOPPING CART LOGIC --- */
+      function addCurrentProductToCart() {
+        if (!currentPdpProduct) return;
+        if (!selectedPdpSize) {
+          alert('Please select an available shoe size before adding to bag.');
+          return;
+        }
+
+        addToCart(currentPdpProduct.id, selectedPdpSize, selectedPdpColor);
+        closeProductDetail();
+        toggleCartDrawer(true);
+      }
+
+      function addToCart(productId, size, color) {
+        const product = PRODUCTS.find(p => p.id === productId);
+        if (!product) return;
+
+        // Check if matching item exists
+        const existingIdx = state.cart.findIndex(item => item.id === productId && item.size === size && item.color === color);
+
+        if (existingIdx > -1) {
+          state.cart[existingIdx].qty += 1;
+        } else {
+          state.cart.push({
+            id: product.id,
+            name: product.name,
+            brand: product.brand,
+            price: product.price,
+            image: product.image,
+            size: size,
+            color: color || "Original",
+            qty: 1
+          });
+        }
+
+        saveCart();
+        updateCartUI();
+      }
+
+      function updateCartItemQty(idx, delta) {
+        if (state.cart[idx]) {
+          state.cart[idx].qty += delta;
+          if (state.cart[idx].qty <= 0) {
+            state.cart.splice(idx, 1);
+          }
+          saveCart();
+          updateCartUI();
+        }
+      }
+
+      function removeCartItem(idx) {
+        state.cart.splice(idx, 1);
+        saveCart();
+        updateCartUI();
+      }
+
+      function saveCart() {
+        localStorage.setItem('kv_cart', JSON.stringify(state.cart));
+      }
+
+      function updateCartUI() {
+        const count = state.cart.reduce((sum, item) => sum + item.qty, 0);
+        document.getElementById('cart-badge').textContent = count;
+        document.getElementById('cart-drawer-count').textContent = `(${count} items)`;
+
+        const container = document.getElementById('cart-items-list');
+
+        if (state.cart.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 3rem 1rem; color: #858991;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 1rem auto;"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+              <div class="font-display" style="font-size: 1.5rem; color: #111214; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+              <p style="font-size: 0.875rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+          `;
+        } else {
+          container.innerHTML = state.cart.map((item, idx) => `
+            <div style="display: flex; gap: 1rem; border-bottom: 1px solid #ECEEF2; padding-bottom: 1rem;">
+              <div style="width: 80px; height: 80px; background: #F6F7F9; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <img src="${item.image}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;" />
+              </div>
+              <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: #858991;">${item.brand}</span>
+                    <button onclick="removeCartItem(${idx})" style="background: none; border: none; font-size: 0.75rem; color: #DC2626; cursor: pointer;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></button>
+                  </div>
+                  <h4 style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 700; color: #111214;">${item.name}</h4>
+                  <div style="font-size: 0.75rem; color: #64748B;">Size: EU ${item.size} · ${item.color}</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                  <!-- Stepper -->
+                  <div style="display: flex; align-items: center; border: 1px solid #D6DAE1;">
+                    <button onclick="updateCartItemQty(${idx}, -1)" style="width: 1.75rem; height: 1.75rem; background: none; border: none; cursor: pointer; font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                    <span class="tabular-nums" style="padding: 0 0.5rem; font-size: 0.8125rem; font-weight: 700;">${item.qty}</span>
+                    <button onclick="updateCartItemQty(${idx}, 1)" style="width: 1.75rem; height: 1.75rem; background: none; border: none; cursor: pointer; font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                  </div>
+                  <span class="tabular-nums" style="font-family: var(--font-heading); font-size: 0.9375rem; font-weight: 800; color: #111214;">
+                    ${formatPrice(item.price * item.qty)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Calculations
+        const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const freeDeliveryThreshold = 10000;
+        const shippingFee = (subtotal >= freeDeliveryThreshold || subtotal === 0) ? 0 : 500;
+        const discountAmount = Math.round(subtotal * state.discountRate);
+        const total = Math.max(0, subtotal - discountAmount + shippingFee);
+
+        // Progress bar for free shipping
+        const progressEl = document.getElementById('free-shipping-progress-bar');
+        const progressTxt = document.getElementById('free-shipping-progress-text');
+        if (subtotal >= freeDeliveryThreshold) {
+          progressEl.style.width = '100%';
+          progressEl.style.background = '#059669';
+          progressTxt.textContent = '🎉 You qualified for FREE delivery across Kenya!';
+        } else {
+          const pct = Math.min(100, Math.round((subtotal / freeDeliveryThreshold) * 100));
+          progressEl.style.width = pct + '%';
+          progressEl.style.background = '#355FE8';
+          progressTxt.textContent = `Add ${formatPrice(freeDeliveryThreshold - subtotal)} more for FREE delivery`;
+        }
+
+        document.getElementById('cart-subtotal').textContent = formatPrice(subtotal);
+        document.getElementById('cart-shipping').textContent = shippingFee === 0 ? 'FREE' : formatPrice(shippingFee);
+
+        const discountRow = document.getElementById('cart-discount-row');
+        if (discountAmount > 0) {
+          discountRow.style.display = 'flex';
+          document.getElementById('cart-discount-val').textContent = `- ${formatPrice(discountAmount)}`;
+        } else {
+          discountRow.style.display = 'none';
+        }
+
+        document.getElementById('cart-total').textContent = formatPrice(total);
+
+        // Checkout Button state
+        const checkoutBtn = document.getElementById('cart-checkout-btn');
+        if (state.cart.length === 0) {
+          checkoutBtn.disabled = true;
+          checkoutBtn.style.opacity = '0.5';
+          checkoutBtn.style.cursor = 'not-allowed';
+        } else {
+          checkoutBtn.disabled = false;
+          checkoutBtn.style.opacity = '1';
+          checkoutBtn.style.cursor = 'pointer';
+        }
+      }
+
+      function toggleCartDrawer(open) {
+        const drawer = document.getElementById('cart-drawer');
+        if (open) {
+          updateCartUI();
+          drawer.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        } else {
+          drawer.classList.remove('active');
+          document.body.style.overflow = 'auto';
+        }
+      }
+
+      function applyCoupon() {
+        const input = document.getElementById('coupon-input');
+        const code = input.value.trim().toUpperCase();
+
+        if (code === 'VAULT10' || code === 'KENYA2026') {
+          state.discountRate = 0.10;
+          state.activeCoupon = code;
+          alert(`Coupon "${code}" applied: 10% Discount activated!`);
+          updateCartUI();
+        } else if (code === '') {
+          state.discountRate = 0;
+          state.activeCoupon = null;
+          updateCartUI();
+        } else {
+          alert('Invalid promo code. Use VAULT10 for 10% off.');
+        }
+      }
+
+      /* --- 7. WISHLIST MANAGEMENT --- */
+      function toggleWishlistItem(e, id) {
+        if (e) e.stopPropagation();
+        const idx = state.wishlist.indexOf(id);
+        if (idx > -1) {
+          state.wishlist.splice(idx, 1);
+        } else {
+          state.wishlist.push(id);
+        }
+        localStorage.setItem('kv_wishlist', JSON.stringify(state.wishlist));
+        updateWishlistBadge();
+        renderCatalog();
+        renderWishlistUI();
+      }
+
+      function updateWishlistBadge() {
+        document.getElementById('wishlist-badge').textContent = state.wishlist.length;
+      }
+
+      function toggleWishlistDrawer(open) {
+        const drawer = document.getElementById('wishlist-drawer');
+        if (open) {
+          renderWishlistUI();
+          drawer.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        } else {
+          drawer.classList.remove('active');
+          document.body.style.overflow = 'auto';
+        }
+      }
+
+      function renderWishlistUI() {
+        const container = document.getElementById('wishlist-items-list');
+        const items = PRODUCTS.filter(p => state.wishlist.includes(p.id));
+
+        if (items.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 3rem 1rem; color: #858991;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 1rem auto;"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+              <div class="font-display" style="font-size: 1.5rem; color: #111214;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></div>
+              <p style="font-size: 0.875rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+          `;
+        } else {
+          container.innerHTML = items.map(p => `
+            <div style="display: flex; gap: 1rem; border-bottom: 1px solid #ECEEF2; padding-bottom: 1rem; align-items: center;">
+              <img src="${p.image}" alt="${p.name}" style="width: 70px; height: 70px; object-fit: contain; background: #F6F7F9; padding: 0.25rem;" />
+              <div style="flex: 1;">
+                <span style="font-family: var(--font-heading); font-size: 0.6875rem; font-weight: 700; color: #858991; text-transform: uppercase;">${p.brand}</span>
+                <h4 style="font-family: var(--font-heading); font-size: 0.875rem; font-weight: 700;">${p.name}</h4>
+                <div class="tabular-nums" style="font-weight: 800; font-size: 0.875rem;">${formatPrice(p.price)}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                <button onclick="openProductDetail(${p.id}); toggleWishlistDrawer(false);" class="btn-primary" style="padding: 0.4rem 0.6rem; font-size: 0.6875rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                <button onclick="toggleWishlistItem(null, ${p.id})" style="background: none; border: none; font-size: 0.6875rem; color: #DC2626; cursor: pointer;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></button>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      /* --- 8. SEARCH OVERLAY ENGINE --- */
+      function toggleSearchOverlay(open) {
+        const overlay = document.getElementById('search-overlay');
+        if (open) {
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          const input = document.getElementById('global-search-input');
+          input.value = '';
+          input.focus();
+          handleSearchInput('');
+        } else {
+          overlay.classList.remove('active');
+          document.body.style.overflow = 'auto';
+        }
+      }
+
+      function setSearchQuery(q) {
+        document.getElementById('global-search-input').value = q;
+        handleSearchInput(q);
+      }
+
+      function handleSearchInput(query) {
+        const resultsBox = document.getElementById('search-results-box');
+        const q = query.trim().toLowerCase();
+
+        if (q === '') {
+          resultsBox.innerHTML = `
+            <div style="padding: 1.5rem; text-align: center; color: #858991; font-size: 0.875rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+          `;
+          return;
+        }
+
+        const matches = PRODUCTS.filter(p => 
+          p.name.toLowerCase().includes(q) || 
+          p.brand.toLowerCase().includes(q) || 
+          p.category.toLowerCase().includes(q) ||
+          p.tag.toLowerCase().includes(q)
+        ).slice(0, 8);
+
+        if (matches.length === 0) {
+          resultsBox.innerHTML = `
+            <div style="padding: 2rem; text-align: center;">
+              <div class="font-display" style="font-size: 1.5rem; color: #111214;">NO MATCHES FOUND FOR "${query}"</div>
+              <p style="color: #64748B; font-size: 0.875rem; margin-top: 0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+          `;
+        } else {
+          resultsBox.innerHTML = `
+            <div style="font-family: var(--font-heading); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #858991; margin-bottom: 0.75rem;">
+              Found ${matches.length} matching footwear silhouettes:
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              ${matches.map(p => `
+                <div onclick="openProductDetail(${p.id}); toggleSearchOverlay(false);" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border: 1px solid #ECEEF2; cursor: pointer; background: #FFFFFF; transition: all 0.2s;" onmouseover="this.style.borderColor='#111214'" onmouseout="this.style.borderColor='#ECEEF2'">
+                  <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="${p.image}" alt="${p.name}" style="width: 50px; height: 50px; object-fit: contain; background: #F6F7F9;" />
+                    <div>
+                      <span style="font-size: 0.6875rem; font-weight: 700; color: #858991; text-transform: uppercase;">${p.brand} · ${p.category}</span>
+                      <h4 style="font-size: 0.875rem; font-weight: 700; color: #111214;">${p.name}</h4>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <span class="tabular-nums" style="font-weight: 800; font-size: 0.9375rem; color: #111214;">${formatPrice(p.price)}</span>
+                    <span style="display: block; font-size: 0.6875rem; color: #355FE8; font-weight: 700;">VIEW &rarr;</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+      }
+
+      /* --- 9. CHECKOUT & REAL PAYMENT TRANSPARENCY --- */
+      function startCheckout() {
+        if (state.cart.length === 0) return;
+        toggleCartDrawer(false);
+
+        // Populate summary
+        const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const freeDeliveryThreshold = 10000;
+        const shippingFee = (subtotal >= freeDeliveryThreshold) ? 0 : 500;
+        const discountAmount = Math.round(subtotal * state.discountRate);
+        const total = Math.max(0, subtotal - discountAmount + shippingFee);
+
+        document.getElementById('checkout-subtotal').textContent = formatPrice(subtotal);
+        document.getElementById('checkout-shipping').textContent = shippingFee === 0 ? 'FREE' : formatPrice(shippingFee);
+
+        const discountRow = document.getElementById('checkout-discount-row');
+        if (discountAmount > 0) {
+          discountRow.style.display = 'flex';
+          document.getElementById('checkout-discount-val').textContent = `- ${formatPrice(discountAmount)}`;
+        } else {
+          discountRow.style.display = 'none';
+        }
+
+        document.getElementById('checkout-total').textContent = formatPrice(total);
+
+        document.getElementById('checkout-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeCheckoutModal() {
+        document.getElementById('checkout-modal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+
+      function handlePlaceOrder(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+        const county = document.getElementById('cust-county').value;
+        const address = document.getElementById('cust-address').value;
+        const method = document.querySelector('input[name="paymethod"]:checked').value;
+
+        // Generate distinctive order reference
+        const orderRef = 'KV-2026-' + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('order-ref-number').textContent = `ORDER #${orderRef}`;
+
+        // Clear cart
+        state.cart = [];
+        saveCart();
+        updateCartUI();
+
+        closeCheckoutModal();
+        document.getElementById('order-success-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeOrderSuccessModal() {
+        document.getElementById('order-success-modal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+
+      /* --- 10. SIZE GUIDE MODAL --- */
+      function openSizeGuideModal() {
+        document.getElementById('size-guide-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeSizeGuideModal() {
+        document.getElementById('size-guide-modal').classList.remove('active');
+        if (!document.getElementById('pdp-modal').classList.contains('active')) {
+          document.body.style.overflow = 'auto';
+        }
+      }
+
+      /* --- 11. GSAP & SCROLLTRIGGER INITIALIZATION --- */
+      function initGSAPAnimations() {
+        if (typeof gsap === 'undefined') return;
+
+        // Respect prefers-reduced-motion
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion) return;
+
+        if (typeof ScrollTrigger !== 'undefined') {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Hero entrance
+        gsap.from('.hero-title', {
+          opacity: 0,
+          y: 40,
+          duration: 1,
+          ease: 'power3.out'
+        });
+
+        gsap.from('#hero-shoe-img', {
+          opacity: 0,
+          scale: 0.88,
+          rotation: 4,
+          duration: 1.2,
+          ease: 'power3.out',
+          delay: 0.2
+        });
+
+        // Floating hero badge triggers
+        gsap.to('#hero-shoe-img', {
+          y: -12,
+          duration: 2.4,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        });
+      }
+
+      /* --- 12. INITIALIZATION ON DOM READY --- */
+      document.addEventListener('DOMContentLoaded', () => {
+        renderBrandSelector();
+        renderCatalog();
+        renderRails();
+        updateCartUI();
+        updateWishlistBadge();
+        initGSAPAnimations();
+
+        // Keyboard navigation escape support
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            closeProductDetail();
+            closeSizeGuideModal();
+            toggleCartDrawer(false);
+            toggleWishlistDrawer(false);
+            toggleSearchOverlay(false);
+            closeCheckoutModal();
+            closeOrderSuccessModal();
+          }
+        });
+      });
+    </script>
+  
+
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body></html>

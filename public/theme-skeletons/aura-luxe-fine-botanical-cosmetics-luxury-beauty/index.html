@@ -1,0 +1,2468 @@
+<!doctype html>
+<html lang="en" data-eshop-skeleton-preview=""><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-slot="store.name"></title>
+    <meta name="description" content="" data-slot="store.description" data-slot-attr="content">
+    <meta property="og:title" content="" data-slot="store.name" data-slot-attr="content">
+    <meta property="og:description" content="" data-slot="store.description" data-slot-attr="content">
+    <meta property="og:type" content="" data-slot="store.name" data-slot-attr="content">
+    <meta name="twitter:card" content="" data-slot="store.name" data-slot-attr="content">
+
+    <!-- Google Fonts: Playfair Display (Serif) & Plus Jakarta Sans (Interface Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS Play CDN & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              sand: {
+                50: '#FAF8F5',
+                100: '#F5EFEB',
+                200: '#EFE7DE',
+                300: '#E2D8CC',
+                400: '#C8BCAC',
+                500: '#A89B89',
+                800: '#4A4237',
+                900: '#231E18',
+              },
+              onyx: {
+                800: '#26221E',
+                900: '#141210',
+                950: '#0C0A09',
+              },
+              highlight: {
+                DEFAULT: '#D8EB58',
+                hover: '#CEE34B',
+                dark: '#9CB024',
+              },
+              terracotta: {
+                DEFAULT: '#D96843',
+                dark: '#BF522F',
+                light: '#F8E9E3',
+              }
+            },
+            fontFamily: {
+              serif: ['"Playfair Display"', 'Georgia', 'serif'],
+              sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            },
+            borderRadius: {
+              '4xl': '2rem',
+              '5xl': '2.5rem',
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <style>
+      /* Base Typography & Luxury Design Tokens */
+      :root {
+        --bg-ivory: var(--theme-aura-color-01);
+        --surface-cream: var(--theme-aura-color-02);
+        --border-soft: var(--theme-aura-color-03);
+        --accent-lime: var(--theme-aura-color-04);
+        --text-onyx: var(--theme-aura-color-05);
+        --text-muted: var(--theme-aura-color-06);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        background-color: var(--bg-ivory);
+        color: var(--text-onyx);
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      h1, h2, h3, .font-editorial {
+        font-family: 'Playfair Display', Georgia, serif;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--theme-aura-color-01);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--theme-aura-color-07);
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--theme-aura-color-08);
+      }
+
+      /* Hide horizontal scroll indicators where appropriate */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Swatch and Active Indicators */
+      .swatch-ring {
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .swatch-ring.active {
+        box-shadow: 0 0 0 2px var(--theme-aura-color-01), 0 0 0 4px var(--theme-aura-color-05);
+      }
+
+      /* Image fallback styling */
+      .img-fallback {
+        background: linear-gradient(135deg, var(--theme-aura-color-02) 0%, var(--theme-aura-color-09) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Highlight pill token */
+      .pill-highlight {
+        background-color: var(--accent-lime);
+        color: var(--theme-aura-color-05);
+        padding: 0.12em 0.55em;
+        border-radius: 9999px;
+        display: inline-block;
+        font-style: italic;
+        font-weight: 500;
+        line-height: 1.1;
+      }
+
+      /* Glass blur surfaces */
+      .glass-panel {
+        background: var(--theme-aura-color-10);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .glass-dark {
+        background: var(--theme-aura-color-11);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+
+      /* Subtle image zoom on card hover */
+      .card-zoom:hover .card-img {
+        transform: scale(1.04);
+      }
+      .card-img {
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* Smooth route animation container */
+      #view-container {
+        min-height: 70vh;
+      }
+
+      /* Tabular figures for pricing alignment */
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+    </style>
+  <link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-theme-tokens="">:root{--theme-aura-color-01:#faf8f5;--theme-aura-color-02:#f5efeb;--theme-aura-color-03:#eae3d6;--theme-aura-color-04:#d8eb58;--theme-aura-color-05:#141210;--theme-aura-color-06:#6b6358;--theme-aura-color-07:#d5cbbf;--theme-aura-color-08:#b3a595;--theme-aura-color-09:#efe7de;--theme-aura-color-10:rgba(255,255,255,0.85);--theme-aura-color-11:rgba(20,18,16,0.78);}</style><script type="application/ld+json" data-eshop-jsonld=""></script><style data-eshop-skeleton-styles="">
+    .eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:#d1d5db;vertical-align:middle}
+    .eshop-placeholder-media{background:linear-gradient(135deg,var(--theme-placeholder-start,#d1d5db),var(--theme-placeholder-end,#f3f4f6));object-fit:cover}
+    [data-skeleton-text][hidden]{display:none!important}
+  </style></head>
+  <body class="bg-[#FAF8F5] text-[#141210] antialiased flex flex-col min-h-screen">
+
+    <!-- Top Announcement Bar -->
+    <aside class="bg-[#141210] text-[#FAF8F5] text-xs font-medium py-2 px-4 text-center tracking-wide flex items-center justify-center gap-3">
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+      <span class="opacity-40"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+      <span class="hidden sm:inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span><strong class="text-[#D8EB58] font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></span>
+      <span class="opacity-40 hidden sm:inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+      <a href="#guides" class="underline underline-offset-2 hover:text-[#D8EB58] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+    </aside>
+
+    <!-- Top Bar Navigation (Single Row, 3 Zones) -->
+    <header class="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#EAE3D6] transition-all duration-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-8">
+        
+        <!-- Zone 1: Brand Wordmark -->
+        <div class="flex items-center gap-4 shrink-0">
+          <a href="#home" class="flex items-center gap-2 group">
+            <span class="font-editorial text-2xl sm:text-3xl font-semibold tracking-tight text-[#141210] group-hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span><span class="italic font-normal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></span>
+            </span>
+          </a>
+        </div>
+
+        <!-- Zone 2: Navigation Links -->
+        <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-[#5E574E]">
+          <a href="#home" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a>
+          <a href="#shop" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+          <a href="#category/makeup" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></a>
+          <a href="#category/skincare" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a>
+          <a href="#category/haircare" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a>
+          <a href="#category/fragrance" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></a>
+          <a href="#brands" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></a>
+          <a href="#guides" class="nav-link hover:text-[#141210] transition-colors py-1 whitespace-nowrap"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></a>
+        </nav>
+
+        <!-- Zone 3: Actions (Search, Wishlist, Account, Cart) -->
+        <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+          <!-- Currency Toggle -->
+          <button id="currency-toggle-btn" onclick="toggleCurrency()" class="hidden lg:flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border border-[#EAE3D6] text-[#5E574E] hover:text-[#141210] hover:border-[#141210] transition-colors">
+            <span id="currency-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></span>
+          </button>
+
+          <!-- Search Trigger -->
+          <button onclick="openSearchModal()" class="p-2.5 text-[#141210] hover:bg-[#F5EFEB] rounded-full transition-colors">
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </button>
+
+          <!-- Wishlist Trigger -->
+          <a href="#wishlist" class="relative p-2.5 text-[#141210] hover:bg-[#F5EFEB] rounded-full transition-colors">
+            <i data-lucide="heart" class="w-5 h-5"></i>
+            <span id="wishlist-badge" class="hidden absolute top-1 right-1 w-4 h-4 bg-[#D96843] text-white text-[10px] font-bold rounded-full flex items-center justify-center"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </a>
+
+          <!-- Account Trigger -->
+          <a href="#account" class="p-2.5 text-[#141210] hover:bg-[#F5EFEB] rounded-full transition-colors">
+            <i data-lucide="user" class="w-5 h-5"></i>
+          </a>
+
+          <!-- Cart Trigger Button -->
+          <button onclick="openCartDrawer()" class="flex items-center gap-2 bg-[#141210] text-[#FAF8F5] hover:bg-black px-4 py-2.5 rounded-full text-xs font-medium tracking-wide transition-all shadow-sm">
+            <i data-lucide="shopping-bag" class="w-4 h-4 text-[#D8EB58]"></i>
+            <span class="hidden sm:inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            <span id="header-cart-count" class="bg-[#D8EB58] text-[#141210] font-bold px-1.5 py-0.5 rounded-full text-[11px] tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </button>
+
+          <!-- Mobile Hamburger -->
+          <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-[#141210] hover:bg-[#F5EFEB] rounded-lg">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Drawer -->
+      <div id="mobile-menu" class="hidden md:hidden border-t border-[#EAE3D6] bg-[#FAF8F5] px-6 py-5 space-y-3">
+        <a href="#home" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a>
+        <a href="#shop" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+        <div class="grid grid-cols-2 gap-2 pt-1 pb-2">
+          <a href="#category/makeup" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a>
+          <a href="#category/skincare" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a>
+          <a href="#category/haircare" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a>
+          <a href="#category/fragrance" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+          <a href="#category/bath-body" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+          <a href="#category/tools" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a>
+          <a href="#category/bundles" onclick="closeMobileMenu()" class="text-sm text-[#5E574E] py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+        </div>
+        <a href="#brands" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+        <a href="#guides" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a>
+        <a href="#account" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a>
+        <a href="#contact" onclick="closeMobileMenu()" class="block text-base font-medium text-[#141210] py-1.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a>
+      </div>
+    </header>
+
+    <!-- Main Dynamic View Container (Filled by Router) -->
+    <main id="view-container" class="flex-1 w-full" role="main">
+      <!-- Dynamic route view gets rendered here -->
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="bg-[#1F1C19] text-[#FAF8F5] pt-16 pb-24 sm:pb-16 border-t border-[#332E29]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Marquee / Big Callout inspired by screenshot -->
+        <div class="border-b border-[#38332D] pb-12 mb-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+          <div>
+            <span class="text-[#D8EB58] text-xs font-semibold tracking-widest uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span>
+            <h2 class="font-editorial text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight mt-2 text-[#FAF8F5]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span><br class="hidden sm:inline"><span class="italic font-normal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+            </h2>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-[#D8EB58] text-2xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            <a href="#shop" class="bg-[#D8EB58] text-[#141210] hover:bg-[#CEE34B] px-8 py-3.5 rounded-full font-medium text-sm transition-all shadow-md"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a>
+            <span class="text-[#D8EB58] text-2xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12 mb-12 text-sm">
+          
+          <!-- Col 1: Brand Info -->
+          <div class="col-span-2 space-y-4">
+            <div class="font-editorial text-2xl font-bold tracking-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span><span class="italic font-normal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></span>
+            </div>
+            <p class="text-[#999084] text-xs leading-relaxed max-w-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <div class="pt-2 text-xs text-[#999084] space-y-1">
+              <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></p>
+              <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></p>
+            </div>
+          </div>
+
+          <!-- Col 2: Categories -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[#D8EB58]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></h3>
+            <ul class="space-y-2 text-xs text-[#999084]">
+              <li><a href="#category/makeup" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+              <li><a href="#category/skincare" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+              <li><a href="#category/haircare" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+              <li><a href="#category/fragrance" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></li>
+              <li><a href="#category/bath-body" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+              <li><a href="#category/tools" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a></li>
+              <li><a href="#category/bundles" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Discovery & Brands -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[#D8EB58]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></h3>
+            <ul class="space-y-2 text-xs text-[#999084]">
+              <li><a href="#brands" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></li>
+              <li><a href="#guides" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+              <li><a href="#guides" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></a></li>
+              <li><a href="#guides" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+              <li><a href="#shop?sort=bestsellers" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a></li>
+              <li><a href="#shop?badge=new" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a></li>
+            </ul>
+          </div>
+
+          <!-- Col 4: Client Services -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-[#D8EB58]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></h3>
+            <ul class="space-y-2 text-xs text-[#999084]">
+              <li><a href="#account" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+              <li><a href="#policies" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+              <li><a href="#policies" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+              <li><a href="#about" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></li>
+              <li><a href="#contact" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+              <li><a href="#policies" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Payment methods trust bar -->
+        <div class="border-t border-[#332E29] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#999084]">
+          <div class="flex items-center gap-3">
+            <span class="font-medium text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+            <span class="px-2 py-0.5 rounded bg-[#2A2621] text-[#D8EB58] font-bold border border-[#403B33]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span>
+            <span class="px-2 py-0.5 rounded bg-[#2A2621] text-white border border-[#403B33]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+            <span class="px-2 py-0.5 rounded bg-[#2A2621] text-white border border-[#403B33]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+            <span class="px-2 py-0.5 rounded bg-[#2A2621] text-white border border-[#403B33]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+          </div>
+          <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Mobile Sticky Navigation Bar (Cap under 15% viewport) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-[#EAE3D6] px-4 py-2 flex items-center justify-around text-xs font-medium text-[#5E574E]">
+      <a href="#home" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210]">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></span>
+      </a>
+      <a href="#shop" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210]">
+        <i data-lucide="grid" class="w-5 h-5"></i>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></span>
+      </a>
+      <button onclick="openSearchModal()" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210]">
+        <i data-lucide="search" class="w-5 h-5"></i>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+      </button>
+      <a href="#wishlist" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210] relative">
+        <i data-lucide="heart" class="w-5 h-5"></i>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+        <span id="mobile-wishlist-count" class="hidden absolute -top-1 right-2 w-3.5 h-3.5 bg-[#D96843] text-white text-[9px] font-bold rounded-full flex items-center justify-center"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+      </a>
+      <button onclick="openCartDrawer()" class="flex flex-col items-center gap-1 py-1 hover:text-[#141210] relative">
+        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <span id="mobile-cart-count" class="absolute -top-1 right-1 w-4 h-4 bg-[#D8EB58] text-[#141210] text-[10px] font-bold rounded-full flex items-center justify-center"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+      </button>
+    </nav>
+
+    <!-- ========================================================================= -->
+    <!-- SLIDE-OVER CART DRAWER & BACKDROP                                         -->
+    <!-- ========================================================================= -->
+    <div id="cart-drawer-backdrop" onclick="closeCartDrawer()" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity opacity-0"></div>
+    <div id="cart-drawer" class="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-[#FAF8F5] shadow-2xl transform translate-x-full transition-transform duration-300 ease-out flex flex-col">
+      <!-- Drawer Header -->
+      <div class="px-6 py-5 border-b border-[#EAE3D6] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shopping-bag" class="w-5 h-5 text-[#141210]"></i>
+          <h2 class="font-editorial text-xl font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></h2>
+          <span id="drawer-items-count" class="text-xs bg-[#EFE7DE] px-2 py-0.5 rounded-full font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+        </div>
+        <button onclick="closeCartDrawer()" class="p-2 text-[#5E574E] hover:text-[#141210] hover:bg-[#F5EFEB] rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Free Shipping Meter -->
+      <div class="px-6 py-3 bg-[#F5EFEB] border-b border-[#EAE3D6]">
+        <div class="flex items-center justify-between text-xs mb-1.5 font-medium">
+          <span id="shipping-progress-text"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+          <span id="shipping-progress-percent" class="font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </div>
+        <div class="w-full bg-[#E2D8CC] h-1.5 rounded-full overflow-hidden">
+          <div id="shipping-progress-bar" class="bg-[#141210] h-full transition-all duration-300 w-0"></div>
+        </div>
+      </div>
+
+      <!-- Cart Item List -->
+      <div id="cart-items-container" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Voucher Promo Code -->
+      <div class="px-6 py-3 border-t border-[#EAE3D6] bg-[#FAF8F5]">
+        <div class="flex gap-2">
+          <input type="text" id="cart-promo-input" class="flex-1 text-xs px-3 py-2 rounded-lg border border-[#EAE3D6] bg-white focus:outline-none focus:border-[#141210] uppercase font-mono">
+          <button onclick="applyPromoCode()" class="px-4 py-2 bg-[#F5EFEB] text-[#141210] hover:bg-[#EFE7DE] rounded-lg text-xs font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></button>
+        </div>
+        <div id="promo-feedback" class="text-[11px] mt-1 font-medium hidden"></div>
+      </div>
+
+      <!-- Drawer Footer Totals & Checkout -->
+      <div class="p-6 border-t border-[#EAE3D6] bg-white space-y-3">
+        <div class="space-y-1.5 text-xs">
+          <div class="flex justify-between text-[#5E574E]">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+            <span id="cart-subtotal" class="font-semibold text-[#141210] tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+          </div>
+          <div id="cart-discount-row" class="hidden flex justify-between text-[#D96843]">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+            <span id="cart-discount" class="font-semibold tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+          </div>
+          <div class="flex justify-between text-[#5E574E]">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+            <span id="cart-shipping" class="font-semibold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span>
+          </div>
+          <div class="border-t border-[#EAE3D6] pt-2 flex justify-between text-base font-bold text-[#141210]">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+            <span id="cart-total" class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+          </div>
+        </div>
+
+        <div class="pt-2 space-y-2">
+          <a href="#checkout" onclick="closeCartDrawer()" class="w-full bg-[#141210] hover:bg-black text-[#FAF8F5] py-3.5 rounded-full text-xs font-semibold tracking-wider uppercase text-center block transition-all shadow-md"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a>
+          <a href="#cart" onclick="closeCartDrawer()" class="w-full bg-transparent text-[#5E574E] hover:text-[#141210] py-2 text-xs font-medium text-center block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- SEARCH MODAL & OVERLAY                                                    -->
+    <!-- ========================================================================= -->
+    <div id="search-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-16 px-4">
+      <div class="bg-[#FAF8F5] w-full max-w-2xl rounded-3xl shadow-2xl border border-[#EAE3D6] overflow-hidden">
+        <div class="p-5 border-b border-[#EAE3D6] flex items-center gap-3">
+          <i data-lucide="search" class="w-5 h-5 text-[#5E574E]"></i>
+          <input type="text" id="global-search-input" oninput="handleLiveSearch(this.value)" class="flex-1 bg-transparent text-base text-[#141210] placeholder-[#999084] focus:outline-none" autofocus="">
+          <button onclick="closeSearchModal()" class="p-1 text-[#5E574E] hover:text-[#141210] rounded-full">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Quick suggestion chips -->
+        <div class="px-5 py-3 bg-[#F5EFEB] border-b border-[#EAE3D6] flex items-center gap-2 overflow-x-auto text-xs text-[#5E574E]">
+          <span class="font-semibold text-[#141210] shrink-0"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+          <button onclick="fillSearch('Bakuchiol')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></button>
+          <button onclick="fillSearch('Foundation')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button>
+          <button onclick="fillSearch('Blush')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></button>
+          <button onclick="fillSearch('Luna')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></button>
+          <button onclick="fillSearch('Baobab')" class="px-2.5 py-1 bg-white rounded-full hover:border-[#141210] border border-[#EAE3D6] shrink-0"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+        </div>
+
+        <!-- Live search results container -->
+        <div id="search-results-container" class="max-h-96 overflow-y-auto p-5 divide-y divide-[#EAE3D6]">
+          <p class="text-xs text-[#999084] text-center py-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Toast Notification -->
+    <div id="toast-notification" class="fixed bottom-20 md:bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+      <div class="bg-[#141210] text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-medium border border-white/10">
+        <span id="toast-icon" class="text-[#D8EB58]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <span id="toast-message"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MASTER CATALOGUE DATA & COMPLETE JAVASCRIPT LOGIC                         -->
+    <!-- ========================================================================= -->
+    <script>
+      /* =========================================================================
+       * 1. CONFIGURATION & DESIGN TOKENS
+       * ========================================================================= */
+      const APP_CONFIG = /*__ESHOP_DATA_auraAppConfig__*/{"BRAND_NAME":"","STORE_CURRENCY":"KES","KES_TO_USD":1,"FREE_SHIPPING_THRESHOLD_KES":0,"DEFAULT_SHIPPING_FEE_KES":0,"SUPPORT_PHONE":"","SUPPORT_EMAIL":"","DEFAULT_TAX_RATE":0};
+
+      // State stores
+      let currentCurrency = localStorage.getItem('aura_currency') || 'KES';
+      let cart = JSON.parse(localStorage.getItem('aura_cart') || '[]');
+      let wishlist = JSON.parse(localStorage.getItem('aura_wishlist') || '[]');
+      let appliedDiscount = JSON.parse(localStorage.getItem('aura_discount') || 'null');
+      let customerOrders = JSON.parse(localStorage.getItem('aura_orders') || '[]');
+      let customerAccount = JSON.parse(localStorage.getItem('aura_account') || JSON.stringify({
+        isLoggedIn: false,
+        name: "Lilian Wangari",
+        email: "lilian.wangari@example.co.ke",
+        phone: "+254 712 345 678",
+        savedAddresses: [
+          { label: "Home", street: "Mimosa Court, Apt 4B", city: "Nairobi - Kilimani", notes: "Gate code 408" },
+          { label: "Office", street: "The Oval, 5th Floor", city: "Nairobi - Westlands", notes: "Leave at front reception" }
+        ]
+      }));
+
+      /* =========================================================================
+       * 2. COMPLETE COSMETICS CATALOGUE (Structured, Varied, Multi-Category)
+       * ========================================================================= */
+      const CATALOGUE = /*__ESHOP_DATA_auraCatalogue__*/[{"id":"skeleton-1","name":"","brand":"","category":"skeleton-category","subcategory":"","priceKES":0,"originalPriceKES":null,"rating":0,"reviewsCount":0,"isPopular":true,"isBestseller":true,"badge":"","image":"","volume":"","finish":"","coverage":"","skinType":"","description":"","benefits":[],"ingredients":"","howToUse":"","shades":[]},{"id":"skeleton-2","name":"","brand":"","category":"skeleton-category","subcategory":"","priceKES":0,"originalPriceKES":null,"rating":0,"reviewsCount":0,"isPopular":true,"isBestseller":true,"badge":"","image":"","volume":"","finish":"","coverage":"","skinType":"","description":"","benefits":[],"ingredients":"","howToUse":"","shades":[]},{"id":"skeleton-3","name":"","brand":"","category":"skeleton-category","subcategory":"","priceKES":0,"originalPriceKES":null,"rating":0,"reviewsCount":0,"isPopular":true,"isBestseller":true,"badge":"","image":"","volume":"","finish":"","coverage":"","skinType":"","description":"","benefits":[],"ingredients":"","howToUse":"","shades":[]},{"id":"skeleton-4","name":"","brand":"","category":"skeleton-category","subcategory":"","priceKES":0,"originalPriceKES":null,"rating":0,"reviewsCount":0,"isPopular":true,"isBestseller":true,"badge":"","image":"","volume":"","finish":"","coverage":"","skinType":"","description":"","benefits":[],"ingredients":"","howToUse":"","shades":[]}];
+
+      /* =========================================================================
+       * 3. CATEGORIES & BRANDS REGISTRY
+       * ========================================================================= */
+      const CATEGORIES = /*__ESHOP_DATA_auraCategories__*/[{"id":"all","name":"","count":4,"description":""},{"id":"skeleton-category","name":"","count":4,"description":""}];
+
+      const BRANDS_LIST = /*__ESHOP_DATA_auraBrands__*/[{"id":"skeleton-brand","name":"","country":"","tagline":"","description":""}];
+
+      /* =========================================================================
+       * 4. UTILITIES & FORMATTING
+       * ========================================================================= */
+      function formatPrice(priceKES) {
+        if (currentCurrency === 'USD') {
+          const usd = (priceKES * APP_CONFIG.KES_TO_USD).toFixed(2);
+          return `$${usd}`;
+        }
+        return `KSh ${Number(priceKES).toLocaleString('en-KE')}`;
+      }
+
+      function toggleCurrency() {
+        currentCurrency = currentCurrency === 'KES' ? 'USD' : 'KES';
+        localStorage.setItem('aura_currency', currentCurrency);
+        const label = document.getElementById('currency-label');
+        if (label) label.textContent = currentCurrency === 'KES' ? 'KES (KSh)' : 'USD ($)';
+        renderCurrentRoute();
+        renderCartUI();
+        showToast(`Currency set to ${currentCurrency}`);
+      }
+
+      function showToast(message, isAccent = true) {
+        const toast = document.getElementById('toast-notification');
+        const msgEl = document.getElementById('toast-message');
+        const iconEl = document.getElementById('toast-icon');
+        if (!toast || !msgEl) return;
+        msgEl.textContent = message;
+        iconEl.textContent = isAccent ? '✦' : '✓';
+        toast.classList.remove('translate-y-24', 'opacity-0');
+        setTimeout(() => {
+          toast.classList.add('translate-y-24', 'opacity-0');
+        }, 2600);
+      }
+
+      function saveCart() {
+        localStorage.setItem('aura_cart', JSON.stringify(cart));
+        renderCartUI();
+      }
+
+      function saveWishlist() {
+        localStorage.setItem('aura_wishlist', JSON.stringify(wishlist));
+        updateWishlistBadge();
+      }
+
+      function updateWishlistBadge() {
+        const count = wishlist.length;
+        const b1 = document.getElementById('wishlist-badge');
+        const b2 = document.getElementById('mobile-wishlist-count');
+        [b1, b2].forEach(b => {
+          if (!b) return;
+          if (count > 0) {
+            b.textContent = count;
+            b.classList.remove('hidden');
+          } else {
+            b.classList.add('hidden');
+          }
+        });
+      }
+
+      function toggleWishlist(productId) {
+        const idx = wishlist.indexOf(productId);
+        const prod = CATALOGUE.find(p => p.id === productId);
+        if (idx > -1) {
+          wishlist.splice(idx, 1);
+          showToast(`Removed from wishlist`, false);
+        } else {
+          wishlist.push(productId);
+          showToast(`Saved to your wishlist: ${prod ? prod.name.slice(0, 24) + '...' : ''}`);
+        }
+        saveWishlist();
+        // Re-render heart buttons
+        document.querySelectorAll(`.wishlist-btn-${productId}`).forEach(btn => {
+          btn.classList.toggle('text-[#D96843]', wishlist.includes(productId));
+          btn.classList.toggle('fill-[#D96843]', wishlist.includes(productId));
+        });
+        if (window.location.hash.startsWith('#wishlist')) {
+          renderWishlistView();
+        }
+      }
+
+      function addToCart(productId, selectedShadeName = null, qty = 1, openDrawer = true) {
+        const product = CATALOGUE.find(p => p.id === productId);
+        if (!product) return;
+
+        const shade = selectedShadeName || (product.shades ? product.shades[0].name : null);
+        const existingIndex = cart.findIndex(item => item.id === productId && item.shade === shade);
+
+        if (existingIndex > -1) {
+          cart[existingIndex].qty += qty;
+        } else {
+          cart.push({
+            id: product.id,
+            name: product.name,
+            brand: product.brand,
+            priceKES: product.priceKES,
+            image: product.image,
+            shade: shade,
+            qty: qty
+          });
+        }
+
+        saveCart();
+        showToast(`Added to bag: ${product.name.slice(0, 22)}...`);
+        if (openDrawer) {
+          openCartDrawer();
+        }
+      }
+
+      function updateCartQty(index, newQty) {
+        if (newQty <= 0) {
+          cart.splice(index, 1);
+        } else {
+          cart[index].qty = newQty;
+        }
+        saveCart();
+      }
+
+      function removeCartItem(index) {
+        cart.splice(index, 1);
+        saveCart();
+      }
+
+      function applyPromoCode() {
+        const input = document.getElementById('cart-promo-input');
+        const feedback = document.getElementById('promo-feedback');
+        if (!input || !feedback) return;
+        const code = input.value.trim().toUpperCase();
+
+        if (code === 'GLOW10') {
+          appliedDiscount = { code: 'GLOW10', percent: 10, label: '10% New Radiance Discount' };
+          feedback.textContent = '✓ GLOW10 Applied: 10% off your entire ritual!';
+          feedback.className = 'text-[11px] mt-1 font-medium text-emerald-600 block';
+        } else if (code === 'FREESHIP') {
+          appliedDiscount = { code: 'FREESHIP', freeShipping: true, label: 'Complimentary Express Shipping' };
+          feedback.textContent = '✓ FREESHIP Applied: Free shipping on this order!';
+          feedback.className = 'text-[11px] mt-1 font-medium text-emerald-600 block';
+        } else {
+          feedback.textContent = 'Invalid promo code. Try GLOW10 or FREESHIP';
+          feedback.className = 'text-[11px] mt-1 font-medium text-[#D96843] block';
+          appliedDiscount = null;
+        }
+        localStorage.setItem('aura_discount', JSON.stringify(appliedDiscount));
+        renderCartUI();
+      }
+
+      /* =========================================================================
+       * 5. DRAWER & MODAL CONTROLLERS
+       * ========================================================================= */
+      function openCartDrawer() {
+        const drawer = document.getElementById('cart-drawer');
+        const backdrop = document.getElementById('cart-drawer-backdrop');
+        if (!drawer || !backdrop) return;
+        renderCartUI();
+        backdrop.classList.remove('hidden');
+        setTimeout(() => {
+          backdrop.classList.remove('opacity-0');
+          drawer.classList.remove('translate-x-full');
+        }, 10);
+      }
+
+      function closeCartDrawer() {
+        const drawer = document.getElementById('cart-drawer');
+        const backdrop = document.getElementById('cart-drawer-backdrop');
+        if (!drawer || !backdrop) return;
+        drawer.classList.add('translate-x-full');
+        backdrop.classList.add('opacity-0');
+        setTimeout(() => {
+          backdrop.classList.add('hidden');
+        }, 300);
+      }
+
+      function openSearchModal() {
+        const modal = document.getElementById('search-modal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        document.getElementById('global-search-input')?.focus();
+      }
+
+      function closeSearchModal() {
+        const modal = document.getElementById('search-modal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+      }
+
+      function fillSearch(term) {
+        const input = document.getElementById('global-search-input');
+        if (!input) return;
+        input.value = term;
+        handleLiveSearch(term);
+      }
+
+      function handleLiveSearch(query) {
+        const container = document.getElementById('search-results-container');
+        if (!container) return;
+        const q = query.trim().toLowerCase();
+
+        if (q.length < 2) {
+          container.innerHTML = `<p class="text-xs text-[#999084] text-center py-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>`;
+          return;
+        }
+
+        const matches = CATALOGUE.filter(p => 
+          p.name.toLowerCase().includes(q) ||
+          p.brand.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          (p.ingredients && p.ingredients.toLowerCase().includes(q))
+        );
+
+        if (matches.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-8 space-y-2">
+              <p class="text-sm font-semibold text-[#141210]">No formulas found matching "${query}"</p>
+              <p class="text-xs text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <a href="#shop" onclick="closeSearchModal()" class="inline-block mt-3 px-4 py-2 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="space-y-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-[#999084]">${matches.length} Results Found</p>
+            ${matches.map(p => `
+              <div class="flex items-center justify-between gap-4 py-2 hover:bg-[#F5EFEB] rounded-xl px-2 transition-colors">
+                <a href="#product/${p.id}" onclick="closeSearchModal()" class="flex items-center gap-3 flex-1 min-w-0">
+                  <img src="${p.image}" alt="${p.name}" class="w-12 h-12 object-cover rounded-lg bg-[#EFE7DE] shrink-0" onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=150&q=80'" />
+                  <div class="truncate">
+                    <p class="text-[11px] uppercase tracking-wider text-[#999084] font-semibold">${p.brand}</p>
+                    <p class="text-sm font-medium text-[#141210] truncate">${p.name}</p>
+                    <p class="text-xs font-bold text-[#141210] tabular-nums">${formatPrice(p.priceKES)}</p>
+                  </div>
+                </a>
+                <button onclick="addToCart('${p.id}'); closeSearchModal();" class="px-3 py-1.5 bg-[#141210] text-[#FAF8F5] text-xs font-semibold rounded-full hover:bg-black shrink-0">
+                  Add
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        lucide.createIcons();
+      }
+
+      function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        if (menu) menu.classList.toggle('hidden');
+      }
+
+      function closeMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        if (menu) menu.classList.add('hidden');
+      }
+
+      /* =========================================================================
+       * 6. CART CALCULATION & RENDERING
+       * ========================================================================= */
+      function renderCartUI() {
+        const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+        
+        // Header & Mobile badges
+        const headerCount = document.getElementById('header-cart-count');
+        const mobileCount = document.getElementById('mobile-cart-count');
+        const drawerCount = document.getElementById('drawer-items-count');
+        if (headerCount) headerCount.textContent = totalItems;
+        if (mobileCount) mobileCount.textContent = totalItems;
+        if (drawerCount) drawerCount.textContent = `${totalItems} ${totalItems === 1 ? 'item' : 'items'}`;
+
+        const itemsContainer = document.getElementById('cart-items-container');
+        if (!itemsContainer) return;
+
+        if (cart.length === 0) {
+          itemsContainer.innerHTML = `
+            <div class="text-center py-16 space-y-4">
+              <div class="w-16 h-16 bg-[#F5EFEB] rounded-full flex items-center justify-center mx-auto text-[#999084]">
+                <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+              </div>
+              <p class="font-editorial text-lg font-semibold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></p>
+              <p class="text-xs text-[#999084] max-w-xs mx-auto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <a href="#shop" onclick="closeCartDrawer()" class="inline-block mt-2 bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></a>
+            </div>
+          `;
+          updateCartTotals(0, 0);
+          lucide.createIcons();
+          return;
+        }
+
+        itemsContainer.innerHTML = cart.map((item, index) => `
+          <div class="flex items-center gap-3.5 bg-white p-3 rounded-2xl border border-[#EAE3D6] shadow-sm">
+            <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-xl bg-[#F5EFEB] shrink-0" />
+            <div class="flex-1 min-w-0">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-[#999084]">${item.brand}</p>
+              <h4 class="text-xs font-semibold text-[#141210] truncate">${item.name}</h4>
+              ${item.shade ? `<p class="text-[11px] text-[#5E574E] mt-0.5 truncate">Shade: <span class="font-medium text-[#141210]">${item.shade}</span></p>` : ''}
+              <p class="text-xs font-bold text-[#141210] mt-1 tabular-nums">${formatPrice(item.priceKES)}</p>
+            </div>
+            <div class="flex flex-col items-end justify-between self-stretch shrink-0">
+              <button onclick="removeCartItem(${index})" aria-label="Remove item" class="text-[#999084] hover:text-[#D96843] p-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+              <div class="flex items-center border border-[#EAE3D6] rounded-full overflow-hidden bg-[#FAF8F5]">
+                <button onclick="updateCartQty(${index}, ${item.qty - 1})" class="px-2 py-0.5 text-xs text-[#5E574E] hover:bg-[#EAE3D6] font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                <span class="px-2 text-xs font-semibold text-[#141210] tabular-nums">${item.qty}</span>
+                <button onclick="updateCartQty(${index}, ${item.qty + 1})" class="px-2 py-0.5 text-xs text-[#5E574E] hover:bg-[#EAE3D6] font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        const subtotal = cart.reduce((acc, item) => acc + (item.priceKES * item.qty), 0);
+        let discount = 0;
+        if (appliedDiscount && appliedDiscount.percent) {
+          discount = subtotal * (appliedDiscount.percent / 100);
+        }
+        updateCartTotals(subtotal, discount);
+        lucide.createIcons();
+      }
+
+      function updateCartTotals(subtotal, discount) {
+        const subtotalEl = document.getElementById('cart-subtotal');
+        const discountRow = document.getElementById('cart-discount-row');
+        const discountEl = document.getElementById('cart-discount');
+        const shippingEl = document.getElementById('cart-shipping');
+        const totalEl = document.getElementById('cart-total');
+
+        const progressBar = document.getElementById('shipping-progress-bar');
+        const progressPercent = document.getElementById('shipping-progress-percent');
+        const progressText = document.getElementById('shipping-progress-text');
+
+        if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
+
+        if (discount > 0) {
+          if (discountRow) discountRow.classList.remove('hidden');
+          if (discountEl) discountEl.textContent = `-${formatPrice(discount)}`;
+        } else {
+          if (discountRow) discountRow.classList.add('hidden');
+        }
+
+        // Free shipping calculation
+        const threshold = APP_CONFIG.FREE_SHIPPING_THRESHOLD_KES;
+        const pct = Math.min(100, Math.round((subtotal / threshold) * 100));
+        if (progressBar) progressBar.style.width = `${pct}%`;
+        if (progressPercent) progressPercent.textContent = `${pct}%`;
+
+        let shippingCost = subtotal >= threshold || (appliedDiscount && appliedDiscount.freeShipping) ? 0 : (subtotal > 0 ? APP_CONFIG.DEFAULT_SHIPPING_FEE_KES : 0);
+        if (shippingEl) {
+          shippingEl.textContent = shippingCost === 0 ? (subtotal > 0 ? "Free (Nairobi Metro)" : "KSh 0") : formatPrice(shippingCost);
+          if (shippingCost === 0 && subtotal > 0) shippingEl.className = "font-bold text-emerald-700";
+        }
+
+        if (progressText) {
+          if (subtotal >= threshold) {
+            progressText.textContent = "✓ You've unlocked Complimentary Nairobi Delivery!";
+          } else {
+            const diff = threshold - subtotal;
+            progressText.textContent = `Add ${formatPrice(diff)} more for Free Nairobi Delivery`;
+          }
+        }
+
+        const grandTotal = Math.max(0, subtotal - discount + shippingCost);
+        if (totalEl) totalEl.textContent = formatPrice(grandTotal);
+      }
+
+      /* =========================================================================
+       * 7. ROUTING SYSTEM & SCREEN BUILDERS
+       * ========================================================================= */
+      window.addEventListener('hashchange', renderCurrentRoute);
+      window.addEventListener('DOMContentLoaded', () => {
+        updateWishlistBadge();
+        renderCartUI();
+        renderCurrentRoute();
+      });
+
+      function renderCurrentRoute() {
+        const hash = window.location.hash || '#home';
+        const container = document.getElementById('view-container');
+        if (!container) return;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+
+        // Parse route parameters
+        if (hash === '#home' || hash === '' || hash === '#') {
+          renderHomeView();
+        } else if (hash.startsWith('#shop')) {
+          renderShopView();
+        } else if (hash.startsWith('#category/')) {
+          const categoryId = hash.replace('#category/', '').split('?')[0];
+          renderCategoryView(categoryId);
+        } else if (hash.startsWith('#brand/')) {
+          const brandId = hash.replace('#brand/', '').split('?')[0];
+          renderBrandView(brandId);
+        } else if (hash.startsWith('#product/')) {
+          const productId = hash.replace('#product/', '').split('?')[0];
+          renderProductDetailView(productId);
+        } else if (hash === '#brands') {
+          renderBrandsDirectoryView();
+        } else if (hash === '#cart') {
+          renderCartPageView();
+        } else if (hash === '#wishlist') {
+          renderWishlistView();
+        } else if (hash === '#checkout') {
+          renderCheckoutView();
+        } else if (hash.startsWith('#order-success/')) {
+          const orderId = hash.replace('#order-success/', '');
+          renderOrderSuccessView(orderId);
+        } else if (hash === '#account') {
+          renderAccountView();
+        } else if (hash === '#guides') {
+          renderGuidesView();
+        } else if (hash === '#about') {
+          renderAboutView();
+        } else if (hash === '#contact') {
+          renderContactView();
+        } else if (hash === '#policies') {
+          renderPoliciesView();
+        } else {
+          renderNotFoundView();
+        }
+
+        // Initialize GSAP & Lucide after DOM injection
+        initGSAPAnimations();
+        lucide.createIcons();
+      }
+
+      /* =========================================================================
+       * SCREEN 1: HOMEPAGE (Art-Directed, Inspired by Reference Screenshot)
+       * ========================================================================= */
+      function renderHomeView() {
+        const container = document.getElementById('view-container');
+        const bestsellers = CATALOGUE.filter(p => p.isBestseller).slice(0, 4);
+        const mostPopular = CATALOGUE.filter(p => p.isPopular).slice(0, 4);
+        const bestsellerProducts = bestsellers.length ? bestsellers : CATALOGUE.slice(0, 4);
+        const popularProducts = mostPopular.length ? mostPopular : CATALOGUE.slice(0, 4);
+
+        container.innerHTML = `
+          <!-- SECTION 1: HERO (Large Rounded Container, Golden Hour, Highlight Pill) -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12">
+            <div class="relative rounded-3xl lg:rounded-4xl overflow-hidden min-h-[580px] sm:min-h-[640px] flex flex-col justify-between p-6 sm:p-10 lg:p-14 text-white shadow-2xl border border-[#EAE3D6]/40" style="background: linear-gradient(180deg, rgba(20,18,16,0.2) 0%, rgba(20,18,16,0.65) 100%), none center center / cover no-repeat;">
+              
+              <!-- Top Pill Badges in Hero (as seen in screenshot) -->
+              <div class="flex items-center justify-between gap-4 z-10">
+                <div class="flex items-center gap-2">
+                  <span class="glass-dark text-xs font-medium px-4 py-1.5 rounded-full border border-white/20 text-white/90"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                  <span class="glass-dark text-xs font-medium px-4 py-1.5 rounded-full border border-white/20 text-white/90 hidden sm:inline-block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+                </div>
+
+                <!-- Live Client Metric Counter Pill (as in screenshot) -->
+                <div class="glass-dark px-4 py-2 rounded-2xl border border-white/20 flex items-center gap-3 text-right">
+                  <div>
+                    <p class="font-editorial text-xl sm:text-2xl font-bold text-white tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></p>
+                    <p class="text-[10px] text-white/80 max-w-[140px] leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Main Hero Headline & Copy -->
+              <div class="max-w-2xl z-10 my-auto py-8">
+                <h1 class="font-editorial text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-[1.12]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span><span class="pill-highlight font-sans text-3xl sm:text-4xl lg:text-5xl not-italic font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></h1>
+                <p class="mt-5 text-sm sm:text-base text-white/90 font-light max-w-lg leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+                <!-- Dual CTAs (Dark Phone Pill & Outline Shop Pill from screenshot) -->
+                <div class="mt-8 flex flex-wrap items-center gap-4">
+                  <a href="tel:${APP_CONFIG.SUPPORT_PHONE}" class="bg-[#141210] hover:bg-black text-white px-6 py-3.5 rounded-full text-xs font-semibold tracking-wider flex items-center gap-2.5 transition-all shadow-lg border border-white/10">
+                    <i data-lucide="phone" class="w-4 h-4 text-[#D8EB58]"></i>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                  </a>
+                  <a href="#shop" class="bg-white/90 hover:bg-white text-[#141210] px-7 py-3.5 rounded-full text-xs font-bold tracking-wider uppercase transition-all shadow-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+                </div>
+              </div>
+
+              <!-- Bottom Feature Teaser Strip in Hero -->
+              <div class="z-10 flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-white/20 text-xs text-white/90">
+                <div class="flex items-center gap-6">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></span>
+                  <span class="hidden sm:inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+                  <span class="hidden md:inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                </div>
+                <a href="#guides" class="underline underline-offset-4 hover:text-[#D8EB58] transition-colors font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></a>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECTION 2: BESTSELLERS RAIL (Horizontal Layout matching screenshot) -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex items-end justify-between mb-6">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <h2 class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#141210] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></h2>
+              </div>
+              <a href="#shop" class="text-xs font-semibold text-[#141210] hover:underline flex items-center gap-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <!-- Product Cards Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              ${bestsellerProducts.map(p => renderProductCardHTML(p)).join('')}
+            </div>
+          </section>
+
+          <!-- SECTION 3: EDITORIAL SPLIT GRID (Inspired by middle layout in screenshot) -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              
+              <!-- Left Column: Trust Card & Policy Links with Arrows (↗) -->
+              <div class="lg:col-span-4 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] flex flex-col justify-between shadow-sm">
+                <div>
+                  <span class="text-xs font-bold uppercase tracking-widest text-[#D8EB58] bg-[#141210] px-3 py-1 rounded-full inline-block mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  <h3 class="font-editorial text-2xl font-bold text-[#141210] leading-snug"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                  <p class="text-xs text-[#5E574E] mt-3 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+
+                <!-- Trust links with arrows (↗) matching reference image -->
+                <div class="divide-y divide-[#EAE3D6] border-y border-[#EAE3D6] my-6">
+                  <a href="#policies" class="py-3 flex items-center justify-between text-xs font-medium text-[#141210] hover:text-[#D96843] transition-colors group">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+                    <span class="text-sm font-light text-[#999084] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  </a>
+                  <a href="#policies" class="py-3 flex items-center justify-between text-xs font-medium text-[#141210] hover:text-[#D96843] transition-colors group">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></span>
+                    <span class="text-sm font-light text-[#999084] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  </a>
+                  <a href="#contact" class="py-3 flex items-center justify-between text-xs font-medium text-[#141210] hover:text-[#D96843] transition-colors group">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+                    <span class="text-sm font-light text-[#999084] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  </a>
+                  <a href="#about" class="py-3 flex items-center justify-between text-xs font-medium text-[#141210] hover:text-[#D96843] transition-colors group">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+                    <span class="text-sm font-light text-[#999084] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  </a>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <div class="flex -space-x-2">
+                    <img class="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                    <img class="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                    <img class="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+                    <p class="text-[10px] text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Center Column: Model Imagery & Atmosphere -->
+              <div class="lg:col-span-5 relative rounded-3xl overflow-hidden min-h-[380px] shadow-sm">
+                <img class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 sm:p-8 text-white">
+                  <span class="text-xs font-semibold text-[#D8EB58] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span>
+                  <h4 class="font-editorial text-2xl sm:text-3xl font-medium mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h4>
+                  <p class="text-xs text-white/80 mt-2 max-w-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+              </div>
+
+              <!-- Right Column: Step into Your Power Card with Delivery offers -->
+              <div class="lg:col-span-3 bg-[#F5EFEB] p-6 rounded-3xl border border-[#EAE3D6] flex flex-col justify-between shadow-sm">
+                <div>
+                  <h3 class="font-editorial text-xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></h3>
+                  <div class="mt-4 space-y-3">
+                    <div class="bg-white p-3.5 rounded-2xl border border-[#EAE3D6] flex items-center justify-between">
+                      <span class="text-xs font-semibold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+                      <span class="text-xs text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    </div>
+                    <div class="bg-white p-3.5 rounded-2xl border border-[#EAE3D6] flex items-center justify-between">
+                      <span class="text-xs font-semibold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+                      <span class="text-xs text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    </div>
+                    <div class="bg-white p-3.5 rounded-2xl border border-[#EAE3D6] flex items-center justify-between">
+                      <span class="text-xs font-semibold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                      <span class="text-xs text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Floating Mini Showcase Card inside Right Column (matching screenshot) -->
+                <div class="mt-6 relative rounded-2xl overflow-hidden border border-[#EAE3D6] bg-white p-4 text-center">
+                  <img class="w-full h-32 object-cover rounded-xl mb-3" />
+                  <p class="text-xs font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></p>
+                  <p class="text-[10px] text-[#999084] mt-0.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></p>
+                  <a href="#category/fragrance" class="mt-3 block bg-[#141210] hover:bg-black text-white py-2 rounded-full text-xs font-semibold tracking-wide"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECTION 4: MOST POPULAR COLLECTION (Matching screenshot second rail) -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex items-end justify-between mb-6">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-[#D8EB58] bg-[#141210] px-3 py-1 rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span>
+                <h2 class="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-[#141210] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h2>
+              </div>
+              <a href="#shop" class="text-xs font-semibold text-[#141210] hover:underline flex items-center gap-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+              ${popularProducts.map(p => renderProductCardHTML(p)).join('')}
+            </div>
+          </section>
+
+          <!-- SECTION 5: CATEGORIES SHOWCASE -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center max-w-xl mx-auto mb-10">
+              <h2 class="font-editorial text-3xl font-bold tracking-tight text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></h2>
+              <p class="text-xs text-[#5E574E] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+              ${CATEGORIES.filter(c => c.id !== 'all').map(c => `
+                <a href="#category/${c.id}" class="group bg-white p-4 rounded-2xl border border-[#EAE3D6] hover:border-[#141210] transition-all text-center flex flex-col items-center justify-between shadow-sm">
+                  <div class="w-12 h-12 rounded-full bg-[#F5EFEB] group-hover:bg-[#D8EB58] transition-colors flex items-center justify-center text-[#141210] mb-3">
+                    <i data-lucide="${getCategoryIcon(c.id)}" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-xs font-bold text-[#141210] group-hover:text-black">${c.name}</h3>
+                    <p class="text-[10px] text-[#999084] mt-0.5">${c.count} items</p>
+                  </div>
+                </a>
+              `).join('')}
+            </div>
+          </section>
+
+          <!-- SECTION 6: EDITORIAL BEAUTY GUIDES TEASER -->
+          <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-8">
+            <div class="bg-[#F5EFEB] rounded-3xl p-6 sm:p-10 border border-[#EAE3D6]">
+              <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                <div>
+                  <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  <h2 class="font-editorial text-2xl sm:text-3xl font-bold text-[#141210] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></h2>
+                </div>
+                <a href="#guides" class="bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold hover:bg-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></a>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl overflow-hidden border border-[#EAE3D6] shadow-sm">
+                  <img class="w-full h-44 object-cover" />
+                  <div class="p-5">
+                    <p class="text-[10px] uppercase tracking-wider font-bold text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></p>
+                    <h4 class="font-editorial text-lg font-bold text-[#141210] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h4>
+                    <p class="text-xs text-[#5E574E] mt-2 line-clamp-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                    <a href="#guides" class="inline-block mt-4 text-xs font-bold text-[#141210] underline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></a>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-2xl overflow-hidden border border-[#EAE3D6] shadow-sm">
+                  <img class="w-full h-44 object-cover" />
+                  <div class="p-5">
+                    <p class="text-[10px] uppercase tracking-wider font-bold text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+                    <h4 class="font-editorial text-lg font-bold text-[#141210] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h4>
+                    <p class="text-xs text-[#5E574E] mt-2 line-clamp-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                    <a href="#guides" class="inline-block mt-4 text-xs font-bold text-[#141210] underline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></a>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-2xl overflow-hidden border border-[#EAE3D6] shadow-sm">
+                  <img class="w-full h-44 object-cover" />
+                  <div class="p-5">
+                    <p class="text-[10px] uppercase tracking-wider font-bold text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+                    <h4 class="font-editorial text-lg font-bold text-[#141210] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h4>
+                    <p class="text-xs text-[#5E574E] mt-2 line-clamp-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                    <a href="#guides" class="inline-block mt-4 text-xs font-bold text-[#141210] underline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      /* Helper for category icons */
+      function getCategoryIcon(catId) {
+        switch(catId) {
+          case 'makeup': return 'sparkles';
+          case 'skincare': return 'droplet';
+          case 'haircare': return 'wind';
+          case 'fragrance': return 'sun';
+          case 'bath-body': return 'heart';
+          case 'tools': return 'wand-2';
+          case 'bundles': return 'gift';
+          default: return 'package';
+        }
+      }
+
+      /* Product Card Generator (Reused across views) */
+      function renderProductCardHTML(p) {
+        const isWishlisted = wishlist.includes(p.id);
+        return `
+          <div class="group bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-[#EAE3D6] flex flex-col justify-between transition-all hover:shadow-lg card-zoom">
+            <div class="relative overflow-hidden rounded-xl sm:rounded-2xl bg-[#F5EFEB] aspect-square flex items-center justify-center mb-3">
+              <!-- Product Image -->
+              <a href="#product/${p.id}" class="w-full h-full block">
+                <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover card-img" />
+              </a>
+
+              <!-- Wishlist heart button -->
+              <button onclick="toggleWishlist('${p.id}')" aria-label="Save to wishlist" class="wishlist-btn-${p.id} absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-[#141210] transition-transform hover:scale-110 shadow-sm ${isWishlisted ? 'text-[#D96843] fill-[#D96843]' : ''}">
+                <i data-lucide="heart" class="w-4 h-4"></i>
+              </button>
+
+              <!-- Optional Badge -->
+              ${p.badge ? `
+                <span class="absolute top-2.5 left-2.5 bg-[#141210] text-white text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full">
+                  ${p.badge}
+                </span>
+              ` : ''}
+
+              <!-- Quick Add Hover Overlay Button on Desktop -->
+              <button onclick="addToCart('${p.id}')" class="hidden md:flex absolute bottom-2 left-2 right-2 bg-[#141210]/95 hover:bg-black text-[#FAF8F5] py-2 rounded-xl text-xs font-semibold items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                <i data-lucide="plus" class="w-3.5 h-3.5 text-[#D8EB58]"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></button>
+            </div>
+
+            <!-- Metadata info -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-[11px] text-[#999084]">
+                <span class="uppercase tracking-wider font-semibold">${p.brand}</span>
+                <div class="flex items-center text-[#141210] font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span><span class="ml-0.5">${p.rating}</span>
+                </div>
+              </div>
+              <h3 class="font-medium text-xs sm:text-sm text-[#141210] line-clamp-1 leading-snug">
+                <a href="#product/${p.id}" class="hover:underline">${p.name}</a>
+              </h3>
+              
+              <div class="flex items-baseline gap-2 pt-1">
+                <span class="font-bold text-xs sm:text-sm text-[#141210] tabular-nums">${formatPrice(p.priceKES)}</span>
+                ${p.originalPriceKES ? `
+                  <span class="text-[11px] text-[#999084] line-through tabular-nums">${formatPrice(p.originalPriceKES)}</span>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Mobile Add to Bag CTA -->
+            <button onclick="addToCart('${p.id}')" class="md:hidden mt-3 w-full bg-[#FAF8F5] hover:bg-[#141210] hover:text-white text-[#141210] py-1.5 rounded-xl text-xs font-semibold border border-[#EAE3D6] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 2: ALL PRODUCTS / SHOP MASTER VIEW (With Multi-Facet Filters)
+       * ========================================================================= */
+      let currentFilterCategory = 'all';
+      let currentFilterBrand = 'all';
+      let currentSortOption = 'recommended';
+      let currentMaxPrice = 15000;
+
+      function renderShopView() {
+        const container = document.getElementById('view-container');
+        
+        // Read URL hash params if any
+        const hash = window.location.hash;
+        if (hash.includes('sort=')) {
+          const match = hash.match(/sort=([a-z-]+)/);
+          if (match) currentSortOption = match[1];
+        }
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Header Breadcrumb & Title -->
+            <div class="mb-8">
+              <nav class="text-xs text-[#999084] flex items-center gap-2 mb-2">
+                <a href="#home" class="hover:text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                <span class="text-[#141210] font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+              </nav>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></h1>
+              <p class="text-xs text-[#5E574E] mt-1 max-w-2xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Filter Controls Bar -->
+            <div class="bg-white p-4 rounded-2xl border border-[#EAE3D6] shadow-sm mb-8 flex flex-wrap items-center justify-between gap-4">
+              <!-- Category Filter Chips -->
+              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                ${CATEGORIES.map(c => `
+                  <button onclick="setFilterCategory('${c.id}')" class="category-chip px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${currentFilterCategory === c.id ? 'bg-[#141210] text-[#FAF8F5]' : 'bg-[#FAF8F5] text-[#5E574E] hover:text-[#141210] border border-[#EAE3D6]'}">
+                    ${c.name}
+                  </button>
+                `).join('')}
+              </div>
+
+              <!-- Sorting & Brand Selector -->
+              <div class="flex items-center gap-3 shrink-0">
+                <select id="brand-filter-select" onchange="setFilterBrand(this.value)" class="text-xs bg-[#FAF8F5] border border-[#EAE3D6] rounded-xl px-3 py-2 text-[#141210] focus:outline-none focus:border-[#141210]">
+                  <option value="all">All Brands (${BRANDS_LIST.length})</option>
+                  ${BRANDS_LIST.map(b => `<option value="${b.name}" ${currentFilterBrand === b.name ? 'selected' : ''}>${b.name}</option>`).join('')}
+                </select>
+
+                <select id="sort-select" onchange="setSortOption(this.value)" class="text-xs bg-[#FAF8F5] border border-[#EAE3D6] rounded-xl px-3 py-2 text-[#141210] focus:outline-none focus:border-[#141210]">
+                  <option value="recommended" ${currentSortOption === 'recommended' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></option>
+                  <option value="price-asc" ${currentSortOption === 'price-asc' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  <option value="price-desc" ${currentSortOption === 'price-desc' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  <option value="rating" ${currentSortOption === 'rating' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Active Products Count & Grid Container -->
+            <div id="shop-products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              <!-- Injected by filter logic -->
+            </div>
+          </div>
+        `;
+
+        renderFilteredShopProducts();
+      }
+
+      function setFilterCategory(catId) {
+        currentFilterCategory = catId;
+        renderShopView();
+      }
+
+      function setFilterBrand(brandName) {
+        currentFilterBrand = brandName;
+        renderFilteredShopProducts();
+      }
+
+      function setSortOption(sortOpt) {
+        currentSortOption = sortOpt;
+        renderFilteredShopProducts();
+      }
+
+      function renderFilteredShopProducts() {
+        const grid = document.getElementById('shop-products-grid');
+        if (!grid) return;
+
+        let list = [...CATALOGUE];
+
+        if (currentFilterCategory !== 'all') {
+          list = list.filter(p => p.category === currentFilterCategory);
+        }
+
+        if (currentFilterBrand !== 'all') {
+          list = list.filter(p => p.brand.toLowerCase() === currentFilterBrand.toLowerCase());
+        }
+
+        // Sorting logic
+        if (currentSortOption === 'price-asc') {
+          list.sort((a, b) => a.priceKES - b.priceKES);
+        } else if (currentSortOption === 'price-desc') {
+          list.sort((a, b) => b.priceKES - a.priceKES);
+        } else if (currentSortOption === 'rating') {
+          list.sort((a, b) => b.rating - a.rating);
+        }
+
+        if (list.length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full py-16 text-center space-y-3">
+              <p class="font-editorial text-2xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></p>
+              <p class="text-xs text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <button onclick="currentFilterCategory='all'; currentFilterBrand='all'; renderShopView();" class="px-5 py-2.5 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></button>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = list.map(p => renderProductCardHTML(p)).join('');
+        lucide.createIcons();
+      }
+
+      /* =========================================================================
+       * SCREEN 3: DEDICATED CATEGORY VIEW (e.g. #category/makeup, #category/skincare)
+       * ========================================================================= */
+      function renderCategoryView(categoryId) {
+        const container = document.getElementById('view-container');
+        const cat = CATEGORIES.find(c => c.id === categoryId) || CATEGORIES[1];
+        const products = CATALOGUE.filter(p => p.category === cat.id);
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <nav class="text-xs text-[#999084] flex items-center gap-2 mb-2">
+              <a href="#home" class="hover:text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <a href="#shop" class="hover:text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-[#141210] font-semibold">${cat.name}</span>
+            </nav>
+
+            <!-- Category Header Banner -->
+            <div class="bg-white p-6 sm:p-10 rounded-3xl border border-[#EAE3D6] mb-8 shadow-sm">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210] mt-1">${cat.name}</h1>
+              <p class="text-xs text-[#5E574E] mt-2 max-w-xl leading-relaxed">${cat.description}</p>
+              <div class="mt-4 flex items-center gap-2 text-xs font-semibold text-[#141210]">
+                <span>${products.length} Products Available</span>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+              </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              ${products.map(p => renderProductCardHTML(p)).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 4: INDIVIDUAL BRAND VIEW (e.g. #brand/aura-botanica)
+       * ========================================================================= */
+      function renderBrandView(brandId) {
+        const container = document.getElementById('view-container');
+        const brand = BRANDS_LIST.find(b => b.id === brandId) || BRANDS_LIST[0];
+        const products = CATALOGUE.filter(p => p.brand.toLowerCase() === brand.name.toLowerCase());
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <nav class="text-xs text-[#999084] flex items-center gap-2 mb-2">
+              <a href="#home" class="hover:text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <a href="#brands" class="hover:text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-[#141210] font-semibold">${brand.name}</span>
+            </nav>
+
+            <div class="bg-[#F5EFEB] p-6 sm:p-10 rounded-3xl border border-[#EAE3D6] mb-8">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#D8EB58] bg-[#141210] px-3 py-1 rounded-full">
+                Origin: ${brand.country}
+              </span>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210] mt-3">${brand.name}</h1>
+              <p class="text-sm font-medium text-[#D96843] mt-1">${brand.tagline}</p>
+              <p class="text-xs text-[#5E574E] mt-3 max-w-2xl leading-relaxed">${brand.description}</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              ${products.length > 0 ? products.map(p => renderProductCardHTML(p)).join('') : `
+                <div class="col-span-full py-12 text-center text-xs text-[#999084]">
+                  Additional formulations from ${brand.name} are arriving in our next shipment flight.
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 5: BRANDS DIRECTORY VIEW (#brands)
+       * ========================================================================= */
+      function renderBrandsDirectoryView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="mb-10 text-center max-w-xl mx-auto">
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></h1>
+              <p class="text-xs text-[#5E574E] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              ${BRANDS_LIST.map(b => {
+                const count = CATALOGUE.filter(p => p.brand.toLowerCase() === b.name.toLowerCase()).length;
+                return `
+                  <a href="#brand/${b.id}" class="group bg-white p-6 rounded-3xl border border-[#EAE3D6] hover:border-[#141210] transition-all shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between text-xs text-[#999084] mb-2">
+                        <span>${b.country}</span>
+                        <span class="font-semibold">${count} items</span>
+                      </div>
+                      <h3 class="font-editorial text-xl font-bold text-[#141210] group-hover:text-black">${b.name}</h3>
+                      <p class="text-xs text-[#D96843] font-medium mt-1">${b.tagline}</p>
+                      <p class="text-xs text-[#5E574E] mt-3 line-clamp-3 leading-relaxed">${b.description}</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-[#EAE3D6] flex items-center justify-between text-xs font-semibold text-[#141210]">
+                      <span>Explore Collection</span>
+                      <span class="group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </a>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 6: PRODUCT DETAIL PAGE (PDP) - Rich, Variant Swatches, Verified Tabs
+       * ========================================================================= */
+      let selectedShadeState = {};
+
+      function renderProductDetailView(productId) {
+        const container = document.getElementById('view-container');
+        const product = CATALOGUE.find(p => p.id === productId) || CATALOGUE[0];
+        const isWishlisted = wishlist.includes(product.id);
+        const related = CATALOGUE.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+
+        if (!selectedShadeState[product.id] && product.shades) {
+          selectedShadeState[product.id] = product.shades[0].name;
+        }
+        const activeShade = selectedShadeState[product.id];
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Breadcrumbs -->
+            <nav class="text-xs text-[#999084] flex items-center gap-2 mb-6">
+              <a href="#home" class="hover:text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <a href="#category/${product.category}" class="hover:text-[#141210] capitalize">${product.category}</a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-[#141210] font-semibold truncate">${product.name}</span>
+            </nav>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+              
+              <!-- Left: Image Gallery & Highlights (7 cols) -->
+              <div class="lg:col-span-7 space-y-4">
+                <div class="relative rounded-3xl overflow-hidden bg-[#F5EFEB] border border-[#EAE3D6] aspect-square max-h-[580px] flex items-center justify-center">
+                  <img id="main-product-img" src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" />
+                  
+                  <button onclick="toggleWishlist('${product.id}')" aria-label="Toggle wishlist" class="wishlist-btn-${product.id} absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-[#141210] shadow-md transition-transform hover:scale-110 ${isWishlisted ? 'text-[#D96843] fill-[#D96843]' : ''}">
+                    <i data-lucide="heart" class="w-5 h-5"></i>
+                  </button>
+
+                  ${product.badge ? `
+                    <span class="absolute top-4 left-4 bg-[#141210] text-[#D8EB58] text-xs font-semibold px-3 py-1 rounded-full">
+                      ${product.badge}
+                    </span>
+                  ` : ''}
+                </div>
+
+                <!-- Thumbnails Gallery row -->
+                <div class="grid grid-cols-4 gap-3">
+                  <button onclick="setMainImage('${product.image}')" class="rounded-xl overflow-hidden border-2 border-[#141210] aspect-square bg-[#F5EFEB]">
+                    <img src="${product.image}" class="w-full h-full object-cover" />
+                  </button>
+                  <button onclick="setMainImage('./src/assets/images/hero_botanical_beauty_1791795227849.jpg')" class="rounded-xl overflow-hidden border border-[#EAE3D6] aspect-square bg-[#F5EFEB] hover:border-[#141210]">
+                    <img class="w-full h-full object-cover" />
+                  </button>
+                  <button onclick="setMainImage('./src/assets/images/skincare_dropper_serum_1791795239150.jpg')" class="rounded-xl overflow-hidden border border-[#EAE3D6] aspect-square bg-[#F5EFEB] hover:border-[#141210]">
+                    <img class="w-full h-full object-cover" />
+                  </button>
+                  <button onclick="setMainImage('./src/assets/images/editorial_model_radiance_1791795250849.jpg')" class="rounded-xl overflow-hidden border border-[#EAE3D6] aspect-square bg-[#F5EFEB] hover:border-[#141210]">
+                    <img class="w-full h-full object-cover" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right: Contiguous Purchase Module (5 cols) -->
+              <div class="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-6">
+                <div>
+                  <div class="flex items-center justify-between text-xs text-[#999084] mb-1">
+                    <a href="#brand/${product.brand.toLowerCase().replace(/\s+/g, '-')}" class="font-bold uppercase tracking-wider text-[#D96843] hover:underline">${product.brand}</a>
+                    <span class="font-medium">${product.volume || 'Standard Full Size'}</span>
+                  </div>
+                  <h1 class="font-editorial text-2xl sm:text-3xl font-bold text-[#141210]">${product.name}</h1>
+                  
+                  <div class="flex items-center gap-3 mt-2 text-xs">
+                    <div class="flex items-center text-amber-500 font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span><span class="ml-1 text-[#141210]">${product.rating}</span>
+                    </div>
+                    <span class="text-[#999084]">(${product.reviewsCount} verified reviews)</span>
+                    <span class="text-[#D8EB58] bg-[#141210] px-2 py-0.5 rounded-full text-[10px] font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                  </div>
+                </div>
+
+                <!-- Price Row -->
+                <div class="border-t border-b border-[#EAE3D6] py-4 flex items-baseline gap-3">
+                  <span class="text-2xl sm:text-3xl font-bold text-[#141210] tabular-nums">${formatPrice(product.priceKES)}</span>
+                  ${product.originalPriceKES ? `
+                    <span class="text-sm text-[#999084] line-through tabular-nums">${formatPrice(product.originalPriceKES)}</span>
+                    <span class="text-xs font-bold text-[#D96843]">Save ${formatPrice(product.originalPriceKES - product.priceKES)}</span>
+                  ` : ''}
+                </div>
+
+                <!-- Shade Selector (if shades available) -->
+                ${product.shades ? `
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="font-bold text-[#141210]">Select Shade:</span>
+                      <span id="active-shade-name" class="font-semibold text-[#D96843]">${activeShade}</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                      ${product.shades.map(s => `
+                        <button onclick="selectShade('${product.id}', '${s.name}')" title="${s.name}" class="swatch-btn w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center ${activeShade === s.name ? 'border-[#141210] ring-2 ring-[#141210]/20 scale-110' : 'border-[#EAE3D6] hover:scale-105'}" style="background-color: ${s.hex};">
+                          ${activeShade === s.name ? `<span class="w-1.5 h-1.5 rounded-full ${s.hex < '#888888' ? 'bg-white' : 'bg-black'}"></span>` : ''}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+
+                <!-- Quantity & Purchase CTAs -->
+                <div class="space-y-3 pt-2">
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center border border-[#EAE3D6] rounded-full px-3 py-2 bg-[#FAF8F5]">
+                      <button onclick="stepPDPQty(-1)" class="text-sm font-bold px-2 text-[#5E574E] hover:text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                      <span id="pdp-qty-display" class="px-3 text-xs font-bold tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                      <button onclick="stepPDPQty(1)" class="text-sm font-bold px-2 text-[#5E574E] hover:text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                    </div>
+
+                    <button onclick="addCurrentPDPToCart('${product.id}')" class="flex-1 bg-[#141210] hover:bg-black text-[#FAF8F5] py-3.5 rounded-full text-xs font-bold tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md">
+                      <i data-lucide="shopping-bag" class="w-4 h-4 text-[#D8EB58]"></i>
+                      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span>
+                    </button>
+                  </div>
+
+                  <button onclick="buyNowPDP('${product.id}')" class="w-full bg-[#D8EB58] hover:bg-[#CEE34B] text-[#141210] py-3.5 rounded-full text-xs font-bold tracking-wider uppercase transition-all shadow-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></button>
+                </div>
+
+                <!-- Trust Points -->
+                <div class="bg-[#F5EFEB] p-4 rounded-2xl border border-[#EAE3D6] space-y-2 text-xs text-[#5E574E]">
+                  <div class="flex items-center gap-2 text-[#141210] font-medium">
+                    <i data-lucide="truck" class="w-4 h-4 text-[#D96843]"></i>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[#141210] font-medium">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-[#D96843]"></i>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </div>
+                </div>
+
+                <!-- Product Specifications Accordion -->
+                <div class="border-t border-[#EAE3D6] pt-4 space-y-3 text-xs">
+                  <div>
+                    <h3 class="font-bold text-[#141210] uppercase tracking-wider text-[11px] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h3>
+                    <ul class="space-y-1 text-[#5E574E]">
+                      ${product.benefits.map(b => `<li>✦ ${b}</li>`).join('')}
+                    </ul>
+                  </div>
+
+                  <div class="pt-2">
+                    <h3 class="font-bold text-[#141210] uppercase tracking-wider text-[11px] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h3>
+                    <p class="text-[#5E574E] leading-relaxed">${product.howToUse}</p>
+                  </div>
+
+                  <div class="pt-2">
+                    <h3 class="font-bold text-[#141210] uppercase tracking-wider text-[11px] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h3>
+                    <p class="text-[#999084] font-mono text-[10px] leading-relaxed bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EAE3D6]">
+                      ${product.ingredients}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Related Products Section -->
+            <div class="mt-16 pt-12 border-t border-[#EAE3D6]">
+              <h2 class="font-editorial text-2xl font-bold text-[#141210] mb-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h2>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+                ${related.map(p => renderProductCardHTML(p)).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function setMainImage(src) {
+        const img = document.getElementById('main-product-img');
+        if (img) img.src = src;
+      }
+
+      let pdpQty = 1;
+      function stepPDPQty(delta) {
+        pdpQty = Math.max(1, pdpQty + delta);
+        const display = document.getElementById('pdp-qty-display');
+        if (display) display.textContent = pdpQty;
+      }
+
+      function selectShade(productId, shadeName) {
+        selectedShadeState[productId] = shadeName;
+        const label = document.getElementById('active-shade-name');
+        if (label) label.textContent = shadeName;
+        renderProductDetailView(productId);
+      }
+
+      function addCurrentPDPToCart(productId) {
+        const product = CATALOGUE.find(p => p.id === productId);
+        const shade = selectedShadeState[productId] || (product && product.shades ? product.shades[0].name : null);
+        addToCart(productId, shade, pdpQty, true);
+      }
+
+      function buyNowPDP(productId) {
+        addCurrentPDPToCart(productId);
+        closeCartDrawer();
+        window.location.hash = '#checkout';
+      }
+
+      /* =========================================================================
+       * SCREEN 7: DEDICATED FULL CART PAGE (#cart)
+       * ========================================================================= */
+      function renderCartPageView() {
+        const container = document.getElementById('view-container');
+        const subtotal = cart.reduce((acc, item) => acc + (item.priceKES * item.qty), 0);
+        const discount = appliedDiscount && appliedDiscount.percent ? subtotal * (appliedDiscount.percent / 100) : 0;
+        const shipping = subtotal >= APP_CONFIG.FREE_SHIPPING_THRESHOLD_KES ? 0 : (subtotal > 0 ? APP_CONFIG.DEFAULT_SHIPPING_FEE_KES : 0);
+        const total = Math.max(0, subtotal - discount + shipping);
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 class="font-editorial text-3xl font-bold text-[#141210] mb-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h1>
+
+            ${cart.length === 0 ? `
+              <div class="bg-white p-12 rounded-3xl border border-[#EAE3D6] text-center space-y-4">
+                <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto text-[#999084]"></i>
+                <h2 class="font-editorial text-xl font-bold text-[#141210]">Your bag is currently empty</h2>
+                <a href="#shop" class="inline-block bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold">Discover Catalogue</a>
+              </div>
+            ` : `
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div class="lg:col-span-8 bg-white p-6 rounded-3xl border border-[#EAE3D6] shadow-sm divide-y divide-[#EAE3D6]">
+                  ${cart.map((item, index) => `
+                    <div class="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                      <div class="flex items-center gap-4">
+                        <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-cover rounded-2xl bg-[#F5EFEB] shrink-0" />
+                        <div>
+                          <p class="text-xs uppercase tracking-wider font-bold text-[#999084]">${item.brand}</p>
+                          <h3 class="text-sm font-semibold text-[#141210]">${item.name}</h3>
+                          ${item.shade ? `<p class="text-xs text-[#5E574E] mt-0.5">Shade: <strong>${item.shade}</strong></p>` : ''}
+                          <p class="text-xs font-bold text-[#141210] mt-1 tabular-nums">${formatPrice(item.priceKES)}</p>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-4">
+                        <div class="flex items-center border border-[#EAE3D6] rounded-full bg-[#FAF8F5]">
+                          <button onclick="updateCartQty(${index}, ${item.qty - 1}); renderCartPageView();" class="px-2.5 py-1 text-xs font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                          <span class="px-2 text-xs font-semibold tabular-nums">${item.qty}</span>
+                          <button onclick="updateCartQty(${index}, ${item.qty + 1}); renderCartPageView();" class="px-2.5 py-1 text-xs font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                        </div>
+                        <span class="font-bold text-sm text-[#141210] tabular-nums min-w-[70px] text-right">${formatPrice(item.priceKES * item.qty)}</span>
+                        <button onclick="removeCartItem(${index}); renderCartPageView();" class="text-[#999084] hover:text-[#D96843]">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="lg:col-span-4 bg-white p-6 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-4">
+                  <h3 class="font-editorial text-lg font-bold text-[#141210]">Order Summary</h3>
+                  <div class="space-y-2 text-xs">
+                    <div class="flex justify-between text-[#5E574E]">
+                      <span>Subtotal</span>
+                      <span class="font-bold text-[#141210] tabular-nums">${formatPrice(subtotal)}</span>
+                    </div>
+                    ${discount > 0 ? `
+                      <div class="flex justify-between text-[#D96843]">
+                        <span>Promo (${appliedDiscount.code})</span>
+                        <span class="font-bold tabular-nums">-${formatPrice(discount)}</span>
+                      </div>
+                    ` : ''}
+                    <div class="flex justify-between text-[#5E574E]">
+                      <span>Delivery</span>
+                      <span class="font-bold text-[#141210]">${shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                    </div>
+                    <div class="border-t border-[#EAE3D6] pt-3 flex justify-between text-base font-bold text-[#141210]">
+                      <span>Grand Total</span>
+                      <span class="tabular-nums">${formatPrice(total)}</span>
+                    </div>
+                  </div>
+
+                  <a href="#checkout" class="w-full bg-[#141210] hover:bg-black text-[#FAF8F5] py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-center block transition-all shadow-md">
+                    Proceed to Checkout
+                  </a>
+                  <a href="#shop" class="w-full text-center text-xs text-[#5E574E] hover:text-[#141210] block pt-1">
+                    ← Continue Shopping
+                  </a>
+                </div>
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 8: WISHLIST VIEW (#wishlist)
+       * ========================================================================= */
+      function renderWishlistView() {
+        const container = document.getElementById('view-container');
+        const wishlistProducts = CATALOGUE.filter(p => wishlist.includes(p.id));
+
+        container.innerHTML = `
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h1 class="font-editorial text-3xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h1>
+                <p class="text-xs text-[#5E574E] mt-1">${wishlistProducts.length} items saved to your personal beauty collection</p>
+              </div>
+              ${wishlistProducts.length > 0 ? `
+                <button onclick="moveAllWishlistToBag()" class="px-5 py-2.5 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold hover:bg-black">
+                  Add All to Bag
+                </button>
+              ` : ''}
+            </div>
+
+            ${wishlistProducts.length === 0 ? `
+              <div class="bg-white p-12 rounded-3xl border border-[#EAE3D6] text-center space-y-4">
+                <i data-lucide="heart" class="w-12 h-12 mx-auto text-[#999084]"></i>
+                <h2 class="font-editorial text-xl font-bold text-[#141210]">Your wishlist is currently empty</h2>
+                <p class="text-xs text-[#999084] max-w-sm mx-auto">Click the heart icon on any product to save your holy-grail formulas for later.</p>
+                <a href="#shop" class="inline-block bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold">Discover Products</a>
+              </div>
+            ` : `
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                ${wishlistProducts.map(p => renderProductCardHTML(p)).join('')}
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      function moveAllWishlistToBag() {
+        wishlist.forEach(id => addToCart(id, null, 1, false));
+        wishlist = [];
+        saveWishlist();
+        renderWishlistView();
+        openCartDrawer();
+        showToast("All wishlist items moved to your bag!");
+      }
+
+      /* =========================================================================
+       * SCREEN 9: CHECKOUT VIEW (Paystack & M-Pesa Integrated Demo Flow)
+       * ========================================================================= */
+      let checkoutStep = 1;
+      let selectedPaymentMethod = 'mpesa';
+
+      function renderCheckoutView() {
+        const container = document.getElementById('view-container');
+        const subtotal = cart.reduce((acc, item) => acc + (item.priceKES * item.qty), 0);
+        const discount = appliedDiscount && appliedDiscount.percent ? subtotal * (appliedDiscount.percent / 100) : 0;
+        const shipping = subtotal >= APP_CONFIG.FREE_SHIPPING_THRESHOLD_KES ? 0 : (subtotal > 0 ? APP_CONFIG.DEFAULT_SHIPPING_FEE_KES : 0);
+        const total = Math.max(0, subtotal - discount + shipping);
+
+        if (cart.length === 0) {
+          container.innerHTML = `
+            <div class="max-w-md mx-auto px-4 py-16 text-center space-y-4">
+              <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto text-[#999084]"></i>
+              <h2 class="font-editorial text-2xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h2>
+              <p class="text-xs text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <a href="#shop" class="inline-block bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 class="font-editorial text-3xl font-bold text-[#141210] mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h1>
+            <p class="text-xs text-[#5E574E] mb-8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left Form Column (7 cols) -->
+              <div class="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-6">
+                
+                <!-- Notice of Honest Simulation Gateway -->
+                <div class="bg-[#FAF8F5] border border-[#EAE3D6] p-4 rounded-2xl text-[11px] text-[#5E574E] flex items-start gap-3">
+                  <i data-lucide="info" class="w-4 h-4 text-[#D96843] shrink-0 mt-0.5"></i>
+                  <div>
+                    <span class="font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                </div>
+
+                <!-- Form Section 1: Customer Details -->
+                <div class="space-y-4">
+                  <h2 class="font-editorial text-lg font-bold text-[#141210] flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-[#141210] text-white text-xs flex items-center justify-center font-sans"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h2>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label class="block font-semibold text-[#141210] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></label>
+                      <input type="text" id="checkout-name" value="${customerAccount.name}" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" required />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-[#141210] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                      <input type="email" id="checkout-email" value="${customerAccount.email}" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" required />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block font-semibold text-[#141210] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                      <input type="tel" id="checkout-phone" value="${customerAccount.phone}" placeholder="+254 712 345 678" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] font-mono focus:outline-none focus:border-[#141210]" required />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Form Section 2: Delivery Address -->
+                <div class="border-t border-[#EAE3D6] pt-6 space-y-4">
+                  <h2 class="font-editorial text-lg font-bold text-[#141210] flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-[#141210] text-white text-xs flex items-center justify-center font-sans"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h2>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <label class="block font-semibold text-[#141210] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                      <select id="checkout-city" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]">
+                        <option value="Nairobi - Kilimani / Westlands"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></option>
+                        <option value="Nairobi - Karen / Langata"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></option>
+                        <option value="Mombasa - Nyali / Island"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></option>
+                        <option value="Kisumu - Milimani"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></option>
+                        <option value="Nakuru / Naivasha"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></option>
+                        <option value="Eldoret"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-[#141210] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></label>
+                      <input type="text" id="checkout-address" value="Mimosa Court, Apt 4B, Wood Avenue" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" required />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block font-semibold text-[#141210] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></label>
+                      <input type="text" id="checkout-notes" placeholder="e.g. Leave with building security; ring bell 4B" class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Form Section 3: Payment Method Selection -->
+                <div class="border-t border-[#EAE3D6] pt-6 space-y-4">
+                  <h2 class="font-editorial text-lg font-bold text-[#141210] flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-[#141210] text-white text-xs flex items-center justify-center font-sans"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h2>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <!-- M-Pesa Option -->
+                    <label onclick="selectPaymentMethod('mpesa')" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${selectedPaymentMethod === 'mpesa' ? 'border-[#141210] bg-[#FAF8F5]' : 'border-[#EAE3D6] bg-white'}">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-700"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+                        <input type="radio" name="payment" value="mpesa" ${selectedPaymentMethod === 'mpesa' ? 'checked' : ''} class="accent-black" />
+                      </div>
+                      <p class="text-[10px] text-[#5E574E] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                    </label>
+
+                    <!-- Paystack Option -->
+                    <label onclick="selectPaymentMethod('paystack')" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${selectedPaymentMethod === 'paystack' ? 'border-[#141210] bg-[#FAF8F5]' : 'border-[#EAE3D6] bg-white'}">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-sky-700"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                        <input type="radio" name="payment" value="paystack" ${selectedPaymentMethod === 'paystack' ? 'checked' : ''} class="accent-black" />
+                      </div>
+                      <p class="text-[10px] text-[#5E574E] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></p>
+                    </label>
+
+                    <!-- Cash on Delivery -->
+                    <label onclick="selectPaymentMethod('cod')" class="p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${selectedPaymentMethod === 'cod' ? 'border-[#141210] bg-[#FAF8F5]' : 'border-[#EAE3D6] bg-white'}">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                        <input type="radio" name="payment" value="cod" ${selectedPaymentMethod === 'cod' ? 'checked' : ''} class="accent-black" />
+                      </div>
+                      <p class="text-[10px] text-[#5E574E] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></p>
+                    </label>
+                  </div>
+
+                  <!-- Dynamic Payment Details Box -->
+                  <div id="payment-details-box" class="p-4 rounded-2xl bg-[#FAF8F5] border border-[#EAE3D6] text-xs">
+                    ${selectedPaymentMethod === 'mpesa' ? `
+                      <div class="space-y-2">
+                        <p class="font-bold text-[#141210]">Safaricom STK Push Simulation:</p>
+                        <p class="text-[#5E574E]">When you click 'Confirm Order', a prompt will trigger on your phone asking for your M-Pesa PIN for <strong class="text-[#141210]">${formatPrice(total)}</strong>.</p>
+                        <p class="text-[11px] text-[#999084]">Paybill: <strong>247247</strong> · Account: <strong>AURA LUXE</strong></p>
+                      </div>
+                    ` : selectedPaymentMethod === 'paystack' ? `
+                      <div class="space-y-2">
+                        <p class="font-bold text-[#141210]">Paystack Secured Gateway:</p>
+                        <p class="text-[#5E574E]">You will be routed through the simulated Paystack modal with 3D Secure verification.</p>
+                      </div>
+                    ` : `
+                      <div class="space-y-2">
+                        <p class="font-bold text-[#141210]">Cash on Delivery:</p>
+                        <p class="text-[#5E574E]">Pay our courteous concierge courier in cash or via M-Pesa till upon physical inspection.</p>
+                      </div>
+                    `}
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                  <button id="pay-confirm-btn" onclick="initiatePaymentFlow(${total})" class="w-full bg-[#141210] hover:bg-black text-[#FAF8F5] py-4 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2">
+                    <i data-lucide="lock" class="w-4 h-4 text-[#D8EB58]"></i>
+                    <span>Confirm Order & Pay ${formatPrice(total)}</span>
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Right Summary Column (5 cols) -->
+              <div class="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-4">
+                <h2 class="font-editorial text-lg font-bold text-[#141210]">Order Items (${cart.length})</h2>
+                <div class="divide-y divide-[#EAE3D6] max-h-64 overflow-y-auto pr-1">
+                  ${cart.map(item => `
+                    <div class="py-3 flex items-center gap-3">
+                      <img src="${item.image}" alt="${item.name}" class="w-12 h-12 object-cover rounded-xl bg-[#F5EFEB] shrink-0" />
+                      <div class="flex-1 min-w-0 text-xs">
+                        <h3 class="font-semibold text-[#141210] truncate">${item.name}</h3>
+                        ${item.shade ? `<p class="text-[11px] text-[#999084]">Shade: ${item.shade}</p>` : ''}
+                        <p class="text-[11px] text-[#5E574E]">Qty: ${item.qty} × ${formatPrice(item.priceKES)}</p>
+                      </div>
+                      <span class="font-bold text-xs tabular-nums text-[#141210]">${formatPrice(item.priceKES * item.qty)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div class="border-t border-[#EAE3D6] pt-4 space-y-2 text-xs">
+                  <div class="flex justify-between text-[#5E574E]">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                    <span class="font-bold text-[#141210] tabular-nums">${formatPrice(subtotal)}</span>
+                  </div>
+                  ${discount > 0 ? `
+                    <div class="flex justify-between text-[#D96843]">
+                      <span>Discount (${appliedDiscount.code})</span>
+                      <span class="font-bold tabular-nums">-${formatPrice(discount)}</span>
+                    </div>
+                  ` : ''}
+                  <div class="flex justify-between text-[#5E574E]">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    <span class="font-bold text-[#141210]">${shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                  </div>
+                  <div class="flex justify-between text-[#5E574E]">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <span class="text-[#999084] tabular-nums">${formatPrice(subtotal * 0.16)} (Included)</span>
+                  </div>
+                  <div class="border-t border-[#EAE3D6] pt-3 flex justify-between text-base font-bold text-[#141210]">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                    <span class="tabular-nums">${formatPrice(total)}</span>
+                  </div>
+                </div>
+
+                <div class="pt-4 text-[11px] text-[#999084] space-y-1">
+                  <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      }
+
+      function selectPaymentMethod(method) {
+        selectedPaymentMethod = method;
+        renderCheckoutView();
+      }
+
+      function initiatePaymentFlow(total) {
+        const btn = document.getElementById('pay-confirm-btn');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = `<span class="animate-spin mr-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span> Initiating ${selectedPaymentMethod.toUpperCase()} Session...`;
+        }
+
+        const name = document.getElementById('checkout-name')?.value || "Guest Client";
+        const email = document.getElementById('checkout-email')?.value || "client@example.com";
+        const phone = document.getElementById('checkout-phone')?.value || "+254 700 000 000";
+        const city = document.getElementById('checkout-city')?.value || "Nairobi";
+        const address = document.getElementById('checkout-address')?.value || "Nairobi";
+
+        // Generate authentic Kenyan simulated order
+        const orderId = 'AL-' + Math.floor(100000 + Math.random() * 900000);
+        const mpesaRef = 'MPESA-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+        setTimeout(() => {
+          const newOrder = {
+            id: orderId,
+            date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            totalKES: total,
+            currency: currentCurrency,
+            paymentMethod: selectedPaymentMethod,
+            paymentReference: selectedPaymentMethod === 'mpesa' ? mpesaRef : ('PAYSTACK-REF-' + orderId),
+            customer: { name, email, phone, city, address },
+            items: [...cart],
+            status: "Order Confirmed — Preparing Botanical Shipment"
+          };
+
+          customerOrders.unshift(newOrder);
+          localStorage.setItem('aura_orders', JSON.stringify(customerOrders));
+
+          // Clear cart
+          cart = [];
+          localStorage.setItem('aura_cart', '[]');
+          renderCartUI();
+
+          window.location.hash = `#order-success/${orderId}`;
+        }, 1800);
+      }
+
+      /* =========================================================================
+       * SCREEN 10: ORDER CONFIRMATION VIEW (#order-success/:id)
+       * ========================================================================= */
+      function renderOrderSuccessView(orderId) {
+        const container = document.getElementById('view-container');
+        const order = customerOrders.find(o => o.id === orderId) || customerOrders[0];
+
+        if (!order) {
+          container.innerHTML = `<p class="p-8 text-center"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>`;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="bg-white p-8 sm:p-12 rounded-3xl border border-[#EAE3D6] shadow-xl text-center space-y-6">
+              <div class="w-16 h-16 bg-[#D8EB58] text-[#141210] rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-md"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+
+              <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210] mt-1">Thank you, ${order.customer.name}!</h1>
+                <p class="text-xs text-[#5E574E] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+
+              <!-- Order Details Card -->
+              <div class="bg-[#FAF8F5] p-6 rounded-2xl border border-[#EAE3D6] text-left text-xs space-y-3">
+                <div class="flex items-center justify-between border-b border-[#EAE3D6] pb-3">
+                  <div>
+                    <p class="text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></p>
+                    <p class="font-mono font-bold text-sm text-[#141210]">${order.id}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                    <p class="font-mono font-bold text-sm text-[#D96843]">${order.paymentReference}</p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 py-2 border-b border-[#EAE3D6]">
+                  <div>
+                    <p class="text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></p>
+                    <p class="font-semibold text-[#141210] mt-0.5">${order.customer.address}</p>
+                    <p class="text-[#5E574E]">${order.customer.city}</p>
+                  </div>
+                  <div>
+                    <p class="text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></p>
+                    <p class="font-semibold text-[#141210] mt-0.5">${order.customer.phone}</p>
+                    <p class="text-[#5E574E]">${order.customer.email}</p>
+                  </div>
+                </div>
+
+                <!-- Itemized Breakdown -->
+                <div class="space-y-2 pt-2">
+                  <p class="font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></p>
+                  ${order.items.map(it => `
+                    <div class="flex justify-between text-[#5E574E]">
+                      <span>${it.name} ${it.shade ? `(${it.shade})` : ''} × ${it.qty}</span>
+                      <span class="font-bold text-[#141210] tabular-nums">${formatPrice(it.priceKES * it.qty)}</span>
+                    </div>
+                  `).join('')}
+                  <div class="border-t border-[#EAE3D6] pt-2 flex justify-between font-bold text-sm text-[#141210]">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span>
+                    <span class="tabular-nums">${formatPrice(order.totalKES)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+                <button onclick="window.print()" class="px-6 py-3 rounded-full border border-[#EAE3D6] hover:border-[#141210] text-xs font-semibold text-[#141210] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></button>
+                <a href="#shop" class="px-8 py-3 bg-[#141210] hover:bg-black text-[#FAF8F5] rounded-full text-xs font-semibold tracking-wider uppercase transition-all shadow-md"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 11: CUSTOMER ACCOUNT VIEW (#account)
+       * ========================================================================= */
+      function renderAccountView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 class="font-editorial text-3xl font-bold text-[#141210] mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></h1>
+            <p class="text-xs text-[#5E574E] mb-8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left Profile Card (4 cols) -->
+              <div class="lg:col-span-4 bg-white p-6 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-full bg-[#D8EB58] text-[#141210] font-bold text-lg flex items-center justify-center font-editorial">
+                    ${customerAccount.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-sm text-[#141210]">${customerAccount.name}</h3>
+                    <p class="text-xs text-[#999084]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></p>
+                  </div>
+                </div>
+
+                <div class="border-t border-[#EAE3D6] pt-4 space-y-2 text-xs text-[#5E574E]">
+                  <p>✉️ ${customerAccount.email}</p>
+                  <p>📞 ${customerAccount.phone}</p>
+                  <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                </div>
+
+                <div class="border-t border-[#EAE3D6] pt-4">
+                  <h4 class="font-bold text-xs text-[#141210] mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h4>
+                  ${customerAccount.savedAddresses.map(addr => `
+                    <div class="p-3 bg-[#FAF8F5] rounded-xl border border-[#EAE3D6] text-xs mb-2">
+                      <span class="font-bold text-[#141210]">${addr.label}</span>
+                      <p class="text-[#5E574E] text-[11px] mt-0.5">${addr.street}, ${addr.city}</p>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Right Orders History (8 cols) -->
+              <div class="lg:col-span-8 bg-white p-6 sm:p-8 rounded-3xl border border-[#EAE3D6] shadow-sm space-y-6">
+                <h3 class="font-editorial text-xl font-bold text-[#141210]">Order History (${customerOrders.length})</h3>
+
+                ${customerOrders.length === 0 ? `
+                  <div class="text-center py-12 text-[#999084] text-xs space-y-3">
+                    <i data-lucide="package" class="w-10 h-10 mx-auto text-[#EAE3D6]"></i>
+                    <p>You have not placed any orders yet.</p>
+                    <a href="#shop" class="inline-block px-5 py-2 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold">Start Your First Ritual</a>
+                  </div>
+                ` : `
+                  <div class="space-y-4">
+                    ${customerOrders.map(order => `
+                      <div class="p-5 rounded-2xl border border-[#EAE3D6] bg-[#FAF8F5] space-y-3">
+                        <div class="flex items-center justify-between text-xs">
+                          <div>
+                            <span class="font-mono font-bold text-[#141210]">${order.id}</span>
+                            <span class="text-[#999084] ml-2">· ${order.date}</span>
+                          </div>
+                          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D8EB58] text-[#141210]">
+                            ${order.status}
+                          </span>
+                        </div>
+
+                        <div class="divide-y divide-[#EAE3D6] text-xs">
+                          ${order.items.map(item => `
+                            <div class="py-1.5 flex justify-between text-[#5E574E]">
+                              <span>${item.name} × ${item.qty}</span>
+                              <span class="tabular-nums font-semibold">${formatPrice(item.priceKES * item.qty)}</span>
+                            </div>
+                          `).join('')}
+                        </div>
+
+                        <div class="border-t border-[#EAE3D6] pt-2 flex items-center justify-between text-xs">
+                          <span class="text-[#999084]">Ref: ${order.paymentReference}</span>
+                          <span class="font-bold text-sm text-[#141210] tabular-nums">Total: ${formatPrice(order.totalKES)}</span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 12: BEAUTY GUIDES & RITUALS (#guides)
+       * ========================================================================= */
+      function renderGuidesView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="mb-10 text-center max-w-xl mx-auto">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></h1>
+              <p class="text-xs text-[#5E574E] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="space-y-8">
+              <!-- Guide 1 -->
+              <div class="bg-white p-6 sm:p-10 rounded-3xl border border-[#EAE3D6] shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                <div class="md:col-span-5 rounded-2xl overflow-hidden aspect-video md:aspect-square">
+                  <img class="w-full h-full object-cover" />
+                </div>
+                <div class="md:col-span-7 space-y-3">
+                  <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></span>
+                  <h2 class="font-editorial text-2xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+                  <p class="text-xs text-[#5E574E] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <div class="pt-2">
+                    <a href="#product/aura-bakuchiol-serum" class="inline-block px-5 py-2 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold hover:bg-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Guide 2 -->
+              <div class="bg-white p-6 sm:p-10 rounded-3xl border border-[#EAE3D6] shadow-sm grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+                <div class="md:col-span-5 rounded-2xl overflow-hidden aspect-video md:aspect-square">
+                  <img class="w-full h-full object-cover" />
+                </div>
+                <div class="md:col-span-7 space-y-3">
+                  <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+                  <h2 class="font-editorial text-2xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+                  <p class="text-xs text-[#5E574E] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <div class="pt-2">
+                    <a href="#product/aura-silk-foundation" class="inline-block px-5 py-2 bg-[#141210] text-[#FAF8F5] rounded-full text-xs font-semibold hover:bg-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 13: ABOUT US (#about)
+       * ========================================================================= */
+      function renderAboutView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10">
+            <div class="text-center space-y-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></span>
+              <h1 class="font-editorial text-4xl sm:text-5xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></h1>
+              <p class="text-sm text-[#5E574E] max-w-xl mx-auto leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="rounded-3xl overflow-hidden aspect-video shadow-md">
+              <img class="w-full h-full object-cover" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-[#5E574E] leading-relaxed">
+              <div class="bg-white p-6 rounded-2xl border border-[#EAE3D6] space-y-2">
+                <h3 class="font-editorial text-lg font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></h3>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div class="bg-white p-6 rounded-2xl border border-[#EAE3D6] space-y-2">
+                <h3 class="font-editorial text-lg font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h3>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div class="bg-white p-6 rounded-2xl border border-[#EAE3D6] space-y-2">
+                <h3 class="font-editorial text-lg font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></h3>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 14: CONTACT & CONCIERGE (#contact)
+       * ========================================================================= */
+      function renderContactView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="bg-white p-8 sm:p-12 rounded-3xl border border-[#EAE3D6] shadow-sm grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="space-y-4">
+                <span class="text-xs font-bold uppercase tracking-wider text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <h1 class="font-editorial text-3xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h1>
+                <p class="text-xs text-[#5E574E] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <div class="pt-4 text-xs space-y-2 text-[#141210] font-medium">
+                  <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></p>
+                  <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+              </div>
+
+              <form onsubmit="event.preventDefault(); showToast('Inquiry sent! Our concierge will reply via WhatsApp.'); this.reset();" class="space-y-3 text-xs">
+                <div>
+                  <label class="block font-semibold text-[#141210] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></label>
+                  <input type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-[#141210] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></label>
+                  <input type="text" required class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-[#141210] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></label>
+                  <textarea rows="4" required class="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE3D6] bg-[#FAF8F5] focus:outline-none focus:border-[#141210]" placeholder="Ask about ingredients, shade matching, or order status..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-[#141210] hover:bg-black text-[#FAF8F5] py-3.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+              </form>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 15: POLICIES, SHIPPING & RETURNS (#policies)
+       * ========================================================================= */
+      function renderPoliciesView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+            <div>
+              <h1 class="font-editorial text-3xl sm:text-4xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h1>
+              <p class="text-xs text-[#5E574E] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl border border-[#EAE3D6] space-y-6 text-xs text-[#5E574E] leading-relaxed">
+              <section class="space-y-2">
+                <h3 class="font-editorial text-xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h3>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </section>
+
+              <section class="space-y-2 border-t border-[#EAE3D6] pt-6">
+                <h3 class="font-editorial text-xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </section>
+
+              <section class="space-y-2 border-t border-[#EAE3D6] pt-6">
+                <h3 class="font-editorial text-xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </section>
+            </div>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * SCREEN 16: NOT FOUND VIEW (404)
+       * ========================================================================= */
+      function renderNotFoundView() {
+        const container = document.getElementById('view-container');
+        container.innerHTML = `
+          <div class="max-w-md mx-auto px-4 py-24 text-center space-y-4">
+            <span class="font-editorial text-6xl font-bold text-[#D96843]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+            <h1 class="font-editorial text-2xl font-bold text-[#141210]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h1>
+            <p class="text-xs text-[#5E574E]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#home" class="inline-block mt-4 bg-[#141210] text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></a>
+          </div>
+        `;
+      }
+
+      /* =========================================================================
+       * 8. GSAP ANIMATIONS & MOTION CONTROLLER
+       * ========================================================================= */
+      function initGSAPAnimations() {
+        // Accessibility check: do not animate if user prefers reduced motion
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          return;
+        }
+
+        if (typeof gsap === 'undefined') return;
+
+        // Animate hero headline and tags smoothly on entrance
+        const heroHeading = document.querySelector('h1');
+        if (heroHeading) {
+          gsap.fromTo(heroHeading, 
+            { opacity: 0, y: 18 },
+            { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+          );
+        }
+
+        // Animate cards on route entry
+        const cards = document.querySelectorAll('.card-zoom');
+        if (cards.length > 0) {
+          gsap.fromTo(cards,
+            { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: "power2.out" }
+          );
+        }
+      }
+    </script>
+  
+
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body></html>

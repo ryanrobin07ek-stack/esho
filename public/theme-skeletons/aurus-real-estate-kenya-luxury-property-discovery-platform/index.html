@@ -1,0 +1,3180 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth" data-eshop-skeleton-preview=""><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+  <meta name="description" content="">
+  
+  <!-- Open Graph / Meta -->
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:type" content="">
+  <meta name="twitter:card" content="">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Syne -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&amp;family=Syne:wght@600;700;800&amp;display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#0B132B',
+              slate: '#1C2541',
+              dark: '#070C1B',
+              orange: '#E05A2B',
+              'orange-hover': '#C84B1F',
+              'orange-light': '#FFF3EE',
+              stone: '#F8F9FA',
+              border: '#E2E8F0',
+              muted: '#64748B'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Syne"', '"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet CSS for Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+  <!-- Custom CSS for luxury real estate aesthetics -->
+  <style>
+    :root {
+      --brand-navy: var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-01);
+      --brand-orange: var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-02);
+      --brand-stone: var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-03);
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      color: var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-04);
+      background-color: var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-05);
+      overflow-x: hidden;
+    }
+    h1, h2, h3, .font-display {
+      font-family: 'Syne', 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.02em;
+    }
+    /* Hide scrollbar for clean horizontal rails */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Leaflet popup styling override */
+    .leaflet-popup-content-wrapper {
+      padding: 0;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 20px 25px -5px var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-06), 0 8px 10px -6px var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-06);
+    }
+    .leaflet-popup-content {
+      margin: 0;
+      line-height: 1.4;
+    }
+    /* Graceful image fallbacks */
+    img {
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+    /* Safe motion defaults */
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+    /* Watermark text styling */
+    .watermark-text {
+      font-size: clamp(4rem, 15vw, 14rem);
+      line-height: 0.8;
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+
+  <!-- Lucide Icons & GSAP + Leaflet via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-eshop-skeleton-styles="">.eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-07);vertical-align:middle}.eshop-placeholder-media{background:linear-gradient(135deg,var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-07),var(--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-08));object-fit:cover}</style><style data-theme-tokens="">:root{--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-01:#0b132b;--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-02:#e05a2b;--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-03:#f8f9fa;--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-04:#1e293b;--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-05:#ffffff;--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-06:rgb(000/0.1);--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-07:#d1d5db;--theme-aurus-real-estate-kenya-luxury-property-discovery-platform-color-08:#f3f4f6;}</style></head>
+<body class="bg-white text-slate-800 antialiased selection:bg-orange-500 selection:text-white">
+
+  <!-- ================= TOP ANNOUNCEMENT / CONTACT TICKER ================= -->
+  <div class="bg-brand-dark text-slate-300 text-xs py-2 px-4 border-b border-white/10 z-50 relative">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-4 text-[11px] sm:text-xs">
+        <span class="inline-flex items-center gap-1.5 text-orange-400 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 89%;"></span></span>
+        <span class="hidden md:inline text-slate-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <span class="hidden md:flex items-center gap-1 text-slate-400">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+      </div>
+      <div class="flex items-center gap-4 text-[11px] sm:text-xs">
+        <a class="hover:text-white flex items-center gap-1 transition-colors">
+          <i data-lucide="phone" class="w-3 h-3 text-orange-400"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a>
+        <a target="_blank" rel="noopener noreferrer" class="hover:text-white flex items-center gap-1 transition-colors">
+          <i data-lucide="message-circle" class="w-3 h-3 text-emerald-400"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+        <span class="text-slate-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <!-- Currency Toggle -->
+        <button id="currency-toggle-btn" onclick="toggleCurrency()" class="text-slate-300 hover:text-white font-semibold transition-colors flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded text-[11px]">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></span>
+          <span id="current-currency-label" class="text-orange-400 font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PRIMARY NAVIGATION HEADER ================= -->
+  <header id="main-header" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Brand Logo -->
+        <a href="#home" class="flex items-center gap-2 group">
+          <div class="flex flex-col">
+            <span class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-navy group-hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span><span class="text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            </span>
+            <span class="text-[9px] tracking-[0.28em] uppercase text-slate-400 font-semibold -mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="hidden lg:flex items-center gap-7 text-[13px] font-semibold text-slate-700 uppercase tracking-wider">
+          <a href="#properties" onclick="applyCategoryFilter('all')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a>
+          <a href="#properties" onclick="applyCategoryFilter('sale')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></a>
+          <a href="#properties" onclick="applyCategoryFilter('rent')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a>
+          <a href="#properties" onclick="applyCategoryFilter('commercial')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a>
+          <a href="#properties" onclick="applyCategoryFilter('land')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+          <a href="#neighbourhoods" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a>
+          <a href="#agents" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></a>
+          <a href="#mortgage-calculator" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a>
+        </nav>
+
+        <!-- Header Actions: Saved Wishlist, Sell CTA & Mobile Toggle -->
+        <div class="flex items-center gap-3">
+          <!-- Saved Properties Shortcut Button -->
+          <a href="#saved" class="relative p-2.5 text-slate-700 hover:text-brand-orange rounded-full hover:bg-slate-50 transition-colors">
+            <i data-lucide="bookmark" class="w-5 h-5"></i>
+            <span id="saved-count-badge" class="absolute -top-0.5 -right-0.5 bg-brand-orange text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </a>
+
+          <!-- Quick Search Icon -->
+          <a href="#properties" class="p-2.5 text-slate-700 hover:text-brand-orange rounded-full hover:bg-slate-50 transition-colors">
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </a>
+
+          <!-- List With Us CTA Button -->
+          <a href="#sell" class="hidden sm:inline-flex items-center justify-center px-5 py-2.5 bg-brand-navy hover:bg-brand-slate text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm hover:shadow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+
+          <!-- Mobile Hamburger Toggle -->
+          <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="lg:hidden p-2 text-slate-700 hover:text-brand-orange rounded-lg focus:outline-none">
+            <i data-lucide="menu" id="menu-icon" class="w-6 h-6"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Slide-down Drawer -->
+    <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-slate-200 px-5 pt-3 pb-6 shadow-xl">
+      <div class="flex flex-col gap-3 text-sm font-semibold text-slate-800 uppercase tracking-wide">
+        <a href="#home" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('all'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('sale'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('rent'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('commercial'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#properties" onclick="applyCategoryFilter('land'); closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#neighbourhoods" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#agents" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#mortgage-calculator" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        <a href="#sell" onclick="closeMobileMenu()" class="py-2 border-b border-slate-100 text-brand-orange flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></span> <i data-lucide="chevron-right" class="w-4 h-4 text-brand-orange"></i>
+        </a>
+        <a href="#saved" onclick="closeMobileMenu()" class="py-2 flex items-center justify-between">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span> <span id="mobile-saved-badge" class="bg-brand-orange text-white text-xs px-2 py-0.5 rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </a>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-2">
+        <a href="#sell" onclick="closeMobileMenu()" class="w-full text-center py-3 bg-brand-navy text-white text-xs font-bold uppercase rounded-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT APP CONTAINER (DYNAMIC VIEWS) ================= -->
+  <main id="app-root" class="min-h-screen">
+    <!-- Views rendered dynamically via JavaScript based on URL hash:
+         - #home (Reference image layout)
+         - #properties (Catalogue with full filters & map)
+         - #property/:id (Detailed individual listing)
+         - #agents & #agent/:id (Directory & profiles)
+         - #neighbourhoods & #neighbourhood/:id (Area guides)
+         - #mortgage-calculator (Amortisation tool)
+         - #sell & #rent-out (Owner lead gen)
+         - #saved (Shortlist wishlist & comparison)
+         - #about, #contact, #faq, #guides (Informational)
+    -->
+  </main>
+
+  <!-- ================= GLOBAL MODAL: SCHEDULE VIEWING / INQUIRY ================= -->
+  <div id="viewing-modal" class="fixed inset-0 z-50 hidden bg-brand-dark/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl p-6 relative">
+      <button onclick="closeViewingModal()" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition-colors">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="mb-5">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></span>
+        <h3 id="modal-property-title" class="font-display text-xl font-bold text-slate-900 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></h3>
+        <p class="text-xs text-slate-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+      </div>
+
+      <!-- Demo Disclaimer Notice -->
+      <div class="bg-orange-50 border border-orange-200/80 rounded-xl p-3 mb-5 text-[11px] text-amber-900 flex items-start gap-2">
+        <i data-lucide="info" class="w-4 h-4 text-orange-600 shrink-0 mt-0.5"></i>
+        <span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+      </div>
+
+      <form id="viewing-form" onsubmit="handleViewingSubmit(event)" class="space-y-4">
+        <input type="hidden" id="modal-property-id" value="">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></label>
+          <input type="text" id="v-name" required="" class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></label>
+            <input type="email" id="v-email" required="" class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></label>
+            <input type="tel" id="v-phone" required="" class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></label>
+            <input type="date" id="v-date" required="" class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></label>
+            <select id="v-time" class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange">
+              <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></option>
+              <option selected=""><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></option>
+              <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></option>
+              <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></label>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <label class="border border-slate-200 rounded-lg p-2.5 flex items-center gap-2 cursor-pointer hover:bg-slate-50">
+              <input type="radio" name="v-type" value="in-person" checked="" class="text-brand-orange focus:ring-brand-orange">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+            </label>
+            <label class="border border-slate-200 rounded-lg p-2.5 flex items-center gap-2 cursor-pointer hover:bg-slate-50">
+              <input type="radio" name="v-type" value="virtual" class="text-brand-orange focus:ring-brand-orange">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></label>
+          <textarea id="v-notes" rows="2" class="w-full text-xs px-3.5 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange"></textarea>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 84%;"></span></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= GLOBAL ENLARGED PHOTO LIGHTBOX ================= -->
+  <div id="lightbox-modal" class="fixed inset-0 z-50 hidden bg-black/95 flex items-center justify-center p-4">
+    <button onclick="closeLightbox()" class="absolute top-5 right-5 text-white/80 hover:text-white p-2 text-2xl z-50">
+      <i data-lucide="x" class="w-8 h-8"></i>
+    </button>
+    <div class="max-w-5xl w-full flex flex-col items-center">
+      <img id="lightbox-img" class="max-h-[82vh] w-auto max-w-full rounded-lg object-contain shadow-2xl eshop-placeholder-media" data-skeleton-media="">
+      <p id="lightbox-caption" class="text-white text-sm font-medium mt-3 text-center"></p>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-brand-dark text-slate-300 pt-16 pb-12 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Top Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-white/10">
+        
+        <!-- Brand Summary -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex flex-col">
+            <span class="font-display text-3xl font-extrabold tracking-tight text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span><span class="text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            </span>
+            <span class="text-[10px] tracking-[0.3em] uppercase text-slate-400 font-semibold -mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed max-w-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div class="pt-2 flex items-center gap-3 text-xs text-slate-400">
+            <span class="inline-flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+          </div>
+        </div>
+
+        <!-- Property Categories -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></h4>
+          <ul class="space-y-2.5 text-xs text-slate-400 font-medium">
+            <li><a href="#properties" onclick="applyCategoryFilter('sale')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('rent')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('commercial')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('land')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('off-plan')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+            <li><a href="#properties" onclick="applyCategoryFilter('penthouses')" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a></li>
+          </ul>
+        </div>
+
+        <!-- Prime Locations -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></h4>
+          <ul class="space-y-2.5 text-xs text-slate-400 font-medium">
+            <li><a href="#neighbourhood/westlands" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+            <li><a href="#neighbourhood/karen" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a></li>
+            <li><a href="#neighbourhood/kilimani" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+            <li><a href="#neighbourhood/lavington" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+            <li><a href="#neighbourhood/runda" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+            <li><a href="#neighbourhood/diani" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+          </ul>
+        </div>
+
+        <!-- Agency & Advisory -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></h4>
+          <ul class="space-y-2.5 text-xs text-slate-400 font-medium">
+            <li><a href="#sell" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></li>
+            <li><a href="#rent-out" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+            <li><a href="#valuation" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+            <li><a href="#mortgage-calculator" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+            <li><a href="#agents" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></a></li>
+            <li><a href="#guides" class="hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar & Disclaimers -->
+      <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+        <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        <div class="flex items-center gap-6">
+          <a href="#about" class="hover:text-slate-400 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a>
+          <a href="#faq" class="hover:text-slate-400 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a>
+          <a href="#contact" class="hover:text-slate-400 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></a>
+          <span class="text-slate-700"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <span class="text-slate-500"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ================= EMBEDDED JAVASCRIPT APPLICATION CODE ================= -->
+  <script>
+    /* ========================================================================
+       AURUS REAL ESTATE PLATFORM — KENYAN LUXURY REAL ESTATE SYSTEM
+       Single-File Vanilla SPA Architecture with GSAP & Leaflet Integration
+       ======================================================================== */
+
+    // --- Global State ---
+    const STATE = {
+      currentRoute: "",
+      currentPropertyId: null,
+      currentAgentId: null,
+      currentNeighbourhoodId: null,
+      currency: "", // KES or USD
+      kesToUsdRate: 130, // 1 USD = ~130 KES
+      savedProperties: JSON.parse(localStorage.getItem('aurus_saved_properties') || '[]'),
+      filterCriteria: {
+        category: "", // 'all', 'sale', 'rent', 'commercial', 'land', 'off-plan', 'penthouses'
+        location: "",
+        type: "",
+        minPrice: 0,
+        maxPrice: 0,
+        bedrooms: "",
+        furnishing: "",
+        searchQuery: "",
+        sortBy: ""
+      },
+      mapInstance: null,
+      markers: []
+    };
+
+    // --- Property Inventory Catalogue (Realistic Kenya Portfolio) ---
+    const PROPERTIES_DATA = [
+      {
+        id: 'prop-1',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.2642,
+        lng: 36.8045,
+        beds: 4,
+        baths: 5,
+        sqm: 520,
+        parking: 3,
+        yearBuilt: 2024,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-2',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.3320,
+        lng: 36.7088,
+        beds: 5,
+        baths: 6,
+        sqm: 780,
+        parking: 4,
+        yearBuilt: 2023,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-3',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.2789,
+        lng: 36.7865,
+        beds: 3,
+        baths: 4,
+        sqm: 390,
+        parking: 2,
+        yearBuilt: 2024,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-4',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.2185,
+        lng: 36.8188,
+        beds: 5,
+        baths: 6,
+        sqm: 850,
+        parking: 6,
+        yearBuilt: 2022,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-5',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.2891,
+        lng: 36.7932,
+        beds: 2,
+        baths: 2,
+        sqm: 145,
+        parking: 2,
+        yearBuilt: 2024,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-6',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -0.7410,
+        lng: 36.3850,
+        beds: 4,
+        baths: 4,
+        sqm: 600,
+        parking: 4,
+        yearBuilt: 2021,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-7',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -4.3450,
+        lng: 39.5760,
+        beds: 4,
+        baths: 5,
+        sqm: 550,
+        parking: 3,
+        yearBuilt: 2023,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: false
+      },
+      {
+        id: 'prop-8',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: "",
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.2655,
+        lng: 36.8080,
+        beds: 3,
+        baths: 3,
+        sqm: 240,
+        parking: 2,
+        yearBuilt: 2024,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-9',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: "",
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.2820,
+        lng: 36.7710,
+        beds: 4,
+        baths: 4,
+        sqm: 380,
+        parking: 3,
+        yearBuilt: 2022,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: false
+      },
+      {
+        id: 'prop-10',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: "",
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.2310,
+        lng: 36.8120,
+        beds: 5,
+        baths: 6,
+        sqm: 700,
+        parking: 5,
+        yearBuilt: 2021,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: false
+      },
+      {
+        id: 'prop-11',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.2980,
+        lng: 36.8150,
+        beds: 0,
+        baths: 8,
+        sqm: 1200,
+        parking: 15,
+        yearBuilt: 2023,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-12',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.3190,
+        lng: 36.7210,
+        beds: 0,
+        baths: 0,
+        sqm: 2023, // 0.50 Acre
+        parking: 0,
+        yearBuilt: 0,
+        furnishing: "",
+        images: [
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-13',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.2610,
+        lng: 36.8190,
+        beds: 3,
+        baths: 3,
+        sqm: 220,
+        parking: 2,
+        yearBuilt: 2027,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: true
+      },
+      {
+        id: 'prop-14',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -4.0320,
+        lng: 39.7040,
+        beds: 4,
+        baths: 4,
+        sqm: 490,
+        parking: 3,
+        yearBuilt: 2023,
+        furnishing: "",
+        images: [
+          "",
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: false
+      },
+      {
+        id: 'prop-15',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -1.3650,
+        lng: 36.9320,
+        beds: 0,
+        baths: 4,
+        sqm: 1800,
+        parking: 10,
+        yearBuilt: 2023,
+        furnishing: "",
+        images: [
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: false
+      },
+      {
+        id: 'prop-16',
+        title: "",
+        tag: "",
+        purpose: "",
+        category: "",
+        type: "",
+        priceKes: 0,
+        rentPeriod: null,
+        location: "",
+        neighbourhood: "",
+        address: "",
+        lat: -4.3120,
+        lng: 39.5820,
+        beds: 0,
+        baths: 0,
+        sqm: 3035, // 0.75 Acre
+        parking: 0,
+        yearBuilt: 0,
+        furnishing: "",
+        images: [
+          "",
+          ""
+        ],
+        shortDesc: "",
+        fullDesc: "",
+        amenities: [
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        agentId: "",
+        isFeatured: false
+      }
+    ];
+
+    // --- Agent Profiles Directory ---
+    const AGENTS_DATA = [
+      {
+        id: 'agent-1',
+        name: "",
+        role: 'Senior Director — Luxury Residential',
+        specialty: "",
+        phone: "",
+        whatsapp: "",
+        email: "",
+        image: "",
+        bio: "",
+        activeListingsCount: 8
+      },
+      {
+        id: 'agent-2',
+        name: "",
+        role: 'Head of Commercial Advisory & Land',
+        specialty: "",
+        phone: "",
+        whatsapp: "",
+        email: "",
+        image: "",
+        bio: "",
+        activeListingsCount: 6
+      },
+      {
+        id: 'agent-3',
+        name: "",
+        role: 'Director — Coast & Holiday Residences',
+        specialty: "",
+        phone: "",
+        whatsapp: "",
+        email: "",
+        image: "",
+        bio: "",
+        activeListingsCount: 5
+      },
+      {
+        id: 'agent-4',
+        name: "",
+        role: 'Director — Urban Developments & Rentals',
+        specialty: "",
+        phone: "",
+        whatsapp: "",
+        email: "",
+        image: "",
+        bio: "",
+        activeListingsCount: 7
+      }
+    ];
+
+    // --- Neighbourhood Area Profiles ---
+    const NEIGHBOURHOODS_DATA = [
+      {
+        id: 'westlands',
+        name: "",
+        subtitle: "",
+        avgPrice: "",
+        pricePerSqm: "",
+        lifestyle: "",
+        image: "",
+        highlights: ["", "", "", ""],
+        description: ""
+      },
+      {
+        id: 'karen',
+        name: "",
+        subtitle: "",
+        avgPrice: "",
+        pricePerSqm: "",
+        lifestyle: "",
+        image: "",
+        highlights: ["", "", "", ""],
+        description: ""
+      },
+      {
+        id: 'kilimani',
+        name: "",
+        subtitle: "",
+        avgPrice: "",
+        pricePerSqm: "",
+        lifestyle: "",
+        image: "",
+        highlights: ["", "", "", ""],
+        description: ""
+      },
+      {
+        id: 'runda',
+        name: "",
+        subtitle: "",
+        avgPrice: "",
+        pricePerSqm: "",
+        lifestyle: "",
+        image: "",
+        highlights: ["", "", "", ""],
+        description: ""
+      },
+      {
+        id: 'diani',
+        name: "",
+        subtitle: "",
+        avgPrice: "",
+        pricePerSqm: "",
+        lifestyle: "",
+        image: "",
+        highlights: ["", "", "", ""],
+        description: ""
+      }
+    ];
+
+    // --- Helper Utilities ---
+    function formatCurrency(amountKes, rentPeriod = null) {
+      if (!amountKes || amountKes === 0) return 'Price on Inquiry';
+
+      let displayVal = '';
+      if (STATE.currency === 'USD') {
+        const usdVal = Math.round(amountKes / STATE.kesToUsdRate);
+        displayVal = '$' + usdVal.toLocaleString('en-US');
+      } else {
+        displayVal = 'KES ' + amountKes.toLocaleString('en-KE');
+      }
+
+      if (rentPeriod) {
+        displayVal += ` / ${rentPeriod}`;
+      }
+      return displayVal;
+    }
+
+    function toggleCurrency() {
+      STATE.currency = STATE.currency === 'KES' ? 'USD' : 'KES';
+      document.getElementById('current-currency-label').innerText = STATE.currency;
+      renderCurrentRoute();
+      showToast(`Currency converted to ${STATE.currency}`);
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto bg-brand-navy text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-white/10 transition-all duration-300 transform translate-y-4 opacity-0`;
+      
+      const icon = type === 'success' ? 'check-circle' : 'info';
+      toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 text-brand-orange"></i><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>`;
+      
+      container.appendChild(toast);
+      if (window.lucide) lucide.createIcons();
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 350);
+      }, 3500);
+    }
+
+    // --- Wishlist / Saved Properties Functionality ---
+    function isPropertySaved(id) {
+      return STATE.savedProperties.includes(id);
+    }
+
+    function toggleSaveProperty(id, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      const index = STATE.savedProperties.indexOf(id);
+      if (index > -1) {
+        STATE.savedProperties.splice(index, 1);
+        showToast('Property removed from shortlist');
+      } else {
+        STATE.savedProperties.push(id);
+        showToast('Property saved to shortlist');
+      }
+      localStorage.setItem('aurus_saved_properties', JSON.stringify(STATE.savedProperties));
+      updateSavedBadges();
+      
+      // Update heart icon if on screen
+      const heartBtns = document.querySelectorAll(`[data-save-id="${id}"]`);
+      heartBtns.forEach(btn => {
+        const icon = btn.querySelector('i');
+        if (icon) {
+          if (isPropertySaved(id)) {
+            btn.classList.add('text-brand-orange');
+            btn.classList.remove('text-slate-400');
+            icon.setAttribute('fill', 'currentColor');
+          } else {
+            btn.classList.remove('text-brand-orange');
+            btn.classList.add('text-slate-400');
+            icon.removeAttribute('fill');
+          }
+        }
+      });
+
+      // If currently on saved view, re-render
+      if (STATE.currentRoute === 'saved') {
+        renderSavedView();
+      }
+    }
+
+    function updateSavedBadges() {
+      const count = STATE.savedProperties.length;
+      const b1 = document.getElementById('saved-count-badge');
+      const b2 = document.getElementById('mobile-saved-badge');
+      if (b1) b1.innerText = count;
+      if (b2) b2.innerText = count;
+    }
+
+    // --- Mobile Menu Toggle ---
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    function closeMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      if (!menu.classList.contains('hidden')) {
+        menu.classList.add('hidden');
+      }
+    }
+
+    // --- Lightbox Functions ---
+    function openLightbox(imageUrl, caption) {
+      const modal = document.getElementById('lightbox-modal');
+      const img = document.getElementById('lightbox-img');
+      const cap = document.getElementById('lightbox-caption');
+      img.src = imageUrl;
+      cap.innerText = caption || 'Aurus Luxury Property Portfolio';
+      modal.classList.remove('hidden');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox-modal').classList.add('hidden');
+    }
+
+    // --- Viewing Modal Form Handler ---
+    function openViewingModal(propertyId = '') {
+      const modal = document.getElementById('viewing-modal');
+      const propInput = document.getElementById('modal-property-id');
+      const titleElem = document.getElementById('modal-property-title');
+      
+      if (propertyId) {
+        propInput.value = propertyId;
+        const prop = PROPERTIES_DATA.find(p => p.id === propertyId);
+        if (prop) {
+          titleElem.innerText = `Viewing: ${prop.title} (${prop.location})`;
+        }
+      } else {
+        propInput.value = '';
+        titleElem.innerText = 'Schedule a Private Property Consultation';
+      }
+
+      // Set min date to today
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('v-date');
+      if (dateInput) {
+        dateInput.min = today;
+        dateInput.value = today;
+      }
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeViewingModal() {
+      document.getElementById('viewing-modal').classList.add('hidden');
+    }
+
+    function handleViewingSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('v-name').value;
+      const date = document.getElementById('v-date').value;
+      const time = document.getElementById('v-time').value;
+      const propId = document.getElementById('modal-property-id').value;
+      
+      let propName = 'General Portfolio';
+      if (propId) {
+        const p = PROPERTIES_DATA.find(x => x.id === propId);
+        if (p) propName = p.title;
+      }
+
+      closeViewingModal();
+      showToast(`Thank you, ${name}! Your viewing request for "${propName}" on ${date} (${time}) has been registered with our advisory desk.`);
+      document.getElementById('viewing-form').reset();
+    }
+
+    // ========================================================================
+    // VIEW RENDERING ENGINES
+    // ========================================================================
+
+    // --- 1. HOMEPAGE VIEW (FAITHFUL TO REFERENCE IMAGE) ---
+    function renderHomeView() {
+      const featuredProps = PROPERTIES_DATA.filter(p => p.isFeatured).slice(0, 6);
+      const heroFeaturedProp = PROPERTIES_DATA[0]; // Azure Palms
+
+      return `
+        <!-- HERO SECTION: Masterpiece Architecture Headline & Lead Card -->
+        <section class="relative bg-brand-dark text-white overflow-hidden pt-12 pb-24 lg:pt-20 lg:pb-32">
+          
+          <!-- Background Architectural Image with Overlay -->
+          <div class="absolute inset-0 z-0">
+            <img 
+              class="w-full h-full object-cover object-center brightness-[0.45] scale-105 eshop-placeholder-media"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/40 to-transparent"></div>
+          </div>
+
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <!-- Left Column: Bold Headline & Copy -->
+              <div class="lg:col-span-7 space-y-6">
+                
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/15 text-orange-400 text-xs font-semibold tracking-wider uppercase">
+                  <span class="w-2 h-2 rounded-full bg-brand-orange animate-ping"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+
+                <h1 class="text-5xl sm:text-7xl lg:text-8xl font-black font-display tracking-tight text-white uppercase leading-[0.95]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span><br /><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span><br />
+                  <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-orange-300"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></span>
+                </h1>
+
+                <p class="text-slate-300 text-sm sm:text-base max-w-xl font-normal leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+                <div class="pt-4 flex flex-wrap items-center gap-4">
+                  <a href="#properties" onclick="applyCategoryFilter('all')" class="px-7 py-3.5 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-lg hover:shadow-orange-500/20 flex items-center gap-2">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                  </a>
+                  <button onclick="openViewingModal()" class="px-7 py-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all border border-white/20"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></button>
+                </div>
+
+              </div>
+
+              <!-- Right Column: Floating Signature Property Card (From Reference Image) -->
+              <div class="lg:col-span-5 flex justify-center lg:justify-end">
+                <div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 sm:p-5 max-w-sm w-full shadow-2xl text-white transform hover:-translate-y-1 transition-transform">
+                  
+                  <div class="relative rounded-xl overflow-hidden mb-4 aspect-[4/3]">
+                    <img 
+                      class="w-full h-full object-cover eshop-placeholder-media"
+                    />
+                    <div class="absolute top-3 left-3 bg-brand-orange text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></div>
+                    <button onclick="toggleSaveProperty('${heroFeaturedProp.id}', event)" data-save-id="${heroFeaturedProp.id}" class="absolute top-3 right-3 p-2 bg-brand-navy/60 backdrop-blur-md rounded-full text-white hover:text-brand-orange transition-colors">
+                      <i data-lucide="bookmark" class="w-4 h-4 ${isPropertySaved(heroFeaturedProp.id) ? 'fill-current text-brand-orange' : ''}"></i>
+                    </button>
+                  </div>
+
+                  <div class="space-y-2">
+                    <div class="flex items-baseline justify-between">
+                      <span class="text-xs uppercase text-orange-400 font-bold tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                      <span class="text-base font-extrabold text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    </div>
+                    <h3 class="font-display text-lg font-bold text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+                    <p class="text-xs text-slate-300 line-clamp-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+                    
+                    <div class="pt-3 border-t border-white/15 flex items-center justify-between text-xs text-slate-300">
+                      <span class="flex items-center gap-1"><i data-lucide="bed" class="w-3.5 h-3.5 text-orange-400"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></span>
+                      <span class="flex items-center gap-1"><i data-lucide="bath" class="w-3.5 h-3.5 text-orange-400"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+                      <span class="flex items-center gap-1"><i data-lucide="maximize" class="w-3.5 h-3.5 text-orange-400"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></span>
+                    </div>
+
+                    <a href="#property/${heroFeaturedProp.id}" class="block w-full text-center py-2.5 mt-3 bg-white text-brand-navy hover:bg-orange-50 text-xs font-bold uppercase rounded-lg transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></a>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- CATEGORY MARQUEE TICKER (Matching Reference Image) -->
+        <div class="bg-brand-navy text-slate-200 py-3.5 border-y border-white/10 overflow-hidden">
+          <div class="max-w-7xl mx-auto px-4 flex items-center justify-between gap-6 text-[11px] sm:text-xs font-bold uppercase tracking-widest no-scrollbar overflow-x-auto whitespace-nowrap">
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span>
+            <span class="text-slate-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            <span class="text-slate-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></span>
+            <span class="text-slate-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span>
+            <span class="text-slate-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+            <span class="text-slate-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+            <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-orange"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+          </div>
+        </div>
+
+        <!-- STATS BAR (Matching Reference Image) -->
+        <section class="bg-white py-10 border-b border-slate-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div class="space-y-1">
+                <span class="font-display text-3xl sm:text-4xl font-extrabold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span>
+                <p class="text-xs uppercase tracking-wider text-slate-500 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></p>
+              </div>
+              <div class="space-y-1">
+                <span class="font-display text-3xl sm:text-4xl font-extrabold text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                <p class="text-xs uppercase tracking-wider text-slate-500 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></p>
+              </div>
+              <div class="space-y-1">
+                <span class="font-display text-3xl sm:text-4xl font-extrabold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                <p class="text-xs uppercase tracking-wider text-slate-500 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></p>
+              </div>
+              <div class="space-y-1">
+                <span class="font-display text-3xl sm:text-4xl font-extrabold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                <p class="text-xs uppercase tracking-wider text-slate-500 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MULTI-FIELD SEARCH CONSOLE BAR -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-7 relative z-20">
+          <div class="bg-white rounded-2xl shadow-xl border border-slate-200/80 p-4 sm:p-5">
+            <form id="hero-search-form" onsubmit="handleHeroSearch(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-center">
+              
+              <!-- Location Selection -->
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></label>
+                <div class="relative">
+                  <select id="hero-location" class="w-full text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/30">
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Property Category -->
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></label>
+                <select id="hero-category" class="w-full text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/30">
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></option>
+                </select>
+              </div>
+
+              <!-- Property Type -->
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                <select id="hero-type" class="w-full text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/30">
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></option>
+                </select>
+              </div>
+
+              <!-- Price Bracket -->
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></label>
+                <select id="hero-price" class="w-full text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/30">
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></option>
+                </select>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="sm:col-span-2 lg:col-span-1 pt-2 sm:pt-4">
+                <button type="submit" class="w-full py-3 bg-brand-navy hover:bg-brand-slate text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md">
+                  <i data-lucide="search" class="w-4 h-4"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </section>
+
+        <!-- CURATED LISTINGS SECTION (Matching Reference Image Grid) -->
+        <section class="py-20 bg-slate-50">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Section Header & Filter Tabs -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                <h2 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h2>
+              </div>
+
+              <!-- Tabs: All, For Sale, For Rent, Commercial -->
+              <div class="inline-flex p-1 bg-white border border-slate-200 rounded-xl shadow-sm text-xs font-bold">
+                <button onclick="filterCuratedGrid('all', this)" class="curated-tab-btn active px-4 py-2 rounded-lg bg-brand-navy text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                <button onclick="filterCuratedGrid('sale', this)" class="curated-tab-btn px-4 py-2 rounded-lg text-slate-600 hover:text-brand-navy transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></button>
+                <button onclick="filterCuratedGrid('rent', this)" class="curated-tab-btn px-4 py-2 rounded-lg text-slate-600 hover:text-brand-navy transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></button>
+                <button onclick="filterCuratedGrid('commercial', this)" class="curated-tab-btn px-4 py-2 rounded-lg text-slate-600 hover:text-brand-navy transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></button>
+              </div>
+            </div>
+
+            <!-- Property Cards Grid (6 Cards, Matching Reference Layout) -->
+            <div id="curated-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+            <!-- View All Properties Button -->
+            <div class="mt-14 text-center">
+              <a href="#properties" onclick="applyCategoryFilter('all')" class="inline-flex items-center gap-2 px-9 py-4 bg-brand-navy hover:bg-brand-slate text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all shadow-md hover:shadow-lg">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </a>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- DARK EDITORIAL SECTION: "Where Vision Finds Home" (Matching Reference Image) -->
+        <section class="relative bg-brand-navy text-white py-24 overflow-hidden">
+          
+          <!-- Large Background Watermark -->
+          <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+            <span class="watermark-text font-black font-display text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span>
+          </div>
+
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <!-- Left: Editorial Architectural Image with Orange Badge -->
+              <div class="lg:col-span-6 relative">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 aspect-[4/3]">
+                  <img 
+                    class="w-full h-full object-cover eshop-placeholder-media"
+                  />
+                </div>
+                <!-- Orange Badge in Bottom Corner -->
+                <div class="absolute -bottom-6 -right-3 sm:right-6 bg-brand-orange text-white p-6 rounded-2xl shadow-xl max-w-[210px] space-y-1">
+                  <span class="font-display text-3xl font-extrabold block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  <span class="text-xs font-semibold leading-tight block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                </div>
+              </div>
+
+              <!-- Right: Editorial Content -->
+              <div class="lg:col-span-6 space-y-6 lg:pl-6">
+                
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                
+                <h2 class="text-3xl sm:text-5xl font-black font-display tracking-tight text-white leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span><br /><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></h2>
+
+                <p class="text-slate-300 text-sm leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+                <p class="text-slate-400 text-xs leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+                <div class="pt-4 flex flex-wrap items-center gap-4">
+                  <a href="#about" class="px-6 py-3.5 bg-white text-brand-navy hover:bg-orange-50 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></a>
+                  <a href="#agents" class="px-6 py-3.5 border border-white/30 hover:border-white text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></a>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- "HOW WE SERVE YOU" SECTION: Numbered Editorial Grid (Matching Reference Image) -->
+        <section class="py-24 bg-white">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+                <h2 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h2>
+              </div>
+              <p class="text-xs text-slate-500 max-w-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Numbered Rows with Expandable Action -->
+            <div class="space-y-4">
+              
+              <div class="border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-brand-orange/40 hover:shadow-md transition-all group flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="flex items-start gap-6">
+                  <span class="font-display text-3xl sm:text-4xl font-extrabold text-slate-300 group-hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  <div>
+                    <h3 class="font-display text-xl font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+                <a href="#properties" onclick="applyCategoryFilter('sale')" class="p-3 rounded-full bg-slate-50 group-hover:bg-brand-navy group-hover:text-white text-slate-700 transition-colors">
+                  <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+              </div>
+
+              <div class="border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-brand-orange/40 hover:shadow-md transition-all group flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="flex items-start gap-6">
+                  <span class="font-display text-3xl sm:text-4xl font-extrabold text-slate-300 group-hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  <div>
+                    <h3 class="font-display text-xl font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+                <a href="#properties" onclick="applyCategoryFilter('off-plan')" class="p-3 rounded-full bg-slate-50 group-hover:bg-brand-navy group-hover:text-white text-slate-700 transition-colors">
+                  <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+              </div>
+
+              <div class="border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-brand-orange/40 hover:shadow-md transition-all group flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="flex items-start gap-6">
+                  <span class="font-display text-3xl sm:text-4xl font-extrabold text-slate-300 group-hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  <div>
+                    <h3 class="font-display text-xl font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+                <a href="#valuation" class="p-3 rounded-full bg-slate-50 group-hover:bg-brand-navy group-hover:text-white text-slate-700 transition-colors">
+                  <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+              </div>
+
+              <div class="border border-slate-200 rounded-2xl p-6 sm:p-8 hover:border-brand-orange/40 hover:shadow-md transition-all group flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div class="flex items-start gap-6">
+                  <span class="font-display text-3xl sm:text-4xl font-extrabold text-slate-300 group-hover:text-brand-orange transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  <div>
+                    <h3 class="font-display text-xl font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+                <a href="#rent-out" class="p-3 rounded-full bg-slate-50 group-hover:bg-brand-navy group-hover:text-white text-slate-700 transition-colors">
+                  <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- COASTAL PROMOTIONAL CAMPAIGN BANNER (Matching Reference Image) -->
+        <section class="py-12 bg-white">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative rounded-3xl overflow-hidden shadow-2xl min-h-[440px] flex items-center">
+              
+              <!-- Background Coastal Image -->
+              <img 
+                class="absolute inset-0 w-full h-full object-cover eshop-placeholder-media"
+              />
+              <div class="absolute inset-0 bg-gradient-to-r from-brand-navy/90 via-brand-navy/60 to-transparent"></div>
+
+              <div class="relative z-10 p-8 sm:p-14 max-w-xl space-y-5 text-white">
+                <span class="text-xs font-bold uppercase tracking-widest text-orange-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                <h2 class="text-3xl sm:text-5xl font-black font-display tracking-tight leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h2>
+                <p class="text-slate-200 text-xs sm:text-sm leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <div class="pt-2 flex flex-wrap gap-4">
+                  <button onclick="openViewingModal()" class="px-6 py-3.5 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></button>
+                  <a href="#properties" onclick="applyCategoryFilter('all')" class="px-6 py-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors border border-white/20"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- "CLIENT VOICES" TESTIMONIALS (Matching Reference Image) -->
+        <section class="py-20 bg-slate-50">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="mb-12">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></span>
+              <h2 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              
+              <!-- Review 1 -->
+              <div class="bg-white rounded-2xl p-7 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="flex text-amber-400 gap-1 text-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></div>
+                <p class="text-xs text-slate-600 leading-relaxed italic"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <div class="flex items-center gap-3 pt-2 border-t border-slate-100">
+                  <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                    <img class="w-full h-full object-cover eshop-placeholder-media" />
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h4>
+                    <span class="text-[11px] text-slate-500"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Review 2 -->
+              <div class="bg-white rounded-2xl p-7 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="flex text-amber-400 gap-1 text-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></div>
+                <p class="text-xs text-slate-600 leading-relaxed italic"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <div class="flex items-center gap-3 pt-2 border-t border-slate-100">
+                  <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                    <img class="w-full h-full object-cover eshop-placeholder-media" />
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h4>
+                    <span class="text-[11px] text-slate-500"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Review 3 -->
+              <div class="bg-white rounded-2xl p-7 border border-slate-200/80 shadow-sm space-y-4">
+                <div class="flex text-amber-400 gap-1 text-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></div>
+                <p class="text-xs text-slate-600 leading-relaxed italic"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <div class="flex items-center gap-3 pt-2 border-t border-slate-100">
+                  <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                    <img class="w-full h-full object-cover eshop-placeholder-media" />
+                  </div>
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h4>
+                    <span class="text-[11px] text-slate-500"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ORANGE CTA CALLOUT STRIP (Matching Reference Image) -->
+        <section class="bg-brand-orange text-white py-6">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-center md:text-left">
+              <h3 class="font-display text-lg font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></h3>
+              <p class="text-xs text-orange-100"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+            <div class="flex items-center gap-6 text-xs font-bold">
+              <a class="flex items-center gap-2 hover:text-orange-100 transition-colors">
+                <i data-lucide="phone" class="w-4 h-4"></i>
+                
+              </a>
+              <a class="flex items-center gap-2 hover:text-orange-100 transition-colors">
+                <i data-lucide="mail" class="w-4 h-4"></i>
+                
+              </a>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    // Helper: render a batch of property cards
+    function renderPropertyCardBatch(properties) {
+      if (properties.length === 0) {
+        return `
+          <div class="col-span-full py-16 text-center">
+            <i data-lucide="home" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
+            <h3 class="font-display text-lg font-bold text-slate-700"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+            <p class="text-xs text-slate-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <button onclick="resetFilters()" class="mt-4 px-5 py-2.5 bg-brand-navy text-white text-xs font-bold uppercase rounded-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></button>
+          </div>
+        `;
+      }
+
+      return properties.map(p => {
+        const isSaved = isPropertySaved(p.id);
+        const tagBg = p.tag === 'EXCLUSIVE' ? 'bg-brand-orange' : (p.tag === 'FOR RENT' ? 'bg-indigo-600' : 'bg-brand-navy');
+
+        return `
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
+            
+            <!-- Card Image Container -->
+            <div class="relative aspect-[4/3] overflow-hidden bg-slate-100">
+              <img 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 eshop-placeholder-media"
+                loading="lazy"
+              />
+              
+              <!-- Tag Badge -->
+              <span class="absolute top-3 left-3 ${tagBg} text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded shadow-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+
+              <!-- Save / Bookmark Button -->
+              <button 
+                onclick="toggleSaveProperty('${p.id}', event)" 
+                data-save-id="${p.id}"
+                class="absolute top-3 right-3 p-2 rounded-full bg-white/90 backdrop-blur-md shadow-md text-slate-600 hover:text-brand-orange transition-colors"
+              >
+                <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-current text-brand-orange' : ''}"></i>
+              </button>
+
+              <!-- Category Pill in Bottom Corner -->
+              <span class="absolute bottom-3 left-3 bg-brand-dark/70 backdrop-blur-sm text-slate-200 text-[10px] font-semibold px-2 py-0.5 rounded"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </div>
+
+            <!-- Card Content Body -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              
+              <div>
+                <!-- Price Display (Prominent as in reference) -->
+                <div class="text-xl font-black font-display text-brand-navy mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+                <!-- Title & Location -->
+                <h3 class="font-display text-base font-bold text-slate-900 group-hover:text-brand-orange transition-colors leading-snug">
+                  <a href="#property/${p.id}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+                </h3>
+                
+                <p class="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-orange shrink-0"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                </p>
+              </div>
+
+              <!-- Specifications Bar (Beds, Baths, Sqm) -->
+              <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+
+              <!-- View Details Action Button -->
+              <div class="pt-1">
+                <a href="#property/${p.id}" class="block w-full text-center py-2.5 bg-slate-100 hover:bg-brand-navy hover:text-white text-brand-navy text-xs font-bold uppercase rounded-lg transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></a>
+              </div>
+
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- 2. PROPERTIES CATALOGUE VIEW (ADVANCED SEARCH & DISCOVERY) ---
+    function renderPropertiesCatalogueView() {
+      const filtered = getFilteredProperties();
+
+      return `
+        <div class="bg-slate-50 min-h-screen py-10">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Breadcrumbs -->
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-slate-900 font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span>
+            </nav>
+
+            <!-- Page Title -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span>
+                <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></h1>
+              </div>
+              <p class="text-xs text-slate-500 max-w-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Master Filter Console -->
+            <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 mb-8 space-y-5">
+              
+              <!-- Search query + Quick Category Switcher -->
+              <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+                
+                <!-- Keyword input -->
+                <div class="relative flex-1">
+                  <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                  <input 
+                    type="text" 
+                    id="cat-search-input"
+                    oninput="handleKeywordSearch(this.value)"
+                    class="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange"
+                  />
+                </div>
+
+                <!-- Category Segmented Buttons -->
+                <div class="inline-flex p-1 bg-slate-100 rounded-xl text-xs font-bold overflow-x-auto whitespace-nowrap">
+                  <button onclick="setFilterCategory('all')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'all' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                  <button onclick="setFilterCategory('sale')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'sale' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></button>
+                  <button onclick="setFilterCategory('rent')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'rent' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button>
+                  <button onclick="setFilterCategory('commercial')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'commercial' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></button>
+                  <button onclick="setFilterCategory('land')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'land' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+                  <button onclick="setFilterCategory('off-plan')" class="px-3.5 py-2 rounded-lg transition-colors ${STATE.filterCriteria.category === 'off-plan' ? 'bg-brand-navy text-white shadow-sm' : 'text-slate-600 hover:text-brand-navy'}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></button>
+                </div>
+
+              </div>
+
+              <!-- Secondary Filters Row (Location, Type, Beds, Sort) -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-slate-100 text-xs">
+                
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></label>
+                  <select id="filter-location-select" onchange="handleLocationFilter(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/40">
+                    <option ${STATE.filterCriteria.location === 'all' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></option>
+                    <option ${STATE.filterCriteria.location === 'westlands' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></option>
+                    <option ${STATE.filterCriteria.location === 'karen' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></option>
+                    <option ${STATE.filterCriteria.location === 'kilimani' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                    <option ${STATE.filterCriteria.location === 'lavington' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                    <option ${STATE.filterCriteria.location === 'runda' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                    <option ${STATE.filterCriteria.location === 'diani' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                    <option ${STATE.filterCriteria.location === 'nyali' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></option>
+                    <option ${STATE.filterCriteria.location === 'upcountry' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                  <select id="filter-type-select" onchange="handleTypeFilter(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/40">
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></option>
+                    <option ${STATE.filterCriteria.type === 'Penthouse' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                    <option ${STATE.filterCriteria.type === 'Luxury Villa' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></option>
+                    <option ${STATE.filterCriteria.type === 'Apartment' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                    <option ${STATE.filterCriteria.type === 'Townhouse' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                    <option ${STATE.filterCriteria.type === 'Detached House' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></option>
+                    <option ${STATE.filterCriteria.type === 'Commercial Office' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                    <option ${STATE.filterCriteria.type === 'Residential Plot' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></label>
+                  <select id="filter-beds-select" onchange="handleBedsFilter(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/40">
+                    <option ${STATE.filterCriteria.bedrooms === 'all' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></option>
+                    <option ${STATE.filterCriteria.bedrooms === '1' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                    <option ${STATE.filterCriteria.bedrooms === '2' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                    <option ${STATE.filterCriteria.bedrooms === '3' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                    <option ${STATE.filterCriteria.bedrooms === '4' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                    <option ${STATE.filterCriteria.bedrooms === '5' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-500 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></label>
+                  <select id="filter-sort-select" onchange="handleSortFilter(this.value)" class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/40">
+                    <option ${STATE.filterCriteria.sortBy === 'featured' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                    <option ${STATE.filterCriteria.sortBy === 'price-asc' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                    <option ${STATE.filterCriteria.sortBy === 'price-desc' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                    <option ${STATE.filterCriteria.sortBy === 'sqm-desc' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  </select>
+                </div>
+
+              </div>
+
+              <!-- Active Filter Chips / Clear Controls -->
+              <div class="flex items-center justify-between text-xs pt-2">
+                <div class="text-slate-500 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span><span class="text-brand-navy font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></div>
+                <button onclick="resetFilters()" class="text-brand-orange hover:text-brand-orange-hover font-bold flex items-center gap-1">
+                  <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- View Switcher Tabs: Grid vs Interactive Map -->
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-2">
+                <button id="view-mode-grid-btn" onclick="toggleCatalogueViewMode('grid')" class="px-4 py-2 rounded-lg bg-brand-navy text-white text-xs font-bold flex items-center gap-2">
+                  <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                </button>
+                <button id="view-mode-map-btn" onclick="toggleCatalogueViewMode('map')" class="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-brand-navy text-xs font-bold flex items-center gap-2">
+                  <i data-lucide="map" class="w-4 h-4"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Catalogue Grid Container -->
+            <div id="catalogue-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+            <!-- Leaflet Interactive Map Explorer Container (Initially Hidden) -->
+            <div id="catalogue-map-container" class="hidden bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-lg mb-8">
+              <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+                <div>
+                  <h3 class="font-display text-sm font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                  <p class="text-[11px] text-slate-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+                <span class="text-xs bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></span>
+              </div>
+              <div id="catalogue-leaflet-map" style="height: 540px; width: 100%; z-index: 10;"></div>
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 3. DETAILED PROPERTY PAGE VIEW ---
+    function renderPropertyDetailView(id) {
+      const prop = PROPERTIES_DATA.find(p => p.id === id);
+      if (!prop) {
+        return `
+          <div class="max-w-4xl mx-auto px-4 py-20 text-center">
+            <h2 class="font-display text-2xl font-bold text-slate-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></h2>
+            <p class="text-slate-500 text-sm mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#properties" class="inline-block mt-4 px-6 py-2.5 bg-brand-navy text-white text-xs font-bold uppercase rounded-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></a>
+          </div>
+        `;
+      }
+
+      const agent = AGENTS_DATA.find(a => a.id === prop.agentId) || AGENTS_DATA[0];
+      const isSaved = isPropertySaved(prop.id);
+      const similar = PROPERTIES_DATA.filter(p => p.id !== prop.id && (p.neighbourhood === prop.neighbourhood || p.purpose === prop.purpose)).slice(0, 3);
+
+      return `
+        <div class="bg-slate-50 min-h-screen py-10">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Breadcrumbs -->
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <a href="#properties" class="hover:text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-slate-900 font-bold truncate"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </nav>
+
+            <!-- Property Title & Action Header -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="bg-brand-orange text-white text-[10px] font-extrabold uppercase px-2 py-0.5 rounded"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  <span class="text-xs text-slate-400 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></span>
+                </div>
+                <h1 class="text-2xl sm:text-4xl font-black font-display text-brand-navy tracking-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+                <p class="text-xs text-slate-500 flex items-center gap-1.5 mt-1.5">
+                  <i data-lucide="map-pin" class="w-4 h-4 text-brand-orange"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                </p>
+              </div>
+
+              <!-- Price & CTA Column -->
+              <div class="flex flex-col sm:flex-row md:flex-col items-start md:items-end justify-between gap-3">
+                <div class="text-left md:text-right">
+                  <div class="text-2xl sm:text-3xl font-black font-display text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                  <span class="text-[11px] text-slate-400 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <button onclick="toggleSaveProperty('${prop.id}', event)" data-save-id="${prop.id}" class="px-4 py-2.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:text-brand-orange flex items-center gap-1.5 bg-slate-50">
+                    <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-current text-brand-orange' : ''}"></i>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </button>
+                  <button onclick="openViewingModal('${prop.id}')" class="px-6 py-2.5 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase rounded-lg transition-colors shadow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- High-Res Photo Gallery (Main Image + Thumbnail Matrix) -->
+            <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-sm mb-8">
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                
+                <!-- Main Featured Photo -->
+                <div class="lg:col-span-8 relative aspect-[16/10] rounded-xl overflow-hidden cursor-pointer group" onclick="openLightbox('${prop.images[0]}', '${prop.title} - Main Gallery')">
+                  <img id="detail-main-img" class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-300 eshop-placeholder-media" />
+                  <div class="absolute bottom-4 right-4 bg-brand-dark/80 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-2">
+                    <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                </div>
+
+                <!-- Thumbnail Column -->
+                <div class="lg:col-span-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+              </div>
+            </div>
+
+            <!-- Two-Column Layout: Details Left, Agent & Mortgage Right -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Left Column: Specs, Description, Amenities, Location Map -->
+              <div class="lg:col-span-8 space-y-8">
+                
+                <!-- Key Specifications Bar -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm">
+                  <h3 class="font-display text-base font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></h3>
+                  
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs">
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                      <span class="font-display text-base font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                      <span class="font-display text-base font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span>
+                      <span class="font-display text-base font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+                      <span class="font-display text-base font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span>
+                      <span class="font-display text-base font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span>
+                      <span class="font-display text-base font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                      <span class="font-display text-base font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 font-semibold uppercase text-[10px] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+                      <span class="font-display text-base font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Editorial Overview & Architectural Narrative -->
+                <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-sm space-y-4">
+                  <h3 class="font-display text-lg font-bold text-slate-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h3>
+                  <p class="text-xs sm:text-sm text-slate-700 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                </div>
+
+                <!-- Amenities & Infrastructure Checklist -->
+                <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/90 shadow-sm">
+                  <h3 class="font-display text-lg font-bold text-slate-900 mb-5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                </div>
+
+                <!-- Interactive Location Map (Leaflet) -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h3 class="font-display text-base font-bold text-slate-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h3>
+                      <p class="text-xs text-slate-500"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                    </div>
+                    <span class="text-[11px] text-slate-400 font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </div>
+                  <div id="property-detail-map" class="rounded-xl overflow-hidden border border-slate-200" style="height: 320px; width: 100%;"></div>
+                </div>
+
+              </div>
+
+              <!-- Right Column: Dedicated Agent Card & Pre-filled Mortgage Widget -->
+              <div class="lg:col-span-4 space-y-6">
+                
+                <!-- Dedicated Senior Agent Card -->
+                <div class="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-sm space-y-4">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+                  
+                  <div class="flex items-center gap-4">
+                    <img class="w-16 h-16 rounded-full object-cover border-2 border-brand-orange shrink-0 eshop-placeholder-media" />
+                    <div>
+                      <h4 class="font-display text-base font-bold text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h4>
+                      <p class="text-[11px] text-slate-500 font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                      <p class="text-[11px] text-brand-orange font-semibold mt-0.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                    </div>
+                  </div>
+
+                  <p class="text-xs text-slate-600 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+
+                  <div class="pt-2 space-y-2 text-xs">
+                    <a class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-lg flex items-center justify-center gap-2 transition-colors">
+                      <i data-lucide="phone" class="w-4 h-4 text-brand-orange"></i>
+                      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </a>
+                    
+                    <a target="_blank" rel="noopener noreferrer" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-colors">
+                      <i data-lucide="message-circle" class="w-4 h-4"></i>
+                      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    </a>
+
+                    <button onclick="openViewingModal('${prop.id}')" class="w-full py-2.5 bg-brand-orange hover:bg-brand-orange-hover text-white font-bold rounded-lg transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></button>
+                  </div>
+                </div>
+
+                <!-- Inline Quick Mortgage Repayment Widget --><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+            </div>
+
+            <!-- Similar Properties Carousel / Grid --><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+        </div>
+      `;
+    }
+
+    // --- 4. AGENTS DIRECTORY & PROFILES VIEW ---
+    function renderAgentsView() {
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-slate-900 font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></span>
+            </nav>
+
+            <div class="max-w-2xl mb-12">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></h1>
+              <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 5. NEIGHBOURHOOD GUIDES VIEW ---
+    function renderNeighbourhoodsView() {
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-slate-900 font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+            </nav>
+
+            <div class="max-w-2xl mb-12">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></h1>
+              <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="space-y-12"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 6. MORTGAGE CALCULATOR & FINANCIAL PLANNER ---
+    function renderMortgageCalculatorView() {
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-slate-900 font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></span>
+            </nav>
+
+            <div class="mb-10 text-center max-w-2xl mx-auto">
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h1>
+              <p class="text-xs sm:text-sm text-slate-600 mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Main Interactive Calculator Card -->
+            <div class="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              
+              <!-- Form Inputs (Left) -->
+              <div class="lg:col-span-7 space-y-6">
+                
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-bold text-slate-700"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></label>
+                    <span id="calc-price-display" class="font-display font-extrabold text-brand-navy text-sm"></span>
+                  </div>
+                  <input 
+                    type="range" 
+                    id="calc-price-input" 
+                    min="5000000" 
+                    max="200000000" 
+                    step="1000000" 
+                    oninput="recalculateMortgage()"
+                    class="w-full accent-brand-orange cursor-pointer"
+                  />
+                  <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-bold text-slate-700"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></label>
+                    <span id="calc-deposit-display" class="font-display font-extrabold text-brand-navy text-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span>
+                  </div>
+                  <input 
+                    type="range" 
+                    id="calc-deposit-input" 
+                    min="10" 
+                    max="50" 
+                    step="5" 
+                    oninput="recalculateMortgage()"
+                    class="w-full accent-brand-orange cursor-pointer"
+                  />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></label>
+                    <input 
+                      type="number" 
+                      id="calc-rate-input" 
+                      step="0.25" 
+                      min="8" 
+                      max="24"
+                      oninput="recalculateMortgage()"
+                      class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
+                    />
+                    <span class="text-[10px] text-slate-400 mt-1 block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></span>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></label>
+                    <select 
+                      id="calc-tenure-input" 
+                      onchange="recalculateMortgage()"
+                      class="w-full text-xs px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 bg-white"
+                    >
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                      <option selected><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Rent vs Buy Insight -->
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 text-xs text-slate-600 space-y-1">
+                  <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                    <i data-lucide="info" class="w-4 h-4 text-brand-orange"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></span>
+                  <p class="text-[11px] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+
+              </div>
+
+              <!-- Output Box (Right) -->
+              <div class="lg:col-span-5 bg-brand-navy text-white rounded-2xl p-6 sm:p-8 space-y-6">
+                
+                <span class="text-[10px] font-bold uppercase tracking-wider text-orange-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+
+                <div>
+                  <span class="text-xs text-slate-300 block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></span>
+                  <div id="res-monthly" class="text-3xl sm:text-4xl font-black font-display text-orange-400 mt-1">
+                    
+                  </div>
+                </div>
+
+                <div class="space-y-3 pt-4 border-t border-white/10 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-slate-300"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+                    <span id="res-principal" class="font-bold text-white"></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-300"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></span>
+                    <span id="res-interest" class="font-bold text-white"></span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-300"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></span>
+                    <span id="res-total" class="font-bold text-white"></span>
+                  </div>
+                </div>
+
+                <!-- Visual Bar Breakdown -->
+                <div>
+                  <div class="flex justify-between text-[11px] text-slate-300 mb-1">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+                  </div>
+                  <div class="h-3 w-full bg-white/20 rounded-full overflow-hidden flex">
+                    <div id="bar-principal" class="bg-brand-orange h-full" style="width: 35%;"></div>
+                    <div id="bar-interest" class="bg-indigo-400 h-full" style="width: 65%;"></div>
+                  </div>
+                </div>
+
+                <div class="pt-2">
+                  <button onclick="openViewingModal()" class="w-full py-3 bg-brand-orange hover:bg-brand-orange-hover text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></button>
+                  <p class="text-[10px] text-slate-400 text-center mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 7. SAVED PROPERTIES & SHORTLIST VIEW ---
+    function renderSavedView() {
+      const savedList = PROPERTIES_DATA.filter(p => STATE.savedProperties.includes(p.id));
+
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-slate-900 font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+            </nav>
+
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+                <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></h1>
+              </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        </div>
+      `;
+    }
+
+    // --- 8. SELL / RENT OUT / VALUATION INTAKE SCREENS ---
+    function renderOwnerLeadGenView(mode = 'sell') {
+      const isValuation = mode === 'valuation';
+      const isRentOut = mode === 'rent-out';
+      
+      const title = isValuation 
+        ? 'Request Professional Property Valuation' 
+        : (isRentOut ? 'List Your Property for Executive Rental' : 'Sell Your Property With Aurus');
+
+      const subtitle = isValuation
+        ? 'Our valuation team provides empirical comparative market appraisals across Nairobi and the Coast.'
+        : 'Connect with qualified corporate expatriates, diplomatic missions, and vetted high-net-worth buyers.';
+
+      return `
+        <div class="bg-slate-50 min-h-screen py-12">
+          <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <nav class="flex text-xs text-slate-500 gap-2 items-center mb-6">
+              <a href="#home" class="hover:text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-slate-900 font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </nav>
+
+            <div class="bg-white rounded-3xl p-6 sm:p-12 border border-slate-200/90 shadow-xl space-y-8">
+              
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></span>
+                <h1 class="text-2xl sm:text-4xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+                <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+              </div>
+
+              <!-- Notice -->
+              <div class="bg-orange-50 border border-orange-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
+                <i data-lucide="shield-check" class="w-4 h-4 text-brand-orange shrink-0 mt-0.5"></i>
+                <span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+              </div>
+
+              <form onsubmit="handleLeadGenSubmit(event, '${mode}')" class="space-y-5 text-xs">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                    <input type="text" required class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></label>
+                    <input type="email" required class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></label>
+                    <input type="tel" required class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40" />
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                    <input type="text" required class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></label>
+                    <select class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white">
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></label>
+                    <select class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white">
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                      <option selected><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></label>
+                    <input type="text" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200" />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                  <textarea rows="3" class="w-full px-3.5 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"></textarea>
+                </div>
+
+                <div class="pt-2">
+                  <button type="submit" class="w-full py-3.5 bg-brand-navy hover:bg-brand-slate text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors shadow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></button>
+                </div>
+
+              </form>
+
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 9. INFORMATIONAL PAGES (ABOUT, GUIDES, FAQ, CONTACT) ---
+    function renderAboutView() {
+      return `
+        <div class="bg-white min-h-screen py-16">
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+              <h1 class="text-4xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></h1>
+              <p class="text-sm text-slate-600 mt-4 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
+              <div class="space-y-2">
+                <h3 class="font-display font-bold text-lg text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></h3>
+                <p class="text-xs text-slate-500 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div class="space-y-2">
+                <h3 class="font-display font-bold text-lg text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h3>
+                <p class="text-xs text-slate-500 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div class="space-y-2">
+                <h3 class="font-display font-bold text-lg text-brand-navy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h3>
+                <p class="text-xs text-slate-500 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderContactView() {
+      return `
+        <div class="bg-slate-50 min-h-screen py-16">
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-xl">
+              <div class="space-y-6">
+                <div>
+                  <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></span>
+                  <h1 class="text-3xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h1>
+                  <p class="text-xs text-slate-500 mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+
+                <div class="space-y-4 text-xs text-slate-700">
+                  <div class="flex items-start gap-3">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-brand-orange shrink-0 mt-0.5"></i>
+                    <div>
+                      <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></strong><br /><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                  <div class="flex items-start gap-3">
+                    <i data-lucide="map-pin" class="w-4 h-4 text-brand-orange shrink-0 mt-0.5"></i>
+                    <div>
+                      <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></strong><br /><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i data-lucide="phone" class="w-4 h-4 text-brand-orange"></i>
+                    <span></span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <i data-lucide="mail" class="w-4 h-4 text-brand-orange"></i>
+                    <span></span>
+                  </div>
+                </div>
+              </div>
+
+              <form onsubmit="handleContactSubmit(event)" class="space-y-4 text-xs">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></label>
+                  <input type="text" required class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200" />
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                  <input type="email" required class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200" />
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                  <select class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-white">
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></label>
+                  <textarea rows="3" required class="w-full px-3.5 py-2 rounded-lg border border-slate-200"></textarea>
+                </div>
+                <button type="submit" class="w-full py-3 bg-brand-navy hover:bg-brand-slate text-white font-bold uppercase rounded-lg transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+              </form>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderFaqView() {
+      return `
+        <div class="bg-white min-h-screen py-16">
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h1>
+            </div>
+
+            <div class="space-y-4 text-xs">
+              <div class="border border-slate-200 rounded-xl p-5">
+                <h3 class="font-bold text-sm text-slate-900 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                <p class="text-slate-600 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div class="border border-slate-200 rounded-xl p-5">
+                <h3 class="font-bold text-sm text-slate-900 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                <p class="text-slate-600 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div class="border border-slate-200 rounded-xl p-5">
+                <h3 class="font-bold text-sm text-slate-900 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                <p class="text-slate-600 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGuidesView() {
+      return `
+        <div class="bg-white min-h-screen py-16">
+          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+              <h1 class="text-3xl sm:text-5xl font-black font-display text-brand-navy tracking-tight mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h1>
+              <p class="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="space-y-6 text-xs text-slate-700 leading-relaxed">
+              <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                <h3 class="font-display font-bold text-base text-brand-navy mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></h3>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                <h3 class="font-display font-bold text-base text-brand-navy mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ========================================================================
+    // ROUTING & CONTROLLER LOGIC
+    // ========================================================================
+
+    function handleHashChange() {
+      const hash = window.location.hash.replace('#', '') || 'home';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (hash.startsWith('property/')) {
+        const id = hash.replace('property/', '');
+        STATE.currentRoute = 'property-detail';
+        STATE.currentPropertyId = id;
+      } else if (hash.startsWith('neighbourhood/')) {
+        const nId = hash.replace('neighbourhood/', '');
+        // Filter properties by this neighbourhood and jump to catalogue
+        STATE.filterCriteria.location = nId;
+        STATE.currentRoute = 'properties';
+      } else {
+        STATE.currentRoute = hash;
+        STATE.currentPropertyId = null;
+      }
+
+      renderCurrentRoute();
+    }
+
+    function renderCurrentRoute() {
+      const root = document.getElementById('app-root');
+      if (!root) return;
+
+      let html = '';
+      switch (STATE.currentRoute) {
+        case 'home':
+          html = renderHomeView();
+          break;
+        case 'properties':
+          html = renderPropertiesCatalogueView();
+          break;
+        case 'property-detail':
+          html = renderPropertyDetailView(STATE.currentPropertyId);
+          break;
+        case 'agents':
+          html = renderAgentsView();
+          break;
+        case 'neighbourhoods':
+          html = renderNeighbourhoodsView();
+          break;
+        case 'mortgage-calculator':
+          html = renderMortgageCalculatorView();
+          break;
+        case 'saved':
+          html = renderSavedView();
+          break;
+        case 'sell':
+          html = renderOwnerLeadGenView('sell');
+          break;
+        case 'rent-out':
+          html = renderOwnerLeadGenView('rent-out');
+          break;
+        case 'valuation':
+          html = renderOwnerLeadGenView('valuation');
+          break;
+        case 'about':
+          html = renderAboutView();
+          break;
+        case 'contact':
+          html = renderContactView();
+          break;
+        case 'faq':
+          html = renderFaqView();
+          break;
+        case 'guides':
+          html = renderGuidesView();
+          break;
+        default:
+          html = renderHomeView();
+      }
+
+      root.innerHTML = html;
+
+      // Re-initialize Lucide Icons
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      // Re-initialize Maps if needed
+      if (STATE.currentRoute === 'property-detail' && STATE.currentPropertyId) {
+        initPropertyDetailMap(STATE.currentPropertyId);
+      }
+
+      // Re-trigger subtle GSAP text animations if GSAP is loaded
+      initGsapAnimations();
+    }
+
+    // --- Filter Application Functions ---
+    function getFilteredProperties() {
+      return PROPERTIES_DATA.filter(p => {
+        // Purpose / Category
+        if (STATE.filterCriteria.category !== 'all') {
+          if (STATE.filterCriteria.category === 'sale' && p.purpose !== 'sale') return false;
+          if (STATE.filterCriteria.category === 'rent' && p.purpose !== 'rent') return false;
+          if (STATE.filterCriteria.category === 'commercial' && p.purpose !== 'commercial') return false;
+          if (STATE.filterCriteria.category === 'land' && p.purpose !== 'land') return false;
+          if (STATE.filterCriteria.category === 'off-plan' && p.purpose !== 'off-plan') return false;
+          if (STATE.filterCriteria.category === 'penthouses' && p.type !== 'Penthouse') return false;
+        }
+
+        // Location
+        if (STATE.filterCriteria.location !== 'all') {
+          if (p.neighbourhood !== STATE.filterCriteria.location) return false;
+        }
+
+        // Property Type
+        if (STATE.filterCriteria.type !== 'all') {
+          if (p.type !== STATE.filterCriteria.type) return false;
+        }
+
+        // Bedrooms
+        if (STATE.filterCriteria.bedrooms !== 'all') {
+          const minBeds = parseInt(STATE.filterCriteria.bedrooms, 10);
+          if (p.beds < minBeds) return false;
+        }
+
+        // Search Query
+        if (STATE.filterCriteria.searchQuery.trim() !== '') {
+          const q = STATE.filterCriteria.searchQuery.toLowerCase();
+          const matches = p.title.toLowerCase().includes(q) ||
+                          p.location.toLowerCase().includes(q) ||
+                          p.address.toLowerCase().includes(q) ||
+                          p.type.toLowerCase().includes(q) ||
+                          p.shortDesc.toLowerCase().includes(q);
+          if (!matches) return false;
+        }
+
+        return true;
+      }).sort((a, b) => {
+        if (STATE.filterCriteria.sortBy === 'price-asc') return a.priceKes - b.priceKes;
+        if (STATE.filterCriteria.sortBy === 'price-desc') return b.priceKes - a.priceKes;
+        if (STATE.filterCriteria.sortBy === 'sqm-desc') return (b.sqm || 0) - (a.sqm || 0);
+        return 0; // default featured
+      });
+    }
+
+    function applyCategoryFilter(cat) {
+      STATE.filterCriteria.category = cat;
+      if (STATE.currentRoute === 'properties') {
+        renderCurrentRoute();
+      }
+    }
+
+    function setFilterCategory(cat) {
+      STATE.filterCriteria.category = cat;
+      renderCurrentRoute();
+    }
+
+    function handleLocationFilter(loc) {
+      STATE.filterCriteria.location = loc;
+      renderCurrentRoute();
+    }
+
+    function handleTypeFilter(t) {
+      STATE.filterCriteria.type = t;
+      renderCurrentRoute();
+    }
+
+    function handleBedsFilter(b) {
+      STATE.filterCriteria.bedrooms = b;
+      renderCurrentRoute();
+    }
+
+    function handleSortFilter(s) {
+      STATE.filterCriteria.sortBy = s;
+      renderCurrentRoute();
+    }
+
+    function handleKeywordSearch(query) {
+      STATE.filterCriteria.searchQuery = query;
+      const filtered = getFilteredProperties();
+      const grid = document.getElementById('catalogue-grid-container');
+      if (grid) {
+        grid.innerHTML = renderPropertyCardBatch(filtered);
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    function resetFilters() {
+      STATE.filterCriteria = {
+        category: 'all',
+        location: 'all',
+        type: 'all',
+        minPrice: 0,
+        maxPrice: 500000000,
+        bedrooms: 'all',
+        furnishing: 'all',
+        searchQuery: '',
+        sortBy: 'featured'
+      };
+      renderCurrentRoute();
+      showToast('Filters reset to show all properties');
+    }
+
+    function filterCuratedGrid(cat, btn) {
+      // Toggle button visual state
+      document.querySelectorAll('.curated-tab-btn').forEach(b => {
+        b.classList.remove('bg-brand-navy', 'text-white');
+        b.classList.add('text-slate-600');
+      });
+      btn.classList.add('bg-brand-navy', 'text-white');
+      btn.classList.remove('text-slate-600');
+
+      let list = PROPERTIES_DATA;
+      if (cat === 'sale') list = PROPERTIES_DATA.filter(p => p.purpose === 'sale');
+      else if (cat === 'rent') list = PROPERTIES_DATA.filter(p => p.purpose === 'rent');
+      else if (cat === 'commercial') list = PROPERTIES_DATA.filter(p => p.purpose === 'commercial' || p.purpose === 'land');
+
+      const grid = document.getElementById('curated-cards-grid');
+      if (grid) {
+        grid.innerHTML = renderPropertyCardBatch(list.slice(0, 6));
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    function handleHeroSearch(e) {
+      e.preventDefault();
+      const loc = document.getElementById('hero-location').value;
+      const cat = document.getElementById('hero-category').value;
+      const type = document.getElementById('hero-type').value;
+
+      STATE.filterCriteria.location = loc;
+      STATE.filterCriteria.category = cat;
+      STATE.filterCriteria.type = type;
+
+      window.location.hash = '#properties';
+    }
+
+    function filterByNeighbourhood(nId) {
+      STATE.filterCriteria.location = nId;
+      window.location.hash = '#properties';
+    }
+
+    function clearSavedProperties() {
+      STATE.savedProperties = [];
+      localStorage.setItem('aurus_saved_properties', '[]');
+      updateSavedBadges();
+      renderCurrentRoute();
+      showToast('Saved properties cleared');
+    }
+
+    function setMainDetailImage(url, elem) {
+      const main = document.getElementById('detail-main-img');
+      if (main) main.src = url;
+      // Border highlight
+      elem.parentElement.querySelectorAll('div').forEach(d => d.classList.remove('border-brand-orange'));
+      elem.classList.add('border-brand-orange');
+    }
+
+    // --- Interactive Map Toggles & Initializers ---
+    function toggleCatalogueViewMode(mode) {
+      const grid = document.getElementById('catalogue-grid-container');
+      const map = document.getElementById('catalogue-map-container');
+      const gridBtn = document.getElementById('view-mode-grid-btn');
+      const mapBtn = document.getElementById('view-mode-map-btn');
+
+      if (mode === 'map') {
+        grid.classList.add('hidden');
+        map.classList.remove('hidden');
+        mapBtn.classList.add('bg-brand-navy', 'text-white');
+        mapBtn.classList.remove('bg-white', 'text-slate-700');
+        gridBtn.classList.remove('bg-brand-navy', 'text-white');
+        gridBtn.classList.add('bg-white', 'text-slate-700');
+        initCatalogueMap();
+      } else {
+        map.classList.add('hidden');
+        grid.classList.remove('hidden');
+        gridBtn.classList.add('bg-brand-navy', 'text-white');
+        gridBtn.classList.remove('bg-white', 'text-slate-700');
+        mapBtn.classList.remove('bg-brand-navy', 'text-white');
+        mapBtn.classList.add('bg-white', 'text-slate-700');
+      }
+    }
+
+    function initCatalogueMap() {
+      if (!window.L) return;
+      const container = document.getElementById('catalogue-leaflet-map');
+      if (!container) return;
+
+      // Clean old instance
+      if (STATE.mapInstance) {
+        STATE.mapInstance.remove();
+        STATE.mapInstance = null;
+      }
+
+      // Center around Nairobi
+      const map = L.map('catalogue-leaflet-map').setView([-1.286389, 36.817223], 12);
+      STATE.mapInstance = map;
+
+      L.tileLayer("", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      // Plot all filtered properties
+      const filtered = getFilteredProperties();
+      filtered.forEach(p => {
+        if (p.lat && p.lng) {
+          const marker = L.marker([p.lat, p.lng]).addTo(map);
+          marker.bindPopup(`
+            <div style="font-family:'Plus Jakarta Sans',sans-serif; width: 220px;">
+              <img style="width:100%; height:110px; object-fit:cover; border-radius:6px 6px 0 0;" / class="eshop-placeholder-media">
+              <div style="padding:10px;">
+                <div style="font-size:11px; font-weight:800; color:#E05A2B;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                <div style="font-size:12px; font-weight:700; color:#0B132B; margin-top:2px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                <div style="font-size:10px; color:#64748B; margin-top:2px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                <a href="#property/${p.id}" style="display:block; text-align:center; padding:5px 0; margin-top:8px; background:#0B132B; color:#ffffff; font-size:10px; font-weight:700; text-transform:uppercase; border-radius:4px; text-decoration:none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></a>
+              </div>
+            </div>
+          `);
+        }
+      });
+
+      setTimeout(() => map.invalidateSize(), 200);
+    }
+
+    function initPropertyDetailMap(propertyId) {
+      if (!window.L) return;
+      const container = document.getElementById('property-detail-map');
+      if (!container) return;
+
+      const p = PROPERTIES_DATA.find(x => x.id === propertyId);
+      if (!p || !p.lat) return;
+
+      const map = L.map('property-detail-map').setView([p.lat, p.lng], 14);
+      L.tileLayer("", {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      const marker = L.marker([p.lat, p.lng]).addTo(map);
+      marker.bindPopup(`<strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong><br /><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:40%"></span>`).openPopup();
+      setTimeout(() => map.invalidateSize(), 200);
+    }
+
+    // --- Mortgage Formula Calculations ---
+    function calculateMonthlyRepayment(principal, annualRatePct, years) {
+      const monthlyRate = (annualRatePct / 100) / 12;
+      const numMonths = years * 12;
+      if (monthlyRate === 0) return 'KES ' + Math.round(principal / numMonths).toLocaleString('en-KE');
+      
+      const factor = Math.pow(1 + monthlyRate, numMonths);
+      const monthlyPayment = principal * ((monthlyRate * factor) / (factor - 1));
+      return 'KES ' + Math.round(monthlyPayment).toLocaleString('en-KE');
+    }
+
+    function updateQuickMortgage(totalPrice, depositPct) {
+      const depVal = Math.round(totalPrice * (depositPct / 100));
+      const loanAmount = totalPrice - depVal;
+      const repay = calculateMonthlyRepayment(loanAmount, 13.5, 20);
+
+      document.getElementById('widget-dep-pct').innerText = depositPct + '%';
+      document.getElementById('widget-dep-val').innerText = formatCurrency(depVal);
+      document.getElementById('widget-repay-val').innerText = repay;
+    }
+
+    function recalculateMortgage() {
+      const price = parseFloat(document.getElementById('calc-price-input').value) || 45000000;
+      const depPct = parseFloat(document.getElementById('calc-deposit-input').value) || 20;
+      const rate = parseFloat(document.getElementById('calc-rate-input').value) || 13.5;
+      const years = parseInt(document.getElementById('calc-tenure-input').value, 10) || 20;
+
+      const depAmount = price * (depPct / 100);
+      const loanPrincipal = price - depAmount;
+
+      const monthlyRate = (rate / 100) / 12;
+      const numMonths = years * 12;
+      const factor = Math.pow(1 + monthlyRate, numMonths);
+      const monthlyPayment = loanPrincipal * ((monthlyRate * factor) / (factor - 1));
+      const totalLifetime = monthlyPayment * numMonths;
+      const totalInterest = totalLifetime - loanPrincipal;
+
+      // Update UI elements
+      document.getElementById('calc-price-display').innerText = 'KES ' + price.toLocaleString('en-KE');
+      document.getElementById('calc-deposit-display').innerText = `${depPct}% (KES ${depAmount.toLocaleString('en-KE')})`;
+      
+      document.getElementById('res-monthly').innerText = 'KES ' + Math.round(monthlyPayment).toLocaleString('en-KE');
+      document.getElementById('res-principal').innerText = 'KES ' + Math.round(loanPrincipal).toLocaleString('en-KE');
+      document.getElementById('res-interest').innerText = 'KES ' + Math.round(totalInterest).toLocaleString('en-KE');
+      document.getElementById('res-total').innerText = 'KES ' + Math.round(totalLifetime).toLocaleString('en-KE');
+
+      // Visual ratios
+      const pRatio = Math.round((loanPrincipal / totalLifetime) * 100);
+      const iRatio = 100 - pRatio;
+      document.getElementById('bar-principal').style.width = pRatio + '%';
+      document.getElementById('bar-interest').style.width = iRatio + '%';
+    }
+
+    // --- Lead Gen Form Submissions ---
+    function handleLeadGenSubmit(e, mode) {
+      e.preventDefault();
+      showToast('Thank you! Your property intake has been dispatched to our senior valuation partner. We will contact you within 24 hours.');
+      e.target.reset();
+    }
+
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      showToast('Your message has been received by our client desk. A senior advisor will follow up promptly.');
+      e.target.reset();
+    }
+
+    // --- GSAP Animation Initializer (With Full Defensive Fallbacks) ---
+    function initGsapAnimations() {
+      if (!window.gsap) return;
+      
+      // Respect user's motion preferences
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      try {
+        // Register ScrollTrigger if available
+        if (window.ScrollTrigger) {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Subtly animate headlines in view
+        gsap.fromTo("h1, h2", 
+          { opacity: 0.85, y: 8 }, 
+          { opacity: 1, y: 0, duration: 0.6, ease: "power2.out", stagger: 0.05 }
+        );
+      } catch (err) {
+        // Safe silent fail
+        console.warn("GSAP subtle animation skipped", err);
+      }
+    }
+
+    // --- Application Bootstrapping ---
+    window.addEventListener('DOMContentLoaded', () => {
+      updateSavedBadges();
+      handleHashChange();
+    });
+
+    window.addEventListener('hashchange', handleHashChange);
+  </script>
+
+
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body></html>

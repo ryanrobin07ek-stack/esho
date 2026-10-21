@@ -1,0 +1,4264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>FreshBox - Flavor That Makes History!</title>
+  <meta name="description" content="FreshBox: Curated gourmet burgers, stone-fired pizza, crispy broasted chicken, loaded fries, and handcrafted milkshakes. Fast 30-min local delivery." />
+  <meta property="og:title" content="FreshBox - Flavor That Makes History!" />
+  <meta property="og:description" content="Gourmet food & restaurant storefront with stone-fired pizzas, smash burgers, fried chicken, and live customizer." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#381207" />
+  <meta name="color-scheme" content="only light" />
+  <meta name="supported-color-schemes" content="light" />
+  <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiRnJlc2hCb3giLCJzaG9ydF9uYW1lIjoiRnJlc2hCb3giLCJzdGFydF91cmwiOiIvIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI0ZERjZFRCIsInRoZW1lX2NvbG9yIjoiIzM4MTIwNyJ9" />
+  <style>
+    /* ==========================================================================
+       RESET & MOBILE CONSTRAINTS
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    a, button, input, select, textarea, label, [onclick] {
+      touch-action: manipulation;
+    }
+    :root {
+      color-scheme: only light;
+      --ff-brand: #381207;
+      --ff-bg: #FDF6ED;
+      --ff-surface: #FFF9F2;
+      --ff-card-bg: #FFFFFF;
+      --ff-text: #381207;
+      --ff-muted: #78350F;
+      --ff-accent: #F59E0B;
+      --ff-border: #F3E5D4;
+      --ff-hero-bg: #FDF6ED;
+      --ff-hero-text: #381207;
+      --ff-btn-bg: #F59E0B;
+      --ff-btn-text: #381207;
+      --ff-card-radius: 20px;
+      --ff-card-border: 1px solid #F3E5D4;
+      --ff-card-padding: 14px;
+      --ff-heading-font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --ff-body-font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --ff-heading-weight: 900;
+      --ff-heading-transform: uppercase;
+      --ff-letter-spacing: -0.03em;
+      --ff-safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    html {
+      max-width: 100%;
+      overflow-x: clip;
+    }
+    body {
+      background-color: #EFE4D6;
+      color: var(--ff-text);
+      font-family: var(--ff-body-font);
+      line-height: 1.5;
+      font-size: 16px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      max-width: 100%;
+      overflow-x: hidden;
+      overflow-x: clip;
+    }
+    #app-container {
+      width: 100%;
+      max-width: 480px;
+      background-color: var(--ff-bg);
+      min-height: 100vh;
+      min-height: 100dvh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 50px rgba(56, 18, 7, 0.15);
+      padding-bottom: calc(130px + var(--ff-safe-bottom));
+      overflow-x: clip;
+      min-width: 0;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+    button {
+      color: inherit;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+    input, select, textarea {
+      font-family: inherit;
+      font-size: 16px;
+    }
+
+    /* ==========================================================================
+       HEADER & PROMO BAR
+       ========================================================================== */
+    .promo-ticker {
+      background-color: #381207;
+      color: #FFFDF9;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 7px 12px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .store-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background-color: var(--ff-bg);
+      border-bottom: 1px solid var(--ff-border);
+      padding: 10px 14px 6px;
+    }
+    .header-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 10px;
+      margin-bottom: 8px;
+    }
+    .header-top .brand-title { order: 1; }
+    .header-top .header-icons { order: 2; flex-shrink: 0; }
+    .header-top .search-pill-wrap { order: 3; flex: 1 1 100%; min-width: 0; }
+    .brand-title {
+      font-size: 22px;
+      font-weight: var(--ff-heading-weight);
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: var(--ff-brand);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-leaf-icon {
+      color: #F59E0B;
+      display: inline-flex;
+    }
+    .search-pill-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background-color: #FFF9F2;
+      border-radius: 9999px;
+      padding: 3px 4px 3px 14px;
+      border: 1.5px solid var(--ff-border);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .search-pill-wrap:focus-within {
+      border-color: #381207;
+      background-color: #FFFFFF;
+    }
+    .search-pill-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 15px;
+      color: #381207;
+      min-width: 0;
+      width: 100%;
+    }
+    .search-pill-input::placeholder {
+      color: #92400E;
+      opacity: 0.7;
+    }
+    .search-pill-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #F59E0B;
+      color: #381207;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+    .search-pill-btn:active {
+      transform: scale(0.92);
+    }
+    .search-pill-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+    .header-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      color: #381207;
+      background: #FFF9F2;
+      border: 1px solid var(--ff-border);
+      transition: background-color 0.2s;
+    }
+    .icon-btn:active {
+      background-color: #F5EBE1;
+    }
+    .badge-count {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      background-color: #DC2626;
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 900;
+      min-width: 17px;
+      height: 17px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 1.5px solid #FFFFFF;
+    }
+    .sub-nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 6px 0 8px;
+      border-top: 1px solid var(--ff-border);
+    }
+    .sub-nav::-webkit-scrollbar {
+      display: none;
+    }
+    .sub-nav-link {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #78350F;
+      white-space: nowrap;
+      padding: 2px 0;
+      position: relative;
+    }
+    .sub-nav-link.active, .sub-nav-link:hover {
+      color: #381207;
+    }
+    .sub-nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background-color: #F59E0B;
+      border-radius: 2px;
+    }
+
+    /* ==========================================================================
+       HERO SHOWCASE (FreshBox Inspiration Match)
+       ========================================================================== */
+    .hero-freshbox-section {
+      background: linear-gradient(180deg, #FDF6ED 0%, #F5EBE1 100%);
+      padding: 24px 16px 20px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .hero-stickers-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .hero-sticker-badge {
+      font-size: 24px;
+      animation: floatBadge 3s ease-in-out infinite alternate;
+    }
+    @keyframes floatBadge {
+      0% { transform: translateY(0) rotate(-4deg); }
+      100% { transform: translateY(-6px) rotate(4deg); }
+    }
+    .hero-big-title {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      line-height: 1.02;
+      color: #381207;
+      margin-bottom: 12px;
+      text-wrap: balance;
+    }
+    .hero-big-title span.accent-text {
+      color: #DC2626;
+      display: inline-block;
+    }
+    .hero-center-art {
+      width: 100%;
+      height: 220px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+    .hero-center-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 24px;
+      box-shadow: 0 16px 36px rgba(56, 18, 7, 0.16);
+    }
+    .hero-center-art .hero-svg-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-footer-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .hero-subtitle {
+      font-size: 13px;
+      line-height: 1.35;
+      color: #78350F;
+      text-align: left;
+      max-width: 62%;
+      font-weight: 600;
+    }
+    .btn-pill-action {
+      background-color: #F59E0B;
+      color: #381207;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 12px 22px;
+      border-radius: 9999px;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .btn-pill-action:active {
+      transform: scale(0.96);
+      background-color: #D97706;
+    }
+
+    /* ==========================================================================
+       CIRCULAR ZONE MENU (Matching Dribbble Row)
+       ========================================================================== */
+    .zone-menu-section {
+      padding: 20px 16px 14px;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--ff-border);
+    }
+    .zone-menu-title {
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      text-align: center;
+      color: #381207;
+      margin-bottom: 14px;
+    }
+    .zone-menu-scroller {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 4px 2px 8px;
+    }
+    .zone-menu-scroller::-webkit-scrollbar {
+      display: none;
+    }
+    .zone-item-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 74px;
+      cursor: pointer;
+    }
+    .zone-item-icon-box {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: #FDF6ED;
+      border: 1.5px solid #F3E5D4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 6px;
+      transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+    }
+    .zone-item-btn.active .zone-item-icon-box,
+    .zone-item-btn:hover .zone-item-icon-box {
+      background-color: #381207;
+      border-color: #381207;
+      transform: scale(1.06);
+    }
+    .zone-item-icon-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+    .zone-item-label {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: #78350F;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .zone-item-btn.active .zone-item-label {
+      color: #381207;
+      font-weight: 900;
+    }
+
+    /* ==========================================================================
+       SECTION CONTAINER & BENTO BLOCKS (Matching Dribbble Composition)
+       ========================================================================== */
+    .section-block {
+      padding: 22px 16px;
+    }
+    .section-title-wrap {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-size: 22px;
+      font-weight: var(--ff-heading-weight);
+      letter-spacing: var(--ff-letter-spacing);
+      text-transform: var(--ff-heading-transform);
+      color: var(--ff-text);
+      line-height: 1.15;
+    }
+    .section-subtitle-text {
+      font-size: 12px;
+      color: #78350F;
+      margin-top: 4px;
+    }
+
+    /* Bento Featured Grid */
+    .bento-hero-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .bento-card-large {
+      border-radius: 20px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 155px;
+    }
+    .bento-card-dark {
+      background: linear-gradient(135deg, #381207 0%, #200802 100%);
+      color: #FFFFFF;
+    }
+    .bento-card-gold {
+      background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+      color: #381207;
+    }
+    .bento-card-cream {
+      background: #FFFFFF;
+      color: #381207;
+      border: 1px solid var(--ff-border);
+    }
+    .bento-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      z-index: 2;
+    }
+    .bento-tag {
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: rgba(245, 158, 11, 0.25);
+      color: #F59E0B;
+      margin-bottom: 6px;
+    }
+    .bento-card-dark .bento-tag {
+      background: rgba(255, 255, 255, 0.15);
+      color: #FDE68A;
+    }
+    .bento-title {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .bento-desc {
+      font-size: 11px;
+      line-height: 1.35;
+      opacity: 0.85;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .bento-price-btn-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .bento-price {
+      font-size: 15px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .bento-btn-mini {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 7px 14px;
+      border-radius: 9999px;
+      background: #F59E0B;
+      color: #381207;
+    }
+    .bento-card-dark .bento-btn-mini {
+      background: #FFFFFF;
+      color: #381207;
+    }
+    .bento-media-box {
+      width: 125px;
+      height: 125px;
+      flex-shrink: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.05);
+    }
+    .bento-media-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .bento-card-large:hover .bento-media-box img {
+      transform: scale(1.08);
+    }
+
+    /* 3-card mini row */
+    .bento-mini-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .bento-mini-card {
+      border-radius: 16px;
+      padding: 10px;
+      background: #FFFFFF;
+      border: 1px solid var(--ff-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .bento-mini-img-wrap {
+      width: 100%;
+      height: 75px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .bento-mini-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .bento-mini-name {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      line-height: 1.15;
+      margin-bottom: 3px;
+      color: #381207;
+    }
+    .bento-mini-price {
+      font-size: 11px;
+      font-weight: 900;
+      color: #DC2626;
+      margin-bottom: 6px;
+    }
+    .bento-mini-btn {
+      width: 100%;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 5px 6px;
+      border-radius: 9999px;
+      background: #381207;
+      color: #FFFFFF;
+    }
+
+    /* ==========================================================================
+       PRODUCT GRID & CARDS (The Universal Restaurant Card)
+       ========================================================================== */
+    .product-grid-2col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .product-grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 380px) {
+      .product-grid-3col {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .product-card {
+      background-color: var(--ff-card-bg);
+      border-radius: var(--ff-card-radius);
+      border: var(--ff-card-border);
+      padding: var(--ff-card-padding);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(56, 18, 7, 0.04);
+    }
+    .product-card:active {
+      transform: scale(0.98);
+    }
+    .card-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      min-height: 22px;
+    }
+    .card-brand-tag {
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #92400E;
+    }
+    .card-dietary-badge {
+      font-size: 8px;
+      font-weight: 900;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #DCFCE7;
+      color: #15803D;
+      text-transform: uppercase;
+    }
+    .card-wish-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background-color: #FFF9F2;
+      border: 1px solid var(--ff-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9CA3AF;
+      transition: color 0.2s;
+    }
+    .card-wish-btn.active {
+      color: #DC2626;
+    }
+    .card-img-wrap {
+      width: 100%;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 4px 0 8px;
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #FDF6ED;
+    }
+    .card-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .product-card:hover .card-img-wrap img {
+      transform: scale(1.06);
+    }
+    .card-img-wrap .svg-food-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+    .card-info-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .card-name {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: var(--ff-text);
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-price {
+      font-size: 13px;
+      font-weight: 900;
+      color: #DC2626;
+      white-space: nowrap;
+    }
+    .card-desc-snippet {
+      font-size: 10px;
+      color: #78350F;
+      line-height: 1.35;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-quick-add {
+      margin-top: auto;
+      width: 100%;
+      background-color: #381207;
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 7px 10px;
+      border-radius: 9999px;
+      text-align: center;
+      transition: background-color 0.2s, transform 0.15s;
+    }
+    .card-quick-add:active {
+      background-color: #F59E0B;
+      color: #381207;
+      transform: scale(0.97);
+    }
+
+    /* Centered Pill Button */
+    .btn-see-all-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 18px;
+    }
+    .btn-pill-outline {
+      border: 1.5px solid #381207;
+      background-color: transparent;
+      color: #381207;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 9px 26px;
+      border-radius: 9999px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .btn-pill-outline:active {
+      background-color: #381207;
+      color: #FFFFFF;
+    }
+
+    /* ==========================================================================
+       EDITORIAL SPLIT SECTION (Chef / Food Story matching Reference)
+       ========================================================================== */
+    .chef-story-section {
+      background: #381207;
+      color: #FFFDF9;
+      border-radius: 24px;
+      margin: 10px 16px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+    .chef-story-title {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      line-height: 1.05;
+      color: #FFFFFF;
+    }
+    .chef-story-desc {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #F3E5D4;
+      opacity: 0.9;
+    }
+    .chef-story-media-box {
+      width: 100%;
+      height: 180px;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+    }
+    .chef-story-media-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ==========================================================================
+       SPECIAL DEALS & SAVINGS CARDS
+       ========================================================================== */
+    .savings-banner-section {
+      background: linear-gradient(135deg, #4A1505 0%, #290802 100%);
+      color: #FFFFFF;
+      border-radius: 24px;
+      margin: 10px 16px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .savings-header h2 {
+      font-size: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      color: #FBBF24;
+    }
+    .savings-vouchers-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .voucher-pill {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px dashed #FBBF24;
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .voucher-tag {
+      font-size: 13px;
+      font-weight: 900;
+      color: #FFFFFF;
+    }
+    .voucher-sub {
+      font-size: 10px;
+      color: #FDE68A;
+    }
+    .voucher-code-btn {
+      background: #F59E0B;
+      color: #381207;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 9999px;
+    }
+
+    /* ==========================================================================
+       FOOTER (Wavy Top Contour matching Dribbble Reference)
+       ========================================================================== */
+    .store-footer {
+      background-color: #2D0D04;
+      color: #FFFDF9;
+      padding: 36px 16px 20px;
+      position: relative;
+    }
+    .footer-wavy-top {
+      position: absolute;
+      top: -18px;
+      left: 0;
+      right: 0;
+      height: 20px;
+      background-color: #2D0D04;
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+    }
+    .footer-columns-4 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px 12px;
+      margin-bottom: 24px;
+    }
+    .footer-col-title {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #FBBF24;
+      margin-bottom: 8px;
+    }
+    .footer-link-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .footer-link {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #F3E5D4;
+      letter-spacing: 0.02em;
+      opacity: 0.85;
+    }
+    .footer-link:hover {
+      color: #FFFFFF;
+      opacity: 1;
+    }
+    .footer-secondary-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 0 16px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .footer-huge-watermark {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      text-align: center;
+      color: #F59E0B;
+      line-height: 1;
+      margin: 8px 0 14px;
+    }
+    .footer-bottom-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #F3E5D4;
+      opacity: 0.7;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 12px;
+    }
+
+    /* ==========================================================================
+       FIXED BOTTOM NAVIGATION BAR
+       ========================================================================== */
+    .fixed-bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      height: calc(58px + var(--ff-safe-bottom));
+      padding-bottom: var(--ff-safe-bottom);
+      background-color: #FFFFFF;
+      border-top: 1.5px solid var(--ff-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 50;
+      box-shadow: 0 -4px 16px rgba(56, 18, 7, 0.08);
+    }
+    .nav-tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: #78350F;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      width: 20%;
+      height: 100%;
+      position: relative;
+    }
+    .nav-tab-item.active {
+      color: #DC2626;
+      font-weight: 900;
+    }
+    .nav-tab-item svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ==========================================================================
+       FLOATING ACTIONS (WhatsApp, Assistant & Floating Studio Gear)
+       ========================================================================== */
+    .floating-whatsapp {
+      position: fixed;
+      bottom: calc(68px + var(--ff-safe-bottom));
+      right: calc(50% - 228px);
+      z-index: 45;
+      background-color: #25D366;
+      color: #FFFFFF;
+      border-radius: 9999px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      box-shadow: 0 4px 16px rgba(37, 211, 102, 0.45);
+      transition: transform 0.2s;
+    }
+    @media (max-width: 480px) {
+      .floating-whatsapp { right: 14px; }
+    }
+    .floating-whatsapp:active { transform: scale(0.95); }
+    .floating-whatsapp svg { width: 18px; height: 18px; }
+
+    .floating-chatbot {
+      position: fixed;
+      bottom: calc(68px + var(--ff-safe-bottom));
+      left: calc(50% - 228px);
+      z-index: 45;
+      background-color: #381207;
+      color: #F59E0B;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(56, 18, 7, 0.35);
+      border: 1.5px solid #F59E0B;
+    }
+    @media (max-width: 480px) {
+      .floating-chatbot { left: 14px; }
+    }
+    .floating-chatbot svg { width: 20px; height: 20px; }
+
+    /* FLOATING STUDIO GEAR BUTTON (Clearly visible, elegant entry to studio.html) */
+    .floating-studio-gear {
+      position: fixed;
+      bottom: calc(122px + var(--ff-safe-bottom));
+      right: calc(50% - 228px);
+      z-index: 46;
+      background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+      color: #381207;
+      border-radius: 9999px;
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.4);
+      border: 1.5px solid #FFFFFF;
+      transition: transform 0.2s;
+    }
+    @media (max-width: 480px) {
+      .floating-studio-gear { right: 14px; }
+    }
+    .floating-studio-gear:active { transform: scale(0.94); }
+    .floating-studio-gear svg { width: 15px; height: 15px; }
+
+    /* ==========================================================================
+       BOTTOM SHEET MODAL (Food Customizer, Filters, Cart, FAQs)
+       ========================================================================== */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(56, 18, 7, 0.6);
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      backdrop-filter: blur(2px);
+    }
+    .sheet-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .bottom-sheet {
+      background-color: #FFFFFF;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -8px 30px rgba(56, 18, 7, 0.25);
+    }
+    .sheet-overlay.open .bottom-sheet {
+      transform: translateY(0);
+    }
+    .sheet-header {
+      padding: 14px 18px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--ff-border);
+    }
+    .sheet-drag-handle {
+      width: 36px;
+      height: 4px;
+      background-color: #D1D5DB;
+      border-radius: 4px;
+      margin: 8px auto 0;
+    }
+    .sheet-title {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: #381207;
+    }
+    .sheet-content {
+      padding: 16px 18px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .sheet-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--ff-border);
+      display: flex;
+      gap: 10px;
+      background: #FFFDF9;
+    }
+
+    /* ==========================================================================
+       PRODUCT DETAIL VIEW & CUSTOMIZER
+       ========================================================================== */
+    .pdp-gallery-wrap {
+      background: linear-gradient(180deg, #FDF6ED 0%, #FFFFFF 100%);
+      padding: 20px 16px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .pdp-main-img-box {
+      width: 100%;
+      height: 230px;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #FDF6ED;
+      box-shadow: 0 10px 24px rgba(56, 18, 7, 0.08);
+    }
+    .pdp-main-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .pdp-details-box {
+      padding: 16px;
+    }
+    .pdp-brand-cat {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #92400E;
+      margin-bottom: 4px;
+    }
+    .pdp-title {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      line-height: 1.15;
+      color: #381207;
+      margin-bottom: 8px;
+    }
+    .pdp-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .pdp-current-price {
+      font-size: 24px;
+      font-weight: 900;
+      color: #DC2626;
+    }
+    .pdp-compare-price {
+      font-size: 16px;
+      color: #9CA3AF;
+      text-decoration: line-through;
+    }
+    .custom-option-group {
+      margin-bottom: 18px;
+      background: #FFF9F2;
+      border: 1px solid var(--ff-border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .custom-group-title {
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: #381207;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .custom-group-title span.sub-hint {
+      font-size: 10px;
+      font-weight: 700;
+      color: #92400E;
+    }
+    .option-pills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .option-pill-btn {
+      border: 1.5px solid var(--ff-border);
+      background-color: #FFFFFF;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #381207;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .option-pill-btn.selected {
+      border-color: #381207;
+      background-color: #381207;
+      color: #FFFFFF;
+    }
+    .option-pill-btn.selected span.opt-price {
+      color: #FBBF24;
+    }
+    .opt-price {
+      font-size: 11px;
+      color: #DC2626;
+      font-weight: 900;
+    }
+
+    /* PWA Install Prompt */
+    .pwa-prompt {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(76px + var(--ff-safe-bottom));
+      width: min(456px, calc(100% - 20px));
+      background: #381207;
+      color: #FFFDF9;
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 80;
+      box-shadow: 0 12px 32px rgba(56, 18, 7, 0.4);
+      border: 1px solid #F59E0B;
+    }
+    .pwa-prompt-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #F59E0B;
+      color: #381207;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .pwa-prompt-body { flex: 1; min-width: 0; }
+    .pwa-prompt-title { font-size: 12px; font-weight: 900; text-transform: uppercase; color: #FBBF24; }
+    .pwa-prompt-text { font-size: 11px; color: #F3E5D4; line-height: 1.35; margin-top: 2px; }
+    .pwa-prompt-btn {
+      background: #F59E0B;
+      color: #381207;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 8px 14px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+    }
+    .pwa-prompt-x { color: #D1D5DB; font-size: 20px; line-height: 1; padding: 4px; flex-shrink: 0; }
+
+    /* Studio Shell */
+    html.studio-mode #promo-ticker,
+    html.studio-mode #main-header,
+    html.studio-mode #customer-bottom-nav,
+    html.studio-mode #main-footer,
+    html.studio-mode #floating-whatsapp,
+    html.studio-mode #floating-chatbot,
+    html.studio-mode #floating-studio-gear {
+      display: none !important;
+    }
+    html.studio-mode #app-container {
+      padding-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app-container">
+    <!-- TOP TICKER -->
+    <div class="promo-ticker" id="promo-ticker">
+      <span>🔥</span>
+      <span id="promo-text">SPECIAL: 20% OFF ALL FAMILY BUNDLES TODAY — CODE: FRESH20 • 30-MIN DELIVERY</span>
+    </div>
+
+    <!-- MAIN HEADER -->
+    <header class="store-header" id="main-header">
+      <div class="header-top">
+        <a href="/" class="brand-title" id="header-brand-title">
+          <span>FreshBox</span>
+          <span class="brand-leaf-icon">⚡</span>
+        </a>
+        <div class="search-pill-wrap">
+          <input type="text" class="search-pill-input" id="global-search-input" placeholder="Search burgers, pizza, chicken..." aria-label="Search food items" />
+          <button class="search-pill-btn" id="global-search-btn" aria-label="Search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+        <div class="header-icons">
+          <a href="/saved" class="icon-btn" aria-label="Saved Meals" id="wishlist-header-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span class="badge-count" id="wishlist-badge" style="display:none;">0</span>
+          </a>
+          <a href="/cart" class="icon-btn" aria-label="Order Cart" id="cart-header-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <span class="badge-count" id="cart-badge" style="display:none;">0</span>
+          </a>
+          <a href="/account" class="icon-btn" aria-label="Customer Account">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </a>
+        </div>
+      </div>
+      <nav class="sub-nav" id="sub-nav-bar" aria-label="Menu Categories Navigation">
+        <!-- Rendered dynamically -->
+      </nav>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main id="main-content" role="main">
+      <!-- Injected by slash-based router -->
+    </main>
+
+    <!-- FOOTER (Wavy Top Contour matching Dribbble Reference) -->
+    <footer class="store-footer" id="main-footer">
+      <div class="footer-wavy-top"></div>
+      <div class="footer-columns-4">
+        <div>
+          <h4 class="footer-col-title">FOLLOW US</h4>
+          <ul class="footer-link-list" id="footer-social-list"></ul>
+        </div>
+        <div>
+          <h4 class="footer-col-title">OUR RESTAURANT</h4>
+          <ul class="footer-link-list">
+            <li><a href="/pages/about" class="footer-link">OUR STORY</a></li>
+            <li><a href="/pages/faqs" class="footer-link">HELP & FAQS</a></li>
+            <li><a href="/pages/allergens" class="footer-link">ALLERGEN GUIDE</a></li>
+            <li><a href="/pages/privacy" class="footer-link">PRIVACY POLICY</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-col-title">ORDERING & DELIVERY</h4>
+          <ul class="footer-link-list">
+            <li><a href="/pages/delivery" class="footer-link">DELIVERY ZONES</a></li>
+            <li><a href="/pages/pickup" class="footer-link">CURBSIDE PICKUP</a></li>
+            <li><a href="/pages/catering" class="footer-link">PARTY CATERING</a></li>
+            <li><a href="/pages/terms" class="footer-link">TERMS OF SERVICE</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-col-title">CONTACT KITCHEN</h4>
+          <ul class="footer-link-list" id="footer-contact-list"></ul>
+        </div>
+      </div>
+
+      <div class="footer-secondary-nav" id="footer-secondary-nav">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="footer-huge-watermark" id="footer-huge-watermark">
+        FRESHBOX
+      </div>
+
+      <div class="footer-bottom-bar">
+        <span>© 2026 FRESHBOX GOURMET. ALL RIGHTS RESERVED.</span>
+        <a href="/studio.html" class="studio-gear-link" aria-label="Open Visual Studio" title="Open Visual Studio Editor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </a>
+      </div>
+    </footer>
+
+    <!-- FIXED CUSTOMER BOTTOM NAV -->
+    <nav class="fixed-bottom-nav" id="customer-bottom-nav" aria-label="Customer Navigation">
+      <a href="/" class="nav-tab-item active" data-nav="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span>HOME</span>
+      </a>
+      <a href="/browse" class="nav-tab-item" data-nav="browse">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span>MENU</span>
+      </a>
+      <a href="/saved" class="nav-tab-item" data-nav="saved">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        <span>SAVED</span>
+      </a>
+      <a href="/cart" class="nav-tab-item" data-nav="cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+        <span>CART</span>
+      </a>
+      <a href="/account" class="nav-tab-item" data-nav="account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <span>ACCOUNT</span>
+      </a>
+    </nav>
+
+    <!-- FLOATING ACTIONS -->
+    <a href="https://wa.me/254715333555" target="_blank" class="floating-whatsapp" id="floating-whatsapp" aria-label="Chat on WhatsApp">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.979-.276-.101-.476-.15-.677.15-.2.301-.777.979-.953 1.179-.175.201-.351.226-.652.075-.301-.15-1.27-.468-2.42-1.493-.895-.798-1.5-1.784-1.675-2.085-.175-.301-.019-.464.132-.614.135-.135.301-.351.451-.527.151-.176.201-.301.301-.502.101-.201.05-.377-.025-.527-.075-.15-.677-1.633-.928-2.235-.245-.587-.494-.508-.677-.517-.175-.01-.376-.01-.577-.01-.201 0-.527.075-.802.377-.276.301-1.054 1.03-1.054 2.511 0 1.482 1.079 2.912 1.229 3.113.15.201 2.124 3.243 5.146 4.549.719.311 1.28.497 1.718.636.722.229 1.378.197 1.898.119.579-.087 1.78-.727 2.031-1.43.251-.703.251-1.306.175-1.43-.075-.125-.276-.201-.577-.351zM12.04 2C6.51 2 2.02 6.49 2.02 12.02c0 1.84.498 3.56 1.365 5.04L2 22l5.08-1.332A9.97 9.97 0 0 0 12.04 22c5.53 0 10.02-4.49 10.02-10.02C22.06 6.49 17.57 2 12.04 2z"/></svg>
+      <span>WhatsApp</span>
+    </a>
+    
+    <button class="floating-chatbot" id="floating-chatbot" aria-label="Open FreshBox Assistant">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+
+    <!-- FLOATING STUDIO GEAR BUTTON (Clearly visible entry to studio.html) -->
+    <a href="/studio.html" class="floating-studio-gear" id="floating-studio-gear" aria-label="Open Visual Studio Admin" title="Open Studio Visual Editor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span>STUDIO</span>
+    </a>
+
+    <!-- BOTTOM SHEET OVERLAY (For Filters, Customizer & Chatbot) -->
+    <div class="sheet-overlay" id="sheet-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="bottom-sheet" id="bottom-sheet">
+        <div class="sheet-drag-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title" id="sheet-title">Options</h3>
+          <button class="icon-btn" id="sheet-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="sheet-content" id="sheet-content">
+          <!-- Dynamic Content -->
+        </div>
+        <div class="sheet-footer" id="sheet-footer">
+          <!-- Dynamic Footer Buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMBEDDED CONFIGURATION BLOB -->
+  <script type="application/json" id="ff-config">
+{
+  "_readme": "Code-level settings. Content, menu items, and themes live in site-data.json.",
+  "storage": {
+    "dbName": "FreshBoxRestaurantDB",
+    "dbVersion": 1,
+    "siteKey": "freshbox_site_data",
+    "cartKey": "freshbox_cart",
+    "savedKey": "freshbox_saved",
+    "ordersKey": "freshbox_orders",
+    "pwaDismissKey": "freshbox_pwa_dismissed",
+    "revisionKey": "freshbox_applied_revision"
+  },
+  "fallbacks": {
+    "whatsapp": "254715333555",
+    "email": "freshboxkitchen@gmail.com"
+  },
+  "whatsappOrderTemplate": "Hello {store}! I would like to place an order:\n*Dish:* {product}\n*Category:* {category}\n*Options:* {size}\n*Price:* {price}\n*Link:* {link}\n*Delivery Address:* Nairobi Central",
+  "contactHints": {
+    "phone": "+254 715 333 555",
+    "whatsapp": "254715333555",
+    "email": "orders@freshbox.co.ke",
+    "telegram": "@freshboxnairobi",
+    "sms": "+254 715 333 555",
+    "link": "https://freshbox.co.ke",
+    "page": "/location"
+  },
+  "checkoutEmailPlaceholder": "youremail@example.com",
+  "backupFileName": "freshbox_restaurant_backup.json"
+}
+  </script>
+
+  <!-- EMBEDDED SITE DATA BLOB (Full 42-item catalog, 8 categories, 7 homepage sections, themes) -->
+  <script type="application/json" id="ff-site-data">
+{
+  "version": 1,
+  "name": "FreshBox",
+  "tagline": "Flavor That Makes History! Fresh smash burgers, stone-fired pizza, and crispy broasted chicken.",
+  "currency": "KES",
+  "currencySymbol": "KSh",
+  "taxRate": 0.16,
+  "shippingFlatRate": 250,
+  "freeShippingThreshold": 2500,
+  "contact": {
+    "businessName": "FreshBox Gourmet Kitchen Ltd.",
+    "phone": "+254 715 333 555",
+    "whatsapp": "+254715333555",
+    "whatsappMessage": "Hello FreshBox! I would like to order some hot food for delivery.",
+    "email": "orders@freshbox.co.ke",
+    "address": "Kimathi Street, Nairobi Central, Kenya",
+    "hours": "Mon - Sun: 8:00 AM - 11:00 PM (Late Night Delivery)"
+  },
+  "location": {
+    "lat": -1.28333,
+    "lng": 36.82194,
+    "zoom": 16,
+    "title": "FreshBox Flagship Diner & Cloud Kitchen",
+    "active": true
+  },
+  "socials": [
+    { "platform": "Instagram", "url": "https://instagram.com/freshboxfood", "enabled": true },
+    { "platform": "TikTok", "url": "https://tiktok.com/@freshboxnairobi", "enabled": true },
+    { "platform": "Facebook", "url": "https://facebook.com/freshboxgourmet", "enabled": true },
+    { "platform": "Twitter / X", "url": "https://x.com/freshboxkenya", "enabled": true }
+  ],
+  "floating": {
+    "whatsappEnabled": true,
+    "whatsappPosition": "bottom-right",
+    "whatsappLabel": "Order via WhatsApp",
+    "chatbotEnabled": true,
+    "chatbotPosition": "bottom-left",
+    "chatbotTitle": "FreshBox Meal Assistant"
+  },
+  "pwa": {
+    "enabled": true,
+    "appName": "FreshBox Gourmet",
+    "shortName": "FreshBox",
+    "themeColor": "#381207",
+    "bgColor": "#FDF6ED",
+    "promptTitle": "Install FreshBox App",
+    "promptText": "Add FreshBox to your phone home screen for instant one-tap food delivery.",
+    "promptButton": "INSTALL APP",
+    "delaySeconds": 6,
+    "snoozeDays": 5,
+    "showOnIOS": true
+  },
+  "paystack": {
+    "publicKey": "pk_test_sample_freshbox_demo_key_2026",
+    "currency": "KES",
+    "testMode": true
+  },
+  "activeThemeId": "theme-freshbox-warm",
+  "themes": [
+    {
+      "id": "theme-freshbox-warm",
+      "name": "FreshBox Roasted Umber & Gold",
+      "description": "Authentic Dribbble match: warm toasted cream background, deep roasted espresso headings, golden mustard accents.",
+      "colors": {
+        "brand": "#381207",
+        "background": "#FDF6ED",
+        "surface": "#FFF9F2",
+        "surfaceCard": "#FFFFFF",
+        "textPrimary": "#381207",
+        "textMuted": "#78350F",
+        "accent": "#F59E0B",
+        "border": "#F3E5D4",
+        "heroBg": "#FDF6ED",
+        "heroText": "#381207",
+        "buttonBg": "#F59E0B",
+        "buttonText": "#381207"
+      },
+      "typography": {
+        "headingFont": "'Plus Jakarta Sans', system-ui, sans-serif",
+        "bodyFont": "'Plus Jakarta Sans', system-ui, sans-serif",
+        "headingWeight": "900",
+        "letterSpacing": "-0.03em",
+        "headingTransform": "uppercase"
+      },
+      "cardStyle": {
+        "preset": "uniform-grid",
+        "radius": "20px",
+        "borderWidth": "1px",
+        "borderStyle": "solid",
+        "borderColor": "#F3E5D4",
+        "padding": "14px",
+        "shadow": "0 2px 8px rgba(56, 18, 7, 0.05)",
+        "bg": "#FFFFFF"
+      }
+    },
+    {
+      "id": "theme-sizzling-chili",
+      "name": "Sizzling Spicy Crimson",
+      "description": "High-octane fiery red flame tones paired with warm brioche tones.",
+      "colors": {
+        "brand": "#991B1B",
+        "background": "#FFFDF9",
+        "surface": "#FEF2F2",
+        "surfaceCard": "#FFFFFF",
+        "textPrimary": "#18181B",
+        "textMuted": "#991B1B",
+        "accent": "#DC2626",
+        "border": "#FEE2E2",
+        "heroBg": "#7F1D1D",
+        "heroText": "#FFFFFF",
+        "buttonBg": "#DC2626",
+        "buttonText": "#FFFFFF"
+      },
+      "typography": {
+        "headingFont": "Impact, 'Arial Black', sans-serif",
+        "bodyFont": "system-ui, sans-serif",
+        "headingWeight": "900",
+        "letterSpacing": "-0.02em",
+        "headingTransform": "uppercase"
+      },
+      "cardStyle": {
+        "preset": "uniform-grid",
+        "radius": "18px",
+        "borderWidth": "1.5px",
+        "borderStyle": "solid",
+        "borderColor": "#FEE2E2",
+        "padding": "14px",
+        "shadow": "0 4px 12px rgba(220, 38, 38, 0.08)",
+        "bg": "#FFFFFF"
+      }
+    },
+    {
+      "id": "theme-botanical-herb",
+      "name": "Garden Herb & Truffle",
+      "description": "Artisanal farm-to-table aesthetic with deep basil green and warm champagne cream.",
+      "colors": {
+        "brand": "#14532D",
+        "background": "#FDFBF7",
+        "surface": "#F0FDF4",
+        "surfaceCard": "#FFFFFF",
+        "textPrimary": "#14532D",
+        "textMuted": "#166534",
+        "accent": "#15803D",
+        "border": "#DCFCE7",
+        "heroBg": "#14532D",
+        "heroText": "#FDFBF7",
+        "buttonBg": "#15803D",
+        "buttonText": "#FFFFFF"
+      },
+      "typography": {
+        "headingFont": "'Trebuchet MS', system-ui, sans-serif",
+        "bodyFont": "system-ui, sans-serif",
+        "headingWeight": "800",
+        "letterSpacing": "-0.01em",
+        "headingTransform": "uppercase"
+      },
+      "cardStyle": {
+        "preset": "bento",
+        "radius": "20px",
+        "borderWidth": "1px",
+        "borderStyle": "solid",
+        "borderColor": "#DCFCE7",
+        "padding": "16px",
+        "shadow": "none",
+        "bg": "#FFFFFF"
+      }
+    },
+    {
+      "id": "theme-midnight-diner",
+      "name": "Midnight Diner Neon Noir",
+      "brand": "#F59E0B",
+      "description": "Late-night food truck vibe with dark charcoal backdrop and amber neon signs.",
+      "colors": {
+        "brand": "#F59E0B",
+        "background": "#18181B",
+        "surface": "#27272A",
+        "surfaceCard": "#27272A",
+        "textPrimary": "#FAFAFA",
+        "textMuted": "#A1A1AA",
+        "accent": "#F59E0B",
+        "border": "#3F3F46",
+        "heroBg": "#09090B",
+        "heroText": "#FAFAFA",
+        "buttonBg": "#F59E0B",
+        "buttonText": "#18181B"
+      },
+      "typography": {
+        "headingFont": "'Arial Black', sans-serif",
+        "bodyFont": "system-ui, sans-serif",
+        "headingWeight": "900",
+        "letterSpacing": "-0.03em",
+        "headingTransform": "uppercase"
+      },
+      "cardStyle": {
+        "preset": "uniform-grid",
+        "radius": "16px",
+        "borderWidth": "1.5px",
+        "borderStyle": "solid",
+        "borderColor": "#3F3F46",
+        "padding": "14px",
+        "shadow": "0 4px 16px rgba(0,0,0,0.4)",
+        "bg": "#27272A"
+      }
+    }
+  ],
+  "cardLayoutSettings": {
+    "preset": "uniform-grid",
+    "radius": "20px",
+    "borderWidth": "1px",
+    "borderStyle": "solid",
+    "borderColor": "#F3E5D4",
+    "padding": "14px",
+    "showBrand": true,
+    "showWishlist": true,
+    "showQuickAdd": true,
+    "imageRatio": "4/3",
+    "cardHeight": "270px",
+    "columns": 0
+  },
+  "navigation": [
+    { "label": "HOME", "route": "/", "enabled": true },
+    { "label": "FULL MENU", "route": "/browse", "enabled": true },
+    { "label": "BEST SELLERS", "route": "/browse?badge=BEST%20SELLER", "enabled": true },
+    { "label": "COMBO OFFERS", "route": "/browse?badge=20%25%20OFF", "enabled": true },
+    { "label": "OUR STORY", "route": "/pages/about", "enabled": true },
+    { "label": "LOCATION & MAP", "route": "/location", "enabled": true }
+  ],
+  "categories": [
+    {
+      "id": "cat-burgers",
+      "name": "Smash Burgers",
+      "slug": "burgers",
+      "description": "Double smash beef patties on butter-toasted brioche with melted aged cheddar and secret house relish.",
+      "subcategories": ["beef", "chicken", "spicy", "sliders"]
+    },
+    {
+      "id": "cat-pizza",
+      "name": "Stone-Fired Pizza",
+      "slug": "pizza",
+      "description": "48-hour fermented Neapolitan dough baked at 450°C with San Marzano tomatoes and fior di latte mozzarella.",
+      "subcategories": ["classic", "pepperoni", "truffle", "vegetarian"]
+    },
+    {
+      "id": "cat-chicken",
+      "name": "Crispy Chicken",
+      "slug": "chicken",
+      "description": "24-hour buttermilk herb-brined crispy chicken, jumbo tenders, and hot sticky glazed wings.",
+      "subcategories": ["buckets", "wings", "tenders", "grilled"]
+    },
+    {
+      "id": "cat-fries-sides",
+      "name": "Loaded Fries & Sides",
+      "slug": "fries-sides",
+      "description": "Crispy hand-cut fries, dirty bacon cheese sauce, golden onion rings, and mac & cheese bites.",
+      "subcategories": ["loaded", "shoestring", "finger-food"]
+    },
+    {
+      "id": "cat-sandwiches",
+      "name": "Artisan Sandwiches",
+      "slug": "sandwiches",
+      "description": "Gourmet grilled melts, Philly cheesesteak subs, and crispy brioche chicken club sandwiches.",
+      "subcategories": ["subs", "melts", "club"]
+    },
+    {
+      "id": "cat-pasta-bowls",
+      "name": "Wok Bowls & Pasta",
+      "slug": "pasta-bowls",
+      "description": "Sizzling teriyaki chicken wok bowls, fresh hand-rolled pasta, and spicy garlic noodle skillets.",
+      "subcategories": ["bowls", "pasta", "noodles"]
+    },
+    {
+      "id": "cat-drinks",
+      "name": "Milkshakes & Drinks",
+      "slug": "drinks",
+      "description": "Thick hand-spun dairy shakes, cold-pressed tropical juices, artisan iced teas, and craft sodas.",
+      "subcategories": ["shakes", "fresh-juice", "coffee-tea"]
+    },
+    {
+      "id": "cat-desserts",
+      "name": "Sweet Treats",
+      "slug": "desserts",
+      "description": "Warm molten chocolate lava cakes, Spanish cinnamon sugar churros, and artisanal cheesecakes.",
+      "subcategories": ["cakes", "churros", "gelato"]
+    }
+  ],
+  "sections": [
+    {
+      "id": "sec-hero",
+      "type": "hero",
+      "name": "Hero Flavor Showcase",
+      "enabled": true,
+      "title": "FLAVOR THAT MAKES HISTORY!",
+      "subtitle": "Fresh smash burgers, Neapolitan stone-fired pizza, and crunch-packed fried chicken delivered in 30 minutes.",
+      "ctaText": "EXPLORE MENU",
+      "ctaRoute": "/browse",
+      "bgColor": "#FDF6ED",
+      "textColor": "#381207"
+    },
+    {
+      "id": "sec-zone-menu",
+      "type": "zone-menu",
+      "name": "Daily Curated Zone Menu",
+      "enabled": true,
+      "title": "DAILY CURATED ZONE MENU"
+    },
+    {
+      "id": "sec-bento-favorites",
+      "type": "bento-favorites",
+      "name": "Chef Curated Bento Showcase",
+      "enabled": true,
+      "title": "FRESHBOX SIGNATURE DROPS",
+      "subtitle": "The iconic favorites that put FreshBox on the culinary map."
+    },
+    {
+      "id": "sec-best-sellers",
+      "type": "best-sellers",
+      "name": "Best Sellers Spotlight",
+      "enabled": true,
+      "title": "BEST SELLERS",
+      "description": "Handcrafted to order with locally sourced farm ingredients, toasted artisan brioche, and signature house-made sauces.",
+      "featuredProductId": "fb-brg-001",
+      "secondaryProductId": "fb-pza-001"
+    },
+    {
+      "id": "sec-chef-story",
+      "type": "chef-story",
+      "name": "Our Culinary Creed Story",
+      "enabled": true,
+      "title": "SIT, SAVOR, OR ORDER FAST—YOUR MEAL, YOUR RULES.",
+      "subtitle": "Get our food delivered to your door in 30 minutes or pick it up piping hot straight from the open kitchen counter.",
+      "ctaText": "LEARN OUR STORY",
+      "ctaRoute": "/pages/about"
+    },
+    {
+      "id": "sec-featured-dishes",
+      "type": "featured-dishes",
+      "name": "Trending Menu Items",
+      "enabled": true,
+      "title": "POPULAR DISHES RIGHT NOW",
+      "productIds": ["fb-brg-002", "fb-chk-001", "fb-frs-001", "fb-pza-002", "fb-pst-001", "fb-drk-001"],
+      "ctaText": "SEE ALL 42 DISHES",
+      "ctaRoute": "/browse"
+    },
+    {
+      "id": "sec-savings-deals",
+      "type": "savings-deals",
+      "name": "More Bites More Savings Deals",
+      "enabled": true,
+      "title": "MORE BITES, MORE SAVINGS!",
+      "subtitle": "Bundle up with family platters and combo meals to save big every single day."
+    }
+  ],
+  "pages": [
+    {
+      "id": "page-about",
+      "name": "Our Story",
+      "slug": "about",
+      "title": "The FreshBox Culinary Story",
+      "description": "How FreshBox grew from a passion for real, uncompromised comfort food in Nairobi into a premier gourmet dining brand.",
+      "content": "<p style=\"margin-bottom:12px;\">At FreshBox, we believe food should be bold, unapologetic, and made from scratch every single morning. We never use frozen beef patties or pre-shredded cheese. Our 100% grass-fed beef is freshly ground daily, and our pizza dough ferments slowly over 48 hours for an airy, digestible crust.</p><p style=\"margin-bottom:12px;\">From our signature smash burgers with caramelized onions to our 24-hour herb buttermilk fried chicken, every recipe is crafted to make food history. Whether you order online or visit our open kitchen in Nairobi Central, welcome to the family.</p>"
+    },
+    {
+      "id": "page-delivery",
+      "name": "Delivery Info",
+      "slug": "delivery",
+      "title": "Fast 30-Minute Delivery Service",
+      "description": "Hot, thermal-insulated motorcycle courier delivery across Nairobi Central, Westlands, Kilimani, Upper Hill and beyond.",
+      "content": "<p style=\"margin-bottom:12px;\"><strong>30-Minute Guarantee:</strong> We pack orders in custom ventilated thermal boxes to guarantee your fries stay crispy and your pizza arrives steaming hot.</p><p style=\"margin-bottom:12px;\"><strong>Flat Rate Shipping:</strong> KSh 250 flat courier delivery fee within 10km radius. <strong>FREE DELIVERY</strong> applies on all orders exceeding KSh 2,500.</p>"
+    },
+    {
+      "id": "page-allergens",
+      "name": "Allergen Guide",
+      "slug": "allergens",
+      "title": "Kitchen Allergen & Dietary Information",
+      "description": "Ingredient transparency for gluten, dairy, nuts, sesame, and vegetarian options.",
+      "content": "<p style=\"margin-bottom:12px;\">We take food allergies seriously. Our kitchen prepares gluten-free cauliflower crust pizzas and offers plant-based avocado patties. Please specify any allergy notes during checkout or tap the WhatsApp button to speak directly with our head chef before placing an order.</p>"
+    },
+    {
+      "id": "page-faqs",
+      "name": "FAQs",
+      "slug": "faqs",
+      "title": "Frequently Asked Questions",
+      "description": "Answers to ordering times, delivery radius, group catering, and payment options.",
+      "content": "<div style=\"display:flex; flex-direction:column; gap:12px;\"><div><h4 style=\"font-size:13px; font-weight:900;\">How hot does the food arrive?</h4><p style=\"font-size:12px; color:#4B5563;\">Our courier boxes maintain 70°C heat retention for up to 45 minutes.</p></div><div><h4 style=\"font-size:13px; font-weight:900;\">Can I customize my burger toppings?</h4><p style=\"font-size:12px; color:#4B5563;\">Yes! Tap any meal card to pick single/double patties, extra melted cheddar, bacon, jalapeños, and sauces.</p></div><div><h4 style=\"font-size:13px; font-weight:900;\">What payment methods are supported?</h4><p style=\"font-size:12px; color:#4B5563;\">We support M-Pesa Express, Visa, Mastercard, and Cash on Delivery.</p></div></div>"
+    }
+  ],
+  "products": [
+    {
+      "id": "fb-brg-001",
+      "slug": "classic-double-smash-burger",
+      "name": "Classic Double Smash Burger",
+      "brand": "FreshBox Grill",
+      "price": 850,
+      "comparePrice": 1050,
+      "category": "burgers",
+      "subcategories": ["beef", "popular"],
+      "badge": "BEST SELLER",
+      "rating": 5.0,
+      "reviewCount": 384,
+      "description": "Two 100% grass-fed beef patties smashed razor-thin with crispy lacy edges, double American cheddar, caramelized onions, dill pickles, and signature house burger relish on toasted brioche.",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80",
+      "attributes": {
+        "Patty": "100% Grass-Fed Beef (2 x 100g)",
+        "Bun": "Artisan Butter Brioche",
+        "Cheese": "Double Aged Yellow Cheddar",
+        "Sauce": "Smoked Garlic Burger Relish",
+        "PrepTime": "12-15 Mins",
+        "SpiceLevel": "Mild"
+      },
+      "colors": [
+        { "name": "Classic Toasted Brioche", "hex": "#D97706", "imageId": "art-burger-01" },
+        { "name": "Charcoal Black Bun", "hex": "#1F2937", "imageId": "art-burger-02" }
+      ],
+      "sizes": [
+        { "size": "Regular Double (200g)", "price": 850, "stock": 45, "sku": "FB-BRG-REG" },
+        { "size": "Triple Monster (300g)", "price": 1050, "stock": 25, "sku": "FB-BRG-TRP" },
+        { "size": "Combo + Fries & Milkshake", "price": 1350, "stock": 30, "sku": "FB-BRG-CMB" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-12"
+    },
+    {
+      "id": "fb-brg-002",
+      "slug": "truffle-mushroom-swiss-burger",
+      "name": "Truffle Mushroom Swiss Burger",
+      "brand": "FreshBox Grill",
+      "price": 950,
+      "comparePrice": 1150,
+      "category": "burgers",
+      "subcategories": ["beef", "gourmet"],
+      "badge": "CHEF SPECIAL",
+      "rating": 4.9,
+      "reviewCount": 192,
+      "description": "Smashed beef patties smothered in sautéed portobello mushrooms, melted Emmental Swiss cheese, and black summer truffle aioli on a glossy sesame bun.",
+      "image": "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Patty": "Double Beef", "Cheese": "Melted Swiss Emmental", "Sauce": "Black Truffle Aioli", "PrepTime": "14 Mins" },
+      "colors": [{ "name": "Sesame Brioche", "hex": "#B45309", "imageId": "art-burger-03" }],
+      "sizes": [
+        { "size": "Standard (Double)", "price": 950, "stock": 20, "sku": "FB-TRF-STD" },
+        { "size": "Combo + Truffle Fries", "price": 1400, "stock": 18, "sku": "FB-TRF-CMB" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-10"
+    },
+    {
+      "id": "fb-brg-003",
+      "slug": "spicy-habanero-fire-burger",
+      "name": "Spicy Habanero Fire Burger",
+      "brand": "FreshBox Grill",
+      "price": 880,
+      "comparePrice": 1020,
+      "category": "burgers",
+      "subcategories": ["beef", "spicy"],
+      "badge": "HOT & SPICY",
+      "rating": 4.8,
+      "reviewCount": 145,
+      "description": "Double smashed beef with pepper jack cheese, crispy fried jalapeños, smoked bacon, and house-made roasted habanero chili sauce.",
+      "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Patty": "Double Beef", "Cheese": "Pepper Jack", "Sauce": "Fire Habanero", "SpiceLevel": "Inferno Hot" },
+      "colors": [{ "name": "Toasted Brioche", "hex": "#EA580C", "imageId": "art-burger-04" }],
+      "sizes": [
+        { "size": "Double Fire", "price": 880, "stock": 30, "sku": "FB-HAB-DBL" },
+        { "size": "Combo + Loaded Fries", "price": 1300, "stock": 20, "sku": "FB-HAB-CMB" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-08"
+    },
+    {
+      "id": "fb-brg-004",
+      "slug": "bbq-bacon-smokehouse-burger",
+      "name": "BBQ Bacon Smokehouse Burger",
+      "brand": "FreshBox Grill",
+      "price": 920,
+      "comparePrice": 1100,
+      "category": "burgers",
+      "subcategories": ["beef", "bacon"],
+      "badge": "SMOKEHOUSE",
+      "rating": 4.9,
+      "reviewCount": 210,
+      "description": "Crispy applewood smoked bacon, crunchy beer-battered onion rings, cheddar cheese, and sweet hickory BBQ glaze on toasted brioche.",
+      "image": "https://images.unsplash.com/photo-1553979459-d2229ba7433b?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Patty": "Double Beef", "Topping": "Smoked Bacon & Onion Rings", "Sauce": "Hickory BBQ" },
+      "colors": [{ "name": "Smoked Brioche", "hex": "#78350F", "imageId": "art-burger-05" }],
+      "sizes": [
+        { "size": "Regular Smokehouse", "price": 920, "stock": 35, "sku": "FB-SMK-REG" },
+        { "size": "Combo + Soda & Fries", "price": 1350, "stock": 22, "sku": "FB-SMK-CMB" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-05"
+    },
+    {
+      "id": "fb-brg-005",
+      "slug": "crispy-avocado-green-burger",
+      "name": "Crispy Avocado Green Burger",
+      "brand": "FreshBox Green",
+      "price": 820,
+      "comparePrice": 980,
+      "category": "burgers",
+      "subcategories": ["vegetarian", "healthy"],
+      "badge": "VEGGIE FAVORITE",
+      "rating": 4.7,
+      "reviewCount": 118,
+      "description": "Crispy panko-crusted fresh avocado cutlet, pickled red onions, baby arugula, vegan herb mayo, and vine-ripened tomatoes on a vegan oat bun.",
+      "image": "https://images.unsplash.com/photo-1520072959219-c595dc870360?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Patty": "Panko Avocado Cutlet", "Dietary": "100% Vegetarian", "Sauce": "Herb Vegan Aioli" },
+      "colors": [{ "name": "Oat Brioche", "hex": "#15803D", "imageId": "art-burger-06" }],
+      "sizes": [
+        { "size": "Single Avocado Burger", "price": 820, "stock": 25, "sku": "FB-AVO-SGL" },
+        { "size": "Combo + Sweet Potato Fries", "price": 1250, "stock": 15, "sku": "FB-AVO-CMB" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-02"
+    },
+    {
+      "id": "fb-brg-006",
+      "slug": "freshbox-mini-sliders-trio",
+      "name": "FreshBox Mini Sliders Trio",
+      "brand": "FreshBox Grill",
+      "price": 990,
+      "comparePrice": 1200,
+      "category": "burgers",
+      "subcategories": ["sliders", "platter"],
+      "badge": "SHARING",
+      "rating": 5.0,
+      "reviewCount": 260,
+      "description": "Three mini gourmet brioche sliders: one Classic Smash, one BBQ Pulled Pork/Beef, and one Crispy Hot Chicken Tender with fries.",
+      "image": "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Quantity": "3 Mini Sliders", "Sides": "Includes Fries", "Variety": "Beef, BBQ & Chicken" },
+      "colors": [{ "name": "Trio Pack", "hex": "#F59E0B", "imageId": "art-burger-07" }],
+      "sizes": [
+        { "size": "Trio (3 Sliders)", "price": 990, "stock": 30, "sku": "FB-SLD-TRI" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-28"
+    },
+    {
+      "id": "fb-pza-001",
+      "slug": "hot-honey-pepperoni-pizza",
+      "name": "Hot Honey Pepperoni Supreme Pizza",
+      "brand": "FreshBox Pizza Co.",
+      "price": 1250,
+      "comparePrice": 1450,
+      "category": "pizza",
+      "subcategories": ["pepperoni", "spicy"],
+      "badge": "BEST SELLER",
+      "rating": 5.0,
+      "reviewCount": 425,
+      "description": "Hand-stretched 48hr fermented dough, San Marzano tomato sauce, generous cups of crispy-edge beef pepperoni, fresh mozzarella, and drizzled with organic chili-infused hot honey.",
+      "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
+      "attributes": {
+        "Crust": "Stone-Fired Neapolitan",
+        "Cheese": "Fresh Fior Di Latte Mozzarella",
+        "Glaze": "Infused Hot Honey",
+        "Size": "12 Inch (8 Slices)",
+        "PrepTime": "15 Mins"
+      },
+      "colors": [{ "name": "Classic Golden Crust", "hex": "#DC2626", "imageId": "art-pizza-01" }],
+      "sizes": [
+        { "size": "Medium 10-inch (6 Slices)", "price": 1050, "stock": 40, "sku": "FB-PZA-10" },
+        { "size": "Large 12-inch (8 Slices)", "price": 1250, "stock": 50, "sku": "FB-PZA-12" },
+        { "size": "Family 16-inch (12 Slices)", "price": 1750, "stock": 25, "sku": "FB-PZA-16" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-12"
+    },
+    {
+      "id": "fb-pza-002",
+      "slug": "classic-margherita-dop-pizza",
+      "name": "Classic Margherita DOP Pizza",
+      "brand": "FreshBox Pizza Co.",
+      "price": 950,
+      "comparePrice": 1150,
+      "category": "pizza",
+      "subcategories": ["classic", "vegetarian"],
+      "badge": "AUTHENTIC",
+      "rating": 4.9,
+      "reviewCount": 310,
+      "description": "The purity of Italian tradition. Crushed sweet Italian plum tomatoes, buffalo mozzarella medallions, fresh sweet basil leaves, and a swirl of extra virgin olive oil.",
+      "image": "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Crust": "Thin Crisp", "Sauce": "San Marzano DOP", "Cheese": "Buffalo Mozzarella" },
+      "colors": [{ "name": "Classic Neapolitan", "hex": "#15803D", "imageId": "art-pizza-02" }],
+      "sizes": [
+        { "size": "Medium 10-inch", "price": 950, "stock": 30, "sku": "FB-MAR-10" },
+        { "size": "Large 12-inch", "price": 1150, "stock": 35, "sku": "FB-MAR-12" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-09"
+    },
+    {
+      "id": "fb-pza-003",
+      "slug": "bbq-pulled-chicken-bacon-pizza",
+      "name": "BBQ Chicken & Crispy Bacon Pizza",
+      "brand": "FreshBox Pizza Co.",
+      "price": 1300,
+      "comparePrice": 1500,
+      "category": "pizza",
+      "subcategories": ["chicken", "bbq"],
+      "badge": "CROWD PLEASER",
+      "rating": 4.8,
+      "reviewCount": 188,
+      "description": "Tender pulled rotisserie chicken tossed in smoky sweet barbecue sauce, smoked bacon crumble, red onions, and mozzarella on a crispy golden crust.",
+      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Meat": "Smoked Chicken & Bacon", "Sauce": "Smoky BBQ", "Cheese": "Aged Mozzarella" },
+      "colors": [{ "name": "Golden BBQ", "hex": "#B45309", "imageId": "art-pizza-03" }],
+      "sizes": [
+        { "size": "Medium 10-inch", "price": 1100, "stock": 25, "sku": "FB-BBQ-10" },
+        { "size": "Large 12-inch", "price": 1300, "stock": 35, "sku": "FB-BBQ-12" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-04"
+    },
+    {
+      "id": "fb-pza-004",
+      "slug": "truffle-wild-mushroom-pizza",
+      "name": "Truffle Wild Mushroom & Ricotta Pizza",
+      "brand": "FreshBox Pizza Co.",
+      "price": 1350,
+      "comparePrice": 1550,
+      "category": "pizza",
+      "subcategories": ["truffle", "vegetarian"],
+      "badge": "GOURMET",
+      "rating": 5.0,
+      "reviewCount": 165,
+      "description": "White garlic cream base, roasted wild cremini and shiitake mushrooms, dollops of whipped ricotta, thyme, and white truffle oil.",
+      "image": "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Base": "White Garlic Cream", "Mushrooms": "Wild Shiitake & Cremini", "Oil": "Italian White Truffle" },
+      "colors": [{ "name": "White Truffle", "hex": "#78350F", "imageId": "art-pizza-04" }],
+      "sizes": [
+        { "size": "Large 12-inch", "price": 1350, "stock": 20, "sku": "FB-MSH-12" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-27"
+    },
+    {
+      "id": "fb-pza-005",
+      "slug": "quattro-formaggi-four-cheese-pizza",
+      "name": "Quattro Formaggi Four Cheese Pizza",
+      "brand": "FreshBox Pizza Co.",
+      "price": 1200,
+      "comparePrice": 1380,
+      "category": "pizza",
+      "subcategories": ["cheese", "vegetarian"],
+      "badge": "EXTRA CHEESY",
+      "rating": 4.8,
+      "reviewCount": 140,
+      "description": "A decadent blend of mozzarella, gorgonzola blue cheese, shaved parmesan reggiano, and creamy fontina cheese with fresh rosemary.",
+      "image": "https://images.unsplash.com/photo-1573821663912-569905455b1c?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Cheeses": "Mozzarella, Gorgonzola, Parmesan, Fontina", "Crust": "Wood-Fired" },
+      "colors": [{ "name": "Four Cheese", "hex": "#FBBF24", "imageId": "art-pizza-05" }],
+      "sizes": [
+        { "size": "Large 12-inch", "price": 1200, "stock": 25, "sku": "FB-4CH-12" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-20"
+    },
+    {
+      "id": "fb-pza-006",
+      "slug": "peri-peri-chicken-pizza",
+      "name": "Peri-Peri Flame Chicken Pizza",
+      "brand": "FreshBox Pizza Co.",
+      "price": 1280,
+      "comparePrice": 1450,
+      "category": "pizza",
+      "subcategories": ["chicken", "spicy"],
+      "badge": "AFRICAN HEAT",
+      "rating": 4.9,
+      "reviewCount": 215,
+      "description": "Flame-grilled chicken strips marinated in African bird's eye peri-peri sauce, sweet bell peppers, red onions, and coriander on mozzarella.",
+      "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Heat": "Spicy Peri-Peri", "Meat": "Flame Chicken", "Toppings": "Peppers & Red Onion" },
+      "colors": [{ "name": "Peri Peri", "hex": "#DC2626", "imageId": "art-pizza-06" }],
+      "sizes": [
+        { "size": "Large 12-inch", "price": 1280, "stock": 30, "sku": "FB-PRP-12" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-15"
+    },
+    {
+      "id": "fb-chk-001",
+      "slug": "crispy-broasted-chicken-bucket",
+      "name": "Crispy Broasted Chicken Bucket (8pcs)",
+      "brand": "FreshBox Chicken",
+      "price": 1450,
+      "comparePrice": 1700,
+      "category": "chicken",
+      "subcategories": ["buckets", "crunch"],
+      "badge": "BEST SELLER",
+      "rating": 5.0,
+      "reviewCount": 490,
+      "description": "Eight pieces of golden pressure-fried chicken with an impossibly crunchy herbal crust and piping hot, tender, juicy meat inside. Served with garlic dip and 2 warm honey biscuits.",
+      "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Pieces": "8 Pcs (Drumsticks, Thighs & Breast)", "Brine": "24hr Herb Buttermilk", "Includes": "Garlic Dip & Biscuits" },
+      "colors": [{ "name": "Golden Crisp", "hex": "#D97706", "imageId": "art-chicken-01" }],
+      "sizes": [
+        { "size": "4 Pieces (Solo)", "price": 750, "stock": 40, "sku": "FB-CHK-4P" },
+        { "size": "8 Pieces (Family Bucket)", "price": 1450, "stock": 50, "sku": "FB-CHK-8P" },
+        { "size": "12 Pieces (Feast + 2 Large Fries)", "price": 2100, "stock": 25, "sku": "FB-CHK-12P" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-11"
+    },
+    {
+      "id": "fb-chk-002",
+      "slug": "korean-sweet-chili-glazed-wings",
+      "name": "Korean Sweet Chili Glazed Wings (12pcs)",
+      "brand": "FreshBox Wings",
+      "price": 950,
+      "comparePrice": 1150,
+      "category": "chicken",
+      "subcategories": ["wings", "korean"],
+      "badge": "HOT & STICKY",
+      "rating": 4.9,
+      "reviewCount": 320,
+      "description": "Double-fried for maximum glass-like crunch, tossed in our sticky gochujang garlic honey glaze, and topped with toasted sesame seeds and scallions.",
+      "image": "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Count": "12 Jumbo Wings", "Glaze": "Gochujang Honey Garlic", "Crunch": "Double-Fried" },
+      "colors": [{ "name": "Sticky Korean Red", "hex": "#DC2626", "imageId": "art-chicken-02" }],
+      "sizes": [
+        { "size": "6 Wings (Snack)", "price": 550, "stock": 35, "sku": "FB-WNG-6P" },
+        { "size": "12 Wings (Standard)", "price": 950, "stock": 45, "sku": "FB-WNG-12P" },
+        { "size": "24 Wings (Party Box)", "price": 1800, "stock": 20, "sku": "FB-WNG-24P" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-07"
+    },
+    {
+      "id": "fb-chk-003",
+      "slug": "crispy-buttermilk-chicken-tenders",
+      "name": "Crispy Buttermilk Chicken Tenders (6pcs)",
+      "brand": "FreshBox Chicken",
+      "price": 720,
+      "comparePrice": 850,
+      "category": "chicken",
+      "subcategories": ["tenders", "kids"],
+      "badge": "100% BREAST",
+      "rating": 4.8,
+      "reviewCount": 230,
+      "description": "Hand-cut whole chicken breast tenders dipped in seasoned flour and fried to golden perfection. Served with honey mustard and smoky ranch dip.",
+      "image": "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Count": "6 Large Tenders", "Cut": "100% Whole Breast", "Sauces": "Honey Mustard & Ranch" },
+      "colors": [{ "name": "Golden Buttermilk", "hex": "#F59E0B", "imageId": "art-chicken-03" }],
+      "sizes": [
+        { "size": "6 Tenders", "price": 720, "stock": 35, "sku": "FB-TND-6P" },
+        { "size": "10 Tenders + Fries Combo", "price": 1200, "stock": 25, "sku": "FB-TND-10P" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-01"
+    },
+    {
+      "id": "fb-chk-004",
+      "slug": "flame-grilled-peri-peri-half-chicken",
+      "name": "Flame-Grilled Peri-Peri Half Chicken",
+      "brand": "FreshBox Grill",
+      "price": 980,
+      "comparePrice": 1180,
+      "category": "chicken",
+      "subcategories": ["grilled", "healthy"],
+      "badge": "FLAME GRILLED",
+      "rating": 4.9,
+      "reviewCount": 178,
+      "description": "Marinated for 24 hours in lemon, garlic, and fresh bird's eye chilies, then flame-charred to juicy smoky tenderness. Served with seasoned rice or fries.",
+      "image": "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Portion": "Half Chicken (Bone-in)", "Marinade": "Lemon Herb & Peri-Peri", "Cooking": "Charcoal Flame Grilled" },
+      "colors": [{ "name": "Smoked Peri-Peri", "hex": "#EA580C", "imageId": "art-chicken-04" }],
+      "sizes": [
+        { "size": "Half Chicken + Rice/Fries", "price": 980, "stock": 30, "sku": "FB-PRP-HALF" },
+        { "size": "Full Chicken Feast + 2 Sides", "price": 1850, "stock": 20, "sku": "FB-PRP-FULL" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-25"
+    },
+    {
+      "id": "fb-chk-005",
+      "slug": "garlic-parmesan-butter-wings",
+      "name": "Garlic Parmesan Butter Wings (12pcs)",
+      "brand": "FreshBox Wings",
+      "price": 950,
+      "comparePrice": 1120,
+      "category": "chicken",
+      "subcategories": ["wings", "garlic"],
+      "badge": "SAVORY",
+      "rating": 4.8,
+      "reviewCount": 155,
+      "description": "Crispy fried wings tossed in rich melted garlic butter, freshly grated 24-month aged parmesan cheese, and minced Italian parsley.",
+      "image": "https://images.unsplash.com/photo-1527477321005-4d45d65427d5?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Count": "12 Wings", "Toss": "Garlic Butter & Aged Parmesan", "Style": "Savory Non-Spicy" },
+      "colors": [{ "name": "Garlic Parmesan", "hex": "#FBBF24", "imageId": "art-chicken-05" }],
+      "sizes": [
+        { "size": "12 Wings", "price": 950, "stock": 30, "sku": "FB-WNG-GAR" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-18"
+    },
+    {
+      "id": "fb-chk-006",
+      "slug": "nashville-hot-chicken-sandwich",
+      "name": "Nashville Hot Fried Chicken Sandwich",
+      "brand": "FreshBox Grill",
+      "price": 820,
+      "comparePrice": 980,
+      "category": "chicken",
+      "subcategories": ["sandwich", "spicy"],
+      "badge": "TRENDING",
+      "rating": 4.9,
+      "reviewCount": 280,
+      "description": "Crispy fried chicken thigh dipped in spicy cayenne-infused chili oil, topped with creamy southern coleslaw and thick dill pickles on a buttered brioche bun.",
+      "image": "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Cut": "Crispy Chicken Thigh", "Heat": "Nashville Cayenne Chili", "Bun": "Toasted Brioche" },
+      "colors": [{ "name": "Nashville Red", "hex": "#DC2626", "imageId": "art-chicken-06" }],
+      "sizes": [
+        { "size": "Single Sandwich", "price": 820, "stock": 35, "sku": "FB-NSH-SGL" },
+        { "size": "Combo + Fries & Drink", "price": 1200, "stock": 25, "sku": "FB-NSH-CMB" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-12"
+    },
+    {
+      "id": "fb-frs-001",
+      "slug": "loaded-dirty-cheese-bacon-fries",
+      "name": "Loaded Dirty Cheese & Bacon Fries",
+      "brand": "FreshBox Sides",
+      "price": 550,
+      "comparePrice": 680,
+      "category": "fries-sides",
+      "subcategories": ["loaded", "bacon"],
+      "badge": "ULTIMATE SIDE",
+      "rating": 4.9,
+      "reviewCount": 340,
+      "description": "Crispy golden shoestring fries loaded with warm cheddar cheese sauce, crispy smoked bacon crumble, pickled jalapeño slices, and smoky house drizzle.",
+      "image": "https://images.unsplash.com/photo-1585109649139-366815a0d713?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Fries": "Crisp Shoestring", "Toppings": "Warm Cheese Sauce & Bacon", "Size": "Generous Sharing Box" },
+      "colors": [{ "name": "Loaded Golden", "hex": "#F59E0B", "imageId": "art-fries-01" }],
+      "sizes": [
+        { "size": "Regular Box", "price": 550, "stock": 40, "sku": "FB-FRS-REG" },
+        { "size": "Super Size Sharing", "price": 750, "stock": 30, "sku": "FB-FRS-LRG" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-10"
+    },
+    {
+      "id": "fb-frs-002",
+      "slug": "truffle-parmesan-fries",
+      "name": "Truffle Parmesan Shoestring Fries",
+      "brand": "FreshBox Sides",
+      "price": 480,
+      "comparePrice": 600,
+      "category": "fries-sides",
+      "subcategories": ["truffle", "shoestring"],
+      "badge": "GOURMET",
+      "rating": 4.8,
+      "reviewCount": 190,
+      "description": "Hand-cut crispy fries tossed in Italian white truffle oil, freshly grated parmesan cheese, and cracked black pepper. Served with truffle garlic aioli.",
+      "image": "https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Oil": "White Truffle Oil", "Cheese": "Parmigiano Reggiano", "Dip": "Truffle Mayo" },
+      "colors": [{ "name": "Truffle Parm", "hex": "#78350F", "imageId": "art-fries-02" }],
+      "sizes": [
+        { "size": "Standard Sharing Box", "price": 480, "stock": 35, "sku": "FB-TRF-FRS" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-04"
+    },
+    {
+      "id": "fb-frs-003",
+      "slug": "crispy-beer-battered-onion-rings",
+      "name": "Crispy Beer-Battered Onion Rings",
+      "brand": "FreshBox Sides",
+      "price": 420,
+      "comparePrice": 520,
+      "category": "fries-sides",
+      "subcategories": ["finger-food", "crisp"],
+      "badge": "CRUNCH",
+      "rating": 4.7,
+      "reviewCount": 140,
+      "description": "Thick-cut sweet Spanish onions dipped in our craft lager beer batter and fried until deeply crunchy. Served with house secret dipping sauce.",
+      "image": "https://images.unsplash.com/photo-1639024471287-032f6640dc1f?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Cut": "Thick Sweet Onion", "Batter": "Craft Beer Batter", "Dip": "Secret Dipping Sauce" },
+      "colors": [{ "name": "Golden Rings", "hex": "#D97706", "imageId": "art-fries-03" }],
+      "sizes": [
+        { "size": "Basket (10 Rings)", "price": 420, "stock": 30, "sku": "FB-RNG-10" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-26"
+    },
+    {
+      "id": "fb-frs-004",
+      "slug": "crispy-fried-mac-cheese-bites",
+      "name": "Fried Mac & Cheese Bites (6pcs)",
+      "brand": "FreshBox Sides",
+      "price": 490,
+      "comparePrice": 620,
+      "category": "fries-sides",
+      "subcategories": ["cheese", "bites"],
+      "badge": "MELTY",
+      "rating": 4.9,
+      "reviewCount": 180,
+      "description": "Elbow macaroni in a rich three-cheese cream sauce, rolled in seasoned breadcrumbs, and flash-fried until golden on the outside with molten cheese inside.",
+      "image": "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Count": "6 Molten Bites", "Cheese": "Cheddar, Mozzarella & Gouda", "Dip": "Marinara Dip" },
+      "colors": [{ "name": "Golden Mac", "hex": "#F59E0B", "imageId": "art-fries-04" }],
+      "sizes": [
+        { "size": "6 Pieces", "price": 490, "stock": 25, "sku": "FB-MAC-6P" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-20"
+    },
+    {
+      "id": "fb-frs-005",
+      "slug": "sweet-potato-fries-chipotle-dip",
+      "name": "Sweet Potato Fries with Chipotle Mayo",
+      "brand": "FreshBox Sides",
+      "price": 450,
+      "comparePrice": 560,
+      "category": "fries-sides",
+      "subcategories": ["sweet-potato"],
+      "badge": "FAVORITE",
+      "rating": 4.8,
+      "reviewCount": 165,
+      "description": "Crisp sweet potato wedges dusted with sea salt and smoked paprika. Served with creamy smoky chipotle dip.",
+      "image": "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Fries": "Real Sweet Potato", "Seasoning": "Smoked Paprika & Sea Salt", "Dip": "Chipotle Aioli" },
+      "colors": [{ "name": "Orange Sunset", "hex": "#EA580C", "imageId": "art-fries-05" }],
+      "sizes": [
+        { "size": "Standard Box", "price": 450, "stock": 30, "sku": "FB-SWT-FRS" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-14"
+    },
+    {
+      "id": "fb-snd-001",
+      "slug": "philly-cheesesteak-brioche-sub",
+      "name": "Philly Cheesesteak Brioche Sub",
+      "brand": "FreshBox Subs",
+      "price": 890,
+      "comparePrice": 1050,
+      "category": "sandwiches",
+      "subcategories": ["subs", "beef"],
+      "badge": "HOT SUB",
+      "rating": 4.9,
+      "reviewCount": 270,
+      "description": "Thinly shaved ribeye steak sautéed with caramelized onions and bell peppers, smothered in melted provolone and cheese sauce in a toasted soft hoagie brioche roll.",
+      "image": "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Meat": "Shaved Ribeye Beef", "Cheese": "Melted Provolone & Cheese Whiz", "Bread": "Toasted Soft Brioche Sub" },
+      "colors": [{ "name": "Warm Hoagie", "hex": "#78350F", "imageId": "art-sub-01" }],
+      "sizes": [
+        { "size": "Standard 8-inch Sub", "price": 890, "stock": 30, "sku": "FB-PHL-8IN" },
+        { "size": "Combo + Fries & Soda", "price": 1280, "stock": 20, "sku": "FB-PHL-CMB" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-08"
+    },
+    {
+      "id": "fb-snd-002",
+      "slug": "crispy-chicken-club-sandwich",
+      "name": "Triple-Decker Crispy Chicken Club",
+      "brand": "FreshBox Subs",
+      "price": 840,
+      "comparePrice": 990,
+      "category": "sandwiches",
+      "subcategories": ["club", "chicken"],
+      "badge": "CLASSIC",
+      "rating": 4.8,
+      "reviewCount": 180,
+      "description": "Triple-decker toasted sourdough stacked with crispy chicken breast, smoked bacon strips, avocado slices, lettuce, tomato, and garlic herb mayonnaise.",
+      "image": "https://images.unsplash.com/photo-1528736235302-52922df5c122?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Layers": "Triple Decker Toasted Sourdough", "Meat": "Crispy Chicken & Bacon", "Avocado": "Fresh Hass Avocado" },
+      "colors": [{ "name": "Toasted Sourdough", "hex": "#D97706", "imageId": "art-sub-02" }],
+      "sizes": [
+        { "size": "Club Sandwich + Chips", "price": 840, "stock": 25, "sku": "FB-CLB-SGL" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-01"
+    },
+    {
+      "id": "fb-snd-003",
+      "slug": "grilled-three-cheese-pesto-melt",
+      "name": "Grilled Three-Cheese & Pesto Sourdough Melt",
+      "brand": "FreshBox Subs",
+      "price": 680,
+      "comparePrice": 820,
+      "category": "sandwiches",
+      "subcategories": ["melts", "vegetarian"],
+      "badge": "CHEESY COMFORT",
+      "rating": 4.7,
+      "reviewCount": 140,
+      "description": "Artisan sourdough bread buttered and griddled with sharp cheddar, fontina, fresh mozzarella, and homemade basil pine nut pesto.",
+      "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Cheese": "Cheddar, Fontina & Mozzarella", "Bread": "Rustic Sourdough", "Pesto": "Fresh Basil Pine Nut" },
+      "colors": [{ "name": "Golden Melt", "hex": "#15803D", "imageId": "art-sub-03" }],
+      "sizes": [
+        { "size": "Gourmet Melt", "price": 680, "stock": 20, "sku": "FB-MLT-CHZ" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-23"
+    },
+    {
+      "id": "fb-snd-004",
+      "slug": "smoked-pastrami-reuben-sub",
+      "name": "Smoked Pastrami Reuben Sub",
+      "brand": "FreshBox Subs",
+      "price": 920,
+      "comparePrice": 1080,
+      "category": "sandwiches",
+      "subcategories": ["subs", "pastrami"],
+      "badge": "DELI SPECIAL",
+      "rating": 4.9,
+      "reviewCount": 160,
+      "description": "Warm spiced beef pastrami piled high with melted Swiss cheese, tangy sauerkraut, and Russian dressing on toasted marbled rye bread.",
+      "image": "https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Meat": "Smoked Beef Pastrami", "Cheese": "Aged Swiss", "Bread": "Toasted Marbled Rye" },
+      "colors": [{ "name": "Deli Rye", "hex": "#78350F", "imageId": "art-sub-04" }],
+      "sizes": [
+        { "size": "Reuben Sub", "price": 920, "stock": 20, "sku": "FB-RBN-SUB" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-16"
+    },
+    {
+      "id": "fb-snd-005",
+      "slug": "bbq-pulled-beef-brioche-melt",
+      "name": "Smoky BBQ Pulled Beef Brioche Melt",
+      "brand": "FreshBox Subs",
+      "price": 860,
+      "comparePrice": 1020,
+      "category": "sandwiches",
+      "subcategories": ["subs", "bbq"],
+      "badge": "TENDER",
+      "rating": 4.8,
+      "reviewCount": 135,
+      "description": "Slow-braised 12-hour beef brisket shredded and simmered in dark barbecue reduction, crisp purple cabbage slaw, and pickles on brioche.",
+      "image": "https://images.unsplash.com/photo-1521305916504-4a1121188589?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Meat": "12hr Braised Pulled Beef", "Slaw": "Crunchy Purple Cabbage", "Sauce": "Dark Honey BBQ" },
+      "colors": [{ "name": "Smoky Pulled", "hex": "#92400E", "imageId": "art-sub-05" }],
+      "sizes": [
+        { "size": "Pulled Beef Melt", "price": 860, "stock": 25, "sku": "FB-PLD-BEEF" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-10"
+    },
+    {
+      "id": "fb-pst-001",
+      "slug": "sizzling-teriyaki-chicken-wok-bowl",
+      "name": "Sizzling Teriyaki Chicken Wok Bowl",
+      "brand": "FreshBox Wok",
+      "price": 750,
+      "comparePrice": 900,
+      "category": "pasta-bowls",
+      "subcategories": ["bowls", "asian"],
+      "badge": "HEALTHY DROP",
+      "rating": 4.9,
+      "reviewCount": 290,
+      "description": "Tender grilled chicken thigh glazed in sweet savory teriyaki sauce, served over steamed jasmine rice with charred broccoli, edamame, and toasted sesame.",
+      "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Base": "Steamed Jasmine Rice", "Protein": "Glazed Chicken Thigh", "Veg": "Charred Broccoli & Edamame" },
+      "colors": [{ "name": "Teriyaki Bowl", "hex": "#15803D", "imageId": "art-wok-01" }],
+      "sizes": [
+        { "size": "Regular Bowl", "price": 750, "stock": 35, "sku": "FB-TRY-REG" },
+        { "size": "Double Protein Bowl", "price": 980, "stock": 20, "sku": "FB-TRY-DBL" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-09"
+    },
+    {
+      "id": "fb-pst-002",
+      "slug": "creamy-tuscan-garlic-rigatoni",
+      "name": "Creamy Tuscan Garlic Rigatoni",
+      "brand": "FreshBox Pasta",
+      "price": 890,
+      "comparePrice": 1050,
+      "category": "pasta-bowls",
+      "subcategories": ["pasta", "italian"],
+      "badge": "CREAMY",
+      "rating": 4.8,
+      "reviewCount": 195,
+      "description": "Bronze-die rigatoni pasta tossed in sun-dried tomato and garlic parmesan cream sauce with baby spinach and grilled sliced chicken.",
+      "image": "https://images.unsplash.com/photo-1621996346565-e3d5d628169e?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Pasta": "Bronze-Die Rigatoni", "Sauce": "Tuscan Sun-Dried Tomato Cream", "Parmesan": "24-Month Aged" },
+      "colors": [{ "name": "Tuscan Garlic", "hex": "#DC2626", "imageId": "art-wok-02" }],
+      "sizes": [
+        { "size": "Standard Skillet", "price": 890, "stock": 25, "sku": "FB-TSC-RIG" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-03"
+    },
+    {
+      "id": "fb-pst-003",
+      "slug": "spicy-dan-dan-garlic-noodles",
+      "name": "Spicy Dan Dan Garlic Noodles",
+      "brand": "FreshBox Wok",
+      "price": 780,
+      "comparePrice": 920,
+      "category": "pasta-bowls",
+      "subcategories": ["noodles", "spicy"],
+      "badge": "SICHUAN KICK",
+      "rating": 5.0,
+      "reviewCount": 210,
+      "description": "Chewy egg noodles tossed in spicy Sichuan chili oil, roasted sesame paste, minced braised beef, crushed peanuts, and fresh bok choy.",
+      "image": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Noodles": "Hand-Pulled Style Egg Noodles", "Chili": "Sichuan Peppercorn Oil", "Crunch": "Crushed Peanuts" },
+      "colors": [{ "name": "Sichuan Red", "hex": "#DC2626", "imageId": "art-wok-03" }],
+      "sizes": [
+        { "size": "Noodle Bowl", "price": 780, "stock": 30, "sku": "FB-DAN-NDL" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-25"
+    },
+    {
+      "id": "fb-pst-004",
+      "slug": "traditional-pad-thai-king-prawns",
+      "name": "Classic Pad Thai with King Prawns",
+      "brand": "FreshBox Wok",
+      "price": 950,
+      "comparePrice": 1150,
+      "category": "pasta-bowls",
+      "subcategories": ["noodles", "seafood"],
+      "badge": "SEAFOOD",
+      "rating": 4.9,
+      "reviewCount": 175,
+      "description": "Wok-fried rice noodles with tamarind palm sugar glaze, succulent king prawns, scrambled egg, bean sprouts, chives, and lime wedges.",
+      "image": "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Noodles": "Flat Rice Noodles", "Seafood": "King Tiger Prawns", "Glaze": "Tamarind & Palm Sugar" },
+      "colors": [{ "name": "Thai Tamarind", "hex": "#F59E0B", "imageId": "art-wok-04" }],
+      "sizes": [
+        { "size": "Pad Thai Plate", "price": 950, "stock": 25, "sku": "FB-PDT-PRW" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-18"
+    },
+    {
+      "id": "fb-pst-005",
+      "slug": "truffle-four-cheese-mac-skillet",
+      "name": "Truffle Four-Cheese Mac Skillet",
+      "brand": "FreshBox Pasta",
+      "price": 820,
+      "comparePrice": 980,
+      "category": "pasta-bowls",
+      "subcategories": ["pasta", "cheese"],
+      "badge": "DECIDENT",
+      "rating": 4.8,
+      "reviewCount": 140,
+      "description": "Cavatappi spirals baked in sharp cheddar, gruyère, fontina, and mascarpone cream, topped with garlic panko crunch and white truffle oil.",
+      "image": "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Pasta": "Cavatappi Spirals", "Cheese": "Gruyère & Aged Cheddar", "Crust": "Crispy Garlic Panko" },
+      "colors": [{ "name": "Golden Mac", "hex": "#FBBF24", "imageId": "art-wok-05" }],
+      "sizes": [
+        { "size": "Skillet Bowl", "price": 820, "stock": 20, "sku": "FB-TRF-MAC" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-11"
+    },
+    {
+      "id": "fb-drk-001",
+      "slug": "salted-caramel-pretzel-shake",
+      "name": "Hand-Spun Salted Caramel Pretzel Shake",
+      "brand": "FreshBox Shakes",
+      "price": 450,
+      "comparePrice": 550,
+      "category": "drinks",
+      "subcategories": ["shakes", "dessert"],
+      "badge": "BEST SELLER",
+      "rating": 5.0,
+      "reviewCount": 410,
+      "description": "Thick premium vanilla bean dairy ice cream blended with butterscotch caramel, topped with whipped cream, sea salt, and crushed salted pretzels.",
+      "image": "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Volume": "450ml Tall Cup", "IceCream": "100% Real Dairy Vanilla Bean", "Topping": "Whipped Cream & Pretzels" },
+      "colors": [{ "name": "Salted Caramel", "hex": "#D97706", "imageId": "art-drink-01" }],
+      "sizes": [
+        { "size": "Regular (450ml)", "price": 450, "stock": 50, "sku": "FB-SHK-CAR" },
+        { "size": "Monster Jar (650ml)", "price": 620, "stock": 30, "sku": "FB-SHK-BIG" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-11"
+    },
+    {
+      "id": "fb-drk-002",
+      "slug": "strawberry-shortcake-milkshake",
+      "name": "Strawberry Shortcake Milkshake",
+      "brand": "FreshBox Shakes",
+      "price": 450,
+      "comparePrice": 550,
+      "category": "drinks",
+      "subcategories": ["shakes", "fruity"],
+      "badge": "POPULAR",
+      "rating": 4.9,
+      "reviewCount": 260,
+      "description": "Real strawberry puree spun with vanilla ice cream, topped with vanilla cookie crumble, whipped cream, and fresh whole strawberry.",
+      "image": "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Fruit": "Fresh Ripe Strawberries", "Cookie": "Vanilla Biscuit Crumble" },
+      "colors": [{ "name": "Strawberry Pink", "hex": "#EC4899", "imageId": "art-drink-02" }],
+      "sizes": [
+        { "size": "Regular (450ml)", "price": 450, "stock": 40, "sku": "FB-SHK-STR" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-05"
+    },
+    {
+      "id": "fb-drk-003",
+      "slug": "cold-pressed-passion-mango-juice",
+      "name": "Cold-Pressed Passion & Mango Juice",
+      "brand": "FreshBox Juice",
+      "price": 320,
+      "comparePrice": 400,
+      "category": "drinks",
+      "subcategories": ["fresh-juice", "healthy"],
+      "badge": "100% NATURAL",
+      "rating": 4.8,
+      "reviewCount": 185,
+      "description": "Pure ripe Kenyan mangoes and tart passion fruit freshly pressed with zero added sugar or preservatives. Packed with vitamin C.",
+      "image": "https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Ingredients": "100% Mango & Passion Fruit", "Sugar": "No Added Sugar", "Volume": "500ml Bottle" },
+      "colors": [{ "name": "Tropical Orange", "hex": "#F59E0B", "imageId": "art-drink-03" }],
+      "sizes": [
+        { "size": "500ml Chilled Bottle", "price": 320, "stock": 45, "sku": "FB-JCE-MNG" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-28"
+    },
+    {
+      "id": "fb-drk-004",
+      "slug": "iced-hibiscus-berry-cooler",
+      "name": "Iced Hibiscus Berry Herbal Cooler",
+      "brand": "FreshBox Drinks",
+      "price": 280,
+      "comparePrice": 360,
+      "category": "drinks",
+      "subcategories": ["coffee-tea", "refreshing"],
+      "badge": "REFRESHING",
+      "rating": 4.7,
+      "reviewCount": 130,
+      "description": "Brewed organic wild hibiscus petals infused with crushed mint leaves, fresh lime juice, and wild forest honey over crushed ice.",
+      "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Tea": "Wild Hibiscus Flowers", "Infusion": "Fresh Mint & Lime", "Sweetener": "Organic Raw Honey" },
+      "colors": [{ "name": "Ruby Hibiscus", "hex": "#DC2626", "imageId": "art-drink-04" }],
+      "sizes": [
+        { "size": "Tall Glass (500ml)", "price": 280, "stock": 35, "sku": "FB-TEA-HIB" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-22"
+    },
+    {
+      "id": "fb-drk-005",
+      "slug": "iced-vanilla-caramel-latte",
+      "name": "Iced Madagascar Vanilla Latte",
+      "brand": "FreshBox Coffee",
+      "price": 380,
+      "comparePrice": 460,
+      "category": "drinks",
+      "subcategories": ["coffee-tea", "coffee"],
+      "badge": "KENYAN BEANS",
+      "rating": 4.9,
+      "reviewCount": 210,
+      "description": "Double shot of single-origin Kenyan AA espresso poured over cold whole milk, pure Madagascar vanilla bean syrup, and crystal ice.",
+      "image": "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Coffee": "100% Kenyan AA Arabica", "Syrup": "Madagascar Vanilla Bean", "Milk": "Creamy Whole Milk" },
+      "colors": [{ "name": "Iced Latte", "hex": "#78350F", "imageId": "art-drink-05" }],
+      "sizes": [
+        { "size": "Regular (400ml)", "price": 380, "stock": 40, "sku": "FB-COF-LAT" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-15"
+    },
+    {
+      "id": "fb-des-001",
+      "slug": "molten-chocolate-lava-cake",
+      "name": "Molten Chocolate Lava Cake",
+      "brand": "FreshBox Bakery",
+      "price": 550,
+      "comparePrice": 680,
+      "category": "desserts",
+      "subcategories": ["cakes", "chocolate"],
+      "badge": "WARM DESSERT",
+      "rating": 5.0,
+      "reviewCount": 315,
+      "description": "Rich 70% dark Belgian chocolate cake with a warm flowing molten center, dusted with powdered sugar and served with a scoop of vanilla bean ice cream.",
+      "image": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Chocolate": "70% Dark Belgian", "Center": "Warm Flowing Molten", "Includes": "Vanilla Bean Gelato" },
+      "colors": [{ "name": "Molten Dark", "hex": "#381207", "imageId": "art-dessert-01" }],
+      "sizes": [
+        { "size": "Individual Cake + Gelato", "price": 550, "stock": 25, "sku": "FB-LAV-CAK" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-08"
+    },
+    {
+      "id": "fb-des-002",
+      "slug": "spanish-cinnamon-churros-nutella",
+      "name": "Spanish Cinnamon Churros with Nutella",
+      "brand": "FreshBox Bakery",
+      "price": 480,
+      "comparePrice": 590,
+      "category": "desserts",
+      "subcategories": ["churros", "sharing"],
+      "badge": "BEST SELLER",
+      "rating": 4.9,
+      "reviewCount": 240,
+      "description": "Six golden crispy Spanish churros fried fresh to order, rolled in aromatic cinnamon sugar, and served with warm Nutella hazelnut chocolate dip.",
+      "image": "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Count": "6 Long Churros", "Dip": "Warm Nutella Dip", "Sugar": "Cinnamon Sugar Rolled" },
+      "colors": [{ "name": "Golden Churro", "hex": "#D97706", "imageId": "art-dessert-02" }],
+      "sizes": [
+        { "size": "Basket (6 Churros)", "price": 480, "stock": 35, "sku": "FB-CHR-6P" },
+        { "size": "Party Box (12 Churros + 2 Dips)", "price": 850, "stock": 20, "sku": "FB-CHR-12P" }
+      ],
+      "status": "published",
+      "createdDate": "2026-03-02"
+    },
+    {
+      "id": "fb-des-003",
+      "slug": "new-york-salted-caramel-cheesecake",
+      "name": "New York Salted Caramel Cheesecake",
+      "brand": "FreshBox Bakery",
+      "price": 520,
+      "comparePrice": 640,
+      "category": "desserts",
+      "subcategories": ["cakes", "caramel"],
+      "badge": "RICH & CREAMY",
+      "rating": 4.8,
+      "reviewCount": 170,
+      "description": "Silky smooth Philadelphia cream cheese filling on a buttery graham cracker crust, topped with thick salted caramel drizzle and white chocolate curls.",
+      "image": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Crust": "Buttery Graham Cracker", "Cheese": "Classic New York Style", "Caramel": "Sea Salted Caramel" },
+      "colors": [{ "name": "Salted Caramel", "hex": "#B45309", "imageId": "art-dessert-03" }],
+      "sizes": [
+        { "size": "Large Slice", "price": 520, "stock": 20, "sku": "FB-CHK-SLC" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-22"
+    },
+    {
+      "id": "fb-des-004",
+      "slug": "warm-apple-crumble-vanilla-gelato",
+      "name": "Warm Apple Crumble & Vanilla Gelato",
+      "brand": "FreshBox Bakery",
+      "price": 500,
+      "comparePrice": 620,
+      "category": "desserts",
+      "subcategories": ["pies", "warm"],
+      "badge": "HOMEMADE",
+      "rating": 4.8,
+      "reviewCount": 125,
+      "description": "Caramelized Granny Smith apples baked with cinnamon and brown sugar under a golden oat crumble topping. Served warm with vanilla bean ice cream.",
+      "image": "https://images.unsplash.com/photo-1568571780765-9276ac8b75a2?auto=format&fit=crop&w=600&q=80",
+      "attributes": { "Apples": "Spiced Granny Smith", "Topping": "Golden Oat Crumble", "Served": "Piping Warm" },
+      "colors": [{ "name": "Apple Crumble", "hex": "#78350F", "imageId": "art-dessert-04" }],
+      "sizes": [
+        { "size": "Individual Skillet", "price": 500, "stock": 18, "sku": "FB-APL-CRM" }
+      ],
+      "status": "published",
+      "createdDate": "2026-02-14"
+    }
+  ],
+  "dataRevision": 1
+}
+  </script>
+
+  <!-- JAVASCRIPT APPLICATION CODE -->
+  <script>
+  window.__FF_CONFIG__ = JSON.parse(document.getElementById("ff-config").textContent);
+  window.__FF_SITE__ = JSON.parse(document.getElementById("ff-site-data").textContent);
+  
+  (function() {
+    'use strict';
+
+    const APP_MODE = 'store'; // 'store' for index.html, 'studio' for studio.html
+    const CFG = window.__FF_CONFIG__;
+    const initialSiteData = window.__FF_SITE__;
+
+    // State management
+    let site = JSON.parse(JSON.stringify(initialSiteData));
+    let cart = [];
+    let savedIds = new Set();
+    let orders = [];
+    let undoStack = [];
+    let redoStack = [];
+    let selectedVariant = {};
+    let selectedAddons = {};
+    let selectedSpice = {};
+
+    // =========================================================================
+    // SVG FOOD ILLUSTRATION FALLBACK GENERATOR (Zero Broken Image Guarantee)
+    // =========================================================================
+    const foodSvgStore = {
+      artSvg: function(category, primaryHex = '#F59E0B', secondaryHex = '#381207') {
+        const cat = (category || 'burgers').toLowerCase();
+        if (cat.includes('burger')) {
+          return `<svg viewBox="0 0 100 80" class="food-svg" style="width:75%;height:auto;" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 42C15 22 28 12 50 12C72 12 85 22 85 42H15Z" fill="#D97706"/>
+            <circle cx="35" cy="24" r="1.5" fill="#FEF3C7"/><circle cx="50" cy="20" r="1.5" fill="#FEF3C7"/><circle cx="65" cy="24" r="1.5" fill="#FEF3C7"/>
+            <path d="M12 43C16 43 20 40 24 43C28 46 32 43 36 43C40 43 44 40 48 43C52 46 56 43 60 43C64 43 68 40 72 43C76 46 80 43 84 43C86 43 88 41 88 41H12Z" fill="#15803D"/>
+            <rect x="14" y="46" width="72" height="10" rx="3" fill="#DC2626"/>
+            <polygon points="14,54 22,58 30,54 40,60 50,54 60,60 70,54 78,58 86,54 86,58 14,58" fill="#FBBF24"/>
+            <rect x="12" y="58" width="76" height="10" rx="4" fill="#78350F"/>
+            <path d="M15 68H85C85 75 75 78 50 78C25 78 15 75 15 68Z" fill="#B45309"/>
+          </svg>`;
+        }
+        if (cat.includes('pizza')) {
+          return `<svg viewBox="0 0 100 85" class="food-svg" style="width:75%;height:auto;" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 10L12 75C24 82 76 82 88 75L50 10Z" fill="#FBBF24"/>
+            <path d="M12 75C24 82 76 82 88 75C76 86 24 86 12 75Z" fill="#D97706"/>
+            <circle cx="50" cy="38" r="6" fill="#DC2626"/><circle cx="36" cy="56" r="6" fill="#DC2626"/><circle cx="64" cy="56" r="6" fill="#DC2626"/>
+            <circle cx="50" cy="65" r="4" fill="#15803D"/><circle cx="42" cy="46" r="3" fill="#15803D"/><circle cx="58" cy="48" r="3" fill="#15803D"/>
+          </svg>`;
+        }
+        if (cat.includes('chicken')) {
+          return `<svg viewBox="0 0 100 85" class="food-svg" style="width:75%;height:auto;" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 35C22 25 32 15 48 18C62 20 72 32 68 48C65 60 52 68 38 65C24 62 22 45 22 35Z" fill="#D97706"/>
+            <path d="M60 52L82 72C85 75 80 80 77 78L55 58Z" fill="#FDE68A"/>
+            <circle cx="82" cy="74" r="5" fill="#FFFFFF"/><circle cx="77" cy="80" r="5" fill="#FFFFFF"/>
+          </svg>`;
+        }
+        if (cat.includes('fries') || cat.includes('side')) {
+          return `<svg viewBox="0 0 100 85" class="food-svg" style="width:75%;height:auto;" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="25,35 75,35 68,80 32,80" fill="#DC2626"/>
+            <rect x="30" y="10" width="7" height="35" rx="2" fill="#FBBF24"/>
+            <rect x="40" y="5" width="7" height="40" rx="2" fill="#F59E0B"/>
+            <rect x="50" y="8" width="7" height="38" rx="2" fill="#FBBF24"/>
+            <rect x="60" y="15" width="7" height="32" rx="2" fill="#F59E0B"/>
+          </svg>`;
+        }
+        if (cat.includes('drink') || cat.includes('shake')) {
+          return `<svg viewBox="0 0 100 85" class="food-svg" style="width:75%;height:auto;" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M30 25L38 80H62L70 25H30Z" fill="#FDE68A" opacity="0.8"/>
+            <path d="M34 25C34 14 44 10 50 10C56 10 66 14 66 25Z" fill="#FFFFFF"/>
+            <circle cx="50" cy="8" r="4" fill="#DC2626"/>
+            <line x1="56" y1="2" x2="68" y2="40" stroke="#EF4444" stroke-width="4" stroke-linecap="round"/>
+          </svg>`;
+        }
+        // Generic gourmet bowl
+        return `<svg viewBox="0 0 100 85" class="food-svg" style="width:75%;height:auto;" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="50" cy="35" rx="38" ry="12" fill="#FBBF24"/>
+          <path d="M12 35C12 60 25 78 50 78C75 78 88 60 88 35H12Z" fill="#381207"/>
+          <circle cx="40" cy="32" r="5" fill="#15803D"/><circle cx="55" cy="34" r="6" fill="#DC2626"/>
+        </svg>`;
+      }
+    };
+
+    // =========================================================================
+    // PERSISTENCE ENGINE (LocalStorage + IndexedDB + Storage Sync)
+    // =========================================================================
+    function loadState() {
+      try {
+        const rev = String(initialSiteData.dataRevision ?? initialSiteData.version);
+        const appliedRev = localStorage.getItem(CFG.storage.revisionKey);
+        if (appliedRev !== rev) localStorage.setItem(CFG.storage.revisionKey, rev);
+        const savedSite = appliedRev === rev ? localStorage.getItem(CFG.storage.siteKey) : null;
+        if (savedSite) {
+          const parsed = JSON.parse(savedSite);
+          if (parsed && parsed.products) site = parsed;
+        }
+        const savedCart = localStorage.getItem(CFG.storage.cartKey);
+        if (savedCart) cart = JSON.parse(savedCart);
+        const savedWish = localStorage.getItem(CFG.storage.savedKey);
+        if (savedWish) savedIds = new Set(JSON.parse(savedWish));
+        const savedOrders = localStorage.getItem(CFG.storage.ordersKey);
+        if (savedOrders) orders = JSON.parse(savedOrders);
+      } catch (err) {
+        console.warn('Failed to load state from storage:', err);
+      }
+    }
+
+    let saveTimeout = null;
+    function scheduleSave() {
+      if (saveTimeout) clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(flushSave, 400);
+    }
+
+    function flushSave() {
+      try {
+        localStorage.setItem(CFG.storage.siteKey, JSON.stringify(site));
+        localStorage.setItem(CFG.storage.cartKey, JSON.stringify(cart));
+        localStorage.setItem(CFG.storage.savedKey, JSON.stringify(Array.from(savedIds)));
+        localStorage.setItem(CFG.storage.ordersKey, JSON.stringify(orders));
+      } catch (e) {
+        console.warn('Failed to flush storage:', e);
+      }
+    }
+
+    function pushUndoState() {
+      undoStack.push(JSON.stringify(site));
+      if (undoStack.length > 20) undoStack.shift();
+      redoStack = [];
+    }
+
+    // =========================================================================
+    // FORMATTERS & DOM THEME ENGINE
+    // =========================================================================
+    function formatCurrency(amount) {
+      const sym = site.currencySymbol || 'KSh';
+      return sym + ' ' + Math.round(amount || 0).toLocaleString();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function applyThemeToDom() {
+      const root = document.documentElement;
+      const th = site.themes.find(t => t.id === site.activeThemeId) || site.themes[0];
+      if (th && th.colors) {
+        root.style.setProperty('--ff-brand', th.colors.brand || '#381207');
+        root.style.setProperty('--ff-bg', th.colors.background || '#FDF6ED');
+        root.style.setProperty('--ff-surface', th.colors.surface || '#FFF9F2');
+        root.style.setProperty('--ff-card-bg', th.colors.surfaceCard || '#FFFFFF');
+        root.style.setProperty('--ff-text', th.colors.textPrimary || '#381207');
+        root.style.setProperty('--ff-muted', th.colors.textMuted || '#78350F');
+        root.style.setProperty('--ff-accent', th.colors.accent || '#F59E0B');
+        root.style.setProperty('--ff-border', th.colors.border || '#F3E5D4');
+      }
+      const ty = site.typography || (th && th.typography) || {};
+      if (ty.headingFont) root.style.setProperty('--ff-heading-font', ty.headingFont);
+      if (ty.bodyFont) root.style.setProperty('--ff-body-font', ty.bodyFont);
+      if (ty.headingWeight) root.style.setProperty('--ff-heading-weight', ty.headingWeight);
+      if (ty.letterSpacing) root.style.setProperty('--ff-letter-spacing', ty.letterSpacing);
+
+      const cl = site.cardLayoutSettings || {};
+      root.style.setProperty('--ff-card-radius', cl.radius || '20px');
+      root.style.setProperty('--ff-card-border', (cl.borderWidth || '1px') + ' ' + (cl.borderStyle || 'solid') + ' ' + (cl.borderColor || '#F3E5D4'));
+
+      // Update titles
+      const titles = document.querySelectorAll('#header-brand-title span:first-child, #footer-huge-watermark');
+      titles.forEach(el => { el.textContent = site.name; });
+
+      renderSubNav();
+      renderFooterLinks();
+      computeCart();
+    }
+
+    // =========================================================================
+    // CART CALCULATION & BADGES
+    // =========================================================================
+    function computeCart() {
+      let subtotal = 0;
+      let count = 0;
+      for (const item of cart) {
+        subtotal += item.price * item.quantity;
+        count += item.quantity;
+      }
+      const threshold = site.freeShippingThreshold || 2500;
+      const flatRate = site.shippingFlatRate || 250;
+      const shipping = subtotal >= threshold || cart.length === 0 ? 0 : flatRate;
+      const tax = Math.round(subtotal * (site.taxRate || 0.16));
+      const total = subtotal + shipping + tax;
+
+      const cartBadge = document.getElementById('cart-badge');
+      if (cartBadge) {
+        cartBadge.textContent = count;
+        cartBadge.style.display = count > 0 ? 'flex' : 'none';
+      }
+      const wishBadge = document.getElementById('wishlist-badge');
+      if (wishBadge) {
+        wishBadge.textContent = savedIds.size;
+        wishBadge.style.display = savedIds.size > 0 ? 'flex' : 'none';
+      }
+
+      return { subtotal, shipping, tax, total, count };
+    }
+
+    // =========================================================================
+    // NAVIGATION & FOOTER GENERATION
+    // =========================================================================
+    function renderSubNav() {
+      const navEl = document.getElementById('sub-nav-bar');
+      const footerNavEl = document.getElementById('footer-secondary-nav');
+      if (!navEl) return;
+      const items = (site.navigation || []).filter(n => n.enabled);
+      const currentPath = window.location.pathname;
+
+      navEl.innerHTML = items.map(item => {
+        const isActive = currentPath === item.route;
+        return `<a href="${item.route}" class="sub-nav-link ${isActive ? 'active' : ''}">${escapeHtml(item.label)}</a>`;
+      }).join('');
+
+      if (footerNavEl) {
+        footerNavEl.innerHTML = items.map(item => `<a href="${item.route}" class="footer-link">${escapeHtml(item.label)}</a>`).join('');
+      }
+    }
+
+    function renderFooterLinks() {
+      const socialUl = document.getElementById('footer-social-list');
+      const contactUl = document.getElementById('footer-contact-list');
+      if (socialUl) {
+        socialUl.innerHTML = (site.socials || []).filter(s => s.enabled).map(s => 
+          `<li><a href="${escapeHtml(s.url)}" target="_blank" rel="noopener" class="footer-link">${escapeHtml(s.platform)}</a></li>`
+        ).join('');
+      }
+      if (contactUl && site.contact) {
+        contactUl.innerHTML = `
+          <li><a href="tel:${site.contact.phone}" class="footer-link">📞 ${escapeHtml(site.contact.phone)}</a></li>
+          <li><a href="mailto:${site.contact.email}" class="footer-link">✉️ ${escapeHtml(site.contact.email)}</a></li>
+          <li><span class="footer-link" style="opacity:0.85;">📍 ${escapeHtml(site.contact.address)}</span></li>
+          <li><span class="footer-link" style="opacity:0.85;">⏰ ${escapeHtml(site.contact.hours)}</span></li>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // STOREFRONT CARD RENDERER (The Universal Product Card Contract)
+    // =========================================================================
+    function renderProductCard(p) {
+      if (!p) return '';
+      const isSaved = savedIds.has(p.id);
+      return `
+        <div class="product-card" data-product-id="${p.id}">
+          <div class="card-top-bar">
+            <span class="card-brand-tag">${escapeHtml(p.brand || 'FreshBox')}</span>
+            ${p.badge ? `<span class="card-dietary-badge">${escapeHtml(p.badge)}</span>` : ''}
+            <button class="card-wish-btn ${isSaved ? 'active' : ''}" onclick="window.toggleWishlist('${p.id}', event)" aria-label="Toggle Wishlist">
+              <svg viewBox="0 0 24 24" fill="${isSaved ? '#DC2626' : 'none'}" stroke="${isSaved ? '#DC2626' : 'currentColor'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </button>
+          </div>
+          <a href="/product/${p.slug}" class="card-img-wrap" aria-label="${escapeHtml(p.name)}">
+            ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />` : ''}
+            <div class="svg-food-fallback" style="${p.image ? 'display:none;' : 'display:flex;'}">
+              ${foodSvgStore.artSvg(p.category)}
+            </div>
+          </a>
+          <div class="card-info-row">
+            <a href="/product/${p.slug}" class="card-name">${escapeHtml(p.name)}</a>
+            <span class="card-price">${formatCurrency(p.price)}</span>
+          </div>
+          <p class="card-desc-snippet">${escapeHtml(p.description)}</p>
+          <button class="card-quick-add" onclick="window.openCustomizerModal('${p.id}')">ORDER NOW</button>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // STOREFRONT VIEWS: HOMEPAGE, BROWSE, PRODUCT DETAIL, CART, CHECKOUT
+    // =========================================================================
+    function renderHomePage() {
+      const main = document.getElementById('main-content');
+      let html = '';
+
+      for (const sec of site.sections || []) {
+        if (!sec.enabled) continue;
+
+        if (sec.type === 'hero') {
+          html += `
+            <section class="hero-freshbox-section">
+              <div class="hero-stickers-row">
+                <span class="hero-sticker-badge">🍔</span>
+                <span class="hero-sticker-badge" style="animation-delay: 0.5s;">🍅</span>
+                <span class="hero-sticker-badge" style="animation-delay: 1s;">⚡</span>
+              </div>
+              <h1 class="hero-big-title">FLAVOR THAT MAKES <span class="accent-text">HISTORY!</span></h1>
+              <div class="hero-center-art">
+                <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80" alt="FreshBox signature food feast" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="hero-svg-fallback" style="display:none;">${foodSvgStore.artSvg('burgers')}</div>
+              </div>
+              <div class="hero-footer-row">
+                <p class="hero-subtitle">${escapeHtml(sec.subtitle || site.tagline)}</p>
+                <a href="${sec.ctaRoute || '/browse'}" class="btn-pill-action">${escapeHtml(sec.ctaText || 'EXPLORE MENU')}</a>
+              </div>
+            </section>
+          `;
+        }
+
+        else if (sec.type === 'zone-menu') {
+          html += `
+            <section class="zone-menu-section">
+              <h3 class="zone-menu-title">${escapeHtml(sec.title || 'DAILY CURATED ZONE MENU')}</h3>
+              <div class="zone-menu-scroller">
+                ${site.categories.map(c => `
+                  <a href="/category/${c.slug}" class="zone-item-btn">
+                    <div class="zone-item-icon-box">
+                      ${foodSvgStore.artSvg(c.slug)}
+                    </div>
+                    <span class="zone-item-label">${escapeHtml(c.name.split(' ')[0])}</span>
+                  </a>
+                `).join('')}
+              </div>
+            </section>
+          `;
+        }
+
+        else if (sec.type === 'bento-favorites') {
+          const pFriedRice = site.products.find(p => p.id === 'fb-pst-001') || site.products[0];
+          const pPizza = site.products.find(p => p.id === 'fb-pza-001') || site.products[6];
+          const pBurger = site.products.find(p => p.id === 'fb-brg-001') || site.products[0];
+          const pPasta = site.products.find(p => p.id === 'fb-pst-002') || site.products[21];
+          const pChicken = site.products.find(p => p.id === 'fb-chk-001') || site.products[12];
+
+          html += `
+            <section class="section-block">
+              <div class="section-title-wrap">
+                <h2 class="section-title">${escapeHtml(sec.title || 'FRESHBOX SIGNATURE DROPS')}</h2>
+                <p class="section-subtitle-text">${escapeHtml(sec.subtitle || 'Cooked to order with farm-fresh ingredients')}</p>
+              </div>
+              <div class="bento-hero-grid">
+                <!-- Large Bento 1: Dark Wok Bowl -->
+                <div class="bento-card-large bento-card-dark">
+                  <div class="bento-info">
+                    <span class="bento-tag">WOK MASTER</span>
+                    <h3 class="bento-title">${escapeHtml(pFriedRice.name)}</h3>
+                    <p class="bento-desc">${escapeHtml(pFriedRice.description)}</p>
+                    <div class="bento-price-btn-row">
+                      <span class="bento-price">${formatCurrency(pFriedRice.price)}</span>
+                      <button class="bento-btn-mini" onclick="window.openCustomizerModal('${pFriedRice.id}')">BUY NOW</button>
+                    </div>
+                  </div>
+                  <div class="bento-media-box">
+                    <img src="${pFriedRice.image}" alt="${pFriedRice.name}" loading="lazy" />
+                  </div>
+                </div>
+
+                <!-- Large Bento 2: Golden Pizza -->
+                <div class="bento-card-large bento-card-gold">
+                  <div class="bento-info">
+                    <span class="bento-tag" style="background:#381207; color:#FFFFFF;">STONE-FIRED</span>
+                    <h3 class="bento-title">${escapeHtml(pPizza.name)}</h3>
+                    <p class="bento-desc" style="color:#4A1505;">${escapeHtml(pPizza.description)}</p>
+                    <div class="bento-price-btn-row">
+                      <span class="bento-price" style="color:#381207;">${formatCurrency(pPizza.price)}</span>
+                      <button class="bento-btn-mini" style="background:#381207; color:#FFFFFF;" onclick="window.openCustomizerModal('${pPizza.id}')">BUY NOW</button>
+                    </div>
+                  </div>
+                  <div class="bento-media-box">
+                    <img src="${pPizza.image}" alt="${pPizza.name}" loading="lazy" />
+                  </div>
+                </div>
+
+                <!-- Mini Trio Row -->
+                <div class="bento-mini-row">
+                  <div class="bento-mini-card">
+                    <div class="bento-mini-img-wrap"><img src="${pBurger.image}" alt="${pBurger.name}" loading="lazy"/></div>
+                    <div class="bento-mini-name">BURGER</div>
+                    <div class="bento-mini-price">${formatCurrency(pBurger.price)}</div>
+                    <button class="bento-mini-btn" onclick="window.openCustomizerModal('${pBurger.id}')">ORDER</button>
+                  </div>
+                  <div class="bento-mini-card">
+                    <div class="bento-mini-img-wrap"><img src="${pPasta.image}" alt="${pPasta.name}" loading="lazy"/></div>
+                    <div class="bento-mini-name">PASTA</div>
+                    <div class="bento-mini-price">${formatCurrency(pPasta.price)}</div>
+                    <button class="bento-mini-btn" onclick="window.openCustomizerModal('${pPasta.id}')">ORDER</button>
+                  </div>
+                  <div class="bento-mini-card">
+                    <div class="bento-mini-img-wrap"><img src="${pChicken.image}" alt="${pChicken.name}" loading="lazy"/></div>
+                    <div class="bento-mini-name">CHICKEN</div>
+                    <div class="bento-mini-price">${formatCurrency(pChicken.price)}</div>
+                    <button class="bento-mini-btn" onclick="window.openCustomizerModal('${pChicken.id}')">ORDER</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          `;
+        }
+
+        else if (sec.type === 'best-sellers') {
+          const p1 = site.products.find(p => p.id === sec.featuredProductId) || site.products[0];
+          const p2 = site.products.find(p => p.id === sec.secondaryProductId) || site.products[6];
+          html += `
+            <section class="section-block">
+              <div class="section-title-wrap">
+                <h2 class="section-title">${escapeHtml(sec.title || 'BEST SELLERS')}</h2>
+                <p class="section-subtitle-text">${escapeHtml(sec.description || 'Our all-time top-rated menu selections.')}</p>
+              </div>
+              <div class="product-grid-2col">
+                ${renderProductCard(p1)}
+                ${renderProductCard(p2)}
+              </div>
+            </section>
+          `;
+        }
+
+        else if (sec.type === 'chef-story') {
+          html += `
+            <section class="chef-story-section">
+              <h2 class="chef-story-title">${escapeHtml(sec.title || 'SIT, SAVOR, OR ORDER FAST—YOUR MEAL, YOUR RULES.')}</h2>
+              <p class="chef-story-desc">${escapeHtml(sec.subtitle || 'From open flame grills to your dining table in 30 minutes.')}</p>
+              <div class="chef-story-media-box">
+                <img src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=800&q=80" alt="FreshBox Head Chef" loading="lazy" />
+              </div>
+              <a href="${sec.ctaRoute || '/pages/about'}" class="btn-pill-action" style="align-self:flex-start; margin-top:4px;">
+                ${escapeHtml(sec.ctaText || 'LEARN OUR STORY')}
+              </a>
+            </section>
+          `;
+        }
+
+        else if (sec.type === 'featured-dishes') {
+          const prods = (sec.productIds || []).map(id => site.products.find(p => p.id === id)).filter(Boolean);
+          html += `
+            <section class="section-block">
+              <div class="section-title-wrap">
+                <h2 class="section-title">${escapeHtml(sec.title || 'POPULAR DISHES')}</h2>
+              </div>
+              <div class="product-grid-2col">
+                ${prods.map(renderProductCard).join('')}
+              </div>
+              <div class="btn-see-all-wrap">
+                <a href="${sec.ctaRoute || '/browse'}" class="btn-pill-outline">${escapeHtml(sec.ctaText || 'SEE ALL DISHES')}</a>
+              </div>
+            </section>
+          `;
+        }
+
+        else if (sec.type === 'savings-deals') {
+          html += `
+            <section class="savings-banner-section">
+              <div class="savings-header">
+                <h2>${escapeHtml(sec.title || 'MORE BITES, MORE SAVINGS!')}</h2>
+                <p style="font-size:12px; opacity:0.9; margin-top:4px;">${escapeHtml(sec.subtitle || 'Apply coupon codes at checkout for instant meal discounts.')}</p>
+              </div>
+              <div class="savings-vouchers-stack">
+                <div class="voucher-pill">
+                  <div>
+                    <div class="voucher-tag">20% OFF FIRST ORDER</div>
+                    <div class="voucher-sub">Valid on all burger & pizza combos</div>
+                  </div>
+                  <button class="voucher-code-btn" onclick="window.copyVoucherCode('FRESH20')">FRESH20</button>
+                </div>
+                <div class="voucher-pill">
+                  <div>
+                    <div class="voucher-tag">FREE CHICKEN WINGS (6PCS)</div>
+                    <div class="voucher-sub">Orders over KSh 3,000</div>
+                  </div>
+                  <button class="voucher-code-btn" onclick="window.copyVoucherCode('FREEWINGS')">FREEWINGS</button>
+                </div>
+              </div>
+            </section>
+          `;
+        }
+      }
+
+      main.innerHTML = html;
+    }
+
+    function renderBrowsePage(params = {}) {
+      const main = document.getElementById('main-content');
+      const query = params.query || '';
+      const selectedCat = params.category || 'all';
+      const selectedBadge = params.badge || '';
+      const sortBy = params.sort || 'newest';
+
+      let filtered = site.products.filter(p => {
+        if (p.status !== 'published') return false;
+        if (query) {
+          const q = query.toLowerCase();
+          const match = p.name.toLowerCase().includes(q) ||
+                        p.category.toLowerCase().includes(q) ||
+                        p.description.toLowerCase().includes(q);
+          if (!match) return false;
+        }
+        if (selectedCat !== 'all') {
+          if (p.category.toLowerCase() !== selectedCat.toLowerCase()) return false;
+        }
+        if (selectedBadge) {
+          if (p.badge !== selectedBadge) return false;
+        }
+        return true;
+      });
+
+      filtered.sort((a, b) => {
+        if (sortBy === 'price-asc') return a.price - b.price;
+        if (sortBy === 'price-desc') return b.price - a.price;
+        return a.name.localeCompare(b.name);
+      });
+
+      let html = `
+        <div style="padding:12px 16px; background:#FFFFFF; border-bottom:1px solid var(--ff-border); display:flex; align-items:center; gap:8px;">
+          <button class="btn-pill-outline" style="padding:6px 14px; font-size:11px;" onclick="window.openFilterSheet()">FILTERS</button>
+          <select style="background:#FFF9F2; border:1px solid var(--ff-border); border-radius:9999px; padding:6px 12px; font-size:11px; font-weight:800; color:#381207;" onchange="window.handleSortChange(this.value)">
+            <option value="newest" ${sortBy === 'newest' ? 'selected' : ''}>DEFAULT SORT</option>
+            <option value="price-asc" ${sortBy === 'price-asc' ? 'selected' : ''}>PRICE: LOW TO HIGH</option>
+            <option value="price-desc" ${sortBy === 'price-desc' ? 'selected' : ''}>PRICE: HIGH TO LOW</option>
+          </select>
+          <div style="margin-left:auto; font-size:11px; font-weight:900; color:#78350F;">
+            ${filtered.length} DISHES
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding:10px 16px; background:#FFF9F2; border-bottom:1px solid var(--ff-border);">
+          <a href="/browse" class="sub-nav-link ${selectedCat === 'all' ? 'active' : ''}" style="background:#FFFFFF; border:1px solid var(--ff-border); padding:6px 12px; border-radius:9999px;">ALL</a>
+          ${site.categories.map(c => `
+            <a href="/category/${c.slug}" class="sub-nav-link ${selectedCat === c.slug ? 'active' : ''}" style="background:#FFFFFF; border:1px solid var(--ff-border); padding:6px 12px; border-radius:9999px;">${escapeHtml(c.name)}</a>
+          `).join('')}
+        </div>
+
+        <section class="section-block">
+          ${filtered.length === 0 ? `
+            <div style="text-align:center; padding: 48px 16px;">
+              <h3 style="font-size:16px; font-weight:900; margin-bottom:8px;">NO DISHES MATCH</h3>
+              <p style="font-size:13px; color:#78350F; margin-bottom:16px;">Try adjusting your search keywords.</p>
+              <a href="/browse" class="btn-pill-action">RESET FILTERS</a>
+            </div>
+          ` : `
+            <div class="product-grid-2col">
+              ${filtered.map(renderProductCard).join('')}
+            </div>
+          `}
+        </section>
+      `;
+
+      main.innerHTML = html;
+    }
+
+    function renderProductDetailPage(slug) {
+      const main = document.getElementById('main-content');
+      const p = site.products.find(item => item.slug === slug);
+      if (!p) {
+        main.innerHTML = `<div style="padding:48px 16px; text-align:center;"><h2>Dish Not Found</h2><a href="/browse" class="btn-pill-action" style="margin-top:16px; display:inline-block;">BROWSE MENU</a></div>`;
+        return;
+      }
+
+      if (!selectedVariant[p.id]) selectedVariant[p.id] = p.sizes[0] || { size: 'Regular', price: p.price };
+      if (!selectedSpice[p.id]) selectedSpice[p.id] = 'Mild';
+      if (!selectedAddons[p.id]) selectedAddons[p.id] = [];
+
+      const activeVar = selectedVariant[p.id];
+      const addonsTotal = selectedAddons[p.id].reduce((sum, a) => sum + (a.price || 0), 0);
+      const currentPrice = activeVar.price + addonsTotal;
+
+      let html = `
+        <div class="pdp-gallery-wrap">
+          <div class="pdp-main-img-box">
+            ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}" />` : foodSvgStore.artSvg(p.category)}
+          </div>
+        </div>
+
+        <div class="pdp-details-box">
+          <div class="pdp-brand-cat">${escapeHtml(p.brand || 'FreshBox')} &bull; ${escapeHtml(p.category.toUpperCase())}</div>
+          <h1 class="pdp-title">${escapeHtml(p.name)}</h1>
+          
+          <div class="pdp-price-row">
+            <span class="pdp-current-price" id="pdp-price-tag">${formatCurrency(currentPrice)}</span>
+            ${p.comparePrice ? `<span class="pdp-compare-price">${formatCurrency(p.comparePrice)}</span>` : ''}
+          </div>
+
+          <p style="font-size:13px; line-height:1.55; color:#78350F; margin-bottom:18px;">${escapeHtml(p.description)}</p>
+
+          <!-- Portion / Size Variant Options -->
+          <div class="custom-option-group">
+            <div class="custom-group-title">
+              <span>SELECT PORTION / COMBO</span>
+              <span class="sub-hint">REQUIRED</span>
+            </div>
+            <div class="option-pills-row">
+              ${p.sizes.map(s => `
+                <button class="option-pill-btn ${s.size === activeVar.size ? 'selected' : ''}" onclick="window.selectPdpVariant('${p.id}', '${escapeHtml(s.size)}')">
+                  <span>${escapeHtml(s.size)}</span>
+                  <span class="opt-price">${formatCurrency(s.price)}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Spice Level -->
+          <div class="custom-option-group">
+            <div class="custom-group-title">
+              <span>SPICE LEVEL</span>
+              <span class="sub-hint">FREE CHOICE</span>
+            </div>
+            <div class="option-pills-row">
+              ${['Mild 🍃', 'Medium 🌶️', 'Hot 🔥', 'Inferno 💥'].map(sp => `
+                <button class="option-pill-btn ${selectedSpice[p.id] === sp ? 'selected' : ''}" onclick="window.selectPdpSpice('${p.id}', '${sp}')">
+                  ${sp}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Extra Add-ons -->
+          <div class="custom-option-group">
+            <div class="custom-group-title">
+              <span>ADD EXTRAS & TOPPINGS</span>
+              <span class="sub-hint">OPTIONAL</span>
+            </div>
+            <div class="option-pills-row">
+              ${[
+                { name: 'Melted Aged Cheddar', price: 100 },
+                { name: 'Crispy Smoked Bacon', price: 150 },
+                { name: 'Grilled Jalapeños', price: 80 },
+                { name: 'Truffle Garlic Aioli', price: 80 },
+                { name: 'Extra House Sauce', price: 50 }
+              ].map(add => {
+                const isSelected = selectedAddons[p.id].some(a => a.name === add.name);
+                return `
+                  <button class="option-pill-btn ${isSelected ? 'selected' : ''}" onclick="window.togglePdpAddon('${p.id}', '${add.name}', ${add.price})">
+                    <span>${isSelected ? '✓ ' : '+ '}${add.name}</span>
+                    <span class="opt-price">+${formatCurrency(add.price)}</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:20px;">
+            <label style="font-size:11px; font-weight:900; text-transform:uppercase; color:#381207; display:block; margin-bottom:6px;">SPECIAL PREPARATION INSTRUCTIONS</label>
+            <input type="text" class="search-pill-input" id="pdp-special-notes" placeholder="e.g. No onions, sauce on the side..." style="background:#FFF9F2; border:1px solid var(--ff-border); border-radius:10px; padding:10px 12px; width:100%; font-size:13px;" />
+          </div>
+
+          <!-- CTA Buttons -->
+          <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:24px;">
+            <button class="btn-pill-action" style="padding:14px; text-align:center; font-size:13px;" onclick="window.addPdpItemToCart('${p.id}')">
+              ADD TO CART &bull; <span id="pdp-btn-price">${formatCurrency(currentPrice)}</span>
+            </button>
+            <button class="btn-pill-outline" style="padding:12px; text-align:center; font-size:12px;" onclick="window.orderDishDirectWhatsApp('${p.id}')">
+              ORDER INSTANTLY VIA WHATSAPP
+            </button>
+          </div>
+
+          <!-- Attributes table -->
+          <div style="background:#FFF9F2; border:1px solid var(--ff-border); border-radius:14px; padding:14px;">
+            <h4 style="font-size:12px; font-weight:900; text-transform:uppercase; margin-bottom:8px; color:#381207;">KITCHEN SPECIFICATIONS</h4>
+            <table style="width:100%; font-size:11px; border-collapse:collapse;">
+              ${Object.entries(p.attributes || {}).map(([k, v]) => `
+                <tr style="border-bottom:1px solid var(--ff-border);">
+                  <td style="padding:6px 0; font-weight:900; color:#78350F; text-transform:uppercase;">${k}</td>
+                  <td style="padding:6px 0; text-align:right; color:#381207; font-weight:800;">${v}</td>
+                </tr>
+              `).join('')}
+            </table>
+          </div>
+        </div>
+      `;
+
+      main.innerHTML = html;
+    }
+
+    function renderCartPage() {
+      const main = document.getElementById('main-content');
+      const { subtotal, shipping, tax, total, count } = computeCart();
+
+      if (cart.length === 0) {
+        main.innerHTML = `
+          <div style="text-align:center; padding: 64px 20px;">
+            <div style="font-size:48px; margin-bottom:12px;">🍔</div>
+            <h2 style="font-size:20px; font-weight:900; color:#381207; margin-bottom:6px;">YOUR CART IS EMPTY</h2>
+            <p style="font-size:13px; color:#78350F; margin-bottom:24px;">Browse our 42 delicious dishes and build your feast.</p>
+            <a href="/browse" class="btn-pill-action">EXPLORE MENU</a>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <div style="padding:16px;">
+          <h1 style="font-size:22px; font-weight:900; text-transform:uppercase; margin-bottom:16px; color:#381207;">
+            YOUR ORDER CART (${count})
+          </h1>
+
+          <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+            ${cart.map((item, idx) => `
+              <div style="background:#FFFFFF; border:1px solid var(--ff-border); border-radius:16px; padding:12px; display:flex; gap:12px;">
+                <div style="width:70px; height:70px; border-radius:12px; overflow:hidden; background:#FDF6ED; flex-shrink:0;">
+                  ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;" />` : foodSvgStore.artSvg(item.category)}
+                </div>
+                <div style="flex:1; display:flex; flex-direction:column;">
+                  <div style="font-size:13px; font-weight:900; color:#381207;">${escapeHtml(item.name)}</div>
+                  <div style="font-size:11px; color:#78350F; margin:2px 0 6px;">
+                    ${escapeHtml(item.size)} &bull; ${escapeHtml(item.spice || 'Mild')}
+                    ${item.addons && item.addons.length ? `<br/>+ ${item.addons.map(a => a.name).join(', ')}` : ''}
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-top:auto;">
+                    <span style="font-size:13px; font-weight:900; color:#DC2626;">${formatCurrency(item.price)}</span>
+                    <div style="display:flex; align-items:center; border:1.5px solid var(--ff-border); border-radius:9999px; overflow:hidden;">
+                      <button style="padding:4px 8px; font-weight:900; background:#FFF9F2;" onclick="window.updateCartQty(${idx}, -1)">-</button>
+                      <span style="padding:0 8px; font-size:12px; font-weight:900;">${item.quantity}</span>
+                      <button style="padding:4px 8px; font-weight:900; background:#FFF9F2;" onclick="window.updateCartQty(${idx}, 1)">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Pricing summary -->
+          <div style="background:#FFF9F2; border:1px solid var(--ff-border); border-radius:16px; padding:16px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+              <span style="color:#78350F;">Subtotal:</span>
+              <span style="font-weight:900;">${formatCurrency(subtotal)}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+              <span style="color:#78350F;">Express 30-min Delivery:</span>
+              <span style="font-weight:900;">${shipping === 0 ? '<span style="color:#15803D;">FREE (Over KSh 2,500)</span>' : formatCurrency(shipping)}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:10px;">
+              <span style="color:#78350F;">VAT (16%):</span>
+              <span style="font-weight:900;">${formatCurrency(tax)}</span>
+            </div>
+            <div style="border-top:1.5px solid var(--ff-border); padding-top:10px; display:flex; justify-content:space-between; font-size:17px; font-weight:900; color:#381207;">
+              <span>Total Payable:</span>
+              <span style="color:#DC2626;">${formatCurrency(total)}</span>
+            </div>
+          </div>
+
+          <a href="/checkout" class="btn-pill-action" style="display:block; text-align:center; padding:14px;">
+            PROCEED TO CHECKOUT (${formatCurrency(total)})
+          </a>
+        </div>
+      `;
+
+      main.innerHTML = html;
+    }
+
+    function renderCheckoutPage() {
+      const main = document.getElementById('main-content');
+      const { total } = computeCart();
+
+      let html = `
+        <div style="padding:16px;">
+          <h1 style="font-size:22px; font-weight:900; text-transform:uppercase; margin-bottom:16px; color:#381207;">
+            CHECKOUT & DELIVERY
+          </h1>
+          
+          <form id="checkout-form" onsubmit="window.handleCheckoutSubmit(event)">
+            <div style="background:#FFFFFF; border:1px solid var(--ff-border); border-radius:16px; padding:16px; margin-bottom:14px;">
+              <h3 style="font-size:13px; font-weight:900; text-transform:uppercase; margin-bottom:10px; color:#381207;">1. RECIPIENT DETAILS</h3>
+              <div style="margin-bottom:12px;">
+                <label style="display:block; font-size:11px; font-weight:900; margin-bottom:4px; color:#78350F;">Full Name *</label>
+                <input type="text" required class="search-pill-input" id="co-name" placeholder="John Kamau" style="border:1px solid var(--ff-border); border-radius:8px; padding:10px; width:100%;" />
+              </div>
+              <div style="margin-bottom:12px;">
+                <label style="display:block; font-size:11px; font-weight:900; margin-bottom:4px; color:#78350F;">M-Pesa Phone Number *</label>
+                <input type="tel" required class="search-pill-input" id="co-phone" placeholder="+254 7XX XXX XXX" style="border:1px solid var(--ff-border); border-radius:8px; padding:10px; width:100%;" />
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:900; margin-bottom:4px; color:#78350F;">Email Address</label>
+                <input type="email" class="search-pill-input" id="co-email" placeholder="youremail@example.com" style="border:1px solid var(--ff-border); border-radius:8px; padding:10px; width:100%;" />
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF; border:1px solid var(--ff-border); border-radius:16px; padding:16px; margin-bottom:14px;">
+              <h3 style="font-size:13px; font-weight:900; text-transform:uppercase; margin-bottom:10px; color:#381207;">2. DELIVERY ADDRESS</h3>
+              <div style="margin-bottom:12px;">
+                <label style="display:block; font-size:11px; font-weight:900; margin-bottom:4px; color:#78350F;">Building / Apartment / Street *</label>
+                <input type="text" required class="search-pill-input" id="co-address" placeholder="Delta Corner, Ring Road, Westlands" style="border:1px solid var(--ff-border); border-radius:8px; padding:10px; width:100%;" />
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; font-weight:900; margin-bottom:4px; color:#78350F;">Floor / Door / Landmarks</label>
+                <input type="text" class="search-pill-input" id="co-landmark" placeholder="4th Floor, Office 4B, Opposite Sarit" style="border:1px solid var(--ff-border); border-radius:8px; padding:10px; width:100%;" />
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF; border:1px solid var(--ff-border); border-radius:16px; padding:16px; margin-bottom:18px;">
+              <h3 style="font-size:13px; font-weight:900; text-transform:uppercase; margin-bottom:10px; color:#381207;">3. PAYMENT METHOD</h3>
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:900; cursor:pointer;">
+                  <input type="radio" name="pay_opt" value="mpesa" checked />
+                  <span>M-Pesa Express (STK Push to Phone)</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:900; cursor:pointer;">
+                  <input type="radio" name="pay_opt" value="card" />
+                  <span>Debit / Credit Card (Paystack Secured)</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:900; cursor:pointer;">
+                  <input type="radio" name="pay_opt" value="cash" />
+                  <span>Cash on Delivery</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-pill-action" style="width:100%; padding:14px; text-align:center; font-size:14px;" id="pay-submit-btn">
+              PAY ${formatCurrency(total)} & PLACE ORDER
+            </button>
+          </form>
+        </div>
+      `;
+
+      main.innerHTML = html;
+    }
+
+    function renderSavedPage() {
+      const main = document.getElementById('main-content');
+      const savedProds = Array.from(savedIds).map(id => site.products.find(p => p.id === id)).filter(Boolean);
+
+      if (savedProds.length === 0) {
+        main.innerHTML = `
+          <div style="text-align:center; padding:64px 20px;">
+            <div style="font-size:42px; margin-bottom:12px;">❤️</div>
+            <h2 style="font-size:18px; font-weight:900; color:#381207; margin-bottom:6px;">NO SAVED DISHES</h2>
+            <p style="font-size:13px; color:#78350F; margin-bottom:20px;">Tap the heart on any menu item to save it for later.</p>
+            <a href="/browse" class="btn-pill-action">BROWSE MENU</a>
+          </div>
+        `;
+        return;
+      }
+
+      main.innerHTML = `
+        <div style="padding:16px;">
+          <h1 style="font-size:20px; font-weight:900; text-transform:uppercase; margin-bottom:16px;">SAVED FAVORITES (${savedProds.length})</h1>
+          <div class="product-grid-2col">
+            ${savedProds.map(renderProductCard).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAccountPage() {
+      const main = document.getElementById('main-content');
+      main.innerHTML = `
+        <div style="padding:16px;">
+          <div style="background:#FFF9F2; border:1px solid var(--ff-border); border-radius:18px; padding:16px; margin-bottom:18px; display:flex; align-items:center; gap:12px;">
+            <div style="width:48px; height:48px; border-radius:50%; background:#381207; color:#F59E0B; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900;">
+              FB
+            </div>
+            <div>
+              <div style="font-size:15px; font-weight:900; color:#381207;">VALUED CUSTOMER</div>
+              <div style="font-size:11px; color:#78350F;">Nairobi Central &bull; FreshBox Club Member</div>
+            </div>
+          </div>
+
+          <h2 style="font-size:15px; font-weight:900; text-transform:uppercase; margin-bottom:12px; color:#381207;">
+            RECENT ORDERS (${orders.length})
+          </h2>
+          ${orders.length === 0 ? `
+            <div style="text-align:center; padding:32px 16px; background:#FFFFFF; border-radius:14px; border:1px solid var(--ff-border);">
+              <p style="font-size:13px; color:#78350F;">No orders placed on this device yet.</p>
+            </div>
+          ` : `
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              ${orders.map(o => `
+                <div style="background:#FFFFFF; border:1px solid var(--ff-border); border-radius:14px; padding:12px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="font-size:12px; font-weight:900; color:#381207;">ORDER #${o.id}</span>
+                    <span style="font-size:10px; font-weight:900; background:#DCFCE7; color:#15803D; padding:2px 8px; border-radius:9999px;">${o.status.toUpperCase()}</span>
+                  </div>
+                  <div style="font-size:11px; color:#78350F; margin-bottom:4px;">${o.date} &bull; ${o.items.length} dishes</div>
+                  <div style="font-size:13px; font-weight:900; color:#DC2626;">Total: ${formatCurrency(o.total)}</div>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function renderLocationPage() {
+      const main = document.getElementById('main-content');
+      const loc = site.location || { lat: -1.28333, lng: 36.82194, active: true };
+      main.innerHTML = `
+        <div style="padding:16px;">
+          <h1 style="font-size:22px; font-weight:900; text-transform:uppercase; margin-bottom:6px; color:#381207;">KITCHEN LOCATION</h1>
+          <p style="font-size:13px; color:#78350F; margin-bottom:14px;">Visit our pickup counter or locate our delivery hub in Nairobi.</p>
+
+          <div style="width:100%; height:230px; border-radius:18px; overflow:hidden; border:1px solid var(--ff-border); margin-bottom:14px;">
+            <iframe width="100%" height="100%" frameborder="0" scrolling="no" src="https://www.openstreetmap.org/export/embed.html?bbox=${loc.lng - 0.008}%2C${loc.lat - 0.006}%2C${loc.lng + 0.008}%2C${loc.lat + 0.006}&amp;layer=mapnik&amp;marker=${loc.lat}%2C${loc.lng}"></iframe>
+          </div>
+
+          <div style="background:#FFF9F2; border:1px solid var(--ff-border); border-radius:16px; padding:16px;">
+            <div style="font-size:15px; font-weight:900; color:#381207; margin-bottom:4px;">${escapeHtml(site.contact?.businessName || 'FreshBox Kitchen')}</div>
+            <div style="font-size:13px; color:#381207; margin-bottom:4px;">📍 ${escapeHtml(site.contact?.address || 'Kimathi Street, Nairobi Central, Kenya')}</div>
+            <div style="font-size:12px; color:#78350F; margin-bottom:12px;">⏰ ${escapeHtml(site.contact?.hours || 'Mon - Sun: 8:00 AM - 11:00 PM')}</div>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" class="btn-pill-action" style="display:inline-block;">GET DIRECTIONS</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCustomPage(slug) {
+      const main = document.getElementById('main-content');
+      const page = (site.pages || []).find(p => p.slug === slug);
+      if (!page) {
+        main.innerHTML = `<div style="padding:48px 16px; text-align:center;"><h2>Page Not Found</h2><a href="/" class="btn-pill-action" style="margin-top:16px; display:inline-block;">RETURN HOME</a></div>`;
+        return;
+      }
+      main.innerHTML = `
+        <div style="padding:20px 16px;">
+          <h1 style="font-size:24px; font-weight:900; text-transform:uppercase; margin-bottom:8px; color:#381207;">${escapeHtml(page.title)}</h1>
+          <p style="font-size:13px; color:#78350F; margin-bottom:18px;">${escapeHtml(page.description)}</p>
+          <div style="font-size:13px; line-height:1.65; color:#381207;">${page.content}</div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // ROUTER
+    // =========================================================================
+    function handleRoute(path) {
+      window.scrollTo(0, 0);
+      const url = new URL(path, window.location.origin);
+      let pathname = url.pathname;
+      const searchParams = Object.fromEntries(url.searchParams.entries());
+
+      document.querySelectorAll('.nav-tab-item').forEach(el => {
+        el.classList.remove('active');
+        if (pathname === '/' && el.dataset.nav === 'home') el.classList.add('active');
+        else if (pathname.startsWith('/browse') && el.dataset.nav === 'browse') el.classList.add('active');
+        else if (pathname.startsWith('/saved') && el.dataset.nav === 'saved') el.classList.add('active');
+        else if (pathname.startsWith('/cart') && el.dataset.nav === 'cart') el.classList.add('active');
+        else if (pathname.startsWith('/account') && el.dataset.nav === 'account') el.classList.add('active');
+      });
+
+      renderSubNav();
+
+      if (pathname === '/' || pathname === '') {
+        renderHomePage();
+      } else if (pathname === '/browse' || pathname === '/menu') {
+        renderBrowsePage(searchParams);
+      } else if (pathname.startsWith('/category/')) {
+        const catSlug = pathname.replace('/category/', '').split('/')[0];
+        renderBrowsePage({ ...searchParams, category: catSlug });
+      } else if (pathname.startsWith('/product/')) {
+        const slug = pathname.replace('/product/', '');
+        renderProductDetailPage(slug);
+      } else if (pathname === '/cart') {
+        renderCartPage();
+      } else if (pathname === '/checkout') {
+        renderCheckoutPage();
+      } else if (pathname === '/saved') {
+        renderSavedPage();
+      } else if (pathname === '/account' || pathname === '/orders') {
+        renderAccountPage();
+      } else if (pathname === '/location') {
+        renderLocationPage();
+      } else if (pathname.startsWith('/pages/')) {
+        const slug = pathname.replace('/pages/', '');
+        renderCustomPage(slug);
+      } else {
+        renderHomePage();
+      }
+    }
+
+    function navigate(url) {
+      history.pushState(null, '', url);
+      handleRoute(url);
+    }
+
+    document.addEventListener('click', (e) => {
+      const anchor = e.target.closest('a');
+      const href = anchor && anchor.getAttribute('href');
+      if (href && href.startsWith('/') && !href.startsWith('/studio.html') && !href.endsWith('.html')) {
+        e.preventDefault();
+        navigate(href);
+      }
+    });
+
+    window.addEventListener('popstate', () => {
+      handleRoute(window.location.pathname + window.location.search);
+    });
+
+    // =========================================================================
+    // GLOBAL ACTIONS & CUSTOMIZER MODAL
+    // =========================================================================
+    function showToast(msg) {
+      const existing = document.getElementById('global-toast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.id = 'global-toast';
+      toast.textContent = msg;
+      toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#381207; color:#FBBF24; font-size:12px; font-weight:900; letter-spacing:0.03em; padding:10px 22px; border-radius:9999px; box-shadow:0 8px 24px rgba(56, 18, 7, 0.35); z-index:99999; border:1px solid #F59E0B; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2400);
+    }
+    window.showToast = showToast;
+
+    window.toggleWishlist = function(productId, e) {
+      if (e) e.stopPropagation();
+      if (savedIds.has(productId)) savedIds.delete(productId);
+      else savedIds.add(productId);
+      scheduleSave();
+      computeCart();
+      const currentPath = window.location.pathname;
+      if (currentPath === '/saved') renderSavedPage();
+      else {
+        const btn = document.querySelector(`[data-product-id="${productId}"] .card-wish-btn`);
+        if (btn) btn.classList.toggle('active', savedIds.has(productId));
+      }
+    };
+
+    window.openCustomizerModal = function(productId) {
+      const p = site.products.find(x => x.id === productId);
+      if (!p) return;
+      // Pre-select defaults
+      if (!selectedVariant[p.id]) selectedVariant[p.id] = p.sizes[0] || { size: 'Regular', price: p.price };
+      if (!selectedSpice[p.id]) selectedSpice[p.id] = 'Mild 🍃';
+      if (!selectedAddons[p.id]) selectedAddons[p.id] = [];
+
+      const sheet = document.getElementById('bottom-sheet');
+      const overlay = document.getElementById('sheet-overlay');
+      const title = document.getElementById('sheet-title');
+      const content = document.getElementById('sheet-content');
+      const footer = document.getElementById('sheet-footer');
+
+      title.textContent = p.name.toUpperCase();
+      content.innerHTML = `
+        <div style="display:flex; gap:12px; margin-bottom:14px; align-items:center;">
+          <div style="width:75px; height:75px; border-radius:14px; overflow:hidden; background:#FDF6ED; flex-shrink:0;">
+            ${p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" />` : foodSvgStore.artSvg(p.category)}
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:900; color:#92400E; text-transform:uppercase;">${p.category}</div>
+            <div style="font-size:16px; font-weight:900; color:#381207;">${escapeHtml(p.name)}</div>
+            <div style="font-size:14px; font-weight:900; color:#DC2626;" id="modal-live-price">${formatCurrency(selectedVariant[p.id].price)}</div>
+          </div>
+        </div>
+
+        <!-- Portion -->
+        <div class="custom-option-group">
+          <div class="custom-group-title"><span>PORTION / COMBO</span><span class="sub-hint">REQUIRED</span></div>
+          <div class="option-pills-row">
+            ${p.sizes.map(s => `
+              <button class="option-pill-btn ${s.size === selectedVariant[p.id].size ? 'selected' : ''}" onclick="window.modalSelectVariant('${p.id}', '${escapeHtml(s.size)}')">
+                <span>${escapeHtml(s.size)}</span>
+                <span class="opt-price">${formatCurrency(s.price)}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Spice -->
+        <div class="custom-option-group">
+          <div class="custom-group-title"><span>SPICE LEVEL</span><span class="sub-hint">FREE</span></div>
+          <div class="option-pills-row">
+            ${['Mild 🍃', 'Medium 🌶️', 'Hot 🔥', 'Inferno 💥'].map(sp => `
+              <button class="option-pill-btn ${selectedSpice[p.id] === sp ? 'selected' : ''}" onclick="window.modalSelectSpice('${p.id}', '${sp}')">
+                ${sp}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Add-ons -->
+        <div class="custom-option-group">
+          <div class="custom-group-title"><span>EXTRA TOPPINGS</span><span class="sub-hint">OPTIONAL</span></div>
+          <div class="option-pills-row">
+            ${[
+              { name: 'Melted Aged Cheddar', price: 100 },
+              { name: 'Crispy Smoked Bacon', price: 150 },
+              { name: 'Grilled Jalapeños', price: 80 },
+              { name: 'Truffle Garlic Aioli', price: 80 },
+              { name: 'Extra House Sauce', price: 50 }
+            ].map(add => {
+              const isSel = selectedAddons[p.id].some(a => a.name === add.name);
+              return `
+                <button class="option-pill-btn ${isSel ? 'selected' : ''}" onclick="window.modalToggleAddon('${p.id}', '${add.name}', ${add.price})">
+                  <span>${isSel ? '✓ ' : '+ '}${add.name}</span>
+                  <span class="opt-price">+${formatCurrency(add.price)}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      footer.innerHTML = `
+        <button class="btn-pill-outline" style="flex:1;" onclick="window.closeSheet()">CANCEL</button>
+        <button class="btn-pill-action" style="flex:1.6;" onclick="window.confirmModalAddToCart('${p.id}')">ADD TO CART</button>
+      `;
+      overlay.classList.add('open');
+    };
+
+    window.modalSelectVariant = function(pId, size) {
+      const p = site.products.find(x => x.id === pId);
+      if (!p) return;
+      const v = p.sizes.find(s => s.size === size);
+      if (v) selectedVariant[pId] = v;
+      window.openCustomizerModal(pId);
+    };
+
+    window.modalSelectSpice = function(pId, sp) {
+      selectedSpice[pId] = sp;
+      window.openCustomizerModal(pId);
+    };
+
+    window.modalToggleAddon = function(pId, name, price) {
+      if (!selectedAddons[pId]) selectedAddons[pId] = [];
+      const idx = selectedAddons[pId].findIndex(a => a.name === name);
+      if (idx >= 0) selectedAddons[pId].splice(idx, 1);
+      else selectedAddons[pId].push({ name, price });
+      window.openCustomizerModal(pId);
+    };
+
+    window.confirmModalAddToCart = function(pId) {
+      const p = site.products.find(x => x.id === pId);
+      if (!p) return;
+      const v = selectedVariant[pId] || p.sizes[0];
+      const sp = selectedSpice[pId] || 'Mild 🍃';
+      const adds = selectedAddons[pId] || [];
+      const itemPrice = v.price + adds.reduce((sum, a) => sum + (a.price || 0), 0);
+
+      cart.push({
+        id: 'cart-' + Date.now(),
+        productId: p.id,
+        name: p.name,
+        category: p.category,
+        image: p.image,
+        size: v.size,
+        spice: sp,
+        addons: [...adds],
+        price: itemPrice,
+        quantity: 1
+      });
+
+      scheduleSave();
+      computeCart();
+      window.closeSheet();
+      showToast(`Added ${p.name} to your cart!`);
+    };
+
+    window.selectPdpVariant = function(pId, size) {
+      const p = site.products.find(x => x.id === pId);
+      if (!p) return;
+      const v = p.sizes.find(s => s.size === size);
+      if (v) selectedVariant[pId] = v;
+      renderProductDetailPage(p.slug);
+    };
+
+    window.selectPdpSpice = function(pId, sp) {
+      selectedSpice[pId] = sp;
+      renderProductDetailPage(site.products.find(x => x.id === pId).slug);
+    };
+
+    window.togglePdpAddon = function(pId, name, price) {
+      if (!selectedAddons[pId]) selectedAddons[pId] = [];
+      const idx = selectedAddons[pId].findIndex(a => a.name === name);
+      if (idx >= 0) selectedAddons[pId].splice(idx, 1);
+      else selectedAddons[pId].push({ name, price });
+      renderProductDetailPage(site.products.find(x => x.id === pId).slug);
+    };
+
+    window.addPdpItemToCart = function(pId) {
+      window.confirmModalAddToCart(pId);
+      navigate('/cart');
+    };
+
+    window.orderDishDirectWhatsApp = function(pId) {
+      const p = site.products.find(x => x.id === pId);
+      if (!p) return;
+      const v = selectedVariant[pId] || p.sizes[0];
+      const sp = selectedSpice[pId] || 'Mild';
+      const notes = document.getElementById('pdp-special-notes')?.value || 'Standard';
+      const num = site.contact?.whatsapp ? site.contact.whatsapp.replace(/\D/g, '') : CFG.fallbacks.whatsapp;
+      const msg = `Hello ${site.name}! I would like to order:\n• ${p.name}\n• Portion: ${v.size}\n• Spice: ${sp}\n• Price: ${formatCurrency(v.price)}\n• Notes: ${notes}\n• Delivery Address: Nairobi Central`;
+      window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+    };
+
+    window.copyVoucherCode = function(code) {
+      navigator.clipboard?.writeText(code);
+      showToast(`Voucher code ${code} copied!`);
+    };
+
+    window.updateCartQty = function(idx, delta) {
+      if (!cart[idx]) return;
+      cart[idx].quantity += delta;
+      if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+      scheduleSave();
+      computeCart();
+      renderCartPage();
+    };
+
+    window.handleCheckoutSubmit = function(e) {
+      e.preventDefault();
+      const name = document.getElementById('co-name').value;
+      const phone = document.getElementById('co-phone').value;
+      const email = document.getElementById('co-email')?.value || '';
+      const address = document.getElementById('co-address').value;
+      const { total } = computeCart();
+
+      const btn = document.getElementById('pay-submit-btn');
+      btn.textContent = 'CONNECTING TO M-PESA / PAYSTACK...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        const newOrder = {
+          id: 'FB-' + Math.floor(100000 + Math.random() * 900000),
+          customerName: name,
+          phone,
+          email,
+          address,
+          items: [...cart],
+          total,
+          status: 'paid',
+          date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        };
+        orders.unshift(newOrder);
+        cart = [];
+        scheduleSave();
+        computeCart();
+
+        const main = document.getElementById('main-content');
+        main.innerHTML = `
+          <div style="text-align:center; padding:50px 20px;">
+            <div style="font-size:56px; margin-bottom:12px;">🎉</div>
+            <h2 style="font-size:24px; font-weight:900; color:#381207; margin-bottom:6px;">ORDER RECEIVED & KITCHEN COOKING!</h2>
+            <p style="font-size:13px; color:#78350F; margin-bottom:6px;">Thank you ${escapeHtml(name)}, your meal is being freshly prepared.</p>
+            <p style="font-size:14px; font-weight:900; color:#DC2626; margin-bottom:18px;">Order Reference: #${newOrder.id}</p>
+            <div style="background:#FFF9F2; border:1px solid var(--ff-border); border-radius:14px; padding:14px; margin-bottom:24px; text-align:left; font-size:12px;">
+              <div><strong>Delivery to:</strong> ${escapeHtml(address)}</div>
+              <div><strong>Driver Contact:</strong> Notification sent to ${escapeHtml(phone)}</div>
+              <div><strong>Estimated Arrival:</strong> 25-30 Minutes</div>
+            </div>
+            <a href="/" class="btn-pill-action">ORDER MORE FOOD</a>
+          </div>
+        `;
+      }, 1000);
+    };
+
+    window.openFilterSheet = function() {
+      const sheet = document.getElementById('bottom-sheet');
+      const overlay = document.getElementById('sheet-overlay');
+      const title = document.getElementById('sheet-title');
+      const content = document.getElementById('sheet-content');
+      const footer = document.getElementById('sheet-footer');
+
+      title.textContent = 'FILTER MENU';
+      content.innerHTML = `
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-size:11px; font-weight:900; color:#381207; margin-bottom:6px;">CATEGORY</label>
+          <select class="search-pill-input" id="flt-cat" style="width:100%; padding:10px; border:1px solid var(--ff-border); border-radius:8px;">
+            <option value="all">All Categories</option>
+            ${site.categories.map(c => `<option value="${c.slug}">${c.name}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="display:block; font-size:11px; font-weight:900; color:#381207; margin-bottom:6px;">DIETARY / SPECIAL</label>
+          <select class="search-pill-input" id="flt-badge" style="width:100%; padding:10px; border:1px solid var(--ff-border); border-radius:8px;">
+            <option value="">Any Meal</option>
+            <option value="BEST SELLER">Best Sellers</option>
+            <option value="CHEF SPECIAL">Chef Specials</option>
+            <option value="HOT & SPICY">Hot & Spicy</option>
+            <option value="VEGGIE FAVORITE">Vegetarian</option>
+          </select>
+        </div>
+      `;
+      footer.innerHTML = `
+        <button class="btn-pill-outline" style="flex:1;" onclick="window.closeSheet()">CLEAR</button>
+        <button class="btn-pill-action" style="flex:1;" onclick="window.applyFilters()">APPLY</button>
+      `;
+      overlay.classList.add('open');
+    };
+
+    window.closeSheet = function() {
+      document.getElementById('sheet-overlay').classList.remove('open');
+    };
+    document.getElementById('sheet-close-btn').addEventListener('click', window.closeSheet);
+    document.getElementById('sheet-overlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) window.closeSheet();
+    });
+
+    window.applyFilters = function() {
+      const cat = document.getElementById('flt-cat').value;
+      const badge = document.getElementById('flt-badge').value;
+      window.closeSheet();
+      navigate(`/browse?category=${cat}&badge=${encodeURIComponent(badge)}`);
+    };
+
+    window.handleSortChange = function(val) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('sort', val);
+      navigate(url.pathname + url.search);
+    };
+
+    // Chatbot Assistant Drawer
+    document.getElementById('floating-chatbot').addEventListener('click', () => {
+      const sheet = document.getElementById('bottom-sheet');
+      const overlay = document.getElementById('sheet-overlay');
+      const title = document.getElementById('sheet-title');
+      const content = document.getElementById('sheet-content');
+      const footer = document.getElementById('sheet-footer');
+
+      title.textContent = 'FRESHBOX FOOD ASSISTANT';
+      content.innerHTML = `
+        <div style="font-size:13px; color:#381207; margin-bottom:12px;">
+          Hi there! How can our kitchen help you today?
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button class="btn-pill-outline" style="text-align:left; font-size:11px;" onclick="window.showFaqAns('delivery')">🛵 What are your delivery zones & fees?</button>
+          <button class="btn-pill-outline" style="text-align:left; font-size:11px;" onclick="window.showFaqAns('combos')">🍔 What is the most popular burger?</button>
+          <button class="btn-pill-outline" style="text-align:left; font-size:11px;" onclick="window.showFaqAns('prep')">⏱️ How long does cooking take?</button>
+          <button class="btn-pill-outline" style="text-align:left; font-size:11px;" onclick="window.showFaqAns('whatsapp')">💬 Can I order directly via WhatsApp?</button>
+        </div>
+        <div id="faq-res-box" style="margin-top:14px; background:#FFF9F2; border:1px solid var(--ff-border); padding:12px; border-radius:12px; font-size:12px; line-height:1.45; display:none;"></div>
+      `;
+      footer.innerHTML = `<button class="btn-pill-outline" style="width:100%;" onclick="window.closeSheet()">CLOSE</button>`;
+      overlay.classList.add('open');
+    });
+
+    window.showFaqAns = function(topic) {
+      const box = document.getElementById('faq-res-box');
+      if (!box) return;
+      box.style.display = 'block';
+      if (topic === 'delivery') {
+        box.textContent = 'We deliver everywhere in Nairobi in under 30 minutes. Flat rate KSh 250, or FREE for orders over KSh 2,500!';
+      } else if (topic === 'combos') {
+        box.textContent = 'Our Classic Double Smash Burger (KSh 850) and Hot Honey Pepperoni Pizza (KSh 1,250) are the undisputed customer favorites!';
+      } else if (topic === 'prep') {
+        box.textContent = 'Our smash burgers cook in 12-15 minutes, and stone-fired pizzas bake in our 450°C oven in just 90 seconds!';
+      } else if (topic === 'whatsapp') {
+        box.innerHTML = 'Yes! Click the green WhatsApp button or <a href="https://wa.me/254715333555" target="_blank" style="color:#DC2626;font-weight:900;">tap here to message us directly</a>.';
+      }
+    };
+
+    // Search bar event
+    const sIn = document.getElementById('global-search-input');
+    const sBtn = document.getElementById('global-search-btn');
+    function doSearch() {
+      const q = sIn.value.trim();
+      if (q) navigate('/browse?query=' + encodeURIComponent(q));
+    }
+    sIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+    sBtn.addEventListener('click', doSearch);
+
+    // Live Sync Listener (If Studio in another tab edits site data, storefront live updates!)
+    window.addEventListener('storage', (e) => {
+      if (e.key !== CFG.storage.siteKey || !e.newValue) return;
+      try {
+        const d = JSON.parse(e.newValue);
+        if (d && d.products) {
+          site = d;
+          applyThemeToDom();
+          handleRoute(window.location.pathname + window.location.search);
+        }
+      } catch (err) {}
+    });
+
+    // Initial Bootstrap
+    loadState();
+    applyThemeToDom();
+    computeCart();
+    handleRoute(window.location.pathname + window.location.search);
+
+  })();
+  </script>
+</body>
+</html>

@@ -1,12 +1,28 @@
 const MAX_CATALOG_BYTES = 900_000;
+const MAX_PUBLISHED_THEME_BYTES = 4_000_000;
 const MAX_MEDIA_BYTES = 3_000_000;
 const MAX_RECORDS = 1000;
 const TENANT_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9_.-]{2,31}$/;
 const RESERVED_TENANT_IDS = new Set(["www", "api", "admin", "assets", "main"]);
+const FILLED_THEME_IDS = new Set([
+  "craft-main-storefront",
+  "cira-atelier-event-architecture-management",
+  "aura-luxe-fine-botanical-cosmetics-luxury-beauty",
+  "kicks-vault-curated-sneaker-footwear-archive",
+  "elura-botanicals-luxury-cosmetics-skincare",
+  "autopro-kenya-premium-automotive-spares-parts",
+  "etalon-premium-fashion-apparel",
+  "aurex-electronics"
+]);
 const DOMAIN_ROOT = "rrobin.co.ke";
 const PASSWORD_ITERATIONS = 100_000;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
+const PASSWORD_RESET_CODE_TTL_SECONDS = 10 * 60;
+const PASSWORD_RESET_TOKEN_TTL_SECONDS = 10 * 60;
+const PASSWORD_RESET_COOLDOWN_SECONDS = 60;
+const PASSWORD_RESET_MAX_ATTEMPTS = 5;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_BUSINESS_SNAPSHOT_BYTES = 8_000_000;
 const BUSINESS_STORE_ID_PATTERN = /^[a-zA-Z0-9_-]{1,80}$/;
 const SNAPSHOT_ID_PATTERN = /^[a-f0-9]{64}$/;
@@ -20,7 +36,7 @@ const NEARBY_PAIRING_TTL_SECONDS = 180;
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Nearby-Session",
+  "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Nearby-Session, X-Eshop-Theme-Internal",
   "Access-Control-Max-Age": "86400"
 };
 
@@ -102,7 +118,9 @@ async function requireTenant(request, env, tenantId) {
   const hostname = url.hostname.toLowerCase();
   if (hostname === DOMAIN_ROOT || hostname === `www.${DOMAIN_ROOT}` ||
       hostname.endsWith(`.${DOMAIN_ROOT}`)) {
-    if (tenantId === "main") return { id: "main", name: "E-Shop" };
+    if (tenantId === "main") {
+      return await env.TENANTS?.get("tenant:main", "json") || { id: "main", name: "E-Shop" };
+    }
     if (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId)) return null;
     return await env.TENANTS.get(`tenant:${tenantId}`, "json");
   }
@@ -117,6 +135,41 @@ async function requireTenant(request, env, tenantId) {
   }
   if (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId)) return null;
   return await env.TENANTS.get(`tenant:${tenantId}`, "json");
+}
+
+function storefrontCacheKey(request, catalogUpdatedAt) {
+  const url = new URL(request.url);
+  url.pathname = `/__worker-cache/storefront/filled-v1/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}`;
+  url.search = "";
+  url.hash = "";
+  return new Request(url, { method: "GET" });
+}
+
+function cachedStorefrontResponse(response) {
+  const headers = new Headers(response.headers);
+  headers.set("Cache-Control", "public, max-age=60");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
+
+async function cacheStorefrontResponse(cache, key, response) {
+  if (!cache || !key) return;
+  const cacheEntry = response.clone();
+  cacheEntry.headers.set("Cache-Control", "public, max-age=3600");
+  await cache.put(key, cacheEntry);
+}
+
+async function recordCatalogVersion(env, tenantId, tenant, updatedAt) {
+  if (!env.TENANTS) return;
+  const key = `tenant:${tenantId}`;
+  const storedTenant = await env.TENANTS.get(key, "json");
+  await env.TENANTS.put(key, JSON.stringify({
+    ...(storedTenant || (tenant && typeof tenant === "object" ? tenant : { id: tenantId })),
+    catalog_updated_at: updatedAt
+  }));
 }
 
 function cleanText(value, limit = 5000) {
@@ -221,10 +274,11 @@ function cleanCatalog(input) {
   }
 
   const storeInput = input.store && typeof input.store === "object" ? input.store : {};
+  const elementSelectorPattern = /^(?:#app > section\[data-eshop-editor-section-id="(?:base-[a-z0-9-]{1,100}|custom-[a-z0-9-]{1,100})"\](?: > [a-z0-9-]+:nth-of-type\([1-9]\d*\))*|(?:#app|body) > [a-z0-9-]+:nth-of-type\([1-9]\d*\)(?: > [a-z0-9-]+:nth-of-type\([1-9]\d*\))*)$/i;
   const elementEdits = Array.isArray(storeInput.element_edits)
     ? storeInput.element_edits.slice(0, 250).flatMap(edit => {
       if (!edit || typeof edit !== "object" ||
-          !/^(?:#app|body) > [a-z0-9-]+:nth-of-type\([1-9]\d*\)(?: > [a-z0-9-]+:nth-of-type\([1-9]\d*\))*$/i.test(edit.selector || "") ||
+          !elementSelectorPattern.test(edit.selector || "") ||
           !["text", "image", "icon", "link", "group"].includes(edit.kind)) return [];
       const rotation = Number(edit.rotation);
       const offsetX = Number(edit.offsetX);
@@ -235,6 +289,7 @@ function cleanCatalog(input) {
           id: cleanText(step.id, 160),
           classes: cleanText(step.classes, 400),
           productId: cleanText(step.productId, 80),
+          sectionId: /^[a-z0-9-]{1,120}$/i.test(step.sectionId || "") ? step.sectionId : "",
           slide: cleanText(step.slide, 40),
           action: cleanText(step.action, 80),
           label: cleanText(step.label, 200),
@@ -256,7 +311,7 @@ function cleanCatalog(input) {
         lineage: cleanLineage(edit.lineage),
         linkLineage: cleanLineage(edit.linkLineage),
         linkSelector: typeof edit.linkSelector === "string" &&
-          /^(?:#app|body) > [a-z0-9-]+:nth-of-type\([1-9]\d*\)(?: > [a-z0-9-]+:nth-of-type\([1-9]\d*\))*$/i.test(edit.linkSelector)
+          elementSelectorPattern.test(edit.linkSelector)
           ? edit.linkSelector
           : "",
         href: cleanElementLink(edit.href),
@@ -268,6 +323,33 @@ function cleanCatalog(input) {
       }];
     })
     : [];
+  const sectionLayoutInput = storeInput.section_layout && typeof storeInput.section_layout === "object"
+    ? storeInput.section_layout
+    : {};
+  const validSectionId = value => /^(?:base-[a-z0-9-]{1,100}|custom-[a-z0-9-]{1,100})$/i.test(value || "");
+  const sectionLayout = {
+    order: Array.isArray(sectionLayoutInput.order)
+      ? [...new Set(sectionLayoutInput.order.filter(validSectionId))].slice(0, 120)
+      : [],
+    hidden: Array.isArray(sectionLayoutInput.hidden)
+      ? [...new Set(sectionLayoutInput.hidden.filter(validSectionId))].slice(0, 120)
+      : [],
+    removed: Array.isArray(sectionLayoutInput.removed)
+      ? [...new Set(sectionLayoutInput.removed.filter(validSectionId))].slice(0, 120)
+      : [],
+    added: Array.isArray(sectionLayoutInput.added)
+      ? sectionLayoutInput.added.slice(0, 40).flatMap(section => {
+        if (!section || typeof section !== "object" || !validSectionId(section.id) ||
+            !["text", "products", "categories", "image"].includes(section.type)) return [];
+        return [{
+          id: section.id,
+          type: section.type,
+          title: cleanText(section.title, 80),
+          body: cleanText(section.body, 300)
+        }];
+      })
+      : []
+  };
   const store = {
     name: cleanText(storeInput.name, 200),
     title: cleanText(storeInput.title, 240),
@@ -313,7 +395,8 @@ function cleanCatalog(input) {
     font_family: /^[a-z0-9 ]{1,50}$/i.test(storeInput.font_family || "") ? storeInput.font_family : "sans",
     display_font_family: /^[a-z0-9 ]{1,50}$/i.test(storeInput.display_font_family || "") ? storeInput.display_font_family : "",
     mono_font_family: /^[a-z0-9 ]{1,50}$/i.test(storeInput.mono_font_family || "") ? storeInput.mono_font_family : "",
-    element_edits: elementEdits
+    element_edits: elementEdits,
+    section_layout: sectionLayout
   };
 
   const privateProducts = products.map((product, index) => ({
@@ -465,6 +548,44 @@ function normalizeUsername(value) {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
+function normalizeEmail(value) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function generateRecoveryCode() {
+  const limit = Math.floor(0x1_0000_0000 / 1_000_000) * 1_000_000;
+  const bytes = new Uint32Array(1);
+  do {
+    crypto.getRandomValues(bytes);
+  } while (bytes[0] >= limit);
+  return String(bytes[0] % 1_000_000).padStart(6, "0");
+}
+
+async function sendRecoveryCode(env, email, code) {
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return jsonResponse({ error: "Password recovery email is not configured. Contact support." }, 503);
+  }
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: env.EMAIL_FROM,
+      to: [email],
+      subject: "Your Craft password reset code",
+      text: `Your Craft password reset code is ${code}. It expires in 10 minutes. If you did not request this code, you can ignore this email.`,
+      html: `<p>Your Craft password reset code is <strong>${code}</strong>.</p><p>It expires in 10 minutes. If you did not request this code, you can ignore this email.</p>`
+    })
+  });
+  if (!response.ok) {
+    console.error("Password recovery email delivery failed.", response.status);
+    return jsonResponse({ error: "Could not send the recovery email. Please try again later." }, 502);
+  }
+  return null;
+}
+
 async function passwordHash(password, salt) {
   const padding = "=".repeat((4 - salt.length % 4) % 4);
   const key = await crypto.subtle.importKey(
@@ -529,7 +650,10 @@ async function accountSession(request, env) {
   const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
   if (!token) return null;
   const record = await env.TENANTS.get(`session:${await sha256Hex(token)}`, "json");
-  return record && typeof record.username === "string" ? record : null;
+  if (!record || typeof record.username !== "string") return null;
+  const passwordVersion = await env.TENANTS.get(`password-version:${record.username}`);
+  if (passwordVersion && record.password_version !== passwordVersion) return null;
+  return record;
 }
 
 async function refreshAccountSession(request, env) {
@@ -545,20 +669,27 @@ async function refreshAccountSession(request, env) {
   const result = await env.DB.prepare(
     "SELECT tenant_id FROM account_tenants WHERE username = ? ORDER BY tenant_id"
   ).bind(session.username).all();
+  const account = await env.DB.prepare(
+    "SELECT email FROM accounts WHERE username = ?"
+  ).bind(session.username).first();
   const tenants = [];
   for (const row of result.results || []) {
     const tenant = await env.TENANTS.get(`tenant:${row.tenant_id}`, "json");
     if (tenant) tenants.push({ id: tenant.id, name: tenant.name || tenant.id });
   }
-  return jsonResponse({ ok: true, username: session.username, tenants });
+  return jsonResponse({ ok: true, username: session.username, email: account?.email || "", tenants });
 }
 
 async function authenticateAccount(request, env, input, isRegistration) {
   if (!env.DB || !env.TENANTS) return jsonResponse({ error: "Account service is not configured." }, 503);
   const username = normalizeUsername(input.username);
+  const email = isRegistration ? normalizeEmail(input.email) : "";
   const password = typeof input.password === "string" ? input.password : "";
   if (!USERNAME_PATTERN.test(username)) {
     return jsonResponse({ error: "Username must be 3â€“32 characters using letters, numbers, dots, underscores, or hyphens." }, 400);
+  }
+  if (isRegistration && (!EMAIL_PATTERN.test(email) || email.length > 254)) {
+    return jsonResponse({ error: "Enter a valid recovery email address." }, 400);
   }
   if (password.length < 12 || password.length > 128) {
     return jsonResponse({ error: "Password must be at least 12 characters and no more than 128." }, 400);
@@ -582,18 +713,22 @@ async function authenticateAccount(request, env, input, isRegistration) {
 
   let user;
   if (isRegistration) {
+    const existingEmail = await env.DB.prepare(
+      "SELECT username FROM accounts WHERE email = ?"
+    ).bind(email).first();
+    if (existingEmail) return jsonResponse({ error: "That recovery email is already in use." }, 409);
     const salt = encodeBase64Url(crypto.getRandomValues(new Uint8Array(16)));
     const hash = await passwordHash(password, salt);
     const result = await env.DB.prepare(
-      "INSERT OR IGNORE INTO accounts (username, password_salt, password_hash, created_at) VALUES (?, ?, ?, ?)"
-    ).bind(username, salt, hash, new Date().toISOString()).run();
+      "INSERT OR IGNORE INTO accounts (username, password_salt, password_hash, email, created_at) VALUES (?, ?, ?, ?, ?)"
+    ).bind(username, salt, hash, email, new Date().toISOString()).run();
     if (!result.meta?.changes) {
       return jsonResponse({ error: "That username is already registered. Sign in instead." }, 409);
     }
     user = { username };
   } else {
     user = await env.DB.prepare(
-      "SELECT username, password_salt, password_hash FROM accounts WHERE username = ?"
+      "SELECT username, password_salt, password_hash, email FROM accounts WHERE username = ?"
     ).bind(username).first();
     const salt = user?.password_salt || encodeBase64Url(new Uint8Array(16));
     const candidateHash = await passwordHash(password, salt);
@@ -603,9 +738,10 @@ async function authenticateAccount(request, env, input, isRegistration) {
   }
 
   const sessionToken = generateTenantSecret();
+  const passwordVersion = await env.TENANTS.get(`password-version:${username}`) || "";
   await env.TENANTS.put(
     `session:${await sha256Hex(sessionToken)}`,
-    JSON.stringify({ username: user.username }),
+    JSON.stringify({ username: user.username, password_version: passwordVersion }),
     { expirationTtl: SESSION_TTL_SECONDS }
   );
   const tenants = await env.DB.prepare(
@@ -630,8 +766,143 @@ async function authenticateAccount(request, env, input, isRegistration) {
     ok: true,
     session_token: sessionToken,
     username,
+    email: user.email || email,
     tenants: ownedTenants
   });
+}
+
+async function updateAccountRecoveryEmail(request, env, input) {
+  if (!env.DB || !env.TENANTS) return jsonResponse({ error: "Account service is not configured." }, 503);
+  const session = await accountSession(request, env);
+  if (!session) return jsonResponse({ error: "Your account session expired. Sign in again." }, 401);
+  const email = normalizeEmail(input.email);
+  const password = typeof input.password === "string" ? input.password : "";
+  if (!EMAIL_PATTERN.test(email) || email.length > 254) {
+    return jsonResponse({ error: "Enter a valid recovery email address." }, 400);
+  }
+  if (password.length < 12 || password.length > 128) {
+    return jsonResponse({ error: "Enter your current account password to update the recovery email." }, 400);
+  }
+  if (!await limitAuthRequests(request, env, "recovery-email", 5, 3600)) {
+    return jsonResponse({ error: "Too many attempts. Please try again later." }, 429);
+  }
+  const account = await env.DB.prepare(
+    "SELECT username, password_salt, password_hash FROM accounts WHERE username = ?"
+  ).bind(session.username).first();
+  const candidateHash = await passwordHash(password, account?.password_salt || encodeBase64Url(new Uint8Array(16)));
+  if (!account || !constantTimeEqual(candidateHash, account.password_hash)) {
+    return jsonResponse({ error: "Your current password is incorrect." }, 401);
+  }
+  const existingEmail = await env.DB.prepare(
+    "SELECT username FROM accounts WHERE email = ? AND username != ?"
+  ).bind(email, session.username).first();
+  if (existingEmail) return jsonResponse({ error: "That recovery email is already in use." }, 409);
+  await env.DB.prepare(
+    "UPDATE accounts SET email = ? WHERE username = ?"
+  ).bind(email, session.username).run();
+  return jsonResponse({ ok: true, email });
+}
+
+async function requestPasswordResetCode(request, env, input) {
+  if (!env.DB || !env.TENANTS) return jsonResponse({ error: "Account service is not configured." }, 503);
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return jsonResponse({ error: "Password recovery email is not configured. Contact support." }, 503);
+  }
+  const email = normalizeEmail(input.email);
+  if (!EMAIL_PATTERN.test(email) || email.length > 254) {
+    return jsonResponse({ error: "Enter a valid recovery email address." }, 400);
+  }
+  if (!await limitAuthRequests(request, env, "password-reset", 5, 3600)) {
+    return jsonResponse({ error: "Too many requests. Please try again later." }, 429);
+  }
+  const emailHash = await sha256Hex(email);
+  const cooldownKey = `password-reset-cooldown:${emailHash}`;
+  const genericResponse = {
+    ok: true,
+    message: "If an account uses that email, a reset code will arrive shortly."
+  };
+  if (await env.TENANTS.get(cooldownKey)) return jsonResponse(genericResponse);
+  await env.TENANTS.put(cooldownKey, "1", { expirationTtl: PASSWORD_RESET_COOLDOWN_SECONDS });
+  const account = await env.DB.prepare(
+    "SELECT username FROM accounts WHERE email = ?"
+  ).bind(email).first();
+  if (!account) return jsonResponse(genericResponse);
+  const code = generateRecoveryCode();
+  const codeKey = `password-reset-code:${emailHash}`;
+  const expiresAt = Date.now() + PASSWORD_RESET_CODE_TTL_SECONDS * 1000;
+  await env.TENANTS.put(codeKey, JSON.stringify({
+    username: account.username,
+    code_hash: await sha256Hex(`${email}:${code}`),
+    attempts: 0,
+    expires_at: expiresAt
+  }), { expirationTtl: PASSWORD_RESET_CODE_TTL_SECONDS });
+  const deliveryError = await sendRecoveryCode(env, email, code);
+  if (deliveryError) {
+    await env.TENANTS.delete(codeKey);
+    await env.TENANTS.delete(cooldownKey);
+    return deliveryError;
+  }
+  return jsonResponse(genericResponse);
+}
+
+async function verifyPasswordResetCode(env, input) {
+  if (!env.DB || !env.TENANTS) return jsonResponse({ error: "Account service is not configured." }, 503);
+  const email = normalizeEmail(input.email);
+  const code = typeof input.code === "string" ? input.code.trim() : "";
+  if (!EMAIL_PATTERN.test(email) || email.length > 254 || !/^\d{6}$/.test(code)) {
+    return jsonResponse({ error: "Enter the recovery email and its 6-digit code." }, 400);
+  }
+  const emailHash = await sha256Hex(email);
+  const codeKey = `password-reset-code:${emailHash}`;
+  const rawRecord = await env.TENANTS.get(codeKey, "json");
+  if (!rawRecord) return jsonResponse({ error: "That code has expired. Request a new one." }, 400);
+  if (rawRecord.attempts >= PASSWORD_RESET_MAX_ATTEMPTS) {
+    await env.TENANTS.delete(codeKey);
+    return jsonResponse({ error: "Too many attempts. Request a new code." }, 429);
+  }
+  const candidateHash = await sha256Hex(`${email}:${code}`);
+  if (!constantTimeEqual(candidateHash, rawRecord.code_hash)) {
+    rawRecord.attempts += 1;
+    const remainingSeconds = Math.max(
+      1,
+      Math.ceil((rawRecord.expires_at - Date.now()) / 1000)
+    );
+    await env.TENANTS.put(codeKey, JSON.stringify(rawRecord), { expirationTtl: remainingSeconds });
+    return jsonResponse({ error: "The recovery code is incorrect." }, 400);
+  }
+  await env.TENANTS.delete(codeKey);
+  const resetToken = generateTenantSecret();
+  const resetTokenKey = `password-reset-token:${await sha256Hex(resetToken)}`;
+  await env.TENANTS.put(resetTokenKey, rawRecord.username, {
+    expirationTtl: PASSWORD_RESET_TOKEN_TTL_SECONDS
+  });
+  return jsonResponse({ ok: true, reset_token: resetToken });
+}
+
+async function resetAccountPassword(env, input) {
+  if (!env.DB || !env.TENANTS) return jsonResponse({ error: "Account service is not configured." }, 503);
+  const resetToken = typeof input.reset_token === "string" ? input.reset_token : "";
+  const password = typeof input.password === "string" ? input.password : "";
+  if (resetToken.length < 32 || resetToken.length > 128) {
+    return jsonResponse({ error: "Request a new password reset code and try again." }, 400);
+  }
+  if (password.length < 12 || password.length > 128) {
+    return jsonResponse({ error: "Password must be at least 12 characters and no more than 128." }, 400);
+  }
+  const resetTokenKey = `password-reset-token:${await sha256Hex(resetToken)}`;
+  const username = await env.TENANTS.get(resetTokenKey);
+  if (!username) return jsonResponse({ error: "That password reset has expired. Request a new code." }, 400);
+  const salt = encodeBase64Url(crypto.getRandomValues(new Uint8Array(16)));
+  const hash = await passwordHash(password, salt);
+  const result = await env.DB.prepare(
+    "UPDATE accounts SET password_salt = ?, password_hash = ? WHERE username = ?"
+  ).bind(salt, hash, username).run();
+  if (!result.meta?.changes) {
+    return jsonResponse({ error: "This account could not be updated. Request a new code." }, 404);
+  }
+  await env.TENANTS.put(`password-version:${username}`, generateTenantSecret());
+  await env.TENANTS.delete(resetTokenKey);
+  return jsonResponse({ ok: true, message: "Your password has been reset. Sign in with your new password." });
 }
 
 async function handleAccountAuth(request, env, action) {
@@ -641,7 +912,9 @@ async function handleAccountAuth(request, env, action) {
   if (request.method === "GET" && action === "session") {
     return refreshAccountSession(request, env);
   }
-  if (request.method !== "POST" || !["register", "login"].includes(action)) {
+  if (request.method !== "POST" || ![
+    "register", "login", "set-recovery-email", "request-reset-code", "verify-reset-code", "reset-password"
+  ].includes(action)) {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, OPTIONS" });
   }
   const raw = await request.text();
@@ -654,7 +927,13 @@ async function handleAccountAuth(request, env, action) {
   } catch {
     return jsonResponse({ error: "Request body must be valid JSON." }, 400);
   }
-  return authenticateAccount(request, env, input, action === "register");
+  if (action === "register" || action === "login") {
+    return authenticateAccount(request, env, input, action === "register");
+  }
+  if (action === "set-recovery-email") return updateAccountRecoveryEmail(request, env, input);
+  if (action === "request-reset-code") return requestPasswordResetCode(request, env, input);
+  if (action === "verify-reset-code") return verifyPasswordResetCode(env, input);
+  return resetAccountPassword(env, input);
 }
 
 async function limitTenantSignups(request, env) {
@@ -763,7 +1042,7 @@ async function handleCatalog(request, env, tenantId) {
       return jsonResponse({ error: "A store settings object is required." }, 400);
     }
     const row = await env.DB.prepare(
-      "SELECT payload, admin_payload FROM catalog_snapshots WHERE tenant_id = ?"
+      "SELECT payload, admin_payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
     ).bind(tenantId).first();
     if (!row) return jsonResponse({ error: "Publish the website catalog before publishing settings." }, 409);
     let publicCatalog;
@@ -791,9 +1070,24 @@ async function handleCatalog(request, env, tenantId) {
     const payload = JSON.stringify(cleaned.publicCatalog);
     const privatePayload = JSON.stringify(cleaned.privateCatalog);
     const updatedAt = new Date().toISOString();
+    const currentThemeId = publicCatalog.store?.website_theme_id || "classic";
+    const nextThemeId = cleaned.publicCatalog.store?.website_theme_id || "classic";
+    if (nextThemeId !== currentThemeId) {
+      return jsonResponse({ error: "Changing website themes requires a full catalog publish and verified fill." }, 409);
+    }
+    const filledContentFields = new Set([
+      "name", "title", "description", "tagline", "phone", "email", "address",
+      "location_address", "location", "currency", "catalogue_label"
+    ]);
+    if (FILLED_THEME_IDS.has(currentThemeId) &&
+        Object.keys(input.store).some(key => filledContentFields.has(key))) {
+      return jsonResponse({ error: "Shop content changes require a full publish so the selected theme can be filled again." }, 409);
+    }
     await env.DB.prepare(
       `UPDATE catalog_snapshots SET payload = ?, admin_payload = ?, updated_at = ? WHERE tenant_id = ?`
     ).bind(payload, privatePayload, updatedAt, tenantId).run();
+    await advancePublishedThemeVersion(env, tenantId, currentThemeId, row.updated_at, updatedAt);
+    await recordCatalogVersion(env, tenantId, tenant, updatedAt);
     return jsonResponse({
       ok: true,
       updated_at: updatedAt,
@@ -842,6 +1136,7 @@ async function handleCatalog(request, env, tenantId) {
      ON CONFLICT(tenant_id) DO UPDATE SET payload = excluded.payload, admin_payload = excluded.admin_payload,
      updated_at = excluded.updated_at`
   ).bind(tenantId, payload, privatePayload, updatedAt).run();
+  await recordCatalogVersion(env, tenantId, tenant, updatedAt);
   return jsonResponse({
     ok: true,
     updated_at: updatedAt,
@@ -928,9 +1223,15 @@ async function handlePublicThemeAsset(request, env, themeId, assetPath) {
         !/^[a-z0-9._-]+$/i.test(segment))) {
     return jsonResponse({ error: "Theme asset not found." }, 404);
   }
+  if (decodedPath.toLowerCase().endsWith(".html")) {
+    return jsonResponse({ error: "Raw theme documents are not customer-facing." }, 404);
+  }
   const object = await env.BUSINESS_ARCHIVE.get(`themes/${themeId}/${decodedPath}`);
   if (!object) return jsonResponse({ error: "Theme asset not found." }, 404);
   const extension = decodedPath.split(".").pop().toLowerCase();
+  if (extension === "html" || extension === "htm") {
+    return jsonResponse({ error: "Unfilled theme documents are not public assets." }, 404);
+  }
   const contentTypes = {
     css: "text/css; charset=utf-8",
     gif: "image/gif",
@@ -954,6 +1255,137 @@ async function handlePublicThemeAsset(request, env, themeId, assetPath) {
   });
   if (request.method === "HEAD") return new Response(null, { headers });
   return new Response(object.body, { headers });
+}
+
+async function handleInternalThemeSkeleton(request, env, themeId, assetPath) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, HEAD, OPTIONS" });
+  }
+  if (request.headers.get("X-Eshop-Theme-Internal") !== "preview" ||
+      request.headers.get("Sec-Fetch-Dest") === "document") {
+    return jsonResponse({ error: "Theme templates are internal editor assets." }, 404);
+  }
+  if (!FILLED_THEME_IDS.has(themeId) || !env.ASSETS) {
+    return jsonResponse({ error: "Theme template not found." }, 404);
+  }
+  let decodedPath;
+  try {
+    decodedPath = assetPath.split("/").map(segment => decodeURIComponent(segment)).join("/");
+  } catch {
+    return jsonResponse({ error: "Theme template not found." }, 404);
+  }
+  if (!["index.html", "schema-v2.json"].includes(decodedPath)) {
+    return jsonResponse({ error: "Theme template not found." }, 404);
+  }
+  const assetUrl = new URL(`/theme-skeletons/${themeId}/${decodedPath}`, request.url);
+  const assetResponse = await env.ASSETS.fetch(new Request(assetUrl, { method: request.method }));
+  if (!assetResponse.ok) return jsonResponse({ error: "Theme template not found." }, 404);
+  const headers = new Headers(assetResponse.headers);
+  headers.set("Cache-Control", "private, no-store");
+  headers.set("Content-Type", decodedPath.endsWith(".json")
+    ? "application/json; charset=utf-8"
+    : "text/html; charset=utf-8");
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("Vary", "X-Eshop-Theme-Internal");
+  Object.entries(corsHeaders).forEach(([name, value]) => headers.set(name, value));
+  if (request.method === "HEAD") return new Response(null, { headers });
+  return new Response(assetResponse.body, { headers });
+}
+
+async function handleThemePublish(request, env, tenantId) {
+  if (request.method !== "POST") {
+    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+  }
+  if (!env.BUSINESS_ARCHIVE || !env.TENANTS || !env.DB) {
+    return jsonResponse({ error: "Published theme storage is not configured." }, 503);
+  }
+  const isOwner = tenantId === "main"
+    ? await authorizeMainOwner(request, env)
+    : await authorizeTenantOwner(request, env, tenantId) ||
+      await authorizeTenantAccount(request, env, tenantId);
+  if (!isOwner && !await authorizeAdmin(request, env)) {
+    return jsonResponse({ error: "Shop owner authorization required." }, 401);
+  }
+
+  let input;
+  try {
+    const body = await request.text();
+    if (new TextEncoder().encode(body).byteLength > MAX_PUBLISHED_THEME_BYTES) {
+      return jsonResponse({ error: "Filled storefront is too large to publish." }, 413);
+    }
+    input = JSON.parse(body);
+  } catch {
+    return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+  }
+  const themeId = input?.theme_id;
+  if (!FILLED_THEME_IDS.has(themeId)) {
+    return jsonResponse({
+      error: `Theme "${cleanText(themeId, 80)}" has no verified shop-data mapping and cannot be published.`
+    }, 422);
+  }
+  if (typeof input.html !== "string" || !input.html.startsWith("<!doctype html>") ||
+      !input.html.includes(`<meta name="eshop-filled-theme" content="${themeId}">`) ||
+      input.html.includes("__ESHOP_DATA_") ||
+      /<template\b[^>]*data-repeat|data-eshop-skeleton-preview|data-eshop-skeleton-scrubber/i.test(input.html)) {
+    return jsonResponse({ error: "The theme output is incomplete; publish was stopped to avoid exposing a skeleton." }, 400);
+  }
+  if (typeof input.catalog_updated_at !== "string" || input.catalog_updated_at.length > 40) {
+    return jsonResponse({ error: "A current catalog version is required to publish a filled storefront." }, 400);
+  }
+  const snapshot = await env.DB.prepare(
+    "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
+  ).bind(tenantId).first();
+  if (!snapshot?.payload || snapshot.updated_at !== input.catalog_updated_at) {
+    return jsonResponse({ error: "The catalog changed during theme publishing. Publish again to fill the latest shop data." }, 409);
+  }
+  let catalog;
+  try {
+    catalog = JSON.parse(snapshot.payload);
+  } catch {
+    return jsonResponse({ error: "The saved catalog is invalid; publish the catalog again." }, 500);
+  }
+  if (catalog.store?.website_theme_id !== themeId) {
+    return jsonResponse({ error: "The selected theme no longer matches the published catalog." }, 409);
+  }
+
+  const version = input.catalog_updated_at.replace(/[^a-zA-Z0-9-]/g, "");
+  const key = `published-sites/${tenantId}/${themeId}/${version}.html`;
+  await env.BUSINESS_ARCHIVE.put(key, input.html, {
+    httpMetadata: { contentType: "text/html; charset=utf-8", cacheControl: "public, max-age=60" },
+    customMetadata: { themeId, catalogUpdatedAt: input.catalog_updated_at }
+  });
+  await env.TENANTS.put(`published-theme:${tenantId}`, JSON.stringify({
+    key,
+    themeId,
+    catalogUpdatedAt: input.catalog_updated_at
+  }));
+  return jsonResponse({ ok: true, theme_id: themeId, catalog_updated_at: input.catalog_updated_at });
+}
+
+async function advancePublishedThemeVersion(env, tenantId, themeId, previousUpdatedAt, updatedAt) {
+  if (!FILLED_THEME_IDS.has(themeId) || !previousUpdatedAt ||
+      !env.BUSINESS_ARCHIVE || !env.TENANTS) return;
+  const pointer = await env.TENANTS.get(`published-theme:${tenantId}`, "json");
+  if (!pointer || pointer.themeId !== themeId || pointer.catalogUpdatedAt !== previousUpdatedAt ||
+      !pointer.key?.startsWith(`published-sites/${tenantId}/${themeId}/`)) return;
+  const previous = await env.BUSINESS_ARCHIVE.get(pointer.key);
+  if (!previous || previous.customMetadata?.themeId !== themeId ||
+      previous.customMetadata?.catalogUpdatedAt !== previousUpdatedAt) return;
+  const version = updatedAt.replace(/[^a-zA-Z0-9-]/g, "");
+  const key = `published-sites/${tenantId}/${themeId}/${version}.html`;
+  const html = await new Response(previous.body).text();
+  await env.BUSINESS_ARCHIVE.put(key, html, {
+    httpMetadata: { contentType: "text/html; charset=utf-8", cacheControl: "public, max-age=60" },
+    customMetadata: { themeId, catalogUpdatedAt: updatedAt }
+  });
+  await env.TENANTS.put(`published-theme:${tenantId}`, JSON.stringify({
+    key,
+    themeId,
+    catalogUpdatedAt: updatedAt
+  }));
 }
 
 function storefrontOrderResponse(row) {
@@ -1785,16 +2217,19 @@ async function handleTenants(request, env) {
   if (await env.TENANTS.get(`tenant:${id}`)) {
     return jsonResponse({ error: "That shop address is already in use." }, 409);
   }
-  if (!await limitAuthRequests(request, env, "shop-create", 5, 3600)) {
+  if (env.DEV_SKIP_SHOP_CREATE_LIMIT !== "true" &&
+      !await limitAuthRequests(request, env, "shop-create", 5, 3600)) {
     return jsonResponse({ error: "Shop creation limit reached. Try again in an hour." }, 429);
   }
   const ownerToken = generateTenantSecret();
   const ownerTokenHash = await sha256Hex(ownerToken);
+  const createdAt = new Date().toISOString();
   const tenant = {
     id,
     name,
     owner_username: account.username,
-    created_at: new Date().toISOString(),
+    created_at: createdAt,
+    catalog_updated_at: createdAt,
     owner_token_hash: ownerTokenHash,
     owner_token_hashes: [ownerTokenHash]
   };
@@ -2306,6 +2741,13 @@ function addCloudflareMode(html) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const skeletonMatch = url.pathname.match(/^\/theme-skeletons\/([a-z0-9-]{1,64})\/(.+)$/i);
+    if (skeletonMatch) {
+      return await handleInternalThemeSkeleton(request, env, skeletonMatch[1].toLowerCase(), skeletonMatch[2]);
+    }
+    if (url.pathname.startsWith("/theme-skeletons/")) {
+      return jsonResponse({ error: "Theme template not found." }, 404);
+    }
     const themeMatch = url.pathname.match(/^\/themes\/([a-z0-9-]{1,64})\/(.+)$/i);
     if (themeMatch) {
       return await handlePublicThemeAsset(request, env, themeMatch[1].toLowerCase(), themeMatch[2]);
@@ -2315,7 +2757,7 @@ export default {
     if (url.pathname.startsWith("/api/")) {
       if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
       try {
-        const authMatch = url.pathname.match(/^\/api\/auth\/(config|session|register|login)$/);
+        const authMatch = url.pathname.match(/^\/api\/auth\/(config|session|register|login|set-recovery-email|request-reset-code|verify-reset-code|reset-password)$/);
         if (authMatch) return await handleAccountAuth(request, env, authMatch[1]);
         if (url.pathname === "/api/auth/logout" && request.method === "POST") {
           const authorization = request.headers.get("Authorization") || "";
@@ -2327,6 +2769,11 @@ export default {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
           return await handleCatalog(request, env, tenantId);
+        }
+        if (url.pathname === "/api/theme-publish") {
+          const tenantId = tenantIdFromRequest(request, env);
+          if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
+          return await handleThemePublish(request, env, tenantId);
         }
         if (url.pathname === "/api/media") {
           const tenantId = tenantIdFromRequest(request, env);
@@ -2410,43 +2857,62 @@ export default {
     }
 
     const hostTenantId = tenantIdFromRequest(request, env);
-    if (hostTenantId !== "main" && !await requireTenant(request, env, hostTenantId)) {
+    const hostTenant = await requireTenant(request, env, hostTenantId);
+    if (hostTenantId !== "main" && !hostTenant) {
       return new Response("Shop not found.", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
     }
     if (url.pathname === "/" && env.DB && env.BUSINESS_ARCHIVE) {
+      const storefrontCache = request.method === "GET" ? globalThis.caches?.default : null;
+      let catalogUpdatedAt = hostTenant?.catalog_updated_at || "";
+      let cacheKey = catalogUpdatedAt ? storefrontCacheKey(request, catalogUpdatedAt) : null;
+      if (storefrontCache && cacheKey) {
+        const cachedPage = await storefrontCache.match(cacheKey);
+        if (cachedPage) return cachedStorefrontResponse(cachedPage);
+      }
       const snapshot = await env.DB.prepare(
-        "SELECT payload FROM catalog_snapshots WHERE tenant_id = ?"
+        "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
       ).bind(hostTenantId).first();
       if (snapshot?.payload) {
+        const snapshotUpdatedAt = snapshot.updated_at || catalogUpdatedAt;
+        if (snapshotUpdatedAt && snapshotUpdatedAt !== catalogUpdatedAt) {
+          catalogUpdatedAt = snapshotUpdatedAt;
+          await recordCatalogVersion(env, hostTenantId, hostTenant, catalogUpdatedAt);
+          cacheKey = storefrontCacheKey(request, catalogUpdatedAt);
+          if (storefrontCache) {
+            const cachedPage = await storefrontCache.match(cacheKey);
+            if (cachedPage) return cachedStorefrontResponse(cachedPage);
+          }
+        }
         const catalog = JSON.parse(snapshot.payload);
         const themeId = catalog.store?.website_theme_id;
         if (themeId && themeId !== "classic") {
-          if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(themeId)) {
+          if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(themeId) || !FILLED_THEME_IDS.has(themeId)) {
             return new Response("The published theme selection is invalid.", {
-              status: 500,
-              headers: { "Content-Type": "text/plain; charset=utf-8" }
+              status: 503,
+              headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
             });
           }
-          const theme = await env.BUSINESS_ARCHIVE.get(`themes/${themeId}/index.html`);
-          if (!theme) {
-            return new Response("The published theme is unavailable.", {
+          const publishedTheme = await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
+          if (!publishedTheme ||
+              publishedTheme.themeId !== themeId ||
+              publishedTheme.catalogUpdatedAt !== snapshot.updated_at ||
+              !publishedTheme.key?.startsWith(`published-sites/${hostTenantId}/${themeId}/`)) {
+            return new Response("This theme has not been filled and published for the current shop catalog.", {
+              status: 503,
+              headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
+            });
+          }
+          const theme = await env.BUSINESS_ARCHIVE.get(publishedTheme.key);
+          if (!theme || theme.customMetadata?.themeId !== themeId ||
+              theme.customMetadata?.catalogUpdatedAt !== snapshot.updated_at) {
+            return new Response("The filled storefront is unavailable.", {
               status: 503,
               headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
             });
           }
           let html = await new Response(theme.body).text();
-          const base = `<base href="/themes/${themeId}/">`;
           const store = { ...(catalog.store || {}) };
           delete store.mobile_card_layout;
-          const catalogJson = JSON.stringify({
-            products: Array.isArray(catalog.products) ? catalog.products : [],
-            categories: Array.isArray(catalog.categories) ? catalog.categories : [],
-            store,
-            pages: Array.isArray(catalog.pages) ? catalog.pages : []
-          }).replace(/[<\u2028\u2029]/g, character =>
-            ({ "<": "\\u003c", "\u2028": "\\u2028", "\u2029": "\\u2029" })[character]);
-          const catalogBootstrap = `<script>window.__ESHOP_THEME_CATALOG__=${catalogJson};</script>`;
-          const catalogAdapter = `<script src="/theme-catalog-adapter.js" defer></script>`;
           const designJson = JSON.stringify({
             primaryColor: store.primary_color,
             backgroundColor: store.background_color,
@@ -2462,19 +2928,18 @@ export default {
             elementEdits: Array.isArray(store.element_edits) ? store.element_edits : []
           }).replace(/</g, "\\u003c");
           const editor = `<script>(()=>{const design=${designJson};const apply=()=>{const d=document;const root=d.getElementById("app")||d.body;const validColor=value=>/^#[0-9a-f]{6}$/i.test(value||"");const accent=validColor(design.primaryColor)?design.primaryColor:"#18181B";const family=value=>/^[a-z0-9 ]{1,50}$/i.test(value||"")?"'"+value+"',sans-serif":"";const bodyFont=family(design.fontFamily);const displayFont=family(design.displayFontFamily||design.fontFamily);const monoFont=family(design.monoFontFamily||design.fontFamily);const shape=design.cardShape;const radius=shape==="edgy"?"4px":shape==="pill"?"999px":shape==="rounded"?"16px":shape==="squircle"?"28px":shape==="elevated"?"14px":shape==="inset"?"8px":"0px";const card="[data-eshop-product-id],[class*='product-card'],[class*='product-tile'],[class*='product-item']";const shapes={rugged:"clip-path:polygon(0 0,92% 0,96% 8%,100% 0,100% 92%,92% 96%,100% 100%,8% 100%,4% 92%,0 100%);",slant:"clip-path:polygon(0 0,100% 0,100% 100%,8% 100%);",outlined:"border:2px solid currentColor!important;",terminal:"border:1px dashed currentColor!important;",elevated:"border-color:transparent!important;box-shadow:0 8px 24px #0002!important;",stacked:"box-shadow:4px 4px 0 currentColor!important;",inset:"box-shadow:inset 0 2px 8px #0002!important;"};const style=d.createElement("style");style.textContent=":root{--accent:"+accent+";--primary-color:"+accent+";--radius:"+radius+";--radius-sm:"+radius+";--radius-lg:"+radius+";"+(validColor(design.surfaceColor)?"--surface:"+design.surfaceColor+";":"")+"}"+(validColor(design.backgroundColor)?"body{background-color:"+design.backgroundColor+"!important;}":"")+(validColor(design.textColor)?"body{color:"+design.textColor+"!important;}":"")+(bodyFont?"body,body *{font-family:"+bodyFont+"!important;}":"")+(displayFont?"h1,h2,h3,h4,h5,h6{font-family:"+displayFont+"!important;}":"")+(monoFont?"code,pre,.mono,[class*='label']{font-family:"+monoFont+"!important;}":"")+card+"{border-radius:"+radius+"!important;"+(shapes[shape]||"")+"}";d.head.append(style);if(validColor(design.accent2Color)||validColor(design.accent3Color)){const accent2=validColor(design.accent2Color)?design.accent2Color:accent;const accent3=validColor(design.accent3Color)?design.accent3Color:accent2;const signal=d.createElement("style");signal.textContent=":root{--eshop-accent-secondary:"+accent2+";--eshop-accent-tertiary:"+accent3+";--eshop-accent-gradient:linear-gradient(110deg,"+accent+","+accent2+","+accent3+");}[type=submit],.btn-primary,[class*=button-primary],[class*=primary-button]{background:"+accent+"!important;background-image:linear-gradient(110deg,"+accent+","+accent2+","+accent3+")!important;}";d.head.append(signal)}if(bodyFont){const link=d.createElement("link");link.rel="stylesheet";link.href="https://fonts.googleapis.com/css2?family="+[design.fontFamily,design.displayFontFamily,design.monoFontFamily].filter(Boolean).map(name=>encodeURIComponent(name).replace(/%20/g,"+")+":wght@400;500;600;700").join("&family=")+"&display=swap";d.head.append(link)}for(const edit of design.elementEdits){const element=d.querySelector(edit.selector);if(!element||!root.contains(element))continue;if(edit.deleted){element.remove();continue}if(edit.kind==="text")element.textContent=edit.text;if(edit.kind==="image"&&edit.src)element.setAttribute("src",edit.src);if(edit.linkSelector){const link=d.querySelector(edit.linkSelector);if(link&&root.contains(link)){if(edit.linkDeleted)link.removeAttribute("href");else if(edit.href)link.setAttribute("href",edit.href)}}const x=Math.max(-240,Math.min(240,Number(edit.offsetX)||0));const y=Math.max(-240,Math.min(240,Number(edit.offsetY)||0));if(x||y)element.style.translate=x+"px "+y+"px";if(Number(edit.rotation))element.style.rotate=Number(edit.rotation)+"deg"}};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply,{once:true});else apply()})();</script>`;
-          html = /<head\b[^>]*>/i.test(html)
-            ? html.replace(/<head\b[^>]*>/i, match => `${match}${base}${catalogBootstrap}${catalogAdapter}`)
-            : `${base}${catalogBootstrap}${catalogAdapter}${html}`;
           html = /<\/body>/i.test(html)
             ? html.replace(/<\/body>/i, `${editor}</body>`)
             : `${html}${editor}`;
-          return new Response(addCloudflareMode(html), {
+          const response = new Response(addCloudflareMode(html), {
             headers: {
               "Cache-Control": "public, max-age=60",
               "Content-Type": theme.httpMetadata?.contentType || "text/html; charset=utf-8",
               "X-Content-Type-Options": "nosniff"
             }
           });
+          await cacheStorefrontResponse(storefrontCache, cacheKey, response);
+          return response;
         }
       }
     }

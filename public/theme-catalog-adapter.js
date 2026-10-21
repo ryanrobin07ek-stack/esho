@@ -69,10 +69,11 @@
     const accentActive = Boolean(accent && (fullFilter || accent.toLowerCase() !== "#18181b"
       || validHex(store.accent2_color) || validHex(store.accent3_color)));
     if (!accentActive && !fullFilter && !background && !surface && !text) return;
-    if (store.color_theme) document.documentElement.dataset.eshopColorFilter = store.color_theme;
-    else delete document.documentElement.dataset.eshopColorFilter;
-    if (store.design_theme) document.documentElement.dataset.designTheme = store.design_theme;
-    else delete document.documentElement.dataset.designTheme;
+    const rootData = document.documentElement.dataset;
+    if (store.color_theme) { if (rootData.eshopColorFilter !== String(store.color_theme)) rootData.eshopColorFilter = store.color_theme; }
+    else if ("eshopColorFilter" in rootData) delete rootData.eshopColorFilter;
+    if (store.design_theme) { if (rootData.designTheme !== String(store.design_theme)) rootData.designTheme = store.design_theme; }
+    else if ("designTheme" in rootData) delete rootData.designTheme;
     let style = document.getElementById("eshop-public-color-filter");
     if (!style) {
       style = document.createElement("style");
@@ -171,7 +172,7 @@
   };
   const updateBagCount = () => {
     const count = cart.reduce((total, item) => total + item.quantity, 0);
-    document.querySelectorAll("[data-eshop-bag-count]").forEach(node => { node.textContent = String(count); });
+    document.querySelectorAll("[data-eshop-bag-count]").forEach(node => { if (node.textContent !== String(count)) node.textContent = String(count); });
   };
   const ensureCommerceDialog = () => {
     if (commerceDialog) return commerceDialog;
@@ -215,6 +216,8 @@
       image.src = imageSource;
       image.alt = String(product.name || "Product");
       image.loading = "lazy";
+      image.width = 800;
+      image.height = 800;
       image.style.cssText = "width:100%;max-height:320px;object-fit:cover;border-radius:12px;background:var(--surface-2,#eee)";
       panel.append(image);
     }
@@ -442,13 +445,18 @@
       if (image.getAttribute("alt") !== String(product.name || "Product")) {
         image.setAttribute("alt", String(product.name || "Product"));
       }
+      if (image.loading !== "lazy") image.loading = "lazy";
+      if (image.width !== 800) image.width = 800;
+      if (image.height !== 920) image.height = 920;
     }
     const productLink = card.querySelector("a[href]");
     if (productLink) {
-      productLink.href = `#eshop-product-${encodeURIComponent(id)}`;
-      productLink.dataset.eshopProductOpen = "";
-      productLink.dataset.productId = id;
-      productLink.setAttribute("aria-label", `View ${product.name || "product"} details`);
+      const linkHref = `#eshop-product-${encodeURIComponent(id)}`;
+      const linkLabel = `View ${product.name || "product"} details`;
+      if (productLink.getAttribute("href") !== linkHref) productLink.setAttribute("href", linkHref);
+      setData(productLink, "eshopProductOpen", "");
+      setData(productLink, "productId", id);
+      if (productLink.getAttribute("aria-label") !== linkLabel) productLink.setAttribute("aria-label", linkLabel);
     }
     let addButton = card.querySelector("[data-eshop-add-to-bag]");
     if (!addButton) {
@@ -573,6 +581,8 @@
         image.src = source;
         image.alt = String(product.name || "Product");
         image.loading = "lazy";
+        image.width = 800;
+        image.height = 800;
         image.style.cssText = "width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;background:var(--surface-2,#eee)";
         card.append(image);
       }
@@ -828,7 +838,38 @@
     applyContactFooter();
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", apply, { once: true });
-  else apply();
-  new MutationObserver(() => apply()).observe(document.documentElement, { childList: true, subtree: true });
+  // The observer is paused while apply() runs, so the adapter's own DOM writes
+  // can never re-trigger it. Theme-made changes are batched into one pass.
+  const observerOptions = { childList: true, subtree: true };
+  let observer = null;
+  let applyTimer = 0;
+  let passTimes = [];
+  function safeApply() {
+    applyTimer = 0;
+    const now = Date.now();
+    passTimes = passTimes.filter(time => now - time < 1000);
+    if (passTimes.length >= 10) {
+      console.warn("[eshop adapter] throttled: too many re-applies per second");
+      applyTimer = setTimeout(safeApply, 500);
+      return;
+    }
+    passTimes.push(now);
+    if (observer) observer.disconnect();
+    try {
+      apply();
+    } finally {
+      if (observer) {
+        observer.takeRecords();
+        observer.observe(document.documentElement, observerOptions);
+      }
+    }
+  }
+  function scheduleApply() {
+    if (!applyTimer) applyTimer = setTimeout(safeApply, 60);
+  }
+
+  observer = new MutationObserver(scheduleApply);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", safeApply, { once: true });
+  else safeApply();
+  observer.observe(document.documentElement, observerOptions);
 })();

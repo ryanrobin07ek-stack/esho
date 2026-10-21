@@ -1,0 +1,3852 @@
+<!doctype html>
+<html lang="en" data-eshop-skeleton-preview="">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Store</title>
+    <meta name="description" content="" />
+    <meta property="og:title" content="" />
+    <meta property="og:description" content="" />
+    <meta property="og:type" content="" />
+    <meta property="og:image" content="" />
+    <meta name="twitter:card" content="" />
+    <meta name="twitter:title" content="" />
+    <meta name="twitter:description" content="" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Schema.org Organization Structured Data -->
+    
+
+    <!-- External Browser-Compatible Libraries (CDN) -->
+    <!-- 1. GSAP Core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <!-- 2. GSAP ScrollTrigger Plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <!-- 3. Paystack Official Inline Checkout SDK -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+
+    <!-- Master CSS Stylesheet -->
+    <style>
+/* ==========================================================================
+   AUREX Precision Electronics — Master CSS Design System
+   Architecture: Pure CSS3, Semantic Responsive Tokens, Light Luxury Theme
+   ========================================================================== */
+
+:root {
+  /* Color Palette — Refined Porcelain Foundation & Deep Cobalt Accent */
+  --bg-body: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #f1f5f9;
+  --bg-surface-elevated: #ffffff;
+  --bg-dark-hero: #090d16;
+  --bg-dark-hero-surface: #111827;
+
+  --border-subtle: #f1f5f9;
+  --border-base: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-dark: rgba(255, 255, 255, 0.12);
+
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-light: #64748b;
+  --text-faint: #94a3b8;
+  --text-inverted: #f8fafc;
+  --text-inverted-muted: #94a3b8;
+
+  --accent: #1d4ed8;
+  --accent-hover: #1e40af;
+  --accent-light: #eff6ff;
+  --accent-border: #bfdbfe;
+
+  --warm-gold: #b45309;
+  --warm-gold-bg: #fef3c7;
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+
+  /* Typography */
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Geometry & Elevation */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --shadow-floating: 0 25px 50px -12px rgba(15, 23, 42, 0.18);
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  --container-max: 1360px;
+}
+
+/* Base Reset & Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-body);
+  color: var(--text-main);
+  background-color: var(--bg-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  background-color: var(--bg-body);
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Layout Utilities */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+/* Header & Navigation Bar */
+.top-announcement {
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.top-announcement a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: #93c5fd;
+}
+.announcement-currency {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-base);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.site-header.scrolled {
+  background-color: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 4.5rem;
+  gap: 1.5rem;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-main);
+}
+.brand-logo .brand-mark {
+  width: 2rem;
+  height: 2rem;
+  background: var(--text-main);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.05em;
+}
+.brand-tagline {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-weight: 600;
+  display: block;
+}
+
+.main-nav {
+  display: none;
+  align-items: center;
+  gap: 1.75rem;
+}
+@media (min-width: 1024px) {
+  .main-nav {
+    display: flex;
+  }
+}
+.nav-link {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color var(--duration-fast);
+  position: relative;
+  padding: 0.5rem 0;
+}
+.nav-link:hover, .nav-link.active {
+  color: var(--accent);
+}
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--accent);
+  border-radius: 2px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.search-bar-wrap {
+  position: relative;
+  width: 220px;
+  display: none;
+}
+@media (min-width: 768px) {
+  .search-bar-wrap {
+    display: block;
+  }
+}
+@media (min-width: 1200px) {
+  .search-bar-wrap {
+    width: 280px;
+  }
+}
+.search-input {
+  width: 100%;
+  height: 2.375rem;
+  padding: 0 0.875rem 0 2.25rem;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface-alt);
+  font-size: 0.875rem;
+  color: var(--text-main);
+  transition: all var(--duration-fast);
+}
+.search-input:focus {
+  outline: none;
+  background-color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+}
+.search-icon-btn {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  pointer-events: none;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  position: relative;
+  transition: all var(--duration-fast);
+  border: 1px solid transparent;
+}
+.icon-btn:hover {
+  background-color: var(--bg-surface-alt);
+  color: var(--text-main);
+  border-color: var(--border-base);
+}
+.badge-count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background-color: var(--accent);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.25rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Secondary Category Strip */
+.category-strip {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-base);
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.category-strip::-webkit-scrollbar {
+  display: none;
+}
+.category-strip-inner {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0.625rem 1.5rem;
+}
+.category-strip-link {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.category-strip-link:hover, .category-strip-link.active {
+  color: var(--accent);
+  background-color: var(--accent-light);
+}
+
+/* Main Content Area */
+#app {
+  flex: 1;
+}
+
+/* Screen Transitions */
+.screen-view {
+  display: none;
+  animation: fadeIn 0.25s var(--ease-out) forwards;
+}
+.screen-view.active {
+  display: block;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --------------------------------------------------------------------------
+   CINEMATIC HERO SECTION
+   -------------------------------------------------------------------------- */
+.hero-section {
+  position: relative;
+  background: radial-gradient(circle at 65% 30%, #172554 0%, #090d16 60%, #030712 100%);
+  color: #f8fafc;
+  overflow: hidden;
+  padding: 4rem 0 5rem;
+  min-height: calc(90vh - 4.5rem);
+  display: flex;
+  align-items: center;
+}
+.hero-noise {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 0);
+  background-size: 32px 32px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+.hero-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, rgba(37, 99, 235, 0) 70%);
+  top: 10%;
+  right: 15%;
+  filter: blur(60px);
+  pointer-events: none;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1.1fr 1fr;
+    gap: 4rem;
+  }
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  margin-bottom: 1rem;
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+}
+.hero-title span {
+  background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-desc {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  max-width: 520px;
+  margin-bottom: 2rem;
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px 0 rgba(29, 78, 216, 0.39);
+  transition: all var(--duration-fast);
+}
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px 0 rgba(29, 78, 216, 0.45);
+}
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  padding: 0.875rem 1.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  transition: all var(--duration-fast);
+}
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.hero-stat-val {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+.hero-stat-lbl {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.25rem;
+}
+
+/* Hero Visual Composition */
+.hero-visual-stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.hero-product-frame {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-main-img {
+  width: 90%;
+  height: 90%;
+  object-fit: cover;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform-origin: center;
+  transition: transform 0.5s ease;
+}
+.hero-floating-spec {
+  position: absolute;
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 0.875rem 1.125rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  font-size: 0.8125rem;
+  color: #ffffff;
+}
+.spec-tag-top {
+  top: 10%;
+  left: -5%;
+}
+.spec-tag-bottom {
+  bottom: 8%;
+  right: -5%;
+}
+.spec-highlight {
+  font-weight: 700;
+  color: #93c5fd;
+  display: block;
+  font-size: 1rem;
+  font-family: var(--font-display);
+}
+
+/* --------------------------------------------------------------------------
+   BRAND FEATURES STRIP
+   -------------------------------------------------------------------------- */
+.trust-strip {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-base);
+  padding: 2.25rem 0;
+}
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+}
+@media (min-width: 640px) {
+  .trust-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .trust-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.trust-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.trust-icon-box {
+  width: 2.75rem;
+  height: 2.75rem;
+  background-color: var(--accent-light);
+  color: var(--accent);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.trust-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.2rem;
+}
+.trust-sub {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------------------------------
+   SECTION HEADINGS & EDITORIAL
+   -------------------------------------------------------------------------- */
+.section-header {
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+@media (min-width: 768px) {
+  .section-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+}
+.section-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-main);
+}
+.section-desc {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  max-width: 540px;
+}
+.link-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--accent);
+  transition: gap var(--duration-fast);
+}
+.link-action:hover {
+  gap: 0.6rem;
+  color: var(--accent-hover);
+}
+
+/* --------------------------------------------------------------------------
+   PRODUCT CARDS SYSTEM
+   -------------------------------------------------------------------------- */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+}
+@media (min-width: 540px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 900px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1200px) {
+  .products-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.product-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all var(--duration-normal) var(--ease-out);
+  position: relative;
+}
+.product-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-media {
+  position: relative;
+  background-color: #f1f5f9;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  cursor: pointer;
+}
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease-out);
+}
+.product-card:hover .card-img {
+  transform: scale(1.05);
+}
+
+.card-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: rgba(15, 23, 42, 0.85);
+  color: #fff;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+.card-badge.sale {
+  background-color: var(--danger);
+}
+.card-badge.flagship {
+  background-color: var(--accent);
+}
+
+.card-actions-float {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  z-index: 3;
+  opacity: 0.9;
+}
+.card-float-btn {
+  width: 2rem;
+  height: 2rem;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all var(--duration-fast);
+}
+.card-float-btn:hover {
+  background: #fff;
+  color: var(--accent);
+  transform: scale(1.08);
+}
+.card-float-btn.active {
+  color: var(--danger);
+}
+
+.card-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Anti-AI Slop: Quiet inline unboxed metadata */
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-bottom: 0.35rem;
+}
+.card-brand {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: color var(--duration-fast);
+}
+.card-title:hover {
+  color: var(--accent);
+}
+
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--warm-gold);
+  margin-bottom: 0.75rem;
+}
+.rating-num {
+  font-weight: 700;
+  color: var(--text-main);
+}
+.review-count {
+  color: var(--text-faint);
+}
+
+.card-price-row {
+  margin-top: auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
+}
+.card-prices {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.current-price {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.original-price {
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.card-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background-color: var(--bg-surface-alt);
+  color: var(--text-main);
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all var(--duration-fast);
+}
+.card-add-btn:hover {
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   CATEGORY SHOWCASE SECTION
+   -------------------------------------------------------------------------- */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+@media (min-width: 640px) {
+  .categories-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .categories-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+.category-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  transition: all var(--duration-fast);
+  cursor: pointer;
+}
+.category-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+.category-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 0.875rem;
+  background: var(--bg-surface-alt);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  transition: transform var(--duration-fast);
+}
+.category-card:hover .category-icon {
+  transform: scale(1.1);
+  background-color: var(--accent-light);
+}
+.category-name {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.category-count {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 0.2rem;
+}
+
+/* --------------------------------------------------------------------------
+   HORIZONTAL PINNED SHOWCASE (GSAP Parallax Banner)
+   -------------------------------------------------------------------------- */
+.editorial-banner-section {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 5rem 0;
+  position: relative;
+  overflow: hidden;
+  margin: 4rem 0;
+}
+.banner-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+@media (min-width: 1024px) {
+  .banner-grid {
+    grid-template-columns: 1fr 1.2fr;
+  }
+}
+.banner-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #93c5fd;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.banner-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 1rem 0;
+}
+.banner-desc {
+  color: #cbd5e1;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+.banner-media-container {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+.banner-media-container img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+/* --------------------------------------------------------------------------
+   CATALOG SCREEN & FILTER LAYOUT
+   -------------------------------------------------------------------------- */
+.shop-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding: 2.5rem 0;
+}
+@media (min-width: 1024px) {
+  .shop-layout {
+    grid-template-columns: 260px 1fr;
+  }
+}
+
+.filters-sidebar {
+  background: #ffffff;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  height: fit-content;
+}
+.filter-group {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.filter-group:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.filter-title {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin-bottom: 0.875rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.filter-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.filter-item-label {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.filter-item-label:hover {
+  color: var(--text-main);
+}
+.filter-checkbox {
+  accent-color: var(--accent);
+  width: 1rem;
+  height: 1rem;
+}
+
+.price-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.price-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.price-input {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+}
+
+.shop-top-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  background: #ffffff;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+}
+.results-count {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+.results-count strong {
+  color: var(--text-main);
+}
+.sort-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+.sort-select {
+  padding: 0.375rem 2rem 0.375rem 0.75rem;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-alt);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   PRODUCT DETAILS SCREEN
+   -------------------------------------------------------------------------- */
+.pdp-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  padding: 2.5rem 0;
+}
+@media (min-width: 1024px) {
+  .pdp-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.pdp-gallery-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.pdp-main-image-box {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #ffffff;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  position: relative;
+}
+.pdp-main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.pdp-thumbs-row {
+  display: flex;
+  gap: 0.75rem;
+}
+.pdp-thumb-btn {
+  width: 5rem;
+  height: 5rem;
+  border: 2px solid var(--border-base);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  background: #fff;
+  transition: border-color var(--duration-fast);
+}
+.pdp-thumb-btn.active {
+  border-color: var(--accent);
+}
+.pdp-thumb-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pdp-info-panel {
+  display: flex;
+  flex-direction: column;
+}
+.pdp-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  color: var(--text-light);
+  margin-bottom: 1rem;
+}
+.pdp-brand-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+.pdp-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin: 0.35rem 0 0.875rem;
+}
+.pdp-ratings-stock {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.in-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--success);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.pdp-price-box {
+  background: var(--bg-surface-alt);
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-base);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+.pdp-price {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.pdp-orig-price {
+  font-size: 1.125rem;
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.pdp-variants-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+.variant-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+.variant-options-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.variant-pill-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: #ffffff;
+  transition: all var(--duration-fast);
+}
+.variant-pill-btn:hover {
+  border-color: var(--border-strong);
+}
+.variant-pill-btn.active {
+  background: var(--text-main);
+  color: #fff;
+  border-color: var(--text-main);
+}
+
+.pdp-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  background: #fff;
+  height: 3.25rem;
+}
+.qty-btn {
+  width: 2.5rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 1.125rem;
+  transition: background-color var(--duration-fast);
+}
+.qty-btn:hover {
+  background: var(--bg-surface-alt);
+}
+.qty-display {
+  width: 2.5rem;
+  text-align: center;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.pdp-specs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+}
+.pdp-specs-table tr {
+  border-bottom: 1px solid var(--border-subtle);
+}
+.pdp-specs-table td {
+  padding: 0.75rem 0;
+  font-size: 0.875rem;
+}
+.pdp-specs-table td:first-child {
+  color: var(--text-muted);
+  width: 40%;
+  font-weight: 500;
+}
+.pdp-specs-table td:last-child {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   CART & CHECKOUT SCREENS
+   -------------------------------------------------------------------------- */
+.cart-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  padding: 3rem 0;
+}
+@media (min-width: 1024px) {
+  .cart-layout {
+    grid-template-columns: 1.6fr 1fr;
+  }
+}
+
+.cart-table-wrap {
+  background: #fff;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.cart-item-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  align-items: center;
+}
+.cart-item-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+.cart-item-info h4 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.cart-item-meta {
+  font-size: 0.8125rem;
+  color: var(--text-light);
+}
+.cart-item-price {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 0.25rem;
+}
+
+.order-summary-card {
+  background: #fff;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  height: fit-content;
+}
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  margin-bottom: 0.875rem;
+}
+.summary-line.total {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-base);
+  margin-top: 1rem;
+}
+
+.coupon-box {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.25rem 0;
+}
+.coupon-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+/* Paystack Checkout Adapter Box */
+.paystack-adapter-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+.paystack-badge-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+}
+.paystack-logo-text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: #00c3f7;
+  background: #092c4c;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  letter-spacing: 0.05em;
+}
+.demo-mode-pill {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   COMPARISON MATRIX SCREEN
+   -------------------------------------------------------------------------- */
+.compare-container {
+  padding: 3rem 0;
+  overflow-x: auto;
+}
+.compare-table {
+  width: 100%;
+  min-width: 800px;
+  background: #fff;
+  border: 1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  border-collapse: collapse;
+}
+.compare-table th, .compare-table td {
+  padding: 1.25rem;
+  border: 1px solid var(--border-subtle);
+  text-align: left;
+  font-size: 0.875rem;
+}
+.compare-table th {
+  background: var(--bg-surface-alt);
+  font-family: var(--font-display);
+  font-weight: 700;
+  width: 25%;
+}
+
+/* --------------------------------------------------------------------------
+   FOOTER
+   -------------------------------------------------------------------------- */
+.site-footer {
+  background: #090d16;
+  color: #94a3b8;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 4.5rem 0 2rem;
+  margin-top: auto;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  margin-bottom: 4rem;
+}
+@media (min-width: 640px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr 1.2fr;
+  }
+}
+
+.footer-brand h3 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+}
+.footer-brand p {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  max-width: 320px;
+  margin-bottom: 1.5rem;
+}
+
+.footer-col h4 {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
+}
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.footer-links a {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  transition: color var(--duration-fast);
+}
+.footer-links a:hover {
+  color: #ffffff;
+}
+
+.footer-bottom {
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  font-size: 0.8125rem;
+  text-align: center;
+}
+@media (min-width: 768px) {
+  .footer-bottom {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   MODAL & TOAST NOTIFICATION SYSTEMS
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal-card {
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-floating);
+  position: relative;
+  padding: 2rem;
+  animation: modalPop 0.25s var(--ease-out);
+}
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+.modal-close-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  transition: all var(--duration-fast);
+}
+.modal-close-btn:hover {
+  background: var(--border-base);
+  color: var(--text-main);
+}
+
+/* Toast System */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+.toast-msg {
+  pointer-events: auto;
+  background: #0f172a;
+  color: #ffffff;
+  border-left: 4px solid var(--accent);
+  padding: 0.875rem 1.25rem;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideToast 0.3s var(--ease-out) forwards;
+}
+@keyframes slideToast {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Mobile Drawer Navigation */
+.mobile-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+  display: none;
+}
+.mobile-drawer-overlay.active {
+  display: block;
+}
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 82%;
+  max-width: 340px;
+  background: #ffffff;
+  z-index: 95;
+  transform: translateX(-100%);
+  transition: transform var(--duration-normal) var(--ease-out);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.mobile-drawer.active {
+  transform: translateX(0);
+}
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-base);
+}
+.drawer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  list-style: none;
+}
+.drawer-link {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+    </style>
+  <link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-eshop-skeleton-styles="">.eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:#d1d5db;vertical-align:middle}.eshop-placeholder-media{background:linear-gradient(135deg,#d1d5db,#f3f4f6);object-fit:cover}</style></head>
+  <body>
+    <!-- Top Announcement Bar -->
+    <div class="top-announcement">
+      <div class="container" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+        <div>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+          <a href="#/deals"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></a>
+        </div>
+        <div class="announcement-currency">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+          <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></strong>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="site-header">
+      <div class="container header-inner">
+        <!-- Brand Wordmark & Logo -->
+        <a href="#/" class="brand-logo">
+          <div class="brand-mark"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+          <div>
+            <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></div>
+            <span class="brand-tagline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <nav class="main-nav">
+          <a href="#/" class="nav-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+          <a href="#/shop" class="nav-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></a>
+          <a href="#/category?id=smartphones" class="nav-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></a>
+          <a href="#/category?id=laptops" class="nav-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></a>
+          <a href="#/category?id=audio" class="nav-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></a>
+          <a href="#/deals" class="nav-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></a>
+          <a href="#/compare" class="nav-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></a>
+          <a href="#/about" class="nav-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></a>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <!-- Live Search Bar -->
+          <form id="header-search-form" class="search-bar-wrap" role="search">
+            <span class="search-icon-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input type="search" id="header-search-input" class="search-input" autocomplete="off">
+          </form>
+
+          <!-- Compare Counter Button -->
+          <a href="#/compare" class="icon-btn">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+            <span id="header-compare-count" class="badge-count"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+          </a>
+
+          <!-- Wishlist Counter Button -->
+          <a href="#/wishlist" class="icon-btn">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            <span id="header-wish-count" class="badge-count"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+          </a>
+
+          <!-- Shopping Cart Button -->
+          <a href="#/cart" class="icon-btn">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-3z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            <span id="header-cart-count" class="badge-count"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+          </a>
+
+          <!-- User Account Button -->
+          <a href="#/account" class="icon-btn">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </a>
+
+          <!-- Mobile Hamburger Toggle -->
+          <button class="icon-btn" style="display:inline-flex;" onclick="window.aurexApp.toggleMobileDrawer(true)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Secondary Category Navigation Strip -->
+      <div class="category-strip">
+        <div class="container category-strip-inner">
+          <a href="#/category?id=smartphones" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a>
+          <a href="#/category?id=laptops" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></a>
+          <a href="#/category?id=tablets" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></a>
+          <a href="#/category?id=audio" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></a>
+          <a href="#/category?id=cameras" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+          <a href="#/category?id=gaming" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a>
+          <a href="#/category?id=wearables" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></a>
+          <a href="#/category?id=displays" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a>
+          <a href="#/category?id=accessories" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+          <a href="#/category?id=smarthome" class="category-strip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Primary Application Stage (Client-Side Routed) -->
+    <main id="app">
+      <!-- Injected dynamically by handleRoute() -->
+    </main>
+
+    <!-- Master Footer -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <!-- Col 1: Brand Philosophy -->
+          <div class="footer-brand">
+            <h3><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></h3>
+            <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <div style="font-size:0.8125rem; color:#64748b;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+          </div>
+
+          <!-- Col 2: Hardware Categories -->
+          <div class="footer-col">
+            <h4><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h4>
+            <ul class="footer-links">
+              <li><a href="#/category?id=smartphones"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></a></li>
+              <li><a href="#/category?id=laptops"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></a></li>
+              <li><a href="#/category?id=tablets"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></a></li>
+              <li><a href="#/category?id=audio"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></a></li>
+              <li><a href="#/category?id=cameras"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></a></li>
+              <li><a href="#/category?id=gaming"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></a></li>
+              <li><a href="#/category?id=wearables"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Customer Concierge -->
+          <div class="footer-col">
+            <h4><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h4>
+            <ul class="footer-links">
+              <li><a href="#/shipping"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></a></li>
+              <li><a href="#/warranty"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></a></li>
+              <li><a href="#/faq"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></a></li>
+              <li><a href="#/contact"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></a></li>
+              <li><a href="#/account"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></a></li>
+              <li><a href="#/compare"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></a></li>
+            </ul>
+          </div>
+
+          <!-- Col 4: Trust & Paystack Security -->
+          <div class="footer-col">
+            <h4><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h4>
+            <p style="font-size:0.8125rem; line-height:1.6; margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; font-family:var(--font-mono); font-size:0.6875rem;">
+              <span style="background:rgba(255,255,255,0.08); padding:0.25rem 0.5rem; border-radius:var(--radius-sm); color:#e2e8f0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></span>
+              <span style="background:rgba(255,255,255,0.08); padding:0.25rem 0.5rem; border-radius:var(--radius-sm); color:#e2e8f0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></span>
+              <span style="background:rgba(255,255,255,0.08); padding:0.25rem 0.5rem; border-radius:var(--radius-sm); color:#e2e8f0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Bottom Legal Strip -->
+        <div class="footer-bottom">
+          <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+          <div style="display:flex; gap:1.5rem;">
+            <a href="#/legal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a>
+            <a href="#/legal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></a>
+            <a href="#/warranty"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Quick View Modal Container -->
+    <div id="quickview-modal" class="modal-overlay" onclick="window.aurexApp.closeQuickView()">
+      <div class="modal-card" onclick="event.stopPropagation()">
+        <button class="modal-close-btn" onclick="window.aurexApp.closeQuickView()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button>
+        <div id="quickview-content"></div>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="drawer-overlay" class="mobile-drawer-overlay" onclick="window.aurexApp.toggleMobileDrawer(false)"></div>
+    <div id="mobile-drawer" class="mobile-drawer">
+      <div class="drawer-header">
+        <a href="#/" class="brand-logo" onclick="window.aurexApp.toggleMobileDrawer(false)">
+          <div class="brand-mark"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></span>
+        </a>
+        <button class="icon-btn" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button>
+      </div>
+      <ul class="drawer-links">
+        <li><a href="#/" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a></li>
+        <li><a href="#/shop" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></a></li>
+        <li><a href="#/category?id=smartphones" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a></li>
+        <li><a href="#/category?id=laptops" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></a></li>
+        <li><a href="#/category?id=audio" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a></li>
+        <li><a href="#/category?id=cameras" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></a></li>
+        <li><a href="#/category?id=gaming" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a></li>
+        <li><a href="#/deals" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></a></li>
+        <li><a href="#/compare" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a></li>
+        <li><a href="#/account" class="drawer-link" onclick="window.aurexApp.toggleMobileDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></a></li>
+      </ul>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Application JavaScript Engine -->
+    <script>
+      // 104 Rich Electronics Catalog Embedded Directly
+      window.AUREX_PRODUCTS = /*__ESHOP_DATA_products__*/ [{"id":"aurex-phone-16-pro-max","name":"AUREX Titan 16 Pro Max","brand":"AUREX Studio","category":"smartphones","price":245000,"originalPrice":265000,"rating":4.9,"reviewsCount":342,"badge":"Flagship","image":"https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=1000&q=85","gallery":["https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=1000&q=85","https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1000&q=85","https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=1000&q=85"],"description":"Grade 5 titanium chassis housing the 3nm A18 Bionic architecture. ProMotion 120Hz Super Retina XDR display with 2500 nits peak brightness and optical periscope telephoto.","specs":{"Display":"6.9-inch OLED 120Hz","Processor":"A18 Pro (3nm)","Storage":"512GB NVMe","Camera":"48MP Quad-Pixel + 5x Optical","Battery":"4685mAh Fast-Charge","Weight":"227g"},"variants":{"colors":["Natural Titanium","Desert Sand","Black Titanium"],"storage":["256GB","512GB","1TB"]},"featured":true,"deal":false}];
+
+      // Master Application Engine
+      /* ==========================================================================
+   AUREX Precision Electronics — Master Vanilla JS Application Engine
+   Features: Hash Client-Side Router, State Management, GSAP Timelines,
+             Paystack Payment Architecture, 104 Products Catalog, Interactive Modals
+   ========================================================================== */
+
+(function () {
+  'use strict';
+
+  // --------------------------------------------------------------------------
+  // 1. GLOBAL STATE & PERSISTENCE
+  // --------------------------------------------------------------------------
+  const APP_STATE = {
+    cart: JSON.parse(localStorage.getItem('aurex_cart') || '[]'),
+    wishlist: JSON.parse(localStorage.getItem('aurex_wishlist') || '[]'),
+    compare: JSON.parse(localStorage.getItem('aurex_compare') || '[]'),
+    recent: JSON.parse(localStorage.getItem('aurex_recent') || '[]'),
+    appliedCoupon: JSON.parse(localStorage.getItem('aurex_coupon') || 'null'),
+    paystackConfig: {
+      publicKey: 'pk_test_sample_key_placeholder',
+      currency: 'KES',
+      isDemo: true // Enabled by default for reliable client-side operation
+    },
+    activeFilters: {
+      category: 'all',
+      brand: 'all',
+      maxPrice: 900000,
+      search: '',
+      inStockOnly: false,
+      sortBy: 'featured'
+    }
+  };
+
+  // Safe localStorage persistence
+  function saveState(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      console.warn('Storage quota exceeded or restricted', e);
+    }
+  }
+
+  // Currency Formatter for Kenyan Shillings (KES)
+  const currencyFormatter = new Intl.NumberFormat('en-KE', {
+    style: 'currency',
+    currency: 'KES',
+    maximumFractionDigits: 0
+  });
+
+  function formatKSh(amount) {
+    if (typeof amount !== 'number') return 'KSh 0';
+    return currencyFormatter.format(amount).replace('KES', 'KSh');
+  }
+
+  // --------------------------------------------------------------------------
+  // 2. TOAST NOTIFICATION ENGINE
+  // --------------------------------------------------------------------------
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast-msg toast-${type}`;
+    toast.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span>${escapeHTML(message)}</span>
+    `;
+
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(30px)';
+      toast.style.transition = 'all 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 3200);
+  }
+
+  function escapeHTML(str) {
+    if (!str) return '';
+    return str.replace(/[&<>'"]/g, tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag));
+  }
+
+  // --------------------------------------------------------------------------
+  // 3. CART, WISHLIST & COMPARISON OPERATIONS
+  // --------------------------------------------------------------------------
+  function addToCart(productId, qty = 1, selectedVariant = null) {
+    const product = window.AUREX_PRODUCTS.find(p => p.id === productId);
+    if (!product) return;
+
+    const variantKey = selectedVariant ? JSON.stringify(selectedVariant) : 'standard';
+    const existingIndex = APP_STATE.cart.findIndex(
+      item => item.id === productId && item.variantKey === variantKey
+    );
+
+    if (existingIndex > -1) {
+      APP_STATE.cart[existingIndex].qty += qty;
+    } else {
+      APP_STATE.cart.push({
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        price: product.price,
+        image: product.image,
+        category: product.category,
+        variantKey: variantKey,
+        variantDetails: selectedVariant,
+        qty: qty
+      });
+    }
+
+    saveState('aurex_cart', APP_STATE.cart);
+    updateHeaderCounters();
+    showToast(`Added "${product.name}" to cart`, 'success');
+  }
+
+  function removeFromCart(index) {
+    if (APP_STATE.cart[index]) {
+      const removed = APP_STATE.cart.splice(index, 1);
+      saveState('aurex_cart', APP_STATE.cart);
+      updateHeaderCounters();
+      renderCartScreen();
+      showToast(`Removed "${removed[0].name}" from cart`, 'info');
+    }
+  }
+
+  function updateCartQty(index, delta) {
+    if (APP_STATE.cart[index]) {
+      APP_STATE.cart[index].qty += delta;
+      if (APP_STATE.cart[index].qty <= 0) {
+        removeFromCart(index);
+        return;
+      }
+      saveState('aurex_cart', APP_STATE.cart);
+      updateHeaderCounters();
+      renderCartScreen();
+    }
+  }
+
+  function toggleWishlist(productId) {
+    const product = window.AUREX_PRODUCTS.find(p => p.id === productId);
+    if (!product) return;
+
+    const idx = APP_STATE.wishlist.indexOf(productId);
+    if (idx > -1) {
+      APP_STATE.wishlist.splice(idx, 1);
+      showToast(`Removed from wishlist`, 'info');
+    } else {
+      APP_STATE.wishlist.push(productId);
+      showToast(`Saved to wishlist`, 'success');
+    }
+    saveState('aurex_wishlist', APP_STATE.wishlist);
+    updateHeaderCounters();
+    // Refresh card states if in view
+    document.querySelectorAll(`.card-wishlist-btn[data-id="${productId}"]`).forEach(btn => {
+      btn.classList.toggle('active', APP_STATE.wishlist.includes(productId));
+    });
+  }
+
+  function toggleCompare(productId) {
+    const product = window.AUREX_PRODUCTS.find(p => p.id === productId);
+    if (!product) return;
+
+    const idx = APP_STATE.compare.indexOf(productId);
+    if (idx > -1) {
+      APP_STATE.compare.splice(idx, 1);
+      showToast(`Removed from comparison`, 'info');
+    } else {
+      if (APP_STATE.compare.length >= 4) {
+        showToast(`You can compare up to 4 devices simultaneously`, 'warning');
+        return;
+      }
+      APP_STATE.compare.push(productId);
+      showToast(`Added to comparison matrix`, 'success');
+    }
+    saveState('aurex_compare', APP_STATE.compare);
+    updateHeaderCounters();
+  }
+
+  function recordRecentlyViewed(productId) {
+    if (!APP_STATE.recent.includes(productId)) {
+      APP_STATE.recent.unshift(productId);
+      if (APP_STATE.recent.length > 8) APP_STATE.recent.pop();
+      saveState('aurex_recent', APP_STATE.recent);
+    }
+  }
+
+  function updateHeaderCounters() {
+    const cartCountEl = document.getElementById('header-cart-count');
+    const wishCountEl = document.getElementById('header-wish-count');
+    const compareCountEl = document.getElementById('header-compare-count');
+
+    const totalQty = APP_STATE.cart.reduce((sum, item) => sum + item.qty, 0);
+    if (cartCountEl) cartCountEl.textContent = totalQty;
+    if (wishCountEl) wishCountEl.textContent = APP_STATE.wishlist.length;
+    if (compareCountEl) compareCountEl.textContent = APP_STATE.compare.length;
+  }
+
+  // --------------------------------------------------------------------------
+  // 4. GSAP & SCROLLTRIGGER INITIALIZATION ENGINE
+  // --------------------------------------------------------------------------
+  function initGSAPAnimations() {
+    // Check reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      console.info('GSAP motion skipped: prefers-reduced-motion active.');
+      return;
+    }
+
+    if (!window.gsap) {
+      console.warn('GSAP library not detected. Application remains fully operational via CSS.');
+      return;
+    }
+
+    try {
+      if (window.ScrollTrigger) {
+        gsap.registerPlugin(ScrollTrigger);
+      }
+
+      // Hero Entrance Timeline
+      const heroTimeline = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.9 } });
+      heroTimeline
+        .from('.hero-eyebrow', { opacity: 0, y: -20, delay: 0.1 })
+        .from('.hero-title', { opacity: 0, y: 30, duration: 1.1 }, '-=0.6')
+        .from('.hero-desc', { opacity: 0, y: 20 }, '-=0.7')
+        .from('.hero-actions', { opacity: 0, y: 20 }, '-=0.7')
+        .from('.hero-stats', { opacity: 0, y: 20 }, '-=0.6')
+        .from('.hero-main-img', { opacity: 0, scale: 0.88, duration: 1.2, ease: 'power2.out' }, '-=1.2')
+        .from('.hero-floating-spec', { opacity: 0, scale: 0.85, stagger: 0.2 }, '-=0.7');
+
+      // ScrollTrigger Parallax on Hero elements
+      if (window.ScrollTrigger && document.querySelector('.hero-section')) {
+        gsap.to('.hero-main-img', {
+          yPercent: 20,
+          scale: 1.05,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.hero-section',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true
+          }
+        });
+
+        gsap.to('.hero-floating-spec', {
+          yPercent: -35,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.hero-section',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: true
+          }
+        });
+      }
+
+      // Stagger Reveal for Product Cards
+      if (window.ScrollTrigger) {
+        ScrollTrigger.batch('.product-card', {
+          onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, stagger: 0.08, duration: 0.6, overwrite: true }),
+          start: 'top 88%'
+        });
+
+        // Banner Image Scrub Parallax
+        if (document.querySelector('.banner-media-container img')) {
+          gsap.to('.banner-media-container img', {
+            yPercent: -15,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: '.editorial-banner-section',
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: true
+            }
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('GSAP animation sequence encountered notice:', err);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // 5. PAYSTACK INTEGRATION ARCHITECTURE & ADAPTER
+  // --------------------------------------------------------------------------
+  /*
+   * SECURITY & BACKEND NOTICE:
+   * In a live production environment, transactions MUST be initialized server-side
+   * using the Paystack Secret Key, and verified via signed webhooks.
+   * Client-side secrets are strictly forbidden.
+   *
+   * The AUREX adapter below supports:
+   * 1. Simulated Demo Mode (Default, safe, test orders with reference AUR-XXXX)
+   * 2. Official Paystack Inline modal (via https://js.paystack.co/v1/inline.js)
+   */
+  function handlePaystackCheckout(orderData) {
+    const isDemo = APP_STATE.paystackConfig.isDemo;
+
+    if (isDemo) {
+      // Simulate authentic processing delay & order receipt
+      const demoRef = 'AUR-DEMO-' + Date.now().toString().slice(-6);
+      showToast('Connecting to Paystack Demo Gateway (KES)...', 'info');
+
+      setTimeout(() => {
+        showToast('Payment verified successfully in Demo Mode', 'success');
+        // Clear cart
+        APP_STATE.cart = [];
+        saveState('aurex_cart', APP_STATE.cart);
+        updateHeaderCounters();
+        // Route to Confirmation Screen
+        window.location.hash = `#/confirmation?ref=${demoRef}&total=${orderData.totalAmount}&email=${encodeURIComponent(orderData.customerEmail)}`;
+      }, 1500);
+      return;
+    }
+
+    // Live or Test Key with PaystackPop Inline SDK
+    if (typeof PaystackPop === 'undefined') {
+      showToast('Paystack Inline SDK could not be reached. Switching to demo checkout.', 'warning');
+      APP_STATE.paystackConfig.isDemo = true;
+      handlePaystackCheckout(orderData);
+      return;
+    }
+
+    try {
+      const handler = PaystackPop.setup({
+        key: APP_STATE.paystackConfig.publicKey,
+        email: orderData.customerEmail,
+        amount: Math.round(orderData.totalAmount * 100), // Paystack requires amount in lowest currency unit (cents/kobo)
+        currency: 'KES',
+        ref: 'AUR-' + Math.floor(Math.random() * 1000000000 + 1),
+        metadata: {
+          custom_fields: [
+            { display_name: "Customer Name", variable_name: "customer_name", value: orderData.customerName },
+            { display_name: "Phone", variable_name: "phone", value: orderData.customerPhone }
+          ]
+        },
+        callback: function (response) {
+          // Transaction completed in popup
+          APP_STATE.cart = [];
+          saveState('aurex_cart', APP_STATE.cart);
+          updateHeaderCounters();
+          window.location.hash = `#/confirmation?ref=${response.reference}&total=${orderData.totalAmount}&email=${encodeURIComponent(orderData.customerEmail)}`;
+        },
+        onClose: function () {
+          showToast('Payment window was closed before completion', 'info');
+        }
+      });
+      handler.openIframe();
+    } catch (e) {
+      console.error('Paystack initialization error:', e);
+      showToast('Paystack error: ' + e.message, 'danger');
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // 6. REUSABLE UI RENDERING COMPONENTS
+  // --------------------------------------------------------------------------
+  function renderProductCard(product) {
+    const isWishlisted = APP_STATE.wishlist.includes(product.id);
+    const badgeHTML = product.badge
+      ? `<span class="card-badge ${product.badge.toLowerCase()}">${product.badge}</span>`
+      : '';
+
+    const origPriceHTML = product.originalPrice
+      ? `<span class="original-price">${formatKSh(product.originalPrice)}</span>`
+      : '';
+
+    return `
+      <article class="product-card" data-id="${product.id}">
+        <div class="card-media" onclick="window.location.hash='#/product?id=${product.id}'">
+          ${badgeHTML}
+          <div class="card-actions-float">
+            <button class="card-float-btn card-wishlist-btn ${isWishlisted ? 'active' : ''}"
+                    data-id="${product.id}"
+                    onclick="event.stopPropagation(); window.aurexApp.toggleWishlist('${product.id}')"
+                    title="Add to Wishlist" aria-label="Add to Wishlist">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </button>
+            <button class="card-float-btn"
+                    onclick="event.stopPropagation(); window.aurexApp.toggleCompare('${product.id}')"
+                    title="Compare Specs" aria-label="Compare Specs">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+            </button>
+            <button class="card-float-btn"
+                    onclick="event.stopPropagation(); window.aurexApp.openQuickView('${product.id}')"
+                    title="Quick Preview" aria-label="Quick Preview">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </button>
+          </div>
+          <img src="${product.image}" alt="${escapeHTML(product.name)}" class="card-img" loading="lazy">
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="card-brand">${escapeHTML(product.brand)}</span>
+            <span aria-hidden="true">·</span>
+            <span>${escapeHTML(product.category.toUpperCase())}</span>
+          </div>
+          <h3 class="card-title" onclick="window.location.hash='#/product?id=${product.id}'">${escapeHTML(product.name)}</h3>
+          <div class="card-rating">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span class="rating-num">${product.rating}</span>
+            <span class="review-count">(${product.reviewsCount})</span>
+          </div>
+          <div class="card-price-row">
+            <div class="card-prices">
+              <span class="current-price">${formatKSh(product.price)}</span>
+              ${origPriceHTML}
+            </div>
+            <button class="card-add-btn" onclick="window.aurexApp.addToCart('${product.id}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-3z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+              <span>Add</span>
+            </button>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  // --------------------------------------------------------------------------
+  // 7. SCREEN RENDERERS
+  // --------------------------------------------------------------------------
+
+  // SCREEN 1: HOME
+  function renderHomeScreen() {
+    const flagships = window.AUREX_PRODUCTS.filter(p => p.featured).slice(0, 8);
+    const newArrivals = window.AUREX_PRODUCTS.filter(p => p.badge === 'New' || p.badge === 'Flagship').slice(0, 4);
+    const topDeals = window.AUREX_PRODUCTS.filter(p => p.deal).slice(0, 4);
+
+    return `
+      <section class="hero-section">
+        <div class="hero-noise"></div>
+        <div class="hero-glow"></div>
+        <div class="container hero-grid">
+          <div class="hero-content">
+            <div class="hero-eyebrow">
+              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#60a5fa;"></span>
+              AUREX // 2026 PRECISION LAUNCH
+            </div>
+            <h1 class="hero-title">
+              Engineered for <span>uncompromising</span> clarity.
+            </h1>
+            <p class="hero-desc">
+              Experience the pinnacle of consumer technology. Aerodynamic titanium acoustics, 3nm neural computing, and studio-grade imaging calibrated for discerning creators.
+            </p>
+            <div class="hero-actions">
+              <a href="#/shop" class="btn-primary">
+                <span>Explore Catalogue</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </a>
+              <a href="#/deals" class="btn-secondary">
+                <span>Exclusive Offers</span>
+              </a>
+            </div>
+            <div class="hero-stats">
+              <div>
+                <div class="hero-stat-val">100+</div>
+                <div class="hero-stat-lbl">Flagship Models</div>
+              </div>
+              <div>
+                <div class="hero-stat-val">24h</div>
+                <div class="hero-stat-lbl">Nairobi Dispatch</div>
+              </div>
+              <div>
+                <div class="hero-stat-val">2-Year</div>
+                <div class="hero-stat-lbl">Warranty Included</div>
+              </div>
+            </div>
+          </div>
+          <div class="hero-visual-stage">
+            <div class="hero-product-frame">
+              <div class="hero-floating-spec spec-tag-top">
+                <span class="spec-highlight">45mm Beryllium</span>
+                <span>Lossless 24-bit/96kHz Audio</span>
+              </div>
+              <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1000&q=85"
+                   alt="AUREX Precision Acoustic X1" class="hero-main-img">
+              <div class="hero-floating-spec spec-tag-bottom">
+                <span class="spec-highlight">Grade 5 Titanium</span>
+                <span>Weight: 285g · 55h ANC Battery</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Trust Pillars Strip -->
+      <section class="trust-strip">
+        <div class="container trust-grid">
+          <div class="trust-item">
+            <div class="trust-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            </div>
+            <div>
+              <h4 class="trust-title">Nationwide Delivery</h4>
+              <p class="trust-sub">Same-day across Nairobi, 24-48h upcountry via Wells Fargo & G4S courier.</p>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <div>
+              <h4 class="trust-title">2-Year Official Warranty</h4>
+              <p class="trust-sub">Authorized warranty coverage with certified repair centers in Nairobi.</p>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            </div>
+            <div>
+              <h4 class="trust-title">Secure Paystack Payments</h4>
+              <p class="trust-sub">Instant KES checkouts via Card, M-Pesa, and bank transfer with 256-bit encryption.</p>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            </div>
+            <div>
+              <h4 class="trust-title">14-Day Free Returns</h4>
+              <p class="trust-sub">Hassle-free replacement policy on all unopened electronics and accessories.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Category Discovery -->
+      <section style="padding: 4.5rem 0;">
+        <div class="container">
+          <div class="section-header">
+            <div>
+              <div class="section-kicker">Curated Hardware</div>
+              <h2 class="section-title">Explore by Domain</h2>
+            </div>
+            <a href="#/shop" class="link-action">View Full Catalogue &rarr;</a>
+          </div>
+          <div class="categories-grid">
+            ${[
+              { id: 'smartphones', name: 'Smartphones', count: '11 Models', icon: 'M12 18h.01M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z' },
+              { id: 'laptops', name: 'Laptops & Workstations', count: '11 Models', icon: 'M20 16V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12m16 0H4m16 0a2 2 0 0 1 2 2v2H2v-2a2 2 0 0 1 2-2' },
+              { id: 'tablets', name: 'Tablets & E-Paper', count: '10 Models', icon: 'M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6zm8 12h.01' },
+              { id: 'audio', name: 'Headphones & Audio', count: '12 Models', icon: 'M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z' },
+              { id: 'cameras', name: 'Cameras & Imaging', count: '10 Models', icon: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z' },
+              { id: 'gaming', name: 'Gaming Consoles & Gear', count: '10 Models', icon: 'M6 11h4M8 9v4M15 12h.01M18 10h.01M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.105-.017.157l-1.5 9A4 4 0 0 0 5.14 22h.04a3.99 3.99 0 0 0 3.73-2.63L10 16h4l1.09 3.37A3.99 3.99 0 0 0 18.82 22h.04a4 4 0 0 0 3.955-4.253l-1.5-9c-.007-.052-.011-.105-.017-.157A4 4 0 0 0 17.32 5z' },
+              { id: 'wearables', name: 'Smartwatches & Rings', count: '10 Models', icon: 'M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83' },
+              { id: 'displays', name: 'OLED TVs & Monitors', count: '10 Models', icon: 'M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7zm6 14h8m-4-3v3' },
+              { id: 'accessories', name: 'GaN Power & Docks', count: '10 Models', icon: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
+              { id: 'smarthome', name: 'Smart Home & Wi-Fi 7', count: '10 Models', icon: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12h6v10' }
+            ].map(cat => `
+              <div class="category-card" onclick="window.location.hash='#/category?id=${cat.id}'">
+                <div class="category-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="${cat.icon}"></path></svg>
+                </div>
+                <div class="category-name">${cat.name}</div>
+                <div class="category-count">${cat.count}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </section>
+
+      <!-- Flagship Showcase Grid -->
+      <section style="padding: 2rem 0 4.5rem; background: #ffffff; border-top: 1px solid var(--border-base); border-bottom: 1px solid var(--border-base);">
+        <div class="container">
+          <div class="section-header">
+            <div>
+              <div class="section-kicker">Engineered Excellence</div>
+              <h2 class="section-title">Flagship Showcase</h2>
+            </div>
+            <a href="#/shop" class="link-action">Browse All &rarr;</a>
+          </div>
+          <div class="products-grid">
+            ${flagships.map(renderProductCard).join('')}
+          </div>
+        </div>
+      </section>
+
+      <!-- Editorial Horizontal Storytelling Section -->
+      <section class="editorial-banner-section">
+        <div class="container banner-grid">
+          <div>
+            <div class="banner-badge">Acoustic Architecture</div>
+            <h2 class="banner-title">Pure titanium resonance. Zero artificial coloration.</h2>
+            <p class="banner-desc">
+              Every driver in the AUREX sound system is machined from solid aircraft-grade billets. Coupled with our dual 24-bit DAC processing engines, experience audio master tracks precisely as recorded in Abbey Road Studios.
+            </p>
+            <div style="display:flex; gap:1rem;">
+              <a href="#/category?id=audio" class="btn-primary">Explore Studio Audio</a>
+              <a href="#/about" class="btn-secondary">Read Engineering Story</a>
+            </div>
+          </div>
+          <div class="banner-media-container">
+            <img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=1200&q=85"
+                 alt="AUREX Acoustic Chamber Engineering" loading="lazy">
+          </div>
+        </div>
+      </section>
+
+      <!-- New Arrivals Grid -->
+      <section style="padding: 4.5rem 0;">
+        <div class="container">
+          <div class="section-header">
+            <div>
+              <div class="section-kicker">Just Landed</div>
+              <h2 class="section-title">Fresh Innovations</h2>
+            </div>
+            <a href="#/shop" class="link-action">View Full Collection &rarr;</a>
+          </div>
+          <div class="products-grid">
+            ${newArrivals.map(renderProductCard).join('')}
+          </div>
+        </div>
+      </section>
+
+      <!-- Comparison Teaser Section -->
+      <section style="background: #f1f5f9; padding: 4rem 0; border-top: 1px solid var(--border-base);">
+        <div class="container" style="text-align: center; max-width: 720px;">
+          <div class="section-kicker" style="margin-bottom: 0.5rem;">Hardware Intelligence</div>
+          <h2 class="section-title" style="margin-bottom: 1rem;">Compare Specifications Side-by-Side</h2>
+          <p class="section-desc" style="margin: 0 auto 2rem;">
+            Make informed decisions. Evaluate silicon architectures, battery longevity, optical sensor matrices, and port arrays in our side-by-side comparison matrix.
+          </p>
+          <a href="#/compare" class="btn-primary" style="margin: 0 auto;">
+            <span>Open Comparison Matrix</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line></svg>
+          </a>
+        </div>
+      </section>
+
+      <!-- Newsletter Section -->
+      <section style="padding: 5rem 0; background: #ffffff; border-top: 1px solid var(--border-base);">
+        <div class="container" style="max-width: 600px; text-align: center;">
+          <h3 style="font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem;">Join the AUREX Circle</h3>
+          <p style="color: var(--text-muted); font-size: 0.9375rem; margin-bottom: 1.75rem;">
+            Receive exclusive technical teardowns, firmware release notes, and priority allocations on limited hardware releases.
+          </p>
+          <form onsubmit="event.preventDefault(); window.aurexApp.handleNewsletter(this);" style="display:flex; gap:0.5rem;">
+            <input type="email" placeholder="Enter your email address" required
+                   style="flex:1; height:3rem; padding: 0 1rem; border:1px solid var(--border-base); border-radius:var(--radius-md); font-size:0.9375rem;">
+            <button type="submit" class="btn-primary" style="padding: 0 1.5rem; height:3rem;">Subscribe</button>
+          </form>
+          <div style="font-size:0.75rem; color:var(--text-light); margin-top:0.75rem;">No spam. Unsubscribe with one click at any time.</div>
+        </div>
+      </section>
+    `;
+  }
+
+  // SCREEN 2: ALL PRODUCTS CATALOGUE
+  function renderShopScreen() {
+    let filtered = [...window.AUREX_PRODUCTS];
+    const { category, brand, maxPrice, search, inStockOnly, sortBy } = APP_STATE.activeFilters;
+
+    if (category && category !== 'all') {
+      filtered = filtered.filter(p => p.category === category);
+    }
+    if (brand && brand !== 'all') {
+      filtered = filtered.filter(p => p.brand === brand);
+    }
+    if (search && search.trim() !== '') {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.brand.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+      );
+    }
+    filtered = filtered.filter(p => p.price <= maxPrice);
+
+    if (sortBy === 'price-low') {
+      filtered.sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'price-high') {
+      filtered.sort((a, b) => b.price - a.price);
+    } else if (sortBy === 'rating') {
+      filtered.sort((a, b) => b.rating - a.rating);
+    }
+
+    // Brands list for filter
+    const brands = Array.from(new Set(window.AUREX_PRODUCTS.map(p => p.brand))).sort();
+
+    return `
+      <div class="container" style="padding-top: 2rem;">
+        <div style="margin-bottom: 1.5rem;">
+          <h1 style="font-family: var(--font-display); font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em;">
+            Hardware Catalogue
+          </h1>
+          <p style="color: var(--text-muted); font-size: 0.9375rem;">
+            Showing all high-performance electronics, computing systems, and studio equipment.
+          </p>
+        </div>
+
+        <div class="shop-layout">
+          <!-- Sidebar Filters -->
+          <aside class="filters-sidebar">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+              <h3 style="font-family:var(--font-display); font-size:1.125rem; font-weight:700;">Filters</h3>
+              <button onclick="window.aurexApp.resetFilters()" style="font-size:0.8125rem; color:var(--accent); font-weight:600;">Reset All</button>
+            </div>
+
+            <!-- Categories -->
+            <div class="filter-group">
+              <div class="filter-title">Category</div>
+              <ul class="filter-list">
+                ${[
+                  { id: 'all', name: 'All Categories' },
+                  { id: 'smartphones', name: 'Smartphones' },
+                  { id: 'laptops', name: 'Laptops & PCs' },
+                  { id: 'tablets', name: 'Tablets' },
+                  { id: 'audio', name: 'Audio & Acoustics' },
+                  { id: 'cameras', name: 'Cameras' },
+                  { id: 'gaming', name: 'Gaming Gear' },
+                  { id: 'wearables', name: 'Wearables' },
+                  { id: 'displays', name: 'Displays & TVs' },
+                  { id: 'accessories', name: 'Accessories' },
+                  { id: 'smarthome', name: 'Smart Home' }
+                ].map(cat => `
+                  <li>
+                    <label class="filter-item-label">
+                      <input type="radio" name="filter_cat" class="filter-checkbox" value="${cat.id}"
+                             ${APP_STATE.activeFilters.category === cat.id ? 'checked' : ''}
+                             onchange="window.aurexApp.setFilter('category', '${cat.id}')">
+                      <span>${cat.name}</span>
+                    </label>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+
+            <!-- Max Price Filter -->
+            <div class="filter-group">
+              <div class="filter-title">
+                <span>Max Price</span>
+                <span style="font-family:var(--font-mono); font-size:0.8125rem; color:var(--text-main); font-weight:700;">
+                  ${formatKSh(APP_STATE.activeFilters.maxPrice)}
+                </span>
+              </div>
+              <input type="range" min="15000" max="950000" step="10000"
+                     value="${APP_STATE.activeFilters.maxPrice}"
+                     style="width: 100%; accent-color: var(--accent);"
+                     oninput="window.aurexApp.setFilter('maxPrice', Number(this.value))">
+            </div>
+
+            <!-- Brands Filter -->
+            <div class="filter-group">
+              <div class="filter-title">Brand</div>
+              <ul class="filter-list" style="max-height: 220px; overflow-y: auto;">
+                <li>
+                  <label class="filter-item-label">
+                    <input type="radio" name="filter_brand" class="filter-checkbox" value="all"
+                           ${APP_STATE.activeFilters.brand === 'all' ? 'checked' : ''}
+                           onchange="window.aurexApp.setFilter('brand', 'all')">
+                    <span>All Brands</span>
+                  </label>
+                </li>
+                ${brands.map(b => `
+                  <li>
+                    <label class="filter-item-label">
+                      <input type="radio" name="filter_brand" class="filter-checkbox" value="${b}"
+                             ${APP_STATE.activeFilters.brand === b ? 'checked' : ''}
+                             onchange="window.aurexApp.setFilter('brand', '${b}')">
+                      <span>${b}</span>
+                    </label>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          </aside>
+
+          <!-- Main Catalog Grid Area -->
+          <div>
+            <div class="shop-top-controls">
+              <div class="results-count">
+                Showing <strong>${filtered.length}</strong> of ${window.AUREX_PRODUCTS.length} products
+              </div>
+              <div class="sort-wrap">
+                <label for="shop-sort">Sort by:</label>
+                <select id="shop-sort" class="sort-select" onchange="window.aurexApp.setFilter('sortBy', this.value)">
+                  <option value="featured" ${APP_STATE.activeFilters.sortBy === 'featured' ? 'selected' : ''}>Featured</option>
+                  <option value="price-low" ${APP_STATE.activeFilters.sortBy === 'price-low' ? 'selected' : ''}>Price: Low to High</option>
+                  <option value="price-high" ${APP_STATE.activeFilters.sortBy === 'price-high' ? 'selected' : ''}>Price: High to Low</option>
+                  <option value="rating" ${APP_STATE.activeFilters.sortBy === 'rating' ? 'selected' : ''}>Highest Rated</option>
+                </select>
+              </div>
+            </div>
+
+            ${filtered.length > 0 ? `
+              <div class="products-grid">
+                ${filtered.map(renderProductCard).join('')}
+              </div>
+            ` : `
+              <div style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-lg); padding:4rem 2rem; text-align:center;">
+                <h3 style="font-family:var(--font-display); font-size:1.25rem; margin-bottom:0.5rem;">No hardware found</h3>
+                <p style="color:var(--text-muted); font-size:0.9375rem; margin-bottom:1.5rem;">Try adjusting your price range, clearing brand filters, or searching for another model.</p>
+                <button onclick="window.aurexApp.resetFilters()" class="btn-primary" style="margin:0 auto;">Reset All Filters</button>
+              </div>
+            `}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 3: CATEGORY SCREENS
+  function renderCategoryScreen(categoryId) {
+    const categoryInfo = {
+      smartphones: { title: "Smartphones & Mobile Flagships", desc: "Flagship processors, titanium unibodies, and professional computational optics." },
+      laptops: { title: "Laptops & Workstations", desc: "Creator notebooks, desktop-replacement laptops, and silent workstations." },
+      tablets: { title: "Tablets & Digital Paper", desc: "Tandem OLED screens, ultra-low latency styluses, and color e-paper." },
+      audio: { title: "Headphones & Studio Audio", desc: "Beryllium driver headphones, lossless Bluetooth, and reference monitors." },
+      cameras: { title: "Cameras & Cinema Imaging", desc: "Full-frame 8K mirrorless bodies, cinema rigs, and drones." },
+      gaming: { title: "Gaming Consoles & Peripherals", desc: "Next-gen consoles, magnetic Hall Effect keyboards, and ultra-light mice." },
+      wearables: { title: "Smartwatches & Wearables", desc: "Aerospace titanium outdoor watches, health monitors, and smart rings." },
+      displays: { title: "Displays & OLED Televisions", desc: "Micro Lens Array OLED panels, 240Hz monitors, and studio color reference displays." },
+      accessories: { title: "Power, Docks & Desk Gear", desc: "Gallium Nitride 240W chargers, Thunderbolt 4 docks, and aerospace desk accessories." },
+      smarthome: { title: "Smart Home & Mesh Wi-Fi 7", desc: "Multi-gigabit mesh networking, Matter security locks, and 4K solar cameras." }
+    }[categoryId] || { title: "Category Hardware", desc: "Precision electronics engineered for high performance." };
+
+    const products = window.AUREX_PRODUCTS.filter(p => p.category === categoryId);
+
+    return `
+      <div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+        <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-base); padding-bottom: 1.5rem;">
+          <div class="section-kicker">Hardware Category</div>
+          <h1 style="font-family: var(--font-display); font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em;">
+            ${escapeHTML(categoryInfo.title)}
+          </h1>
+          <p style="color: var(--text-muted); font-size: 1rem; margin-top: 0.35rem;">
+            ${escapeHTML(categoryInfo.desc)}
+          </p>
+        </div>
+
+        <div class="products-grid">
+          ${products.map(renderProductCard).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 4: PRODUCT DETAILS SCREEN
+  function renderProductDetailScreen(productId) {
+    const product = window.AUREX_PRODUCTS.find(p => p.id === productId);
+    if (!product) {
+      return render404Screen();
+    }
+
+    recordRecentlyViewed(productId);
+
+    const related = window.AUREX_PRODUCTS
+      .filter(p => p.category === product.category && p.id !== product.id)
+      .slice(0, 4);
+
+    const isWishlisted = APP_STATE.wishlist.includes(product.id);
+    const origPriceHTML = product.originalPrice
+      ? `<span class="pdp-orig-price">${formatKSh(product.originalPrice)}</span>`
+      : '';
+
+    return `
+      <div class="container">
+        <div class="pdp-grid">
+          <!-- Gallery Section -->
+          <div class="pdp-gallery-wrap">
+            <div class="pdp-main-image-box">
+              <img id="pdp-active-img" src="${product.image}" alt="${escapeHTML(product.name)}" class="pdp-main-image">
+            </div>
+            <div class="pdp-thumbs-row">
+              ${(product.gallery || [product.image]).map((img, i) => `
+                <button class="pdp-thumb-btn ${i === 0 ? 'active' : ''}" onclick="window.aurexApp.switchPdpImage('${img}', this)">
+                  <img src="${img}" alt="${escapeHTML(product.name)} view ${i + 1}">
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Product Details Panel -->
+          <div class="pdp-info-panel">
+            <nav class="pdp-breadcrumbs" aria-label="Breadcrumb">
+              <a href="#/">Home</a> &rsaquo;
+              <a href="#/category?id=${product.category}">${product.category.toUpperCase()}</a> &rsaquo;
+              <span style="color:var(--text-main); font-weight:600;">${escapeHTML(product.brand)}</span>
+            </nav>
+
+            <div class="pdp-brand-kicker">${escapeHTML(product.brand)}</div>
+            <h1 class="pdp-title">${escapeHTML(product.name)}</h1>
+
+            <div class="pdp-ratings-stock">
+              <div class="card-rating" style="margin-bottom:0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span class="rating-num">${product.rating}</span>
+                <span class="review-count">(${product.reviewsCount} customer reviews)</span>
+              </div>
+              <span aria-hidden="true" style="color:var(--border-strong);">·</span>
+              <span class="in-stock-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                In Stock & Ready to Dispatch
+              </span>
+            </div>
+
+            <div class="pdp-price-box">
+              <span class="pdp-price">${formatKSh(product.price)}</span>
+              ${origPriceHTML}
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6; margin-bottom: 2rem;">
+              ${escapeHTML(product.description)}
+            </p>
+
+            <!-- Variants Selection (if present) -->
+            ${product.variants ? `
+              <div class="pdp-variants-section">
+                ${Object.entries(product.variants).map(([type, options]) => `
+                  <div>
+                    <div class="variant-title">Select ${type.charAt(0).toUpperCase() + type.slice(1)}:</div>
+                    <div class="variant-options-row">
+                      ${options.map((opt, i) => `
+                        <button class="variant-pill-btn ${i === 0 ? 'active' : ''}" onclick="window.aurexApp.selectVariant(this)">
+                          ${opt}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            <!-- Action Controls -->
+            <div class="pdp-cta-row">
+              <div class="qty-stepper">
+                <button class="qty-btn" onclick="window.aurexApp.stepperChange(-1)">&minus;</button>
+                <span id="pdp-qty-val" class="qty-display">1</span>
+                <button class="qty-btn" onclick="window.aurexApp.stepperChange(1)">&plus;</button>
+              </div>
+
+              <button class="btn-primary" style="flex:1; height:3.25rem;" onclick="window.aurexApp.addCurrentPdpToCart('${product.id}')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-3z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                <span>Add to Cart</span>
+              </button>
+
+              <button class="icon-btn" style="width:3.25rem; height:3.25rem;" onclick="window.aurexApp.toggleWishlist('${product.id}')" title="Wishlist">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="${isWishlisted ? 'var(--danger)' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              </button>
+            </div>
+
+            <!-- Technical Specifications Table -->
+            <div style="border-top: 1px solid var(--border-base); padding-top: 1.5rem;">
+              <h3 style="font-family: var(--font-display); font-size: 1.125rem; font-weight: 700;">Technical Specifications</h3>
+              <table class="pdp-specs-table">
+                <tbody>
+                  ${Object.entries(product.specs || {}).map(([key, val]) => `
+                    <tr>
+                      <td>${escapeHTML(key)}</td>
+                      <td>${escapeHTML(val)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Related Hardware Section -->
+        ${related.length > 0 ? `
+          <div style="padding: 4rem 0; border-top: 1px solid var(--border-base);">
+            <div class="section-header">
+              <div>
+                <div class="section-kicker">Companion Hardware</div>
+                <h2 class="section-title">Related Devices</h2>
+              </div>
+            </div>
+            <div class="products-grid">
+              ${related.map(renderProductCard).join('')}
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  // SCREEN 5: SEARCH RESULTS
+  function renderSearchScreen(query) {
+    const q = (query || '').toLowerCase().trim();
+    const results = window.AUREX_PRODUCTS.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.brand.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.category.toLowerCase().includes(q)
+    );
+
+    return `
+      <div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-family: var(--font-display); font-size: 2rem; font-weight: 800;">
+            Search Results for "${escapeHTML(query)}"
+          </h1>
+          <p style="color: var(--text-muted); font-size: 0.9375rem;">
+            Found ${results.length} matching devices
+          </p>
+        </div>
+
+        ${results.length > 0 ? `
+          <div class="products-grid">
+            ${results.map(renderProductCard).join('')}
+          </div>
+        ` : `
+          <div style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-lg); padding:4rem 2rem; text-align:center;">
+            <h3>No results found for "${escapeHTML(query)}"</h3>
+            <p style="color:var(--text-muted); margin: 0.5rem 0 1.5rem;">Check your spelling or explore categories like Laptops, Smartphones, and Studio Audio.</p>
+            <a href="#/shop" class="btn-primary" style="margin:0 auto;">Browse All Hardware</a>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  // SCREEN 6: SHOPPING CART SCREEN
+  function renderCartScreen() {
+    const items = APP_STATE.cart;
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const shipping = subtotal > 50000 || subtotal === 0 ? 0 : 1500;
+    const discount = APP_STATE.appliedCoupon ? (subtotal * (APP_STATE.appliedCoupon.discountPercent / 100)) : 0;
+    const total = subtotal + shipping - discount;
+
+    if (items.length === 0) {
+      return `
+        <div class="container" style="padding: 6rem 0; text-align: center; max-width: 500px;">
+          <div style="width: 4.5rem; height: 4.5rem; background: var(--bg-surface-alt); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--text-light);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-3z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+          </div>
+          <h2 style="font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem;">Your Cart is Empty</h2>
+          <p style="color: var(--text-muted); margin-bottom: 2rem;">Discover our collection of precision audio, computing workstations, and mobile flagships.</p>
+          <a href="#/shop" class="btn-primary" style="margin: 0 auto;">Start Shopping</a>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+        <h1 style="font-family: var(--font-display); font-size: 2.25rem; font-weight: 800; margin-bottom: 2rem;">
+          Shopping Cart (${items.reduce((sum, i) => sum + i.qty, 0)})
+        </h1>
+
+        <div class="cart-layout">
+          <!-- Items List -->
+          <div class="cart-table-wrap">
+            ${items.map((item, index) => `
+              <div class="cart-item-row">
+                <img src="${item.image}" alt="${escapeHTML(item.name)}" class="cart-item-img">
+                <div class="cart-item-info">
+                  <h4>${escapeHTML(item.name)}</h4>
+                  <div class="cart-item-meta">${escapeHTML(item.brand)} · ${escapeHTML(item.category.toUpperCase())}</div>
+                  <div class="cart-item-price">${formatKSh(item.price)}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:1.25rem;">
+                  <div class="qty-stepper" style="height:2.5rem;">
+                    <button class="qty-btn" onclick="window.aurexApp.updateCartQty(${index}, -1)">&minus;</button>
+                    <span class="qty-display">${item.qty}</span>
+                    <button class="qty-btn" onclick="window.aurexApp.updateCartQty(${index}, 1)">&plus;</button>
+                  </div>
+                  <button onclick="window.aurexApp.removeFromCart(${index})" title="Remove item" style="color:var(--text-light); hover:color:var(--danger);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Order Summary Card -->
+          <div class="order-summary-card">
+            <h3 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; margin-bottom: 1.25rem;">Order Summary</h3>
+            <div class="summary-line">
+              <span>Subtotal</span>
+              <span style="font-family: var(--font-mono); font-weight: 600;">${formatKSh(subtotal)}</span>
+            </div>
+            <div class="summary-line">
+              <span>Shipping (Kenya)</span>
+              <span style="font-family: var(--font-mono); font-weight: 600;">${shipping === 0 ? 'FREE' : formatKSh(shipping)}</span>
+            </div>
+            ${discount > 0 ? `
+              <div class="summary-line" style="color: var(--success);">
+                <span>Discount (${APP_STATE.appliedCoupon.code})</span>
+                <span style="font-family: var(--font-mono); font-weight: 600;">-${formatKSh(discount)}</span>
+              </div>
+            ` : ''}
+
+            <!-- Coupon Input -->
+            <div class="coupon-box">
+              <input type="text" id="coupon-code-input" class="coupon-input" placeholder="Promo code (e.g. AUREX10)" value="${APP_STATE.appliedCoupon ? APP_STATE.appliedCoupon.code : ''}">
+              <button onclick="window.aurexApp.applyCoupon()" class="card-add-btn">Apply</button>
+            </div>
+
+            <div class="summary-line total">
+              <span>Total</span>
+              <span>${formatKSh(total)}</span>
+            </div>
+
+            <a href="#/checkout" class="btn-primary" style="width: 100%; height: 3.25rem; margin-top: 1.5rem; justify-content: center;">
+              <span>Proceed to Checkout</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+
+            <div style="font-size: 0.75rem; color: var(--text-light); text-align: center; margin-top: 1rem;">
+              Paystack 256-bit SSL encrypted checkout
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 7: WISHLIST SCREEN
+  function renderWishlistScreen() {
+    const products = window.AUREX_PRODUCTS.filter(p => APP_STATE.wishlist.includes(p.id));
+
+    return `
+      <div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-family: var(--font-display); font-size: 2.25rem; font-weight: 800;">
+            Saved Wishlist (${products.length})
+          </h1>
+          <p style="color: var(--text-muted); font-size: 0.9375rem;">Your curated shortlist of precision devices.</p>
+        </div>
+
+        ${products.length > 0 ? `
+          <div class="products-grid">
+            ${products.map(renderProductCard).join('')}
+          </div>
+        ` : `
+          <div style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-lg); padding:4rem 2rem; text-align:center;">
+            <h3>Your wishlist is currently empty</h3>
+            <p style="color:var(--text-muted); margin: 0.5rem 0 1.5rem;">Save your favorite electronics by clicking the heart icon on any product.</p>
+            <a href="#/shop" class="btn-primary" style="margin:0 auto;">Explore Catalogue</a>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  // SCREEN 8: DEALS & PROMOTIONS
+  function renderDealsScreen() {
+    const dealProducts = window.AUREX_PRODUCTS.filter(p => p.deal || p.originalPrice);
+
+    return `
+      <div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+        <div style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); color: #fff; padding: 3rem; border-radius: var(--radius-xl); margin-bottom: 3rem;">
+          <div style="font-family: var(--font-mono); color: #93c5fd; font-size: 0.8125rem; letter-spacing: 0.12em; text-transform: uppercase;">Promotions & Limited Allocations</div>
+          <h1 style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0 1rem;">
+            Precision Tech Deals
+          </h1>
+          <p style="color: #cbd5e1; max-width: 580px; font-size: 1rem;">
+            Save up to KSh 40,000 on studio monitors, creator laptops, and flagship smartphones. Use code <strong style="color:#fff;">AUREX10</strong> at checkout for an extra 10% off.
+          </p>
+        </div>
+
+        <div class="products-grid">
+          ${dealProducts.map(renderProductCard).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 9: PRODUCT COMPARISON MATRIX
+  function renderCompareScreen() {
+    const products = window.AUREX_PRODUCTS.filter(p => APP_STATE.compare.includes(p.id));
+
+    if (products.length === 0) {
+      return `
+        <div class="container" style="padding: 6rem 0; text-align: center;">
+          <h2 style="font-family: var(--font-display); font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">Comparison Matrix</h2>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">No devices currently added for comparison.</p>
+          <a href="#/shop" class="btn-primary" style="margin: 0 auto;">Select Devices to Compare</a>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="container compare-container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+          <div>
+            <h1 style="font-family: var(--font-display); font-size: 2.25rem; font-weight: 800;">Hardware Comparison</h1>
+            <p style="color: var(--text-muted);">Side-by-side engineering evaluation (${products.length} of 4 max).</p>
+          </div>
+          <button onclick="window.aurexApp.clearCompare()" style="color: var(--danger); font-size: 0.875rem; font-weight: 600;">Clear All</button>
+        </div>
+
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Specification</th>
+              ${products.map(p => `
+                <th style="background:#fff; text-align:center;">
+                  <img src="${p.image}" alt="${escapeHTML(p.name)}" style="width:100px; height:100px; object-fit:cover; margin:0 auto 0.75rem; border-radius:var(--radius-md);">
+                  <div style="font-family:var(--font-display); font-weight:700; font-size:1rem;">${escapeHTML(p.name)}</div>
+                  <div style="color:var(--text-main); font-weight:800; margin:0.35rem 0;">${formatKSh(p.price)}</div>
+                  <button onclick="window.aurexApp.addToCart('${p.id}')" class="card-add-btn" style="margin:0 auto 0.5rem;">Add to Cart</button>
+                  <button onclick="window.aurexApp.toggleCompare('${p.id}')" style="color:var(--text-light); font-size:0.75rem; display:block; margin:0 auto;">Remove</button>
+                </th>
+              `).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Brand</td>
+              ${products.map(p => `<td style="font-weight:600;">${p.brand}</td>`).join('')}
+            </tr>
+            <tr>
+              <td>Category</td>
+              ${products.map(p => `<td>${p.category.toUpperCase()}</td>`).join('')}
+            </tr>
+            <tr>
+              <td>Rating</td>
+              ${products.map(p => `<td>★ ${p.rating} (${p.reviewsCount} reviews)</td>`).join('')}
+            </tr>
+            <tr>
+              <td>Key Specs</td>
+              ${products.map(p => `
+                <td>
+                  <ul style="list-style:none; display:flex; flex-direction:column; gap:0.25rem;">
+                    ${Object.entries(p.specs || {}).map(([k, v]) => `<li><span style="color:var(--text-light);">${k}:</span> ${v}</li>`).join('')}
+                  </ul>
+                </td>
+              `).join('')}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // SCREEN 10: ABOUT THE BRAND
+  function renderAboutScreen() {
+    return `
+      <div class="container" style="padding: 4rem 0; max-width: 860px;">
+        <div class="section-kicker">Precision Heritage</div>
+        <h1 style="font-family: var(--font-display); font-size: 3rem; font-weight: 800; line-height: 1.1; margin: 0.5rem 0 1.5rem;">
+          Engineering clarity at the intersection of acoustics and silicon.
+        </h1>
+        <p style="font-size: 1.125rem; line-height: 1.7; color: var(--text-muted); margin-bottom: 2rem;">
+          Founded on the principle that consumer technology should be built with the exactitude of horology and aerospace metallurgy, AUREX curates and crafts computing, acoustic, and imaging systems for engineers, musicians, and creators.
+        </p>
+
+        <div style="background: var(--bg-surface-alt); border-radius: var(--radius-xl); padding: 2.5rem; border: 1px solid var(--border-base); margin: 3rem 0;">
+          <h3 style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">Our Hardware Commitments</h3>
+          <ul style="display: flex; flex-direction: column; gap: 1rem; color: var(--text-muted); list-style: none;">
+            <li style="display:flex; gap:0.75rem;">
+              <span style="color:var(--accent); font-weight:700;">01.</span>
+              <span><strong>Pure Grade 5 Titanium & CNC Aluminum:</strong> No flimsy recycled plastics on structural stress points.</span>
+            </li>
+            <li style="display:flex; gap:0.75rem;">
+              <span style="color:var(--accent); font-weight:700;">02.</span>
+              <span><strong>True Local Support in Kenya:</strong> Direct warranty servicing centers in Nairobi and Mombasa with zero export delays.</span>
+            </li>
+            <li style="display:flex; gap:0.75rem;">
+              <span style="color:var(--accent); font-weight:700;">03.</span>
+              <span><strong>Fair Authoritative Pricing:</strong> Direct-to-creator supply chains with verified manufacturer provenance.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 11: CONTACT AND SUPPORT
+  function renderContactScreen() {
+    return `
+      <div class="container" style="padding: 4rem 0; max-width: 800px;">
+        <div class="section-kicker">Customer Concierge</div>
+        <h1 style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0 1rem;">
+          Technical Inquiries & Support
+        </h1>
+        <p style="color: var(--text-muted); margin-bottom: 2.5rem;">
+          Have questions regarding compatibility, high-speed dispatch, or Paystack checkouts? Our engineering support team responds within 2 business hours.
+        </p>
+
+        <form onsubmit="event.preventDefault(); window.aurexApp.handleContact(this);" style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-xl); padding:2rem; display:flex; flex-direction:column; gap:1.25rem;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div>
+              <label style="font-size:0.875rem; font-weight:600; display:block; margin-bottom:0.35rem;">Full Name</label>
+              <input type="text" required class="coupon-input" placeholder="e.g. Samuel Karanja">
+            </div>
+            <div>
+              <label style="font-size:0.875rem; font-weight:600; display:block; margin-bottom:0.35rem;">Email Address</label>
+              <input type="email" required class="coupon-input" placeholder="s.karanja@example.co.ke">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:0.875rem; font-weight:600; display:block; margin-bottom:0.35rem;">Inquiry Topic</label>
+            <select class="coupon-input">
+              <option>Hardware Compatibility & Specs</option>
+              <option>Order Status & Courier Dispatch</option>
+              <option>Paystack & M-Pesa Payment Support</option>
+              <option>Warranty Claim or Service</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.875rem; font-weight:600; display:block; margin-bottom:0.35rem;">Message</label>
+            <textarea rows="4" required class="coupon-input" placeholder="Describe your question or requirements..."></textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="height:3rem; justify-content:center;">Send Inquiry</button>
+        </form>
+      </div>
+    `;
+  }
+
+  // SCREEN 12: CUSTOMER ACCOUNT INTERFACE
+  function renderAccountScreen() {
+    return `
+      <div class="container" style="padding: 4rem 0; max-width: 500px;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <h1 style="font-family: var(--font-display); font-size: 2rem; font-weight: 800;">AUREX Account</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.35rem;">
+            Sign in to track orders, manage addresses, and view warranty certificates.
+          </p>
+        </div>
+
+        <div style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-xl); padding:2rem;">
+          <form onsubmit="event.preventDefault(); window.aurexApp.handleSignIn(this);" style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div>
+              <label style="font-size:0.875rem; font-weight:600; display:block; margin-bottom:0.35rem;">Email Address</label>
+              <input type="email" required class="coupon-input" placeholder="name@domain.com">
+            </div>
+            <div>
+              <label style="font-size:0.875rem; font-weight:600; display:block; margin-bottom:0.35rem;">Password</label>
+              <input type="password" required class="coupon-input" placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-primary" style="height:3rem; justify-content:center;">Sign In</button>
+          </form>
+
+          <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--border-subtle); text-align:center; font-size:0.8125rem; color:var(--text-light);">
+            Note: Secure server authentication, user persistence, and password resets require production backend infrastructure.
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 13: CHECKOUT SCREEN
+  function renderCheckoutScreen() {
+    const items = APP_STATE.cart;
+    if (items.length === 0) {
+      window.location.hash = '#/cart';
+      return '';
+    }
+
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const shipping = subtotal > 50000 ? 0 : 1500;
+    const discount = APP_STATE.appliedCoupon ? (subtotal * (APP_STATE.appliedCoupon.discountPercent / 100)) : 0;
+    const total = subtotal + shipping - discount;
+
+    return `
+      <div class="container" style="padding-top: 2.5rem; padding-bottom: 5rem;">
+        <h1 style="font-family: var(--font-display); font-size: 2.25rem; font-weight: 800; margin-bottom: 2rem;">
+          Checkout & Shipping
+        </h1>
+
+        <div class="cart-layout">
+          <!-- Checkout Form -->
+          <form id="checkout-form" onsubmit="event.preventDefault(); window.aurexApp.processCheckout(this);"
+                style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-xl); padding:2rem; display:flex; flex-direction:column; gap:1.75rem;">
+
+            <div>
+              <h3 style="font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">1. Contact Details</h3>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div>
+                  <label style="font-size:0.8125rem; font-weight:600; display:block; margin-bottom:0.25rem;">Full Name *</label>
+                  <input type="text" name="name" required class="coupon-input" placeholder="e.g. Brian Ochieng">
+                </div>
+                <div>
+                  <label style="font-size:0.8125rem; font-weight:600; display:block; margin-bottom:0.25rem;">Email Address *</label>
+                  <input type="email" name="email" required class="coupon-input" placeholder="brian@ochieng.ke">
+                </div>
+              </div>
+              <div style="margin-top:1rem;">
+                <label style="font-size:0.8125rem; font-weight:600; display:block; margin-bottom:0.25rem;">Phone Number (for M-Pesa / Courier) *</label>
+                <input type="tel" name="phone" required class="coupon-input" placeholder="+254 712 345678">
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border-subtle); padding-top:1.5rem;">
+              <h3 style="font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">2. Shipping Address in Kenya</h3>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                <div>
+                  <label style="font-size:0.8125rem; font-weight:600; display:block; margin-bottom:0.25rem;">County / City *</label>
+                  <select name="county" class="coupon-input">
+                    <option>Nairobi</option>
+                    <option>Mombasa</option>
+                    <option>Kisumu</option>
+                    <option>Nakuru</option>
+                    <option>Eldoret</option>
+                    <option>Kiambu</option>
+                    <option>Other Upcountry (Wells Fargo)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:0.8125rem; font-weight:600; display:block; margin-bottom:0.25rem;">Postal Code / Building</label>
+                  <input type="text" name="postal" class="coupon-input" placeholder="00100 Nairobi">
+                </div>
+              </div>
+              <div>
+                <label style="font-size:0.8125rem; font-weight:600; display:block; margin-bottom:0.25rem;">Street & Floor / Estate Details *</label>
+                <input type="text" name="street" required class="coupon-input" placeholder="e.g. Westlands Commercial Center, 4th Floor">
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border-subtle); padding-top:1.5rem;">
+              <h3 style="font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">3. Payment Architecture (Paystack)</h3>
+
+              <div class="paystack-adapter-card">
+                <div class="paystack-badge-title">
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span class="paystack-logo-text">Paystack</span>
+                    <span style="font-size:0.875rem; font-weight:700;">Instant Payment (KES)</span>
+                  </div>
+                  <span class="demo-mode-pill">Demo Mode: Active</span>
+                </div>
+                <p style="font-size:0.8125rem; color:var(--text-muted); line-height:1.5; margin-bottom:1rem;">
+                  Pay securely using Credit/Debit Card, M-Pesa, or Mobile Money. In demo mode, a realistic sandbox order transaction will be verified without deducting actual funds.
+                </p>
+
+                <!-- Demo Mode Toggle -->
+                <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.8125rem; font-weight:600; cursor:pointer;">
+                  <input type="checkbox" id="demo-mode-checkbox" checked onchange="window.aurexApp.toggleDemoMode(this.checked)" style="accent-color:var(--accent);">
+                  <span>Run simulated demonstration checkout (safe, no card charged)</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="height:3.5rem; justify-content:center; font-size:1.0625rem; margin-top:0.5rem;">
+              <span>Pay ${formatKSh(total)} with Paystack</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+          </form>
+
+          <!-- Side Order Summary -->
+          <div class="order-summary-card">
+            <h3 style="font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Order Items (${items.length})</h3>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1.5rem; max-height:260px; overflow-y:auto;">
+              ${items.map(item => `
+                <div style="display:flex; justify-content:space-between; font-size:0.875rem;">
+                  <span>${escapeHTML(item.name)} &times; ${item.qty}</span>
+                  <span style="font-family:var(--font-mono); font-weight:600;">${formatKSh(item.price * item.qty)}</span>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="summary-line" style="border-top:1px solid var(--border-subtle); padding-top:0.75rem;">
+              <span>Subtotal</span>
+              <span style="font-family:var(--font-mono); font-weight:600;">${formatKSh(subtotal)}</span>
+            </div>
+            <div class="summary-line">
+              <span>Shipping</span>
+              <span style="font-family:var(--font-mono); font-weight:600;">${shipping === 0 ? 'FREE' : formatKSh(shipping)}</span>
+            </div>
+            ${discount > 0 ? `
+              <div class="summary-line" style="color:var(--success);">
+                <span>Discount</span>
+                <span style="font-family:var(--font-mono); font-weight:600;">-${formatKSh(discount)}</span>
+              </div>
+            ` : ''}
+            <div class="summary-line total">
+              <span>Total Due</span>
+              <span>${formatKSh(total)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 14: ORDER CONFIRMATION
+  function renderConfirmationScreen(params) {
+    const ref = params.get('ref') || 'AUR-TEST-000000';
+    const total = Number(params.get('total') || 0);
+    const email = params.get('email') || 'customer@example.ke';
+
+    return `
+      <div class="container" style="padding: 5rem 0; max-width: 650px; text-align: center;">
+        <div style="width: 5rem; height: 5rem; background: var(--success-bg); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+
+        <h1 style="font-family: var(--font-display); font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem;">
+          Order Verified & Confirmed
+        </h1>
+        <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 2rem;">
+          Thank you for choosing AUREX. An itemized invoice has been dispatched to <strong>${escapeHTML(email)}</strong>.
+        </p>
+
+        <div style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-xl); padding:2rem; text-align:left; margin-bottom:2rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+            <span style="color:var(--text-light); font-size:0.875rem;">Transaction Reference</span>
+            <span style="font-family:var(--font-mono); font-weight:700; color:var(--accent);">${escapeHTML(ref)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+            <span style="color:var(--text-light); font-size:0.875rem;">Amount Settled</span>
+            <span style="font-family:var(--font-mono); font-weight:700;">${formatKSh(total)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+            <span style="color:var(--text-light); font-size:0.875rem;">Payment Provider</span>
+            <span style="font-weight:600;">Paystack Inline Gateway</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-light); font-size:0.875rem;">Estimated Courier Arrival</span>
+            <span style="font-weight:600; color:var(--success);">Within 24 Hours</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:1rem; justify-content:center;">
+          <button onclick="window.print()" class="btn-secondary" style="color:var(--text-main); border-color:var(--border-strong);">
+            <span>Print Receipt</span>
+          </button>
+          <a href="#/shop" class="btn-primary">Continue Browsing</a>
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 15: SHIPPING AND DELIVERY
+  function renderShippingScreen() {
+    return `
+      <div class="container" style="padding: 4rem 0; max-width: 800px;">
+        <h1 style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin-bottom: 1.5rem;">
+          Shipping & Nationwide Dispatch
+        </h1>
+        <div style="color: var(--text-muted); line-height: 1.7; display: flex; flex-direction: column; gap: 1.5rem;">
+          <p>
+            AUREX maintains dedicated logistics partnerships with Wells Fargo, G4S Secure Logistics, and Speedaf Express across Kenya.
+          </p>
+          <div style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-lg); padding:1.5rem;">
+            <h3 style="font-family:var(--font-display); color:var(--text-main); font-weight:700; margin-bottom:0.5rem;">Delivery Timelines:</h3>
+            <ul style="padding-left:1.25rem;">
+              <li><strong>Nairobi Metropolitan Area:</strong> Same-day dispatch for orders placed before 2:00 PM EAT.</li>
+              <li><strong>Mombasa, Kisumu, Nakuru, Eldoret:</strong> Next-day guaranteed delivery (18–24 hours).</li>
+              <li><strong>Upcountry Counties:</strong> 24–48 hours via secure bonded courier transit.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 16: RETURNS AND WARRANTY
+  function renderWarrantyScreen() {
+    return `
+      <div class="container" style="padding: 4rem 0; max-width: 800px;">
+        <h1 style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin-bottom: 1.5rem;">
+          2-Year Warranty & Returns
+        </h1>
+        <div style="color: var(--text-muted); line-height: 1.7; display: flex; flex-direction: column; gap: 1.5rem;">
+          <p>
+            All hardware sold through AUREX includes our standard 24-Month Manufacturer Warranty against internal component defects, sensor faults, and silicon malfunctions.
+          </p>
+          <div style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-lg); padding:1.5rem;">
+            <h3 style="font-family:var(--font-display); color:var(--text-main); font-weight:700; margin-bottom:0.5rem;">14-Day Replacement Policy</h3>
+            <p>
+              If your device arrives with any transit damage or manufacturer anomaly, our concierge will issue an immediate direct swap at no additional cost.
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 17: FAQ
+  function renderFaqScreen() {
+    const faqs = [
+      { q: "What payment methods are supported via Paystack?", a: "We accept all Visa and Mastercard debit/credit cards, M-Pesa direct express checkouts, and PesaLink bank transfers in Kenyan Shillings (KES)." },
+      { q: "How are high-value electronics insured during transit?", a: "Every parcel is sealed with tamper-evident holograms and insured for 100% of retail invoice value via Wells Fargo or G4S." },
+      { q: "Are all products original and authorized?", a: "Yes. Every item in the AUREX catalog is 100% brand new, factory sealed, and backed by manufacturer serial verification." },
+      { q: "Can I collect my device in person in Nairobi?", a: "Yes. In addition to door-to-door courier dispatch, click-and-collect is available at our Nairobi flagship dispatch lounge." }
+    ];
+
+    return `
+      <div class="container" style="padding: 4rem 0; max-width: 800px;">
+        <h1 style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin-bottom: 2rem;">
+          Frequently Asked Questions
+        </h1>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          ${faqs.map(faq => `
+            <details style="background:#fff; border:1px solid var(--border-base); border-radius:var(--radius-lg); padding:1.25rem; cursor:pointer;">
+              <summary style="font-weight:700; font-family:var(--font-display); font-size:1.0625rem; color:var(--text-main);">${escapeHTML(faq.q)}</summary>
+              <p style="color:var(--text-muted); font-size:0.9375rem; line-height:1.6; margin-top:0.75rem;">${escapeHTML(faq.a)}</p>
+            </details>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 18: LEGAL PRIVACY & TERMS
+  function renderLegalScreen() {
+    return `
+      <div class="container" style="padding: 4rem 0; max-width: 800px;">
+        <h1 style="font-family: var(--font-display); font-size: 2.5rem; font-weight: 800; margin-bottom: 1.5rem;">
+          Privacy Policy & Terms
+        </h1>
+        <div style="color: var(--text-muted); line-height: 1.7; display: flex; flex-direction: column; gap: 1.25rem;">
+          <p><em>Demonstration Notice: This legal content is provided for demonstration and interface evaluation purposes. Official legal terms require jurisdictional counsel.</em></p>
+          <p>
+            AUREX respects your data sovereignty. We do not sell user telemetries, contact records, or browsing patterns to data brokers. Transaction payments are processed strictly through authorized payment channels under PCI-DSS Level 1 compliance.
+          </p>
+        </div>
+      </div>
+    `;
+  }
+
+  // SCREEN 19: 404 NOT FOUND
+  function render404Screen() {
+    return `
+      <div class="container" style="padding: 6rem 0; text-align: center;">
+        <div style="font-family: var(--font-mono); font-size: 5rem; font-weight: 800; color: var(--accent); margin-bottom: 1rem;">404</div>
+        <h1 style="font-family: var(--font-display); font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">Hardware Not Found</h1>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">The requested product or screen does not exist or has been relocated.</p>
+        <a href="#/" class="btn-primary" style="margin: 0 auto;">Return to Home</a>
+      </div>
+    `;
+  }
+
+  // --------------------------------------------------------------------------
+  // 8. CLIENT-SIDE ROUTER ENGINE
+  // --------------------------------------------------------------------------
+  function handleRoute() {
+    const hash = window.location.hash || '#/';
+    const [path, queryString] = hash.split('?');
+    const params = new URLSearchParams(queryString || '');
+    const appEl = document.getElementById('app');
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    let screenHTML = '';
+    let pageTitle = 'AUREX // Precision Electronics';
+
+    if (path === '#' || path === '#/' || path === '#home') {
+      screenHTML = renderHomeScreen();
+      pageTitle = 'AUREX Precision Electronics — Flagship Computing & Audio';
+    } else if (path === '#/shop') {
+      screenHTML = renderShopScreen();
+      pageTitle = 'Hardware Catalogue — AUREX Electronics';
+    } else if (path === '#/category') {
+      const catId = params.get('id') || 'all';
+      screenHTML = renderCategoryScreen(catId);
+      pageTitle = `${catId.toUpperCase()} Hardware — AUREX`;
+    } else if (path === '#/product') {
+      const prodId = params.get('id');
+      screenHTML = renderProductDetailScreen(prodId);
+      pageTitle = `Product Details — AUREX`;
+    } else if (path === '#/search') {
+      const q = params.get('q') || '';
+      screenHTML = renderSearchScreen(q);
+      pageTitle = `Search: ${q} — AUREX`;
+    } else if (path === '#/cart') {
+      screenHTML = renderCartScreen();
+      pageTitle = 'Shopping Cart — AUREX';
+    } else if (path === '#/wishlist') {
+      screenHTML = renderWishlistScreen();
+      pageTitle = 'Wishlist — AUREX';
+    } else if (path === '#/deals') {
+      screenHTML = renderDealsScreen();
+      pageTitle = 'Deals & Offers — AUREX';
+    } else if (path === '#/compare') {
+      screenHTML = renderCompareScreen();
+      pageTitle = 'Compare Hardware — AUREX';
+    } else if (path === '#/about') {
+      screenHTML = renderAboutScreen();
+      pageTitle = 'About AUREX Heritage';
+    } else if (path === '#/contact') {
+      screenHTML = renderContactScreen();
+      pageTitle = 'Customer Support — AUREX';
+    } else if (path === '#/account') {
+      screenHTML = renderAccountScreen();
+      pageTitle = 'Customer Account — AUREX';
+    } else if (path === '#/checkout') {
+      screenHTML = renderCheckoutScreen();
+      pageTitle = 'Checkout — AUREX';
+    } else if (path === '#/confirmation') {
+      screenHTML = renderConfirmationScreen(params);
+      pageTitle = 'Order Confirmed — AUREX';
+    } else if (path === '#/shipping') {
+      screenHTML = renderShippingScreen();
+      pageTitle = 'Shipping Guidelines — AUREX';
+    } else if (path === '#/warranty') {
+      screenHTML = renderWarrantyScreen();
+      pageTitle = 'Warranty & Returns — AUREX';
+    } else if (path === '#/faq') {
+      screenHTML = renderFaqScreen();
+      pageTitle = 'FAQ — AUREX';
+    } else if (path === '#/legal') {
+      screenHTML = renderLegalScreen();
+      pageTitle = 'Legal & Privacy — AUREX';
+    } else {
+      screenHTML = render404Screen();
+      pageTitle = 'Page Not Found — AUREX';
+    }
+
+    document.title = pageTitle;
+    appEl.innerHTML = screenHTML;
+
+    // Trigger animations for fresh DOM
+    setTimeout(initGSAPAnimations, 50);
+
+    // Update active state in nav links
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      link.classList.toggle('active', href === path || (path === '#/' && href === '#/'));
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // 9. PUBLIC APP API & EVENT CONTROLLERS
+  // --------------------------------------------------------------------------
+  window.aurexApp = {
+    addToCart,
+    removeFromCart,
+    updateCartQty,
+    toggleWishlist,
+    toggleCompare,
+    clearCompare: () => {
+      APP_STATE.compare = [];
+      saveState('aurex_compare', []);
+      updateHeaderCounters();
+      renderCompareScreen();
+      showToast('Cleared comparison matrix', 'info');
+      handleRoute();
+    },
+    setFilter: (key, value) => {
+      APP_STATE.activeFilters[key] = value;
+      const appEl = document.getElementById('app');
+      appEl.innerHTML = renderShopScreen();
+    },
+    resetFilters: () => {
+      APP_STATE.activeFilters = {
+        category: 'all',
+        brand: 'all',
+        maxPrice: 900000,
+        search: '',
+        inStockOnly: false,
+        sortBy: 'featured'
+      };
+      const appEl = document.getElementById('app');
+      appEl.innerHTML = renderShopScreen();
+    },
+    stepperChange: (delta) => {
+      const el = document.getElementById('pdp-qty-val');
+      if (!el) return;
+      let val = Math.max(1, parseInt(el.textContent || '1', 10) + delta);
+      el.textContent = val;
+    },
+    addCurrentPdpToCart: (productId) => {
+      const el = document.getElementById('pdp-qty-val');
+      const qty = el ? parseInt(el.textContent || '1', 10) : 1;
+      const activeVariantBtn = document.querySelector('.variant-pill-btn.active');
+      const variant = activeVariantBtn ? { option: activeVariantBtn.textContent.trim() } : null;
+      addToCart(productId, qty, variant);
+    },
+    switchPdpImage: (src, btn) => {
+      const img = document.getElementById('pdp-active-img');
+      if (img) img.src = src;
+      document.querySelectorAll('.pdp-thumb-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+    },
+    selectVariant: (btn) => {
+      btn.parentElement.querySelectorAll('.variant-pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    },
+    openQuickView: (productId) => {
+      const product = window.AUREX_PRODUCTS.find(p => p.id === productId);
+      if (!product) return;
+      const modal = document.getElementById('quickview-modal');
+      const content = document.getElementById('quickview-content');
+      if (!modal || !content) return;
+
+      content.innerHTML = `
+        <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:2rem; align-items:center;">
+          <img src="${product.image}" alt="${escapeHTML(product.name)}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:var(--radius-lg);">
+          <div>
+            <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent); text-transform:uppercase;">${product.brand}</div>
+            <h3 style="font-family:var(--font-display); font-size:1.5rem; font-weight:800; margin:0.25rem 0 0.5rem;">${escapeHTML(product.name)}</h3>
+            <div style="font-family:var(--font-display); font-size:1.5rem; font-weight:800; color:var(--text-main); margin-bottom:1rem;">${formatKSh(product.price)}</div>
+            <p style="color:var(--text-muted); font-size:0.875rem; line-height:1.5; margin-bottom:1.5rem;">${escapeHTML(product.description)}</p>
+            <div style="display:flex; gap:0.75rem;">
+              <button onclick="window.aurexApp.addToCart('${product.id}'); window.aurexApp.closeQuickView();" class="btn-primary" style="flex:1; justify-content:center;">Add to Cart</button>
+              <a href="#/product?id=${product.id}" onclick="window.aurexApp.closeQuickView();" class="btn-secondary" style="color:var(--text-main); border-color:var(--border-strong);">Full Details</a>
+            </div>
+          </div>
+        </div>
+      `;
+      modal.classList.add('active');
+    },
+    closeQuickView: () => {
+      const modal = document.getElementById('quickview-modal');
+      if (modal) modal.classList.remove('active');
+    },
+    applyCoupon: () => {
+      const input = document.getElementById('coupon-code-input');
+      if (!input) return;
+      const code = input.value.trim().toUpperCase();
+      if (code === 'AUREX10') {
+        APP_STATE.appliedCoupon = { code: 'AUREX10', discountPercent: 10 };
+        saveState('aurex_coupon', APP_STATE.appliedCoupon);
+        showToast('Promo code applied: 10% discount', 'success');
+        renderCartScreen();
+        handleRoute();
+      } else if (code === 'TECH5') {
+        APP_STATE.appliedCoupon = { code: 'TECH5', discountPercent: 5 };
+        saveState('aurex_coupon', APP_STATE.appliedCoupon);
+        showToast('Promo code applied: 5% discount', 'success');
+        renderCartScreen();
+        handleRoute();
+      } else {
+        showToast('Invalid promo coupon code', 'danger');
+      }
+    },
+    toggleDemoMode: (val) => {
+      APP_STATE.paystackConfig.isDemo = val;
+    },
+    processCheckout: (form) => {
+      const formData = new FormData(form);
+      const items = APP_STATE.cart;
+      const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const shipping = subtotal > 50000 ? 0 : 1500;
+      const discount = APP_STATE.appliedCoupon ? (subtotal * (APP_STATE.appliedCoupon.discountPercent / 100)) : 0;
+      const totalAmount = subtotal + shipping - discount;
+
+      const orderData = {
+        customerName: formData.get('name'),
+        customerEmail: formData.get('email'),
+        customerPhone: formData.get('phone'),
+        totalAmount: totalAmount,
+        items: items
+      };
+
+      handlePaystackCheckout(orderData);
+    },
+    handleNewsletter: (form) => {
+      showToast('Thank you for subscribing to AUREX hardware drops', 'success');
+      form.reset();
+    },
+    handleContact: (form) => {
+      showToast('Inquiry received. A technical specialist will contact you shortly.', 'success');
+      form.reset();
+    },
+    handleSignIn: (form) => {
+      showToast('Client demo authentication simulated', 'info');
+      form.reset();
+    },
+    toggleMobileDrawer: (open) => {
+      const drawer = document.getElementById('mobile-drawer');
+      const overlay = document.getElementById('drawer-overlay');
+      if (drawer && overlay) {
+        if (open) {
+          drawer.classList.add('active');
+          overlay.classList.add('active');
+        } else {
+          drawer.classList.remove('active');
+          overlay.classList.remove('active');
+        }
+      }
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // 10. BOOTSTRAP INITIALIZATION
+  // --------------------------------------------------------------------------
+  window.addEventListener('DOMContentLoaded', () => {
+    updateHeaderCounters();
+    window.addEventListener('hashchange', handleRoute);
+    handleRoute();
+
+    // Sticky header scroll listener
+    window.addEventListener('scroll', () => {
+      const header = document.querySelector('.site-header');
+      if (header) {
+        header.classList.toggle('scrolled', window.scrollY > 20);
+      }
+    }, { passive: true });
+
+    // Header search form listener
+    const searchForm = document.getElementById('header-search-form');
+    if (searchForm) {
+      searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('header-search-input');
+        if (input && input.value.trim() !== '') {
+          window.location.hash = `#/search?q=${encodeURIComponent(input.value.trim())}`;
+          input.value = '';
+        }
+      });
+    }
+  });
+
+})();
+
+    </script>
+  <script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body>
+</html>

@@ -6,6 +6,7 @@
   "workers_dev": true,
   "vars": {
     "TURNSTILE_SITE_KEY": "0x4AAAAAAFPA2kxSnlxxwR-D",
+    "EMAIL_FROM": "Craft <noreply@rrobin.co.ke>",
     "VAPID_SUBJECT": "mailto:admin@rrobin.co.ke"
   },
   "routes": [
@@ -15,7 +16,7 @@
   "assets": {
     "directory": "../www",
     "binding": "ASSETS",
-    "run_worker_first": true
+    "run_worker_first": ["/", "/api/*", "/media/*", "/themes/*", "/theme-skeletons/*"]
   },
   "d1_databases": [
     {

@@ -1,0 +1,3382 @@
+<!doctype html>
+<html lang="en" data-eshop-skeleton-preview=""><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <meta name="description" content="">
+    <meta property="og:title" content="">
+    <meta property="og:description" content="">
+    <meta property="og:type" content="">
+    <meta name="twitter:card" content="">
+
+    <!-- Google Fonts: Cormorant Garamond & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+
+    <!-- GSAP & ScrollTrigger from Cloudflare CDN for Cinematic Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <style>
+      /* ==========================================================================
+         DESIGN SYSTEM & CSS CUSTOM PROPERTIES
+         ========================================================================== */
+      :root {
+        --color-bg: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-01);
+        --color-surface: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+        --color-surface-subtle: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-03);
+        --color-surface-dark: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-04);
+        --color-surface-darker: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-05);
+        --color-surface-card-dark: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-06);
+        --color-text-main: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-07);
+        --color-text-muted: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-08);
+        --color-text-light: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-09);
+        --color-text-light-muted: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-10);
+        --color-accent: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-11);
+        --color-accent-hover: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-12);
+        --color-accent-soft: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-13);
+        --color-terracotta: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-14);
+        --color-sage: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-15);
+        --color-border: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-16);
+        --color-border-dark: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-17);
+        --color-success: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-18);
+        --color-danger: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-19);
+        --font-serif: 'Cormorant Garamond', Georgia, serif;
+        --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        --radius-sm: 6px;
+        --radius-md: 12px;
+        --radius-lg: 18px;
+        --radius-xl: 24px;
+        --shadow-soft: 0 4px 20px -2px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-20);
+        --shadow-card: 0 10px 30px -4px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-21);
+        --shadow-elevated: 0 20px 45px -10px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-22);
+        --shadow-cinematic: 0 30px 70px -15px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-23);
+        --transition-standard: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        background-color: var(--color-bg);
+        color: var(--color-text-main);
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        min-height: 100vh;
+        overflow-x: hidden;
+        background-color: var(--color-bg);
+      }
+
+      /* Typography Helpers */
+      .font-serif { font-family: var(--font-serif); }
+      .font-sans { font-family: var(--font-sans); }
+
+      h1, h2, h3, h4 {
+        font-family: var(--font-serif);
+        font-weight: 500;
+        line-height: 1.15;
+        color: var(--color-text-main);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button, input, select, textarea {
+        font-family: inherit;
+        font-size: inherit;
+        border: none;
+        outline: none;
+        background: none;
+      }
+
+      button {
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1320px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.6rem;
+        font-weight: 600;
+        font-size: 0.92rem;
+        letter-spacing: 0.02em;
+        border-radius: 9999px;
+        transition: all 0.3s var(--transition-standard);
+      }
+
+      .btn-primary {
+        background: var(--color-surface-dark);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        box-shadow: 0 4px 15px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-25);
+      }
+      .btn-primary:hover {
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-26);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-27);
+      }
+
+      .btn-accent {
+        background: var(--color-accent);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+        box-shadow: 0 4px 15px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-28);
+      }
+      .btn-accent:hover {
+        background: var(--color-accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-29);
+      }
+
+      .btn-secondary {
+        background: var(--color-surface);
+        color: var(--color-text-main);
+        border: 1px solid var(--color-border);
+      }
+      .btn-secondary:hover {
+        background: var(--color-surface-subtle);
+        border-color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-30);
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--color-text-main);
+      }
+      .btn-ghost:hover {
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-20);
+      }
+
+      .btn-outline-white {
+        background: transparent;
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+        border: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-31);
+      }
+      .btn-outline-white:hover {
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-32);
+        border-color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+      }
+
+      /* ==========================================================================
+         CINEMATIC ENTRANCE: DOORS THAT ACTUALLY OPEN (3D HINGE ANIMATION)
+         ========================================================================== */
+      #entrance-portal {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-33);
+        perspective: 1600px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Behind the doors: revealed interior sanctuary */
+      #entrance-reveal-bg {
+        position: absolute;
+        inset: 0;
+        background: none center/cover no-repeat;
+        filter: brightness(0.92) contrast(1.05);
+        transform: scale(1.08);
+        transition: transform 3.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+      }
+
+      #entrance-reveal-overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-34) 0%, var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-35) 80%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        z-index: 10;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 1.6s ease, transform 1.6s var(--transition-standard);
+      }
+
+      .entrance-brand-emblem {
+        width: 56px;
+        height: 56px;
+        border: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-36);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: var(--color-accent);
+      }
+
+      .entrance-brand-title {
+        font-family: var(--font-serif);
+        font-size: clamp(2.5rem, 6vw, 5rem);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        text-shadow: 0 4px 20px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-37);
+      }
+
+      .entrance-brand-sub {
+        font-family: var(--font-sans);
+        font-size: 0.95rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-38);
+        max-width: 520px;
+        font-weight: 300;
+      }
+
+      /* 3D Doorway Structure */
+      #door-viewport {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        pointer-events: none;
+        z-index: 20;
+      }
+
+      .door-panel {
+        width: 50%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-39);
+        /* Rich architectural fluted dark oak texture */
+        background-image: 
+          repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 16px),
+          linear-gradient(180deg, #18221D 0%, #0F1612 100%);
+        box-shadow: inset 0 0 80px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-40);
+        transition: transform 2.6s cubic-bezier(0.2, 0.8, 0.15, 1);
+      }
+
+      .door-panel-left {
+        transform-origin: left center;
+        border-right: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-28);
+      }
+
+      .door-panel-right {
+        transform-origin: right center;
+        border-left: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-28);
+      }
+
+      /* Center seam golden light leaking through */
+      #door-light-seam {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 2px;
+        transform: translateX(-50%);
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-41);
+        box-shadow: 0 0 45px 12px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-42);
+        z-index: 25;
+        transition: opacity 1.2s ease;
+      }
+
+      /* Door brass vertical handles */
+      .door-handle {
+        position: absolute;
+        top: 50%;
+        width: 6px;
+        height: 120px;
+        background: linear-gradient(180deg, var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-43) 0%, var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-44) 100%);
+        border-radius: 3px;
+        box-shadow: 0 2px 15px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-37), inset 0 1px 2px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-45);
+      }
+      .door-panel-left .door-handle {
+        right: 40px;
+        transform: translateY(-50%);
+      }
+      .door-panel-right .door-handle {
+        left: 40px;
+        transform: translateY(-50%);
+      }
+
+      /* Architectural Door Moldings */
+      .door-molding {
+        position: absolute;
+        border: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-46);
+        box-shadow: inset 0 0 20px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-47);
+      }
+      .door-panel-left .door-molding-top {
+        top: 8%; left: 15%; right: 15%; height: 38%;
+      }
+      .door-panel-left .door-molding-bottom {
+        bottom: 8%; left: 15%; right: 15%; height: 38%;
+      }
+      .door-panel-right .door-molding-top {
+        top: 8%; left: 15%; right: 15%; height: 38%;
+      }
+      .door-panel-right .door-molding-bottom {
+        bottom: 8%; left: 15%; right: 15%; height: 38%;
+      }
+
+      /* Skip Entrance Control */
+      #skip-entrance-btn {
+        position: absolute;
+        bottom: 2.5rem;
+        right: 2.5rem;
+        z-index: 100;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-48);
+        backdrop-filter: blur(8px);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        border: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-49);
+        padding: 0.65rem 1.4rem;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      #skip-entrance-btn:hover {
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-50);
+        border-color: var(--color-accent);
+      }
+
+      /* Door Open Active State */
+      .doors-opened .door-panel-left {
+        transform: rotateY(-105deg);
+      }
+      .doors-opened .door-panel-right {
+        transform: rotateY(105deg);
+      }
+      .doors-opened #door-light-seam {
+        opacity: 0;
+      }
+      .doors-opened #entrance-reveal-bg {
+        transform: scale(1);
+      }
+      .doors-opened #entrance-reveal-overlay {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* ==========================================================================
+         SITE HEADER & NAVIGATION
+         ========================================================================== */
+      #site-header {
+        position: sticky;
+        top: 0;
+        z-index: 500;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-51);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-52);
+        transition: all 0.3s ease;
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 80px;
+      }
+
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .brand-symbol {
+        width: 38px;
+        height: 38px;
+        border: 1.5px solid var(--color-accent);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-accent);
+      }
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+      }
+      .brand-title {
+        font-family: var(--font-serif);
+        font-size: 1.6rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        color: var(--color-text-main);
+        line-height: 1;
+      }
+      .brand-tagline {
+        font-size: 0.65rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        margin-top: 2px;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+      }
+      .nav-link {
+        font-size: 0.92rem;
+        font-weight: 500;
+        color: var(--color-text-main);
+        transition: color 0.2s ease;
+        position: relative;
+        padding: 0.4rem 0;
+      }
+      .nav-link:hover, .nav-link.active {
+        color: var(--color-accent);
+      }
+      .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1.5px;
+        background: var(--color-accent);
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      /* Currency picker */
+      .currency-selector {
+        position: relative;
+      }
+      .currency-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        padding: 0.45rem 0.8rem;
+        border-radius: 9999px;
+        background: var(--color-surface-subtle);
+        border: 1px solid var(--color-border);
+      }
+      .currency-btn:hover {
+        color: var(--color-text-main);
+        border-color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-53);
+      }
+
+      .nav-badge-btn {
+        position: relative;
+        padding: 0.6rem;
+        border-radius: 50%;
+        color: var(--color-text-main);
+        background: transparent;
+      }
+      .nav-badge-btn:hover {
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-54);
+      }
+      .badge-counter {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: var(--color-accent);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+        font-size: 0.68rem;
+        font-weight: 700;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mobile-menu-toggle {
+        display: none;
+        padding: 0.6rem;
+        color: var(--color-text-main);
+      }
+
+      /* ==========================================================================
+         HERO SECTION & IMMERSIVE SEARCH BAR
+         ========================================================================== */
+      .hero-section {
+        position: relative;
+        padding: 5rem 0 7rem;
+        background: linear-gradient(180deg, var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-55) 0%, var(--color-bg) 100%);
+        overflow: hidden;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 4rem;
+        align-items: center;
+      }
+
+      .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-56);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-44);
+        border-radius: 9999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+      }
+
+      .hero-title {
+        font-size: clamp(3rem, 5.5vw, 4.8rem);
+        font-weight: 400;
+        letter-spacing: -0.02em;
+        margin-bottom: 1.5rem;
+        color: var(--color-text-main);
+      }
+      .hero-title span {
+        font-style: italic;
+        color: var(--color-accent);
+      }
+
+      .hero-lead {
+        font-size: 1.15rem;
+        line-height: 1.65;
+        color: var(--color-text-muted);
+        max-width: 540px;
+        margin-bottom: 2.5rem;
+        font-weight: 300;
+      }
+
+      .hero-visual-card {
+        position: relative;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-cinematic);
+      }
+      .hero-visual-card img {
+        width: 100%;
+        height: 540px;
+        object-fit: cover;
+        transition: transform 1.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+      }
+      .hero-visual-card:hover img {
+        transform: scale(1.03);
+      }
+      .hero-visual-badge {
+        position: absolute;
+        bottom: 2rem;
+        left: 2rem;
+        right: 2rem;
+        padding: 1.5rem;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-57);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-58);
+        border-radius: var(--radius-lg);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* Unified Floating Search Engine */
+      .search-engine-bar {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 9999px;
+        padding: 0.6rem 0.75rem;
+        box-shadow: var(--shadow-elevated);
+        display: grid;
+        grid-template-columns: 1.5fr 1fr 1fr 1.2fr auto;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .search-segment {
+        padding: 0.6rem 1.2rem;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        position: relative;
+      }
+      .search-segment:hover {
+        background: var(--color-surface-subtle);
+      }
+      .search-segment:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 25%;
+        bottom: 25%;
+        width: 1px;
+        background: var(--color-border);
+      }
+      .search-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-main);
+        display: block;
+        margin-bottom: 2px;
+      }
+      .search-value {
+        font-size: 0.92rem;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .search-submit-btn {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: var(--color-surface-dark);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-59);
+      }
+      .search-submit-btn:hover {
+        background: var(--color-accent);
+        transform: scale(1.05);
+      }
+
+      /* Category Pills Bar */
+      .category-pills-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        overflow-x: auto;
+        padding: 2.5rem 0 1.5rem;
+        scrollbar-width: none;
+      }
+      .category-pills-bar::-webkit-scrollbar { display: none; }
+
+      .category-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.7rem 1.4rem;
+        border-radius: 9999px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--color-text-muted);
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+      .category-pill:hover, .category-pill.active {
+        background: var(--color-surface-dark);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        border-color: var(--color-surface-dark);
+      }
+      .category-pill.active svg {
+        stroke: var(--color-accent);
+      }
+
+      /* ==========================================================================
+         PROPERTY GRID & PROPERTY CARD ARCHITECTURE
+         ========================================================================== */
+      .section-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 2.5rem;
+      }
+      .section-tag {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--color-accent);
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      .section-title {
+        font-size: clamp(2rem, 3.5vw, 3rem);
+        color: var(--color-text-main);
+      }
+      .section-desc {
+        color: var(--color-text-muted);
+        font-size: 1rem;
+        max-width: 520px;
+        margin-top: 0.5rem;
+      }
+
+      .property-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 2.5rem 2rem;
+      }
+
+      .property-card {
+        display: flex;
+        flex-direction: column;
+        border-radius: var(--radius-lg);
+        background: transparent;
+        transition: transform 0.3s ease;
+        position: relative;
+      }
+      .property-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .property-card-media {
+        position: relative;
+        aspect-ratio: 4 / 3;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-60);
+        margin-bottom: 1.1rem;
+      }
+      .property-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s cubic-bezier(0.15, 0.9, 0.2, 1);
+      }
+      .property-card:hover .property-card-img {
+        transform: scale(1.05);
+      }
+
+      .property-card-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-61);
+        backdrop-filter: blur(8px);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 0.35rem 0.8rem;
+        border-radius: 9999px;
+        border: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-58);
+      }
+
+      .wishlist-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-62);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-main);
+        transition: all 0.2s ease;
+        z-index: 10;
+      }
+      .wishlist-btn:hover {
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+        transform: scale(1.1);
+      }
+      .wishlist-btn.saved {
+        color: var(--color-terracotta);
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+      }
+
+      .property-card-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.35rem;
+      }
+      .property-card-location {
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--color-accent);
+      }
+      .property-card-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      .property-card-name {
+        font-family: var(--font-serif);
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+        line-height: 1.25;
+        margin-bottom: 0.45rem;
+      }
+
+      .property-card-specs {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+        margin-bottom: 0.75rem;
+      }
+
+      .property-card-price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+        margin-top: auto;
+      }
+      .property-card-price {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+      .property-card-unit {
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+      }
+
+      /* ==========================================================================
+         EDITORIAL DESTINATIONS & CURATED COLLECTIONS
+         ========================================================================== */
+      .editorial-section {
+        padding: 6rem 0;
+      }
+
+      .destinations-mosaic {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 1.5rem;
+      }
+
+      .dest-card {
+        position: relative;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        height: 380px;
+        cursor: pointer;
+        box-shadow: var(--shadow-card);
+      }
+      .dest-card-col-6 { grid-column: span 6; }
+      .dest-card-col-4 { grid-column: span 4; }
+      .dest-card-col-8 { grid-column: span 8; }
+
+      .dest-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s var(--transition-standard);
+      }
+      .dest-card:hover .dest-card-img {
+        transform: scale(1.06);
+      }
+      .dest-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-63) 0%, var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-64) 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 2rem;
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+      }
+      .dest-card-title {
+        font-family: var(--font-serif);
+        font-size: 1.9rem;
+        margin-bottom: 0.25rem;
+      }
+      .dest-card-subtitle {
+        font-size: 0.85rem;
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-65);
+        letter-spacing: 0.05em;
+      }
+
+      /* Storytelling banner */
+      .story-banner {
+        background: var(--color-surface-dark);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        border-radius: var(--radius-xl);
+        padding: 5rem 4rem;
+        margin: 6rem 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .story-banner-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 4rem;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+      }
+      .story-title {
+        font-size: clamp(2.4rem, 4vw, 3.6rem);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        line-height: 1.15;
+        margin-bottom: 1.5rem;
+      }
+      .story-text {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-66);
+        font-weight: 300;
+        margin-bottom: 2rem;
+      }
+
+      /* ==========================================================================
+         SEARCH / DISCOVERY VIEW WITH ADVANCED REAL-TIME FILTERS
+         ========================================================================== */
+      .search-view-layout {
+        padding: 3rem 0 6rem;
+      }
+      .filters-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.2rem 1.8rem;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        margin-bottom: 2.5rem;
+        box-shadow: var(--shadow-soft);
+      }
+      .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      .filter-select {
+        padding: 0.55rem 1rem;
+        border-radius: 9999px;
+        border: 1px solid var(--color-border);
+        background: var(--color-bg);
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--color-text-main);
+        cursor: pointer;
+      }
+
+      /* ==========================================================================
+         PROPERTY DETAIL VIEW (EDITORIAL GALLERY, AMENITIES & CALENDAR)
+         ========================================================================== */
+      .property-detail-view {
+        padding: 2.5rem 0 6rem;
+      }
+      .breadcrumbs {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+        margin-bottom: 1.5rem;
+      }
+
+      .property-header-title {
+        font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+        margin-bottom: 0.75rem;
+      }
+      .property-header-sub {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+        color: var(--color-text-muted);
+      }
+
+      /* 5-Photo Editorial Gallery Grid */
+      .gallery-editorial-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        grid-template-rows: 240px 240px;
+        gap: 1rem;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        margin-bottom: 3.5rem;
+        position: relative;
+      }
+      .gallery-item-hero {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+      }
+      .gallery-item {
+        position: relative;
+        overflow: hidden;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-16);
+        cursor: pointer;
+      }
+      .gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+      }
+      .gallery-item:hover img {
+        transform: scale(1.04);
+      }
+      .gallery-view-all-btn {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-67);
+        backdrop-filter: blur(8px);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        padding: 0.7rem 1.4rem;
+        border-radius: 9999px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-49);
+        cursor: pointer;
+        z-index: 10;
+      }
+      .gallery-view-all-btn:hover {
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-68);
+      }
+
+      /* Detail 2-Column Split: Content vs Sticky Booking Widget */
+      .detail-layout-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 4.5rem;
+        align-items: start;
+      }
+
+      .detail-specs-bar {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 1.8rem 0;
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
+        margin-bottom: 2.5rem;
+      }
+      .detail-spec-item {
+        display: flex;
+        flex-direction: column;
+      }
+      .detail-spec-val {
+        font-size: 1.25rem;
+        font-weight: 600;
+        font-family: var(--font-serif);
+      }
+      .detail-spec-lbl {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .detail-section {
+        margin-bottom: 3.5rem;
+      }
+      .detail-section-title {
+        font-size: 1.7rem;
+        margin-bottom: 1.2rem;
+      }
+      .detail-body-text {
+        font-size: 1.05rem;
+        line-height: 1.75;
+        color: var(--color-text-muted);
+        font-weight: 300;
+      }
+
+      /* Amenities Grid */
+      .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.2rem 2rem;
+      }
+      .amenity-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        font-size: 0.98rem;
+        color: var(--color-text-main);
+      }
+
+      /* Sticky Booking Card */
+      .sticky-booking-widget {
+        position: sticky;
+        top: 110px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: 2.2rem;
+        box-shadow: var(--shadow-card);
+      }
+      .booking-widget-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 1.8rem;
+      }
+      .booking-rate-big {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+
+      .booking-calendar-selector {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        margin-bottom: 1.2rem;
+        overflow: hidden;
+      }
+      .booking-date-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      .date-input-box {
+        padding: 0.8rem 1rem;
+        cursor: pointer;
+        background: var(--color-bg);
+      }
+      .date-input-box:first-child {
+        border-right: 1px solid var(--color-border);
+      }
+      .date-input-lbl {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        display: block;
+      }
+      .date-input-val {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      .booking-guests-selector {
+        padding: 0.8rem 1rem;
+        border-top: 1px solid var(--color-border);
+        background: var(--color-bg);
+        cursor: pointer;
+      }
+
+      /* Price Calculation Breakdown Table */
+      .price-breakdown-table {
+        margin: 1.8rem 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .price-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.92rem;
+        color: var(--color-text-muted);
+      }
+      .price-row-total {
+        margin-top: 0.75rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--color-border);
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+
+      /* Interactive Month Calendar Component */
+      .interactive-calendar {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+      }
+      .calendar-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.2rem;
+      }
+      .calendar-month-title {
+        font-family: var(--font-serif);
+        font-size: 1.35rem;
+      }
+      .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        margin-bottom: 0.6rem;
+      }
+      .calendar-days-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+      }
+      .cal-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.88rem;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .cal-day:hover:not(.disabled) {
+        background: var(--color-surface-subtle);
+      }
+      .cal-day.disabled {
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-69);
+        cursor: not-allowed;
+        text-decoration: line-through;
+        opacity: 0.6;
+      }
+      .cal-day.selected {
+        background: var(--color-surface-dark) !important;
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24) !important;
+      }
+      .cal-day.in-range {
+        background: var(--color-accent-soft);
+        color: var(--color-text-main);
+        border-radius: 0;
+      }
+
+      /* ==========================================================================
+         CHECKOUT & BOOKING FLOW (5 REFINED STEPS)
+         ========================================================================== */
+      .checkout-layout {
+        padding: 3rem 0 6rem;
+      }
+      .checkout-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 4.5rem;
+        align-items: start;
+      }
+
+      .checkout-step-tracker {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+      }
+      .step-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+      .step-indicator.active {
+        color: var(--color-accent);
+      }
+      .step-bubble {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--color-surface-subtle);
+        border: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+      }
+      .step-indicator.active .step-bubble {
+        background: var(--color-accent);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+        border-color: var(--color-accent);
+      }
+
+      .form-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: 2.5rem;
+        box-shadow: var(--shadow-card);
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+      }
+      .form-group-full { grid-column: span 2; }
+
+      .input-label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-text-main);
+        margin-bottom: 0.45rem;
+      }
+      .form-control {
+        width: 100%;
+        padding: 0.85rem 1.1rem;
+        background: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        font-size: 0.95rem;
+        color: var(--color-text-main);
+        transition: border-color 0.2s ease;
+      }
+      .form-control:focus {
+        border-color: var(--color-accent);
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+      }
+
+      /* Payment Gateway Selectors (Paystack & M-Pesa STK Push) */
+      .payment-methods-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin: 1.5rem 0;
+      }
+      .payment-option-card {
+        padding: 1.2rem;
+        border: 1.5px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.5rem;
+        transition: all 0.25s ease;
+      }
+      .payment-option-card:hover, .payment-option-card.selected {
+        border-color: var(--color-accent);
+        background: var(--color-accent-soft);
+      }
+
+      /* ==========================================================================
+         HOST DASHBOARD & HOST ONBOARDING WIZARD
+         ========================================================================== */
+      .host-portal-header {
+        background: var(--color-surface-dark);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        padding: 4rem 0 3rem;
+      }
+      .host-nav-tabs {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-top: 2rem;
+        border-bottom: 1px solid var(--color-border-dark);
+      }
+      .host-tab-link {
+        padding: 0.75rem 0;
+        color: var(--color-text-light-muted);
+        font-size: 0.92rem;
+        font-weight: 500;
+        cursor: pointer;
+        position: relative;
+      }
+      .host-tab-link.active {
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+      }
+      .host-tab-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--color-accent);
+      }
+
+      .host-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin: 2.5rem 0;
+      }
+      .stat-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 1.8rem;
+        box-shadow: var(--shadow-soft);
+      }
+      .stat-card-lbl {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--color-text-muted);
+        margin-bottom: 0.4rem;
+      }
+      .stat-card-val {
+        font-family: var(--font-serif);
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: var(--color-text-main);
+      }
+
+      /* ==========================================================================
+         MODALS & OVERLAYS (PHOTO LIGHTBOX, M-PESA STK DIALOG, TOASTS)
+         ========================================================================== */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-70);
+        backdrop-filter: blur(12px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .modal-backdrop.open {
+        display: flex;
+      }
+
+      .modal-box {
+        background: var(--color-surface);
+        border-radius: var(--radius-xl);
+        max-width: 640px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-cinematic);
+        position: relative;
+      }
+      .modal-close-btn {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--color-surface-subtle);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-main);
+      }
+
+      /* Lightbox Gallery Modal */
+      .lightbox-modal {
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-71);
+        max-width: 1100px;
+        width: 100%;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .lightbox-media {
+        position: relative;
+        height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .lightbox-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      .lightbox-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-58);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .lightbox-nav-btn:hover { background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-72); }
+      .lightbox-prev { left: 1.5rem; }
+      .lightbox-next { right: 1.5rem; }
+
+      /* Toast Notification */
+      #toast-container {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        pointer-events: none;
+      }
+      .toast-msg {
+        background: var(--color-surface-dark);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        padding: 0.9rem 1.6rem;
+        border-radius: 9999px;
+        box-shadow: var(--shadow-cinematic);
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        transform: translateY(20px);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: auto;
+      }
+      .toast-msg.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      /* ==========================================================================
+         SITE FOOTER
+         ========================================================================== */
+      #site-footer {
+        background: var(--color-surface-dark);
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        padding: 5rem 0 3rem;
+        border-top: 1px solid var(--color-border-dark);
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 1.5fr repeat(3, 1fr);
+        gap: 4rem;
+        margin-bottom: 4rem;
+      }
+      .footer-brand-title {
+        font-family: var(--font-serif);
+        font-size: 2rem;
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);
+        letter-spacing: 0.12em;
+        margin-bottom: 0.75rem;
+      }
+      .footer-col-title {
+        font-family: var(--font-sans);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--color-accent);
+        margin-bottom: 1.4rem;
+      }
+      .footer-links-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+      }
+      .footer-link {
+        font-size: 0.92rem;
+        color: var(--color-text-light-muted);
+        transition: color 0.2s ease;
+      }
+      .footer-link:hover {
+        color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02);
+      }
+
+      .footer-bottom {
+        padding-top: 2.5rem;
+        border-top: 1px solid var(--color-border-dark);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: var(--color-text-light-muted);
+      }
+
+      /* Responsive Media Queries */
+      @media (max-width: 1024px) {
+        .hero-grid { grid-template-columns: 1fr; gap: 3rem; }
+        .hero-visual-card img { height: 420px; }
+        .search-engine-bar { grid-template-columns: 1fr 1fr; border-radius: var(--radius-xl); padding: 1.2rem; }
+        .detail-layout-grid { grid-template-columns: 1fr; }
+        .gallery-editorial-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 200px 200px; }
+        .gallery-item-hero { grid-column: span 2; grid-row: span 1; }
+        .checkout-grid { grid-template-columns: 1fr; }
+        .host-stat-grid { grid-template-columns: repeat(2, 1fr); }
+        .footer-grid { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+      }
+
+      @media (max-width: 768px) {
+        .nav-links, .nav-actions .btn { display: none; }
+        .mobile-menu-toggle { display: block; }
+        .dest-card-col-6, .dest-card-col-4, .dest-card-col-8 { grid-column: span 12; }
+        .dest-card { height: 280px; }
+        .property-grid { grid-template-columns: 1fr; }
+        .search-engine-bar { grid-template-columns: 1fr; }
+        .search-segment:not(:last-child)::after { display: none; }
+        .gallery-editorial-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+        .gallery-item { min-width: 85vw; height: 260px; scroll-snap-align: start; }
+        .story-banner { padding: 3rem 1.8rem; }
+        .story-banner-grid { grid-template-columns: 1fr; }
+        .footer-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  <link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-eshop-skeleton-styles="">.eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-73);vertical-align:middle}.eshop-placeholder-media{background:linear-gradient(135deg,var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-73),var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-74));object-fit:cover}</style><style data-theme-tokens="">:root{--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-01:#faf7f2;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-02:#ffffff;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-03:#f3efe9;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-04:#121815;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-05:#0a0f0d;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-06:#19221d;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-07:#18221d;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-08:#5d6861;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-09:#f4efea;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-10:#9ba7a0;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-11:#c49758;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-12:#ae8345;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-13:#f6efe5;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-14:#b65d43;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-15:#5f7363;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-16:#e5dfd5;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-17:#28372f;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-18:#2e7d4e;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-19:#c0392b;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-20:rgba(24,34,29,0.05);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-21:rgba(24,34,29,0.08);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-22:rgba(24,34,29,0.14);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-23:rgba(10,15,13,0.45);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24:#f8f5ee;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-25:rgba(18,24,21,0.2);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-26:#25332c;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-27:rgba(18,24,21,0.28);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-28:rgba(196,151,88,0.3);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-29:rgba(196,151,88,0.4);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-30:#d0c8bd;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-31:rgba(255,255,255,0.35);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-32:rgba(255,255,255,0.12);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-33:#090e0b;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-34:rgba(10,15,12,0.1);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-35:rgba(9,14,11,0.7);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-36:rgba(196,151,88,0.6);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-37:rgba(0,0,0,0.6);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-38:#d4c9bd;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-39:#171e19;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-40:rgba(0,0,0,0.8);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-41:#ffdf9e;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-42:rgba(255,215,130,0.7);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-43:#e6c280;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-44:#9c7238;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-45:rgba(255,255,255,0.4);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-46:rgba(255,255,255,0.05);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-47:rgba(0,0,0,0.5);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-48:rgba(18,24,21,0.7);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-49:rgba(255,255,255,0.2);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-50:rgba(196,151,88,0.85);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-51:rgba(250,247,242,0.92);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-52:rgba(229,223,213,0.8);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-53:#c0b7aa;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-54:rgba(24,34,29,0.06);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-55:rgba(245,240,232,0.6);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-56:rgba(196,151,88,0.12);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-57:rgba(18,24,21,0.82);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-58:rgba(255,255,255,0.15);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-59:rgba(18,24,21,0.25);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-60:#ece6dc;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-61:rgba(18,24,21,0.75);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-62:rgba(255,255,255,0.85);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-63:rgba(18,24,21,0.05);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-64:rgba(18,24,21,0.78);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-65:#d6cbc0;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-66:#bbb0a3;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-67:rgba(18,24,21,0.85);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-68:#0f1612;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-69:#c8bfb4;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-70:rgba(10,15,12,0.85);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-71:#0b100d;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-72:rgba(255,255,255,0.3);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-73:#d1d5db;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-74:#f3f4f6;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-75:rgba(255,255,255,0.1);--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-76:#fff;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-77:#e8f5e9;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-78:#2e7d32;--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-79:#0ba4db;}</style></head>
+  <body>
+    <!-- ==========================================================================
+         CINEMATIC 3D ENTRANCE PORTAL
+         ========================================================================== -->
+    <div id="entrance-portal" role="dialog">
+      <!-- Revealed interior sanctuary behind doors -->
+      <div id="entrance-reveal-bg"></div>
+      <div id="entrance-reveal-overlay">
+        <div class="entrance-brand-emblem">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </div>
+        <h1 class="entrance-brand-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></h1>
+        <p class="entrance-brand-sub"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+      </div>
+
+      <!-- 3D Realistic Double Doorway -->
+      <div id="door-viewport">
+        <!-- Left Door Panel -->
+        <div class="door-panel door-panel-left" id="door-left">
+          <div class="door-molding door-molding-top"></div>
+          <div class="door-molding door-molding-bottom"></div>
+          <div class="door-handle"></div>
+        </div>
+        <!-- Right Door Panel -->
+        <div class="door-panel door-panel-right" id="door-right">
+          <div class="door-molding door-molding-top"></div>
+          <div class="door-molding door-molding-bottom"></div>
+          <div class="door-handle"></div>
+        </div>
+      </div>
+
+      <!-- Center Seam Warm Light Glow -->
+      <div id="door-light-seam"></div>
+
+      <!-- Skip Control -->
+      <button id="skip-entrance-btn">
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ==========================================================================
+         SITE HEADER & NAVIGATION
+         ========================================================================== -->
+    <header id="site-header">
+      <div class="container">
+        <div class="nav-inner">
+          <!-- Brand Logo -->
+          <a href="#/" class="brand-logo">
+            <div class="brand-symbol">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <div class="brand-text">
+              <span class="brand-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+              <span class="brand-tagline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+            </div>
+          </a>
+
+          <!-- Navigation Links -->
+          <nav class="nav-links">
+            <a href="#/explore" class="nav-link" id="nav-explore"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+            <a href="#/destinations" class="nav-link" id="nav-destinations"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+            <a href="#/collections" class="nav-link" id="nav-collections"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+            <a href="#/how-it-works" class="nav-link" id="nav-how"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+            <a href="#/trips" class="nav-link" id="nav-trips"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a>
+          </nav>
+
+          <!-- Navigation Right Actions -->
+          <div class="nav-actions">
+            <!-- Currency Selector -->
+            <div class="currency-selector">
+              <button class="currency-btn" id="currency-toggle-btn">
+                <span id="current-currency-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Wishlist Icon Badge -->
+            <a href="#/wishlist" class="nav-badge-btn">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+              <span class="badge-counter" id="wishlist-counter"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            </a>
+
+            <!-- Host a Stay CTA -->
+            <a href="#/host" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.65rem 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+
+            <!-- User Menu -->
+            <a href="#/host/dashboard" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.65rem 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+
+            <!-- Mobile Hamburger Toggle -->
+            <button class="mobile-menu-toggle" id="mobile-toggle-btn">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==========================================================================
+         ROUTER VIEW CONTAINER (DYNAMIC VIEW RENDERING)
+         ========================================================================== -->
+    <main id="app-viewport">
+      <!-- Views are dynamically injected by Router according to hash -->
+    </main>
+
+    <!-- ==========================================================================
+         MODALS & OVERLAYS CONTAINER
+         ========================================================================== -->
+    <!-- Lightbox Gallery Modal -->
+    <div id="gallery-lightbox" class="modal-backdrop" role="dialog" aria-modal="true">
+      <div class="lightbox-modal">
+        <div style="padding: 1.2rem 1.8rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-75); color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-24);">
+          <span id="lightbox-counter" style="font-size: 0.9rem; font-weight: 500;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span>
+          <button class="modal-close-btn" id="close-lightbox-btn" style="background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-58); color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-76);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        </div>
+        <div class="lightbox-media">
+          <button class="lightbox-nav-btn lightbox-prev" id="lightbox-prev-btn"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+          <img id="lightbox-main-img" class="lightbox-img eshop-placeholder-media" data-skeleton-media="">
+          <button class="lightbox-nav-btn lightbox-next" id="lightbox-next-btn"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- M-Pesa STK Push Simulation Modal -->
+    <div id="mpesa-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+      <div class="modal-box" style="text-align: center;">
+        <button class="modal-close-btn" onclick="closeModal('mpesa-modal')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        <div style="width: 64px; height: 64px; background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-77); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-78);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+        </div>
+        <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></h3>
+        <p style="color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        <div style="background: var(--color-bg); padding: 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span><span id="mpesa-amount-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></span><br>
+          <span style="font-size: 0.85rem; font-weight: 400; color: var(--color-text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></span>
+        </div>
+        <div style="font-size: 0.88rem; color: var(--color-accent); font-weight: 600; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 89%;"></span><span id="mpesa-timer"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="simulateMpesaSuccess()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></button>
+      </div>
+    </div>
+
+    <!-- Paystack Gateway Modal -->
+    <div id="paystack-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+      <div class="modal-box">
+        <button class="modal-close-btn" onclick="closeModal('paystack-modal')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+          <div style="width: 32px; height: 32px; background: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-79); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--theme-elysian-stays-cinematic-vacation-boutique-short-stay-rentals-color-76); font-weight: 800;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+          <h3 style="font-size: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></h3>
+        </div>
+        <p style="color: var(--color-text-muted); font-size: 0.92rem; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        <div class="form-grid" style="margin-bottom: 1.5rem;">
+          <div class="form-group-full">
+            <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></label>
+            <input type="text" class="form-control" value="4000 1234 5678 9010">
+          </div>
+          <div>
+            <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></label>
+            <input type="text" class="form-control" value="08/28">
+          </div>
+          <div>
+            <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></label>
+            <input type="password" class="form-control" value="888">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="simulatePaystackSuccess()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></button>
+        <div style="margin-top: 1rem; font-size: 0.78rem; text-align: center; color: var(--color-text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Overlay -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <!-- ==========================================================================
+         SITE FOOTER
+         ========================================================================== -->
+    <footer id="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <div class="footer-brand-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></div>
+            <p style="font-size: 0.95rem; color: var(--color-text-light-muted); line-height: 1.7; margin-bottom: 1.8rem; max-width: 340px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <button class="btn btn-outline-white" id="replay-entrance-btn" style="font-size: 0.82rem; padding: 0.5rem 1.1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></button>
+          </div>
+
+          <div>
+            <div class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></div>
+            <ul class="footer-links-list">
+              <li><a href="#/explore" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+              <li><a href="#/destinations" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+              <li><a href="#/collections" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+              <li><a href="#/explore?type=villa" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+              <li><a href="#/explore?type=coastal" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></div>
+            <ul class="footer-links-list">
+              <li><a href="#/how-it-works" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a></li>
+              <li><a href="#/trust-and-safety" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+              <li><a href="#/cancellation-policy" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+              <li><a href="#/help" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+              <li><a href="#/contact" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></div>
+            <ul class="footer-links-list">
+              <li><a href="#/host" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+              <li><a href="#/host/onboarding" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></li>
+              <li><a href="#/host/dashboard" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a></li>
+              <li><a href="#/host/dashboard#reservations" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></li>
+              <li><a href="#/host/dashboard#earnings" class="footer-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+          <div style="display: flex; gap: 1.5rem;">
+            <a href="#/trust-and-safety" style="color: inherit;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></a>
+            <a href="#/cancellation-policy" style="color: inherit;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+            <a href="#/help" style="color: inherit;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ==========================================================================
+         JAVASCRIPT APPLICATION CORE (STANDALONE ARCHITECTURE)
+         ========================================================================== -->
+    <script>
+      /**
+       * ELYSIAN SHORT-STAY RENTAL & VACATION PLATFORM
+       * Standalone Architecture: Router, State, Curated Dataset, Payments, Host Wizard
+       */
+
+      // ==========================================
+      // 1. CURRENCY CONVERSION & FORMATTING
+      // ==========================================
+      const CURRENCIES = {
+        KES: { symbol: "", rate: 1, label: "" },
+        USD: { symbol: "", rate: 0.0077, label: "" },
+        EUR: { symbol: "", rate: 0.0071, label: "" },
+        GBP: { symbol: "", rate: 0.0061, label: "" }
+      };
+      let currentCurrency = localStorage.getItem('elysian_currency') || 'KES';
+
+      function formatPrice(amountInKES) {
+        const curr = CURRENCIES[currentCurrency] || CURRENCIES.KES;
+        const converted = Math.round(amountInKES * curr.rate);
+        return `${curr.symbol}${converted.toLocaleString()}`;
+      }
+
+      // ==========================================
+      // 2. VERIFIED PHOTOGRAPHIC DATASET (14 PROPERTIES)
+      // ==========================================
+      const INITIAL_PROPERTIES = [
+        {
+          id: 'karen-glasshouse',
+          title: "",
+          category: "",
+          destination: "",
+          neighborhood: "",
+          tag: "",
+          rating: 0,
+          reviewsCount: 0,
+          guests: 8,
+          bedrooms: 4,
+          beds: 5,
+          baths: 4.5,
+          pricePerNight: 0,
+          cleaningFee: 0,
+          serviceFeePercent: 0,
+          taxPercent: 0.14,
+          heroImg: "",
+          gallery: [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          description: "",
+          amenities: ["", "", "", "", "", "", "", ""],
+          bookedDates: ["", "", "", "", ""]
+        },
+        {
+          id: 'amani-ocean-villa',
+          title: "",
+          category: "",
+          destination: "",
+          neighborhood: "",
+          tag: "",
+          rating: 0,
+          reviewsCount: 0,
+          guests: 10,
+          bedrooms: 5,
+          beds: 6,
+          baths: 5,
+          pricePerNight: 0,
+          cleaningFee: 0,
+          serviceFeePercent: 0,
+          taxPercent: 0.14,
+          heroImg: "",
+          gallery: [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          description: "",
+          amenities: ["", "", "", "", "", "", "", ""],
+          bookedDates: ["", "", ""]
+        },
+        {
+          id: 'naivasha-escarpment',
+          title: "",
+          category: "",
+          destination: "",
+          neighborhood: "",
+          tag: "",
+          rating: 0,
+          reviewsCount: 0,
+          guests: 6,
+          bedrooms: 3,
+          beds: 4,
+          baths: 3,
+          pricePerNight: 0,
+          cleaningFee: 0,
+          serviceFeePercent: 0,
+          taxPercent: 0.14,
+          heroImg: "",
+          gallery: [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          description: "",
+          amenities: ["", "", "", "", "", "", "", ""],
+          bookedDates: ["", ""]
+        },
+        {
+          id: 'watamu-sultan-pavilion',
+          title: "",
+          category: "",
+          destination: "",
+          neighborhood: "",
+          tag: "",
+          rating: 0,
+          reviewsCount: 0,
+          guests: 8,
+          bedrooms: 4,
+          beds: 4,
+          baths: 4,
+          pricePerNight: 0,
+          cleaningFee: 0,
+          serviceFeePercent: 0,
+          taxPercent: 0.14,
+          heroImg: "",
+          gallery: [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          description: "",
+          amenities: ["", "", "", "", "", "", "", ""],
+          bookedDates: ["", ""]
+        },
+        {
+          id: 'mara-horizon-lodge',
+          title: "",
+          category: "",
+          destination: "",
+          neighborhood: "",
+          tag: "",
+          rating: 0,
+          reviewsCount: 0,
+          guests: 6,
+          bedrooms: 3,
+          beds: 4,
+          baths: 3.5,
+          pricePerNight: 0,
+          cleaningFee: 0,
+          serviceFeePercent: 0,
+          taxPercent: 0.14,
+          heroImg: "",
+          gallery: [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          description: "",
+          amenities: ["", "", "", "", "", "", ""],
+          bookedDates: ["", "", ""]
+        },
+        {
+          id: 'camps-bay-penthouse',
+          title: "",
+          category: "",
+          destination: "",
+          neighborhood: "",
+          tag: "",
+          rating: 0,
+          reviewsCount: 0,
+          guests: 4,
+          bedrooms: 2,
+          beds: 2,
+          baths: 2,
+          pricePerNight: 0,
+          cleaningFee: 0,
+          serviceFeePercent: 0,
+          taxPercent: 0.14,
+          heroImg: "",
+          gallery: [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          description: "",
+          amenities: ["", "", "", "", "", "", "", ""],
+          bookedDates: ["", ""]
+        },
+        {
+          id: 'zanzibar-stone-haven',
+          title: "",
+          category: "",
+          destination: "",
+          neighborhood: "",
+          tag: "",
+          rating: 0,
+          reviewsCount: 0,
+          guests: 8,
+          bedrooms: 4,
+          beds: 4,
+          baths: 4,
+          pricePerNight: 0,
+          cleaningFee: 0,
+          serviceFeePercent: 0,
+          taxPercent: 0.14,
+          heroImg: "",
+          gallery: [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          description: "",
+          amenities: ["", "", "", "", "", "", "", ""],
+          bookedDates: ["", "", ""]
+        },
+        {
+          id: 'kileleshwa-skyline-villa',
+          title: "",
+          category: "",
+          destination: "",
+          neighborhood: "",
+          tag: "",
+          rating: 0,
+          reviewsCount: 0,
+          guests: 4,
+          bedrooms: 2,
+          beds: 2,
+          baths: 2.5,
+          pricePerNight: 0,
+          cleaningFee: 0,
+          serviceFeePercent: 0,
+          taxPercent: 0.14,
+          heroImg: "",
+          gallery: [
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          description: "",
+          amenities: ["", "", "", "", "", "", ""],
+          bookedDates: ["", ""]
+        }
+      ];
+
+      // Merge with custom host listings from localStorage
+      function getProperties() {
+        const stored = localStorage.getItem('elysian_custom_properties');
+        if (stored) {
+          try {
+            const custom = JSON.parse(stored);
+            return [...custom, ...INITIAL_PROPERTIES];
+          } catch(e) { return INITIAL_PROPERTIES; }
+        }
+        return INITIAL_PROPERTIES;
+      }
+
+      function getPropertyById(id) {
+        return getProperties().find(p => p.id === id) || INITIAL_PROPERTIES[0];
+      }
+
+      // ==========================================
+      // 3. IMAGE ERROR GRACEFUL ARCHITECTURAL FALLBACK
+      // ==========================================
+      function getFallbackImage(title) {
+        const safeTitle = encodeURIComponent(title || 'Sanctuary Stay');
+        return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox=""><rect width="800" height="600" fill="%23171F1A"/><line x1="0" y1="0" x2="800" y2="600" stroke="%2325322A" stroke-width="2"/><line x1="800" y1="0" x2="0" y2="600" stroke="%2325322A" stroke-width="2"/><circle cx="400" cy="300" r="120" fill="none" stroke="%23C49758" stroke-width="1.5" stroke-dasharray="6,6"/><text x="400" y="295" font-family="Georgia,serif" font-size="28" fill="%23F4EFEA" text-anchor="middle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></text><text x="400" y="335" font-family="sans-serif" font-size="14" fill="%239BA7A0" letter-spacing="3" text-anchor="middle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></text></svg>`;
+      }
+
+      window.handleImageError = function(img, title) {
+        img.onerror = null;
+        img.src = getFallbackImage(title);
+      };
+
+      // ==========================================
+      // 4. WISHLIST & LOCAL STORAGE HELPERS
+      // ==========================================
+      function getWishlist() {
+        try {
+          return JSON.parse(localStorage.getItem('elysian_wishlist')) || [];
+        } catch(e) { return []; }
+      }
+
+      function toggleWishlist(propId) {
+        let list = getWishlist();
+        if (list.includes(propId)) {
+          list = list.filter(id => id !== propId);
+          showToast('Removed from saved sanctuaries');
+        } else {
+          list.push(propId);
+          showToast('Saved to your architectural wishlist');
+        }
+        localStorage.setItem('elysian_wishlist', JSON.stringify(list));
+        updateWishlistBadge();
+        // Refresh wishlist buttons on screen
+        document.querySelectorAll(`.wishlist-btn[data-id="${propId}"]`).forEach(btn => {
+          btn.classList.toggle('saved', list.includes(propId));
+        });
+      }
+
+      function updateWishlistBadge() {
+        const badge = document.getElementById('wishlist-counter');
+        if (badge) {
+          badge.textContent = getWishlist().length;
+        }
+      }
+
+      // ==========================================
+      // 5. TOAST NOTIFICATIONS
+      // ==========================================
+      function showToast(message) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+        toast.innerHTML = `
+          <svg width="18" height="18" viewBox="" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="2"></polyline>
+          </svg>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+        `;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+          toast.classList.remove('show');
+          setTimeout(() => toast.remove(), 400);
+        }, 3200);
+      }
+
+      // ==========================================
+      // 6. 3D ENTRANCE SEQUENCE CONTROLLER
+      // ==========================================
+      function initEntrance() {
+        const portal = document.getElementById('entrance-portal');
+        const skipBtn = document.getElementById('skip-entrance-btn');
+        if (!portal) return;
+
+        // Check if user already saw entrance this session or prefers reduced motion
+        const alreadySeen = sessionStorage.getItem('elysian_door_entrance_seen');
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function closePortal() {
+          portal.classList.add('doors-opened');
+          setTimeout(() => {
+            portal.style.transition = 'opacity 1s ease';
+            portal.style.opacity = '0';
+            setTimeout(() => {
+              portal.style.display = 'none';
+              sessionStorage.setItem('elysian_door_entrance_seen', 'true');
+            }, 1000);
+          }, 1800);
+        }
+
+        if (alreadySeen || prefersReducedMotion) {
+          portal.style.display = 'none';
+          return;
+        }
+
+        // Automatic cinematic reveal on normal initial page load
+        setTimeout(() => {
+          portal.classList.add('doors-opened');
+          setTimeout(() => {
+            closePortal();
+          }, 2400);
+        }, 700);
+
+        skipBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          portal.style.transition = 'opacity 0.4s ease';
+          portal.style.opacity = '0';
+          setTimeout(() => {
+            portal.style.display = 'none';
+            sessionStorage.setItem('elysian_door_entrance_seen', 'true');
+          }, 400);
+        });
+      }
+
+      // Replay entrance button in footer
+      document.getElementById('replay-entrance-btn')?.addEventListener('click', () => {
+        sessionStorage.removeItem('elysian_door_entrance_seen');
+        const portal = document.getElementById('entrance-portal');
+        if (portal) {
+          portal.classList.remove('doors-opened');
+          portal.style.display = 'flex';
+          portal.style.opacity = '1';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(() => {
+            portal.classList.add('doors-opened');
+            setTimeout(() => {
+              portal.style.transition = 'opacity 1s ease';
+              portal.style.opacity = '0';
+              setTimeout(() => {
+                portal.style.display = 'none';
+              }, 1000);
+            }, 2600);
+          }, 500);
+        }
+      });
+
+      // Currency toggle button in header
+      document.getElementById('currency-toggle-btn')?.addEventListener('click', () => {
+        const keys = Object.keys(CURRENCIES);
+        const idx = keys.indexOf(currentCurrency);
+        currentCurrency = keys[(idx + 1) % keys.length];
+        localStorage.setItem('elysian_currency', currentCurrency);
+        document.getElementById('current-currency-lbl').textContent = currentCurrency;
+        showToast(`Currency updated to ${CURRENCIES[currentCurrency].label}`);
+        // Re-render current view to update prices
+        renderCurrentRoute();
+      });
+
+      // ==========================================
+      // 7. LIGHTBOX GALLERY CONTROLLER
+      // ==========================================
+      let activeGalleryPhotos = [];
+      let activePhotoIndex = 0;
+
+      function openGallery(photos, startIndex = 0) {
+        activeGalleryPhotos = photos || [];
+        activePhotoIndex = startIndex;
+        const modal = document.getElementById('gallery-lightbox');
+        const img = document.getElementById('lightbox-main-img');
+        const counter = document.getElementById('lightbox-counter');
+        if (!modal || !img) return;
+
+        function updateView() {
+          img.src = activeGalleryPhotos[activePhotoIndex];
+          counter.textContent = `Photo ${activePhotoIndex + 1} of ${activeGalleryPhotos.length}`;
+        }
+
+        updateView();
+        modal.classList.add('open');
+
+        document.getElementById('lightbox-prev-btn').onclick = () => {
+          activePhotoIndex = (activePhotoIndex - 1 + activeGalleryPhotos.length) % activeGalleryPhotos.length;
+          updateView();
+        };
+
+        document.getElementById('lightbox-next-btn').onclick = () => {
+          activePhotoIndex = (activePhotoIndex + 1) % activeGalleryPhotos.length;
+          updateView();
+        };
+
+        document.getElementById('close-lightbox-btn').onclick = () => {
+          modal.classList.remove('open');
+        };
+      }
+
+      window.closeModal = function(modalId) {
+        document.getElementById(modalId)?.classList.remove('open');
+      };
+
+      // ==========================================
+      // 8. RENDERER VIEWS
+      // ==========================================
+
+      // 8.1 VIEW: HOMEPAGE
+      function renderHomeView() {
+        const properties = getProperties();
+        const wishlist = getWishlist();
+
+        return `
+          <!-- HERO SECTION -->
+          <section class="hero-section">
+            <div class="container">
+              <div class="hero-grid">
+                <div>
+                  <div class="hero-tag">
+                    <svg width="14" height="14" viewBox="" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></div>
+                  <h1 class="hero-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></h1>
+                  <p class="hero-lead"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+                  <!-- Search Bar Engine -->
+                  <div class="search-engine-bar" role="search">
+                    <div class="search-segment" onclick="location.hash='#/explore'">
+                      <span class="search-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></span>
+                      <div class="search-value"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></div>
+                    </div>
+                    <div class="search-segment" onclick="location.hash='#/explore'">
+                      <span class="search-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                      <div class="search-value"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></div>
+                    </div>
+                    <div class="search-segment" onclick="location.hash='#/explore'">
+                      <span class="search-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                      <div class="search-value"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></div>
+                    </div>
+                    <div class="search-segment" onclick="location.hash='#/explore'">
+                      <span class="search-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span>
+                      <div class="search-value"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></div>
+                    </div>
+                    <button class="search-submit-btn" onclick="location.hash='#/explore'">
+                      <svg width="20" height="20" viewBox="" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="hero-visual-card">
+                  <img / class="eshop-placeholder-media">
+                  <div class="hero-visual-badge">
+                    <div>
+                      <div style="font-family: var(--font-serif); font-size: 1.35rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></div>
+                      <div style="font-size: 0.85rem; color: #D0C6B8;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></div>
+                    </div>
+                    <a href="#/property/karen-glasshouse" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Category Pills -->
+              <div class="category-pills-bar">
+                <button class="category-pill active" onclick="location.hash='#/explore'">
+                  <svg width="16" height="16" viewBox="" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 H5a2 2 z"/></svg><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></button>
+                <button class="category-pill" onclick="location.hash='#/explore?type=villa'">
+                  <svg width="16" height="16" viewBox="" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></button>
+                <button class="category-pill" onclick="location.hash='#/explore?type=coastal'">
+                  <svg width="16" height="16" viewBox="" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></button>
+                <button class="category-pill" onclick="location.hash='#/explore?type=lodge'">
+                  <svg width="16" height="16" viewBox="" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22"/></svg><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></button>
+                <button class="category-pill" onclick="location.hash='#/explore?type=penthouse'">
+                  <svg width="16" height="16" viewBox="" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></button>
+              </div>
+            </div>
+          </section>
+
+          <!-- FEATURED STAYS GRID -->
+          <section style="padding: 4rem 0;">
+            <div class="container">
+              <div class="section-header">
+                <div>
+                  <span class="section-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  <h2 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h2>
+                  <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+                <a href="#/explore" class="btn btn-secondary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></a>
+              </div>
+
+              <div class="property-grid"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+            </div>
+          </section>
+
+          <!-- DESTINATIONS MOSAIC -->
+          <section class="editorial-section" style="background: var(--color-surface-subtle);">
+            <div class="container">
+              <div class="section-header">
+                <div>
+                  <span class="section-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  <h2 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></h2>
+                  <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+                <a href="#/destinations" class="btn btn-secondary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></a>
+              </div>
+
+              <div class="destinations-mosaic">
+                <div class="dest-card dest-card-col-6" onclick="location.hash='#/explore?dest=Nairobi'">
+                  <img class="dest-card-img eshop-placeholder-media" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h3>
+                    <div class="dest-card-subtitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                </div>
+                <div class="dest-card dest-card-col-6" onclick="location.hash='#/explore?dest=Diani'">
+                  <img class="dest-card-img eshop-placeholder-media" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h3>
+                    <div class="dest-card-subtitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                </div>
+                <div class="dest-card dest-card-col-4" onclick="location.hash='#/explore?dest=Watamu'">
+                  <img class="dest-card-img eshop-placeholder-media" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></h3>
+                    <div class="dest-card-subtitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></div>
+                  </div>
+                </div>
+                <div class="dest-card dest-card-col-4" onclick="location.hash='#/explore?dest=Naivasha'">
+                  <img class="dest-card-img eshop-placeholder-media" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h3>
+                    <div class="dest-card-subtitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                </div>
+                <div class="dest-card dest-card-col-4" onclick="location.hash='#/explore?dest=Mara'">
+                  <img class="dest-card-img eshop-placeholder-media" />
+                  <div class="dest-card-overlay">
+                    <h3 class="dest-card-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></h3>
+                    <div class="dest-card-subtitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- EDITORIAL STORY BANNER -->
+          <div class="container">
+            <div class="story-banner">
+              <div class="story-banner-grid">
+                <div>
+                  <span style="font-size: 0.8rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-accent); font-weight: 700; margin-bottom: 0.75rem; display: block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                  <h2 class="story-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+                  <p class="story-text"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <a href="#/how-it-works" class="btn btn-accent"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></a>
+                    <a href="#/host" class="btn btn-outline-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></a>
+                  </div>
+                </div>
+                <div style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 3rem;">
+                  <div style="margin-bottom: 2rem;">
+                    <div style="font-family: var(--font-serif); font-size: 2.4rem; color: #F8F5EE;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></div>
+                    <div style="font-size: 0.88rem; color: #B5A89A;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                  <div style="margin-bottom: 2rem;">
+                    <div style="font-family: var(--font-serif); font-size: 2.4rem; color: #F8F5EE;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></div>
+                    <div style="font-size: 0.88rem; color: #B5A89A;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                  <div>
+                    <div style="font-family: var(--font-serif); font-size: 2.4rem; color: #F8F5EE;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></div>
+                    <div style="font-size: 0.88rem; color: #B5A89A;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Reusable Property Card HTML
+      function renderPropertyCard(p, isSaved) {
+        return `
+          <div class="property-card" data-id="${p.id}">
+            <div class="property-card-media">
+              <img class="property-card-img eshop-placeholder-media" loading="lazy" />
+              <div class="property-card-badge"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              <button class="wishlist-btn ${isSaved ? 'saved' : ''}" data-id="${p.id}" onclick="toggleWishlist('${p.id}')">
+                <svg width="20" height="20" viewBox="" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 .78z"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="property-card-meta">
+              <span class="property-card-location"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+              <div class="property-card-rating">
+                <svg width="14" height="14" viewBox="" fill="#C49758" stroke="#C49758">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                <span style="color: var(--color-text-muted); font-weight: 400;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+              </div>
+            </div>
+            <a href="#/property/${p.id}" class="property-card-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+            <div class="property-card-specs">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+            </div>
+            <div class="property-card-price-row">
+              <span class="property-card-price"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+              <span class="property-card-unit"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></span>
+            </div>
+          </div>
+        `;
+      }
+
+      // 8.2 VIEW: DISCOVERY & SEARCH WITH WORKING REAL-TIME FILTERS
+      function renderSearchView(params = {}) {
+        const allProperties = getProperties();
+        const wishlist = getWishlist();
+
+        // Filter state from parameters or default
+        const filterDest = params.dest || '';
+        const filterType = params.type || '';
+        const filterMaxPrice = params.maxPrice ? parseInt(params.maxPrice) : 150000;
+        const filterGuests = params.guests ? parseInt(params.guests) : 1;
+        const sortBy = params.sort || 'recommended';
+
+        // Apply filters
+        let filtered = allProperties.filter(p => {
+          if (filterDest && !p.destination.toLowerCase().includes(filterDest.toLowerCase()) && !p.neighborhood.toLowerCase().includes(filterDest.toLowerCase())) {
+            return false;
+          }
+          if (filterType && p.category !== filterType) {
+            return false;
+          }
+          if (p.pricePerNight > filterMaxPrice) {
+            return false;
+          }
+          if (p.guests < filterGuests) {
+            return false;
+          }
+          return true;
+        });
+
+        // Apply sorting
+        if (sortBy === 'price-low') {
+          filtered.sort((a, b) => a.pricePerNight - b.pricePerNight);
+        } else if (sortBy === 'price-high') {
+          filtered.sort((a, b) => b.pricePerNight - a.pricePerNight);
+        } else if (sortBy === 'rating') {
+          filtered.sort((a, b) => b.rating - a.rating);
+        }
+
+        return `
+          <div class="container search-view-layout">
+            <div style="margin-bottom: 2rem;">
+              <span class="section-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+              <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></h1>
+              <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Interactive Live Filters Bar -->
+            <div class="filters-bar">
+              <div class="filter-group">
+                <select class="filter-select" id="filter-dest-select" onchange="applySearchFilters()">
+                  <option ${filterDest === '' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></option>
+                  <option ${filterDest === 'Nairobi' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></option>
+                  <option ${filterDest === 'Diani' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                  <option ${filterDest === 'Watamu' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></option>
+                  <option ${filterDest === 'Naivasha' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></option>
+                  <option ${filterDest === 'Mara' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                  <option ${filterDest === 'Zanzibar' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></option>
+                  <option ${filterDest === 'Cape Town' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></option>
+                </select>
+
+                <select class="filter-select" id="filter-type-select" onchange="applySearchFilters()">
+                  <option ${filterType === '' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  <option ${filterType === 'villa' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></option>
+                  <option ${filterType === 'coastal' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  <option ${filterType === 'lodge' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></option>
+                  <option ${filterType === 'penthouse' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></option>
+                </select>
+
+                <select class="filter-select" id="filter-guests-select" onchange="applySearchFilters()">
+                  <option ${filterGuests <= 1 ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></option>
+                  <option ${filterGuests === 2 ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></option>
+                  <option ${filterGuests === 4 ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></option>
+                  <option ${filterGuests === 6 ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></option>
+                  <option ${filterGuests === 8 ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <span style="font-size: 0.85rem; color: var(--color-text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                <select class="filter-select" id="filter-sort-select" onchange="applySearchFilters()">
+                  <option ${sortBy === 'recommended' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                  <option ${sortBy === 'price-low' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  <option ${sortBy === 'price-high' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  <option ${sortBy === 'rating' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></option>
+                </select>
+                <button class="btn btn-ghost" onclick="resetSearchFilters()" style="font-size: 0.85rem; padding: 0.5rem 0.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></button>
+              </div>
+            </div>
+
+            <!-- Results Grid --><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+        `;
+      }
+
+      window.applySearchFilters = function() {
+        const dest = document.getElementById('filter-dest-select').value;
+        const type = document.getElementById('filter-type-select').value;
+        const guests = document.getElementById('filter-guests-select').value;
+        const sort = document.getElementById('filter-sort-select').value;
+        let query = `#/explore?`;
+        if (dest) query += `dest=${encodeURIComponent(dest)}&`;
+        if (type) query += `type=${encodeURIComponent(type)}&`;
+        if (guests > 1) query += `guests=${guests}&`;
+        if (sort) query += `sort=${sort}&`;
+        location.hash = query.replace(/&$/, '');
+      };
+
+      window.resetSearchFilters = function() {
+        location.hash = '#/explore';
+      };
+
+      // 8.3 VIEW: PROPERTY DETAIL PAGE WITH REAL INTERACTIVE CALENDAR & AMENITIES
+      function renderPropertyDetailView(id) {
+        const p = getPropertyById(id);
+        const wishlist = getWishlist();
+        const isSaved = wishlist.includes(p.id);
+
+        // Default reservation state: 3 nights starting from 2 days ahead
+        const today = new Date();
+        const d1 = new Date(today);
+        d1.setDate(today.getDate() + 2);
+        const d2 = new Date(today);
+        d2.setDate(today.getDate() + 5);
+        const nights = 3;
+
+        const subtotal = p.pricePerNight * nights;
+        const serviceFee = Math.round(subtotal * p.serviceFeePercent);
+        const taxes = Math.round(subtotal * p.taxPercent);
+        const total = subtotal + p.cleaningFee + serviceFee + taxes;
+
+        return `
+          <div class="container property-detail-view">
+            <!-- Breadcrumbs -->
+            <div class="breadcrumbs">
+              <a href="#/"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <a href="#/explore"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <a href="#/explore?dest=${encodeURIComponent(p.destination)}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></a> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span style="color: var(--color-text-main); font-weight: 500;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </div>
+
+            <!-- Title & Share/Wishlist Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h1 class="property-header-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+                <div class="property-header-sub">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.75rem;">
+                <button class="btn btn-secondary" onclick="toggleWishlist('${p.id}')">
+                  <svg width="18" height="18" viewBox="" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 .78z"></path>
+                  </svg><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></button>
+                <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(window.location.href); showToast('Link copied to clipboard')">
+                  <svg width="18" height="18" viewBox="" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></button>
+              </div>
+            </div>
+
+            <!-- 5-Photo Editorial Gallery Grid -->
+            <div class="gallery-editorial-grid">
+              <div class="gallery-item gallery-item-hero" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 0)">
+                <img / class="eshop-placeholder-media">
+              </div>
+              <div class="gallery-item" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 1)">
+                <img / class="eshop-placeholder-media">
+              </div>
+              <div class="gallery-item" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 2)">
+                <img / class="eshop-placeholder-media">
+              </div>
+              <div class="gallery-item" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 3)">
+                <img / class="eshop-placeholder-media">
+              </div>
+              <div class="gallery-item" onclick="openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 4)">
+                <img / class="eshop-placeholder-media">
+                <button class="gallery-view-all-btn" onclick="event.stopPropagation(); openGallery(${JSON.stringify(p.gallery).replace(/"/g, '&quot;')}, 0)">
+                  <svg width="18" height="18" viewBox="" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                  </svg><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></button>
+              </div>
+            </div>
+
+            <!-- Detail Split: Description vs Sticky Booking Card -->
+            <div class="detail-layout-grid">
+              <div>
+                <!-- Specs Bar -->
+                <div class="detail-specs-bar">
+                  <div class="detail-spec-item">
+                    <span class="detail-spec-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <span class="detail-spec-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span>
+                  </div>
+                  <div class="detail-spec-item">
+                    <span class="detail-spec-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <span class="detail-spec-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                  </div>
+                  <div class="detail-spec-item">
+                    <span class="detail-spec-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <span class="detail-spec-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></span>
+                  </div>
+                  <div class="detail-spec-item">
+                    <span class="detail-spec-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <span class="detail-spec-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                  </div>
+                </div>
+
+                <!-- Host Note -->
+                <div style="display: flex; gap: 1.2rem; align-items: center; margin-bottom: 2.5rem; padding: 1.5rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);">
+                  <div style="width: 52px; height: 52px; border-radius: 50%; background: #25332C; color: #FFF; display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 1.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                  <div>
+                    <div style="font-weight: 600; font-size: 1.05rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                    <div style="font-size: 0.85rem; color: var(--color-text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                </div>
+
+                <!-- Architectural Description -->
+                <div class="detail-section">
+                  <h2 class="detail-section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></h2>
+                  <p class="detail-body-text"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                </div>
+
+                <!-- Sleeping Arrangements -->
+                <div class="detail-section">
+                  <h2 class="detail-section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></h2>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                </div>
+
+                <!-- Verified Amenities -->
+                <div class="detail-section">
+                  <h2 class="detail-section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h2>
+                  <div class="amenities-grid"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                </div>
+
+                <!-- House Rules & Policies -->
+                <div class="detail-section">
+                  <h2 class="detail-section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h2>
+                  <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.95rem; color: var(--color-text-muted);">
+                    <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></div>
+                    <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                    <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                    <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sticky Booking Card Widget -->
+              <div class="sticky-booking-widget">
+                <div class="booking-widget-header">
+                  <div>
+                    <span class="booking-rate-big"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <span style="color: var(--color-text-muted); font-size: 0.9rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></span>
+                  </div>
+                  <div style="font-size: 0.88rem; font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></div>
+                </div>
+
+                <!-- Calendar Date Selectors -->
+                <div class="booking-calendar-selector">
+                  <div class="booking-date-inputs">
+                    <div class="date-input-box" onclick="showToast('Select dates in calendar below')">
+                      <span class="date-input-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                      <span class="date-input-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                    <div class="date-input-box" onclick="showToast('Select dates in calendar below')">
+                      <span class="date-input-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                      <span class="date-input-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                  </div>
+                  <div class="booking-guests-selector">
+                    <span class="date-input-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span>
+                    <span class="date-input-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </div>
+                </div>
+
+                <!-- Transparent Price Breakdown -->
+                <div class="price-breakdown-table">
+                  <div class="price-row">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                  <div class="price-row">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                  <div class="price-row">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                  <div class="price-row">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                  <div class="price-row price-row-total">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                </div>
+
+                <a href="#/booking/${p.id}" class="btn btn-primary" style="width: 100%; padding: 1.1rem; font-size: 1rem; border-radius: var(--radius-md);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+
+                <div style="text-align: center; font-size: 0.78rem; color: var(--color-text-muted); margin-top: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 8.4 VIEW: 5-STEP CHECKOUT & BOOKING FLOW
+      function renderBookingView(id, currentStep = 1) {
+        const p = getPropertyById(id);
+        const nights = 3;
+        const subtotal = p.pricePerNight * nights;
+        const serviceFee = Math.round(subtotal * p.serviceFeePercent);
+        const taxes = Math.round(subtotal * p.taxPercent);
+        const total = subtotal + p.cleaningFee + serviceFee + taxes;
+
+        return `
+          <div class="container checkout-layout">
+            <div style="margin-bottom: 2rem;">
+              <a href="#/property/${p.id}" style="font-size: 0.9rem; color: var(--color-accent); font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></a>
+              <h1 class="section-title" style="margin-top: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h1>
+            </div>
+
+            <!-- Step Progress Tracker -->
+            <div class="checkout-step-tracker">
+              <div class="step-indicator ${currentStep >= 1 ? 'active' : ''}">
+                <div class="step-bubble"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></span>
+              </div>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <div class="step-indicator ${currentStep >= 2 ? 'active' : ''}">
+                <div class="step-bubble"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+              </div>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <div class="step-indicator ${currentStep >= 3 ? 'active' : ''}">
+                <div class="step-bubble"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+              </div>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <div class="step-indicator ${currentStep >= 4 ? 'active' : ''}">
+                <div class="step-bubble"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></span>
+              </div>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <div class="step-indicator ${currentStep >= 5 ? 'active' : ''}">
+                <div class="step-bubble"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></span>
+              </div>
+            </div>
+
+            <div class="checkout-grid">
+              <!-- Left Column: Step Form Content -->
+              <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+
+              <!-- Right Column: Sticky Summary Card -->
+              <div style="position: sticky; top: 110px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: 2rem; box-shadow: var(--shadow-card);">
+                <div style="display: flex; gap: 1.2rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--color-border);">
+                  <img style="width: 88px; height: 88px; border-radius: var(--radius-md); object-fit: cover;" / class="eshop-placeholder-media">
+                  <div>
+                    <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--color-accent);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <h3 style="font-size: 1.2rem; margin: 0.2rem 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h3>
+                    <div style="font-size: 0.85rem; color: var(--color-text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                </div>
+
+                <div class="price-breakdown-table">
+                  <div class="price-row">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                  <div class="price-row">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                  <div class="price-row">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                  <div class="price-row">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                  <div class="price-row price-row-total">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      window.navigateBookingStep = function(propId, step) {
+        location.hash = `#/booking/${propId}?step=${step}`;
+      };
+
+      let selectedPayment = 'mpesa';
+      window.selectPaymentMethod = function(cardEl, method) {
+        document.querySelectorAll('.payment-option-card').forEach(c => c.classList.remove('selected'));
+        cardEl.classList.add('selected');
+        selectedPayment = method;
+        const detailsEl = document.getElementById('payment-method-details');
+        if (method === 'mpesa') {
+          detailsEl.innerHTML = `
+            <div style="padding: 1.2rem; background: var(--color-bg); border-radius: var(--radius-md);">
+              <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></label>
+              <input type="tel" id="checkout-mpesa-phone" class="form-control" />
+              <span style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.4rem; display: block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+            </div>
+          `;
+        } else if (method === 'paystack') {
+          detailsEl.innerHTML = `
+            <div style="padding: 1.2rem; background: var(--color-bg); border-radius: var(--radius-md);">
+              <div style="font-size: 0.88rem; color: var(--color-text-main); font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></div>
+              <p style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+          `;
+        } else {
+          detailsEl.innerHTML = `
+            <div class="form-grid" style="padding: 1.2rem; background: var(--color-bg); border-radius: var(--radius-md);">
+              <div class="form-group-full">
+                <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></label>
+                <input type="text" class="form-control" />
+              </div>
+              <div>
+                <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></label>
+                <input type="text" class="form-control" />
+              </div>
+              <div>
+                <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></label>
+                <input type="password" class="form-control" />
+              </div>
+            </div>
+          `;
+        }
+      };
+
+      window.triggerPaymentFlow = function(propId, totalKES) {
+        if (selectedPayment === 'mpesa') {
+          document.getElementById('mpesa-amount-val').textContent = formatPrice(totalKES);
+          document.getElementById('mpesa-modal').classList.add('open');
+        } else if (selectedPayment === 'paystack') {
+          document.getElementById('paystack-modal').classList.add('open');
+        } else {
+          saveBookingRecord(propId);
+          navigateBookingStep(propId, 5);
+        }
+      };
+
+      window.simulateMpesaSuccess = function() {
+        closeModal('mpesa-modal');
+        const hash = location.hash;
+        const propId = hash.split('/')[2]?.split('?')[0];
+        saveBookingRecord(propId);
+        showToast('M-Pesa transaction confirmed by Safaricom');
+        navigateBookingStep(propId, 5);
+      };
+
+      window.simulatePaystackSuccess = function() {
+        closeModal('paystack-modal');
+        const hash = location.hash;
+        const propId = hash.split('/')[2]?.split('?')[0];
+        saveBookingRecord(propId);
+        showToast('Paystack payment verified successfully');
+        navigateBookingStep(propId, 5);
+      };
+
+      function saveBookingRecord(propId) {
+        const p = getPropertyById(propId);
+        const existing = JSON.parse(localStorage.getItem('elysian_bookings') || '[]');
+        existing.push({
+          id: 'ELY-' + Math.floor(100000 + Math.random() * 900000),
+          propertyId: propId,
+          title: p.title,
+          heroImg: p.heroImg,
+          destination: p.destination,
+          dates: '3 Nights • Confirmed Stay',
+          bookedAt: new Date().toLocaleDateString()
+        });
+        localStorage.setItem('elysian_bookings', JSON.stringify(existing));
+      }
+
+      // 8.5 VIEW: MY TRIPS & BOOKING MANAGEMENT
+      function renderTripsView() {
+        const bookings = JSON.parse(localStorage.getItem('elysian_bookings') || '[]');
+
+        return `
+          <div class="container" style="padding: 3rem 0 6rem;">
+            <div style="margin-bottom: 2.5rem;">
+              <span class="section-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+              <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h1>
+              <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        `;
+      }
+
+      // 8.6 VIEW: SAVED WISHLIST
+      function renderWishlistView() {
+        const wishlistIds = getWishlist();
+        const allProperties = getProperties();
+        const savedProperties = allProperties.filter(p => wishlistIds.includes(p.id));
+
+        return `
+          <div class="container" style="padding: 3rem 0 6rem;">
+            <div style="margin-bottom: 2.5rem;">
+              <span class="section-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span>
+              <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h1>
+              <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        `;
+      }
+
+      // 8.7 VIEW: HOST ONBOARDING WIZARD & HOST DASHBOARD
+      function renderHostOnboardingView(step = 1) {
+        return `
+          <div class="container" style="padding: 3rem 0 6rem; max-width: 820px;">
+            <div style="margin-bottom: 2rem;">
+              <span class="section-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></span>
+              <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h1>
+              <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="form-card">
+              <form id="host-wizard-form" onsubmit="event.preventDefault(); submitNewPropertyListing();">
+                <div class="form-grid">
+                  <div class="form-group-full">
+                    <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></label>
+                    <input type="text" id="wizard-title" class="form-control" required />
+                  </div>
+                  <div>
+                    <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></label>
+                    <input type="text" id="wizard-dest" class="form-control" required />
+                  </div>
+                  <div>
+                    <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></label>
+                    <input type="text" id="wizard-hood" class="form-control" required />
+                  </div>
+                  <div>
+                    <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                    <select id="wizard-cat" class="form-control">
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></label>
+                    <input type="number" id="wizard-price" class="form-control" required />
+                  </div>
+                  <div>
+                    <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></label>
+                    <input type="number" id="wizard-guests" class="form-control" />
+                  </div>
+                  <div>
+                    <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></label>
+                    <input type="number" id="wizard-beds" class="form-control" />
+                  </div>
+                  <div class="form-group-full">
+                    <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                    <textarea id="wizard-desc" class="form-control" rows="4" required><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></textarea>
+                  </div>
+                  <div class="form-group-full">
+                    <label class="input-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                    <input type="url" id="wizard-img" class="form-control" />
+                  </div>
+                </div>
+
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                  <button type="submit" class="btn btn-primary" style="flex: 1;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></button>
+                  <a href="#/host/dashboard" class="btn btn-secondary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></a>
+                </div>
+              </form>
+            </div>
+          </div>
+        `;
+      }
+
+      window.submitNewPropertyListing = function() {
+        const newProp = {
+          id: 'custom-' + Date.now(),
+          title: document.getElementById('wizard-title').value,
+          destination: document.getElementById('wizard-dest').value,
+          neighborhood: document.getElementById('wizard-hood').value,
+          category: document.getElementById('wizard-cat').value,
+          pricePerNight: parseInt(document.getElementById('wizard-price').value) || 35000,
+          cleaningFee: 3500,
+          serviceFeePercent: 0.10,
+          taxPercent: 0.14,
+          guests: parseInt(document.getElementById('wizard-guests').value) || 4,
+          bedrooms: parseInt(document.getElementById('wizard-beds').value) || 2,
+          beds: parseInt(document.getElementById('wizard-beds').value) || 2,
+          baths: 2,
+          rating: 5.0,
+          reviewsCount: 1,
+          tag: 'New Listing',
+          heroImg: document.getElementById('wizard-img').value || "",
+          gallery: [
+            document.getElementById('wizard-img').value,
+            "",
+            ""
+          ],
+          description: document.getElementById('wizard-desc').value,
+          amenities: ['Private Heated Pool', 'High-Speed Wi-Fi', 'Full Kitchen', 'Dedicated Workspace', 'Free Parking']
+        };
+
+        const existing = JSON.parse(localStorage.getItem('elysian_custom_properties') || '[]');
+        existing.unshift(newProp);
+        localStorage.setItem('elysian_custom_properties', JSON.stringify(existing));
+
+        showToast('Sanctuary successfully listed!');
+        location.hash = `#/property/${newProp.id}`;
+      };
+
+      // 8.8 VIEW: HOST DASHBOARD
+      function renderHostDashboardView() {
+        const properties = getProperties();
+        const customProps = JSON.parse(localStorage.getItem('elysian_custom_properties') || '[]');
+
+        return `
+          <div>
+            <div class="host-portal-header">
+              <div class="container">
+                <span style="font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-accent); font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+                <h1 style="font-size: 2.8rem; color: #F8F5EE; margin: 0.4rem 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></h1>
+                <div class="host-nav-tabs">
+                  <span class="host-tab-link active"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                  <span class="host-tab-link" onclick="location.hash='#/host/onboarding'"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="container" style="padding-bottom: 6rem;">
+              <!-- KPI Cards -->
+              <div class="host-stat-grid">
+                <div class="stat-card">
+                  <div class="stat-card-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></div>
+                  <div class="stat-card-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-card-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></div>
+                  <div class="stat-card-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-card-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></div>
+                  <div class="stat-card-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-card-lbl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></div>
+                  <div class="stat-card-val"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                </div>
+              </div>
+
+              <!-- Host Properties Section -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></h2>
+                <a href="#/host/onboarding" class="btn btn-primary" style="font-size: 0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></a>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 8.9 VIEW: HOW IT WORKS & TRUST
+      function renderHowItWorksView() {
+        return `
+          <div class="container" style="padding: 4rem 0 6rem; max-width: 960px;">
+            <div style="text-align: center; margin-bottom: 4rem;">
+              <span class="section-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+              <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h1>
+              <p class="section-desc" style="margin: 0.5rem auto 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 5rem;">
+              <div style="padding: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);">
+                <div style="font-family: var(--font-serif); font-size: 2rem; color: var(--color-accent); margin-bottom: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h3>
+                <p style="font-size: 0.92rem; color: var(--color-text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div style="padding: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);">
+                <div style="font-family: var(--font-serif); font-size: 2rem; color: var(--color-accent); margin-bottom: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h3>
+                <p style="font-size: 0.92rem; color: var(--color-text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div style="padding: 2rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg);">
+                <div style="font-family: var(--font-serif); font-size: 2rem; color: var(--color-accent); margin-bottom: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h3>
+                <p style="font-size: 0.92rem; color: var(--color-text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+            </div>
+
+            <div style="text-align: center;">
+              <a href="#/explore" class="btn btn-primary" style="padding: 1rem 2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></a>
+            </div>
+          </div>
+        `;
+      }
+
+      // ==========================================
+      // 9. CLIENT-SIDE ROUTER & DISPATCHER
+      // ==========================================
+      function parseHash() {
+        const hash = location.hash || '#/';
+        const [path, queryString] = hash.split('?');
+        const params = {};
+        if (queryString) {
+          new URLSearchParams(queryString).forEach((val, key) => {
+            params[key] = val;
+          });
+        }
+        return { path, params };
+      }
+
+      function renderCurrentRoute() {
+        const { path, params } = parseHash();
+        const viewport = document.getElementById('app-viewport');
+        if (!viewport) return;
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Update active state on nav links
+        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+        if (path === '#/' || path === '') {
+          // Home
+        } else if (path.startsWith('#/explore') || path.startsWith('#/search')) {
+          document.getElementById('nav-explore')?.classList.add('active');
+        } else if (path.startsWith('#/destinations')) {
+          document.getElementById('nav-destinations')?.classList.add('active');
+        } else if (path.startsWith('#/collections')) {
+          document.getElementById('nav-collections')?.classList.add('active');
+        } else if (path.startsWith('#/trips')) {
+          document.getElementById('nav-trips')?.classList.add('active');
+        }
+
+        // Route dispatcher
+        if (path === '#/' || path === '') {
+          viewport.innerHTML = renderHomeView();
+        } else if (path === '#/explore' || path === '#/search') {
+          viewport.innerHTML = renderSearchView(params);
+        } else if (path.startsWith('#/property/')) {
+          const id = path.replace('#/property/', '');
+          viewport.innerHTML = renderPropertyDetailView(id);
+        } else if (path.startsWith('#/booking/')) {
+          const id = path.replace('#/booking/', '').split('?')[0];
+          const step = parseInt(params.step) || 1;
+          viewport.innerHTML = renderBookingView(id, step);
+        } else if (path === '#/trips') {
+          viewport.innerHTML = renderTripsView();
+        } else if (path === '#/wishlist') {
+          viewport.innerHTML = renderWishlistView();
+        } else if (path === '#/host') {
+          viewport.innerHTML = renderHowItWorksView();
+        } else if (path === '#/host/onboarding') {
+          viewport.innerHTML = renderHostOnboardingView();
+        } else if (path.startsWith('#/host/dashboard')) {
+          viewport.innerHTML = renderHostDashboardView();
+        } else if (path === '#/how-it-works' || path === '#/trust-and-safety' || path === '#/cancellation-policy') {
+          viewport.innerHTML = renderHowItWorksView();
+        } else if (path === '#/destinations') {
+          viewport.innerHTML = renderSearchView();
+        } else if (path === '#/collections') {
+          viewport.innerHTML = renderSearchView();
+        } else {
+          // Fallback to home
+          viewport.innerHTML = renderHomeView();
+        }
+
+        updateWishlistBadge();
+      }
+
+      // Initialize App Lifecycle
+      window.addEventListener('hashchange', renderCurrentRoute);
+      window.addEventListener('DOMContentLoaded', () => {
+        initEntrance();
+        renderCurrentRoute();
+      });
+    </script>
+  
+
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body></html>

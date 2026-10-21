@@ -1,0 +1,3343 @@
+<!doctype html>
+<html lang="en" data-eshop-skeleton-preview=""><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title></title>
+  <meta name="description" content="">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:type" content="">
+  <meta name="twitter:card" content="">
+
+  <!-- Google Fonts: Playfair Display, Cinzel, Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&amp;family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+
+  <!-- GSAP & ScrollTrigger with graceful fallback -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <!-- Paystack Inline Popup (Real official CDN) -->
+  <script src="https://js.paystack.co/v1/inline.js" defer=""></script>
+
+  <!-- Schema.org Structured Data -->
+  
+
+  <style>
+    :root {
+      --bg-dark: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01);
+      --bg-surface: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-02);
+      --bg-surface-elevated: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-03);
+      --bg-parchment: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-04);
+      --bg-parchment-card: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+      --gold-primary: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-06);
+      --gold-light: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-07);
+      --gold-dark: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-08);
+      --terracotta: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-09);
+      --burgundy: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-10);
+      --text-light: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-11);
+      --text-muted: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-12);
+      --text-dark: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-13);
+      --text-dark-muted: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-14);
+      --border-subtle: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15);
+      --border-light-subtle: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-16);
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-brand: 'Cinzel', serif;
+      --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Space Mono', monospace;
+      --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    body {
+      overflow-x: hidden;
+      min-height: 100vh;
+      line-height: 1.6;
+      background: radial-gradient(circle at 50% 0%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-17) 0%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01) 70%);
+    }
+
+    /* Selection */
+    ::selection {
+      background: var(--gold-primary);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-18);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--gold-primary);
+    }
+
+    /* Typography */
+    .font-display { font-family: var(--font-display); }
+    .font-brand { font-family: var(--font-brand); }
+    .font-body { font-family: var(--font-body); }
+    .font-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+    /* Custom Cursor (Desktop only) */
+    @media (hover: hover) and (pointer: fine) {
+      .cursor-dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 8px;
+        height: 8px;
+        background: var(--gold-primary);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9999;
+        transform: translate(-50%, -50%);
+        transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease, background 0.3s ease;
+      }
+      .cursor-ring {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 38px;
+        height: 38px;
+        border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-19);
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 9998;
+        transform: translate(-50%, -50%);
+        transition: transform 0.18s var(--ease-lux), width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+      }
+      .cursor-active .cursor-ring {
+        width: 64px;
+        height: 64px;
+        border-color: var(--gold-light);
+        background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-20);
+      }
+      .cursor-active .cursor-dot {
+        transform: translate(-50%, -50%) scale(1.6);
+      }
+    }
+
+    @media (hover: none) or (pointer: coarse) {
+      .cursor-dot, .cursor-ring { display: none !important; }
+    }
+
+    /* Navigation styling */
+    .nav-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      transition: all 0.4s var(--ease-lux);
+      border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-21);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-22);
+    }
+    .nav-header.scrolled {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-23);
+      border-bottom-color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-24);
+      box-shadow: 0 10px 30px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-25);
+    }
+    .nav-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .brand-wordmark {
+      font-family: var(--font-brand);
+      font-size: 1.45rem;
+      letter-spacing: 0.28em;
+      color: var(--gold-primary);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-transform: uppercase;
+    }
+    .brand-wordmark span {
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+      font-weight: 300;
+      letter-spacing: 0.22em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+    .nav-link {
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-26);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: color 0.25s ease;
+      position: relative;
+      white-space: nowrap;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--gold-primary);
+      transition: width 0.3s var(--ease-lux);
+    }
+    .nav-link:hover {
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+    }
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.75rem 1.6rem;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.3s var(--ease-lux);
+      border: 1px solid transparent;
+      outline: none;
+    }
+    .btn:focus-visible {
+      box-shadow: 0 0 0 3px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-27);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-28) 0%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-06) 50%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-29) 100%);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01);
+      box-shadow: 0 4px 18px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-24);
+    }
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-30);
+      filter: brightness(1.08);
+    }
+
+    .btn-outline-gold {
+      background: transparent;
+      border-color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-19);
+      color: var(--gold-light);
+    }
+    .btn-outline-gold:hover {
+      border-color: var(--gold-primary);
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-31);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-32);
+      border-color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-33);
+      color: var(--text-light);
+    }
+    .btn-ghost:hover {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-34);
+      border-color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-35);
+    }
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+    }
+
+    /* Cart Badge & Counter */
+    .cart-btn {
+      position: relative;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-36);
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-24);
+      color: var(--gold-light);
+      padding: 0.55rem 0.9rem;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .cart-count {
+      background: var(--gold-primary);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Mobile Navigation Drawer */
+    .mobile-nav-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--gold-primary);
+      cursor: pointer;
+      padding: 0.4rem;
+    }
+    @media (max-width: 992px) {
+      .nav-links { display: none; }
+      .mobile-nav-toggle { display: block; }
+      .nav-container { padding: 0.8rem 1.2rem; }
+    }
+
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 85%;
+      max-width: 400px;
+      height: 100vh;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-37);
+      border-left: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15);
+      z-index: 1000;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: right 0.45s var(--ease-lux);
+      overflow-y: auto;
+    }
+    .mobile-drawer.open {
+      right: 0;
+      box-shadow: -10px 0 50px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-38);
+    }
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-39);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .drawer-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Section Architecture — Breaking the rectangle */
+    .section-wrapper {
+      position: relative;
+      padding: 6.5rem 2rem;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    .section-full {
+      position: relative;
+      padding: 6.5rem 0;
+      width: 100%;
+    }
+
+    .diagonal-divider-top {
+      clip-path: polygon(0 4vw, 100% 0, 100% 100%, 0 100%);
+    }
+    .diagonal-divider-bottom {
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4vw), 0 100%);
+    }
+
+    .arch-frame {
+      border-radius: 260px 260px 16px 16px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-40);
+      box-shadow: 0 20px 60px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-41);
+    }
+    .oval-mask {
+      border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+      overflow: hidden;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 8rem 2rem 5rem 2rem;
+    }
+    .hero-bg-container {
+      position: absolute;
+      inset: -5%;
+      width: 110%;
+      height: 110%;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .hero-bg-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: brightness(0.68) contrast(1.08);
+      transform: scale(1.08);
+      will-change: transform;
+    }
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 45%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-42) 0%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-43) 75%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01) 100%),
+                  linear-gradient(180deg, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-44) 0%, transparent 40%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-45) 90%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01) 100%);
+      z-index: 2;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      max-width: 1200px;
+      width: 100%;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.85rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: '';
+      width: 36px;
+      height: 1px;
+      background: var(--gold-primary);
+      opacity: 0.6;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6.5vw, 6.2rem);
+      line-height: 1.05;
+      font-weight: 400;
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+      margin-bottom: 1.8rem;
+      text-wrap: balance;
+      letter-spacing: -0.015em;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--gold-light);
+      font-weight: 400;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 1.8vw, 1.22rem);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-46);
+      max-width: 680px;
+      margin: 0 auto 3rem auto;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* Asymmetric Hero Booking Bar */
+    .hero-booking-bar {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-47);
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-40);
+      border-radius: 8px;
+      padding: 1.25rem 1.8rem;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 60px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-48);
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr 1fr auto;
+      gap: 1.2rem;
+      align-items: center;
+      text-align: left;
+      margin: 0 auto;
+      max-width: 1100px;
+      position: relative;
+    }
+    @media (max-width: 1024px) {
+      .hero-booking-bar {
+        grid-template-columns: 1fr 1fr;
+        padding: 1.5rem;
+      }
+      .hero-booking-bar .book-action {
+        grid-column: span 2;
+      }
+    }
+    @media (max-width: 640px) {
+      .hero-booking-bar {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .hero-booking-bar .book-action {
+        grid-column: span 1;
+      }
+    }
+
+    .booking-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .booking-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-primary);
+      font-weight: 600;
+    }
+    .booking-input, .booking-select {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-32);
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+      padding: 0.65rem 0.85rem;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      font-family: var(--font-body);
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      width: 100%;
+    }
+    .booking-input:focus, .booking-select:focus {
+      border-color: var(--gold-primary);
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-49);
+    }
+    .booking-select option {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-02);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+    }
+
+    /* Locations Grid & Tabs */
+    .location-card-editorial {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15);
+      background: var(--bg-surface);
+      transition: transform 0.4s var(--ease-lux), box-shadow 0.4s var(--ease-lux);
+      display: flex;
+      flex-direction: column;
+    }
+    .location-card-editorial:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 50px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-25);
+      border-color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-27);
+    }
+    .location-card-img-wrap {
+      position: relative;
+      height: 380px;
+      overflow: hidden;
+    }
+    .location-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.7s var(--ease-lux);
+    }
+    .location-card-editorial:hover .location-card-img {
+      transform: scale(1.06);
+    }
+    .location-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-45) 100%);
+    }
+    .location-tag {
+      position: absolute;
+      top: 1.2rem;
+      left: 1.2rem;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-50);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-subtle);
+      color: var(--gold-light);
+      padding: 0.35rem 0.8rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+      border-radius: 3px;
+    }
+    .location-content {
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: space-between;
+    }
+
+    /* Asymmetric Storytelling / Editorial Split */
+    .story-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 4.5rem;
+      align-items: center;
+    }
+    @media (max-width: 992px) {
+      .story-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+    }
+    .image-composition {
+      position: relative;
+    }
+    .image-primary {
+      width: 88%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-24);
+      box-shadow: 0 20px 50px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-25);
+    }
+    .image-secondary-floating {
+      position: absolute;
+      bottom: -12%;
+      right: 0;
+      width: 48%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid var(--bg-dark);
+      box-shadow: 0 25px 50px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-39);
+    }
+
+    /* Menu / Culinary System */
+    .menu-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      overflow-x: auto;
+      padding-bottom: 0.75rem;
+      margin-bottom: 2.5rem;
+      scrollbar-width: none;
+    }
+    .menu-tabs::-webkit-scrollbar { display: none; }
+
+    .menu-tab-btn {
+      padding: 0.65rem 1.4rem;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-51);
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15);
+      color: var(--text-muted);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .menu-tab-btn.active {
+      background: var(--gold-primary);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01);
+      font-weight: 700;
+      border-color: var(--gold-primary);
+      box-shadow: 0 4px 14px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-24);
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 2rem;
+    }
+    @media (max-width: 640px) {
+      .menu-grid { grid-template-columns: 1fr; }
+    }
+
+    .menu-item-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-52);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s var(--ease-lux), border-color 0.3s ease;
+    }
+    .menu-item-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-30);
+    }
+    .menu-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 0.4rem;
+    }
+    .menu-item-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+    }
+    .menu-item-price {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--gold-light);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .menu-item-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      flex-grow: 1;
+    }
+    .menu-item-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.74rem;
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-53);
+      border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-36);
+      padding-top: 0.85rem;
+    }
+
+    /* Modal Framework */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-54);
+      backdrop-filter: blur(16px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s var(--ease-lux);
+    }
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-window {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-55);
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-56);
+      border-radius: 10px;
+      max-width: 820px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2.5rem;
+      position: relative;
+      box-shadow: 0 30px 80px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-57);
+      transform: translateY(20px) scale(0.98);
+      transition: transform 0.4s var(--ease-lux);
+    }
+    .modal-backdrop.active .modal-window {
+      transform: translateY(0) scale(1);
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.4rem;
+      right: 1.4rem;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-58);
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-34);
+      color: var(--text-light);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.2s ease;
+    }
+    .modal-close:hover {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15);
+      color: var(--gold-light);
+    }
+
+    /* Cart Slide-Over Drawer */
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 100%;
+      max-width: 460px;
+      height: 100vh;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-59);
+      border-left: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-40);
+      z-index: 2100;
+      padding: 2rem 1.8rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: right 0.45s var(--ease-lux);
+      box-shadow: -15px 0 60px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-57);
+    }
+    .cart-drawer.open {
+      right: 0;
+    }
+
+    .cart-items-scroll {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin: 1.5rem 0;
+      padding-right: 0.5rem;
+    }
+    .cart-item-row {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-21);
+    }
+
+    /* Live Tracking Bar */
+    .tracking-step {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      position: relative;
+      padding-bottom: 1.4rem;
+    }
+    .tracking-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 14px;
+      top: 30px;
+      bottom: 0;
+      width: 2px;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15);
+    }
+    .tracking-step.done::after {
+      background: var(--gold-primary);
+    }
+    .tracking-bullet {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-32);
+      border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-40);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      z-index: 2;
+    }
+    .tracking-step.active .tracking-bullet {
+      background: var(--gold-primary);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01);
+      box-shadow: 0 0 15px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-60);
+    }
+    .tracking-step.done .tracking-bullet {
+      background: var(--gold-dark);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+    }
+
+    /* Mobile Sticky Bottom Bar */
+    .mobile-bottom-bar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 90;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-61);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-24);
+      padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom, 0px)) 1rem;
+      justify-content: space-around;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .mobile-bottom-bar { display: flex; }
+      body { padding-bottom: 70px; }
+    }
+    .mobile-bar-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+    }
+    .mobile-bar-btn.active, .mobile-bar-btn:hover {
+      color: var(--gold-light);
+    }
+
+    /* Preloader */
+    .preloader {
+      position: fixed;
+      inset: 0;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01);
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      transition: opacity 0.8s var(--ease-lux), visibility 0.8s;
+    }
+    .preloader.fade-out {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .preloader-emblem {
+      font-family: var(--font-brand);
+      font-size: 2.5rem;
+      color: var(--gold-primary);
+      letter-spacing: 0.3em;
+      position: relative;
+    }
+    .preloader-line {
+      width: 140px;
+      height: 1px;
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-40);
+      position: relative;
+      overflow: hidden;
+    }
+    .preloader-line::after {
+      content: '';
+      position: absolute;
+      left: -100%;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--gold-light);
+      animation: loadSlide 1.5s infinite var(--ease-lux);
+    }
+    @keyframes loadSlide {
+      0% { left: -100%; }
+      50% { left: 0%; }
+      100% { left: 100%; }
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      top: 5.5rem;
+      right: 1.5rem;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-62);
+      border: 1px solid var(--gold-primary);
+      color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05);
+      padding: 0.85rem 1.4rem;
+      border-radius: 6px;
+      box-shadow: 0 10px 30px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-41);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      pointer-events: auto;
+      transform: translateX(120%);
+      transition: transform 0.35s var(--ease-lux);
+    }
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-eshop-skeleton-styles="">.eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-63);vertical-align:middle}.eshop-placeholder-media{background:linear-gradient(135deg,var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-63),var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-64));object-fit:cover}</style><style data-theme-tokens="">:root{--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01:#080d0b;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-02:#0e1713;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-03:#15221d;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-04:#f9f7f2;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-05:#ffffff;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-06:#c5a880;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-07:#e5cbab;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-08:#8e6f47;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-09:#ab4b2a;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-10:#4a1525;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-11:#f4f6f4;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-12:#95a79f;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-13:#121c17;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-14:#57655f;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15:rgba(197,168,128,0.2);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-16:rgba(0,0,0,0.08);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-17:#112019;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-18:#253930;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-19:rgba(197,168,128,0.45);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-20:rgba(197,168,128,0.08);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-21:rgba(197,168,128,0.12);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-22:rgba(8,13,11,0.75);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-23:rgba(8,13,11,0.94);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-24:rgba(197,168,128,0.25);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-25:rgba(0,0,0,0.5);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-26:rgba(244,246,244,0.78);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-27:rgba(197,168,128,0.5);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-28:#dfc298;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-29:#9e7f53;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-30:rgba(197,168,128,0.4);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-31:rgba(197,168,128,0.09);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-32:rgba(255,255,255,0.05);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-33:rgba(255,255,255,0.1);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-34:rgba(255,255,255,0.12);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-35:rgba(255,255,255,0.25);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-36:rgba(197,168,128,0.1);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-37:#0b1410;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-38:rgba(0,0,0,0.8);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-39:rgba(0,0,0,0.7);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-40:rgba(197,168,128,0.3);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-41:rgba(0,0,0,0.6);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-42:rgba(8,13,11,0.3);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-43:rgba(8,13,11,0.88);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-44:rgba(8,13,11,0.6);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-45:rgba(8,13,11,0.95);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-46:rgba(244,246,244,0.85);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-47:rgba(14,23,19,0.85);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-48:rgba(0,0,0,0.65);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-49:rgba(255,255,255,0.09);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-50:rgba(8,13,11,0.8);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-51:rgba(255,255,255,0.04);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-52:rgba(197,168,128,0.16);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-53:rgba(197,168,128,0.8);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-54:rgba(4,7,6,0.85);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-55:#0d1713;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-56:rgba(197,168,128,0.35);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-57:rgba(0,0,0,0.85);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-58:rgba(255,255,255,0.06);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-59:#0c1612;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-60:rgba(197,168,128,0.6);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-61:rgba(10,18,14,0.94);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-62:#0f1c16;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-63:#d1d5db;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-64:#f3f4f6;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-65:rgba(14,23,19,0.9);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66:#fff;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67:rgba(197,168,128,0.15);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-68:rgba(8,13,11,0.85);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-69:#060a08;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-70:rgba(14,23,19,0.6);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-71:rgba(14,23,19,0.95);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-72:rgba(8,13,11,0.98);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-73:#050807;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-74:rgba(8,13,11,0.7);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-75:rgba(255,255,255,0.03);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-76:rgba(0,0,0,0.4);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-77:#c4d9cb;--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-78:rgba(74,21,37,0.4);--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-79:#f28d9b;}</style></head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Toast Notification Area -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Preloader Curtain -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-emblem"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></div>
+    <div style="font-size: 0.75rem; letter-spacing: 0.3em; color: var(--gold-light); text-transform: uppercase;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></div>
+    <div class="preloader-line"></div>
+  </div>
+
+  <!-- TOP BAR (3-Zone Contract) -->
+  <header class="nav-header" id="navHeader">
+    <div class="nav-container">
+      <!-- Zone 1: Single-element Brand Wordmark -->
+      <a href="#" class="brand-wordmark" onclick="switchMainView('home'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+      </a>
+
+      <!-- Zone 2: 4-5 concise single-line nav links -->
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#destinations" class="nav-link" onclick="scrollToSection('destinations'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a></li>
+          <li><a href="#suites" class="nav-link" onclick="scrollToSection('suites'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a></li>
+          <li><a href="#dining" class="nav-link" onclick="scrollToSection('dining'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a></li>
+          <li><a href="#experiences" class="nav-link" onclick="scrollToSection('experiences'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a></li>
+          <li><a href="#" class="nav-link" onclick="openBackendContractModal(); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a></li>
+        </ul>
+      </nav>
+
+      <!-- Zone 3: Primary Action & Cart -->
+      <div class="nav-actions">
+        <button class="cart-btn" onclick="openCartDrawer()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+          <span class="cart-count" id="headerCartCount"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </button>
+
+        <button class="btn btn-outline-gold btn-sm" onclick="openGuestPortalModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+
+        <button class="btn btn-gold btn-sm" onclick="openRoomBookingModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></button>
+
+        <button class="mobile-nav-toggle" onclick="toggleMobileNav()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeMobileNav()"></div>
+  <aside class="mobile-drawer" id="mobileDrawer">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+        <span class="brand-wordmark" style="font-size: 1.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+        <button class="modal-close" style="position: static;" onclick="closeMobileNav()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <a href="#destinations" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); scrollToSection('destinations');"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+        <a href="#suites" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); scrollToSection('suites');"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a>
+        <a href="#dining" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); scrollToSection('dining');"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+        <a href="#experiences" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); scrollToSection('experiences');"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a>
+        <a href="#" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); openTableReservationModal();"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a>
+        <a href="#" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); openOrderFoodView();"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a>
+        <a href="#" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); openGuestPortalModal();"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a>
+        <a href="#" class="nav-link" style="font-size: 1rem;" onclick="closeMobileNav(); openBackendContractModal();"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.8rem; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-top: 1.5rem;">
+      <button class="btn btn-gold" style="width: 100%;" onclick="closeMobileNav(); openRoomBookingModal();"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button>
+      <div style="font-size: 0.72rem; color: var(--text-muted); text-align: center;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT CONTENT -->
+  <main id="mainContainer">
+
+    <!-- 1. CINEMATIC HERO SECTION -->
+    <section class="hero-section" id="heroSection">
+      <div class="hero-bg-container">
+        <img class="hero-bg-img eshop-placeholder-media" id="heroBgImg" data-skeleton-media="">
+      </div>
+      <div class="hero-gradient"></div>
+
+      <div class="hero-content">
+        <div class="hero-eyebrow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></div>
+        <h1 class="hero-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span><em><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></em><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></h1>
+        <p class="hero-subtitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+
+        <!-- Asymmetric Hero Booking Bar -->
+        <div class="hero-booking-bar">
+          <div class="booking-field">
+            <label class="booking-label" for="heroLocationSelect"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></label>
+            <select class="booking-select" id="heroLocationSelect" onchange="onLocationChange(this.value)">
+              <option value="cotedazur"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></option>
+              <option value="kyoto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 89%;"></span></option>
+              <option value="dolomites"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 89%;"></span></option>
+            </select>
+          </div>
+
+          <div class="booking-field">
+            <label class="booking-label" for="heroCheckIn"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></label>
+            <input type="date" class="booking-input" id="heroCheckIn" value="2026-10-18" onchange="validateDates()">
+          </div>
+
+          <div class="booking-field">
+            <label class="booking-label" for="heroCheckOut"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></label>
+            <input type="date" class="booking-input" id="heroCheckOut" value="2026-10-23" onchange="validateDates()">
+          </div>
+
+          <div class="booking-field">
+            <label class="booking-label" for="heroGuests"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></label>
+            <select class="booking-select" id="heroGuests">
+              <option value="1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></option>
+              <option value="2" selected=""><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></option>
+              <option value="3"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+              <option value="4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></option>
+            </select>
+          </div>
+
+          <div class="book-action">
+            <button class="btn btn-gold" onclick="submitHeroSearch()" style="height: 100%; width: 100%; min-height: 48px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></button>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 2rem; font-size: 0.78rem; color: var(--gold-light); opacity: 0.85;">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. EDITORIAL PHILOSOPHY (Asymmetric Split & Floating Layer) -->
+    <section class="section-wrapper" id="philosophy">
+      <div class="story-grid">
+        <div>
+          <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></div>
+          <h2 class="font-display" style="font-size: clamp(2.2rem, 4vw, 3.4rem); line-height: 1.15; font-weight: 400; margin-bottom: 1.8rem; text-wrap: balance;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h2>
+          <p style="font-size: 1.02rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2.2rem; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-top: 1.8rem;">
+            <div>
+              <div class="font-display" style="font-size: 2rem; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></div>
+            </div>
+            <div>
+              <div class="font-display" style="font-size: 2rem; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="image-composition">
+          <div class="image-primary arch-frame">
+            <img style="width: 100%; height: 520px; object-fit: cover; display: block;" class="eshop-placeholder-media" data-skeleton-media="">
+          </div>
+          <div class="image-secondary-floating">
+            <div style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-65); border: 1px solid var(--border-subtle); padding: 1.4rem; border-radius: 6px; backdrop-filter: blur(12px);">
+              <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></div>
+              <div class="font-display" style="font-size: 1.1rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-top: 0.3rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+              <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MULTIPLE HOTEL LOCATIONS DISCOVERY -->
+    <section class="section-wrapper" id="destinations" style="padding-top: 4rem;">
+      <div style="text-align: center; max-width: 780px; margin: 0 auto 4rem auto;">
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></div>
+        <h2 class="font-display" style="font-size: clamp(2.2rem, 4.2vw, 3.6rem); font-weight: 400; line-height: 1.15;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h2>
+        <p style="font-size: 1rem; color: var(--text-muted); margin-top: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2.2rem;">
+        <!-- Location 1: Côte d'Azur -->
+        <div class="location-card-editorial">
+          <div class="location-card-img-wrap">
+            <img class="location-card-img eshop-placeholder-media" data-skeleton-media="">
+            <div class="location-card-overlay"></div>
+            <div class="location-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></div>
+          </div>
+          <div class="location-content">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></div>
+              <h3 class="font-display" style="font-size: 1.6rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-bottom: 0.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><em><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></em><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></p>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.2rem; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); padding-top: 1rem;">
+                <span style="font-size: 0.78rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+                <span class="font-mono" style="font-size: 0.8rem; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+              </div>
+              <div style="display: flex; gap: 0.8rem;">
+                <button class="btn btn-gold btn-sm" style="flex: 1;" onclick="selectPropertyAndBook('cotedazur')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></button>
+                <button class="btn btn-outline-gold btn-sm" onclick="switchLocationMenu('cotedazur')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location 2: Kyoto Higashiyama -->
+        <div class="location-card-editorial">
+          <div class="location-card-img-wrap">
+            <img class="location-card-img eshop-placeholder-media" data-skeleton-media="">
+            <div class="location-card-overlay"></div>
+            <div class="location-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></div>
+          </div>
+          <div class="location-content">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></div>
+              <h3 class="font-display" style="font-size: 1.6rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-bottom: 0.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><em><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></em><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></p>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.2rem; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); padding-top: 1rem;">
+                <span style="font-size: 0.78rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+                <span class="font-mono" style="font-size: 0.8rem; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></span>
+              </div>
+              <div style="display: flex; gap: 0.8rem;">
+                <button class="btn btn-gold btn-sm" style="flex: 1;" onclick="selectPropertyAndBook('kyoto')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></button>
+                <button class="btn btn-outline-gold btn-sm" onclick="switchLocationMenu('kyoto')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location 3: Dolomites Alpine Reserve -->
+        <div class="location-card-editorial">
+          <div class="location-card-img-wrap">
+            <img class="location-card-img eshop-placeholder-media" data-skeleton-media="">
+            <div class="location-card-overlay"></div>
+            <div class="location-tag"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></div>
+          </div>
+          <div class="location-content">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></div>
+              <h3 class="font-display" style="font-size: 1.6rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-bottom: 0.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><em><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></em><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></p>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.2rem; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); padding-top: 1rem;">
+                <span style="font-size: 0.78rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+                <span class="font-mono" style="font-size: 0.8rem; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span>
+              </div>
+              <div style="display: flex; gap: 0.8rem;">
+                <button class="btn btn-gold btn-sm" style="flex: 1;" onclick="selectPropertyAndBook('dolomites')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></button>
+                <button class="btn btn-outline-gold btn-sm" onclick="switchLocationMenu('dolomites')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SIGNATURE SUITES & SANCTUARIES SHOWCASE -->
+    <section class="section-wrapper" id="suites">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3.5rem; flex-wrap: wrap; gap: 1.5rem;">
+        <div>
+          <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></div>
+          <h2 class="font-display" style="font-size: clamp(2.2rem, 3.8vw, 3.2rem); font-weight: 400;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></h2>
+        </div>
+        <div style="display: flex; gap: 0.8rem;">
+          <button class="btn btn-outline-gold btn-sm" onclick="filterSuites('all')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+          <button class="btn btn-ghost btn-sm" onclick="filterSuites('cliffside')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button>
+          <button class="btn btn-ghost btn-sm" onclick="filterSuites('onsen')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+          <button class="btn btn-ghost btn-sm" onclick="filterSuites('chalet')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 2.5rem;" id="suitesGrid">
+        <!-- Suite 1 -->
+        <div class="menu-item-card" style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-55);">
+          <div style="height: 280px; position: relative; overflow: hidden;">
+            <img style="width: 100%; height: 100%; object-fit: cover;" class="eshop-placeholder-media" data-skeleton-media="">
+            <span style="position: absolute; top: 1rem; right: 1rem; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-68); color: var(--gold-light); font-size: 0.75rem; padding: 0.35rem 0.8rem; border-radius: 4px; border: 1px solid var(--border-subtle);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span>
+          </div>
+          <div style="padding: 1.8rem; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem;">
+              <h3 class="font-display" style="font-size: 1.4rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></h3>
+              <span class="font-mono" style="color: var(--gold-light); font-size: 1.15rem; font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span><small style="font-size: 0.7rem; font-weight: 400; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></small></span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <div style="display: flex; gap: 1rem; font-size: 0.78rem; color: var(--gold-light); margin-bottom: 1.4rem;">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></span>
+            </div>
+            <div style="margin-top: auto;">
+              <button class="btn btn-gold btn-sm" style="width: 100%;" onclick="openSuiteDetailModal('imperial')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suite 2 -->
+        <div class="menu-item-card" style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-55);">
+          <div style="height: 280px; position: relative; overflow: hidden;">
+            <img style="width: 100%; height: 100%; object-fit: cover;" class="eshop-placeholder-media" data-skeleton-media="">
+            <span style="position: absolute; top: 1rem; right: 1rem; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-68); color: var(--gold-light); font-size: 0.75rem; padding: 0.35rem 0.8rem; border-radius: 4px; border: 1px solid var(--border-subtle);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span>
+          </div>
+          <div style="padding: 1.8rem; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem;">
+              <h3 class="font-display" style="font-size: 1.4rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></h3>
+              <span class="font-mono" style="color: var(--gold-light); font-size: 1.15rem; font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span><small style="font-size: 0.7rem; font-weight: 400; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></small></span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <div style="display: flex; gap: 1rem; font-size: 0.78rem; color: var(--gold-light); margin-bottom: 1.4rem;">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+            </div>
+            <div style="margin-top: auto;">
+              <button class="btn btn-gold btn-sm" style="width: 100%;" onclick="openSuiteDetailModal('kyoto_bamboo')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suite 3 -->
+        <div class="menu-item-card" style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-55);">
+          <div style="height: 280px; position: relative; overflow: hidden;">
+            <img style="width: 100%; height: 100%; object-fit: cover;" class="eshop-placeholder-media" data-skeleton-media="">
+            <span style="position: absolute; top: 1rem; right: 1rem; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-68); color: var(--gold-light); font-size: 0.75rem; padding: 0.35rem 0.8rem; border-radius: 4px; border: 1px solid var(--border-subtle);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+          </div>
+          <div style="padding: 1.8rem; display: flex; flex-direction: column; flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem;">
+              <h3 class="font-display" style="font-size: 1.4rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></h3>
+              <span class="font-mono" style="color: var(--gold-light); font-size: 1.15rem; font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span><small style="font-size: 0.7rem; font-weight: 400; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></small></span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <div style="display: flex; gap: 1rem; font-size: 0.78rem; color: var(--gold-light); margin-bottom: 1.4rem;">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></span>
+            </div>
+            <div style="margin-top: auto;">
+              <button class="btn btn-gold btn-sm" style="width: 100%;" onclick="openSuiteDetailModal('cristallo')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. LOCATION-SPECIFIC GASTRONOMY & MICHELIN MENUS -->
+    <section class="section-full" id="dining" style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-69); border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67);">
+      <div class="section-wrapper" style="padding-top: 0; padding-bottom: 0;">
+        <div style="text-align: center; max-width: 840px; margin: 0 auto 3.5rem auto;">
+          <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></div>
+          <h2 class="font-display" style="font-size: clamp(2.2rem, 4.2vw, 3.8rem); font-weight: 400; line-height: 1.15;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></h2>
+          <p style="font-size: 1rem; color: var(--text-muted); margin-top: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+
+          <!-- Location Selector for Dining -->
+          <div style="display: inline-flex; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-32); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-24); border-radius: 6px; padding: 0.35rem; margin-top: 2rem; gap: 0.4rem;">
+            <button class="btn btn-sm btn-gold" id="diningLocCote" onclick="switchLocationMenu('cotedazur')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></button>
+            <button class="btn btn-sm btn-ghost" id="diningLocKyoto" onclick="switchLocationMenu('kyoto')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></button>
+            <button class="btn btn-sm btn-ghost" id="diningLocDolomites" onclick="switchLocationMenu('dolomites')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></button>
+          </div>
+        </div>
+
+        <!-- Featured Culinary Spotlight (Dish + Architecture) -->
+        <div style="display: grid; grid-template-columns: 1fr 1.1fr; gap: 3.5rem; align-items: center; margin-bottom: 4.5rem;">
+          <div class="arch-frame" style="height: 480px;">
+            <img id="featuredDishImg" style="width: 100%; height: 100%; object-fit: cover;" class="eshop-placeholder-media" data-skeleton-media="">
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.6rem;" id="featuredRestMeta"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+            <h3 class="font-display" style="font-size: 2.2rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); line-height: 1.2; margin-bottom: 1.2rem;" id="featuredRestTitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></h3>
+            <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.8rem;" id="featuredRestDesc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+              <button class="btn btn-gold" onclick="openTableReservationModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></button>
+              <button class="btn btn-outline-gold" onclick="openOrderFoodView()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <div class="menu-tabs" id="menuTabsContainer">
+          <button class="menu-tab-btn active" onclick="filterMenuCategory('all')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('signatures')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('starters')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('mains')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('desserts')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button>
+          <button class="menu-tab-btn" onclick="filterMenuCategory('cellar')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button>
+        </div>
+
+        <!-- Dynamic Menu Items Grid -->
+        <div class="menu-grid" id="menuItemsGrid">
+          <!-- Dynamically populated by JS based on selected location & category -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. CURATED EXPERIENCES & ITINERARIES -->
+    <section class="section-wrapper" id="experiences">
+      <div style="text-align: center; max-width: 780px; margin: 0 auto 4rem auto;">
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></div>
+        <h2 class="font-display" style="font-size: clamp(2.2rem, 4vw, 3.5rem); font-weight: 400;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></h2>
+        <p style="font-size: 1rem; color: var(--text-muted); margin-top: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+        <div style="background: var(--bg-surface); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); border-radius: 8px; padding: 2.2rem;">
+          <div style="font-size: 0.72rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></div>
+          <h3 class="font-display" style="font-size: 1.45rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin: 0.5rem 0 1rem 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div style="font-size: 0.82rem; color: var(--gold-light); font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></div>
+        </div>
+
+        <div style="background: var(--bg-surface); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); border-radius: 8px; padding: 2.2rem;">
+          <div style="font-size: 0.72rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></div>
+          <h3 class="font-display" style="font-size: 1.45rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin: 0.5rem 0 1rem 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div style="font-size: 0.82rem; color: var(--gold-light); font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></div>
+        </div>
+
+        <div style="background: var(--bg-surface); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); border-radius: 8px; padding: 2.2rem;">
+          <div style="font-size: 0.72rem; color: var(--gold-primary); letter-spacing: 0.15em; text-transform: uppercase;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></div>
+          <h3 class="font-display" style="font-size: 1.45rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin: 0.5rem 0 1rem 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div style="font-size: 0.82rem; color: var(--gold-light); font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. GUEST REVIEWS & QUANTITATIVE HONEST PROOF -->
+    <section class="section-wrapper" style="border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67);">
+      <div style="text-align: center; max-width: 720px; margin: 0 auto 3rem auto;">
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></div>
+        <h2 class="font-display" style="font-size: 2.4rem; font-weight: 400;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+        <div style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-70); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); border-radius: 8px; padding: 2rem;">
+          <div style="color: var(--gold-primary); margin-bottom: 1rem; font-size: 1.1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></div>
+          <p style="font-style: italic; color: var(--text-light); line-height: 1.7; margin-bottom: 1.5rem; font-size: 0.95rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div style="font-size: 0.82rem; font-weight: 600; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        </div>
+
+        <div style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-70); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); border-radius: 8px; padding: 2rem;">
+          <div style="color: var(--gold-primary); margin-bottom: 1rem; font-size: 1.1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></div>
+          <p style="font-style: italic; color: var(--text-light); line-height: 1.7; margin-bottom: 1.5rem; font-size: 0.95rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div style="font-size: 0.82rem; font-weight: 600; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        </div>
+
+        <div style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-70); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); border-radius: 8px; padding: 2rem;">
+          <div style="color: var(--gold-primary); margin-bottom: 1rem; font-size: 1.1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></div>
+          <p style="font-style: italic; color: var(--text-light); line-height: 1.7; margin-bottom: 1.5rem; font-size: 0.95rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div style="font-size: 0.82rem; font-weight: 600; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. FINAL RESERVATION CALL TO ACTION -->
+    <section class="section-wrapper" style="text-align: center; padding: 7rem 2rem; position: relative;">
+      <div style="max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-71) 0%, var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-72) 100%); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-40); border-radius: 12px; padding: 3.5rem 2rem; box-shadow: 0 25px 60px var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-39);">
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></div>
+        <h2 class="font-display" style="font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 400; margin-bottom: 1.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></h2>
+        <p style="font-size: 0.98rem; color: var(--text-muted); line-height: 1.7; max-width: 580px; margin: 0 auto 2.5rem auto;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+          <button class="btn btn-gold" onclick="openRoomBookingModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></button>
+          <button class="btn btn-outline-gold" onclick="openTableReservationModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-73); border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); padding: 5rem 2rem 3rem 2rem;">
+    <div style="max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 4rem;">
+      <div>
+        <a href="#" class="brand-wordmark" style="font-size: 1.6rem; margin-bottom: 1.2rem; display: block;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+        </a>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; max-width: 320px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        <div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+      </div>
+
+      <div>
+        <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-primary); margin-bottom: 1.2rem; font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+          <li><a href="#" onclick="selectPropertyAndBook('cotedazur'); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+          <li><a href="#" onclick="selectPropertyAndBook('kyoto'); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+          <li><a href="#" onclick="selectPropertyAndBook('dolomites'); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+          <li><a href="#" onclick="openTableReservationModal(); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-primary); margin-bottom: 1.2rem; font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+          <li><a href="#" onclick="openRoomBookingModal(); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+          <li><a href="#" onclick="openTableReservationModal(); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+          <li><a href="#" onclick="openOrderFoodView(); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+          <li><a href="#" onclick="openGuestPortalModal(); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold-primary); margin-bottom: 1.2rem; font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+          <li><a href="#" onclick="openBackendContractModal(); return false;" style="color: var(--gold-light); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></a></li>
+          <li><a href="#" onclick="openTermsModal('cancellation'); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+          <li><a href="#" onclick="openTermsModal('privacy'); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+          <li><a href="#" onclick="openTermsModal('terms'); return false;" style="color: var(--text-muted); text-decoration: none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="max-width: 1440px; margin: 0 auto; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-58); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--text-muted); flex-wrap: wrap; gap: 1rem;">
+      <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+      <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+    </div>
+  </footer>
+
+  <!-- MOBILE STICKY BOTTOM BAR -->
+  <div class="mobile-bottom-bar">
+    <button class="mobile-bar-btn" onclick="scrollToSection('heroSection')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></span>
+    </button>
+    <button class="mobile-bar-btn" onclick="openRoomBookingModal()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+    </button>
+    <button class="mobile-bar-btn" onclick="openTableReservationModal()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+    </button>
+    <button class="mobile-bar-btn" onclick="openOrderFoodView()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+    </button>
+    <button class="mobile-bar-btn" onclick="openGuestPortalModal()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+    </button>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 1: ROOM RESERVATION & CHECKOUT ENGINE -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="roomBookingModal">
+    <div class="modal-window">
+      <button class="modal-close" onclick="closeRoomBookingModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+
+      <!-- Step Header -->
+      <div style="border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span><span id="bookingStepNum"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-top: 0.4rem;" id="bookingStepTitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></h2>
+      </div>
+
+      <!-- Step 1: Property, Dates & Room Selection -->
+      <div id="bookingStep1">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.8rem;">
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></label>
+            <select class="booking-select" id="bookModalProperty" onchange="renderBookingRoomOptions()">
+              <option value="cotedazur"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></option>
+              <option value="kyoto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 89%;"></span></option>
+              <option value="dolomites"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 89%;"></span></option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></label>
+            <select class="booking-select" id="bookModalGuests">
+              <option value="1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></option>
+              <option value="2" selected=""><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+              <option value="3"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+              <option value="4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></label>
+            <input type="date" class="booking-input" id="bookModalCheckIn" value="2026-10-18">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></label>
+            <input type="date" class="booking-input" id="bookModalCheckOut" value="2026-10-23">
+          </div>
+        </div>
+
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;" id="bookingRoomOptionsContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button class="btn btn-gold" onclick="advanceBookingToStep2()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></button>
+        </div>
+      </div>
+
+      <!-- Step 2: Inclusions & Guest Details -->
+      <div id="bookingStep2" style="display: none;">
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 2rem;">
+          <label style="display: flex; align-items: center; justify-content: space-between; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-51); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); padding: 1rem; border-radius: 6px; cursor: pointer;">
+            <div>
+              <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span class="font-mono" style="color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+              <input type="checkbox" id="addonTransfer" style="transform: scale(1.3); accent-color: var(--gold-primary);">
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; justify-content: space-between; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-51); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); padding: 1rem; border-radius: 6px; cursor: pointer;">
+            <div>
+              <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span class="font-mono" style="color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+              <input type="checkbox" id="addonChampagne" style="transform: scale(1.3); accent-color: var(--gold-primary);">
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; justify-content: space-between; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-51); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); padding: 1rem; border-radius: 6px; cursor: pointer;">
+            <div>
+              <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <span class="font-mono" style="color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></span>
+              <input type="checkbox" id="addonCredit" style="transform: scale(1.3); accent-color: var(--gold-primary);">
+            </div>
+          </label>
+        </div>
+
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></label>
+            <input type="text" class="booking-input" id="guestFullName" required="">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></label>
+            <input type="email" class="booking-input" id="guestEmail" required="">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></label>
+            <input type="tel" class="booking-input" id="guestPhone" required="">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></label>
+            <input type="text" class="booking-input" id="guestSpecialNotes">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+          <button class="btn btn-ghost" onclick="backBookingToStep1()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></button>
+          <button class="btn btn-gold" onclick="advanceBookingToStep3()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></button>
+        </div>
+      </div>
+
+      <!-- Step 3: Price Breakdown & Payment -->
+      <div id="bookingStep3" style="display: none;">
+        <div style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-74); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-24); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+          <div class="font-display" style="font-size: 1.3rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></div>
+          <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.88rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></span>
+              <strong id="summarySuiteName" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></span>
+              <span id="summaryDates" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+              <span id="summaryGuests" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); padding-top: 0.6rem;">
+              <span style="color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+              <span id="summaryBaseRate" class="font-mono" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></span>
+              <span id="summaryAddons" class="font-mono" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></span>
+              <span id="summaryTaxes" class="font-mono" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-40); padding-top: 0.8rem; font-size: 1.15rem;">
+              <strong style="color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></strong>
+              <strong id="summaryTotal" class="font-mono" style="color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Selection -->
+        <div style="margin-bottom: 2rem;">
+          <div style="font-size: 0.85rem; font-weight: 600; color: var(--gold-light); margin-bottom: 0.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <label style="border: 1px solid var(--gold-primary); background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-20); padding: 1rem; border-radius: 6px; display: flex; align-items: center; gap: 0.8rem; cursor: pointer;">
+              <input type="radio" name="payMethod" value="paystack" checked="" style="accent-color: var(--gold-primary);">
+              <div>
+                <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></div>
+              </div>
+            </label>
+            <label style="border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-75); padding: 1rem; border-radius: 6px; display: flex; align-items: center; gap: 0.8rem; cursor: pointer;">
+              <input type="radio" name="payMethod" value="demo" style="accent-color: var(--gold-primary);">
+              <div>
+                <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 84%;"></span></div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between;">
+          <button class="btn btn-ghost" onclick="backBookingToStep2()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></button>
+          <button class="btn btn-gold" id="btnConfirmPay" onclick="executeRoomBookingPayment()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 84%;"></span></button>
+        </div>
+      </div>
+
+      <!-- Confirmation Screen -->
+      <div id="bookingConfirmationView" style="display: none; text-align: center; padding: 2rem 1rem;">
+        <div style="width: 70px; height: 70px; border-radius: 50%; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); border: 2px solid var(--gold-primary); color: var(--gold-light); display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+        <div style="font-size: 0.8rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-primary); margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span><strong id="confirmedRefCode" class="font-mono" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); letter-spacing: 0.1em;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></strong>
+        </div>
+        <h2 class="font-display" style="font-size: 2.2rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></h2>
+        <p style="font-size: 0.95rem; color: var(--text-muted); max-width: 520px; margin: 0 auto 2rem auto; line-height: 1.7;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><strong id="confirmedGuestEmail" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></p>
+        <div style="display: flex; justify-content: center; gap: 1rem;">
+          <button class="btn btn-gold btn-sm" onclick="printVoucher()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button>
+          <button class="btn btn-outline-gold btn-sm" onclick="closeRoomBookingModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 2: TABLE RESERVATION MODAL -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="tableReservationModal">
+    <div class="modal-window" style="max-width: 680px;">
+      <button class="modal-close" onclick="closeTableReservationModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+
+      <div style="border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-bottom: 1.2rem; margin-bottom: 1.8rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-top: 0.3rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></h2>
+      </div>
+
+      <div id="tableFormContent">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.4rem;">
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></label>
+            <select class="booking-select" id="tableRestSelect">
+              <option value="ambroisie"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+              <option value="mizuki"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+              <option value="fumo"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></label>
+            <select class="booking-select" id="tableGuestsSelect">
+              <option value="1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></option>
+              <option value="2" selected=""><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+              <option value="3"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+              <option value="4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+              <option value="6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></option>
+              <option value="8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></label>
+            <input type="date" class="booking-input" id="tableDateInput" value="2026-10-19">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></label>
+            <select class="booking-select" id="tableTimeSelect">
+              <option value="12:30"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></option>
+              <option value="13:30"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></option>
+              <option value="19:30" selected=""><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></option>
+              <option value="20:30"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></option>
+              <option value="21:15"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.4rem;">
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></label>
+            <select class="booking-select" id="tableAtmosphereSelect">
+              <option value="terrace"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></option>
+              <option value="arches"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+              <option value="counter"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></option>
+              <option value="cellar"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></option>
+            </select>
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></label>
+            <select class="booking-select" id="tableOccasionSelect">
+              <option value="anniversary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></option>
+              <option value="romantic"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></option>
+              <option value="business"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></option>
+              <option value="culinary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.8rem;">
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></label>
+            <input type="text" class="booking-input" id="tableNameInput">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></label>
+            <input type="text" class="booking-input" id="tableContactInput">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+          <button class="btn btn-ghost" onclick="closeTableReservationModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></button>
+          <button class="btn btn-gold" onclick="submitTableReservation()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></button>
+        </div>
+      </div>
+
+      <!-- Table Confirmation -->
+      <div id="tableConfirmationContent" style="display: none; text-align: center; padding: 2rem 1rem;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); color: var(--gold-light); display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 1.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+        <div style="font-size: 0.75rem; color: var(--gold-primary); text-transform: uppercase; letter-spacing: 0.2em;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span><span id="confirmedTableRef" class="font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span>
+        </div>
+        <h3 class="font-display" style="font-size: 1.8rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin: 0.5rem 0 1rem 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;" id="confirmedTableSummary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        <button class="btn btn-gold btn-sm" onclick="closeTableReservationModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 3: DISH CUSTOMIZATION & ADD TO CART -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="dishCustomModal">
+    <div class="modal-window" style="max-width: 580px;">
+      <button class="modal-close" onclick="closeDishCustomModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+
+      <div style="margin-bottom: 1.5rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-primary);" id="customDishCategory"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></div>
+        <h3 class="font-display" style="font-size: 1.6rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-top: 0.3rem;" id="customDishName"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></h3>
+        <div class="font-mono" style="font-size: 1.2rem; color: var(--gold-light); margin-top: 0.3rem;" id="customDishPrice"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+      </div>
+
+      <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem;" id="customDishDesc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></p>
+
+      <div style="border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-top: 1.2rem; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.78rem; font-weight: 600; color: var(--gold-light); text-transform: uppercase; margin-bottom: 0.8rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></div>
+
+        <div class="booking-field" style="margin-bottom: 1rem;">
+          <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></label>
+          <select class="booking-select" id="customCookingOption">
+            <option value="chef"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></option>
+            <option value="rare"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></option>
+            <option value="med_rare"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></option>
+            <option value="well"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></option>
+          </select>
+        </div>
+
+        <div class="booking-field" style="margin-bottom: 1rem;">
+          <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 84%;"></span></label>
+          <select class="booking-select" id="customAddonOption">
+            <option value="0"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></option>
+            <option value="45"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+            <option value="65"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+            <option value="90"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></option>
+          </select>
+        </div>
+
+        <div class="booking-field">
+          <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></label>
+          <input type="text" class="booking-input" id="customNotes">
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-top: 1.2rem;">
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+          <button class="btn btn-ghost btn-sm" onclick="adjustDishQty(-1)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+          <span class="font-mono" style="font-size: 1rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);" id="customDishQty"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <button class="btn btn-ghost btn-sm" onclick="adjustDishQty(1)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+        </div>
+
+        <button class="btn btn-gold" onclick="confirmAddToCart()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span><span id="customDishTotal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- DRAWER: IN-SUITE & DINING CART DRAWER -->
+  <!-- ======================================================== -->
+  <aside class="cart-drawer" id="cartDrawer">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-bottom: 1.2rem;">
+        <div>
+          <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></div>
+          <h3 class="font-display" style="font-size: 1.4rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></h3>
+        </div>
+        <button class="modal-close" style="position: static;" onclick="closeCartDrawer()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+      </div>
+
+      <!-- Delivery / Destination Selector -->
+      <div style="margin-top: 1.2rem; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-51); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); border-radius: 6px; padding: 0.85rem;">
+        <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></label>
+        <select class="booking-select" id="cartDeliveryDest" style="margin-top: 0.3rem;">
+          <option value="suite"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+          <option value="cabana"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+          <option value="residence"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 84%;"></span></option>
+        </select>
+        <input type="text" class="booking-input" id="cartSuiteNumber" style="margin-top: 0.5rem;">
+      </div>
+
+      <!-- Items List -->
+      <div class="cart-items-scroll" id="cartItemsList">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Subtotal & Checkout -->
+    <div style="border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-top: 1.2rem;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+        <span style="color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+        <span id="cartSubtotal" class="font-mono" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+        <span style="color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></span>
+        <span id="cartServiceFee" class="font-mono" style="color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 1.15rem; margin-bottom: 1.4rem; border-top: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); padding-top: 0.6rem;">
+        <strong style="color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></strong>
+        <strong id="cartGrandTotal" class="font-mono" style="color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></strong>
+      </div>
+
+      <button class="btn btn-gold" style="width: 100%;" onclick="proceedToFoodCheckout()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></button>
+    </div>
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 4: LIVE ORDER TRACKER LIFECYCLE -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="orderTrackerModal">
+    <div class="modal-window" style="max-width: 580px;">
+      <button class="modal-close" onclick="closeOrderTrackerModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+
+      <div style="text-align: center; border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+        <div style="font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-top: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span><span id="trackerOrderId"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span>
+        </h2>
+        <div style="font-size: 0.85rem; color: var(--gold-light); margin-top: 0.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span><strong id="trackerEta"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></strong>
+        </div>
+      </div>
+
+      <!-- Real 6-stage lifecycle -->
+      <div style="padding: 0 1rem; margin-bottom: 2rem;">
+        <div class="tracking-step done" id="tstep1">
+          <div class="tracking-bullet"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+          <div>
+            <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></div>
+          </div>
+        </div>
+
+        <div class="tracking-step active" id="tstep2">
+          <div class="tracking-bullet"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+          <div>
+            <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+          </div>
+        </div>
+
+        <div class="tracking-step" id="tstep3">
+          <div class="tracking-bullet"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+          <div>
+            <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+          </div>
+        </div>
+
+        <div class="tracking-step" id="tstep4">
+          <div class="tracking-bullet"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+          <div>
+            <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+          </div>
+        </div>
+
+        <div class="tracking-step" id="tstep5">
+          <div class="tracking-bullet"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+          <div>
+            <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></div>
+          </div>
+        </div>
+
+        <div class="tracking-step" id="tstep6">
+          <div class="tracking-bullet"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+          <div>
+            <div style="font-weight: 600; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center;">
+        <button class="btn btn-outline-gold btn-sm" onclick="advanceSimulatedKitchenStatus()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 5: VIP GUEST PORTAL & LOOKUP -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="guestPortalModal">
+    <div class="modal-window" style="max-width: 680px;">
+      <button class="modal-close" onclick="closeGuestPortalModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+
+      <div style="border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-bottom: 1.2rem; margin-bottom: 1.8rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-top: 0.3rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></h2>
+      </div>
+
+      <!-- Quick lookup tabs -->
+      <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); margin-bottom: 1.8rem;">
+        <button class="btn btn-sm btn-gold" id="portalTabLookup" onclick="switchPortalTab('lookup')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+        <button class="btn btn-sm btn-ghost" id="portalTabProfile" onclick="switchPortalTab('profile')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+        <button class="btn btn-sm btn-ghost" id="portalTabHistory" onclick="switchPortalTab('history')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></button>
+      </div>
+
+      <!-- Tab: Lookup -->
+      <div id="portalViewLookup">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></label>
+            <input type="text" class="booking-input" id="lookupRefInput">
+          </div>
+          <div class="booking-field">
+            <label class="booking-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></label>
+            <input type="text" class="booking-input" id="lookupEmailInput">
+          </div>
+        </div>
+
+        <button class="btn btn-gold btn-sm" onclick="executeBookingLookup()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></button>
+
+        <div id="lookupResultArea" style="margin-top: 1.8rem; display: none; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-75); border: 1px solid var(--border-subtle); padding: 1.4rem; border-radius: 6px;">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Tab: VIP Profile -->
+      <div id="portalViewProfile" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.5rem;">
+          <div style="width: 54px; height: 54px; border-radius: 50%; background: var(--gold-primary); color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01); font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></div>
+          <div>
+            <div class="font-display" style="font-size: 1.3rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></div>
+            <div style="font-size: 0.75rem; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+          </div>
+        </div>
+
+        <div style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-75); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); border-radius: 6px; padding: 1.2rem; font-size: 0.85rem;">
+          <div style="margin-bottom: 0.6rem;"><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></strong></div>
+          <div style="color: var(--text-muted); line-height: 1.6;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span><br><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><br><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><br><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        </div>
+      </div>
+
+      <!-- Tab: History -->
+      <div id="portalViewHistory" style="display: none;">
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        <div id="portalHistoryList" style="display: flex; flex-direction: column; gap: 0.8rem;">
+          <!-- Loaded by JS from localStorage -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 6: BACKEND INTEGRATION CONTRACT & PAYSTACK SPECS -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="backendContractModal">
+    <div class="modal-window" style="max-width: 860px;">
+      <button class="modal-close" onclick="closeBackendContractModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+
+      <div style="border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-bottom: 1.2rem; margin-bottom: 1.8rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-top: 0.3rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h2>
+      </div>
+
+      <div style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 2rem;">
+        <!-- Endpoint 1 -->
+        <div style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-76); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); border-radius: 6px; padding: 1.2rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+            <span class="font-mono" style="color: var(--gold-light); font-weight: 700; font-size: 0.9rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></span>
+            <span style="font-size: 0.7rem; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-67); color: var(--gold-light); padding: 0.2rem 0.6rem; border-radius: 3px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></p>
+          <pre class="font-mono" style="font-size: 0.72rem; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-01); padding: 0.8rem; border-radius: 4px; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-77); overflow-x: auto;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></pre>
+        </div>
+
+        <!-- Endpoint 2 -->
+        <div style="background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-76); border: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); border-radius: 6px; padding: 1.2rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+            <span class="font-mono" style="color: var(--gold-light); font-weight: 700; font-size: 0.9rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></span>
+            <span style="font-size: 0.7rem; background: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-78); color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-79); padding: 0.2rem 0.6rem; border-radius: 3px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></span>
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span><code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span><code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn btn-gold btn-sm" onclick="closeBackendContractModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL 7: TERMS, CANCELLATION & POLICIES -->
+  <!-- ======================================================== -->
+  <div class="modal-backdrop" id="termsModal">
+    <div class="modal-window" style="max-width: 720px;">
+      <button class="modal-close" onclick="closeTermsModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+
+      <div style="border-bottom: 1px solid var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-15); padding-bottom: 1.2rem; margin-bottom: 1.8rem;">
+        <div style="font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></div>
+        <h2 class="font-display" style="font-size: 1.8rem; color: var(--theme-aurelia-grand-luxury-hotels-stays-culinary-destinations-color-66); margin-top: 0.3rem;" id="termsModalTitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></h2>
+      </div>
+
+      <div id="termsModalBody" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.8;">
+        <!-- Populated by JS -->
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 2rem;">
+        <button class="btn btn-gold btn-sm" onclick="closeTermsModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- COMPREHENSIVE JAVASCRIPT SYSTEM -->
+  <!-- ======================================================== -->
+  <script>
+    /**
+     * AURELIA HOTELS & RESTAURANTS JAVASCRIPT ARCHITECTURE
+     * Complete in-file reactive state store, multi-location database,
+     * GSAP ScrollTrigger parallax integration, and Paystack payment flow.
+     */
+
+    // --- 1. MULTI-LOCATION HOSPITALITY DATA REPOSITORY ---
+    const AURELIA_LOCATIONS = {
+      cotedazur: {
+        id: 'cotedazur',
+        name: "",
+        region: "",
+        currency: "",
+        currencySymbol: "",
+        coordinates: "",
+        restaurantName: "",
+        restaurantStars: "",
+        chef: "",
+        description: "",
+        heroImg: "",
+        rooms: [
+          {
+            id: 'imperial_cliffside',
+            name: "",
+            size: "",
+            price: 0,
+            image: "",
+            features: ["", "", "", ""]
+          },
+          {
+            id: 'royal_azure',
+            name: "",
+            size: "",
+            price: 0,
+            image: "",
+            features: ["", "", ""]
+          },
+          {
+            id: 'citrus_garden',
+            name: "",
+            size: "",
+            price: 0,
+            image: "",
+            features: ["", "", ""]
+          }
+        ],
+        menu: [
+          {
+            id: 'cot_dish_1',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'cot_dish_2',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'cot_dish_3',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'cot_dish_4',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'cot_dish_5',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'cot_dish_6',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          }
+        ]
+      },
+      kyoto: {
+        id: 'kyoto',
+        name: "",
+        region: "",
+        currency: "",
+        currencySymbol: "",
+        rateMultiplier: 155, // For rough EUR conversion in UI
+        coordinates: "",
+        restaurantName: "",
+        restaurantStars: "",
+        chef: "",
+        description: "",
+        heroImg: "",
+        rooms: [
+          {
+            id: 'kyoto_bamboo',
+            name: "",
+            size: "",
+            price: 0, // in EUR equivalent for storage
+            image: "",
+            features: ["", "", "", ""]
+          },
+          {
+            id: 'higashiyama_moon',
+            name: "",
+            size: "",
+            price: 0,
+            image: "",
+            features: ["", "", ""]
+          },
+          {
+            id: 'sukiya_residence',
+            name: "",
+            size: "",
+            price: 0,
+            image: "",
+            features: ["", "", ""]
+          }
+        ],
+        menu: [
+          {
+            id: 'kyo_dish_1',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'kyo_dish_2',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'kyo_dish_3',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'kyo_dish_4',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'kyo_dish_5',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'kyo_dish_6',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          }
+        ]
+      },
+      dolomites: {
+        id: 'dolomites',
+        name: "",
+        region: "",
+        currency: "",
+        currencySymbol: "",
+        coordinates: "",
+        restaurantName: "",
+        restaurantStars: "",
+        chef: "",
+        description: "",
+        heroImg: "",
+        rooms: [
+          {
+            id: 'cristallo',
+            name: "",
+            size: "",
+            price: 0,
+            image: "",
+            features: ["", "", "", ""]
+          },
+          {
+            id: 'larch_lodge',
+            name: "",
+            size: "",
+            price: 0,
+            image: "",
+            features: ["", "", ""]
+          },
+          {
+            id: 'dolomiti_grand',
+            name: "",
+            size: "",
+            price: 0,
+            image: "",
+            features: ["", "", ""]
+          }
+        ],
+        menu: [
+          {
+            id: 'dol_dish_1',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'dol_dish_2',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'dol_dish_3',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'dol_dish_4',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'dol_dish_5',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          },
+          {
+            id: 'dol_dish_6',
+            name: "",
+            category: "",
+            price: 0,
+            desc: "",
+            pairing: "",
+            allergens: ""
+          }
+        ]
+      }
+    };
+
+    // --- 2. REACTIVE STATE ENGINE ---
+    const AppState = {
+      currentLocation: 'cotedazur',
+      currentMenuCategory: 'all',
+      cart: [], // items: { id, name, price, qty, cooking, addon, notes }
+      activeModal: null,
+      bookingDraft: {
+        propertyId: 'cotedazur',
+        room: null,
+        checkIn: "2",
+        checkOut: "2",
+        guests: 2,
+        addons: { transfer: false, champagne: false, credit: false },
+        guest: { name: '', email: '', phone: '', notes: '' }
+      },
+      customizingDish: null,
+      customDishQty: 1,
+      liveOrderTracking: {
+        id: 'AUR-ORD-4921',
+        step: 2,
+        eta: '25-30 minutes'
+      }
+    };
+
+    // Load persisted state from localStorage safely
+    try {
+      const savedCart = localStorage.getItem('aurelia_cart');
+      if (savedCart) AppState.cart = JSON.parse(savedCart);
+    } catch (e) {
+      console.warn("Storage access restricted", e);
+    }
+
+    // --- 3. LIFECYCLE & GSAP INITIALIZATION ---
+    window.addEventListener('DOMContentLoaded', () => {
+      // Hide preloader smoothly after entrance
+      setTimeout(() => {
+        const preloader = document.getElementById('preloader');
+        if (preloader) preloader.classList.add('fade-out');
+      }, 700);
+
+      // Render initial views
+      renderMenu();
+      updateCartUI();
+      renderBookingRoomOptions();
+
+      // Initialize Desktop Custom Cursor
+      initCustomCursor();
+
+      // Initialize GSAP & ScrollTrigger Parallax
+      initParallaxAnimations();
+
+      // Listen to scroll for navigation background
+      window.addEventListener('scroll', () => {
+        const header = document.getElementById('navHeader');
+        if (window.scrollY > 40) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      }, { passive: true });
+    });
+
+    // --- 4. GSAP & SCROLLTRIGGER GENUINE PARALLAX ---
+    function initParallaxAnimations() {
+      // Check if GSAP is loaded
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+        console.warn("GSAP/ScrollTrigger CDN unavailable; standard graceful CSS flow active.");
+        return;
+      }
+
+      // Check reduced motion
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      // 1. Hero Background Parallax Scaling
+      gsap.to('#heroBgImg', {
+        yPercent: 20,
+        scale: 1.15,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#heroSection',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true
+        }
+      });
+
+      // 2. Editorial Philosophy Image Reveal
+      gsap.from('.image-primary', {
+        scale: 0.94,
+        y: 40,
+        opacity: 0.7,
+        duration: 1.2,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '#philosophy',
+          start: 'top 75%'
+        }
+      });
+
+      // 3. Floating Secondary Image Layer Parallax
+      gsap.to('.image-secondary-floating', {
+        y: -30,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#philosophy',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 1
+        }
+      });
+
+      // 4. Staggered reveal for Destination Cards
+      gsap.from('.location-card-editorial', {
+        y: 60,
+        opacity: 0,
+        stagger: 0.2,
+        duration: 1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '#destinations',
+          start: 'top 70%'
+        }
+      });
+    }
+
+    // --- 5. CUSTOM CURSOR TREATMENT ---
+    function initCustomCursor() {
+      const dot = document.getElementById('cursorDot');
+      const ring = document.getElementById('cursorRing');
+      if (!dot || !ring) return;
+
+      let mouseX = window.innerWidth / 2;
+      let mouseY = window.innerHeight / 2;
+
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        dot.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+        ring.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+      }, { passive: true });
+
+      // Interactive hover cues
+      const interactiveEls = document.querySelectorAll('button, a, input, select, .menu-item-card, .location-card-editorial');
+      interactiveEls.forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.classList.add('cursor-active'));
+        el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-active'));
+      });
+    }
+
+    // --- 6. NAVIGATION & SMOOTH SCROLL ---
+    function scrollToSection(id) {
+      const target = document.getElementById(id);
+      if (target) {
+        const offset = 80;
+        const targetPos = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: targetPos, behavior: 'smooth' });
+      }
+    }
+
+    function toggleMobileNav() {
+      const drawer = document.getElementById('mobileDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      drawer.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    function closeMobileNav() {
+      const drawer = document.getElementById('mobileDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      if (drawer) drawer.classList.remove('open');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    // --- 7. LOCATION MANAGEMENT & PROPERTY SWITCHING ---
+    function onLocationChange(locId) {
+      AppState.currentLocation = locId;
+      renderMenu();
+      renderBookingRoomOptions();
+      updateFeaturedDiningUI(locId);
+      showToast(`Selected Estate: ${AURELIA_LOCATIONS[locId].name}`);
+    }
+
+    function switchLocationMenu(locId) {
+      AppState.currentLocation = locId;
+      // Update toggle buttons styling
+      document.getElementById('diningLocCote').className = locId === 'cotedazur' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+      document.getElementById('diningLocKyoto').className = locId === 'kyoto' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+      document.getElementById('diningLocDolomites').className = locId === 'dolomites' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+
+      renderMenu();
+      updateFeaturedDiningUI(locId);
+      scrollToSection('dining');
+      showToast(`Viewing Gastronomy: ${AURELIA_LOCATIONS[locId].restaurantName}`);
+    }
+
+    function updateFeaturedDiningUI(locId) {
+      const loc = AURELIA_LOCATIONS[locId];
+      const titleEl = document.getElementById('featuredRestTitle');
+      const metaEl = document.getElementById('featuredRestMeta');
+      const descEl = document.getElementById('featuredRestDesc');
+      if (titleEl) titleEl.textContent = loc.restaurantName;
+      if (metaEl) metaEl.textContent = `${loc.restaurantStars} · ${loc.chef}`;
+      if (descEl) descEl.textContent = loc.description;
+    }
+
+    function selectPropertyAndBook(locId) {
+      AppState.currentLocation = locId;
+      const select = document.getElementById('bookModalProperty');
+      if (select) select.value = locId;
+      openRoomBookingModal();
+    }
+
+    // --- 8. GASTRONOMY & MENU RENDERING ---
+    function filterMenuCategory(cat) {
+      AppState.currentMenuCategory = cat;
+      const buttons = document.querySelectorAll('.menu-tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderMenu();
+    }
+
+    function renderMenu() {
+      const container = document.getElementById('menuItemsGrid');
+      if (!container) return;
+
+      const loc = AURELIA_LOCATIONS[AppState.currentLocation];
+      let items = loc.menu;
+
+      if (AppState.currentMenuCategory !== 'all') {
+        items = items.filter(i => i.category === AppState.currentMenuCategory);
+      }
+
+      container.innerHTML = items.map(item => `
+        <div class="menu-item-card">
+          <div style="padding: 1.6rem; display: flex; flex-direction: column; flex-grow: 1;">
+            <div class="menu-item-header">
+              <h4 class="menu-item-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h4>
+              <span class="menu-item-price"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+            </div>
+            <p class="menu-item-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+            <div style="font-size: 0.75rem; color: var(--gold-light); margin-bottom: 1rem; opacity: 0.85;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span><em><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></em>
+            </div>
+            <div class="menu-item-meta">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></span>
+              <button class="btn btn-outline-gold btn-sm" onclick="openDishCustomModal('${item.id}')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openDishCustomModal(dishId) {
+      const loc = AURELIA_LOCATIONS[AppState.currentLocation];
+      const dish = loc.menu.find(d => d.id === dishId);
+      if (!dish) return;
+
+      AppState.customizingDish = dish;
+      AppState.customDishQty = 1;
+
+      document.getElementById('customDishName').textContent = dish.name;
+      document.getElementById('customDishPrice').textContent = `€${dish.price}`;
+      document.getElementById('customDishDesc').textContent = dish.desc;
+      document.getElementById('customDishQty').textContent = '1';
+      document.getElementById('customDishTotal').textContent = `€${dish.price}`;
+      document.getElementById('customNotes').value = '';
+
+      const modal = document.getElementById('dishCustomModal');
+      modal.classList.add('active');
+    }
+
+    function closeDishCustomModal() {
+      const modal = document.getElementById('dishCustomModal');
+      modal.classList.remove('active');
+    }
+
+    function adjustDishQty(delta) {
+      AppState.customDishQty = Math.max(1, AppState.customDishQty + delta);
+      document.getElementById('customDishQty').textContent = AppState.customDishQty;
+      const basePrice = AppState.customizingDish ? AppState.customizingDish.price : 0;
+      const addon = parseInt(document.getElementById('customAddonOption').value || '0', 10);
+      const total = (basePrice + addon) * AppState.customDishQty;
+      document.getElementById('customDishTotal').textContent = `€${total}`;
+    }
+
+    function confirmAddToCart() {
+      if (!AppState.customizingDish) return;
+
+      const addonPrice = parseInt(document.getElementById('customAddonOption').value || '0', 10);
+      const cooking = document.getElementById('customCookingOption').value;
+      const notes = document.getElementById('customNotes').value;
+
+      const item = {
+        id: `${AppState.customizingDish.id}_${Date.now()}`,
+        dishId: AppState.customizingDish.id,
+        name: AppState.customizingDish.name,
+        basePrice: AppState.customizingDish.price,
+        unitPrice: AppState.customizingDish.price + addonPrice,
+        qty: AppState.customDishQty,
+        cooking: cooking,
+        addonPrice: addonPrice,
+        notes: notes
+      };
+
+      AppState.cart.push(item);
+      saveCart();
+      updateCartUI();
+      closeDishCustomModal();
+      showToast(`Added to In-Suite Order: ${item.name} (${item.qty})`);
+    }
+
+    // --- 9. CART SYSTEM & LIVE PERSISTENCE ---
+    function saveCart() {
+      try {
+        localStorage.setItem('aurelia_cart', JSON.stringify(AppState.cart));
+      } catch (e) {
+        console.warn("Storage restricted", e);
+      }
+    }
+
+    function updateCartUI() {
+      const totalItems = AppState.cart.reduce((sum, item) => sum + item.qty, 0);
+      const countEl = document.getElementById('headerCartCount');
+      if (countEl) countEl.textContent = totalItems;
+
+      const listContainer = document.getElementById('cartItemsList');
+      if (!listContainer) return;
+
+      if (AppState.cart.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+            <svg width="40" height="40" viewBox="" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.8rem; opacity: 0.5;"><path d="M6 2L3 6v14a2 2 h14a2 2 V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 "/></svg>
+            <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+            <div style="font-size: 0.78rem; margin-top: 0.4rem; color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+          </div>
+        `;
+        document.getElementById('cartSubtotal').textContent = '€0';
+        document.getElementById('cartGrandTotal').textContent = '€0';
+        return;
+      }
+
+      let subtotal = 0;
+      listContainer.innerHTML = AppState.cart.map((item, index) => {
+        const itemTotal = item.unitPrice * item.qty;
+        subtotal += itemTotal;
+        return `
+          <div class="cart-item-row">
+            <div style="flex-grow: 1;">
+              <div style="font-weight: 600; color: #fff; font-size: 0.95rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              <div style="font-size: 0.78rem; color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span><div style="display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem;">
+                <button class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.6rem;" onclick="changeCartItemQty(${index}, -1)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                <span class="font-mono" style="font-size: 0.85rem; color: #fff;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <button class="btn btn-ghost btn-sm" style="padding: 0.2rem 0.6rem;" onclick="changeCartItemQty(${index}, 1)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                <button style="background: none; border: none; color: #b86259; font-size: 0.75rem; cursor: pointer; margin-left: 0.5rem;" onclick="removeCartItem(${index})"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></button>
+              </div>
+            </div>
+            <div class="font-mono" style="color: var(--gold-light); font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+          </div>
+        `;
+      }).join('');
+
+      const serviceFee = 15;
+      const grandTotal = subtotal + serviceFee;
+      document.getElementById('cartSubtotal').textContent = `€${subtotal}`;
+      document.getElementById('cartGrandTotal').textContent = `€${grandTotal}`;
+    }
+
+    function changeCartItemQty(index, delta) {
+      if (!AppState.cart[index]) return;
+      AppState.cart[index].qty += delta;
+      if (AppState.cart[index].qty <= 0) {
+        AppState.cart.splice(index, 1);
+      }
+      saveCart();
+      updateCartUI();
+    }
+
+    function removeCartItem(index) {
+      AppState.cart.splice(index, 1);
+      saveCart();
+      updateCartUI();
+    }
+
+    function openCartDrawer() {
+      updateCartUI();
+      document.getElementById('cartDrawer').classList.add('open');
+      document.getElementById('drawerOverlay').classList.add('active');
+    }
+
+    function closeCartDrawer() {
+      document.getElementById('cartDrawer').classList.remove('open');
+      document.getElementById('drawerOverlay').classList.remove('active');
+    }
+
+    function openOrderFoodView() {
+      scrollToSection('dining');
+      showToast("Select dishes from our Michelin menu below to order.");
+    }
+
+    function proceedToFoodCheckout() {
+      if (AppState.cart.length === 0) {
+        showToast("Please add items to your cart first.");
+        return;
+      }
+      closeCartDrawer();
+      // Generate unique order ID
+      const orderId = `AUR-ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+      AppState.liveOrderTracking.id = orderId;
+      AppState.liveOrderTracking.step = 2;
+
+      // Save order to history
+      saveToGuestHistory({
+        type: 'Dining Order',
+        ref: orderId,
+        date: new Date().toLocaleDateString(),
+        items: AppState.cart.length,
+        total: document.getElementById('cartGrandTotal').textContent
+      });
+
+      // Clear cart
+      AppState.cart = [];
+      saveCart();
+      updateCartUI();
+
+      // Open Tracker
+      document.getElementById('trackerOrderId').textContent = orderId;
+      document.getElementById('orderTrackerModal').classList.add('active');
+      showToast(`Order Confirmed: ${orderId}. Butler dispatch active.`);
+    }
+
+    // --- 10. LIVE ORDER TRACKER LIFECYCLE ---
+    function closeOrderTrackerModal() {
+      document.getElementById('orderTrackerModal').classList.remove('active');
+    }
+
+    function advanceSimulatedKitchenStatus() {
+      let current = AppState.liveOrderTracking.step;
+      if (current < 6) {
+        current++;
+        AppState.liveOrderTracking.step = current;
+
+        for (let i = 1; i <= 6; i++) {
+          const stepEl = document.getElementById(`tstep${i}`);
+          if (!stepEl) continue;
+          stepEl.className = 'tracking-step';
+          if (i < current) {
+            stepEl.classList.add('done');
+            stepEl.querySelector('.tracking-bullet').textContent = '✓';
+          } else if (i === current) {
+            stepEl.classList.add('active');
+            stepEl.querySelector('.tracking-bullet').textContent = `${i}`;
+          } else {
+            stepEl.querySelector('.tracking-bullet').textContent = `${i}`;
+          }
+        }
+
+        if (current === 6) {
+          showToast("Order Delivered! Butler has arrived at your suite.");
+        } else {
+          showToast(`Order Status Updated: Step ${current} of 6`);
+        }
+      } else {
+        showToast("Order is already completed and delivered.");
+      }
+    }
+
+    // --- 11. ROOM RESERVATION MULTI-STEP FLOW ---
+    function openRoomBookingModal() {
+      document.getElementById('roomBookingModal').classList.add('active');
+      resetBookingToStep1();
+    }
+
+    function closeRoomBookingModal() {
+      document.getElementById('roomBookingModal').classList.remove('active');
+    }
+
+    function submitHeroSearch() {
+      const loc = document.getElementById('heroLocationSelect').value;
+      const checkIn = document.getElementById('heroCheckIn').value;
+      const checkOut = document.getElementById('heroCheckOut').value;
+      const guests = document.getElementById('heroGuests').value;
+
+      AppState.bookingDraft.propertyId = loc;
+      AppState.bookingDraft.checkIn = checkIn;
+      AppState.bookingDraft.checkOut = checkOut;
+      AppState.bookingDraft.guests = parseInt(guests, 10);
+
+      document.getElementById('bookModalProperty').value = loc;
+      document.getElementById('bookModalCheckIn').value = checkIn;
+      document.getElementById('bookModalCheckOut').value = checkOut;
+      document.getElementById('bookModalGuests').value = guests;
+
+      openRoomBookingModal();
+    }
+
+    function validateDates() {
+      const inEl = document.getElementById('heroCheckIn');
+      const outEl = document.getElementById('heroCheckOut');
+      if (inEl && outEl && new Date(outEl.value) <= new Date(inEl.value)) {
+        // Set checkout to 1 day after checkin
+        const nextDay = new Date(inEl.value);
+        nextDay.setDate(nextDay.getDate() + 1);
+        outEl.value = nextDay.toISOString().split('T')[0];
+      }
+    }
+
+    function renderBookingRoomOptions() {
+      const locId = document.getElementById('bookModalProperty').value;
+      const loc = AURELIA_LOCATIONS[locId] || AURELIA_LOCATIONS.cotedazur;
+      const container = document.getElementById('bookingRoomOptionsContainer');
+      if (!container) return;
+
+      container.innerHTML = loc.rooms.map((room, idx) => `
+        <label style="display: flex; gap: 1.2rem; align-items: center; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 8px; padding: 1.2rem; cursor: pointer; transition: border-color 0.2s ease;">
+          <input type="radio" name="selectRoomRadio" ${idx === 0 ? 'checked' : ''} style="transform: scale(1.3); accent-color: var(--gold-primary);">
+          <img style="width: 100px; height: 75px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-subtle);" class="eshop-placeholder-media">
+          <div style="flex-grow: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <h4 class="font-display" style="font-size: 1.15rem; color: #fff;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h4>
+              <span class="font-mono" style="color: var(--gold-light); font-weight: 700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span><small style="font-size: 0.7rem; color: var(--text-muted); font-weight: 400;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></small></span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+          </div>
+        </label>
+      `).join('');
+    }
+
+    function advanceBookingToStep2() {
+      const selectedRadio = document.querySelector('input[name="selectRoomRadio"]:checked');
+      if (!selectedRadio) {
+        showToast("Please choose an available suite to continue.");
+        return;
+      }
+
+      const locId = document.getElementById('bookModalProperty').value;
+      const room = AURELIA_LOCATIONS[locId].rooms.find(r => r.id === selectedRadio.value);
+      AppState.bookingDraft.room = room;
+      AppState.bookingDraft.propertyId = locId;
+      AppState.bookingDraft.checkIn = document.getElementById('bookModalCheckIn').value;
+      AppState.bookingDraft.checkOut = document.getElementById('bookModalCheckOut').value;
+      AppState.bookingDraft.guests = parseInt(document.getElementById('bookModalGuests').value, 10);
+
+      document.getElementById('bookingStep1').style.display = 'none';
+      document.getElementById('bookingStep2').style.display = 'block';
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingStepNum').textContent = '2';
+      document.getElementById('bookingStepTitle').textContent = 'Curated Inclusions & Guest Folio';
+    }
+
+    function backBookingToStep1() {
+      document.getElementById('bookingStep1').style.display = 'block';
+      document.getElementById('bookingStep2').style.display = 'none';
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingStepNum').textContent = '1';
+      document.getElementById('bookingStepTitle').textContent = 'Select Your Sanctuary & Dates';
+    }
+
+    function advanceBookingToStep3() {
+      const name = document.getElementById('guestFullName').value.trim();
+      const email = document.getElementById('guestEmail').value.trim();
+      const phone = document.getElementById('guestPhone').value.trim();
+
+      if (!name || !email) {
+        showToast("Please complete your Full Name and Email Address.");
+        return;
+      }
+
+      AppState.bookingDraft.guest = {
+        name,
+        email,
+        phone,
+        notes: document.getElementById('guestSpecialNotes').value.trim()
+      };
+
+      AppState.bookingDraft.addons = {
+        transfer: document.getElementById('addonTransfer').checked,
+        champagne: document.getElementById('addonChampagne').checked,
+        credit: document.getElementById('addonCredit').checked
+      };
+
+      // Calculate nights
+      const inDate = new Date(AppState.bookingDraft.checkIn);
+      const outDate = new Date(AppState.bookingDraft.checkOut);
+      const diffTime = Math.max(1, outDate - inDate);
+      const nights = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+      const roomPrice = AppState.bookingDraft.room.price * nights;
+      let addonPrice = 0;
+      if (AppState.bookingDraft.addons.transfer) addonPrice += 480;
+      if (AppState.bookingDraft.addons.champagne) addonPrice += 390;
+      if (AppState.bookingDraft.addons.credit) addonPrice += (200 * nights);
+
+      const subtotal = roomPrice + addonPrice;
+      const taxes = Math.round(subtotal * 0.15);
+      const grandTotal = subtotal + taxes;
+
+      // Populate summary
+      document.getElementById('summarySuiteName').textContent = `${AppState.bookingDraft.room.name} (${AURELIA_LOCATIONS[AppState.bookingDraft.propertyId].name})`;
+      document.getElementById('summaryDates').textContent = `${AppState.bookingDraft.checkIn} to ${AppState.bookingDraft.checkOut} (${nights} Nights)`;
+      document.getElementById('summaryGuests').textContent = `${AppState.bookingDraft.guests} Guests`;
+      document.getElementById('summaryBaseRate').textContent = `€${roomPrice.toLocaleString()}`;
+      document.getElementById('summaryAddons').textContent = `€${addonPrice.toLocaleString()}`;
+      document.getElementById('summaryTaxes').textContent = `€${taxes.toLocaleString()}`;
+      document.getElementById('summaryTotal').textContent = `€${grandTotal.toLocaleString()}`;
+
+      document.getElementById('bookingStep1').style.display = 'none';
+      document.getElementById('bookingStep2').style.display = 'none';
+      document.getElementById('bookingStep3').style.display = 'block';
+      document.getElementById('bookingStepNum').textContent = '3';
+      document.getElementById('bookingStepTitle').textContent = 'Review Itinerary & Guarantee Payment';
+    }
+
+    function backBookingToStep2() {
+      document.getElementById('bookingStep1').style.display = 'none';
+      document.getElementById('bookingStep2').style.display = 'block';
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingStepNum').textContent = '2';
+      document.getElementById('bookingStepTitle').textContent = 'Curated Inclusions & Guest Folio';
+    }
+
+    function resetBookingToStep1() {
+      document.getElementById('bookingStep1').style.display = 'block';
+      document.getElementById('bookingStep2').style.display = 'none';
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingConfirmationView').style.display = 'none';
+      document.getElementById('bookingStepNum').textContent = '1';
+      document.getElementById('bookingStepTitle').textContent = 'Select Your Sanctuary & Dates';
+    }
+
+    function executeRoomBookingPayment() {
+      const payMethod = document.querySelector('input[name="payMethod"]:checked').value;
+      const btn = document.getElementById('btnConfirmPay');
+      btn.disabled = true;
+      btn.textContent = "Authorizing Guarantee...";
+
+      // Generate verified reference code
+      const refCode = `AUR-RES-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      if (payMethod === 'paystack' && typeof PaystackPop !== 'undefined') {
+        // Attempt Paystack popup flow
+        try {
+          const handler = PaystackPop.setup({
+            key: 'pk_test_aurelia_hospitality_sandbox_key', // Configurable public key
+            email: AppState.bookingDraft.guest.email,
+            amount: 50000, // Pre-authorization test amount in kobo/cents
+            currency: 'NGN', // Paystack standard demo
+            ref: refCode,
+            callback: function(response) {
+              completeReservationSuccess(refCode);
+            },
+            onClose: function() {
+              btn.disabled = false;
+              btn.textContent = "Confirm Reservation & Guarantee";
+              showToast("Payment window closed. You may select Sandbox Guarantee.");
+            }
+          });
+          handler.openIframe();
+          return;
+        } catch (e) {
+          console.warn("Paystack live popup requires merchant public key. Falling back to VIP Sandbox Guarantee.", e);
+        }
+      }
+
+      // VIP Sandbox Guarantee Flow
+      setTimeout(() => {
+        completeReservationSuccess(refCode);
+      }, 1000);
+    }
+
+    function completeReservationSuccess(refCode) {
+      document.getElementById('confirmedRefCode').textContent = refCode;
+      document.getElementById('confirmedGuestEmail').textContent = AppState.bookingDraft.guest.email;
+
+      // Save to guest history
+      saveToGuestHistory({
+        type: 'Suite Stay',
+        ref: refCode,
+        date: `${AppState.bookingDraft.checkIn} — ${AppState.bookingDraft.checkOut}`,
+        suite: AppState.bookingDraft.room ? AppState.bookingDraft.room.name : 'Presidential Villa',
+        property: AURELIA_LOCATIONS[AppState.bookingDraft.propertyId].name,
+        total: document.getElementById('summaryTotal').textContent
+      });
+
+      document.getElementById('bookingStep3').style.display = 'none';
+      document.getElementById('bookingConfirmationView').style.display = 'block';
+      document.getElementById('bookingStepTitle').textContent = 'Reservation Confirmed';
+      showToast(`Reservation Confirmed: ${refCode}`);
+    }
+
+    function printVoucher() {
+      window.print();
+    }
+
+    // --- 12. TABLE RESERVATION FLOW ---
+    function openTableReservationModal() {
+      document.getElementById('tableFormContent').style.display = 'block';
+      document.getElementById('tableConfirmationContent').style.display = 'none';
+      document.getElementById('tableReservationModal').classList.add('active');
+    }
+
+    function closeTableReservationModal() {
+      document.getElementById('tableReservationModal').classList.remove('active');
+    }
+
+    function submitTableReservation() {
+      const rest = document.getElementById('tableRestSelect').value;
+      const guests = document.getElementById('tableGuestsSelect').value;
+      const date = document.getElementById('tableDateInput').value;
+      const time = document.getElementById('tableTimeSelect').value;
+      const name = document.getElementById('tableNameInput').value.trim() || 'Distinguished Guest';
+
+      const tableRef = `AUR-TBL-${Math.floor(1000 + Math.random() * 9000)}`;
+      document.getElementById('confirmedTableRef').textContent = tableRef;
+      document.getElementById('confirmedTableSummary').textContent = `
+        Table reserved for ${name} (${guests} Guests) on ${date} at ${time}. Our Maître d' will greet you upon arrival.
+      `;
+
+      saveToGuestHistory({
+        type: 'Table Reservation',
+        ref: tableRef,
+        date: `${date} at ${time}`,
+        restaurant: rest,
+        guests: guests
+      });
+
+      document.getElementById('tableFormContent').style.display = 'none';
+      document.getElementById('tableConfirmationContent').style.display = 'block';
+      showToast(`Dining Table Confirmed: ${tableRef}`);
+    }
+
+    // --- 13. VIP GUEST PORTAL & LOOKUP ---
+    function openGuestPortalModal() {
+      document.getElementById('guestPortalModal').classList.add('active');
+      renderGuestHistoryUI();
+    }
+
+    function closeGuestPortalModal() {
+      document.getElementById('guestPortalModal').classList.remove('active');
+    }
+
+    function switchPortalTab(tab) {
+      document.getElementById('portalViewLookup').style.display = tab === 'lookup' ? 'block' : 'none';
+      document.getElementById('portalViewProfile').style.display = tab === 'profile' ? 'block' : 'none';
+      document.getElementById('portalViewHistory').style.display = tab === 'history' ? 'block' : 'none';
+
+      document.getElementById('portalTabLookup').className = tab === 'lookup' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+      document.getElementById('portalTabProfile').className = tab === 'profile' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+      document.getElementById('portalTabHistory').className = tab === 'history' ? 'btn btn-sm btn-gold' : 'btn btn-sm btn-ghost';
+    }
+
+    function saveToGuestHistory(record) {
+      let history = [];
+      try {
+        const existing = localStorage.getItem('aurelia_history');
+        if (existing) history = JSON.parse(existing);
+      } catch (e) {}
+
+      history.unshift(record);
+      try {
+        localStorage.setItem('aurelia_history', JSON.stringify(history));
+      } catch (e) {}
+    }
+
+    function renderGuestHistoryUI() {
+      const container = document.getElementById('portalHistoryList');
+      if (!container) return;
+
+      let history = [];
+      try {
+        const existing = localStorage.getItem('aurelia_history');
+        if (existing) history = JSON.parse(existing);
+      } catch (e) {}
+
+      if (history.length === 0) {
+        container.innerHTML = `
+          <div style="padding: 1.5rem; text-align: center; color: var(--text-muted); background: rgba(255,255,255,0.02); border-radius: 6px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+        `;
+        return;
+      }
+
+      container.innerHTML = history.map(item => `
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(197, 168, 128, 0.2); border-radius: 6px; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 600; color: #fff; font-size: 0.9rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span><span class="font-mono" style="color: var(--gold-light);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span></div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></div>
+          </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+      `).join('');
+    }
+
+    function executeBookingLookup() {
+      const ref = document.getElementById('lookupRefInput').value.trim();
+      const resultArea = document.getElementById('lookupResultArea');
+
+      if (!ref) {
+        showToast("Please enter a valid Reference ID (e.g. AUR-RES-2026-8812)");
+        return;
+      }
+
+      resultArea.style.display = 'block';
+      resultArea.innerHTML = `
+        <div style="color: var(--gold-light); font-weight: 700; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></div>
+        <div style="font-size: 0.88rem; color: #fff;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span><strong class="font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong></div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span><br><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+      `;
+    }
+
+    // --- 14. BACKEND INTEGRATION CONTRACT & POLICIES MODALS ---
+    function openBackendContractModal() {
+      document.getElementById('backendContractModal').classList.add('active');
+    }
+
+    function closeBackendContractModal() {
+      document.getElementById('backendContractModal').classList.remove('active');
+    }
+
+    function openTermsModal(type) {
+      const modal = document.getElementById('termsModal');
+      const title = document.getElementById('termsModalTitle');
+      const body = document.getElementById('termsModalBody');
+
+      if (type === 'cancellation') {
+        title.textContent = 'Cancellation & Refund Guarantee';
+        body.innerHTML = `
+          <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p><br>
+          <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p><br>
+          <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+        `;
+      } else if (type === 'privacy') {
+        title.textContent = 'Privacy, Confidentiality & GDPR';
+        body.innerHTML = `
+          <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p><br>
+          <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+        `;
+      } else {
+        title.textContent = 'Terms of Hospitality';
+        body.innerHTML = `
+          <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+        `;
+      }
+
+      modal.classList.add('active');
+    }
+
+    function closeTermsModal() {
+      document.getElementById('termsModal').classList.remove('active');
+    }
+
+    function openSuiteDetailModal(suiteKey) {
+      selectPropertyAndBook('cotedazur');
+    }
+
+    function filterSuites(cat) {
+      const cards = document.querySelectorAll('#suitesGrid .menu-item-card');
+      cards.forEach(card => {
+        if (cat === 'all' || card.dataset.category === cat) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      showToast(`Filtered: ${cat.toUpperCase()} Suites`);
+    }
+
+    // --- 15. TOAST NOTIFICATION UTILITY ---
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `
+        <span style="color: var(--gold-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+      `;
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, 3500);
+    }
+  </script>
+
+
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body></html>

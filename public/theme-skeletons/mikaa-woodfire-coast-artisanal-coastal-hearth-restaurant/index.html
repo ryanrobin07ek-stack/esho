@@ -1,0 +1,3491 @@
+<!doctype html>
+<html lang="en" data-eshop-skeleton-preview=""><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="theme-color" content="">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:type" content="">
+
+  <!-- Google Fonts: Editorial Serif & Clean Geometric Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+
+  <!-- GSAP & ScrollTrigger from reliable CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <!-- Lucide Icons from browser CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    /* -------------------------------------------------------------
+       1. CSS VARIABLES & THEME TOKENS
+       ------------------------------------------------------------- */
+    :root {
+      --bg-canvas: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-01);
+      --bg-surface: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-02);
+      --bg-surface-elevated: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-03);
+      --bg-surface-subtle: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-04);
+      --border-hairline: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-05);
+      --border-accent: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-06);
+      
+      --text-primary: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-07);
+      --text-secondary: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-08);
+      --text-muted: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-09);
+      --text-inverse: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-01);
+
+      --accent-ember: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-10);
+      --accent-ember-hover: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-11);
+      --accent-gold: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-12);
+      --accent-gold-subtle: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-13);
+      --accent-olive: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-14);
+      
+      --status-success: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-15);
+      --status-error: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-16);
+
+      --font-display: 'Cinzel', Georgia, serif;
+      --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+
+      --transition-swift: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      --container-max: 1320px;
+    }
+
+    /* -------------------------------------------------------------
+       2. RESET & BASE ELEMENTS
+       ------------------------------------------------------------- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      color-scheme: dark;
+      scroll-behavior: smooth;
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background: var(--bg-canvas);
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color var(--transition-swift);
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent-gold);
+      outline-offset: 3px;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Accessibility skip link */
+    .skip-link {
+      position: absolute;
+      top: -60px;
+      left: 1rem;
+      background: var(--accent-ember);
+      color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);
+      padding: 0.75rem 1.25rem;
+      z-index: 9999;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      transition: top 0.2s ease;
+    }
+    .skip-link:focus {
+      top: 1rem;
+    }
+
+    /* Layout Container */
+    .container {
+      width: 100%;
+      max-width: var(--container-max);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .container { padding: 0 2.5rem; }
+    }
+
+    /* Typography Utilities */
+    .font-display {
+      font-family: var(--font-display);
+      letter-spacing: 0.02em;
+    }
+    .balance {
+      text-wrap: balance;
+    }
+
+    /* -------------------------------------------------------------
+       3. TOP NAVIGATION (Top Bar Contract: 3 Zones)
+       ------------------------------------------------------------- */
+    .header-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-18);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-hairline);
+      height: 76px;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s ease;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+      width: 100%;
+    }
+
+    /* Zone 1: Wordmark */
+    .brand-wordmark {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--text-primary);
+    }
+    .brand-subtitle {
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+    }
+
+    /* Zone 2: Single-line Navigation Links */
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 2rem;
+    }
+    @media (min-width: 992px) {
+      .nav-links { display: flex; }
+    }
+
+    .nav-link {
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      flex-shrink: 0;
+      position: relative;
+      padding: 0.35rem 0;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-primary);
+    }
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent-ember);
+    }
+
+    /* Dropdown container */
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      min-width: 180px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      padding: 0.5rem;
+      box-shadow: 0 16px 36px var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-19);
+      z-index: 110;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu,
+    .nav-dropdown:focus-within .nav-dropdown-menu {
+      display: block;
+    }
+    .nav-dropdown-item {
+      display: block;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      transition: background var(--transition-swift), color var(--transition-swift);
+    }
+    .nav-dropdown-item:hover {
+      background: var(--bg-surface-subtle);
+      color: var(--text-primary);
+    }
+
+    /* Zone 3: Primary Action & Utilities */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.35rem;
+      font-size: 0.86rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      border-radius: var(--radius-md);
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all var(--transition-swift);
+    }
+    .btn-primary {
+      background: var(--accent-ember);
+      color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-20);
+    }
+    .btn-primary:hover {
+      background: var(--accent-ember-hover);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-hairline);
+      color: var(--text-primary);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-surface-subtle);
+      border-color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-21);
+    }
+    .btn-outline {
+      border: 1px solid var(--border-hairline);
+      color: var(--text-secondary);
+    }
+    .btn-outline:hover {
+      color: var(--text-primary);
+      border-color: var(--accent-gold);
+    }
+
+    .cart-trigger-btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      color: var(--text-primary);
+      transition: background var(--transition-swift);
+    }
+    .cart-trigger-btn:hover {
+      background: var(--bg-surface-subtle);
+    }
+    .cart-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--accent-ember);
+      color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);
+      font-size: 0.7rem;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mobile-menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      color: var(--text-primary);
+    }
+    @media (min-width: 992px) {
+      .mobile-menu-btn { display: none; }
+    }
+
+    /* Mobile Menu Drawer */
+    .mobile-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-22);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .mobile-drawer.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .mobile-drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+    }
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .mobile-nav-link {
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      color: var(--text-primary);
+    }
+    .mobile-nav-link:hover, .mobile-nav-link.active {
+      color: var(--accent-ember);
+    }
+
+    /* -------------------------------------------------------------
+       4. SCREEN WRAPPER & PAGE CONTAINERS
+       ------------------------------------------------------------- */
+    #main-content {
+      flex: 1;
+      min-height: calc(100vh - 76px - 260px);
+    }
+
+    .screen-view {
+      display: none;
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .screen-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* -------------------------------------------------------------
+       5. HOMEPAGE COMPONENTS
+       ------------------------------------------------------------- */
+    .hero-section {
+      position: relative;
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+    .hero-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background-size: cover;
+      background-position: center 35%;
+      transform: scale(1.02);
+      transition: transform 0.6s ease;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: linear-gradient(
+        180deg,
+        var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-23) 0%,
+        var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-24) 65%,
+        var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-22) 100%
+      );
+    }
+    .hero-content {
+      position: relative;
+      z-index: 3;
+      max-width: 820px;
+      padding-top: 3rem;
+      padding-bottom: 5rem;
+    }
+    .hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      margin-bottom: 1.25rem;
+      font-weight: 600;
+    }
+    .hero-headline {
+      font-family: var(--font-display);
+      font-size: clamp(2.25rem, 5vw, 3.85rem);
+      line-height: 1.15;
+      font-weight: 700;
+      margin-bottom: 1.4rem;
+      color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-20);
+      letter-spacing: -0.01em;
+    }
+    .hero-subheading {
+      font-size: clamp(1rem, 1.35vw, 1.18rem);
+      color: var(--text-secondary);
+      line-height: 1.65;
+      max-width: 680px;
+      margin-bottom: 2.25rem;
+    }
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    /* Feature Pillars Strip */
+    .feature-strip {
+      border-bottom: 1px solid var(--border-hairline);
+      background: var(--bg-surface);
+      padding: 2.5rem 0;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      gap: 2rem;
+    }
+    @media (min-width: 640px) {
+      .feature-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .feature-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .feature-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .feature-index {
+      font-size: 0.75rem;
+      font-family: var(--font-display);
+      color: var(--accent-gold);
+      letter-spacing: 0.1em;
+    }
+    .feature-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .feature-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Section General */
+    .section-py {
+      padding: 5.5rem 0;
+    }
+    .section-header {
+      margin-bottom: 3.5rem;
+      max-width: 720px;
+    }
+    .section-header.text-center {
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
+    .section-kicker {
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      font-weight: 600;
+      margin-bottom: 0.65rem;
+      display: block;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3.2vw, 2.65rem);
+      line-height: 1.25;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.85rem;
+    }
+    .section-desc {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* Horizontal Signature Rail */
+    .rail-header-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    .rail-controls {
+      display: flex;
+      gap: 0.6rem;
+    }
+    .rail-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition-swift);
+    }
+    .rail-btn:hover {
+      background: var(--bg-surface-subtle);
+      border-color: var(--accent-gold);
+    }
+
+    .rail-track-wrap {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-bottom: 1rem;
+    }
+    .rail-track-wrap::-webkit-scrollbar {
+      display: none;
+    }
+    .rail-track {
+      display: flex;
+      gap: 1.75rem;
+    }
+    .rail-card {
+      flex: 0 0 310px;
+      scroll-snap-align: start;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--transition-swift), border-color var(--transition-swift);
+    }
+    @media (min-width: 768px) {
+      .rail-card { flex: 0 0 360px; }
+    }
+    .rail-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-accent);
+    }
+    .rail-card-img-wrap {
+      position: relative;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: var(--bg-surface-subtle);
+    }
+    .rail-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .rail-card:hover .rail-card-img {
+      transform: scale(1.04);
+    }
+    .rail-card-body {
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .rail-card-meta {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .rail-card-name {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+    }
+    .rail-card-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+      flex: 1;
+    }
+    .rail-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-hairline);
+      padding-top: 1rem;
+    }
+    .price-tag {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Split Section (Editorial Story) */
+    .story-split {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3.5rem;
+      align-items: center;
+    }
+    @media (min-width: 992px) {
+      .story-split {
+        grid-template-columns: 1fr 1fr;
+        gap: 5rem;
+      }
+    }
+    .story-media-wrap {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border-hairline);
+      aspect-ratio: 4/3;
+      background: var(--bg-surface-subtle);
+    }
+    .story-media-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .story-caption-card {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 1.25rem;
+      right: 1.25rem;
+      background: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-25);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-hairline);
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    /* -------------------------------------------------------------
+       6. MENU SCREEN & FILTERING
+       ------------------------------------------------------------- */
+    .menu-filter-bar {
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .menu-search-wrap {
+      position: relative;
+      max-width: 480px;
+      width: 100%;
+    }
+    .menu-search-input {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1rem 0.75rem 2.85rem;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      transition: border-color var(--transition-swift);
+    }
+    .menu-search-input:focus {
+      border-color: var(--accent-gold);
+    }
+    .menu-search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Filter Category Buttons */
+    .category-tabs-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 0.25rem;
+    }
+    .category-tabs-wrap::-webkit-scrollbar { display: none; }
+    .category-btn {
+      padding: 0.5rem 1.15rem;
+      font-size: 0.84rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      color: var(--text-secondary);
+      transition: all var(--transition-swift);
+    }
+    .category-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-surface-subtle);
+    }
+    .category-btn.active {
+      background: var(--accent-ember);
+      border-color: var(--accent-ember);
+      color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-20);
+    }
+
+    /* Dietary Toggles */
+    .dietary-toggles {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .dietary-toggle-btn {
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-size: 0.76rem;
+      font-weight: 500;
+      transition: all var(--transition-swift);
+    }
+    .dietary-toggle-btn.active {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+      background: var(--accent-gold-subtle);
+    }
+
+    /* Menu Items Grid */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+    @media (min-width: 680px) {
+      .menu-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1080px) {
+      .menu-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .dish-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--transition-swift), border-color var(--transition-swift);
+    }
+    .dish-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-accent);
+    }
+    .dish-media {
+      position: relative;
+      aspect-ratio: 16/10;
+      background: var(--bg-surface-subtle);
+      overflow: hidden;
+    }
+    .dish-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+    .dish-card:hover .dish-img {
+      transform: scale(1.03);
+    }
+    .dish-content {
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .dish-header-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.4rem;
+    }
+    .dish-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .dish-price {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+      white-space: nowrap;
+    }
+    .dish-meta-line {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .dish-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+      flex: 1;
+    }
+    .dish-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    /* -------------------------------------------------------------
+       7. RESERVATION SCREEN
+       ------------------------------------------------------------- */
+    .reservation-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3.5rem;
+    }
+    @media (min-width: 992px) {
+      .reservation-layout {
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 4.5rem;
+      }
+    }
+    .form-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      padding: 2.25rem;
+    }
+    @media (max-width: 600px) {
+      .form-card { padding: 1.5rem; }
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      margin-bottom: 0.45rem;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      padding: 0.8rem 1rem;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      transition: border-color var(--transition-swift);
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent-gold);
+    }
+    .form-select option {
+      background: var(--bg-surface-elevated);
+      color: var(--text-primary);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+    @media (min-width: 600px) {
+      .form-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    .time-slot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+      gap: 0.6rem;
+      margin-top: 0.4rem;
+    }
+    .time-slot-btn {
+      padding: 0.6rem 0.25rem;
+      text-align: center;
+      font-size: 0.84rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-surface-elevated);
+      color: var(--text-secondary);
+      transition: all var(--transition-swift);
+    }
+    .time-slot-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--text-primary);
+    }
+    .time-slot-btn.selected {
+      background: var(--accent-ember);
+      border-color: var(--accent-ember);
+      color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);
+    }
+
+    .reservation-sidebar-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+    .sidebar-section-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    .info-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+    }
+    .info-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+    }
+
+    /* -------------------------------------------------------------
+       8. CART DRAWER & CHECKOUT
+       ------------------------------------------------------------- */
+    .cart-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-26);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .cart-drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-surface-elevated);
+      border-left: 1px solid var(--border-hairline);
+      z-index: 1001;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-drawer-overlay.open .cart-drawer {
+      transform: translateX(0);
+    }
+    .cart-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cart-items-wrap {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .cart-item {
+      display: flex;
+      gap: 1rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+    .cart-item-img {
+      width: 68px;
+      height: 68px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      background: var(--bg-surface);
+    }
+    .cart-item-info {
+      flex: 1;
+    }
+    .cart-item-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+    }
+    .cart-item-price {
+      font-size: 0.85rem;
+      color: var(--accent-gold);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .cart-qty-ctrls {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .qty-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+    .cart-footer {
+      padding: 1.5rem;
+      border-top: 1px solid var(--border-hairline);
+      background: var(--bg-surface);
+    }
+    .cart-totals-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    .cart-total-grand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-top: 1px solid var(--border-hairline);
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* -------------------------------------------------------------
+       9. EXPERIENCES & PRIVATE DINING SCREEN
+       ------------------------------------------------------------- */
+    .experience-card-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+      margin-bottom: 5rem;
+    }
+    @media (min-width: 900px) {
+      .experience-card-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .experience-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .experience-media {
+      aspect-ratio: 16/10;
+      background: var(--bg-surface-subtle);
+    }
+    .experience-body {
+      padding: 1.75rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .experience-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    .experience-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      flex: 1;
+    }
+
+    /* -------------------------------------------------------------
+       10. GALLERY & LIGHTBOX
+       ------------------------------------------------------------- */
+    .gallery-filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .gallery-item {
+      position: relative;
+      aspect-ratio: 4/3;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--bg-surface-subtle);
+      border: 1px solid var(--border-hairline);
+    }
+    .gallery-item-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .gallery-item:hover .gallery-item-img {
+      transform: scale(1.05);
+    }
+    .gallery-item-caption {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-27) 0%, transparent 60%);
+      opacity: 0;
+      display: flex;
+      align-items: flex-end;
+      padding: 1.25rem;
+      transition: opacity 0.2s ease;
+    }
+    .gallery-item:hover .gallery-item-caption {
+      opacity: 1;
+    }
+
+    /* Lightbox Modal */
+    .lightbox-modal {
+      position: fixed;
+      inset: 0;
+      background: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-28);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .lightbox-modal.open {
+      display: flex;
+    }
+    .lightbox-inner {
+      position: relative;
+      max-width: 960px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .lightbox-img {
+      max-height: 75vh;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-hairline);
+    }
+    .lightbox-caption-text {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    .lightbox-close-btn {
+      position: absolute;
+      top: -45px;
+      right: 0;
+      color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);
+      font-size: 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* -------------------------------------------------------------
+       11. FAQ ACCORDION
+       ------------------------------------------------------------- */
+    .faq-accordion {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .faq-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: border-color var(--transition-swift);
+    }
+    .faq-item.open {
+      border-color: var(--border-accent);
+    }
+    .faq-trigger {
+      width: 100%;
+      padding: 1.35rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+      font-size: 0.96rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .faq-content {
+      display: none;
+      padding: 0 1.5rem 1.35rem 1.5rem;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .faq-item.open .faq-content {
+      display: block;
+    }
+
+    /* -------------------------------------------------------------
+       12. DISH DETAIL MODAL
+       ------------------------------------------------------------- */
+    .dish-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-29);
+      backdrop-filter: blur(5px);
+      z-index: 1500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .dish-modal-overlay.open {
+      display: flex;
+    }
+    .dish-modal-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xl);
+      max-width: 640px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .dish-modal-media {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: var(--bg-surface-subtle);
+    }
+    .dish-modal-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .dish-modal-body {
+      padding: 2rem;
+    }
+    .dish-modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-30);
+      color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* -------------------------------------------------------------
+       13. FOOTER
+       ------------------------------------------------------------- */
+    .site-footer {
+      background: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-31);
+      border-top: 1px solid var(--border-hairline);
+      padding: 4.5rem 0 2.5rem 0;
+      margin-top: auto;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      margin-bottom: 3.5rem;
+    }
+    @media (min-width: 640px) {
+      .footer-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      .footer-grid { grid-template-columns: 1.5fr 1fr 1fr 1fr; }
+    }
+    .footer-col-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.05em;
+    }
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+    .footer-bottom {
+      border-top: 1px solid var(--border-hairline);
+      padding-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      pointer-events: none;
+    }
+    .toast-msg {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-hairline);
+      border-left: 3px solid var(--accent-ember);
+      color: var(--text-primary);
+      padding: 0.9rem 1.4rem;
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 25px var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-32);
+      font-size: 0.85rem;
+      pointer-events: auto;
+      animation: slideInRight 0.25s ease;
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-eshop-skeleton-styles="">.eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-33);vertical-align:middle}.eshop-placeholder-media{background:linear-gradient(135deg,var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-33),var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-34));object-fit:cover}</style><style data-theme-tokens="">:root{--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-01:#121110;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-02:#1a1816;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-03:#24211d;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-04:#2d2924;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-05:rgba(230,220,205,0.09);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-06:rgba(200,90,50,0.25);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-07:#fcfbf9;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-08:#c9c3b8;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-09:#8e887f;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-10:#c85a32;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-11:#db6a40;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-12:#c9a050;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-13:rgba(201,160,80,0.12);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-14:#4a5443;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-15:#3e8e60;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-16:#bf4343;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17:#fff;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-18:rgba(18,17,16,0.94);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-19:rgba(0,0,0,0.4);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-20:#ffffff;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-21:rgba(230,220,205,0.2);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-22:rgba(18,17,16,0.98);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-23:rgba(18,17,16,0.55);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-24:rgba(18,17,16,0.82);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-25:rgba(18,17,16,0.9);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-26:rgba(0,0,0,0.7);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-27:rgba(18,17,16,0.85);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-28:rgba(10,9,8,0.95);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-29:rgba(0,0,0,0.75);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-30:rgba(18,17,16,0.8);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-31:#0d0c0b;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-32:rgba(0,0,0,0.5);--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-33:#d1d5db;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-34:#f3f4f6;--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-35:#191715;}</style></head>
+<body>
+
+  <!-- Accessible Skip Link -->
+  <a href="#main-content" class="skip-link"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a>
+
+  <!-- Announcement Bar -->
+  <div style="background: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-35); border-bottom: 1px solid var(--border-hairline); padding: 0.45rem 1rem; font-size: 0.75rem; text-align: center; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+    <span style="color: var(--accent-gold); font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></span>
+    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+    <a href="#/reservations" style="color: var(--text-primary); text-decoration: underline; font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+  </div>
+
+  <!-- Header Navigation: Strict 3-Zone Contract -->
+  <header class="header-bar">
+    <div class="container">
+      <div class="header-inner">
+        <!-- Zone 1: Brand Wordmark -->
+        <a href="#/" class="brand-wordmark">
+          <span class="brand-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+          <span class="brand-subtitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+        </a>
+
+        <!-- Zone 2: Navigation Links (Single-Line) -->
+        <nav class="nav-links">
+          <a href="#/" class="nav-link" data-route=""><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a>
+          <a href="#/menu" class="nav-link" data-route="menu"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a>
+          <a href="#/reservations" class="nav-link" data-route="reservations"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+          <a href="#/order" class="nav-link" data-route="order"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+          <a href="#/experiences" class="nav-link" data-route="experiences"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+          <a href="#/about" class="nav-link" data-route="about"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a>
+          <div class="nav-dropdown">
+            <a href="#/gallery" class="nav-link" style="display: flex; align-items: center; gap: 0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span><i data-lucide="chevron-down" style="width: 14px; height: 14px;"></i>
+            </a>
+            <div class="nav-dropdown-menu">
+              <a href="#/gallery" class="nav-dropdown-item"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+              <a href="#/contact" class="nav-dropdown-item"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a>
+              <a href="#/faq" class="nav-dropdown-item"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></a>
+              <a href="#/privacy" class="nav-dropdown-item"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Zone 3: Primary Action & Cart -->
+        <div class="header-actions">
+          <button id="cart-toggle-btn" class="cart-trigger-btn" onclick="toggleCartDrawer(true)">
+            <i data-lucide="shopping-bag" style="width: 18px; height: 18px;"></i>
+            <span id="header-cart-count" class="cart-badge"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </button>
+          <a href="#/reservations" class="btn btn-primary" style="display: none; @media(min-width: 640px){display: inline-flex;}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+          <button class="mobile-menu-btn" onclick="toggleMobileMenu(true)">
+            <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Menu -->
+  <div id="mobile-drawer" class="mobile-drawer" aria-hidden="true">
+    <div class="mobile-drawer-header">
+      <div class="brand-wordmark">
+        <span class="brand-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+        <span class="brand-subtitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+      </div>
+      <button class="cart-trigger-btn" onclick="toggleMobileMenu(false)">
+        <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+      </button>
+    </div>
+    <div class="mobile-nav-links">
+      <a href="#/" class="mobile-nav-link" onclick="toggleMobileMenu(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a>
+      <a href="#/menu" class="mobile-nav-link" onclick="toggleMobileMenu(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a>
+      <a href="#/reservations" class="mobile-nav-link" onclick="toggleMobileMenu(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+      <a href="#/order" class="mobile-nav-link" onclick="toggleMobileMenu(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+      <a href="#/experiences" class="mobile-nav-link" onclick="toggleMobileMenu(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a>
+      <a href="#/about" class="mobile-nav-link" onclick="toggleMobileMenu(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a>
+      <a href="#/gallery" class="mobile-nav-link" onclick="toggleMobileMenu(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></a>
+      <a href="#/contact" class="mobile-nav-link" onclick="toggleMobileMenu(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+      <a href="#/faq" class="mobile-nav-link" onclick="toggleMobileMenu(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></a>
+    </div>
+    <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border-hairline);">
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></p>
+      <p style="font-size: 0.95rem; color: var(--text-primary); font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></p>
+    </div>
+  </div>
+
+  <!-- Main Content Shell with Distinct Screen Views -->
+  <main id="main-content">
+    
+    <!-- =========================================================
+         SCREEN 1: HOME (#/ or #/home)
+         ========================================================= -->
+    <div id="screen-home" class="screen-view active">
+      <!-- Cinematic Hero -->
+      <section class="hero-section">
+        <div class="hero-backdrop" style="background-image: none;"></div>
+        <div class="hero-overlay"></div>
+        <div class="container" style="position: relative; z-index: 4;">
+          <div class="hero-content">
+            <div class="hero-kicker">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></span>
+            </div>
+            <h1 class="hero-headline balance"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h1>
+            <p class="hero-subheading balance"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <div class="hero-ctas">
+              <a href="#/menu" class="btn btn-primary" style="padding: 0.85rem 1.85rem; font-size: 0.95rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a>
+              <a href="#/reservations" class="btn btn-secondary" style="padding: 0.85rem 1.85rem; font-size: 0.95rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+              <a href="#/order" class="btn btn-outline" style="padding: 0.85rem 1.85rem; font-size: 0.95rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feature Pillars Strip -->
+      <section class="feature-strip">
+        <div class="container">
+          <div class="feature-grid">
+            <div class="feature-item">
+              <span class="feature-index"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+              <h3 class="feature-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></h3>
+              <p class="feature-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            </div>
+            <div class="feature-item">
+              <span class="feature-index"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+              <h3 class="feature-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></h3>
+              <p class="feature-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            </div>
+            <div class="feature-item">
+              <span class="feature-index"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+              <h3 class="feature-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></h3>
+              <p class="feature-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            </div>
+            <div class="feature-item">
+              <span class="feature-index"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+              <h3 class="feature-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></h3>
+              <p class="feature-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Signature Dishes Rail Section -->
+      <section class="section-py" style="background: var(--bg-canvas);">
+        <div class="container">
+          <div class="rail-header-row">
+            <div>
+              <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+              <h2 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></h2>
+            </div>
+            <div class="rail-controls">
+              <button class="rail-btn" onclick="scrollRail('left')">
+                <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+              </button>
+              <button class="rail-btn" onclick="scrollRail('right')">
+                <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="home-signature-rail" class="rail-track-wrap">
+            <div class="rail-track" id="home-rail-items">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Split Story & Sourcing -->
+      <section class="section-py" style="background: var(--bg-surface); border-top: 1px solid var(--border-hairline); border-bottom: 1px solid var(--border-hairline);">
+        <div class="container">
+          <div class="story-split">
+            <div class="story-media-wrap">
+              <img class="story-media-img eshop-placeholder-media" data-skeleton-media="">
+              <div class="story-caption-card">
+                <p style="font-weight: 600; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17); margin-bottom: 0.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              </div>
+            </div>
+            <div>
+              <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+              <h2 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h2>
+              <p class="section-desc" style="margin-bottom: 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              <p class="section-desc" style="margin-bottom: 2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              <div style="display: flex; gap: 1rem; align-items: center;">
+                <a href="#/about" class="btn btn-secondary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a>
+                <a href="#/experiences" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Atmospheric Venue Preview -->
+      <section class="section-py" style="background: var(--bg-canvas);">
+        <div class="container">
+          <div class="story-split" style="direction: rtl;">
+            <div class="story-media-wrap" style="direction: ltr;">
+              <img class="story-media-img eshop-placeholder-media" data-skeleton-media="">
+              <div class="story-caption-card">
+                <p style="font-weight: 600; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17); margin-bottom: 0.2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></p>
+                <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              </div>
+            </div>
+            <div style="direction: ltr;">
+              <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span>
+              <h2 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></h2>
+              <p class="section-desc" style="margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              <ul class="info-list" style="margin-bottom: 2.25rem;">
+                <li><i data-lucide="check" style="color: var(--accent-gold); width: 18px; height: 18px; flex-shrink: 0;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                <li><i data-lucide="check" style="color: var(--accent-gold); width: 18px; height: 18px; flex-shrink: 0;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                <li><i data-lucide="check" style="color: var(--accent-gold); width: 18px; height: 18px; flex-shrink: 0;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+              </ul>
+              <a href="#/reservations" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 2: MENU (#/menu)
+         ========================================================= -->
+    <div id="screen-menu" class="screen-view">
+      <div class="section-py">
+        <div class="container">
+          <div class="section-header text-center">
+            <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></span>
+            <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></h1>
+            <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+
+          <!-- Filter & Search Controls -->
+          <div class="menu-filter-bar">
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: center;">
+              <div class="menu-search-wrap">
+                <i data-lucide="search" class="menu-search-icon" style="width: 18px; height: 18px;"></i>
+                <input type="text" id="menu-search-input" class="menu-search-input" oninput="handleMenuSearch(this.value)">
+              </div>
+              <div class="dietary-toggles">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></span>
+                <button class="dietary-toggle-btn" data-tag="gluten-free" onclick="toggleDietaryFilter('gluten-free', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></button>
+                <button class="dietary-toggle-btn" data-tag="seafood" onclick="toggleDietaryFilter('seafood', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></button>
+                <button class="dietary-toggle-btn" data-tag="vegetarian" onclick="toggleDietaryFilter('vegetarian', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+                <button class="dietary-toggle-btn" data-tag="halal" onclick="toggleDietaryFilter('halal', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+              </div>
+            </div>
+
+            <div class="category-tabs-wrap" id="category-tabs-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+
+          <!-- Allergen Notice Banner -->
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius-md); padding: 0.85rem 1.25rem; margin-bottom: 2.5rem; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.75rem;">
+            <i data-lucide="info" style="color: var(--accent-gold); width: 18px; height: 18px; flex-shrink: 0;"></i>
+            <span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+          </div>
+
+          <!-- Dishes Grid -->
+          <div class="menu-grid" id="dishes-grid-container">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="menu-empty-state" style="display: none; text-align: center; padding: 4rem 1rem;">
+            <i data-lucide="search-x" style="width: 48px; height: 48px; color: var(--text-muted); margin: 0 auto 1rem auto;"></i>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></h3>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <button class="btn btn-secondary" onclick="resetMenuFilters()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 3: RESERVATIONS (#/reservations)
+         ========================================================= -->
+    <div id="screen-reservations" class="screen-view">
+      <div class="section-py">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+            <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></h1>
+            <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+
+          <div class="reservation-layout">
+            <!-- Left Form Area -->
+            <div class="form-card">
+              <!-- Step Progress Indicator -->
+              <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
+                <div style="flex: 1; height: 3px; background: var(--accent-ember); border-radius: 2px;"></div>
+                <div id="res-bar-2" style="flex: 1; height: 3px; background: var(--bg-surface-subtle); border-radius: 2px;"></div>
+                <div id="res-bar-3" style="flex: 1; height: 3px; background: var(--bg-surface-subtle); border-radius: 2px;"></div>
+              </div>
+
+              <form id="reservation-form" onsubmit="handleReservationSubmit(event)">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="res-location"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></label>
+                    <select id="res-location" class="form-select" required="">
+                      <option value="Nairobi Westlands"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+                      <option value="Diani Beach"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="res-guests"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></label>
+                    <select id="res-guests" class="form-select" required="" onchange="updateReservationSummary()">
+                      <option value="1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></option>
+                      <option value="2" selected=""><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></option>
+                      <option value="3"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+                      <option value="4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></option>
+                      <option value="5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+                      <option value="6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></option>
+                      <option value="8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></option>
+                      <option value="custom"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="res-date"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></label>
+                    <input type="date" id="res-date" class="form-input" required="" onchange="updateReservationSummary()">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="res-seating"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></label>
+                    <select id="res-seating" class="form-select" onchange="updateReservationSummary()">
+                      <option value="Main Dining Room"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+                      <option value="Live Hearth Counter"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+                      <option value="Sunset Veranda"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></option>
+                      <option value="Courtyard Garden"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></label>
+                  <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 89%;"></span></p>
+                  <div class="time-slot-grid" id="reservation-time-slots">
+                    <!-- Populated by JS -->
+                  </div>
+                  <input type="hidden" id="selected-res-time" required="">
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="res-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></label>
+                    <input type="text" id="res-name" class="form-input" required="">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="res-phone"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></label>
+                    <input type="tel" id="res-phone" class="form-input" required="">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="res-email"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></label>
+                    <input type="email" id="res-email" class="form-input" required="">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="res-occasion"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></label>
+                    <select id="res-occasion" class="form-select">
+                      <option value="Casual Gathering"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></option>
+                      <option value="Birthday Celebration"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></option>
+                      <option value="Anniversary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></option>
+                      <option value="Business Dinner"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></option>
+                      <option value="Proposal / Romance"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="res-notes"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></label>
+                  <textarea id="res-notes" class="form-textarea" rows="3"></textarea>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.95rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></button>
+                  <p style="font-size: 0.76rem; color: var(--text-muted); text-align: center;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+                </div>
+              </form>
+            </div>
+
+            <!-- Right Sidebar / Policy Area -->
+            <div class="reservation-sidebar-card">
+              <div>
+                <h3 class="sidebar-section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></h3>
+                <div id="res-live-summary" style="background: var(--bg-surface-elevated); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-hairline); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                  <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></strong> <span id="summary-guests"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span></p>
+                  <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></strong> <span id="summary-date"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></span></p>
+                  <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></strong> <span id="summary-time"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></span></p>
+                  <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></strong> <span id="summary-seating"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span></p>
+                </div>
+              </div>
+
+              <div>
+                <h4 style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></h4>
+                <ul class="info-list">
+                  <li><i data-lucide="clock" style="color: var(--accent-gold); width: 16px; height: 16px; flex-shrink: 0;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                  <li><i data-lucide="sparkles" style="color: var(--accent-gold); width: 16px; height: 16px; flex-shrink: 0;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                  <li><i data-lucide="shield-check" style="color: var(--accent-gold); width: 16px; height: 16px; flex-shrink: 0;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                </ul>
+              </div>
+
+              <div style="border-top: 1px solid var(--border-hairline); padding-top: 1.5rem;">
+                <h4 style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></h4>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.65rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+                <a style="color: var(--accent-gold); font-weight: 600; font-size: 0.95rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 4: ONLINE ORDERING & CHECKOUT (#/order)
+         ========================================================= -->
+    <div id="screen-order" class="screen-view">
+      <div class="section-py">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></span>
+            <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></h1>
+            <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+
+          <div class="reservation-layout">
+            <!-- Left: Order Menu & Fulfilment details -->
+            <div>
+              <!-- Fulfilment Selector -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem;">
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></h3>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem;">
+                  <button type="button" id="btn-fulfil-collection" class="btn btn-primary" onclick="setFulfilmentMethod('collection')">
+                    <i data-lucide="store" style="width: 16px; height: 16px;"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></button>
+                  <button type="button" id="btn-fulfil-delivery" class="btn btn-secondary" onclick="setFulfilmentMethod('delivery')">
+                    <i data-lucide="bike" style="width: 16px; height: 16px;"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></button>
+                </div>
+
+                <div id="delivery-address-fields" style="display: none;">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="order-street"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></label>
+                      <input type="text" id="order-street" class="form-input">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="order-zone"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></label>
+                      <select id="order-zone" class="form-select">
+                        <option value="Westlands"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+                        <option value="Kilimani"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+                        <option value="Karen"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+                        <option value="Diani"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="collection-pickup-fields">
+                  <div class="form-group">
+                    <label class="form-label" for="order-pickup-time"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></label>
+                    <select id="order-pickup-time" class="form-select">
+                      <option value="As soon as ready"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></option>
+                      <option value="In 45 minutes"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></option>
+                      <option value="In 1 hour"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></option>
+                      <option value="In 2 hours"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Customer Details -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem;">
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></h3>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="order-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></label>
+                    <input type="text" id="order-name" class="form-input" required="">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="order-phone"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></label>
+                    <input type="tel" id="order-phone" class="form-input" required="">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="order-notes"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></label>
+                  <input type="text" id="order-notes" class="form-input">
+                </div>
+              </div>
+
+              <!-- Payment Method Selection -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 1.5rem;">
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <label style="display: flex; align-items: flex-start; gap: 0.85rem; padding: 1rem; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-surface-elevated); cursor: pointer;">
+                    <input type="radio" name="payment_method" value="mpesa" checked="" style="margin-top: 0.25rem;">
+                    <div>
+                      <div style="font-weight: 600; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></div>
+                      <div style="font-size: 0.8rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+                    </div>
+                  </label>
+
+                  <label style="display: flex; align-items: flex-start; gap: 0.85rem; padding: 1rem; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-surface-elevated); cursor: pointer;">
+                    <input type="radio" name="payment_method" value="paystack" style="margin-top: 0.25rem;">
+                    <div>
+                      <div style="font-weight: 600; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+                      <div style="font-size: 0.8rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+                    </div>
+                  </label>
+
+                  <label style="display: flex; align-items: flex-start; gap: 0.85rem; padding: 1rem; border: 1px solid var(--border-hairline); border-radius: var(--radius-md); background: var(--bg-surface-elevated); cursor: pointer;">
+                    <input type="radio" name="payment_method" value="counter" style="margin-top: 0.25rem;">
+                    <div>
+                      <div style="font-weight: 600; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></div>
+                      <div style="font-size: 0.8rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Order Review & Cart Summary -->
+            <div class="reservation-sidebar-card">
+              <h3 class="sidebar-section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></h3>
+              <div id="checkout-cart-items" style="display: flex; flex-direction: column; gap: 1rem; max-height: 320px; overflow-y: auto; padding-right: 0.5rem;">
+                <!-- Filled via JS -->
+              </div>
+
+              <!-- Promo Code Input -->
+              <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--border-hairline); padding-top: 1rem;">
+                <input type="text" id="promo-code-input" class="form-input" style="padding: 0.5rem 0.75rem; font-size: 0.82rem;">
+                <button type="button" class="btn btn-secondary" onclick="applyPromoCode()" style="padding: 0.5rem 0.85rem; font-size: 0.82rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></button>
+              </div>
+              <div id="promo-status" style="font-size: 0.76rem; color: var(--status-success); display: none;"></div>
+
+              <!-- Calculation Totals -->
+              <div style="border-top: 1px solid var(--border-hairline); padding-top: 1rem;">
+                <div class="cart-totals-row">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+                  <span id="checkout-subtotal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+                </div>
+                <div class="cart-totals-row" id="row-delivery-fee" style="display: none;">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span>
+                  <span id="checkout-delivery-fee"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+                </div>
+                <div class="cart-totals-row" id="row-promo-discount" style="display: none; color: var(--accent-gold);">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></span>
+                  <span id="checkout-discount"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+                </div>
+                <div class="cart-totals-row">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+                  <span id="checkout-vat"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+                </div>
+                <div class="cart-total-grand" style="display: flex; justify-content: space-between;">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></span>
+                  <span id="checkout-total"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+                </div>
+
+                <button type="button" class="btn btn-primary" style="width: 100%; padding: 0.95rem;" onclick="processOrderCheckout()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></button>
+                <p style="font-size: 0.74rem; color: var(--text-muted); text-align: center; margin-top: 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 5: EXPERIENCES (#/experiences)
+         ========================================================= -->
+    <div id="screen-experiences" class="screen-view">
+      <div class="section-py">
+        <div class="container">
+          <div class="section-header text-center">
+            <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+            <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></h1>
+            <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+
+          <div class="experience-card-grid">
+            <div class="experience-card">
+              <div class="experience-media" style="background-image: none; background-size: cover; background-position: center;"></div>
+              <div class="experience-body">
+                <span style="font-size: 0.75rem; color: var(--accent-gold); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></span>
+                <h3 class="experience-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></h3>
+                <p class="experience-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+                <div style="border-top: 1px solid var(--border-hairline); padding-top: 1rem; margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-weight: 700; color: var(--text-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span><span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span></span>
+                  <a href="#/reservations" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.82rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+                </div>
+              </div>
+            </div>
+
+            <div class="experience-card">
+              <div class="experience-media" style="background-image: none; background-size: cover; background-position: center;"></div>
+              <div class="experience-body">
+                <span style="font-size: 0.75rem; color: var(--accent-gold); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></span>
+                <h3 class="experience-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></h3>
+                <p class="experience-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+                <div style="border-top: 1px solid var(--border-hairline); padding-top: 1rem; margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-weight: 700; color: var(--text-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span>
+                  <a href="#/contact" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.82rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+                </div>
+              </div>
+            </div>
+
+            <div class="experience-card">
+              <div class="experience-media" style="background-image: none; background-size: cover; background-position: center;"></div>
+              <div class="experience-body">
+                <span style="font-size: 0.75rem; color: var(--accent-gold); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></span>
+                <h3 class="experience-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></h3>
+                <p class="experience-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+                <div style="border-top: 1px solid var(--border-hairline); padding-top: 1rem; margin-top: auto; display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-weight: 700; color: var(--text-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span><span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span></span>
+                  <a href="#/reservations" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.82rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Group Events Form -->
+          <div class="form-card" style="max-width: 820px; margin: 0 auto;">
+            <div style="margin-bottom: 2rem; text-align: center;">
+              <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+              <h2 style="font-family: var(--font-display); font-size: 1.75rem; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></h2>
+              <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            </div>
+            <form onsubmit="handleEventEnquiry(event)">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="evt-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></label>
+                  <input type="text" id="evt-name" class="form-input" required="">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="evt-email"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></label>
+                  <input type="email" id="evt-email" class="form-input" required="">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="evt-type"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></label>
+                  <select id="evt-type" class="form-select">
+                    <option value="Wedding / Reception"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></option>
+                    <option value="Corporate Dinner"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></option>
+                    <option value="Milestone Birthday"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></option>
+                    <option value="Other"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="evt-guests"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></label>
+                  <input type="number" id="evt-guests" class="form-input" min="8" max="120" value="20" required="">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="evt-details"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></label>
+                <textarea id="evt-details" class="form-textarea" rows="3"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 6: ABOUT & PHILOSOPHY (#/about)
+         ========================================================= -->
+    <div id="screen-about" class="screen-view">
+      <div class="section-py">
+        <div class="container">
+          <div class="section-header text-center">
+            <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></span>
+            <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></h1>
+            <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr; gap: 4rem; margin-bottom: 5rem;">
+            <div class="story-split">
+              <div>
+                <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+                <h2 class="section-title" style="font-size: 1.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></h2>
+                <p class="section-desc" style="margin-bottom: 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+                <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              </div>
+              <div class="story-media-wrap">
+                <img class="story-media-img eshop-placeholder-media" data-skeleton-media="">
+              </div>
+            </div>
+
+            <div class="story-split" style="direction: rtl;">
+              <div style="direction: ltr;">
+                <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+                <h2 class="section-title" style="font-size: 1.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 95%;"></span></h2>
+                <p class="section-desc" style="margin-bottom: 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+                <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              </div>
+              <div class="story-media-wrap" style="direction: ltr;">
+                <img class="story-media-img eshop-placeholder-media" data-skeleton-media="">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 7: GALLERY (#/gallery)
+         ========================================================= -->
+    <div id="screen-gallery" class="screen-view">
+      <div class="section-py">
+        <div class="container">
+          <div class="section-header text-center">
+            <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></span>
+            <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></h1>
+            <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+
+          <div class="gallery-filter-tabs">
+            <button class="category-btn active" onclick="filterGallery('all', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+            <button class="category-btn" onclick="filterGallery('food', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+            <button class="category-btn" onclick="filterGallery('space', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></button>
+            <button class="category-btn" onclick="filterGallery('fire', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></button>
+          </div>
+
+          <div class="gallery-grid" id="gallery-container">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 8: CONTACT & VISITING (#/contact)
+         ========================================================= -->
+    <div id="screen-contact" class="screen-view">
+      <div class="section-py">
+        <div class="container">
+          <div class="section-header">
+            <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+            <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></h1>
+            <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+
+          <div class="reservation-layout">
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+              <!-- Location 1 -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 2rem;">
+                <span style="font-size: 0.75rem; letter-spacing: 0.14em; color: var(--accent-gold); text-transform: uppercase; font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span>
+                <h3 style="font-family: var(--font-display); font-size: 1.35rem; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17); margin: 0.4rem 0 1rem 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></h3>
+                <ul class="info-list" style="margin-bottom: 1.5rem;">
+                  <li><i data-lucide="map-pin" style="color: var(--accent-gold); width: 18px; height: 18px;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                  <li><i data-lucide="clock" style="color: var(--accent-gold); width: 18px; height: 18px;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                  <li><i data-lucide="phone" style="color: var(--accent-gold); width: 18px; height: 18px;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span></li>
+                  <li><i data-lucide="mail" style="color: var(--accent-gold); width: 18px; height: 18px;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                </ul>
+                <a href="#/reservations" class="btn btn-primary" style="padding: 0.55rem 1.25rem; font-size: 0.84rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+              </div>
+
+              <!-- Location 2 -->
+              <div style="background: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 2rem;">
+                <span style="font-size: 0.75rem; letter-spacing: 0.14em; color: var(--accent-gold); text-transform: uppercase; font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+                <h3 style="font-family: var(--font-display); font-size: 1.35rem; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17); margin: 0.4rem 0 1rem 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></h3>
+                <ul class="info-list" style="margin-bottom: 1.5rem;">
+                  <li><i data-lucide="map-pin" style="color: var(--accent-gold); width: 18px; height: 18px;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                  <li><i data-lucide="clock" style="color: var(--accent-gold); width: 18px; height: 18px;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span></li>
+                  <li><i data-lucide="phone" style="color: var(--accent-gold); width: 18px; height: 18px;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span></li>
+                  <li><i data-lucide="mail" style="color: var(--accent-gold); width: 18px; height: 18px;"></i> <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></span></li>
+                </ul>
+                <a href="#/reservations" class="btn btn-secondary" style="padding: 0.55rem 1.25rem; font-size: 0.84rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+              </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="form-card">
+              <h3 style="font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></h3>
+              <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+              <form onsubmit="handleContactSubmit(event)">
+                <div class="form-group">
+                  <label class="form-label" for="cnt-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></label>
+                  <input type="text" id="cnt-name" class="form-input" required="">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="cnt-email"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></label>
+                  <input type="email" id="cnt-email" class="form-input" required="">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="cnt-subject"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></label>
+                  <input type="text" id="cnt-subject" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="cnt-msg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></label>
+                  <textarea id="cnt-msg" class="form-textarea" rows="4" required=""></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 9: FAQ (#/faq)
+         ========================================================= -->
+    <div id="screen-faq" class="screen-view">
+      <div class="section-py">
+        <div class="container">
+          <div class="section-header text-center">
+            <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+            <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></h1>
+            <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+
+          <div class="faq-accordion" id="faq-accordion-container">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         SCREEN 10: PRIVACY & POLICIES (#/privacy & #/terms)
+         ========================================================= -->
+    <div id="screen-privacy" class="screen-view">
+      <div class="section-py">
+        <div class="container" style="max-width: 800px;">
+          <div class="section-header">
+            <span class="section-kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+            <h1 class="section-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></h1>
+            <p class="section-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></p>
+          </div>
+
+          <div style="background: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 2.5rem; font-size: 0.9rem; line-height: 1.7; color: var(--text-secondary);">
+            <h3 style="color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17); font-size: 1.15rem; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></h3>
+            <p style="margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+
+            <h3 style="color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17); font-size: 1.15rem; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h3>
+            <p style="margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+
+            <h3 style="color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17); font-size: 1.15rem; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></h3>
+            <p style="margin-bottom: 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+
+            <h3 style="color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17); font-size: 1.15rem; margin-bottom: 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></h3>
+            <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- =========================================================
+       GLOBAL OVERLAYS & MODALS
+       ========================================================= -->
+
+  <!-- Cart Slide-Over Drawer -->
+  <div id="cart-drawer-overlay" class="cart-drawer-overlay" onclick="handleDrawerOverlayClick(event)">
+    <div class="cart-drawer" onclick="event.stopPropagation()">
+      <div class="cart-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <i data-lucide="shopping-bag" style="width: 20px; height: 20px; color: var(--accent-ember);"></i>
+          <h3 style="font-family: var(--font-display); font-size: 1.15rem; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></h3>
+        </div>
+        <button class="cart-trigger-btn" onclick="toggleCartDrawer(false)">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+
+      <div class="cart-items-wrap" id="cart-drawer-items">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="cart-footer">
+        <div class="cart-totals-row">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+          <span id="drawer-subtotal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+        </div>
+        <div class="cart-totals-row" style="font-size: 0.78rem; color: var(--text-muted);">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></span>
+        </div>
+        <div class="cart-total-grand" style="display: flex; justify-content: space-between;">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></span>
+          <span id="drawer-total"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+          <a href="#/order" class="btn btn-primary" onclick="toggleCartDrawer(false)" style="padding: 0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a>
+          <button type="button" class="btn btn-outline" onclick="toggleCartDrawer(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dish Detail Modal -->
+  <div id="dish-modal" class="dish-modal-overlay" onclick="closeDishModal(event)">
+    <div class="dish-modal-card" onclick="event.stopPropagation()">
+      <div class="dish-modal-media">
+        <button class="dish-modal-close" onclick="closeDishModal()">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+        <img id="modal-dish-img" class="dish-modal-img eshop-placeholder-media" data-skeleton-media="">
+      </div>
+      <div class="dish-modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+          <h2 id="modal-dish-name" style="font-family: var(--font-display); font-size: 1.4rem; color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);"></h2>
+          <span id="modal-dish-price" style="font-size: 1.25rem; font-weight: 700; color: var(--accent-gold);"></span>
+        </div>
+        <div id="modal-dish-tags" style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem; display: flex; gap: 0.5rem;"></div>
+        <p id="modal-dish-desc" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;"></p>
+
+        <!-- Spice Option -->
+        <div style="margin-bottom: 1.5rem;">
+          <label class="form-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></label>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="category-btn active" style="font-size: 0.78rem;" onclick="setModalSpice('Mild Heritage', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></button>
+            <button type="button" class="category-btn" style="font-size: 0.78rem;" onclick="setModalSpice('Coastal Medium', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+            <button type="button" class="category-btn" style="font-size: 0.78rem;" onclick="setModalSpice('Pilipili Ember', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-hairline); padding-top: 1.5rem;">
+          <div class="cart-qty-ctrls">
+            <button class="qty-btn" onclick="adjustModalQty(-1)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+            <span id="modal-qty-val" style="font-weight: 700; min-width: 24px; text-align: center;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            <button class="qty-btn" onclick="adjustModalQty(1)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+          </div>
+          <button id="modal-add-cart-btn" class="btn btn-primary" onclick="addModalDishToCart()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gallery Lightbox Modal -->
+  <div id="lightbox-modal" class="lightbox-modal" onclick="closeLightbox(event)">
+    <div class="lightbox-inner" onclick="event.stopPropagation()">
+      <button class="lightbox-close-btn" onclick="closeLightbox()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+      <img id="lightbox-img" class="lightbox-img eshop-placeholder-media" data-skeleton-media="">
+      <p id="lightbox-caption" class="lightbox-caption-text"></p>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- =========================================================
+       FOOTER
+       ========================================================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Col 1: Brand -->
+        <div>
+          <div class="brand-wordmark" style="margin-bottom: 1rem;">
+            <span class="brand-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+            <span class="brand-subtitle"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></span>
+          </div>
+          <p style="font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; max-width: 320px; margin-bottom: 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div style="font-size: 0.78rem; color: var(--accent-gold); font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></div>
+        </div>
+
+        <!-- Col 2: Navigation -->
+        <div>
+          <h4 class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></h4>
+          <ul class="footer-links">
+            <li><a href="#/"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a></li>
+            <li><a href="#/menu"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a></li>
+            <li><a href="#/reservations"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+            <li><a href="#/order"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></li>
+            <li><a href="#/experiences"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+            <li><a href="#/about"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Outposts -->
+        <div>
+          <h4 class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></h4>
+          <ul class="footer-links">
+            <li><strong style="color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></strong></li>
+            <li><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></li>
+            <li><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></li>
+            <li style="margin-top: 0.5rem;"><strong style="color: var(--theme-mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant-color-17);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></strong></li>
+            <li><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></li>
+            <li><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Concierge -->
+        <div>
+          <h4 class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></h4>
+          <ul class="footer-links">
+            <li><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></li>
+            <li><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 76%;"></span></li>
+            <li><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></li>
+            <li><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></li>
+            <li style="margin-top: 0.5rem;">
+              <a href="#/faq" style="color: var(--accent-gold); text-decoration: underline;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span><span id="copyright-year"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="#/privacy"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+          <a href="#/faq"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></a>
+          <a href="#/contact"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =========================================================
+       JAVASCRIPT APPLICATION CORE
+       ========================================================= -->
+  <script>
+    /* -------------------------------------------------------------
+       1. RESTAURANT CONFIGURATION OBJECT
+       Easily customizable brand, contact details, currency & dishes.
+       ------------------------------------------------------------- */
+    const RESTAURANT_CONFIG = {
+      brand: {
+        name: "",
+        tagline: "",
+        currency: "",
+        currencyCode: "",
+        vatRate: 0.16,
+        deliveryFee: 0
+      },
+      contacts: {
+        phoneNairobi: "",
+        phoneDiani: "",
+        email: ""
+      },
+      timeSlots: [
+        "", "", "", "", "",
+        "", "", "", "", "", "", "", ""
+      ],
+      categories: [
+        { id: "all", name: "" },
+        { id: "starters", name: "" },
+        { id: "seafood", name: "" },
+        { id: "meats", name: "" },
+        { id: "plant", name: "" },
+        { id: "desserts", name: "" },
+        { id: "drinks", name: "" }
+      ],
+      dishes: [
+        {
+          id: "dish-1",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: true,
+          dietary: ["", "", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-2",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: true,
+          dietary: ["", "", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-3",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: true,
+          dietary: ["", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-4",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: true,
+          dietary: ["", "", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-5",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: false,
+          dietary: ["", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-6",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: false,
+          dietary: ["", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-7",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: false,
+          dietary: ["", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-8",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: false,
+          dietary: ["", "", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-9",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: false,
+          dietary: ["", "", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-10",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: true,
+          dietary: [""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-11",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: false,
+          dietary: ["", "", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        },
+        {
+          id: "dish-12",
+          name: "",
+          category: "",
+          price: 0,
+          isSignature: true,
+          dietary: ["", ""],
+          tags: ["", "", ""],
+          desc: "",
+          img: ""
+        }
+      ],
+      faqs: [
+        {
+          q: "",
+          a: ""
+        },
+        {
+          q: "",
+          a: ""
+        },
+        {
+          q: "",
+          a: ""
+        },
+        {
+          q: "",
+          a: ""
+        },
+        {
+          q: "",
+          a: ""
+        },
+        {
+          q: "",
+          a: ""
+        }
+      ]
+    };
+
+    /* -------------------------------------------------------------
+       2. APPLICATION STATE
+       ------------------------------------------------------------- */
+    let AppState = {
+      cart: JSON.parse(localStorage.getItem('mikaa_cart') || '[]'),
+      currentRoute: 'home',
+      activeCategory: 'all',
+      dietaryFilters: new Set(),
+      searchQuery: '',
+      fulfilmentMethod: 'collection',
+      promoDiscount: 0,
+      activeModalDish: null,
+      modalQty: 1,
+      modalSpice: 'Mild Heritage'
+    };
+
+    /* -------------------------------------------------------------
+       3. ROUTING ENGINE (Hash-based multi-screen navigation)
+       ------------------------------------------------------------- */
+    function initRouter() {
+      window.addEventListener('hashchange', handleRouteChange);
+      handleRouteChange();
+    }
+
+    function handleRouteChange() {
+      const hash = window.location.hash.replace('#/', '').replace('#', '').trim();
+      const route = hash || 'home';
+      AppState.currentRoute = route;
+
+      // Hide all screen views
+      document.querySelectorAll('.screen-view').forEach(screen => {
+        screen.classList.remove('active');
+      });
+
+      // Target screen element
+      const targetScreen = document.getElementById(`screen-${route}`);
+      if (targetScreen) {
+        targetScreen.classList.add('active');
+      } else {
+        // Fallback to home if unknown route
+        const homeScreen = document.getElementById('screen-home');
+        if (homeScreen) homeScreen.classList.add('active');
+        AppState.currentRoute = 'home';
+      }
+
+      // Update Nav Link Active states
+      document.querySelectorAll('.nav-link, .mobile-nav-link').forEach(link => {
+        const linkRoute = link.getAttribute('data-route') || '';
+        if (linkRoute === route || (route === 'home' && linkRoute === '')) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+
+      // Scroll to top naturally
+      window.scrollTo(0, 0);
+
+      // Page Title update
+      updatePageTitle(route);
+
+      // Re-trigger icons and specific view initializers
+      if (window.lucide) window.lucide.createIcons();
+      onRouteActivated(route);
+    }
+
+    function updatePageTitle(route) {
+      const titles = {
+        home: "MIKAA Woodfire & Coast — Artisanal Coastal Hearth Restaurant",
+        menu: "The Culinary Menu — MIKAA Woodfire & Coast",
+        reservations: "Table Reservations — MIKAA Woodfire & Coast",
+        order: "Online Ordering & Checkout — MIKAA Woodfire & Coast",
+        experiences: "Hearth Experiences & Private Dining — MIKAA",
+        about: "Our Philosophy & Woodcraft — MIKAA",
+        gallery: "Visual Gallery — MIKAA Woodfire & Coast",
+        contact: "Locations & Visiting — MIKAA",
+        faq: "Guest FAQ & Assistance — MIKAA",
+        privacy: "Dining Policies — MIKAA"
+      };
+      document.title = titles[route] || "MIKAA Woodfire & Coast";
+    }
+
+    function onRouteActivated(route) {
+      if (route === 'menu') {
+        renderMenuCategories();
+        renderDishes();
+      } else if (route === 'home') {
+        renderHomeSignatureRail();
+      } else if (route === 'reservations') {
+        renderReservationTimeSlots();
+        initReservationDateDefaults();
+      } else if (route === 'order') {
+        renderCheckoutCartSummary();
+      } else if (route === 'gallery') {
+        renderGalleryItems('all');
+      } else if (route === 'faq') {
+        renderFaqAccordion();
+      }
+
+      // Re-initialize GSAP animations gently if available
+      initGsapAnimations();
+    }
+
+    /* -------------------------------------------------------------
+       4. HOMEPAGE SIGNATURE RAIL
+       ------------------------------------------------------------- */
+    function renderHomeSignatureRail() {
+      const container = document.getElementById('home-rail-items');
+      if (!container) return;
+
+      const signatures = RESTAURANT_CONFIG.dishes.filter(d => d.isSignature);
+      container.innerHTML = signatures.map(dish => `
+        <div class="rail-card">
+          <div class="rail-card-img-wrap">
+            <img class="rail-card-img eshop-placeholder-media">
+          </div>
+          <div class="rail-card-body">
+            <div class="rail-card-meta">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+            </div>
+            <h3 class="rail-card-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+            <p class="rail-card-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+            <div class="rail-card-footer">
+              <span class="price-tag tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+              <button class="btn btn-secondary" style="padding: 0.45rem 0.95rem; font-size: 0.8rem;" onclick="openDishModal('${dish.id}')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function scrollRail(direction) {
+      const rail = document.getElementById('home-signature-rail');
+      if (!rail) return;
+      const scrollAmount = direction === 'left' ? -380 : 380;
+      rail.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+
+    /* -------------------------------------------------------------
+       5. MENU SCREEN RENDERING & FILTERING
+       ------------------------------------------------------------- */
+    function renderMenuCategories() {
+      const container = document.getElementById('category-tabs-container');
+      if (!container) return;
+
+      container.innerHTML = RESTAURANT_CONFIG.categories.map(cat => `
+        <button class="category-btn ${AppState.activeCategory === cat.id ? 'active' : ''}" onclick="setMenuCategory('${cat.id}')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></button>
+      `).join('');
+    }
+
+    function setMenuCategory(catId) {
+      AppState.activeCategory = catId;
+      renderMenuCategories();
+      renderDishes();
+    }
+
+    function handleMenuSearch(query) {
+      AppState.searchQuery = query.toLowerCase().trim();
+      renderDishes();
+    }
+
+    function toggleDietaryFilter(tag, buttonEl) {
+      if (AppState.dietaryFilters.has(tag)) {
+        AppState.dietaryFilters.delete(tag);
+        buttonEl.classList.remove('active');
+      } else {
+        AppState.dietaryFilters.add(tag);
+        buttonEl.classList.add('active');
+      }
+      renderDishes();
+    }
+
+    function resetMenuFilters() {
+      AppState.searchQuery = '';
+      AppState.activeCategory = 'all';
+      AppState.dietaryFilters.clear();
+      const searchInput = document.getElementById('menu-search-input');
+      if (searchInput) searchInput.value = '';
+      document.querySelectorAll('.dietary-toggle-btn').forEach(b => b.classList.remove('active'));
+      renderMenuCategories();
+      renderDishes();
+    }
+
+    function renderDishes() {
+      const container = document.getElementById('dishes-grid-container');
+      const emptyState = document.getElementById('menu-empty-state');
+      if (!container) return;
+
+      let filtered = RESTAURANT_CONFIG.dishes.filter(dish => {
+        // Category check
+        if (AppState.activeCategory !== 'all' && dish.category !== AppState.activeCategory) {
+          return false;
+        }
+        // Search query check
+        if (AppState.searchQuery) {
+          const matchName = dish.name.toLowerCase().includes(AppState.searchQuery);
+          const matchDesc = dish.desc.toLowerCase().includes(AppState.searchQuery);
+          const matchTag = dish.tags.some(t => t.toLowerCase().includes(AppState.searchQuery));
+          if (!matchName && !matchDesc && !matchTag) return false;
+        }
+        // Dietary check
+        if (AppState.dietaryFilters.size > 0) {
+          for (let requiredTag of AppState.dietaryFilters) {
+            if (!dish.dietary.includes(requiredTag)) return false;
+          }
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        if (emptyState) emptyState.style.display = 'block';
+        return;
+      }
+
+      if (emptyState) emptyState.style.display = 'none';
+
+      container.innerHTML = filtered.map(dish => `
+        <div class="dish-card">
+          <div class="dish-media" onclick="openDishModal('${dish.id}')" style="cursor: pointer;">
+            <img class="dish-img eshop-placeholder-media">
+          </div>
+          <div class="dish-content">
+            <div class="dish-header-row">
+              <h3 class="dish-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+              <span class="dish-price tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </div>
+            <div class="dish-meta-line">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </div>
+            <p class="dish-desc"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+            <div class="dish-actions">
+              <button class="btn btn-primary" style="flex: 1; padding: 0.55rem 0.85rem; font-size: 0.84rem;" onclick="quickAddToCart('${dish.id}')">
+                <i data-lucide="plus" style="width: 15px; height: 15px;"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+              <button class="btn btn-secondary" style="padding: 0.55rem 0.85rem; font-size: 0.84rem;" onclick="openDishModal('${dish.id}')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    /* -------------------------------------------------------------
+       6. DISH DETAIL MODAL
+       ------------------------------------------------------------- */
+    function openDishModal(dishId) {
+      const dish = RESTAURANT_CONFIG.dishes.find(d => d.id === dishId);
+      if (!dish) return;
+
+      AppState.activeModalDish = dish;
+      AppState.modalQty = 1;
+      AppState.modalSpice = 'Mild Heritage';
+
+      document.getElementById('modal-dish-img').src = dish.img;
+      document.getElementById('modal-dish-img').onerror = function() {
+        this.src = "";
+      };
+      document.getElementById('modal-dish-name').textContent = dish.name;
+      document.getElementById('modal-dish-price').textContent = formatPrice(dish.price);
+      document.getElementById('modal-dish-desc').textContent = dish.desc;
+      document.getElementById('modal-qty-val').textContent = '1';
+
+      const tagsContainer = document.getElementById('modal-dish-tags');
+      tagsContainer.innerHTML = dish.dietary.map(d => `<span style="border-right: 1px solid var(--border-hairline); padding-right: 0.5rem; text-transform: uppercase;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>`).join('');
+
+      document.getElementById('dish-modal').classList.add('open');
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function closeDishModal(e) {
+      if (e && e.target !== e.currentTarget && !e.target.closest('.dish-modal-close')) return;
+      document.getElementById('dish-modal').classList.remove('open');
+      AppState.activeModalDish = null;
+    }
+
+    function adjustModalQty(delta) {
+      AppState.modalQty = Math.max(1, AppState.modalQty + delta);
+      document.getElementById('modal-qty-val').textContent = AppState.modalQty;
+    }
+
+    function setModalSpice(spiceName, btnEl) {
+      AppState.modalSpice = spiceName;
+      btnEl.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+    }
+
+    function addModalDishToCart() {
+      if (!AppState.activeModalDish) return;
+      addToCart(AppState.activeModalDish.id, AppState.modalQty, AppState.modalSpice);
+      closeDishModal();
+      showToast(`Added ${AppState.modalQty}x ${AppState.activeModalDish.name} to order.`);
+    }
+
+    function quickAddToCart(dishId) {
+      const dish = RESTAURANT_CONFIG.dishes.find(d => d.id === dishId);
+      if (!dish) return;
+      addToCart(dish.id, 1, 'Standard Hearth');
+      showToast(`Added ${dish.name} to order.`);
+    }
+
+    /* -------------------------------------------------------------
+       7. CART MANAGEMENT
+       ------------------------------------------------------------- */
+    function addToCart(dishId, qty = 1, spice = 'Standard') {
+      const dish = RESTAURANT_CONFIG.dishes.find(d => d.id === dishId);
+      if (!dish) return;
+
+      const existingIndex = AppState.cart.findIndex(item => item.id === dishId && item.spice === spice);
+      if (existingIndex > -1) {
+        AppState.cart[existingIndex].qty += qty;
+      } else {
+        AppState.cart.push({
+          id: dish.id,
+          name: dish.name,
+          price: dish.price,
+          img: dish.img,
+          spice: spice,
+          qty: qty
+        });
+      }
+
+      saveCart();
+      updateCartUI();
+    }
+
+    function updateCartItemQty(index, delta) {
+      if (AppState.cart[index]) {
+        AppState.cart[index].qty += delta;
+        if (AppState.cart[index].qty <= 0) {
+          AppState.cart.splice(index, 1);
+        }
+        saveCart();
+        updateCartUI();
+      }
+    }
+
+    function saveCart() {
+      try {
+        localStorage.setItem('mikaa_cart', JSON.stringify(AppState.cart));
+      } catch (e) {
+        console.warn('LocalStorage error:', e);
+      }
+    }
+
+    function updateCartUI() {
+      const totalCount = AppState.cart.reduce((sum, item) => sum + item.qty, 0);
+      const subtotal = AppState.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+      // Header Badge
+      const badge = document.getElementById('header-cart-count');
+      if (badge) badge.textContent = totalCount;
+
+      // Drawer Content
+      renderDrawerCart(subtotal);
+
+      // Checkout screen if active
+      if (AppState.currentRoute === 'order') {
+        renderCheckoutCartSummary();
+      }
+    }
+
+    function renderDrawerCart(subtotal) {
+      const container = document.getElementById('cart-drawer-items');
+      if (!container) return;
+
+      if (AppState.cart.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+            <i data-lucide="shopping-bag" style="width: 42px; height: 42px; margin: 0 auto 0.75rem auto; color: var(--border-hairline);"></i>
+            <p style="font-weight: 500;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></p>
+            <p style="font-size: 0.8rem; margin-top: 0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        `;
+      } else {
+        container.innerHTML = AppState.cart.map((item, idx) => `
+          <div class="cart-item">
+            <img class="cart-item-img eshop-placeholder-media">
+            <div class="cart-item-info">
+              <div class="cart-item-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></div>
+              <div class="cart-item-price tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              <div class="cart-qty-ctrls">
+                <button class="qty-btn" onclick="updateCartItemQty(${idx}, -1)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                <span style="font-size: 0.82rem; font-weight: 600; min-width: 20px; text-align: center;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <button class="qty-btn" onclick="updateCartItemQty(${idx}, 1)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('drawer-subtotal').textContent = formatPrice(subtotal);
+      document.getElementById('drawer-total').textContent = formatPrice(subtotal);
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function toggleCartDrawer(open) {
+      const drawer = document.getElementById('cart-drawer-overlay');
+      if (open) {
+        drawer.classList.add('open');
+      } else {
+        drawer.classList.remove('open');
+      }
+    }
+
+    function handleDrawerOverlayClick(e) {
+      if (e.target === e.currentTarget) {
+        toggleCartDrawer(false);
+      }
+    }
+
+    /* -------------------------------------------------------------
+       8. CHECKOUT & ORDER PAYMENT HANDLING
+       ------------------------------------------------------------- */
+    function setFulfilmentMethod(method) {
+      AppState.fulfilmentMethod = method;
+      const btnCollection = document.getElementById('btn-fulfil-collection');
+      const btnDelivery = document.getElementById('btn-fulfil-delivery');
+      const deliveryFields = document.getElementById('delivery-address-fields');
+      const collectionFields = document.getElementById('collection-pickup-fields');
+      const deliveryRow = document.getElementById('row-delivery-fee');
+
+      if (method === 'delivery') {
+        btnDelivery.className = 'btn btn-primary';
+        btnCollection.className = 'btn btn-secondary';
+        deliveryFields.style.display = 'block';
+        collectionFields.style.display = 'none';
+        deliveryRow.style.display = 'flex';
+      } else {
+        btnCollection.className = 'btn btn-primary';
+        btnDelivery.className = 'btn btn-secondary';
+        deliveryFields.style.display = 'none';
+        collectionFields.style.display = 'block';
+        deliveryRow.style.display = 'none';
+      }
+      renderCheckoutCartSummary();
+    }
+
+    function renderCheckoutCartSummary() {
+      const container = document.getElementById('checkout-cart-items');
+      if (!container) return;
+
+      const subtotal = AppState.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const deliveryFee = AppState.fulfilmentMethod === 'delivery' ? RESTAURANT_CONFIG.brand.deliveryFee : 0;
+      const discount = AppState.promoDiscount;
+      const grandTotal = Math.max(0, subtotal + deliveryFee - discount);
+      const vatAmount = Math.round(grandTotal * (RESTAURANT_CONFIG.brand.vatRate / (1 + RESTAURANT_CONFIG.brand.vatRate)));
+
+      if (AppState.cart.length === 0) {
+        container.innerHTML = `
+          <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1.5rem 0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span><a href="#/menu" style="color: var(--accent-gold); text-decoration: underline;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></a>
+          </p>
+        `;
+      } else {
+        container.innerHTML = AppState.cart.map((item, idx) => `
+          <div style="display: flex; justify-content: space-between; font-size: 0.86rem; border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.5rem;">
+            <div>
+              <span style="font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></span>
+              <div style="font-size: 0.74rem; color: var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></div>
+            </div>
+            <span class="tabular-nums" style="font-weight: 600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('checkout-subtotal').textContent = formatPrice(subtotal);
+      document.getElementById('checkout-vat').textContent = formatPrice(vatAmount);
+      document.getElementById('checkout-total').textContent = formatPrice(grandTotal);
+
+      const discountRow = document.getElementById('row-promo-discount');
+      if (discount > 0) {
+        discountRow.style.display = 'flex';
+        document.getElementById('checkout-discount').textContent = `-${formatPrice(discount)}`;
+      } else {
+        discountRow.style.display = 'none';
+      }
+    }
+
+    function applyPromoCode() {
+      const code = document.getElementById('promo-code-input').value.trim().toUpperCase();
+      const statusEl = document.getElementById('promo-status');
+      const subtotal = AppState.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+      if (code === 'WELCOME10') {
+        AppState.promoDiscount = Math.round(subtotal * 0.1);
+        statusEl.textContent = 'Code WELCOME10 applied (10% discount).';
+        statusEl.style.display = 'block';
+        showToast('Promo code applied: 10% discount.');
+      } else if (code === 'EMBER20' && subtotal >= 5000) {
+        AppState.promoDiscount = 1000;
+        statusEl.textContent = "Code EMBER20 applied ( off).";
+        statusEl.style.display = 'block';
+        showToast("Promo code applied:  off.");
+      } else {
+        AppState.promoDiscount = 0;
+        statusEl.textContent = 'Invalid code or minimum not met.';
+        statusEl.style.display = 'block';
+        statusEl.style.color = 'var(--status-error)';
+      }
+      renderCheckoutCartSummary();
+    }
+
+    function processOrderCheckout() {
+      if (AppState.cart.length === 0) {
+        showToast('Please add items to your cart before proceeding.');
+        return;
+      }
+
+      const name = document.getElementById('order-name').value.trim();
+      const phone = document.getElementById('order-phone').value.trim();
+
+      if (!name || !phone) {
+        showToast('Please provide your name and mobile telephone number.');
+        return;
+      }
+
+      const selectedPayment = document.querySelector('input[name="payment_method"]:checked')?.value || 'mpesa';
+      const orderRef = `MK-ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+
+      if (selectedPayment === 'mpesa') {
+        showToast(`M-Pesa STK Push triggered to ${phone} (Demo Mode).`);
+        setTimeout(() => {
+          alert(`M-PESA SIMULATION\n\nPrompt sent to: ${phone}\nOrder Reference: ${orderRef}\nStatus: Demo Verified.\n\nIn live production, your backend initiates STK Push via Daraja API and confirms webhook.`);
+          finalizeOrder(orderRef);
+        }, 600);
+      } else if (selectedPayment === 'paystack') {
+        showToast(`Initializing Paystack transaction reference ${orderRef}...`);
+        setTimeout(() => {
+          alert(`PAYSTACK INTEGRATION NOTICE\n\nOrder Ref: ${orderRef}\nAmount: ${document.getElementById('checkout-total').textContent}\n\nIn live production, call your server endpoint to initialize transaction with Paystack Secret Key and mount PaystackPopup.`);
+          finalizeOrder(orderRef);
+        }, 600);
+      } else {
+        alert(`ORDER CONFIRMED (PAY AT COUNTER)\n\nOrder Ref: ${orderRef}\nWe look forward to welcoming you at the pickup counter.`);
+        finalizeOrder(orderRef);
+      }
+    }
+
+    function finalizeOrder(orderRef) {
+      AppState.cart = [];
+      saveCart();
+      updateCartUI();
+      window.location.hash = '#/';
+      showToast(`Order ${orderRef} recorded! We are firing up the hearth.`);
+    }
+
+    /* -------------------------------------------------------------
+       9. RESERVATIONS SYSTEM
+       ------------------------------------------------------------- */
+    function initReservationDateDefaults() {
+      const dateInput = document.getElementById('res-date');
+      if (!dateInput) return;
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.min = today;
+      dateInput.value = today;
+      updateReservationSummary();
+    }
+
+    function renderReservationTimeSlots() {
+      const container = document.getElementById('reservation-time-slots');
+      if (!container) return;
+
+      container.innerHTML = RESTAURANT_CONFIG.timeSlots.map((time, idx) => `
+        <button type="button" class="time-slot-btn ${idx === 5 ? 'selected' : ''}" onclick="selectReservationTime('${time}', this)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></button>
+      `).join('');
+
+      document.getElementById('selected-res-time').value = RESTAURANT_CONFIG.timeSlots[5];
+      updateReservationSummary();
+    }
+
+    function selectReservationTime(timeStr, btnEl) {
+      document.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('selected'));
+      btnEl.classList.add('selected');
+      document.getElementById('selected-res-time').value = timeStr;
+      updateReservationSummary();
+    }
+
+    function updateReservationSummary() {
+      const guestsEl = document.getElementById('res-guests');
+      const dateEl = document.getElementById('res-date');
+      const timeEl = document.getElementById('selected-res-time');
+      const seatingEl = document.getElementById('res-seating');
+
+      if (document.getElementById('summary-guests') && guestsEl) {
+        document.getElementById('summary-guests').textContent = `${guestsEl.value} Guest(s)`;
+      }
+      if (document.getElementById('summary-date') && dateEl) {
+        document.getElementById('summary-date').textContent = dateEl.value || 'Select date';
+      }
+      if (document.getElementById('summary-time') && timeEl) {
+        document.getElementById('summary-time').textContent = timeEl.value || 'Select time';
+      }
+      if (document.getElementById('summary-seating') && seatingEl) {
+        document.getElementById('summary-seating').textContent = seatingEl.value;
+      }
+    }
+
+    function handleReservationSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('res-name').value.trim();
+      const email = document.getElementById('res-email').value.trim();
+      const phone = document.getElementById('res-phone').value.trim();
+      const date = document.getElementById('res-date').value;
+      const time = document.getElementById('selected-res-time').value;
+      const guests = document.getElementById('res-guests').value;
+      const seating = document.getElementById('res-seating').value;
+      const location = document.getElementById('res-location').value;
+
+      const bookingRef = `MK-RES-${Math.floor(10000 + Math.random() * 90000)}`;
+
+      alert(`RESERVATION CONFIRMATION (DEMO PREVIEW)\n\nBooking Reference: ${bookingRef}\nGuest: ${name}\nLocation: ${location}\nDate & Time: ${date} at ${time}\nParty: ${guests} Guests (${seating})\n\nDemo Mode Notice: In production, this data is saved to your Firestore or PostgreSQL database and triggers SMS/Email confirmation.`);
+
+      showToast(`Reservation ${bookingRef} confirmed for ${name}.`);
+      document.getElementById('reservation-form').reset();
+      initReservationDateDefaults();
+      window.location.hash = '#/';
+    }
+
+    function handleEventEnquiry(e) {
+      e.preventDefault();
+      const name = document.getElementById('evt-name').value;
+      alert(`Thank you, ${name}. Your private dining enquiry has been submitted. Our concierge team will reach out within 24 hours.`);
+      e.target.reset();
+      showToast('Event enquiry sent successfully.');
+    }
+
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('cnt-name').value;
+      alert(`Message received from ${name}. Thank you for contacting MIKAA.`);
+      e.target.reset();
+      showToast('Your message has been delivered to our concierge.');
+    }
+
+    /* -------------------------------------------------------------
+       10. GALLERY & LIGHTBOX
+       ------------------------------------------------------------- */
+    const GALLERY_ITEMS = [
+      { id: 1, category: "", title: "", img: "" },
+      { id: 2, category: "", title: "", img: "" },
+      { id: 3, category: "", title: "", img: "" },
+      { id: 4, category: "", title: "", img: "" },
+      { id: 5, category: "", title: "", img: "" },
+      { id: 6, category: "", title: "", img: "" }
+    ];
+
+    function renderGalleryItems(filter = 'all') {
+      const container = document.getElementById('gallery-container');
+      if (!container) return;
+
+      const items = filter === 'all' ? GALLERY_ITEMS : GALLERY_ITEMS.filter(item => item.category === filter);
+      container.innerHTML = items.map(item => `
+        <div class="gallery-item" onclick="openLightbox('${item.img}', '${item.title}')">
+          <img class="gallery-item-img eshop-placeholder-media">
+          <div class="gallery-item-caption">
+            <span style="font-weight: 600; font-size: 0.88rem; color: #fff;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterGallery(category, btnEl) {
+      btnEl.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+      renderGalleryItems(category);
+    }
+
+    function openLightbox(imgSrc, caption) {
+      const modal = document.getElementById('lightbox-modal');
+      const img = document.getElementById('lightbox-img');
+      const cap = document.getElementById('lightbox-caption');
+      img.src = imgSrc;
+      cap.textContent = caption;
+      modal.classList.add('open');
+    }
+
+    function closeLightbox(e) {
+      if (e && e.target !== e.currentTarget && !e.target.classList.contains('lightbox-close-btn')) return;
+      document.getElementById('lightbox-modal').classList.remove('open');
+    }
+
+    /* -------------------------------------------------------------
+       11. FAQ ACCORDION
+       ------------------------------------------------------------- */
+    function renderFaqAccordion() {
+      const container = document.getElementById('faq-accordion-container');
+      if (!container) return;
+
+      container.innerHTML = RESTAURANT_CONFIG.faqs.map((faq, idx) => `
+        <div class="faq-item ${idx === 0 ? 'open' : ''}">
+          <button class="faq-trigger" onclick="toggleFaq(${idx}, this)">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            <i data-lucide="chevron-down" style="width: 18px; height: 18px; transition: transform 0.2s ease;"></i>
+          </button>
+          <div class="faq-content">
+            <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+          </div>
+        </div>
+      `).join('');
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function toggleFaq(index, triggerEl) {
+      const item = triggerEl.closest('.faq-item');
+      item.classList.toggle('open');
+    }
+
+    /* -------------------------------------------------------------
+       12. MOBILE MENU & UTILITIES
+       ------------------------------------------------------------- */
+    function toggleMobileMenu(open) {
+      const drawer = document.getElementById('mobile-drawer');
+      if (open) {
+        drawer.classList.add('open');
+        drawer.setAttribute('aria-hidden', 'false');
+      } else {
+        drawer.classList.remove('open');
+        drawer.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    function formatPrice(amount) {
+      return `${RESTAURANT_CONFIG.brand.currency} ${Number(amount).toLocaleString('en-KE')}`;
+    }
+
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg';
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    /* -------------------------------------------------------------
+       13. GSAP ANIMATIONS & SCROLL TRIGGER
+       ------------------------------------------------------------- */
+    function initGsapAnimations() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return; // Respect reduced motion
+      }
+
+      if (typeof gsap === 'undefined') return;
+
+      try {
+        if (typeof ScrollTrigger !== 'undefined') {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Hero subtle reveal
+        gsap.fromTo('.hero-content', 
+          { opacity: 0, y: 24 }, 
+          { opacity: 1, y: 0, duration: 0.9, ease: 'power2.out', delay: 0.1 }
+        );
+
+        // Feature strip staggered items
+        gsap.fromTo('.feature-item',
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power2.out', delay: 0.3 }
+        );
+      } catch (err) {
+        console.warn('GSAP animation error:', err);
+      }
+    }
+
+    // Keyboard ESC listener for modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        toggleCartDrawer(false);
+        closeDishModal();
+        closeLightbox();
+        toggleMobileMenu(false);
+      }
+    });
+
+    /* -------------------------------------------------------------
+       14. GLOBAL INITIALIZATION
+       ------------------------------------------------------------- */
+    document.addEventListener('DOMContentLoaded', () => {
+      initRouter();
+      updateCartUI();
+      if (window.lucide) window.lucide.createIcons();
+    });
+  </script>
+
+
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body></html>

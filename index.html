@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Craft</title>
-  <meta name="description" content="Browse the Craft online store.">
+  <meta name="description" content="Craft helps you build and manage your online shop.">
   <meta property="og:title" content="Craft">
   <meta property="og:description" content="Browse the Craft online store.">
   <meta property="og:type" content="website">
@@ -7104,6 +7104,22 @@ a.launchpad-link:focus-visible {
   <div id="app"></div>
   <script type="module" src="/src/business-lens.js"></script>
   <script>
+    window.EshopThemeSkeletons = Object.freeze({
+      supportedThemeIds: Object.freeze([
+        "cira-atelier-event-architecture-management",
+        "aura-luxe-fine-botanical-cosmetics-luxury-beauty",
+        "kicks-vault-curated-sneaker-footwear-archive",
+        "elura-botanicals-luxury-cosmetics-skincare",
+        "autopro-kenya-premium-automotive-spares-parts",
+        "etalon-premium-fashion-apparel",
+        "aurex-electronics"
+      ]),
+      isSupportedThemeId(themeId) {
+        return this.supportedThemeIds.includes(themeId);
+      }
+    });
+  </script>
+  <script>
 
 (function() {
   // Seed dataset for Craft
@@ -9475,52 +9491,21 @@ const WEBSITE_BUSINESS_TYPE_THEME_OVERRIDES = {
 
 const WEBSITE_THEME_BUSINESS_GROUPS = {
   "Product Retail & E-commerce": [
-    "atelier-vera-mobile-first-luxury-storefront-paystack-checkout",
-    "aura-luxe-fine-botanical-cosmetics-luxury-beauty",
-    "aurex-electronics",
-    "autopro-kenya-premium-automotive-spares-parts",
-    "etalon-premium-fashion-apparel",
-    "harvest-lane-market-fresh-groceries-delivered-or-ready-to-collec",
-    "kicks-vault-curated-sneaker-footwear-archive",
-    "kifaru-build-kenyan-hardware-construction-supply-superstore",
-    "kinetic-high-performance-electronics",
-    "maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo",
-    "shamba-bora-kenya-s-premier-agricultural-inputs-agrovet-platform",
-    "veluna-grand-electronics-retail-store",
-    "volthaus-electronics-superstore-phones-laptops-tvs-gaming-more",
-    "woodora-modern-furniture-luxury-home-interiors-kenya",
-    "zima-fresh-supermarket-fresh-groceries-farm-produce-daily-essent",
-    "elura-botanicals-luxury-cosmetics-skincare"
+    "agricra-minimarket",
+    "glowmuse-beauty",
+    "heenzy-footwear",
+    "maridadi-living",
+    "ujenzi-hub",
+    "voltra-electronics",
+    "vera-fashion"
   ],
-  "Food & Drinks": [
-    "mikaa-woodfire-coast-artisanal-coastal-hearth-restaurant",
-    "nairobi-feast-modern-cbd-kitchen-grill"
-  ],
-  "Hotels, Stays & Retreats": [
-    "aurelia-grand-luxury-hotels-stays-culinary-destinations",
-    "elysian-stays-cinematic-vacation-boutique-short-stay-rentals",
-    "the-oserengoni-estate-conservancy-luxury-safari-retreat-kenya"
-  ],
-  "Beauty Services & Bookings": [
-    "blush-theory-nail-studio-editorial-nail-art-online-booking-apoth",
-    "maison-elysee-haute-coiffure-luxury-salon-beauty-atelier",
-    "lacqueria-the-art-of-the-hand-nail-atelier-booking-shop"
-  ],
-  "Events": [
-    "arcadia-events-bespoke-event-planning-spatial-design-studio",
-    "cira-atelier-event-architecture-management"
-  ],
-  "Property & Real Estate": [
-    "aurus-real-estate-kenya-luxury-property-discovery-platform"
-  ],
-  "Tours & Safaris": [
-    "olkeri-expeditions-luxury-kenya-safaris"
-  ]
+  "Food & Drinks": ["freshbox-gourmet"]
 };
 
 const StudioRenderers = {
   renderAppAccount() {
     const username = window.localStorage.getItem("ESHOP_ACCOUNT_USERNAME_V1") || "";
+    const recoveryEmail = window.localStorage.getItem("ESHOP_ACCOUNT_EMAIL_V1") || "";
     const signedIn = Boolean(window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") && username);
     AppUtils.updateSEO({ title: "App account — Craft", description: "Create or sign in to your Craft app account." });
     return `
@@ -9535,6 +9520,13 @@ const StudioRenderers = {
             <article class="profile-page-card">
               <h2>Account</h2>
               <p>Username: <strong>${AppUtils.escapeHTML(username)}</strong></p>
+              <form id="app-account-recovery-email-form" class="app-account-form">
+                <label class="form-field"><span class="form-label">Recovery email</span><input class="form-input" name="email" type="email" required maxlength="254" autocomplete="email" value="${AppUtils.escapeHTML(recoveryEmail)}" placeholder="you@example.com"></label>
+                <label class="form-field"><span class="form-label">Current password</span><input class="form-input" name="password" type="password" required minlength="12" maxlength="128" autocomplete="current-password" placeholder="Confirm your password"></label>
+                <p id="app-account-recovery-email-status" role="status" hidden style="color:var(--text-muted);margin:0;"></p>
+                <p id="app-account-recovery-email-error" role="alert" hidden style="color:#b42318;margin:0;"></p>
+                <button class="btn-secondary" type="submit">Save recovery email</button>
+              </form>
               <div class="profile-website-actions">
                 <a class="btn-primary" href="/pos" data-route="/pos">Open POS</a>
                 <a class="btn-secondary" href="/account" data-route="/account">Open Web Builder</a>
@@ -9550,18 +9542,33 @@ const StudioRenderers = {
                   <button class="btn-primary" type="button" data-app-auth-mode="login" aria-pressed="true">Sign in</button>
                 </div>
                 <label class="form-field"><span class="form-label">Username</span><input class="form-input" name="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9._-]+" autocomplete="username" placeholder="Choose a username"></label>
+                <label class="form-field" id="app-account-email-field" hidden><span class="form-label">Recovery email</span><input class="form-input" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com"></label>
                 <label class="form-field"><span class="form-label">Password</span><span class="app-account-password-row"><input class="form-input" name="password" type="password" required minlength="12" maxlength="128" autocomplete="current-password" placeholder="Password"><button class="btn-secondary app-account-password-toggle" type="button" data-app-toggle-password="password" aria-label="Show password">Show</button></span></label>
                 <label class="form-field" id="app-account-confirm-field" hidden><span class="form-label">Confirm password</span><span class="app-account-password-row"><input class="form-input" name="confirmPassword" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="Enter password again"><button class="btn-secondary app-account-password-toggle" type="button" data-app-toggle-password="confirmPassword" aria-label="Show confirm password">Show</button></span></label>
                 <div id="app-account-turnstile" hidden style="min-height:65px;" aria-label="Cloudflare human verification"></div>
                 <p id="app-account-verification-help" role="status" hidden style="color:var(--text-muted);margin:0;"></p>
                 <p id="app-account-error" role="alert" hidden style="color:#b42318;margin:0;"></p>
                 <button class="btn-primary app-account-submit" type="submit">Sign in</button>
+                <button class="btn-secondary" type="button" id="app-account-forgot-password">Forgot password?</button>
               </article>
             </form>
+            <article class="profile-page-card app-account-form" id="app-account-recovery" hidden>
+              <h2>Password recovery</h2>
+              <p id="app-account-recovery-status" role="status">Enter the recovery email you used when creating your account.</p>
+              <label class="form-field" id="app-account-recovery-email-field"><span class="form-label">Recovery email</span><input class="form-input" id="app-account-recovery-email" type="email" maxlength="254" autocomplete="email" required placeholder="you@example.com"></label>
+              <button class="btn-primary" type="button" id="app-account-send-reset-code">Send recovery code</button>
+              <label class="form-field" id="app-account-recovery-code-field" hidden><span class="form-label">6-digit code</span><input class="form-input" id="app-account-recovery-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="123456"></label>
+              <button class="btn-primary" type="button" id="app-account-verify-reset-code" hidden>Verify code</button>
+              <label class="form-field" id="app-account-new-password-field" hidden><span class="form-label">New password</span><input class="form-input" id="app-account-new-password" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="At least 12 characters"></label>
+              <label class="form-field" id="app-account-confirm-new-password-field" hidden><span class="form-label">Confirm new password</span><input class="form-input" id="app-account-confirm-new-password" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="Enter password again"></label>
+              <button class="btn-primary" type="button" id="app-account-reset-password" hidden>Reset password</button>
+              <p id="app-account-recovery-error" role="alert" hidden style="color:#b42318;margin:0;"></p>
+              <button class="btn-secondary" type="button" id="app-account-recovery-cancel">Back to sign in</button>
+            </article>
           `}
           <article class="profile-page-card app-account-note">
             <h2>Your app data</h2>
-            <p>Signing in makes your account available throughout the app. Your POS sales and inventory remain on this device; signing in does not upload or sync them.</p>
+            <p>Your recovery email is used only for password recovery, not marketing. Signing in makes your account available throughout the app. Your POS sales and inventory remain on this device; signing in does not upload or sync them.</p>
           </article>
         </section>
       </main>
@@ -12150,7 +12157,7 @@ const StudioRenderers = {
         savedThemes.push(JSON.parse(JSON.stringify(theme)));
         changed = true;
       } else {
-        for (const key of ["name", "description", "preview_url", "template_version"]) {
+        for (const key of ["name", "description", "preview_url", "studio_url", "studio_mode", "editor_mode", "is_main", "template_version"]) {
           if (saved[key] !== theme[key]) {
             saved[key] = theme[key];
             changed = true;
@@ -12169,44 +12176,35 @@ const StudioRenderers = {
   websiteBuilderDraft() {
     try {
       const saved = JSON.parse(window.localStorage.getItem("ESHOP_NEW_WEBSITE_DRAFT_V1") || "{}");
-      const businessTypeStepComplete = saved.business_type_step === 2;
+      const legacyImportCleanupKey = "ESHOP_WEBSITE_DRAFT_LEGACY_CATALOG_CLEANUP_V2";
+      const needsLegacyImportCleanup = window.localStorage.getItem(legacyImportCleanupKey) !== "1";
+      if (needsLegacyImportCleanup) {
+        saved.products = [];
+        saved.categories = [];
+        window.localStorage.setItem(legacyImportCleanupKey, "1");
+        window.localStorage.setItem("ESHOP_NEW_WEBSITE_DRAFT_V1", JSON.stringify(saved));
+        window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
+      }
+      const availableThemes = this.websiteThemesForPicker();
+      const selectedTheme = availableThemes.some(theme => theme.id === saved.selected_theme)
+        ? saved.selected_theme
+        : availableThemes[0]?.id || "craft-main-storefront";
       return {
         products: Array.isArray(saved.products) ? saved.products : [],
         categories: Array.isArray(saved.categories) ? saved.categories : [],
-        selected_theme: typeof saved.selected_theme === "string" ? saved.selected_theme : "",
-        business_type: businessTypeStepComplete && typeof saved.business_type === "string" ? saved.business_type : "",
-        business_group: businessTypeStepComplete && typeof saved.business_group === "string" ? saved.business_group : "",
-        business_type_step: businessTypeStepComplete ? 2 : 0
+        section_layout: saved.section_layout && typeof saved.section_layout === "object"
+          ? saved.section_layout
+          : { order: [], hidden: [], removed: [], added: [] },
+        selected_theme: selectedTheme
       };
     } catch (error) {
       console.warn("New website draft could not be read.", error);
-      return { products: [], categories: [], selected_theme: "", business_type: "", business_group: "" };
+      return { products: [], categories: [], selected_theme: "" };
     }
   },
 
-  websiteBusinessType(name) {
-    for (const group of WEBSITE_BUSINESS_TYPE_GROUPS) {
-      for (const section of group.sections) {
-        if (section.types.includes(name)) {
-          return {
-            group: group.label,
-            section: section.label
-          };
-        }
-      }
-    }
-    return null;
-  },
-
-  websiteThemesForBusinessType(draft = this.websiteBuilderDraft()) {
-    const businessType = this.websiteBusinessType(draft.business_type);
-    const themes = this.websiteThemes().filter(theme => theme.id !== "classic");
-    if (!businessType) return themes;
-    const relatedIds = new Set(WEBSITE_THEME_BUSINESS_GROUPS[businessType.group] || []);
-    return [
-      ...themes.filter(theme => relatedIds.has(theme.id)),
-      ...themes.filter(theme => !relatedIds.has(theme.id))
-    ];
+  websiteThemesForPicker() {
+    return this.websiteThemes().filter(theme => theme.is_main === true);
   },
 
   saveWebsiteBuilderDraft(draft) {
@@ -12217,7 +12215,6 @@ const StudioRenderers = {
     const draft = this.websiteBuilderDraft();
     const categories = draft.categories;
     const products = draft.products;
-    const ready = products.length > 0 && categories.length > 0;
     AppUtils.updateSEO({ title: "Webmaker — Craft", description: "Prepare the new website catalog before choosing a theme." });
     return `
       ${embedded ? "" : StoreRenderers.renderNavbar("/account")}
@@ -12226,7 +12223,7 @@ const StudioRenderers = {
         <header style="margin:12px 0 18px;">
           <span class="studio-workspace-kicker">NEW WEBSITE · STEP 1 OF 3</span>
           <h1 class="section-heading" style="font-size:1.65rem;margin:4px 0;">Add products and categories</h1>
-          <p style="margin:4px 0 0;color:var(--text-muted);font-size:.9rem;">Prepare the catalog for this new website. Existing websites are not changed. After the catalog, choose your business type to see themes made for that kind of business.</p>
+          <p style="margin:4px 0 0;color:var(--text-muted);font-size:.9rem;">Add only the products you want on this website. Store products are never copied unless you choose them. Existing websites and your Store inventory are not changed.</p>
         </header>
         <button class="btn-primary" id="website-wizard-load-store" type="button" style="width:100%;min-height:48px;margin-bottom:14px;">Choose products from Store</button>
         <section id="website-wizard-store-picker" hidden role="dialog" aria-modal="true" aria-labelledby="website-wizard-store-title" style="position:fixed;inset:0;z-index:1200;background:var(--bg);overflow:auto;padding:env(safe-area-inset-top,0px) 14px env(safe-area-inset-bottom,0px);">
@@ -12249,8 +12246,8 @@ const StudioRenderers = {
           <p class="studio-panel-note" id="website-wizard-category-list">${categories.map(category => AppUtils.escapeHTML(category.name)).join(" · ") || "Add a category before creating products."}</p>
         </section>
         <section class="studio-panel" style="margin-bottom:14px;">
-          <div class="studio-panel-heading"><h2>Products (${products.length})</h2></div>
-          <div id="website-wizard-product-list">${products.map(product => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(product.category_name || "Uncategorized")}</span></div><strong>${AppUtils.escapeHTML(String(product.price ?? ""))}</strong></article>`).join("") || `<p class="studio-panel-note">No products added to this new website yet.</p>`}</div>
+          <div class="studio-panel-heading" style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><h2>Products (${products.length})</h2>${products.length ? `<button class="btn-secondary" id="website-wizard-clear-products" type="button">Remove all</button>` : ""}</div>
+          <div id="website-wizard-product-list">${products.map(product => `<article class="studio-list-row" style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><strong>${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(product.category_name || "Uncategorized")}</span></div><strong>${AppUtils.escapeHTML(String(product.price ?? ""))}</strong><button class="btn-secondary" type="button" data-remove-wizard-product="${AppUtils.escapeHTML(String(product.id))}" aria-label="Remove ${AppUtils.escapeHTML(product.name)} from this website">Remove</button></article>`).join("") || `<p class="studio-panel-note">No products added to this new website yet. Choose Store products or add your own below.</p>`}</div>
           <form id="website-wizard-product-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:8px;margin-top:12px;">
             <input class="form-input" name="name" required maxlength="120" placeholder="Product name">
             <input class="form-input" name="price" type="number" min="0" step="0.01" required placeholder="Price">
@@ -12260,9 +12257,7 @@ const StudioRenderers = {
             <button class="btn-primary" type="submit" ${categories.length ? "" : "disabled"}>Add product</button>
           </form>
         </section>
-        ${ready
-          ? `<a class="btn-primary" href="/account/web/themes/select" data-route="/account/web/themes/select">Continue to choose a business type and theme &rarr;</a>`
-          : `<p class="studio-panel-note">Add at least one product and one category to continue.</p>`}
+        <a class="btn-primary" href="/account/web/themes/select" data-route="/account/web/themes/select">Continue to choose a theme &rarr;</a>
       </main>
       ${embedded ? "" : StoreRenderers.renderFooter()}
     `;
@@ -12273,14 +12268,13 @@ const StudioRenderers = {
   },
 
   renderWebsiteThemeChoices() {
-    const draft = this.websiteBuilderDraft();
-    const businessType = this.websiteBusinessType(draft.business_type);
-    const themes = this.websiteThemesForBusinessType(draft);
-    const businessTypeOptions = WEBSITE_BUSINESS_TYPE_GROUPS.map(group =>
-      group.sections.map(section => `<optgroup label="${AppUtils.escapeHTML(`${group.label} · ${section.label}`)}">${section.types.map(type =>
-        `<option value="${AppUtils.escapeHTML(type)}" ${draft.business_type === type ? "selected" : ""}>${AppUtils.escapeHTML(type)}</option>`
-      ).join("")}</optgroup>`).join("")
-    ).join("");
+    const themes = this.websiteThemesForPicker();
+    const canFillTheme = theme => Boolean(theme.studio_url) || theme.editor_mode === "app"
+      || window.EshopThemeSkeletons?.isSupportedThemeId(theme.id) === true;
+    const themeEditorRoute = theme => `/account/web/themes/${theme.id}`;
+    const directThemePreview = theme => ["glowmuse-beauty", "vera-fashion"].includes(theme.id) ||
+      theme.studio_mode === "embedded";
+    const unsupportedThemeNotice = `<div role="status" style="position:absolute;inset:12px;display:grid;place-items:center;padding:12px;text-align:center;color:var(--text-muted);font-size:.82rem;">Shop-data filling is not available for this theme yet.</div>`;
     AppUtils.updateSEO({ title: "Choose a theme — Craft", description: "Preview themes with your new website's products and categories." });
     return `
       ${StoreRenderers.renderNavbar("/account")}
@@ -12288,43 +12282,20 @@ const StudioRenderers = {
         <a href="/account/web/themes" class="studio-back-link" data-route="/account/web/themes" aria-label="Back to Webmaker">&larr;</a>
         <header style="margin:12px 0 18px;">
           <span class="studio-workspace-kicker">NEW WEBSITE · STEP 2 OF 3</span>
-          <h1 class="section-heading" style="font-size:1.65rem;margin:4px 0;">Choose a business type and matching website theme</h1>
-          <p style="margin:4px 0 12px;color:var(--text-muted);font-size:.9rem;">Your catalog is ready. Choose a specific business type to bring all themes for that business group to the top.</p>
-          <label class="form-field" for="website-wizard-business-type">
-            <span class="form-label">Business type</span>
-            <select class="form-input" id="website-wizard-business-type" required>
-              <option value="">Choose your business type</option>${businessTypeOptions}
-            </select>
-          </label>
-          ${businessType ? `<p class="studio-panel-note" role="status">${AppUtils.escapeHTML(businessType.group)} themes for ${AppUtils.escapeHTML(draft.business_type)} are shown first. The remaining themes are below.</p>` : `<p class="studio-panel-note">Choose a business type to show its matching themes first.</p>`}
+          <h1 class="section-heading" style="font-size:1.65rem;margin:4px 0;">Choose a storefront theme</h1>
+          <p style="margin:4px 0 12px;color:var(--text-muted);font-size:.9rem;">Preview all themes and choose the look you want. Your Store products are added only when you select them.</p>
         </header>
-        ${businessType ? `<h2 class="section-heading" style="font-size:1.2rem;margin:18px 0 10px;">${AppUtils.escapeHTML(businessType.group)} themes</h2>` : ""}
         <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;" aria-label="Website themes">
-          ${businessType ? themes.slice(0, (WEBSITE_THEME_BUSINESS_GROUPS[businessType.group] || []).length).map(theme => `
-            <a class="website-theme-card" href="/account/web/themes/${theme.id}" data-route="/account/web/themes/${theme.id}" style="display:block;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);color:inherit;text-decoration:none;">
-              <div class="website-theme-thumbnail" aria-hidden="true" style="height:200px;overflow:hidden;background:var(--surface-subtle);">
-                <iframe title="${AppUtils.escapeHTML(theme.name)} live storefront preview" data-theme-storefront-preview="${AppUtils.escapeHTML(theme.id)}" ${theme.preview_url ? 'data-theme-preview-remote="1"' : ""} src="${AppUtils.escapeHTML(theme.preview_url || "/builder-storefront.html?builder=1&theme-preview=1")}" loading="lazy" tabindex="-1" style="width:100%;height:720px;border:0;pointer-events:none;transform-origin:top left;"></iframe>
-              </div>
-              <div style="padding:14px;">
-                <span class="studio-workspace-kicker">MATCHES ${AppUtils.escapeHTML(businessType.group)}</span>
-                <h2 style="font-size:1.05rem;margin:0;">${AppUtils.escapeHTML(theme.name)}</h2>
-                <p style="margin:4px 0 0;color:var(--text-muted);font-size:.85rem;">${AppUtils.escapeHTML(theme.description)}</p>
-                <span style="display:inline-block;margin-top:10px;font-size:.85rem;font-weight:600;">Preview theme &rarr;</span>
-              </div>
-            </a>
-          `).join("") : ""}
-        </section>
-        ${businessType ? `<h2 class="section-heading" style="font-size:1.2rem;margin:24px 0 10px;">Other themes</h2>` : ""}
-        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;" aria-label="Other website themes">
-          ${(businessType ? themes.slice((WEBSITE_THEME_BUSINESS_GROUPS[businessType.group] || []).length) : themes).map(theme => `
-            <a class="website-theme-card" href="/account/web/themes/${theme.id}" data-route="/account/web/themes/${theme.id}" style="display:block;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);color:inherit;text-decoration:none;">
-              <div class="website-theme-thumbnail" aria-hidden="true" style="height:200px;overflow:hidden;background:var(--surface-subtle);">
-                <iframe title="${AppUtils.escapeHTML(theme.name)} live storefront preview" data-theme-storefront-preview="${AppUtils.escapeHTML(theme.id)}" ${theme.preview_url ? 'data-theme-preview-remote="1"' : ""} src="${AppUtils.escapeHTML(theme.preview_url || "/builder-storefront.html?builder=1&theme-preview=1")}" loading="lazy" tabindex="-1" style="width:100%;height:720px;border:0;pointer-events:none;transform-origin:top left;"></iframe>
+          ${themes.map(theme => `
+            <a class="website-theme-card" ${canFillTheme(theme) ? `href="${AppUtils.escapeHTML(themeEditorRoute(theme))}" data-route="${AppUtils.escapeHTML(themeEditorRoute(theme))}"` : `aria-disabled="true" tabindex="-1"`} style="display:block;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);color:inherit;text-decoration:none;${canFillTheme(theme) ? "" : "opacity:.72;cursor:not-allowed;"}">
+              <div class="website-theme-thumbnail" aria-hidden="true" style="position:relative;height:200px;overflow:hidden;background:var(--surface-subtle);">
+                ${canFillTheme(theme) ? `<div data-theme-preview-placeholder role="status" style="position:absolute;inset:0;display:${directThemePreview(theme) ? "none" : "grid"};place-items:center;color:var(--text-muted);font-size:.82rem;">Loading filled shop preview…</div>
+                <iframe title="${AppUtils.escapeHTML(theme.name)} storefront preview" data-theme-storefront-preview="${AppUtils.escapeHTML(theme.id)}" data-theme-preview-remote="${AppUtils.escapeHTML(theme.preview_url || "")}" ${directThemePreview(theme) ? 'data-theme-preview-direct="1"' : ""} src="${directThemePreview(theme) ? AppUtils.escapeHTML(theme.preview_url || "") : "about:blank"}" loading="lazy" tabindex="-1" style="position:absolute;inset:0;width:100%;height:720px;border:0;visibility:${directThemePreview(theme) ? "visible" : "hidden"};pointer-events:none;transform-origin:top left;"></iframe>` : unsupportedThemeNotice}
               </div>
               <div style="padding:14px;">
                 <h2 style="font-size:1.05rem;margin:0;">${AppUtils.escapeHTML(theme.name)}</h2>
                 <p style="margin:4px 0 0;color:var(--text-muted);font-size:.85rem;">${AppUtils.escapeHTML(theme.description)}</p>
-                <span style="display:inline-block;margin-top:10px;font-size:.85rem;font-weight:600;">Preview theme &rarr;</span>
+                <span style="display:inline-block;margin-top:10px;font-size:.85rem;font-weight:600;">${canFillTheme(theme) ? "Preview storefront →" : "Not yet available for shop data"}</span>
               </div>
             </a>
           `).join("")}
@@ -12337,26 +12308,42 @@ const StudioRenderers = {
   renderWebsiteTheme(themeId) {
     const theme = this.websiteThemes().find(item => item.id === themeId);
     if (!theme) return null;
+    const directThemePreview = theme => ["glowmuse-beauty", "vera-fashion"].includes(theme.id) ||
+      theme.studio_mode === "embedded";
+    if (!theme.studio_url && theme.editor_mode !== "app" &&
+        window.EshopThemeSkeletons?.isSupportedThemeId(theme.id) !== true) {
+      const supported = window.EshopThemeSkeletons?.supportedThemeIds?.join(", ") || "no themes";
+      return `
+        ${StoreRenderers.renderNavbar("/account")}
+        <main class="container" style="padding:24px 0 48px;max-width:720px;">
+          <a href="/account/web/themes/select" data-route="/account/web/themes/select" class="studio-back-link" aria-label="Back to themes">&larr;</a>
+          <section class="profile-page-card" role="alert" style="margin-top:16px;">
+            <h1 class="section-heading" style="font-size:1.4rem;margin:0;">This theme is not ready for shop data</h1>
+            <p style="margin:10px 0;color:var(--text-muted);">Its skeleton has no verified shop-data mapping yet, so it cannot be opened or published. Currently supported: ${AppUtils.escapeHTML(supported)}.</p>
+          </section>
+        </main>
+      `;
+    }
     const useThemeRoute = `/account/web/site?new=1&edit=1&theme=${encodeURIComponent(theme.id)}`;
     const draft = this.websiteBuilderDraft();
-    if (!this.websiteBusinessType(draft.business_type) || !draft.products.length || !draft.categories.length) return null;
     draft.selected_theme = theme.id;
     this.saveWebsiteBuilderDraft(draft);
     AppUtils.updateSEO({ title: "Theme preview — Craft", description: "Preview your new website catalog with this theme." });
-    const previewDescription = theme.preview_url
-      ? "This theme preview uses its sample products. Your shop's products and categories appear after you use the theme."
-      : "Preview the theme's sample products before applying it to your shop.";
+    const previewDescription = "Preview this theme with your products and categories. They stay in your local draft until setup.";
     return `
       ${StoreRenderers.renderNavbar("/account")}
       <main style="padding:14px 0 0;">
         <div class="container" style="padding-bottom:0;">
           <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
             <a href="/account/web/themes/select" data-route="/account/web/themes/select" aria-label="Back to themes" style="display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border:1px solid var(--border);border-radius:999px;color:var(--text-main);font-size:.78rem;white-space:nowrap;">&larr;</a>
-            <a href="${AppUtils.escapeHTML(useThemeRoute)}" data-route="${AppUtils.escapeHTML(useThemeRoute)}" style="display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-contrast);font:inherit;font-size:.78rem;font-weight:600;text-decoration:none;white-space:nowrap;">Use this theme &rarr;</a>
+            <a href="${AppUtils.escapeHTML(useThemeRoute)}" data-route="${AppUtils.escapeHTML(useThemeRoute)}" style="display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-contrast);font:inherit;font-size:.78rem;font-weight:600;text-decoration:none;white-space:nowrap;">${theme.studio_url ? "Open this theme’s Studio →" : "Use this theme →"}</a>
           </div>
         </div>
         <p class="studio-panel-note" style="margin:8px 16px;">${AppUtils.escapeHTML(previewDescription)} Your ${draft.products.length} products and ${draft.categories.length} categories are ready for the editor.</p>
-        <iframe title="Storefront preview with selected catalog" data-theme-storefront-preview="${AppUtils.escapeHTML(theme.id)}" ${theme.preview_url ? 'data-theme-preview-remote="1"' : ""} src="${AppUtils.escapeHTML(theme.preview_url || "/builder-storefront.html?builder=1&theme-preview=1")}" loading="eager" style="display:block;width:100%;height:calc(100dvh - 150px);min-height:480px;border:0;background:var(--bg);"></iframe>
+        <div style="position:relative;height:calc(100dvh - 150px);min-height:480px;background:var(--bg);">
+          ${directThemePreview(theme) ? "" : `<div data-theme-preview-placeholder role="status" style="position:absolute;inset:0;display:grid;place-items:center;color:var(--text-muted);font-size:.9rem;">Loading theme preview…</div>`}
+          <iframe title="Storefront preview for ${AppUtils.escapeHTML(theme.name)}" data-theme-storefront-preview="${AppUtils.escapeHTML(theme.id)}" data-theme-preview-remote="${AppUtils.escapeHTML(theme.preview_url || "")}" ${directThemePreview(theme) ? 'data-theme-preview-direct="1"' : ""} src="${directThemePreview(theme) ? AppUtils.escapeHTML(theme.preview_url || "") : "about:blank"}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;border:0;visibility:${directThemePreview(theme) ? "visible" : "hidden"};background:var(--bg);"></iframe>
+        </div>
       </main>
     `;
   },
@@ -12371,18 +12358,25 @@ const StudioRenderers = {
     const appAccountSession = window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1");
     const selectedPage = new URLSearchParams(AppController.currentRoute().split("?")[1] || "").get("page") || "";
     const newWebsiteDraft = isNewWebsite ? StudioRenderers.websiteBuilderDraft() : null;
-    const selectedTheme = editorParams.get("theme") ||
+    const requestedTheme = editorParams.get("theme") ||
       (isNewWebsite
         ? newWebsiteDraft.selected_theme || ""
         : store.website_theme_id) || "classic";
-    const selectedThemeRecord = StudioRenderers.websiteThemes().find(theme => theme.id === selectedTheme);
+    const availableThemes = this.websiteThemesForPicker();
+    const selectedTheme = availableThemes.some(theme => theme.id === requestedTheme)
+      ? requestedTheme
+      : availableThemes[0]?.id || "craft-main-storefront";
     const editingPage = pages.find(page => page.slug === selectedPage);
     const previousEditorRoute = AppController.lastRenderedPath || "";
-    const editorReturnRoute = previousEditorRoute !== AppController.currentRoute() &&
-      previousEditorRoute.split("?")[0].startsWith("/account/")
-      ? previousEditorRoute
-      : "/account/web";
+    const editorReturnRoute = draftEditor
+      ? "/account/web/themes/select"
+      : previousEditorRoute !== AppController.currentRoute() &&
+        previousEditorRoute.split("?")[0].startsWith("/account/")
+        ? previousEditorRoute
+        : "/account/web";
     AppUtils.updateSEO({ title: "Edit website — Craft", description: "Customize your website colors and typography, preview it live, and edit its pages." });
+    const nativeStudioTheme = this.websiteThemes().find(theme =>
+      theme.id === selectedTheme && theme.studio_url);
     if (isNewWebsite && !draftEditor) {
     if (!appAccountSession) {
       const continueTo = `/account/web/site?new=1&finish=1&theme=${encodeURIComponent(selectedTheme)}`;
@@ -12405,7 +12399,7 @@ const StudioRenderers = {
       <main class="container" style="padding:16px 0 48px;max-width:760px;">
         <a href="/account/web/site?new=1&edit=1&theme=${encodeURIComponent(selectedTheme)}" class="studio-back-link" data-route="/account/web/site?new=1&edit=1&theme=${encodeURIComponent(selectedTheme)}" aria-label="Back to website editor">&larr;</a>
         <header style="margin:12px 0 18px;">
-          <span class="studio-workspace-kicker">NEW WEBSITE · FINAL STEP</span>
+          <span class="studio-workspace-kicker">NEW WEBSITE · FINAL SETUP</span>
           <h1 class="section-heading" style="font-size:1.55rem;margin:4px 0;">Create your website</h1>
           <p style="margin:3px 0 0;color:var(--text-muted);font-size:.85rem;">Your design is saved on this device. Choose the name and address to create the website now.</p>
         </header>
@@ -12414,7 +12408,7 @@ const StudioRenderers = {
           <label class="form-field"><span class="form-label">Website address</span><span style="display:flex;align-items:center;gap:5px;"><input class="form-input" name="id" required maxlength="40" pattern="[A-Za-z0-9-]+" placeholder="my-store"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
           <p class="studio-panel-note" style="grid-column:1/-1;">Payment settings belong to your signed-in app account, not to each website. New websites use the account-wide Paystack default configured under Payments in the Craft app.</p>
           <p id="new-website-error" role="alert" hidden style="grid-column:1/-1;color:#b42318;margin:0;"></p>
-          <button class="btn-primary" type="submit" style="min-height:42px;align-self:end;">Create website</button>
+          <button class="btn-primary" type="submit" style="min-height:42px;align-self:end;">Set up</button>
         </form>
       </main>
       ${StoreRenderers.renderFooter()}
@@ -12426,6 +12420,7 @@ const StudioRenderers = {
         <a class="builder-back-link" href="${AppUtils.escapeHTML(editorReturnRoute)}" data-route="${AppUtils.escapeHTML(editorReturnRoute)}" aria-label="Back to previous screen" style="font-size:1.2rem;padding:5px 8px;color:#fff;">&larr;</a>
         <div style="min-width:0;display:grid;line-height:1.25;"><strong style="font-size:.83rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${AppUtils.escapeHTML(tenant.name || tenant.hostname)}</strong><span style="color:#9b9ca3;font-size:.68rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${draftEditor ? "Draft · website not created yet" : AppUtils.escapeHTML(tenant.hostname)}</span></div>
         <span style="flex:1;"></span>
+        ${draftEditor ? `<span class="studio-workspace-kicker" style="color:#b4b4bb;font-size:.58rem;white-space:nowrap;">NEW WEBSITE · STEP 3 OF 3</span>` : ""}
         ${draftEditor ? `<button type="button" id="btn-builder-finish-website" style="min-height:34px;padding:0 10px;border:1px solid #45464c;border-radius:7px;background:#fff;color:#18181b;font:inherit;font-size:.7rem;font-weight:700;white-space:nowrap;">Finish &amp; create</button>` : ""}
         <span style="color:#b4b4bb;font-size:.68rem;">${draftEditor ? "WEBSITE DRAFT" : "WEB EDITOR"}</span>
         <button type="button" id="btn-builder-save-design" title="Save design" aria-label="Save design" style="width:34px;height:34px;display:grid;place-items:center;border:1px solid #414249;border-radius:8px;background:#25262a;color:#fff;">
@@ -12436,27 +12431,20 @@ const StudioRenderers = {
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 14v6h14v-6"/></svg>
         </button>
       </header>
-      <section aria-label="Website preview canvas" style="position:relative;min-width:0;min-height:0;padding:10px;background:#101114;">
-        <div id="builder-preview-device" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(360px,calc(100vw - 16px));height:min(720px,calc(100dvh - 120px));max-width:calc(100vw - 16px);max-height:calc(100% - 12px);overflow:hidden;border:1px solid #3a3b40;border-radius:13px;background:#fff;box-shadow:0 14px 44px rgba(0,0,0,.42);">
+      <section aria-label="Website preview canvas" style="position:relative;min-width:0;min-height:0;padding:0;background:#101114;">
+        <div id="builder-preview-device" style="position:absolute;inset:0;width:100%;height:100%;overflow:hidden;background:#fff;">
           <div id="builder-preview-loading" role="status" style="position:absolute;inset:0;z-index:1;display:grid;align-content:center;justify-items:center;gap:10px;background:#fff;color:#737782;font:14px system-ui;">
             <span id="builder-preview-loading-message">Loading website preview…</span>
             <button type="button" id="builder-preview-reload" hidden style="padding:7px 12px;border-radius:6px;background:#18181b;color:#fff;font:inherit;">Reload preview</button>
           </div>
-          <iframe id="builder-storefront-html" title="Mobile-sized live website preview" data-editor-theme-id="${AppUtils.escapeHTML(selectedTheme)}" ${selectedThemeRecord?.preview_url ? `data-editor-theme-url="${AppUtils.escapeHTML(selectedThemeRecord.preview_url)}" src="about:blank"` : 'src="/builder-storefront.html?builder=1"'} style="display:block;width:150%;height:150%;border:0;background:#fff;transform:scale(.666667);transform-origin:top left;"></iframe>
+          <iframe id="builder-storefront-html" title="Local draft storefront preview" data-editor-theme-id="${AppUtils.escapeHTML(selectedTheme)}" data-editor-theme-mode="${AppUtils.escapeHTML(this.websiteThemes().find(theme => theme.id === selectedTheme)?.studio_mode || "")}" data-editor-theme-url="${AppUtils.escapeHTML(this.websiteThemes().find(theme => theme.id === selectedTheme)?.preview_url || "")}" src="about:blank" style="display:block;width:100%;height:100%;border:0;visibility:hidden;background:#fff;"></iframe>
+          ${nativeStudioTheme ? `<iframe id="builder-theme-studio" title="${AppUtils.escapeHTML(nativeStudioTheme.name)} Studio editor" data-studio-url="${AppUtils.escapeHTML(nativeStudioTheme.studio_url)}" src="about:blank" hidden allow="clipboard-read; clipboard-write" style="position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;"></iframe>` : ""}
         </div>
       </section>
-      <section aria-label="Website editing controls" style="width:100%;max-width:760px;justify-self:center;padding:5px 10px 0;background:#151619;border-top:1px solid #303136;">
-        <div style="min-height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 4px 4px;">
-          <span style="font-size:.72rem;font-weight:600;color:#d0d0d4;">Edit elements</span>
-          <label style="display:flex;align-items:center;gap:8px;color:#b4b4bb;font-size:.7rem;">
-            <span id="builder-elements-state">Off</span>
-            <input id="builder-elements-toggle" type="checkbox" role="switch" aria-label="Enable element editing" disabled style="width:38px;height:22px;accent-color:#fff;">
-          </label>
-        </div>
-        <label style="display:flex;align-items:center;gap:8px;padding:2px 4px 6px;color:#d0d0d4;font-size:.72rem;">
-          <input id="builder-select-whole-structure" type="checkbox" style="accent-color:#fff;">
-          Select and move the whole section or hero group
-        </label>
+      <section aria-label="Studio section navigation" style="width:100%;max-width:none;justify-self:stretch;padding:0 6px;background:#151619;border-top:1px solid #303136;">
+        ${nativeStudioTheme ? `<nav id="builder-theme-studio-nav" aria-label="${AppUtils.escapeHTML(nativeStudioTheme.name)} Studio sections" style="min-height:34px;padding:1px 2px;display:flex;align-items:center;gap:6px;overflow-x:auto;white-space:nowrap;touch-action:pan-x;scrollbar-width:thin;">
+          <button type="button" data-theme-editor-store aria-pressed="true" style="flex:none;min-height:30px;padding:0 11px;border:1px solid #45464c;border-radius:999px;background:#fff;color:#18181b;font:inherit;font-size:.7rem;font-weight:700;">View store</button>
+        </nav>` : ""}
         <div id="builder-editor-tools-slot" style="position:relative;">
         <div id="builder-element-editor" hidden style="position:absolute;inset:0 0 auto;z-index:1;box-sizing:border-box;width:100%;max-height:148px;overflow:auto;margin:0 2px 4px;padding:8px 9px;border:1px solid #414249;border-radius:8px;background:#1b1c20;">
           <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;overflow-x:auto;white-space:nowrap;">
@@ -12477,7 +12465,7 @@ const StudioRenderers = {
             <button type="button" id="builder-element-delete-link" hidden style="min-height:48px;flex:none;padding:0 11px;border:1px solid #633b40;border-radius:6px;background:#322226;color:#ffb7bd;font:inherit;font-size:.8rem;">Delete link</button>
           </div>
         </div>
-        <div id="builder-tools-home">
+        <div id="builder-tools-home" ${nativeStudioTheme ? "hidden" : ""}>
         <div role="toolbar" aria-label="Website editor tools" style="width:100%;min-height:44px;padding:0 2px 5px;display:flex;justify-content:flex-start;align-items:center;gap:9px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;touch-action:pan-x;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;">
           ${[
             ["colors", "◉", "Colors"],
@@ -13528,6 +13516,7 @@ const AppController = {
           name: "New website draft",
           title: "New website draft",
           website_theme_id: selectedTheme?.id || "classic",
+          section_layout: draft.section_layout,
           primary_color: "#18181B",
           background_color: "#FAFAF8",
           text_color: "#18181B"
@@ -13535,14 +13524,12 @@ const AppController = {
       });
     }
 
-    if (!selectedTheme || !StudioRenderers.websiteBusinessType(draft.business_type) ||
-        !draft.products.length || !draft.categories.length) return;
+    if (!selectedTheme || !draft.categories.length) return;
 
     draft.selected_theme = selectedTheme.id;
-    const signature = JSON.stringify({
-      theme: selectedTheme.id,
-      categories: draft.categories.map(category => [String(category.id), category.name]),
-      products: draft.products.map(product => [
+    const catalogSignature = value => JSON.stringify({
+      categories: value.categories.map(category => [String(category.id), category.name]),
+      products: value.products.map(product => [
         String(product.id),
         String(product.source_product_id || ""),
         product.name,
@@ -13551,8 +13538,25 @@ const AppController = {
         String(product.category_id)
       ])
     });
-    if (window.localStorage.getItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY) === signature) return;
-
+    const signature = catalogSignature(draft);
+    const savedSignature = window.localStorage.getItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY) || "";
+    let catalogIsCurrent = savedSignature === signature;
+    if (!catalogIsCurrent && savedSignature) {
+      try {
+        catalogIsCurrent = catalogSignature(JSON.parse(savedSignature)) === signature;
+      } catch {
+        catalogIsCurrent = false;
+      }
+    }
+    if (catalogIsCurrent) {
+      SQLiteEngine.updateStore({
+        website_theme_id: selectedTheme.id,
+        section_layout: draft.section_layout
+      });
+      this.cacheActiveTenantCatalog();
+      window.localStorage.setItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY, signature);
+      return;
+    }
     StudioRenderers.saveWebsiteBuilderDraft(draft);
     SQLiteEngine.db.tables.products = [];
     SQLiteEngine.db.tables.categories = [];
@@ -13653,13 +13657,9 @@ const AppController = {
   },
 
   async applyWebsiteBuilderDraft(draft, themeId) {
-    const businessType = StudioRenderers.websiteBusinessType(draft?.business_type);
-    if (!businessType) {
-      throw new Error("Choose a business type in Webmaker before creating this website.");
-    }
-    if (!Array.isArray(draft?.products) || !draft.products.length ||
+    if (!Array.isArray(draft?.products) ||
         !Array.isArray(draft.categories) || !draft.categories.length) {
-      throw new Error("Add products and categories in Webmaker before creating this website.");
+      throw new Error("Add at least one category in Webmaker before creating this website.");
     }
     const categoryIds = new Map();
     for (const category of draft.categories) {
@@ -13686,12 +13686,11 @@ const AppController = {
       theme.id === (themeId || draft.selected_theme)
     );
     if (!selectedTheme) {
-      throw new Error(`No website theme is available for ${draft.business_type}. Choose another business type or theme.`);
+      throw new Error("Choose a website theme before creating this website.");
     }
     SQLiteEngine.updateStore({
       website_theme_id: selectedTheme.id,
-      website_business_type: draft.business_type,
-      website_business_group: businessType.group,
+      section_layout: draft.section_layout || { order: [], hidden: [], removed: [], added: [] },
       ...(selectedTheme?.preview_appearance || {})
     });
     this.cacheActiveTenantCatalog();
@@ -13752,6 +13751,20 @@ const AppController = {
   },
 
   async cloudflareRequest(path, options = {}, tenantId = this.getActiveTenant().id, anonymous = false, credentialOverride = "") {
+    if (this.isWebsiteBuilderDraftTenant(this.getActiveTenant().id) ||
+        this.isWebsiteBuilderDraftTenant(tenantId)) {
+      const [route, query] = this.currentRoute().split("?");
+      const routeParams = new URLSearchParams(query || "");
+      const finalTenantSetup = route === "/account/web/site" &&
+        routeParams.get("new") === "1" &&
+        routeParams.get("finish") === "1";
+      const creatingTenant = path === "/api/tenants" &&
+        String(options.method || "GET").toUpperCase() === "PUT" &&
+        finalTenantSetup;
+      if (!creatingTenant) {
+        throw new Error("Cloudflare requests are disabled for the local website draft until final setup.");
+      }
+    }
     const connection = this.cloudflareConnection(tenantId);
     const token = credentialOverride || connection.token;
     const { origin } = connection;
@@ -14426,19 +14439,6 @@ const AppController = {
   bindWebsiteBuilderEvents() {
     const editorRouteParams = new URLSearchParams(this.currentRoute().split("?")[1] || "");
     const draftEditor = editorRouteParams.get("new") === "1" && editorRouteParams.get("edit") === "1";
-    const businessTypeSelect = document.getElementById("website-wizard-business-type");
-    if (businessTypeSelect) businessTypeSelect.onchange = () => {
-      const businessType = StudioRenderers.websiteBusinessType(businessTypeSelect.value);
-      if (!businessType) return;
-      const draft = StudioRenderers.websiteBuilderDraft();
-      draft.business_type = businessTypeSelect.value;
-      draft.business_group = businessType.group;
-      draft.business_type_step = 2;
-      draft.selected_theme = "";
-      StudioRenderers.saveWebsiteBuilderDraft(draft);
-      this.handleRoute(this.currentRoute());
-    };
-
     const categoryForm = document.getElementById("website-wizard-category-form");
     if (categoryForm) categoryForm.onsubmit = event => {
       event.preventDefault();
@@ -14450,6 +14450,26 @@ const AppController = {
         return;
       }
       draft.categories.push({ id: Date.now() + draft.categories.length, name });
+      StudioRenderers.saveWebsiteBuilderDraft(draft);
+      this.handleRoute(this.currentRoute());
+    };
+
+    const productList = document.getElementById("website-wizard-product-list");
+    if (productList) productList.onclick = event => {
+      const button = event.target.closest("[data-remove-wizard-product]");
+      if (!button) return;
+      const draft = StudioRenderers.websiteBuilderDraft();
+      draft.products = draft.products.filter(product =>
+        String(product.id) !== button.dataset.removeWizardProduct);
+      window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
+      StudioRenderers.saveWebsiteBuilderDraft(draft);
+      this.handleRoute(this.currentRoute());
+    };
+    const clearProducts = document.getElementById("website-wizard-clear-products");
+    if (clearProducts) clearProducts.onclick = () => {
+      const draft = StudioRenderers.websiteBuilderDraft();
+      draft.products = [];
+      window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
       StudioRenderers.saveWebsiteBuilderDraft(draft);
       this.handleRoute(this.currentRoute());
     };
@@ -14599,6 +14619,10 @@ const AppController = {
   },
 
   postRenderSetup(path, params) {
+    const editorRouteParams = new URLSearchParams(this.currentRoute().split("?")[1] || "");
+    const draftEditor = params.get("new") === "1" && params.get("edit") === "1";
+    const selectedTheme = editorRouteParams.get("theme") ||
+      SQLiteEngine.getStore().website_theme_id || "classic";
     const appearancePresets = window.EshopWebsiteAppearance || { fonts: [], colors: [], filters: [], designs: [], designPresets: [], shapes: [] };
     if (path === "/account/web/themes" || path === "/account/web/themes/select" ||
         path === "/account/web/studio/websites/webmaker" || path === "/account/web/site") {
@@ -14607,14 +14631,9 @@ const AppController = {
     if (path === "/account/web/themes/select" || path.startsWith("/account/web/themes/") ||
         (path === "/account/web/site" && params.get("new") === "1")) {
       const draft = StudioRenderers.websiteBuilderDraft();
-      if (!draft.products.length || !draft.categories.length) {
-        AppUtils.showToast("Add products and categories before choosing a theme.", "danger");
+      if (!draft.categories.length) {
+        AppUtils.showToast("Add a category before choosing a theme.", "danger");
         this.navigate("/account/web/themes");
-      } else if (((path.startsWith("/account/web/themes/") && path !== "/account/web/themes/select") ||
-          (path === "/account/web/site" && params.get("new") === "1")) &&
-          !StudioRenderers.websiteBusinessType(draft.business_type)) {
-        AppUtils.showToast("Choose a business type before choosing a theme.", "danger");
-        this.navigate("/account/web/themes/select");
       } else if (path === "/account/web/site" && params.get("new") === "1" &&
           !StudioRenderers.websiteThemes().some(theme => theme.id === (params.get("theme") || draft.selected_theme))) {
         AppUtils.showToast("Choose a website theme before creating this website.", "danger");
@@ -14636,7 +14655,11 @@ const AppController = {
       const accountError = document.getElementById("app-account-error");
       const passwordField = appAccountForm.elements.namedItem("password");
       const confirmField = appAccountForm.elements.namedItem("confirmPassword");
+      const emailField = appAccountForm.elements.namedItem("email");
+      const emailContainer = document.getElementById("app-account-email-field");
       const confirmContainer = document.getElementById("app-account-confirm-field");
+      const forgotPasswordButton = document.getElementById("app-account-forgot-password");
+      const recoveryPanel = document.getElementById("app-account-recovery");
       const turnstileContainer = document.getElementById("app-account-turnstile");
       const verificationHelp = document.getElementById("app-account-verification-help");
       const submitButton = appAccountForm.querySelector('button[type="submit"]');
@@ -14654,6 +14677,8 @@ const AppController = {
         accountError.textContent = "";
         verificationHelp.hidden = true;
         verificationHelp.textContent = "";
+        emailContainer.hidden = !registering;
+        emailField.required = registering;
         confirmContainer.hidden = !registering;
         turnstileContainer.hidden = !registering || !turnstileRequested;
         if (!registering) {
@@ -14668,6 +14693,7 @@ const AppController = {
           ? "Create your app account"
           : "Sign in to your app account";
         submitButton.textContent = appAccountForm.dataset.authMode === "register" ? "Create app account" : "Sign in";
+        forgotPasswordButton.hidden = registering;
         appAccountForm.querySelectorAll("[data-app-auth-mode]").forEach(button => {
           const active = button.dataset.appAuthMode === (registering ? "register" : "login");
           button.setAttribute("aria-pressed", String(active));
@@ -14823,11 +14849,15 @@ const AppController = {
           const result = await fetchAuth(`/api/auth/${registering ? "register" : "login"}`, {
             username,
             password,
-            ...(registering ? { turnstile_token: turnstileToken } : {})
+            ...(registering ? {
+              email: String(formData.get("email") || "").trim(),
+              turnstile_token: turnstileToken
+            } : {})
           });
           if (!result.ok || !result.session_token) throw new Error("The account service did not create a secure session.");
           window.localStorage.setItem("ESHOP_ACCOUNT_SESSION_V1", result.session_token);
           window.localStorage.setItem("ESHOP_ACCOUNT_USERNAME_V1", result.username || username);
+          window.localStorage.setItem("ESHOP_ACCOUNT_EMAIL_V1", result.email || "");
           await this.restoreAccountWebsites(result.tenants, origin);
           AppUtils.showToast(registering ? "Your Craft app account is ready." : "You are signed in.");
           const continueTo = new URLSearchParams(this.currentRoute().split("?")[1] || "").get("continue") || "";
@@ -14855,8 +14885,156 @@ const AppController = {
           submitButton.textContent = registering ? "Create app account" : "Sign in";
         }
       };
+      const recoveryEmail = document.getElementById("app-account-recovery-email");
+      const recoveryCode = document.getElementById("app-account-recovery-code");
+      const recoveryError = document.getElementById("app-account-recovery-error");
+      const recoveryStatus = document.getElementById("app-account-recovery-status");
+      const recoveryStepFields = [
+        ["app-account-recovery-code-field", "app-account-verify-reset-code"],
+        ["app-account-new-password-field", "app-account-confirm-new-password-field", "app-account-reset-password"]
+      ];
+      let resetToken = "";
+      const showRecoveryStep = step => {
+        recoveryStepFields.forEach((fields, index) => {
+          fields.forEach(id => { document.getElementById(id).hidden = index !== step - 1; });
+        });
+        document.getElementById("app-account-recovery-email-field").hidden = step >= 2;
+        document.getElementById("app-account-send-reset-code").hidden = step >= 1;
+      };
+      const showRecoveryError = error => {
+        recoveryError.textContent = error.message || "Could not reset the password.";
+        recoveryError.hidden = false;
+      };
+      forgotPasswordButton.onclick = () => {
+        recoveryError.hidden = true;
+        recoveryEmail.value = emailField.value.trim();
+        resetToken = "";
+        showRecoveryStep(0);
+        appAccountForm.hidden = true;
+        recoveryPanel.hidden = false;
+        recoveryEmail.focus();
+      };
+      document.getElementById("app-account-recovery-cancel").onclick = () => {
+        recoveryPanel.hidden = true;
+        appAccountForm.hidden = false;
+        recoveryError.hidden = true;
+        resetToken = "";
+      };
+      document.getElementById("app-account-send-reset-code").onclick = async event => {
+        const button = event.currentTarget;
+        recoveryError.hidden = true;
+        if (!recoveryEmail.reportValidity()) return;
+        button.disabled = true;
+        button.textContent = "Sending code…";
+        try {
+          const result = await fetchAuth("/api/auth/request-reset-code", { email: recoveryEmail.value.trim() });
+          recoveryStatus.textContent = result.message || "If an account uses that email, a reset code will arrive shortly.";
+          recoveryCode.required = true;
+          showRecoveryStep(1);
+          recoveryCode.focus();
+        } catch (error) {
+          showRecoveryError(error);
+        } finally {
+          button.disabled = false;
+          button.textContent = "Send recovery code";
+        }
+      };
+      document.getElementById("app-account-verify-reset-code").onclick = async event => {
+        const button = event.currentTarget;
+        recoveryError.hidden = true;
+        if (!recoveryCode.reportValidity()) return;
+        button.disabled = true;
+        button.textContent = "Verifying…";
+        try {
+          const result = await fetchAuth("/api/auth/verify-reset-code", {
+            email: recoveryEmail.value.trim(),
+            code: recoveryCode.value.trim()
+          });
+          if (!result.reset_token) throw new Error("The recovery code was not accepted.");
+          resetToken = result.reset_token;
+          recoveryCode.required = false;
+          showRecoveryStep(2);
+          document.getElementById("app-account-new-password").focus();
+        } catch (error) {
+          showRecoveryError(error);
+        } finally {
+          button.disabled = false;
+          button.textContent = "Verify code";
+        }
+      };
+      document.getElementById("app-account-reset-password").onclick = async event => {
+        const button = event.currentTarget;
+        const newPassword = document.getElementById("app-account-new-password");
+        const confirmNewPassword = document.getElementById("app-account-confirm-new-password");
+        recoveryError.hidden = true;
+        if (!newPassword.reportValidity() || !confirmNewPassword.reportValidity()) return;
+        if (newPassword.value !== confirmNewPassword.value) {
+          showRecoveryError(new Error("The passwords do not match."));
+          return;
+        }
+        button.disabled = true;
+        button.textContent = "Resetting password…";
+        try {
+          const result = await fetchAuth("/api/auth/reset-password", {
+            reset_token: resetToken,
+            password: newPassword.value
+          });
+          recoveryStatus.textContent = result.message || "Your password has been reset. Sign in with your new password.";
+          recoveryPanel.hidden = true;
+          appAccountForm.hidden = false;
+          setAuthMode("login");
+          accountError.textContent = "Password reset. Sign in with your new password.";
+          accountError.hidden = false;
+          passwordField.value = "";
+          newPassword.value = "";
+          confirmNewPassword.value = "";
+          resetToken = "";
+        } catch (error) {
+          showRecoveryError(error);
+        } finally {
+          button.disabled = false;
+          button.textContent = "Reset password";
+        }
+      };
     }
     const appAccountSignout = document.getElementById("app-account-signout");
+    const recoveryEmailForm = document.getElementById("app-account-recovery-email-form");
+    if (recoveryEmailForm) {
+      recoveryEmailForm.onsubmit = async event => {
+        event.preventDefault();
+        const button = recoveryEmailForm.querySelector('button[type="submit"]');
+        const status = document.getElementById("app-account-recovery-email-status");
+        const errorMessage = document.getElementById("app-account-recovery-email-error");
+        const formData = new FormData(recoveryEmailForm);
+        status.hidden = true;
+        errorMessage.hidden = true;
+        button.disabled = true;
+        try {
+          const response = await fetch(new URL("/api/auth/set-recovery-email", this.cloudflareConnection("main").origin), {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") || ""}`
+            },
+            body: JSON.stringify({
+              email: String(formData.get("email") || "").trim(),
+              password: String(formData.get("password") || "")
+            })
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.error || `Account service returned HTTP ${response.status}.`);
+          window.localStorage.setItem("ESHOP_ACCOUNT_EMAIL_V1", result.email || "");
+          recoveryEmailForm.elements.namedItem("password").value = "";
+          status.textContent = "Recovery email saved. Use an address you can access to receive password reset codes.";
+          status.hidden = false;
+        } catch (error) {
+          errorMessage.textContent = error.message || "Could not save the recovery email.";
+          errorMessage.hidden = false;
+        } finally {
+          button.disabled = false;
+        }
+      };
+    }
     if (appAccountSignout) {
       appAccountSignout.onclick = async () => {
         const session = window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") || "";
@@ -14873,6 +15051,7 @@ const AppController = {
         }
         window.localStorage.removeItem("ESHOP_ACCOUNT_SESSION_V1");
         window.localStorage.removeItem("ESHOP_ACCOUNT_USERNAME_V1");
+        window.localStorage.removeItem("ESHOP_ACCOUNT_EMAIL_V1");
         if (revokeFailed) AppUtils.showToast("Signed out on this device, but the server session could not be revoked.", "danger");
         else AppUtils.showToast("You are signed out.");
         this.navigate("/", true);
@@ -14891,8 +15070,8 @@ const AppController = {
         const errorElement = document.getElementById("new-website-error");
         const submitButton = newWebsiteForm.querySelector('button[type="submit"]');
         errorElement.hidden = true;
-        if (!websiteDraft.products.length || !websiteDraft.categories.length) {
-          errorElement.textContent = "Add products and categories in Webmaker before creating a website.";
+        if (!websiteDraft.categories.length) {
+          errorElement.textContent = "Add a category in Webmaker before creating a website.";
           errorElement.hidden = false;
           return;
         }
@@ -14952,6 +15131,7 @@ const AppController = {
           if (error.status === 401) {
             window.localStorage.removeItem("ESHOP_ACCOUNT_SESSION_V1");
             window.localStorage.removeItem("ESHOP_ACCOUNT_USERNAME_V1");
+            window.localStorage.removeItem("ESHOP_ACCOUNT_EMAIL_V1");
             const continueTheme = params.get("theme") || websiteDraft.selected_theme;
             const continueTo = this.currentRoute().split("?")[0] + `?new=1&finish=1&theme=${encodeURIComponent(continueTheme)}`;
             const accountRoute = `/app-account?continue=${encodeURIComponent(continueTo)}`;
@@ -14961,7 +15141,7 @@ const AppController = {
           errorElement.textContent = error.message || "Could not set up this website.";
           errorElement.hidden = false;
           submitButton.disabled = false;
-          submitButton.textContent = "Create website";
+          submitButton.textContent = "Set up";
         }
       };
     }
@@ -15106,6 +15286,7 @@ const AppController = {
         try {
           const session = await fetchAuth("/api/auth/session", null, existingAccountSession);
           window.localStorage.setItem("ESHOP_ACCOUNT_USERNAME_V1", session.username || "");
+          window.localStorage.setItem("ESHOP_ACCOUNT_EMAIL_V1", session.email || "");
         } catch (error) {
           if (error.status === 401) {
             window.localStorage.removeItem("ESHOP_ACCOUNT_SESSION_V1");
@@ -15130,14 +15311,9 @@ const AppController = {
       newWebsiteForm.onsubmit = async event => {
         event.preventDefault();
         const websiteDraft = StudioRenderers.websiteBuilderDraft();
-        if (!StudioRenderers.websiteBusinessType(websiteDraft.business_type)) {
+        if (!websiteDraft.categories.length) {
           this.navigate("/account/web/themes");
-          AppUtils.showToast("Choose a business type before creating this website.", "danger");
-          return;
-        }
-        if (!websiteDraft.products.length || !websiteDraft.categories.length) {
-          this.navigate("/account/web/themes");
-          AppUtils.showToast("Add products and categories in Webmaker before creating a website.", "danger");
+          AppUtils.showToast("Add a category in Webmaker before creating a website.", "danger");
           return;
         }
         const formData = new FormData(newWebsiteForm);
@@ -15181,13 +15357,11 @@ const AppController = {
           if (!existingAccountSession) {
             window.localStorage.setItem("ESHOP_ACCOUNT_SESSION_V1", accountResult.session_token);
             window.localStorage.setItem("ESHOP_ACCOUNT_USERNAME_V1", accountResult.username || username);
+            window.localStorage.setItem("ESHOP_ACCOUNT_EMAIL_V1", accountResult.email || "");
           }
           await this.restoreAccountWebsites(accountResult.tenants, origin);
           submitButton.textContent = "Creating website…";
-          const result = await this.cloudflareRequest("/api/tenants", {
-            method: "PUT",
-            body: JSON.stringify({ id, name })
-          }, "main", false, accountResult.session_token);
+          throw new Error("Website creation is available only from the final setup form.");
           if (!result.tenant || !result.owner_token) {
             throw new Error("Cloudflare did not return the new website's private key.");
           }
@@ -15243,80 +15417,485 @@ const AppController = {
           if (registering && turnstileWidgetId !== null) window.turnstile?.reset(turnstileWidgetId);
           submitButton.disabled = false;
           submitButton.textContent = existingAccountSession
-            ? "Create website"
+            ? "Set up"
             : registering ? "Create account & website" : "Sign in & create website";
         }
       };
     }
 
-    const themePreviewFrames = document.querySelectorAll("[data-theme-storefront-preview]");
-    themePreviewFrames.forEach(frame => {
-      let attempts = 0;
-      let initializing = false;
-      let initialized = false;
-      const initializeThemePreview = async () => {
-        if (initializing || initialized) return;
-        if (frame.dataset.themePreviewRemote === "1") {
-          const theme = StudioRenderers.websiteThemes().find(item => item.id === frame.dataset.themeStorefrontPreview);
-          if (!theme) {
-            console.error("The hosted theme preview does not match a saved theme.");
-            AppUtils.showToast("This theme is unavailable. Reload the theme list and try again.", "danger");
-            return;
-          }
-          initialized = true;
-          return;
+    const loadHostedThemePreview = async (frame, theme, catalog, assetUrl = theme.preview_url) => {
+      const themeUrl = new URL(assetUrl || "", window.location.origin);
+      if (theme.studio_url || theme.editor_mode === "app") {
+        const expectedAssetUrls = [new URL(`/theme-packages/${theme.id}/index.html`, window.location.origin).href];
+        if (theme.studio_url) expectedAssetUrls.push(
+          new URL(`/theme-packages/${theme.id}/studio.html`, window.location.origin).href);
+        if (!expectedAssetUrls.includes(themeUrl.href)) {
+          throw new Error("The selected local theme asset URL is invalid.");
         }
-        const previewWindow = frame.contentWindow;
-        if (typeof previewWindow?.setBuilderCatalog !== "function" ||
-            typeof previewWindow.getBuilderSeedCatalog !== "function") {
-          if (++attempts < 60) {
-            setTimeout(initializeThemePreview, 100);
-          } else {
-            console.error("The storefront preview did not expose its saved-catalog interface.");
-            AppUtils.showToast("The theme preview could not initialize. Reload the preview and try again.", "danger");
-          }
-          return;
-        }
-        initializing = true;
-        try {
-          const theme = StudioRenderers.websiteThemes().find(item => item.id === frame.dataset.themeStorefrontPreview);
-          if (!theme) throw new Error("The selected theme is not saved in SQLite.");
-          if (!Array.isArray(theme.preview_catalog?.products) || !theme.preview_catalog.products.length ||
-              !Array.isArray(theme.preview_catalog.categories) || !theme.preview_catalog.categories.length) {
-            const seed = previewWindow.getBuilderSeedCatalog();
-            if (!Array.isArray(seed.products) || !seed.products.length ||
-                !Array.isArray(seed.categories) || !seed.categories.length || !seed.store) {
-              throw new Error("The theme's fixed demo products could not be loaded.");
+        const response = await fetch(themeUrl.href, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Could not load the selected theme preview (${response.status}).`);
+        let source = await response.text();
+        const isThemeStudioAsset = Boolean(theme.studio_url &&
+          themeUrl.href === new URL(theme.studio_url, window.location.origin).href);
+        if (theme.editor_mode === "app" && !isThemeStudioAsset) {
+          const { fillEditableStorefrontTheme } = await import("/editable-storefront-theme.js");
+          let savedStudio = null;
+          if (theme.id === "craft-main-storefront") {
+            try {
+              const raw = window.localStorage.getItem("craft.main-storefront.studio.v1");
+              savedStudio = raw ? JSON.parse(raw) : null;
+            } catch (error) {
+              console.warn("Could not read saved Craft Studio theme settings.", error);
             }
-            theme.preview_catalog = {
-              products: JSON.parse(JSON.stringify(seed.products)),
-              categories: JSON.parse(JSON.stringify(seed.categories)),
-              store: JSON.parse(JSON.stringify(seed.store)),
-              pages: []
-            };
-            SQLiteEngine.save();
-            await window.ShopSQLite.flush();
           }
-          previewWindow.setBuilderCatalog({
-            ...JSON.parse(JSON.stringify(theme.preview_catalog)),
-            appearance: JSON.parse(JSON.stringify(theme.preview_appearance))
-          });
-          initialized = true;
-        } catch (error) {
-          console.error("Could not load the saved theme catalog into its preview.", error);
-          AppUtils.showToast(error.message || "The saved theme preview could not be loaded.", "danger");
-        } finally {
-          initializing = false;
+          return fillEditableStorefrontTheme(source, catalog, themeUrl.href, savedStudio);
         }
-      };
-      frame.addEventListener("load", () => {
-        void initializeThemePreview();
+        const scriptTagName = "scr" + "ipt";
+        const configPattern = new RegExp(`(<${scriptTagName}\\b[^>]*\\bid=["']ff-config["'][^>]*>)([\\s\\S]*?)(<\\/${scriptTagName}>)`, "i");
+        const configScript = source.match(configPattern);
+        const siteDataPattern = new RegExp(`(<${scriptTagName}\\b[^>]*\\bid=["']ff-site-data["'][^>]*>)([\\s\\S]*?)(<\\/${scriptTagName}>)`, "i");
+        const siteDataScript = source.match(siteDataPattern);
+        if (!configScript || !siteDataScript) {
+          const embeddedDataPattern = new RegExp(`(<${scriptTagName}\\b[^>]*\\bid=["'](?:data|embeddedData)["'][^>]*>)([\\s\\S]*?)(<\\/${scriptTagName}>)`, "i");
+          const embeddedDataScript = source.match(embeddedDataPattern);
+          if (!embeddedDataScript) throw new Error(`The ${theme.name} theme has no supported catalog data.`);
+          const themeData = JSON.parse(embeddedDataScript[2]);
+          const sourceCategories = Array.isArray(catalog.categories) ? catalog.categories : [];
+          const safeId = (value, fallback) => String(value ?? fallback)
+            .trim().replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || String(fallback);
+          const slugify = value => String(value || "").trim().toLocaleLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
+          const uniqueSlug = (value, id, used) => {
+            const base = slugify(value);
+            const slug = used.has(base) ? `${base}-${slugify(id)}` : base;
+            used.add(slug);
+            return slug;
+          };
+          const usedCategorySlugs = new Set();
+          const previewCategories = sourceCategories.map((category, index) => {
+            const id = `eshop-category-${safeId(category.id, index + 1)}`;
+            return {
+              id,
+              slug: uniqueSlug(category.slug || category.name, id, usedCategorySlugs),
+              name: String(category.name || "Category"),
+              description: String(category.description || ""),
+              parentId: category.parent_id == null && category.parentId == null
+                ? null
+                : `eshop-category-${safeId(category.parent_id ?? category.parentId, "")}`,
+              hue: Number(category.hue) || 200,
+              media: String(category.image || category.media || ""),
+              published: category.status !== "archived" && category.published !== false && category.published !== 0,
+              position: Number(category.position) || index
+            };
+          });
+          const categoryBySourceId = new Map(sourceCategories.map((category, index) =>
+            [String(category.id), previewCategories[index]]));
+          const categoryByName = new Map(previewCategories.map(category =>
+            [category.name.trim().toLocaleLowerCase(), category]));
+          const usedProductSlugs = new Set();
+          const products = (Array.isArray(catalog.products) ? catalog.products : [])
+            .filter(product => product && product.status !== "archived")
+            .map((product, index) => {
+              const id = `eshop-product-${safeId(product.id, index + 1)}`;
+              const category = categoryBySourceId.get(String(product.category_id ?? product.categoryId ?? ""))
+                || categoryByName.get(String(product.category_name || product.categoryName || product.category || "")
+                  .trim().toLocaleLowerCase());
+              const rawImage = product.images?.[0] || product.imageUri || product.image_uri || product.image || "";
+              const image = typeof rawImage === "string" ? rawImage : rawImage?.url || rawImage?.src || "";
+              const template = themeData.products?.[index] || {};
+              return {
+                ...template,
+                id,
+                slug: uniqueSlug(product.slug || product.name, id, usedProductSlugs),
+                name: String(product.name || "Product"),
+                description: String(product.description || ""),
+                price: Number(product.price ?? product.selling_price ?? product.sellingPrice ?? product.price_cents) || 0,
+                salePrice: Number(product.sale_price ?? product.salePrice) || null,
+                stock: Math.max(0, Number(product.stock ?? product.stock_count) || 0),
+                badge: String(product.badge || ""),
+                featured: Boolean(product.featured ?? product.is_featured),
+                published: product.status !== "archived" && product.published !== false && product.published !== 0,
+                position: Number(product.position) || index,
+                categoryIds: category ? [category.id] : [],
+                hue: Number(product.hue ?? template.hue) || 200,
+                media: String(image),
+                dietary: Array.isArray(product.dietary) ? product.dietary : [],
+                portion: String(product.portion || ""),
+                colors: Array.isArray(product.colors) ? product.colors : [],
+                sizes: Array.isArray(product.sizes) ? product.sizes : []
+              };
+            });
+          const mergedThemeData = { ...themeData, categories: previewCategories, products };
+          const safeThemeData = JSON.stringify(mergedThemeData).replace(/</g, "\\u003c");
+          source = source.replace(embeddedDataScript[0],
+            `${embeddedDataScript[1]}${safeThemeData}${embeddedDataScript[3]}`);
+          const baseHref = new URL(".", themeUrl).href.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+          return source.replace(/<head\b[^>]*>/i, match =>
+            `${match}<base href="${baseHref}">`);
+        }
+        const storageConfig = JSON.parse(configScript[2]).storage || {};
+        const baseSiteData = JSON.parse(siteDataScript[2]);
+        let siteData = baseSiteData;
+        if (storageConfig.siteKey) {
+          const savedThemeSite = window.localStorage.getItem(storageConfig.siteKey);
+          if (savedThemeSite) {
+            const parsedThemeSite = JSON.parse(savedThemeSite);
+            if (!parsedThemeSite || typeof parsedThemeSite !== "object" || Array.isArray(parsedThemeSite)) {
+              throw new Error(`The saved ${theme.name} Studio settings are invalid.`);
+            }
+            siteData = { ...baseSiteData, ...parsedThemeSite };
+          }
+        }
+        const themeStorageKeys = [storageConfig.siteKey, storageConfig.revisionKey]
+          .filter(key => typeof key === "string" && key);
+        const products = Array.isArray(catalog.products) ? catalog.products : [];
+        const savedTemplates = Array.isArray(siteData.products) ? siteData.products : [];
+        const templates = savedTemplates.length
+          ? savedTemplates
+          : (Array.isArray(baseSiteData.products) ? baseSiteData.products : []);
+        if (products.length && !templates.length) throw new Error(`The ${theme.name} storefront has no product template.`);
+        const previewIds = products.map((product, index) =>
+          templates[index]?.id ?? `eshop-preview-${index + 1}`);
+        const toSlug = value => String(value || "").trim().toLocaleLowerCase()
+          .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "product";
+        const previewCategories = Array.isArray(catalog.categories) ? catalog.categories : [];
+        siteData.categories = previewCategories.map((category, index) => ({
+          id: `eshop-category-${index + 1}`,
+          name: String(category.name || "Category"),
+          slug: toSlug(category.name),
+          description: ""
+        }));
+        const previewCategoryById = new Map(previewCategories.map((category, index) =>
+          [String(category.id), siteData.categories[index]]));
+        siteData.products = products.map((product, index) => {
+          const template = templates[index % templates.length];
+          const productCategoryId = product.category_id ?? product.categoryId;
+          const productCategoryName = String(
+            product.category_name || product.categoryName || product.category || ""
+          ).toLocaleLowerCase();
+          const categoryIndex = previewCategoryById.has(String(productCategoryId))
+            ? previewCategories.findIndex(item => String(item.id) === String(productCategoryId))
+            : previewCategories.findIndex(item => String(item.name).toLocaleLowerCase() === productCategoryName);
+          const category = categoryIndex >= 0 ? siteData.categories[categoryIndex] : null;
+          const rawImage = product.images?.[0] || product.imageUri || product.image_uri || product.image || "";
+          const image = typeof rawImage === "string" ? rawImage : rawImage?.url || rawImage?.src || "";
+          return {
+            ...template,
+            id: previewIds[index],
+            slug: toSlug(product.name),
+            name: String(product.name || "Product"),
+            brand: String(product.brand || ""),
+            price: Number(product.price ?? product.price_cents ?? template.price) || 0,
+            comparePrice: null,
+            description: String(product.description || ""),
+            category: category ? toSlug(category.name) : "",
+            subcategories: [],
+            rating: 0,
+            reviewCount: 0,
+            badge: "",
+            attributes: {},
+            colors: [],
+            sizes: [],
+            reviews: [],
+            specs: [],
+            materials: [],
+            technology: [],
+            careGuide: "",
+            fitAdvice: "",
+            unit: "",
+            coveragePerUnit: null,
+            weightKg: null,
+            leadTimeDays: null,
+            assemblyRequired: false,
+            assemblyFee: null,
+            bulkTiers: [],
+            warranty: "",
+            whatsInTheBox: [],
+            highlights: [],
+            stock: Math.max(0, Number(product.stock) || 0),
+            image,
+            gallery: image ? [image] : []
+          };
+        });
+        const originalIds = new Map(templates.map((product, index) =>
+          [String(product.id), previewIds[index % previewIds.length] || ""]));
+        const rewriteProductRefs = (value, key = "") => {
+          if (Array.isArray(value)) {
+            if (/productids$/i.test(key)) return [...previewIds];
+            return value.map(item => rewriteProductRefs(item));
+          }
+          if (value && typeof value === "object") {
+            return Object.fromEntries(Object.entries(value).map(([childKey, child]) =>
+              [childKey, rewriteProductRefs(child, childKey)]));
+          }
+          if (typeof value === "string" && /productid$/i.test(key)) {
+            return originalIds.get(value) ?? previewIds[0] ?? "";
+          }
+          return value;
+        };
+        siteData.sections = rewriteProductRefs(siteData.sections);
+        source = source.replace(siteDataScript[0],
+          `${siteDataScript[1]}${JSON.stringify(siteData)}${siteDataScript[3]}`);
+        const baseHref = new URL(".", themeUrl).href.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+        const base = `<base href="${baseHref}">`;
+        const studioStorageRead = isThemeStudioAsset ? "get.call(this,key)" : "null";
+        const isolatedStorage = theme.studio_url
+          ? "<scr" + "ipt>(()=>{const p=Storage.prototype;const get=p.getItem;const set=p.setItem;const remove=p.removeItem;const allowed=new Set(" + JSON.stringify(themeStorageKeys) + ");const siteKey=" + JSON.stringify(storageConfig.siteKey || "") + ";window.addEventListener('storage',event=>{if(event.key===siteKey)event.stopImmediatePropagation()},true);p.getItem=function(key){if(String(key)===siteKey)return " + studioStorageRead + ";return allowed.has(String(key))?get.call(this,key):null};p.setItem=function(key,value){if(allowed.has(String(key)))set.call(this,key,value)};p.removeItem=function(key){if(allowed.has(String(key)))remove.call(this,key)};p.clear=()=>{}})();<\/scr" + "ipt>"
+          : "<scr" + "ipt>(()=>{const storage=Storage.prototype;storage.getItem=()=>null;storage.setItem=()=>{};storage.removeItem=()=>{};storage.clear=()=>{}})();<\/scr" + "ipt>";
+        const srcdocUrlShim = "<scr" + "ipt>(()=>{const NativeURL=window.URL;window.URL=class extends NativeURL{constructor(input,base){super(input,base===\"null\"?document.baseURI:base)}}})();<\/scr" + "ipt>";
+        return /<head\b[^>]*>/i.test(source)
+          ? source.replace(/<head\b[^>]*>/i, match => `${match}${base}${isolatedStorage}${srcdocUrlShim}`)
+          : `${base}${isolatedStorage}${srcdocUrlShim}${source}`;
+      }
+      if (themeUrl.origin !== "https://eshop-storefront.ryanrobin07-ek.workers.dev" ||
+          themeUrl.pathname !== `/themes/${theme.id}/index.html` ||
+          !/^[a-z0-9][a-z0-9-]{0,63}$/.test(theme.id)) {
+        throw new Error("The selected theme URL is invalid.");
+      }
+      const { fillThemeForShop } = await import("/theme-skeleton-client.js");
+      const filledHtml = await fillThemeForShop(theme.id, catalog, {
+        baseHref: themeUrl.href
       });
-      void initializeThemePreview();
+      const apiGuard = `<script>(()=>{const blocked=path=>/^\\/api\\//.test(path);const deny=()=>Promise.reject(new Error("Live website APIs are disabled in editor preview."));const originalFetch=window.fetch.bind(window);window.fetch=(input,init)=>{const url=new URL(typeof input==="string"?input:input.url,document.baseURI);return blocked(url.pathname)?deny():originalFetch(input,init)};const originalOpen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(method,url,...args){if(blocked(new URL(url,document.baseURI).pathname))throw new DOMException("Live website APIs are disabled in editor preview.","AbortError");return originalOpen.call(this,method,url,...args)};const beacon=navigator.sendBeacon?.bind(navigator);if(beacon)navigator.sendBeacon=(url,...args)=>blocked(new URL(url,document.baseURI).pathname)?false:beacon(url,...args)})();<\/script>`;
+      return filledHtml.replace(/<head\b[^>]*>/i, match => `${match}${apiGuard}`);
+    };
+    const themePreviewFrames = [...document.querySelectorAll("[data-theme-storefront-preview]")]
+      .filter(frame => frame.dataset.themePreviewDirect !== "1");
+    const themePreviewQueue = [];
+    let activeThemePreviewLoads = 0;
+    const pumpThemePreviewQueue = () => {
+      while (activeThemePreviewLoads < 2 && themePreviewQueue.length) {
+        const frame = themePreviewQueue.shift();
+        if (!frame.isConnected) continue;
+        activeThemePreviewLoads += 1;
+        void (async () => {
+          try {
+            const theme = StudioRenderers.websiteThemes().find(item =>
+              item.id === frame.dataset.themeStorefrontPreview &&
+              item.preview_url === frame.dataset.themePreviewRemote);
+            if (!theme) throw new Error("The selected theme preview is unavailable.");
+            const draft = StudioRenderers.websiteBuilderDraft();
+            const html = await loadHostedThemePreview(frame, theme, {
+              products: draft.products,
+              categories: draft.categories,
+              store: { name: "Your new website", title: "Your new website", currency: "KES" },
+              pages: []
+            });
+            if (!frame.isConnected) return;
+            frame.dataset.themePreviewLoaded = "1";
+            frame.srcdoc = html;
+          } catch (error) {
+            console.error("Could not load the hosted theme preview.", error);
+            const placeholder = frame.parentElement?.querySelector("[data-theme-preview-placeholder]");
+            if (placeholder) placeholder.textContent = error.message || "Filled theme preview unavailable.";
+          } finally {
+            activeThemePreviewLoads -= 1;
+            pumpThemePreviewQueue();
+          }
+        })();
+      }
+    };
+    themePreviewFrames.forEach(frame => {
+      frame.addEventListener("load", () => {
+        if (frame.dataset.themePreviewLoaded !== "1" ||
+            frame.contentDocument?.URL !== "about:srcdoc") return;
+        frame.style.visibility = "visible";
+        const placeholder = frame.parentElement?.querySelector("[data-theme-preview-placeholder]");
+        if (placeholder) placeholder.hidden = true;
+      });
     });
+    if (themePreviewFrames.length && typeof IntersectionObserver === "function") {
+      const themePreviewObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          const frame = entry.target;
+          if (!entry.isIntersecting || frame.dataset.themePreviewQueued === "1") return;
+          themePreviewObserver.unobserve(frame);
+          frame.dataset.themePreviewQueued = "1";
+          themePreviewQueue.push(frame);
+        });
+        pumpThemePreviewQueue();
+      }, { rootMargin: "300px 0px" });
+      themePreviewFrames.forEach(frame => {
+        if (frame.dataset.themePreviewRemote) themePreviewObserver.observe(frame);
+        else {
+          const placeholder = frame.parentElement?.querySelector("[data-theme-preview-placeholder]");
+          if (placeholder) placeholder.textContent = "Theme preview unavailable.";
+        }
+      });
+    } else {
+      themePreviewFrames.forEach(frame => {
+        const placeholder = frame.parentElement?.querySelector("[data-theme-preview-placeholder]");
+        if (placeholder) placeholder.textContent = "Theme preview is unavailable in this browser.";
+      });
+    }
 
     const storefrontFrame = document.getElementById("builder-storefront-html");
     if (storefrontFrame) {
+      const usesIntegratedStudio = storefrontFrame.dataset.editorThemeMode === "embedded";
+      const studioFrame = document.getElementById("builder-theme-studio");
+      const studioNav = document.getElementById("builder-theme-studio-nav");
+      if (studioFrame && studioNav) {
+        const studioTabSelector = usesIntegratedStudio
+          ? "#stTabs button[data-tab], .studio-nav-tabs .studio-tab-btn, #studio-tab-bar .studio-tab-btn"
+          : ".studio-nav-tabs .studio-tab-btn, #studio-tab-bar .studio-tab-btn";
+        const studioTabId = element => {
+          if (element.dataset.tab) return element.dataset.tab;
+          const href = element.getAttribute("href") || "";
+          if (href.includes("/studio/")) return href.split("/studio/")[1].split(/[?#]/)[0];
+          return (element.getAttribute("onclick") || "").match(/switchTab\(\s*['"]([^'"]+)['"]/)?.[1] || "";
+        };
+        const setStudioNavActive = id => {
+          studioNav.querySelectorAll("button[data-studio-tab],button[data-theme-editor-store]").forEach(button => {
+            const active = button.dataset.studioTab === id || (!button.dataset.studioTab && id === "store");
+            button.setAttribute("aria-pressed", String(active));
+            button.style.background = active ? "#fff" : "transparent";
+            button.style.color = active ? "#18181b" : "#f5f5f6";
+          });
+        };
+        const showStorefront = async () => {
+          studioFrame.hidden = true;
+          studioFrame.style.display = "none";
+          storefrontFrame.hidden = false;
+          storefrontFrame.style.display = "block";
+          setStudioNavActive("store");
+          if (studioFrame.dataset.storeDirty === "1") {
+            studioFrame.dataset.storeDirty = "0";
+            const loading = document.getElementById("builder-preview-loading");
+            if (loading) loading.style.display = "grid";
+            if (storefrontFrame.dataset.editorThemeUrl) {
+              storefrontFrame.dataset.editorThemeLoaded = "0";
+              storefrontFrame.dataset.editorThemeLoading = "0";
+              storefrontFrame.srcdoc = "";
+              initializeStorefrontPreview();
+            } else {
+              await new Promise(resolve => {
+                const onLoad = () => {
+                  storefrontFrame.removeEventListener("load", onLoad);
+                  resolve();
+                };
+                storefrontFrame.addEventListener("load", onLoad);
+                storefrontFrame.contentWindow.location.reload();
+              });
+            }
+            const started = Date.now();
+            while (storefrontFrame.isConnected &&
+              document.getElementById("builder-preview-loading")?.style.display !== "none" &&
+              Date.now() - started < 10000) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+          }
+        };
+        const showStudioTab = tab => {
+          storefrontFrame.hidden = true;
+          storefrontFrame.style.display = "none";
+          studioFrame.hidden = false;
+          studioFrame.style.display = "block";
+          studioFrame.dataset.storeDirty = "1";
+          setStudioNavActive(tab.id);
+          try {
+            const element = [...(studioFrame.contentDocument?.querySelectorAll(studioTabSelector) || [])]
+              .find(candidate => studioTabId(candidate) === tab.id);
+            if (element) element.click();
+            else throw new Error(`The ${tab.label} section is no longer available.`);
+          } catch (error) {
+            console.error("Could not open the selected theme Studio section.", error);
+            const status = document.getElementById("builder-editor-status");
+            if (status) status.textContent = error.message || "Could not open this Studio section.";
+          }
+        };
+        const storeNavButton = studioNav.querySelector("[data-theme-editor-store]");
+        storeNavButton?.addEventListener("click", () => { void showStorefront(); });
+        const loadStudioTabs = async () => {
+          try {
+            const doc = studioFrame.contentDocument;
+            if (!doc?.head) return;
+            let style = doc.getElementById("eshop-embedded-studio-style");
+            if (!style) {
+              style = doc.createElement("style");
+              style.id = "eshop-embedded-studio-style";
+              style.textContent = usesIntegratedStudio
+                ? ".studio-header,.studio-nav-tabs,#studio-tab-bar,.st__hdr,#stTabs,.st__tabs{display:none!important}html,body{overscroll-behavior:contain}"
+                : ".studio-header,.studio-nav-tabs,#studio-tab-bar{display:none!important}html,body{overscroll-behavior:contain}";
+              doc.head.appendChild(style);
+            }
+            const started = Date.now();
+            if (usesIntegratedStudio) {
+              const studio = doc.getElementById("studio");
+              const openStudio = doc.getElementById("btnStudio") || doc.getElementById("studio-btn");
+              while (studio?.dataset.open !== "true" && Date.now() - started < 10000) {
+                openStudio?.click();
+                await new Promise(resolve => setTimeout(resolve, 150));
+              }
+              if (studio?.dataset.open !== "true") {
+                throw new Error(`The ${studioTheme.name} Studio could not be opened.`);
+              }
+            }
+            let elements = [...(doc.querySelectorAll(studioTabSelector) || [])];
+            while (!elements.length && studioFrame.contentDocument === doc && Date.now() - started < 10000) {
+              await new Promise(resolve => setTimeout(resolve, 150));
+              elements = [...(doc.querySelectorAll(studioTabSelector) || [])];
+            }
+            const seen = new Set();
+            const tabs = elements
+              .map(element => ({
+                id: studioTabId(element),
+                label: String(element.textContent || "").replace(/^[^\p{L}\p{N}]+/u, "").replace(/\s+/g, " ").trim()
+              }))
+              .filter(tab => tab.id && tab.id !== "dashboard" && !seen.has(tab.id) && seen.add(tab.id));
+            studioNav.querySelectorAll("[data-studio-tab],.builder-studio-nav-hint").forEach(element => element.remove());
+            if (!tabs.length) {
+              const hint = document.createElement("span");
+              hint.className = "builder-studio-nav-hint";
+              hint.textContent = "Studio sections could not load.";
+              hint.style.cssText = "flex:none;padding:8px;color:#d0d0d4;font-size:.72rem";
+              studioNav.appendChild(hint);
+              return;
+            }
+            tabs.forEach(tab => {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.dataset.studioTab = tab.id;
+              button.setAttribute("aria-pressed", "false");
+              button.textContent = tab.label || tab.id;
+              button.style.cssText = "flex:none;min-height:38px;padding:0 13px;border:1px solid #45464c;border-radius:999px;background:transparent;color:#f5f5f6;font:inherit;font-size:.72rem;font-weight:600;white-space:nowrap";
+              button.addEventListener("click", () => showStudioTab(tab));
+              studioNav.appendChild(button);
+            });
+            setStudioNavActive("store");
+          } catch (error) {
+            console.error("Theme Studio sections could not be read.", error);
+            const status = document.getElementById("builder-editor-status");
+            if (status) status.textContent = "Theme Studio sections could not be read.";
+          }
+        };
+        studioFrame.addEventListener("load", loadStudioTabs);
+        const studioTheme = StudioRenderers.websiteThemes().find(theme =>
+          theme.id === storefrontFrame.dataset.editorThemeId &&
+          theme.studio_url === studioFrame.dataset.studioUrl);
+        if (!studioTheme) throw new Error("The selected theme Studio is unavailable.");
+        const draftCatalog = draftEditor ? StudioRenderers.websiteBuilderDraft() : null;
+        const studioCatalog = {
+          products: draftCatalog?.products || SQLiteEngine.select("products", product => product.status !== "archived"),
+          categories: draftCatalog?.categories || SQLiteEngine.getCategories(),
+          store: SQLiteEngine.getStore(),
+          pages: draftCatalog ? [] : SQLiteEngine.getPages()
+        };
+        void loadHostedThemePreview(studioFrame, studioTheme, studioCatalog, studioFrame.dataset.studioUrl)
+          .then(html => {
+            if (studioFrame.isConnected) studioFrame.srcdoc = html;
+          })
+          .catch(error => {
+            console.error("The selected theme Studio could not load in the editor.", error);
+            const status = document.getElementById("builder-editor-status");
+            if (status) status.textContent = error.message || "The selected theme Studio could not load.";
+            const hint = document.createElement("span");
+            hint.className = "builder-studio-nav-hint";
+            hint.textContent = "Studio sections could not load.";
+            hint.style.cssText = "flex:none;padding:8px;color:#d0d0d4;font-size:.72rem";
+            studioNav.appendChild(hint);
+          });
+      }
       const persistBuilderCatalogChange = async (operation, ...args) => {
         if (!window.ShopSQLite) throw new Error("The app SQLite database is not ready.");
         if (typeof SQLiteEngine[operation] !== "function") throw new Error(`Unsupported catalog operation: ${operation}`);
@@ -15345,11 +15924,9 @@ const AppController = {
       const previewDevice = document.getElementById("builder-preview-device");
       const centerPreviewDevice = () => {
         if (!previewCanvas || !previewDevice) return;
-        const availableWidth = Math.max(0, previewCanvas.clientWidth - 24);
-        const availableHeight = Math.max(0, previewCanvas.clientHeight - 20);
-        const width = Math.min(280, availableWidth, availableHeight * 9 / 19);
-        previewDevice.style.width = `${width}px`;
-        previewDevice.style.height = `${width * 19 / 9}px`;
+        previewDevice.style.inset = "0";
+        previewDevice.style.width = "100%";
+        previewDevice.style.height = "100%";
       };
       const resizeStorefrontFrame = () => {
         if (previewCanvas) {
@@ -15410,6 +15987,8 @@ const AppController = {
           store.card_shape === "slant" ? `[data-product-id],[data-eshop-product-id],[class*='product-card'],[class*='product-tile']{clip-path:polygon(0 0,100% 0,100% 100%,8% 100%);}` : "",
           ["outlined", "terminal"].includes(store.card_shape) ? `[data-product-id],[data-eshop-product-id],[class*='product-card'],[class*='product-tile']{border:2px solid currentColor!important;}` : ""
         ].join("");
+        const studioStyle = previewDocument.getElementById("eshop-craft-studio-theme");
+        if (studioStyle) previewDocument.head.appendChild(studioStyle);
       };
       const applyHostedThemeElementEdits = () => {
         const previewDocument = storefrontFrame.contentDocument;
@@ -15457,33 +16036,18 @@ const AppController = {
           storefrontFrame.dataset.editorThemeLoading = "1";
           void (async () => {
             try {
-              const themeUrl = new URL(hostedThemeUrl);
               const themeId = storefrontFrame.dataset.editorThemeId || "";
-              if (themeUrl.origin !== "https://eshop-storefront.ryanrobin07-ek.workers.dev" ||
-                  themeUrl.pathname !== `/themes/${themeId}/index.html` ||
-                  !/^[a-z0-9][a-z0-9-]{0,63}$/.test(themeId)) {
-                throw new Error("The selected theme URL is invalid.");
-              }
-              const response = await fetch(themeUrl.href, { cache: "force-cache" });
-              if (!response.ok) throw new Error(`Theme preview request failed (${response.status}).`);
-              let html = await response.text();
-              html = html.replace(/<base\b[^>]*>/gi, "");
-              const base = `<base href="${themeUrl.href.slice(0, themeUrl.href.lastIndexOf("/") + 1)}">`;
+              const theme = StudioRenderers.websiteThemes().find(item =>
+                item.id === themeId && item.preview_url === hostedThemeUrl);
+              if (!theme) throw new Error("The selected theme is not saved in SQLite.");
+              const draftCatalog = draftEditor ? StudioRenderers.websiteBuilderDraft() : null;
               const catalog = {
-                products: SQLiteEngine.select("products", product => product.status !== "archived"),
-                categories: SQLiteEngine.getCategories(),
+                products: draftCatalog?.products || SQLiteEngine.select("products", product => product.status !== "archived"),
+                categories: draftCatalog?.categories || SQLiteEngine.getCategories(),
                 store: SQLiteEngine.getStore(),
-                pages: SQLiteEngine.getPages()
+                pages: draftCatalog ? [] : SQLiteEngine.getPages()
               };
-              const catalogJson = JSON.stringify(catalog).replace(/[<\u2028\u2029]/g, character =>
-                ({ "<": "\\u003c", "\u2028": "\\u2028", "\u2029": "\\u2029" })[character]);
-              const catalogBootstrap = `<script>window.__ESHOP_THEME_CATALOG__=${catalogJson};<\/script>`;
-              const catalogAdapter = `<script src="${window.location.origin}/theme-catalog-adapter.js" defer><\/script>`;
-              if (/<head\b[^>]*>/i.test(html)) {
-                html = html.replace(/<head\b[^>]*>/i, match => `${match}${base}${catalogBootstrap}${catalogAdapter}`);
-              } else {
-                html = `${base}${catalogBootstrap}${catalogAdapter}${html}`;
-              }
+              const html = await loadHostedThemePreview(storefrontFrame, theme, catalog);
               storefrontFrame.dataset.editorThemeLoaded = "1";
               storefrontFrame.srcdoc = html;
             } catch (error) {
@@ -15553,6 +16117,7 @@ const AppController = {
             if (selectedPage && !hostedTheme) previewWindow.location.hash = `#/pages/${encodeURIComponent(selectedPage)}`;
             const loading = document.getElementById("builder-preview-loading");
             if (loading) loading.style.display = "none";
+            storefrontFrame.style.visibility = "visible";
           } catch (error) {
             console.error("Could not load the storefront catalog into app SQLite.", error);
             const loading = document.getElementById("builder-preview-loading");
@@ -15567,8 +16132,9 @@ const AppController = {
         })();
       };
       storefrontFrame.addEventListener("load", initializeStorefrontPreview);
+      storefrontFrame.addEventListener("load", () => renderSectionList());
       if (storefrontFrame.contentDocument?.readyState === "complete" &&
-          document.getElementById("builder-elements-toggle")?.disabled) {
+          storefrontFrame.dataset.editorThemeLoaded !== "1") {
         initializeStorefrontPreview();
       }
       if (previewCanvas) {
@@ -15604,6 +16170,7 @@ const AppController = {
         const previewWindow = storefrontFrame.contentWindow;
         if (storefrontFrame.dataset.editorThemeUrl) {
           applyHostedThemeAppearance(store);
+          previewWindow?.__ESHOP_APPLY_SECTION_LAYOUT__?.();
           return;
         }
         if (typeof previewWindow?.setBuilderCatalog !== "function") return;
@@ -15614,6 +16181,139 @@ const AppController = {
           pages: SQLiteEngine.getPages()
         });
       };
+      const sectionList = document.getElementById("builder-section-list");
+      const readSectionLayout = () => {
+        const saved = SQLiteEngine.getStore().section_layout;
+        return {
+          order: Array.isArray(saved?.order) ? [...saved.order] : [],
+          hidden: Array.isArray(saved?.hidden) ? [...saved.hidden] : [],
+          removed: Array.isArray(saved?.removed) ? [...saved.removed] : [],
+          added: Array.isArray(saved?.added) ? saved.added.map(section => ({ ...section })) : []
+        };
+      };
+      const applyHostedSectionLayout = layout => {
+        const previewWindow = storefrontFrame.contentWindow;
+        if (!previewWindow) return;
+        previewWindow.__ESHOP_EDITOR_SECTION_LAYOUT__ = layout;
+        previewWindow.__ESHOP_APPLY_SECTION_LAYOUT__?.();
+      };
+      const renderSectionList = () => {
+        if (!sectionList) return;
+        const previewDocument = storefrontFrame.contentDocument;
+        const app = previewDocument?.getElementById("app");
+        const container = app?.querySelector(":scope > .container");
+        if (!container) {
+          sectionList.textContent = "Sections are loading…";
+          return;
+        }
+        const layout = readSectionLayout();
+        const removed = new Set(layout.removed);
+        const sections = [...container.querySelectorAll(":scope > section")]
+          .filter(section => !removed.has(section.dataset.eshopEditorSectionId));
+        sectionList.replaceChildren();
+        if (!sections.length) {
+          const empty = previewDocument.createElement("span");
+          empty.textContent = "No sections. Add one below.";
+          sectionList.append(empty);
+        }
+        sections.forEach((section, index) => {
+          const id = section.dataset.eshopEditorSectionId;
+          const added = layout.added.find(item => item.id === id);
+          const label = added?.title || section.getAttribute("aria-label") ||
+            section.querySelector("h1,h2,h3")?.textContent?.trim() || `Section ${index + 1}`;
+          const row = document.createElement("div");
+          row.style.cssText = "display:flex;align-items:center;gap:4px;min-width:0;padding:3px 5px;border:1px solid #35363b;border-radius:6px;background:#1b1c20;font-size:.68rem";
+          const name = document.createElement("span");
+          name.textContent = label;
+          name.style.cssText = "flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
+          row.append(name);
+          const button = (text, label, action, disabled = false) => {
+            const control = document.createElement("button");
+            control.type = "button";
+            control.textContent = text;
+            control.setAttribute("aria-label", label);
+            control.dataset.sectionAction = action;
+            control.dataset.sectionId = id;
+            control.disabled = disabled;
+            control.style.cssText = "min-width:30px;min-height:30px;border:1px solid #45464c;border-radius:5px;background:#25262a;color:#fff";
+            row.append(control);
+          };
+          button("↑", `Move ${label} up`, "up", index === 0);
+          button("↓", `Move ${label} down`, "down", index === sections.length - 1);
+          button(layout.hidden.includes(id) ? "Show" : "Hide",
+            `${layout.hidden.includes(id) ? "Show" : "Hide"} ${label}`, "toggle");
+          button("×", `Delete ${label}`, "delete");
+          sectionList.append(row);
+        });
+      };
+      const saveSectionLayout = async layout => {
+        SQLiteEngine.updateStore({ section_layout: layout });
+        if (this.isWebsiteBuilderDraftTenant(this.getActiveTenant().id)) {
+          const draft = StudioRenderers.websiteBuilderDraft();
+          draft.section_layout = layout;
+          StudioRenderers.saveWebsiteBuilderDraft(draft);
+        }
+        this.cacheActiveTenantCatalog();
+        if (!window.ShopSQLite) throw new Error("The app SQLite database is not ready.");
+        await window.ShopSQLite.flush();
+        applyHostedSectionLayout(layout);
+        renderSectionList();
+        const status = document.getElementById("builder-editor-status");
+        if (status) status.textContent = "Section layout saved.";
+      };
+      if (sectionList) {
+        sectionList.addEventListener("click", event => {
+          const control = event.target.closest("[data-section-action]");
+          if (!control) return;
+          const layout = readSectionLayout();
+          const sections = [...(storefrontFrame.contentDocument
+            ?.getElementById("app")?.querySelector(":scope > .container")
+            ?.querySelectorAll(":scope > section") || [])]
+            .filter(section => !layout.removed.includes(section.dataset.eshopEditorSectionId));
+          const index = sections.findIndex(section =>
+            section.dataset.eshopEditorSectionId === control.dataset.sectionId);
+          if (index < 0) return;
+          const id = control.dataset.sectionId;
+          if (control.dataset.sectionAction === "up" || control.dataset.sectionAction === "down") {
+            const next = index + (control.dataset.sectionAction === "up" ? -1 : 1);
+            if (next < 0 || next >= sections.length) return;
+            [sections[index], sections[next]] = [sections[next], sections[index]];
+            layout.order = sections.map(section => section.dataset.eshopEditorSectionId);
+          } else if (control.dataset.sectionAction === "toggle") {
+            layout.hidden = layout.hidden.includes(id)
+              ? layout.hidden.filter(item => item !== id)
+              : [...layout.hidden, id];
+          } else if (control.dataset.sectionAction === "delete") {
+            layout.removed = [...new Set([...layout.removed, id])];
+          }
+          void saveSectionLayout(layout).catch(error => {
+            console.error("Storefront section layout could not be saved.", error);
+            AppUtils.showToast(error.message || "Could not save section layout.", "danger");
+          });
+        });
+      }
+      const sectionAddForm = document.getElementById("builder-section-add-form");
+      if (sectionAddForm) sectionAddForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const titleInput = document.getElementById("builder-section-title");
+        const bodyInput = document.getElementById("builder-section-body");
+        const typeInput = document.getElementById("builder-section-type");
+        const layout = readSectionLayout();
+        const id = `custom-${globalThis.crypto?.randomUUID?.() || Date.now().toString(36)}`;
+        layout.added.push({
+          id,
+          type: typeInput.value,
+          title: titleInput.value.trim(),
+          body: bodyInput.value.trim()
+        });
+        void saveSectionLayout(layout).then(() => {
+          titleInput.value = "";
+          bodyInput.value = "";
+        }).catch(error => {
+          console.error("Storefront section could not be added.", error);
+          AppUtils.showToast(error.message || "Could not add section.", "danger");
+        });
+      });
       const elementEdits = new Map(
         (Array.isArray(SQLiteEngine.getStore().element_edits) ? SQLiteEngine.getStore().element_edits : [])
           .filter(edit => edit && typeof edit.selector === "string" && ["text", "image", "icon", "link", "group"].includes(edit.kind))
@@ -15676,6 +16376,18 @@ const AppController = {
       const selectorForElement = element => {
         const appRoot = element.ownerDocument.getElementById("app") || element.ownerDocument.body;
         const parts = [];
+        const section = element.closest("section[data-eshop-editor-section-id]");
+        if (section && appRoot.contains(section)) {
+          let node = element;
+          while (node && node !== section) {
+            const tag = node.localName;
+            const sameTagSiblings = [...node.parentElement.children].filter(sibling => sibling.localName === tag);
+            parts.unshift(`${tag}:nth-of-type(${sameTagSiblings.indexOf(node) + 1})`);
+            node = node.parentElement;
+          }
+          if (node !== section) throw new Error("Select an element inside the storefront page.");
+          return `#app > section[data-eshop-editor-section-id="${section.dataset.eshopEditorSectionId}"]${parts.length ? ` > ${parts.join(" > ")}` : ""}`;
+        }
         let node = element;
         while (node && node !== appRoot) {
           const tag = node.localName;
@@ -15696,6 +16408,7 @@ const AppController = {
             id: node.id || "",
             classes: [...node.classList].filter(name => name !== "active").sort().join(" "),
             productId: node.getAttribute("data-product-id") || "",
+            sectionId: node.dataset.eshopEditorSectionId || "",
             slide: node.getAttribute("data-slide") || "",
             action: node.getAttribute("data-action") || "",
             label: node.getAttribute("aria-label") || "",
@@ -16176,10 +16889,11 @@ const AppController = {
           clearElementSelection();
           previewCatalog();
           const status = document.getElementById("builder-editor-status");
-          if (status) status.textContent = draftEditor
+          const isDraftTenant = this.isWebsiteBuilderDraftTenant(this.getActiveTenant().id);
+          if (status) status.textContent = isDraftTenant
             ? "Draft saved on this device. Create the website when you’re ready."
             : elementEdits.size ? "Design and element edits saved to this shop." : "Design saved to this shop.";
-          if (!quiet) AppUtils.showToast(draftEditor ? "Website draft saved on this device." :
+          if (!quiet) AppUtils.showToast(isDraftTenant ? "Website draft saved on this device." :
             elementEdits.size ? "Website design and element edits saved." : "Website design saved.");
           return true;
         } catch (error) {
@@ -16193,6 +16907,11 @@ const AppController = {
       if (saveDesignButton) saveDesignButton.onclick = () => { void saveEditorDesign(); };
       const publishDesignButton = document.querySelector("[data-builder-publish-design]");
       if (publishDesignButton) publishDesignButton.onclick = async () => {
+        if (this.isWebsiteBuilderDraftTenant(this.getActiveTenant().id)) {
+          const status = document.getElementById("builder-editor-status");
+          if (status) status.textContent = "This local draft cannot be published before final setup.";
+          return;
+        }
         if (!await saveEditorDesign(true)) return;
         publishDesignButton.disabled = true;
         const status = document.getElementById("builder-editor-status");
@@ -16201,7 +16920,7 @@ const AppController = {
           const appearance = Object.fromEntries([
             "primary_color", "background_color", "surface_color", "text_color", "color_theme",
             "accent2_color", "accent3_color", "font_family", "display_font_family",
-            "mono_font_family", "design_theme", "card_shape", "card_radius",
+            "mono_font_family", "design_theme", "card_shape", "card_radius", "section_layout",
             "website_theme_id", "element_edits"
           ].map(key => [key, store[key]]));
           const result = await this.cloudflareRequest(
@@ -16229,8 +16948,11 @@ const AppController = {
         finishWebsiteButton.disabled = true;
         try {
           if (!await saveEditorDesign(true)) return;
-          const themeId = editorParams.get("theme") || SQLiteEngine.getStore().website_theme_id || "classic";
+          const themeId = editorRouteParams.get("theme") || SQLiteEngine.getStore().website_theme_id || "classic";
           this.navigate(`/account/web/site?new=1&finish=1&theme=${encodeURIComponent(themeId)}`);
+        } catch (error) {
+          console.error("Could not open final website setup.", error);
+          AppUtils.showToast(error.message || "Could not continue to website setup.", "danger");
         } finally {
           finishWebsiteButton.disabled = false;
         }
@@ -16241,7 +16963,12 @@ const AppController = {
         if (!previewWindow) return;
         const slug = pageSelect.value;
         previewWindow.location.hash = slug ? `#/pages/${encodeURIComponent(slug)}` : "#/";
-        this.navigate(slug ? `/account/web/site?page=${encodeURIComponent(slug)}` : "/account/web/site");
+        const editorRoute = this.isWebsiteBuilderDraftTenant(this.getActiveTenant().id)
+          ? `/account/web/site?new=1&edit=1&theme=${encodeURIComponent(editorRouteParams.get("theme") || selectedTheme)}`
+          : "/account/web/site";
+        this.navigate(slug
+          ? `${editorRoute}${editorRoute.includes("?") ? "&" : "?"}page=${encodeURIComponent(slug)}`
+          : editorRoute);
       });
       document.querySelectorAll("[data-editor-tab]").forEach(tab => {
         tab.addEventListener("click", () => {
@@ -16251,6 +16978,7 @@ const AppController = {
             return;
           }
           const selectedPanel = selectedTool;
+          if (selectedTool === "sections") renderSectionList();
           document.querySelectorAll("[data-editor-tab]").forEach(button => {
             const active = button === tab;
             button.setAttribute("aria-pressed", String(active));
@@ -16260,11 +16988,6 @@ const AppController = {
           document.querySelectorAll("[data-editor-panel]").forEach(panel => {
             panel.hidden = panel.dataset.editorPanel !== selectedPanel;
           });
-          if (selectedPanel === "cards") {
-            connectCardGridEvents();
-            window.setTimeout(refreshMobileCardSections, 250);
-            window.setTimeout(refreshMobileCardSections, 900);
-          }
         });
       });
       const addPageButton = document.getElementById("btn-builder-add-page");
@@ -16779,8 +17502,25 @@ const AppController = {
   },
 
   async uploadCatalogImage(image, apiUrl, tenant, token) {
-    if (typeof image !== "string" || !/^data:image\//i.test(image)) return image || "";
-    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(image));
+    if (typeof image !== "string" || !image) return image || "";
+    const isDataImage = /^data:image\//i.test(image);
+    let imageSource = image;
+    if (!isDataImage) {
+      if (image.startsWith("/")) return image;
+      let sourceUrl;
+      try {
+        sourceUrl = new URL(image);
+      } catch {
+        return image;
+      }
+      if (!["http:", "https:"].includes(sourceUrl.protocol)) return image;
+      const tenantHostname = String(tenant.hostname || "").toLowerCase();
+      const isRrobinDomain = sourceUrl.hostname === "rrobin.co.ke" ||
+        sourceUrl.hostname.endsWith(".rrobin.co.ke");
+      if (isRrobinDomain || sourceUrl.hostname === tenantHostname) return image;
+      imageSource = sourceUrl.href;
+    }
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(imageSource));
     const fingerprint = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, "0")).join("");
     const cacheKey = `ESHOP_CATALOG_MEDIA_UPLOADS_V1:${tenant.id}`;
     let uploadedMedia = {};
@@ -16802,11 +17542,17 @@ const AppController = {
         console.warn("Cached catalog image URL is invalid; uploading the image again.", error);
       }
     }
-    const source = await fetch(image);
+    const source = await fetch(imageSource, isDataImage
+      ? undefined
+      : { mode: "cors", credentials: "omit", cache: "force-cache" });
     if (!source.ok) throw new Error("A saved product image could not be read for publishing.");
     const sourceBlob = await source.blob();
+    if (!sourceBlob.type.startsWith("image/")) {
+      throw new Error("The product image URL did not return an image.");
+    }
     const compressedDataUrl = await AppUtils.compressImageFile(
-      new File([sourceBlob], "catalog-image", { type: sourceBlob.type || "image/png" })
+      new File([sourceBlob], "catalog-image", { type: sourceBlob.type }),
+      { maxDimension: 800, maxBytes: 2_800_000 }
     );
     const compressedResponse = await fetch(compressedDataUrl);
     if (!compressedResponse.ok) throw new Error("A compressed product image could not be prepared for publishing.");
@@ -16845,6 +17591,10 @@ const AppController = {
   },
 
   openCloudflarePublishModal() {
+    if (this.isWebsiteBuilderDraftTenant(this.getActiveTenant().id)) {
+      AppUtils.showToast("A local website draft cannot be published. Finish setup to create its live shop.", "danger");
+      return;
+    }
     const modalContainer = document.getElementById("product-modal-container") ||
       document.getElementById("category-modal-container");
     if (!modalContainer) return;
@@ -16932,6 +17682,13 @@ const AppController = {
       submitButton.disabled = true;
       submitButton.textContent = "Preparing images…";
       try {
+        const themeClient = await import("/theme-skeleton-client.js");
+        const themeId = store.website_theme_id || "classic";
+        const selectedTheme = StudioRenderers.websiteThemes().find(theme => theme.id === themeId);
+        const appEditableTheme = selectedTheme?.editor_mode === "app";
+        if (themeId !== "classic" && !appEditableTheme && !themeClient.isSupportedThemeId(themeId)) {
+          throw new Error(`Theme "${themeId}" cannot be published yet because its shop-data mapping is not verified.`);
+        }
         await window.ShopSQLite.flush();
         const rememberToken = formData.get("rememberToken") === "on";
         window.localStorage.setItem(endpointKey, apiUrl.origin);
@@ -16939,7 +17696,10 @@ const AppController = {
         else if (tenant.id === "main") window.localStorage.removeItem(tokenKey);
 
         const uploadedImages = new Map();
+        const uploadedProductImages = new Map();
         let imageCount = 0;
+        let uploadedProductImageCount = 0;
+        let fallbackProductImageCount = 0;
         const publishImage = async image => {
           if (typeof image !== "string" || !/^data:image\//i.test(image)) return image || "";
           if (!uploadedImages.has(image)) {
@@ -16949,11 +17709,43 @@ const AppController = {
           }
           return uploadedImages.get(image);
         };
+        const publishProductImage = async image => {
+          if (typeof image !== "string" || !image || /^data:image\//i.test(image)) {
+            return publishImage(image);
+          }
+          let imageUrl;
+          try {
+            imageUrl = new URL(image);
+          } catch {
+            return image;
+          }
+          if (!["http:", "https:"].includes(imageUrl.protocol)) return image;
+          const ownHostname = String(tenant.hostname || "").toLowerCase();
+          if (imageUrl.hostname === "rrobin.co.ke" ||
+              imageUrl.hostname.endsWith(".rrobin.co.ke") ||
+              imageUrl.hostname === ownHostname) return image;
+          if (!uploadedProductImages.has(image)) {
+            imageCount += 1;
+            submitButton.textContent = `Uploading image ${imageCount}…`;
+            uploadedProductImages.set(image, (async () => {
+              try {
+                const uploadedUrl = await this.uploadCatalogImage(image, apiUrl, tenant, token);
+                if (uploadedUrl !== image) uploadedProductImageCount += 1;
+                return uploadedUrl;
+              } catch (error) {
+                fallbackProductImageCount += 1;
+                console.warn("External product image could not be copied to R2; keeping its original URL.", error);
+                return image;
+              }
+            })());
+          }
+          return uploadedProductImages.get(image);
+        };
         const publishProducts = [];
         for (const product of products) {
           publishProducts.push({
             ...product,
-            images: await Promise.all((Array.isArray(product.images) ? product.images : []).map(publishImage))
+            images: await Promise.all((Array.isArray(product.images) ? product.images : []).map(publishProductImage))
           });
         }
         const publishCategories = await Promise.all(categories.map(async category => ({
@@ -16992,9 +17784,77 @@ const AppController = {
         if (!response.ok) throw new Error(result.error || `Cloudflare returned HTTP ${response.status}.`);
         if (result.ok !== true) throw new Error("Cloudflare did not confirm the catalog publish.");
 
+        if (themeId !== "classic") {
+          if (!selectedTheme) throw new Error("The selected theme is no longer available.");
+          submitButton.textContent = "Filling and publishing storefront…";
+          const filledCatalog = {
+            products: publishProducts,
+            categories: publishCategories,
+            store: publishStore,
+            pages: SQLiteEngine.getPages()
+          };
+          let filledHtml;
+          if (appEditableTheme) {
+            const themeUrl = new URL(selectedTheme.preview_url, window.location.origin);
+            const templateResponse = await fetch(themeUrl.href, { cache: "no-store" });
+            if (!templateResponse.ok) {
+              throw new Error(`Could not load the selected theme template (${templateResponse.status}).`);
+            }
+            const { fillEditableStorefrontTheme } = await import("/editable-storefront-theme.js");
+            let savedStudio = null;
+            if (themeId === "craft-main-storefront") {
+              try {
+                const raw = window.localStorage.getItem("craft.main-storefront.studio.v1");
+                savedStudio = raw ? JSON.parse(raw) : null;
+              } catch (error) {
+                console.warn("Could not read saved Craft Studio theme settings for publishing.", error);
+              }
+            }
+            filledHtml = fillEditableStorefrontTheme(
+              await templateResponse.text(), filledCatalog, themeUrl.href, savedStudio
+            );
+            filledHtml = filledHtml.replace(/<base href="[^"]*">/i,
+              `<base href="${AppUtils.escapeHTML(`https://${tenant.hostname}/`)}">`);
+          } else {
+            filledHtml = await themeClient.fillThemeForShop(themeId, filledCatalog, {
+              baseHref: selectedTheme.preview_url,
+              authorization: token,
+              tenantId: tenant.id
+            });
+          }
+          const themePublishUrl = new URL("/api/theme-publish", apiUrl.origin);
+          themePublishUrl.search = `?tenant=${encodeURIComponent(tenant.id)}`;
+          const themeResponse = await fetch(themePublishUrl.href, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              theme_id: themeId,
+              catalog_updated_at: result.updated_at,
+              html: filledHtml
+            })
+          });
+          const themeResponseText = await themeResponse.text();
+          let themeResult;
+          try {
+            themeResult = JSON.parse(themeResponseText);
+          } catch {
+            throw new Error(themeResponseText || `Cloudflare returned HTTP ${themeResponse.status}.`);
+          }
+          if (!themeResponse.ok || themeResult.ok !== true) {
+            throw new Error(themeResult.error || `Filled storefront publish failed (${themeResponse.status}).`);
+          }
+        }
+
         close();
+        const uploadedImageCount = uploadedImages.size + uploadedProductImageCount;
         AppUtils.showToast(
-          `Published ${result.product_count} products and ${result.category_count} categories with ${uploadedImages.size} R2 image${uploadedImages.size === 1 ? "" : "s"}.`
+          `Published ${result.product_count} products and ${result.category_count} categories with ${uploadedImageCount} R2 image${uploadedImageCount === 1 ? "" : "s"}.` +
+          (fallbackProductImageCount
+            ? ` ${fallbackProductImageCount} external product image${fallbackProductImageCount === 1 ? "" : "s"} kept its original URL after upload failed.`
+            : "")
         );
       } catch (error) {
         console.error("Cloudflare storefront publishing failed.", error);

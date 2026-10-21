@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="en" class="studio-mode">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <title>FreshBox Studio - Visual Administration Suite</title>
+  <meta name="description" content="Visual Studio site administration suite for FreshBox restaurant storefront." />
+  <meta name="theme-color" content="#381207" />
+  <meta name="color-scheme" content="only light" />
+  <meta name="supported-color-schemes" content="light" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    a, button, input, select, textarea, label, [onclick] {
+      touch-action: manipulation;
+    }
+    :root {
+      color-scheme: only light;
+      --ff-brand: #381207;
+      --ff-bg: #FDF6ED;
+      --ff-surface: #FFF9F2;
+      --ff-card-bg: #FFFFFF;
+      --ff-text: #381207;
+      --ff-muted: #78350F;
+      --ff-accent: #F59E0B;
+      --ff-border: #F3E5D4;
+      --ff-card-radius: 20px;
+      --ff-card-border: 1px solid #F3E5D4;
+      --ff-card-padding: 14px;
+      --ff-heading-font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --ff-body-font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --ff-heading-weight: 900;
+      --ff-heading-transform: uppercase;
+      --ff-letter-spacing: -0.03em;
+      --ff-safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    body {
+      background-color: #EFE4D6;
+      color: #381207;
+      font-family: var(--ff-body-font);
+      line-height: 1.5;
+      font-size: 15px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    #app-container {
+      width: 100%;
+      max-width: 480px;
+      background-color: #FFFFFF;
+      min-height: 100vh;
+      min-height: 100dvh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 50px rgba(56, 18, 7, 0.15);
+      padding-bottom: 24px;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { color: inherit; font-family: inherit; cursor: pointer; border: none; background: none; }
+    input, select, textarea { font-family: inherit; font-size: 15px; }
+
+    /* Studio Shell */
+    .studio-shell {
+      background-color: #FFFFFF;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .studio-header {
+      background-color: #381207;
+      color: #FFFFFF;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .studio-title-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .studio-logo-text {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: #F59E0B;
+    }
+    .studio-tag {
+      background-color: #DC2626;
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      letter-spacing: 0.05em;
+    }
+    .studio-nav-tabs {
+      background-color: #2D0D04;
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 6px 8px;
+      gap: 4px;
+    }
+    .studio-nav-tabs::-webkit-scrollbar { display: none; }
+    .studio-tab-btn {
+      color: #F3E5D4;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 7px 12px;
+      white-space: nowrap;
+      border-radius: 8px;
+      opacity: 0.8;
+      transition: all 0.2s;
+    }
+    .studio-tab-btn.active, .studio-tab-btn:hover {
+      color: #381207;
+      background-color: #F59E0B;
+      opacity: 1;
+    }
+    .studio-body {
+      padding: 16px;
+      flex: 1;
+      background: #FFFFFF;
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #381207;
+      margin-bottom: 5px;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      border: 1.5px solid #F3E5D4;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #381207;
+      outline: none;
+      background-color: #FFF9F2;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: #F59E0B;
+      background-color: #FFFFFF;
+    }
+    .studio-card-box {
+      background-color: #FFF9F2;
+      border: 1px solid #F3E5D4;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    /* Studio Buttons */
+    .btn-pill-action {
+      background-color: #F59E0B;
+      color: #381207;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 10px 18px;
+      border-radius: 9999px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+      transition: transform 0.2s, background-color 0.2s;
+    }
+    .btn-pill-action:active { transform: scale(0.96); background-color: #D97706; }
+    .btn-pill-outline {
+      border: 1.5px solid #381207;
+      background-color: transparent;
+      color: #381207;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .btn-pill-outline:active { background-color: #381207; color: #FFFFFF; }
+
+    /* Bottom Sheet Modal */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(56, 18, 7, 0.6);
+      z-index: 100;
+      display: flex;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      backdrop-filter: blur(2px);
+    }
+    .sheet-overlay.open { opacity: 1; pointer-events: auto; }
+    .bottom-sheet {
+      background-color: #FFFFFF;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -8px 30px rgba(56, 18, 7, 0.25);
+    }
+    .sheet-overlay.open .bottom-sheet { transform: translateY(0); }
+    .sheet-header {
+      padding: 14px 18px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #F3E5D4;
+    }
+    .sheet-drag-handle { width: 36px; height: 4px; background-color: #D1D5DB; border-radius: 4px; margin: 8px auto 0; }
+    .sheet-title { font-size: 16px; font-weight: 900; text-transform: uppercase; color: #381207; }
+    .sheet-content { padding: 16px 18px; overflow-y: auto; flex: 1; }
+    .sheet-footer { padding: 12px 18px; border-top: 1px solid #F3E5D4; display: flex; gap: 10px; background: #FFFDF9; }
+  </style>
+</head>
+<body>
+  <div id="app-container">
+    <div class="studio-shell">
+      <!-- STUDIO HEADER -->
+      <div class="studio-header">
+        <div class="studio-title-badge">
+          <span class="studio-logo-text">FRESHBOX STUDIO</span>
+          <span class="studio-tag">LIVE ADMIN</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="studio-save-status" style="font-size:10px; color:#FDE68A; font-weight:800;">Saved</span>
+          <a href="/" class="btn-pill-action" style="font-size:10px; padding:5px 12px;">VIEW STORE ➔</a>
+        </div>
+      </div>
+
+      <!-- 18 SCROLLABLE NAVIGATION TABS -->
+      <div class="studio-nav-tabs" id="studio-tab-bar">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- MAIN STUDIO CONTENT AREA -->
+      <div class="studio-body" id="studio-content-area">
+        <!-- Rendered by active tab handler -->
+      </div>
+    </div>
+
+    <!-- BOTTOM SHEET OVERLAY FOR EDITING MODALS -->
+    <div class="sheet-overlay" id="sheet-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="bottom-sheet" id="bottom-sheet">
+        <div class="sheet-drag-handle"></div>
+        <div class="sheet-header">
+          <h3 class="sheet-title" id="sheet-title">Edit Section</h3>
+          <button style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#FFF9F2;border:1px solid #F3E5D4;" id="sheet-close-btn" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="sheet-content" id="sheet-content">
+          <!-- Dynamic Form -->
+        </div>
+        <div class="sheet-footer" id="sheet-footer">
+          <!-- Dynamic Action Buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIGURATION BLOB -->
+  <script type="application/json" id="ff-config">
+{
+  "_readme": "Code-level settings. Content, menu items, and themes live in site-data.json.",
+  "storage": {
+    "dbName": "FreshBoxRestaurantDB",
+    "dbVersion": 1,
+    "siteKey": "freshbox_site_data",
+    "cartKey": "freshbox_cart",
+    "savedKey": "freshbox_saved",
+    "ordersKey": "freshbox_orders",
+    "pwaDismissKey": "freshbox_pwa_dismissed",
+    "revisionKey": "freshbox_applied_revision"
+  },
+  "fallbacks": {
+    "whatsapp": "254715333555",
+    "email": "freshboxkitchen@gmail.com"
+  },
+  "whatsappOrderTemplate": "Hello {store}! I would like to place an order:\n*Dish:* {product}\n*Category:* {category}\n*Options:* {size}\n*Price:* {price}\n*Link:* {link}\n*Delivery Address:* Nairobi Central",
+  "contactHints": {
+    "phone": "+254 715 333 555",
+    "whatsapp": "254715333555",
+    "email": "orders@freshbox.co.ke",
+    "telegram": "@freshboxnairobi",
+    "sms": "+254 715 333 555",
+    "link": "https://freshbox.co.ke",
+    "page": "/location"
+  },
+  "checkoutEmailPlaceholder": "youremail@example.com",
+  "backupFileName": "freshbox_restaurant_backup.json"
+}
+  </script>
+
+  <!-- SITE DATA BLOB -->
+  <script type="application/json" id="ff-site-data">
+{
+  "version": 1,
+  "name": "FreshBox",
+  "tagline": "Flavor That Makes History! Fresh smash burgers, stone-fired pizza, and crispy broasted chicken.",
+  "currency": "KES",
+  "currencySymbol": "KSh",
+  "taxRate": 0.16,
+  "shippingFlatRate": 250,
+  "freeShippingThreshold": 2500,
+  "contact": {
+    "businessName": "FreshBox Gourmet Kitchen Ltd.",
+    "phone": "+254 715 333 555",
+    "whatsapp": "+254715333555",
+    "whatsappMessage": "Hello FreshBox! I would like to order some hot food for delivery.",
+    "email": "orders@freshbox.co.ke",
+    "address": "Kimathi Street, Nairobi Central, Kenya",
+    "hours": "Mon - Sun: 8:00 AM - 11:00 PM (Late Night Delivery)"
+  },
+  "location": {
+    "lat": -1.28333,
+    "lng": 36.82194,
+    "zoom": 16,
+    "title": "FreshBox Flagship Diner & Cloud Kitchen",
+    "active": true
+  },
+  "socials": [
+    { "platform": "Instagram", "url": "https://instagram.com/freshboxfood", "enabled": true },
+    { "platform": "TikTok", "url": "https://tiktok.com/@freshboxnairobi", "enabled": true },
+    { "platform": "Facebook", "url": "https://facebook.com/freshboxgourmet", "enabled": true },
+    { "platform": "Twitter / X", "url": "https://x.com/freshboxkenya", "enabled": true }
+  ],
+  "floating": {
+    "whatsappEnabled": true,
+    "whatsappPosition": "bottom-right",
+    "whatsappLabel": "Order via WhatsApp",
+    "chatbotEnabled": true,
+    "chatbotPosition": "bottom-left",
+    "chatbotTitle": "FreshBox Meal Assistant"
+  },
+  "pwa": {
+    "enabled": true,
+    "appName": "FreshBox Gourmet",
+    "shortName": "FreshBox",
+    "themeColor": "#381207",
+    "bgColor": "#FDF6ED",
+    "promptTitle": "Install FreshBox App",
+    "promptText": "Add FreshBox to your phone home screen for instant one-tap food delivery.",
+    "promptButton": "INSTALL APP",
+    "delaySeconds": 6,
+    "snoozeDays": 5,
+    "showOnIOS": true
+  },
+  "paystack": {
+    "publicKey": "pk_test_sample_freshbox_demo_key_2026",
+    "currency": "KES",
+    "testMode": true
+  },
+  "activeThemeId": "theme-freshbox-warm",
+  "themes": [
+    {
+      "id": "theme-freshbox-warm",
+      "name": "FreshBox Roasted Umber & Gold",
+      "description": "Authentic Dribbble match: warm toasted cream background, deep roasted espresso headings, golden mustard accents.",
+      "colors": {
+        "brand": "#381207",
+        "background": "#FDF6ED",
+        "surface": "#FFF9F2",
+        "surfaceCard": "#FFFFFF",
+        "textPrimary": "#381207",
+        "textMuted": "#78350F",
+        "accent": "#F59E0B",
+        "border": "#F3E5D4",
+        "heroBg": "#FDF6ED",
+        "heroText": "#381207",
+        "buttonBg": "#F59E0B",
+        "buttonText": "#381207"
+      },
+      "typography": {
+        "headingFont": "'Plus Jakarta Sans', system-ui, sans-serif",
+        "bodyFont": "'Plus Jakarta Sans', system-ui, sans-serif",
+        "headingWeight": "900",
+        "letterSpacing": "-0.03em",
+        "headingTransform": "uppercase"
+      },
+      "cardStyle": {
+        "preset": "uniform-grid",
+        "radius": "20px",
+        "borderWidth": "1px",
+        "borderStyle": "solid",
+        "borderColor": "#F3E5D4",
+        "padding": "14px",
+        "shadow": "0 2px 8px rgba(56, 18, 7, 0.05)",
+        "bg": "#FFFFFF"
+      }
+    },
+    {
+      "id": "theme-sizzling-chili",
+      "name": "Sizzling Spicy Crimson",
+      "description": "High-octane fiery red flame tones paired with warm brioche tones.",
+      "colors": {
+        "brand": "#991B1B",
+        "background": "#FFFDF9",
+        "surface": "#FEF2F2",
+        "surfaceCard": "#FFFFFF",
+        "textPrimary": "#18181B",
+        "textMuted": "#991B1B",
+        "accent": "#DC2626",
+        "border": "#FEE2E2",
+        "heroBg": "#7F1D1D",
+        "heroText": "#FFFFFF",
+        "buttonBg": "#DC2626",
+        "buttonText": "#FFFFFF"
+      },
+      "typography": {
+        "headingFont": "Impact, 'Arial Black', sans-serif",
+        "bodyFont": "system-ui, sans-serif",
+        "headingWeight": "900",
+        "letterSpacing": "-0.02em",
+        "headingTransform": "uppercase"
+      },
+      "cardStyle": {
+        "preset": "uniform-grid",
+        "radius": "18px",
+        "borderWidth": "1.5px",
+        "borderStyle": "solid",
+        "borderColor": "#FEE2E2",
+        "padding": "14px",
+        "shadow": "0 4px 12px rgba(220, 38, 38, 0.08)",
+        "bg": "#FFFFFF"
+      }
+    },
+    {
+      "id": "theme-botanical-herb",
+      "name": "Garden Herb & Truffle",
+      "description": "Artisanal farm-to-table aesthetic with deep basil green and warm champagne cream.",
+      "colors": {
+        "brand": "#14532D",
+        "background": "#FDFBF7",
+        "surface": "#F0FDF4",
+        "surfaceCard": "#FFFFFF",
+        "textPrimary": "#14532D",
+        "textMuted": "#166534",
+        "accent": "#15803D",
+        "border": "#DCFCE7",
+        "heroBg": "#14532D",
+        "heroText": "#FDFBF7",
+        "buttonBg": "#15803D",
+        "buttonText": "#FFFFFF"
+      },
+      "typography": {
+        "headingFont": "'Trebuchet MS', system-ui, sans-serif",
+        "bodyFont": "system-ui, sans-serif",
+        "headingWeight": "800",
+        "letterSpacing": "-0.01em",
+        "headingTransform": "uppercase"
+      },
+      "cardStyle": {
+        "preset": "bento",
+        "radius": "20px",
+        "borderWidth": "1px",
+        "borderStyle": "solid",
+        "borderColor": "#DCFCE7",
+        "padding": "16px",
+        "shadow": "none",
+        "bg": "#FFFFFF"
+      }
+    },
+    {
+      "id": "theme-midnight-diner",
+      "name": "Midnight Diner Neon Noir",
+      "description": "Late-night food truck vibe with dark charcoal backdrop and amber neon signs.",
+      "colors": {
+        "brand": "#F59E0B",
+        "background": "#18181B",
+        "surface": "#27272A",
+        "surfaceCard": "#27272A",
+        "textPrimary": "#FAFAFA",
+        "textMuted": "#A1A1AA",
+        "accent": "#F59E0B",
+        "border": "#3F3F46",
+        "heroBg": "#09090B",
+        "heroText": "#FAFAFA",
+        "buttonBg": "#F59E0B",
+        "buttonText": "#18181B"
+      },
+      "typography": {
+        "headingFont": "'Arial Black', sans-serif",
+        "bodyFont": "system-ui, sans-serif",
+        "headingWeight": "900",
+        "letterSpacing": "-0.03em",
+        "headingTransform": "uppercase"
+      },
+      "cardStyle": {
+        "preset": "uniform-grid",
+        "radius": "16px",
+        "borderWidth": "1.5px",
+        "borderStyle": "solid",
+        "borderColor": "#3F3F46",
+        "padding": "14px",
+        "shadow": "0 4px 16px rgba(0,0,0,0.4)",
+        "bg": "#27272A"
+      }
+    }
+  ],
+  "cardLayoutSettings": {
+    "preset": "uniform-grid",
+    "radius": "20px",
+    "borderWidth": "1px",
+    "borderStyle": "solid",
+    "borderColor": "#F3E5D4",
+    "padding": "14px",
+    "showBrand": true,
+    "showWishlist": true,
+    "showQuickAdd": true,
+    "imageRatio": "4/3",
+    "cardHeight": "270px",
+    "columns": 0
+  },
+  "navigation": [
+    { "label": "HOME", "route": "/", "enabled": true },
+    { "label": "FULL MENU", "route": "/browse", "enabled": true },
+    { "label": "BEST SELLERS", "route": "/browse?badge=BEST%20SELLER", "enabled": true },
+    { "label": "COMBO OFFERS", "route": "/browse?badge=20%25%20OFF", "enabled": true },
+    { "label": "OUR STORY", "route": "/pages/about", "enabled": true },
+    { "label": "LOCATION & MAP", "route": "/location", "enabled": true }
+  ],
+  "categories": [
+    { "id": "cat-burgers", "name": "Smash Burgers", "slug": "burgers", "description": "Double smash beef patties on butter-toasted brioche with melted aged cheddar and secret house relish.", "subcategories": ["beef", "chicken", "spicy", "sliders"] },
+    { "id": "cat-pizza", "name": "Stone-Fired Pizza", "slug": "pizza", "description": "48-hour fermented Neapolitan dough baked at 450°C with San Marzano tomatoes and fior di latte mozzarella.", "subcategories": ["classic", "pepperoni", "truffle", "vegetarian"] },
+    { "id": "cat-chicken", "name": "Crispy Chicken", "slug": "chicken", "description": "24-hour buttermilk herb-brined crispy chicken, jumbo tenders, and hot sticky glazed wings.", "subcategories": ["buckets", "wings", "tenders", "grilled"] },
+    { "id": "cat-fries-sides", "name": "Loaded Fries & Sides", "slug": "fries-sides", "description": "Crispy hand-cut fries, dirty bacon cheese sauce, golden onion rings, and mac & cheese bites.", "subcategories": ["loaded", "shoestring", "finger-food"] },
+    { "id": "cat-sandwiches", "name": "Artisan Sandwiches", "slug": "sandwiches", "description": "Gourmet grilled melts, Philly cheesesteak subs, and crispy brioche chicken club sandwiches.", "subcategories": ["subs", "melts", "club"] },
+    { "id": "cat-pasta-bowls", "name": "Wok Bowls & Pasta", "slug": "pasta-bowls", "description": "Sizzling teriyaki chicken wok bowls, fresh hand-rolled pasta, and spicy garlic noodle skillets.", "subcategories": ["bowls", "pasta", "noodles"] },
+    { "id": "cat-drinks", "name": "Milkshakes & Drinks", "slug": "drinks", "description": "Thick hand-spun dairy shakes, cold-pressed tropical juices, artisan iced teas, and craft sodas.", "subcategories": ["shakes", "fresh-juice", "coffee-tea"] },
+    { "id": "cat-desserts", "name": "Sweet Treats", "slug": "desserts", "description": "Warm molten chocolate lava cakes, Spanish cinnamon sugar churros, and artisanal cheesecakes.", "subcategories": ["cakes", "churros", "gelato"] }
+  ],
+  "sections": [
+    { "id": "sec-hero", "type": "hero", "name": "Hero Flavor Showcase", "enabled": true, "title": "FLAVOR THAT MAKES HISTORY!", "subtitle": "Fresh smash burgers, Neapolitan stone-fired pizza, and crunch-packed fried chicken delivered in 30 minutes.", "ctaText": "EXPLORE MENU", "ctaRoute": "/browse", "bgColor": "#FDF6ED", "textColor": "#381207" },
+    { "id": "sec-zone-menu", "type": "zone-menu", "name": "Daily Curated Zone Menu", "enabled": true, "title": "DAILY CURATED ZONE MENU" },
+    { "id": "sec-bento-favorites", "type": "bento-favorites", "name": "Chef Curated Bento Showcase", "enabled": true, "title": "FRESHBOX SIGNATURE DROPS", "subtitle": "The iconic favorites that put FreshBox on the culinary map." },
+    { "id": "sec-best-sellers", "type": "best-sellers", "name": "Best Sellers Spotlight", "enabled": true, "title": "BEST SELLERS", "description": "Handcrafted to order with locally sourced farm ingredients, toasted artisan brioche, and signature house-made sauces.", "featuredProductId": "fb-brg-001", "secondaryProductId": "fb-pza-001" },
+    { "id": "sec-chef-story", "type": "chef-story", "name": "Our Culinary Creed Story", "enabled": true, "title": "SIT, SAVOR, OR ORDER FAST—YOUR MEAL, YOUR RULES.", "subtitle": "Get our food delivered to your door in 30 minutes or pick it up piping hot straight from the open kitchen counter.", "ctaText": "LEARN OUR STORY", "ctaRoute": "/pages/about" },
+    { "id": "sec-featured-dishes", "type": "featured-dishes", "name": "Trending Menu Items", "enabled": true, "title": "POPULAR DISHES RIGHT NOW", "productIds": ["fb-brg-002", "fb-chk-001", "fb-frs-001", "fb-pza-002", "fb-pst-001", "fb-drk-001"], "ctaText": "SEE ALL 42 DISHES", "ctaRoute": "/browse" },
+    { "id": "sec-savings-deals", "type": "savings-deals", "name": "More Bites More Savings Deals", "enabled": true, "title": "MORE BITES, MORE SAVINGS!", "subtitle": "Bundle up with family platters and combo meals to save big every single day." }
+  ],
+  "pages": [
+    { "id": "page-about", "name": "Our Story", "slug": "about", "title": "The FreshBox Culinary Story", "description": "How FreshBox grew from a passion for real, uncompromised comfort food in Nairobi into a premier gourmet dining brand.", "content": "<p style=\"margin-bottom:12px;\">At FreshBox, we believe food should be bold, unapologetic, and made from scratch every single morning. We never use frozen beef patties or pre-shredded cheese. Our 100% grass-fed beef is freshly ground daily, and our pizza dough ferments slowly over 48 hours for an airy, digestible crust.</p><p style=\"margin-bottom:12px;\">From our signature smash burgers with caramelized onions to our 24-hour herb buttermilk fried chicken, every recipe is crafted to make food history. Whether you order online or visit our open kitchen in Nairobi Central, welcome to the family.</p>" },
+    { "id": "page-delivery", "name": "Delivery Info", "slug": "delivery", "title": "Fast 30-Minute Delivery Service", "description": "Hot, thermal-insulated motorcycle courier delivery across Nairobi Central, Westlands, Kilimani, Upper Hill and beyond.", "content": "<p style=\"margin-bottom:12px;\"><strong>30-Minute Guarantee:</strong> We pack orders in custom ventilated thermal boxes to guarantee your fries stay crispy and your pizza arrives steaming hot.</p><p style=\"margin-bottom:12px;\"><strong>Flat Rate Shipping:</strong> KSh 250 flat courier delivery fee within 10km radius. <strong>FREE DELIVERY</strong> applies on all orders exceeding KSh 2,500.</p>" },
+    { "id": "page-allergens", "name": "Allergen Guide", "slug": "allergens", "title": "Kitchen Allergen & Dietary Information", "description": "Ingredient transparency for gluten, dairy, nuts, sesame, and vegetarian options.", "content": "<p style=\"margin-bottom:12px;\">We take food allergies seriously. Our kitchen prepares gluten-free cauliflower crust pizzas and offers plant-based avocado patties. Please specify any allergy notes during checkout or tap the WhatsApp button to speak directly with our head chef before placing an order.</p>" },
+    { "id": "page-faqs", "name": "FAQs", "slug": "faqs", "title": "Frequently Asked Questions", "description": "Answers to ordering times, delivery radius, group catering, and payment options.", "content": "<div style=\"display:flex; flex-direction:column; gap:12px;\"><div><h4 style=\"font-size:13px; font-weight:900;\">How hot does the food arrive?</h4><p style=\"font-size:12px; color:#4B5563;\">Our courier boxes maintain 70°C heat retention for up to 45 minutes.</p></div><div><h4 style=\"font-size:13px; font-weight:900;\">Can I customize my burger toppings?</h4><p style=\"font-size:12px; color:#4B5563;\">Yes! Tap any meal card to pick single/double patties, extra melted cheddar, bacon, jalapeños, and sauces.</p></div><div><h4 style=\"font-size:13px; font-weight:900;\">What payment methods are supported?</h4><p style=\"font-size:12px; color:#4B5563;\">We support M-Pesa Express, Visa, Mastercard, and Cash on Delivery.</p></div></div>" }
+  ],
+  "products": [
+    { "id": "fb-brg-001", "slug": "classic-double-smash-burger", "name": "Classic Double Smash Burger", "brand": "FreshBox Grill", "price": 850, "comparePrice": 1050, "category": "burgers", "subcategories": ["beef", "popular"], "badge": "BEST SELLER", "rating": 5.0, "reviewCount": 384, "description": "Two 100% grass-fed beef patties smashed razor-thin with crispy lacy edges, double American cheddar, caramelized onions, dill pickles, and signature house burger relish on toasted brioche.", "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80", "attributes": { "Patty": "100% Grass-Fed Beef (2 x 100g)", "Bun": "Artisan Butter Brioche", "Cheese": "Double Aged Yellow Cheddar", "Sauce": "Smoked Garlic Burger Relish", "PrepTime": "12-15 Mins", "SpiceLevel": "Mild" }, "colors": [{ "name": "Classic Toasted Brioche", "hex": "#D97706", "imageId": "art-burger-01" }], "sizes": [{ "size": "Regular Double (200g)", "price": 850, "stock": 45, "sku": "FB-BRG-REG" }, { "size": "Triple Monster (300g)", "price": 1050, "stock": 25, "sku": "FB-BRG-TRP" }, { "size": "Combo + Fries & Milkshake", "price": 1350, "stock": 30, "sku": "FB-BRG-CMB" }], "status": "published", "createdDate": "2026-03-12" },
+    { "id": "fb-brg-002", "slug": "truffle-mushroom-swiss-burger", "name": "Truffle Mushroom Swiss Burger", "brand": "FreshBox Grill", "price": 950, "comparePrice": 1150, "category": "burgers", "subcategories": ["beef", "gourmet"], "badge": "CHEF SPECIAL", "rating": 4.9, "reviewCount": 192, "description": "Smashed beef patties smothered in sautéed portobello mushrooms, melted Emmental Swiss cheese, and black summer truffle aioli on a glossy sesame bun.", "image": "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80", "attributes": { "Patty": "Double Beef", "Cheese": "Melted Swiss Emmental", "Sauce": "Black Truffle Aioli", "PrepTime": "14 Mins" }, "colors": [{ "name": "Sesame Brioche", "hex": "#B45309", "imageId": "art-burger-03" }], "sizes": [{ "size": "Standard (Double)", "price": 950, "stock": 20, "sku": "FB-TRF-STD" }, { "size": "Combo + Truffle Fries", "price": 1400, "stock": 18, "sku": "FB-TRF-CMB" }], "status": "published", "createdDate": "2026-03-10" },
+    { "id": "fb-brg-003", "slug": "spicy-habanero-fire-burger", "name": "Spicy Habanero Fire Burger", "brand": "FreshBox Grill", "price": 880, "comparePrice": 1020, "category": "burgers", "subcategories": ["beef", "spicy"], "badge": "HOT & SPICY", "rating": 4.8, "reviewCount": 145, "description": "Double smashed beef with pepper jack cheese, crispy fried jalapeños, smoked bacon, and house-made roasted habanero chili sauce.", "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80", "attributes": { "Patty": "Double Beef", "Cheese": "Pepper Jack", "Sauce": "Fire Habanero", "SpiceLevel": "Inferno Hot" }, "colors": [{ "name": "Toasted Brioche", "hex": "#EA580C", "imageId": "art-burger-04" }], "sizes": [{ "size": "Double Fire", "price": 880, "stock": 30, "sku": "FB-HAB-DBL" }, { "size": "Combo + Loaded Fries", "price": 1300, "stock": 20, "sku": "FB-HAB-CMB" }], "status": "published", "createdDate": "2026-03-08" },
+    { "id": "fb-brg-004", "slug": "bbq-bacon-smokehouse-burger", "name": "BBQ Bacon Smokehouse Burger", "brand": "FreshBox Grill", "price": 920, "comparePrice": 1100, "category": "burgers", "subcategories": ["beef", "bacon"], "badge": "SMOKEHOUSE", "rating": 4.9, "reviewCount": 210, "description": "Crispy applewood smoked bacon, crunchy beer-battered onion rings, cheddar cheese, and sweet hickory BBQ glaze on toasted brioche.", "image": "https://images.unsplash.com/photo-1553979459-d2229ba7433b?auto=format&fit=crop&w=600&q=80", "attributes": { "Patty": "Double Beef", "Topping": "Smoked Bacon & Onion Rings", "Sauce": "Hickory BBQ" }, "colors": [{ "name": "Smoked Brioche", "hex": "#78350F", "imageId": "art-burger-05" }], "sizes": [{ "size": "Regular Smokehouse", "price": 920, "stock": 35, "sku": "FB-SMK-REG" }, { "size": "Combo + Soda & Fries", "price": 1350, "stock": 22, "sku": "FB-SMK-CMB" }], "status": "published", "createdDate": "2026-03-05" },
+    { "id": "fb-brg-005", "slug": "crispy-avocado-green-burger", "name": "Crispy Avocado Green Burger", "brand": "FreshBox Green", "price": 820, "comparePrice": 980, "category": "burgers", "subcategories": ["vegetarian", "healthy"], "badge": "VEGGIE FAVORITE", "rating": 4.7, "reviewCount": 118, "description": "Crispy panko-crusted fresh avocado cutlet, pickled red onions, baby arugula, vegan herb mayo, and vine-ripened tomatoes on a vegan oat bun.", "image": "https://images.unsplash.com/photo-1520072959219-c595dc870360?auto=format&fit=crop&w=600&q=80", "attributes": { "Patty": "Panko Avocado Cutlet", "Dietary": "100% Vegetarian", "Sauce": "Herb Vegan Aioli" }, "colors": [{ "name": "Oat Brioche", "hex": "#15803D", "imageId": "art-burger-06" }], "sizes": [{ "size": "Single Avocado Burger", "price": 820, "stock": 25, "sku": "FB-AVO-SGL" }, { "size": "Combo + Sweet Potato Fries", "price": 1250, "stock": 15, "sku": "FB-AVO-CMB" }], "status": "published", "createdDate": "2026-03-02" },
+    { "id": "fb-brg-006", "slug": "freshbox-mini-sliders-trio", "name": "FreshBox Mini Sliders Trio", "brand": "FreshBox Grill", "price": 990, "comparePrice": 1200, "category": "burgers", "subcategories": ["sliders", "platter"], "badge": "SHARING", "rating": 5.0, "reviewCount": 260, "description": "Three mini gourmet brioche sliders: one Classic Smash, one BBQ Pulled Pork/Beef, and one Crispy Hot Chicken Tender with fries.", "image": "https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?auto=format&fit=crop&w=600&q=80", "attributes": { "Quantity": "3 Mini Sliders", "Sides": "Includes Fries", "Variety": "Beef, BBQ & Chicken" }, "colors": [{ "name": "Trio Pack", "hex": "#F59E0B", "imageId": "art-burger-07" }], "sizes": [{ "size": "Trio (3 Sliders)", "price": 990, "stock": 30, "sku": "FB-SLD-TRI" }], "status": "published", "createdDate": "2026-02-28" },
+    { "id": "fb-pza-001", "slug": "hot-honey-pepperoni-pizza", "name": "Hot Honey Pepperoni Supreme Pizza", "brand": "FreshBox Pizza Co.", "price": 1250, "comparePrice": 1450, "category": "pizza", "subcategories": ["pepperoni", "spicy"], "badge": "BEST SELLER", "rating": 5.0, "reviewCount": 425, "description": "Hand-stretched 48hr fermented dough, San Marzano tomato sauce, generous cups of crispy-edge beef pepperoni, fresh mozzarella, and drizzled with organic chili-infused hot honey.", "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80", "attributes": { "Crust": "Stone-Fired Neapolitan", "Cheese": "Fresh Fior Di Latte Mozzarella", "Glaze": "Infused Hot Honey", "Size": "12 Inch (8 Slices)", "PrepTime": "15 Mins" }, "colors": [{ "name": "Classic Golden Crust", "hex": "#DC2626", "imageId": "art-pizza-01" }], "sizes": [{ "size": "Medium 10-inch (6 Slices)", "price": 1050, "stock": 40, "sku": "FB-PZA-10" }, { "size": "Large 12-inch (8 Slices)", "price": 1250, "stock": 50, "sku": "FB-PZA-12" }, { "size": "Family 16-inch (12 Slices)", "price": 1750, "stock": 25, "sku": "FB-PZA-16" }], "status": "published", "createdDate": "2026-03-12" },
+    { "id": "fb-pza-002", "slug": "classic-margherita-dop-pizza", "name": "Classic Margherita DOP Pizza", "brand": "FreshBox Pizza Co.", "price": 950, "comparePrice": 1150, "category": "pizza", "subcategories": ["classic", "vegetarian"], "badge": "AUTHENTIC", "rating": 4.9, "reviewCount": 310, "description": "The purity of Italian tradition. Crushed sweet Italian plum tomatoes, buffalo mozzarella medallions, fresh sweet basil leaves, and a swirl of extra virgin olive oil.", "image": "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=600&q=80", "attributes": { "Crust": "Thin Crisp", "Sauce": "San Marzano DOP", "Cheese": "Buffalo Mozzarella" }, "colors": [{ "name": "Classic Neapolitan", "hex": "#15803D", "imageId": "art-pizza-02" }], "sizes": [{ "size": "Medium 10-inch", "price": 950, "stock": 30, "sku": "FB-MAR-10" }, { "size": "Large 12-inch", "price": 1150, "stock": 35, "sku": "FB-MAR-12" }], "status": "published", "createdDate": "2026-03-09" },
+    { "id": "fb-pza-003", "slug": "bbq-pulled-chicken-bacon-pizza", "name": "BBQ Chicken & Crispy Bacon Pizza", "brand": "FreshBox Pizza Co.", "price": 1300, "comparePrice": 1500, "category": "pizza", "subcategories": ["chicken", "bbq"], "badge": "CROWD PLEASER", "rating": 4.8, "reviewCount": 188, "description": "Tender pulled rotisserie chicken tossed in smoky sweet barbecue sauce, smoked bacon crumble, red onions, and mozzarella on a crispy golden crust.", "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80", "attributes": { "Meat": "Smoked Chicken & Bacon", "Sauce": "Smoky BBQ", "Cheese": "Aged Mozzarella" }, "colors": [{ "name": "Golden BBQ", "hex": "#B45309", "imageId": "art-pizza-03" }], "sizes": [{ "size": "Medium 10-inch", "price": 1100, "stock": 25, "sku": "FB-BBQ-10" }, { "size": "Large 12-inch", "price": 1300, "stock": 35, "sku": "FB-BBQ-12" }], "status": "published", "createdDate": "2026-03-04" },
+    { "id": "fb-pza-004", "slug": "truffle-wild-mushroom-pizza", "name": "Truffle Wild Mushroom & Ricotta Pizza", "brand": "FreshBox Pizza Co.", "price": 1350, "comparePrice": 1550, "category": "pizza", "subcategories": ["truffle", "vegetarian"], "badge": "GOURMET", "rating": 5.0, "reviewCount": 165, "description": "White garlic cream base, roasted wild cremini and shiitake mushrooms, dollops of whipped ricotta, thyme, and white truffle oil.", "image": "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80", "attributes": { "Base": "White Garlic Cream", "Mushrooms": "Wild Shiitake & Cremini", "Oil": "Italian White Truffle" }, "colors": [{ "name": "White Truffle", "hex": "#78350F", "imageId": "art-pizza-04" }], "sizes": [{ "size": "Large 12-inch", "price": 1350, "stock": 20, "sku": "FB-MSH-12" }], "status": "published", "createdDate": "2026-02-27" },
+    { "id": "fb-pza-005", "slug": "quattro-formaggi-four-cheese-pizza", "name": "Quattro Formaggi Four Cheese Pizza", "brand": "FreshBox Pizza Co.", "price": 1200, "comparePrice": 1380, "category": "pizza", "subcategories": ["cheese", "vegetarian"], "badge": "EXTRA CHEESY", "rating": 4.8, "reviewCount": 140, "description": "A decadent blend of mozzarella, gorgonzola blue cheese, shaved parmesan reggiano, and creamy fontina cheese with fresh rosemary.", "image": "https://images.unsplash.com/photo-1573821663912-569905455b1c?auto=format&fit=crop&w=600&q=80", "attributes": { "Cheeses": "Mozzarella, Gorgonzola, Parmesan, Fontina", "Crust": "Wood-Fired" }, "colors": [{ "name": "Four Cheese", "hex": "#FBBF24", "imageId": "art-pizza-05" }], "sizes": [{ "size": "Large 12-inch", "price": 1200, "stock": 25, "sku": "FB-4CH-12" }], "status": "published", "createdDate": "2026-02-20" },
+    { "id": "fb-pza-006", "slug": "peri-peri-chicken-pizza", "name": "Peri-Peri Flame Chicken Pizza", "brand": "FreshBox Pizza Co.", "price": 1280, "comparePrice": 1450, "category": "pizza", "subcategories": ["chicken", "spicy"], "badge": "AFRICAN HEAT", "rating": 4.9, "reviewCount": 215, "description": "Flame-grilled chicken strips marinated in African bird's eye peri-peri sauce, sweet bell peppers, red onions, and coriander on mozzarella.", "image": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80", "attributes": { "Heat": "Spicy Peri-Peri", "Meat": "Flame Chicken", "Toppings": "Peppers & Red Onion" }, "colors": [{ "name": "Peri Peri", "hex": "#DC2626", "imageId": "art-pizza-06" }], "sizes": [{ "size": "Large 12-inch", "price": 1280, "stock": 30, "sku": "FB-PRP-12" }], "status": "published", "createdDate": "2026-02-15" },
+    { "id": "fb-chk-001", "slug": "crispy-broasted-chicken-bucket", "name": "Crispy Broasted Chicken Bucket (8pcs)", "brand": "FreshBox Chicken", "price": 1450, "comparePrice": 1700, "category": "chicken", "subcategories": ["buckets", "crunch"], "badge": "BEST SELLER", "rating": 5.0, "reviewCount": 490, "description": "Eight pieces of golden pressure-fried chicken with an impossibly crunchy herbal crust and piping hot, tender, juicy meat inside. Served with garlic dip and 2 warm honey biscuits.", "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80", "attributes": { "Pieces": "8 Pcs (Drumsticks, Thighs & Breast)", "Brine": "24hr Herb Buttermilk", "Includes": "Garlic Dip & Biscuits" }, "colors": [{ "name": "Golden Crisp", "hex": "#D97706", "imageId": "art-chicken-01" }], "sizes": [{ "size": "4 Pieces (Solo)", "price": 750, "stock": 40, "sku": "FB-CHK-4P" }, { "size": "8 Pieces (Family Bucket)", "price": 1450, "stock": 50, "sku": "FB-CHK-8P" }, { "size": "12 Pieces (Feast + 2 Large Fries)", "price": 2100, "stock": 25, "sku": "FB-CHK-12P" }], "status": "published", "createdDate": "2026-03-11" },
+    { "id": "fb-chk-002", "slug": "korean-sweet-chili-glazed-wings", "name": "Korean Sweet Chili Glazed Wings (12pcs)", "brand": "FreshBox Wings", "price": 950, "comparePrice": 1150, "category": "chicken", "subcategories": ["wings", "korean"], "badge": "HOT & STICKY", "rating": 4.9, "reviewCount": 320, "description": "Double-fried for maximum glass-like crunch, tossed in our sticky gochujang garlic honey glaze, and topped with toasted sesame seeds and scallions.", "image": "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&w=600&q=80", "attributes": { "Count": "12 Jumbo Wings", "Glaze": "Gochujang Honey Garlic", "Crunch": "Double-Fried" }, "colors": [{ "name": "Sticky Korean Red", "hex": "#DC2626", "imageId": "art-chicken-02" }], "sizes": [{ "size": "6 Wings (Snack)", "price": 550, "stock": 35, "sku": "FB-WNG-6P" }, { "size": "12 Wings (Standard)", "price": 950, "stock": 45, "sku": "FB-WNG-12P" }, { "size": "24 Wings (Party Box)", "price": 1800, "stock": 20, "sku": "FB-WNG-24P" }], "status": "published", "createdDate": "2026-03-07" },
+    { "id": "fb-chk-003", "slug": "crispy-buttermilk-chicken-tenders", "name": "Crispy Buttermilk Chicken Tenders (6pcs)", "brand": "FreshBox Chicken", "price": 720, "comparePrice": 850, "category": "chicken", "subcategories": ["tenders", "kids"], "badge": "100% BREAST", "rating": 4.8, "reviewCount": 230, "description": "Hand-cut whole chicken breast tenders dipped in seasoned flour and fried to golden perfection. Served with honey mustard and smoky ranch dip.", "image": "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80", "attributes": { "Count": "6 Large Tenders", "Cut": "100% Whole Breast", "Sauces": "Honey Mustard & Ranch" }, "colors": [{ "name": "Golden Buttermilk", "hex": "#F59E0B", "imageId": "art-chicken-03" }], "sizes": [{ "size": "6 Tenders", "price": 720, "stock": 35, "sku": "FB-TND-6P" }, { "size": "10 Tenders + Fries Combo", "price": 1200, "stock": 25, "sku": "FB-TND-10P" }], "status": "published", "createdDate": "2026-03-01" },
+    { "id": "fb-chk-004", "slug": "flame-grilled-peri-peri-half-chicken", "name": "Flame-Grilled Peri-Peri Half Chicken", "brand": "FreshBox Grill", "price": 980, "comparePrice": 1180, "category": "chicken", "subcategories": ["grilled", "healthy"], "badge": "FLAME GRILLED", "rating": 4.9, "reviewCount": 178, "description": "Marinated for 24 hours in lemon, garlic, and fresh bird's eye chilies, then flame-charred to juicy smoky tenderness. Served with seasoned rice or fries.", "image": "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=600&q=80", "attributes": { "Portion": "Half Chicken (Bone-in)", "Marinade": "Lemon Herb & Peri-Peri", "Cooking": "Charcoal Flame Grilled" }, "colors": [{ "name": "Smoked Peri-Peri", "hex": "#EA580C", "imageId": "art-chicken-04" }], "sizes": [{ "size": "Half Chicken + Rice/Fries", "price": 980, "stock": 30, "sku": "FB-PRP-HALF" }, { "size": "Full Chicken Feast + 2 Sides", "price": 1850, "stock": 20, "sku": "FB-PRP-FULL" }], "status": "published", "createdDate": "2026-02-25" },
+    { "id": "fb-chk-005", "slug": "garlic-parmesan-butter-wings", "name": "Garlic Parmesan Butter Wings (12pcs)", "brand": "FreshBox Wings", "price": 950, "comparePrice": 1120, "category": "chicken", "subcategories": ["wings", "garlic"], "badge": "SAVORY", "rating": 4.8, "reviewCount": 155, "description": "Crispy fried wings tossed in rich melted garlic butter, freshly grated 24-month aged parmesan cheese, and minced Italian parsley.", "image": "https://images.unsplash.com/photo-1527477321005-4d45d65427d5?auto=format&fit=crop&w=600&q=80", "attributes": { "Count": "12 Wings", "Toss": "Garlic Butter & Aged Parmesan", "Style": "Savory Non-Spicy" }, "colors": [{ "name": "Garlic Parmesan", "hex": "#FBBF24", "imageId": "art-chicken-05" }], "sizes": [{ "size": "12 Wings", "price": 950, "stock": 30, "sku": "FB-WNG-GAR" }], "status": "published", "createdDate": "2026-02-18" },
+    { "id": "fb-chk-006", "slug": "nashville-hot-chicken-sandwich", "name": "Nashville Hot Fried Chicken Sandwich", "brand": "FreshBox Grill", "price": 820, "comparePrice": 980, "category": "chicken", "subcategories": ["sandwich", "spicy"], "badge": "TRENDING", "rating": 4.9, "reviewCount": 280, "description": "Crispy fried chicken thigh dipped in spicy cayenne-infused chili oil, topped with creamy southern coleslaw and thick dill pickles on a buttered brioche bun.", "image": "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80", "attributes": { "Cut": "Crispy Chicken Thigh", "Heat": "Nashville Cayenne Chili", "Bun": "Toasted Brioche" }, "colors": [{ "name": "Nashville Red", "hex": "#DC2626", "imageId": "art-chicken-06" }], "sizes": [{ "size": "Single Sandwich", "price": 820, "stock": 35, "sku": "FB-NSH-SGL" }, { "size": "Combo + Fries & Drink", "price": 1200, "stock": 25, "sku": "FB-NSH-CMB" }], "status": "published", "createdDate": "2026-02-12" },
+    { "id": "fb-frs-001", "slug": "loaded-dirty-cheese-bacon-fries", "name": "Loaded Dirty Cheese & Bacon Fries", "brand": "FreshBox Sides", "price": 550, "comparePrice": 680, "category": "fries-sides", "subcategories": ["loaded", "bacon"], "badge": "ULTIMATE SIDE", "rating": 4.9, "reviewCount": 340, "description": "Crispy golden shoestring fries loaded with warm cheddar cheese sauce, crispy smoked bacon crumble, pickled jalapeño slices, and smoky house drizzle.", "image": "https://images.unsplash.com/photo-1585109649139-366815a0d713?auto=format&fit=crop&w=600&q=80", "attributes": { "Fries": "Crisp Shoestring", "Toppings": "Warm Cheese Sauce & Bacon", "Size": "Generous Sharing Box" }, "colors": [{ "name": "Loaded Golden", "hex": "#F59E0B", "imageId": "art-fries-01" }], "sizes": [{ "size": "Regular Box", "price": 550, "stock": 40, "sku": "FB-FRS-REG" }, { "size": "Super Size Sharing", "price": 750, "stock": 30, "sku": "FB-FRS-LRG" }], "status": "published", "createdDate": "2026-03-10" },
+    { "id": "fb-frs-002", "slug": "truffle-parmesan-fries", "name": "Truffle Parmesan Shoestring Fries", "brand": "FreshBox Sides", "price": 480, "comparePrice": 600, "category": "fries-sides", "subcategories": ["truffle", "shoestring"], "badge": "GOURMET", "rating": 4.8, "reviewCount": 190, "description": "Hand-cut crispy fries tossed in Italian white truffle oil, freshly grated parmesan cheese, and cracked black pepper. Served with truffle garlic aioli.", "image": "https://images.unsplash.com/photo-1576107232684-1279f3908594?auto=format&fit=crop&w=600&q=80", "attributes": { "Oil": "White Truffle Oil", "Cheese": "Parmigiano Reggiano", "Dip": "Truffle Mayo" }, "colors": [{ "name": "Truffle Parm", "hex": "#78350F", "imageId": "art-fries-02" }], "sizes": [{ "size": "Standard Sharing Box", "price": 480, "stock": 35, "sku": "FB-TRF-FRS" }], "status": "published", "createdDate": "2026-03-04" },
+    { "id": "fb-frs-003", "slug": "crispy-beer-battered-onion-rings", "name": "Crispy Beer-Battered Onion Rings", "brand": "FreshBox Sides", "price": 420, "comparePrice": 520, "category": "fries-sides", "subcategories": ["finger-food", "crisp"], "badge": "CRUNCH", "rating": 4.7, "reviewCount": 140, "description": "Thick-cut sweet Spanish onions dipped in our craft lager beer batter and fried until deeply crunchy. Served with house secret dipping sauce.", "image": "https://images.unsplash.com/photo-1639024471287-032f6640dc1f?auto=format&fit=crop&w=600&q=80", "attributes": { "Cut": "Thick Sweet Onion", "Batter": "Craft Beer Batter", "Dip": "Secret Dipping Sauce" }, "colors": [{ "name": "Golden Rings", "hex": "#D97706", "imageId": "art-fries-03" }], "sizes": [{ "size": "Basket (10 Rings)", "price": 420, "stock": 30, "sku": "FB-RNG-10" }], "status": "published", "createdDate": "2026-02-26" },
+    { "id": "fb-frs-004", "slug": "crispy-fried-mac-cheese-bites", "name": "Fried Mac & Cheese Bites (6pcs)", "brand": "FreshBox Sides", "price": 490, "comparePrice": 620, "category": "fries-sides", "subcategories": ["cheese", "bites"], "badge": "MELTY", "rating": 4.9, "reviewCount": 180, "description": "Elbow macaroni in a rich three-cheese cream sauce, rolled in seasoned breadcrumbs, and flash-fried until golden on the outside with molten cheese inside.", "image": "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=600&q=80", "attributes": { "Count": "6 Molten Bites", "Cheese": "Cheddar, Mozzarella & Gouda", "Dip": "Marinara Dip" }, "colors": [{ "name": "Golden Mac", "hex": "#F59E0B", "imageId": "art-fries-04" }], "sizes": [{ "size": "6 Pieces", "price": 490, "stock": 25, "sku": "FB-MAC-6P" }], "status": "published", "createdDate": "2026-02-20" },
+    { "id": "fb-frs-005", "slug": "sweet-potato-fries-chipotle-dip", "name": "Sweet Potato Fries with Chipotle Mayo", "brand": "FreshBox Sides", "price": 450, "comparePrice": 560, "category": "fries-sides", "subcategories": ["sweet-potato"], "badge": "FAVORITE", "rating": 4.8, "reviewCount": 165, "description": "Crisp sweet potato wedges dusted with sea salt and smoked paprika. Served with creamy smoky chipotle dip.", "image": "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80", "attributes": { "Fries": "Real Sweet Potato", "Seasoning": "Smoked Paprika & Sea Salt", "Dip": "Chipotle Aioli" }, "colors": [{ "name": "Orange Sunset", "hex": "#EA580C", "imageId": "art-fries-05" }], "sizes": [{ "size": "Standard Box", "price": 450, "stock": 30, "sku": "FB-SWT-FRS" }], "status": "published", "createdDate": "2026-02-14" },
+    { "id": "fb-snd-001", "slug": "philly-cheesesteak-brioche-sub", "name": "Philly Cheesesteak Brioche Sub", "brand": "FreshBox Subs", "price": 890, "comparePrice": 1050, "category": "sandwiches", "subcategories": ["subs", "beef"], "badge": "HOT SUB", "rating": 4.9, "reviewCount": 270, "description": "Thinly shaved ribeye steak sautéed with caramelized onions and bell peppers, smothered in melted provolone and cheese sauce in a toasted soft hoagie brioche roll.", "image": "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=600&q=80", "attributes": { "Meat": "Shaved Ribeye Beef", "Cheese": "Melted Provolone & Cheese Whiz", "Bread": "Toasted Soft Brioche Sub" }, "colors": [{ "name": "Warm Hoagie", "hex": "#78350F", "imageId": "art-sub-01" }], "sizes": [{ "size": "Standard 8-inch Sub", "price": 890, "stock": 30, "sku": "FB-PHL-8IN" }, { "size": "Combo + Fries & Soda", "price": 1280, "stock": 20, "sku": "FB-PHL-CMB" }], "status": "published", "createdDate": "2026-03-08" },
+    { "id": "fb-snd-002", "slug": "crispy-chicken-club-sandwich", "name": "Triple-Decker Crispy Chicken Club", "brand": "FreshBox Subs", "price": 840, "comparePrice": 990, "category": "sandwiches", "subcategories": ["club", "chicken"], "badge": "CLASSIC", "rating": 4.8, "reviewCount": 180, "description": "Triple-decker toasted sourdough stacked with crispy chicken breast, smoked bacon strips, avocado slices, lettuce, tomato, and garlic herb mayonnaise.", "image": "https://images.unsplash.com/photo-1528736235302-52922df5c122?auto=format&fit=crop&w=600&q=80", "attributes": { "Layers": "Triple Decker Toasted Sourdough", "Meat": "Crispy Chicken & Bacon", "Avocado": "Fresh Hass Avocado" }, "colors": [{ "name": "Toasted Sourdough", "hex": "#D97706", "imageId": "art-sub-02" }], "sizes": [{ "size": "Club Sandwich + Chips", "price": 840, "stock": 25, "sku": "FB-CLB-SGL" }], "status": "published", "createdDate": "2026-03-01" },
+    { "id": "fb-snd-003", "slug": "grilled-three-cheese-pesto-melt", "name": "Grilled Three-Cheese & Pesto Sourdough Melt", "brand": "FreshBox Subs", "price": 680, "comparePrice": 820, "category": "sandwiches", "subcategories": ["melts", "vegetarian"], "badge": "CHEESY COMFORT", "rating": 4.7, "reviewCount": 140, "description": "Artisan sourdough bread buttered and griddled with sharp cheddar, fontina, fresh mozzarella, and homemade basil pine nut pesto.", "image": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80", "attributes": { "Cheese": "Cheddar, Fontina & Mozzarella", "Bread": "Rustic Sourdough", "Pesto": "Fresh Basil Pine Nut" }, "colors": [{ "name": "Golden Melt", "hex": "#15803D", "imageId": "art-sub-03" }], "sizes": [{ "size": "Gourmet Melt", "price": 680, "stock": 20, "sku": "FB-MLT-CHZ" }], "status": "published", "createdDate": "2026-02-23" },
+    { "id": "fb-snd-004", "slug": "smoked-pastrami-reuben-sub", "name": "Smoked Pastrami Reuben Sub", "brand": "FreshBox Subs", "price": 920, "comparePrice": 1080, "category": "sandwiches", "subcategories": ["subs", "pastrami"], "badge": "DELI SPECIAL", "rating": 4.9, "reviewCount": 160, "description": "Warm spiced beef pastrami piled high with melted Swiss cheese, tangy sauerkraut, and Russian dressing on toasted marbled rye bread.", "image": "https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=600&q=80", "attributes": { "Meat": "Smoked Beef Pastrami", "Cheese": "Aged Swiss", "Bread": "Toasted Marbled Rye" }, "colors": [{ "name": "Deli Rye", "hex": "#78350F", "imageId": "art-sub-04" }], "sizes": [{ "size": "Reuben Sub", "price": 920, "stock": 20, "sku": "FB-RBN-SUB" }], "status": "published", "createdDate": "2026-02-16" },
+    { "id": "fb-snd-005", "slug": "bbq-pulled-beef-brioche-melt", "name": "Smoky BBQ Pulled Beef Brioche Melt", "brand": "FreshBox Subs", "price": 860, "comparePrice": 1020, "category": "sandwiches", "subcategories": ["subs", "bbq"], "badge": "TENDER", "rating": 4.8, "reviewCount": 135, "description": "Slow-braised 12-hour beef brisket shredded and simmered in dark barbecue reduction, crisp purple cabbage slaw, and pickles on brioche.", "image": "https://images.unsplash.com/photo-1521305916504-4a1121188589?auto=format&fit=crop&w=600&q=80", "attributes": { "Meat": "12hr Braised Pulled Beef", "Slaw": "Crunchy Purple Cabbage", "Sauce": "Dark Honey BBQ" }, "colors": [{ "name": "Smoky Pulled", "hex": "#92400E", "imageId": "art-sub-05" }], "sizes": [{ "size": "Pulled Beef Melt", "price": 860, "stock": 25, "sku": "FB-PLD-BEEF" }], "status": "published", "createdDate": "2026-02-10" },
+    { "id": "fb-pst-001", "slug": "sizzling-teriyaki-chicken-wok-bowl", "name": "Sizzling Teriyaki Chicken Wok Bowl", "brand": "FreshBox Wok", "price": 750, "comparePrice": 900, "category": "pasta-bowls", "subcategories": ["bowls", "asian"], "badge": "HEALTHY DROP", "rating": 4.9, "reviewCount": 290, "description": "Tender grilled chicken thigh glazed in sweet savory teriyaki sauce, served over steamed jasmine rice with charred broccoli, edamame, and toasted sesame.", "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80", "attributes": { "Base": "Steamed Jasmine Rice", "Protein": "Glazed Chicken Thigh", "Veg": "Charred Broccoli & Edamame" }, "colors": [{ "name": "Teriyaki Bowl", "hex": "#15803D", "imageId": "art-wok-01" }], "sizes": [{ "size": "Regular Bowl", "price": 750, "stock": 35, "sku": "FB-TRY-REG" }, { "size": "Double Protein Bowl", "price": 980, "stock": 20, "sku": "FB-TRY-DBL" }], "status": "published", "createdDate": "2026-03-09" },
+    { "id": "fb-pst-002", "slug": "creamy-tuscan-garlic-rigatoni", "name": "Creamy Tuscan Garlic Rigatoni", "brand": "FreshBox Pasta", "price": 890, "comparePrice": 1050, "category": "pasta-bowls", "subcategories": ["pasta", "italian"], "badge": "CREAMY", "rating": 4.8, "reviewCount": 195, "description": "Bronze-die rigatoni pasta tossed in sun-dried tomato and garlic parmesan cream sauce with baby spinach and grilled sliced chicken.", "image": "https://images.unsplash.com/photo-1621996346565-e3d5d628169e?auto=format&fit=crop&w=600&q=80", "attributes": { "Pasta": "Bronze-Die Rigatoni", "Sauce": "Tuscan Sun-Dried Tomato Cream", "Parmesan": "24-Month Aged" }, "colors": [{ "name": "Tuscan Garlic", "hex": "#DC2626", "imageId": "art-wok-02" }], "sizes": [{ "size": "Standard Skillet", "price": 890, "stock": 25, "sku": "FB-TSC-RIG" }], "status": "published", "createdDate": "2026-03-03" },
+    { "id": "fb-pst-003", "slug": "spicy-dan-dan-garlic-noodles", "name": "Spicy Dan Dan Garlic Noodles", "brand": "FreshBox Wok", "price": 780, "comparePrice": 920, "category": "pasta-bowls", "subcategories": ["noodles", "spicy"], "badge": "SICHUAN KICK", "rating": 5.0, "reviewCount": 210, "description": "Chewy egg noodles tossed in spicy Sichuan chili oil, roasted sesame paste, minced braised beef, crushed peanuts, and fresh bok choy.", "image": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80", "attributes": { "Noodles": "Hand-Pulled Style Egg Noodles", "Chili": "Sichuan Peppercorn Oil", "Crunch": "Crushed Peanuts" }, "colors": [{ "name": "Sichuan Red", "hex": "#DC2626", "imageId": "art-wok-03" }], "sizes": [{ "size": "Noodle Bowl", "price": 780, "stock": 30, "sku": "FB-DAN-NDL" }], "status": "published", "createdDate": "2026-02-25" },
+    { "id": "fb-pst-004", "slug": "traditional-pad-thai-king-prawns", "name": "Classic Pad Thai with King Prawns", "brand": "FreshBox Wok", "price": 950, "comparePrice": 1150, "category": "pasta-bowls", "subcategories": ["noodles", "seafood"], "badge": "SEAFOOD", "rating": 4.9, "reviewCount": 175, "description": "Wok-fried rice noodles with tamarind palm sugar glaze, succulent king prawns, scrambled egg, bean sprouts, chives, and lime wedges.", "image": "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=600&q=80", "attributes": { "Noodles": "Flat Rice Noodles", "Seafood": "King Tiger Prawns", "Glaze": "Tamarind & Palm Sugar" }, "colors": [{ "name": "Thai Tamarind", "hex": "#F59E0B", "imageId": "art-wok-04" }], "sizes": [{ "size": "Pad Thai Plate", "price": 950, "stock": 25, "sku": "FB-PDT-PRW" }], "status": "published", "createdDate": "2026-02-18" },
+    { "id": "fb-pst-005", "slug": "truffle-four-cheese-mac-skillet", "name": "Truffle Four-Cheese Mac Skillet", "brand": "FreshBox Pasta", "price": 820, "comparePrice": 980, "category": "pasta-bowls", "subcategories": ["pasta", "cheese"], "badge": "DECIDENT", "rating": 4.8, "reviewCount": 140, "description": "Cavatappi spirals baked in sharp cheddar, gruyère, fontina, and mascarpone cream, topped with garlic panko crunch and white truffle oil.", "image": "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=600&q=80", "attributes": { "Pasta": "Cavatappi Spirals", "Cheese": "Gruyère & Aged Cheddar", "Crust": "Crispy Garlic Panko" }, "colors": [{ "name": "Golden Mac", "hex": "#FBBF24", "imageId": "art-wok-05" }], "sizes": [{ "size": "Skillet Bowl", "price": 820, "stock": 20, "sku": "FB-TRF-MAC" }], "status": "published", "createdDate": "2026-02-11" },
+    { "id": "fb-drk-001", "slug": "salted-caramel-pretzel-shake", "name": "Hand-Spun Salted Caramel Pretzel Shake", "brand": "FreshBox Shakes", "price": 450, "comparePrice": 550, "category": "drinks", "subcategories": ["shakes", "dessert"], "badge": "BEST SELLER", "rating": 5.0, "reviewCount": 410, "description": "Thick premium vanilla bean dairy ice cream blended with butterscotch caramel, topped with whipped cream, sea salt, and crushed salted pretzels.", "image": "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80", "attributes": { "Volume": "450ml Tall Cup", "IceCream": "100% Real Dairy Vanilla Bean", "Topping": "Whipped Cream & Pretzels" }, "colors": [{ "name": "Salted Caramel", "hex": "#D97706", "imageId": "art-drink-01" }], "sizes": [{ "size": "Regular (450ml)", "price": 450, "stock": 50, "sku": "FB-SHK-CAR" }, { "size": "Monster Jar (650ml)", "price": 620, "stock": 30, "sku": "FB-SHK-BIG" }], "status": "published", "createdDate": "2026-03-11" },
+    { "id": "fb-drk-002", "slug": "strawberry-shortcake-milkshake", "name": "Strawberry Shortcake Milkshake", "brand": "FreshBox Shakes", "price": 450, "comparePrice": 550, "category": "drinks", "subcategories": ["shakes", "fruity"], "badge": "POPULAR", "rating": 4.9, "reviewCount": 260, "description": "Real strawberry puree spun with vanilla ice cream, topped with vanilla cookie crumble, whipped cream, and fresh whole strawberry.", "image": "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80", "attributes": { "Fruit": "Fresh Ripe Strawberries", "Cookie": "Vanilla Biscuit Crumble" }, "colors": [{ "name": "Strawberry Pink", "hex": "#EC4899", "imageId": "art-drink-02" }], "sizes": [{ "size": "Regular (450ml)", "price": 450, "stock": 40, "sku": "FB-SHK-STR" }], "status": "published", "createdDate": "2026-03-05" },
+    { "id": "fb-drk-003", "slug": "cold-pressed-passion-mango-juice", "name": "Cold-Pressed Passion & Mango Juice", "brand": "FreshBox Juice", "price": 320, "comparePrice": 400, "category": "drinks", "subcategories": ["fresh-juice", "healthy"], "badge": "100% NATURAL", "rating": 4.8, "reviewCount": 185, "description": "Pure ripe Kenyan mangoes and tart passion fruit freshly pressed with zero added sugar or preservatives. Packed with vitamin C.", "image": "https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=600&q=80", "attributes": { "Ingredients": "100% Mango & Passion Fruit", "Sugar": "No Added Sugar", "Volume": "500ml Bottle" }, "colors": [{ "name": "Tropical Orange", "hex": "#F59E0B", "imageId": "art-drink-03" }], "sizes": [{ "size": "500ml Chilled Bottle", "price": 320, "stock": 45, "sku": "FB-JCE-MNG" }], "status": "published", "createdDate": "2026-02-28" },
+    { "id": "fb-drk-004", "slug": "iced-hibiscus-berry-cooler", "name": "Iced Hibiscus Berry Herbal Cooler", "brand": "FreshBox Drinks", "price": 280, "comparePrice": 360, "category": "drinks", "subcategories": ["coffee-tea", "refreshing"], "badge": "REFRESHING", "rating": 4.7, "reviewCount": 130, "description": "Brewed organic wild hibiscus petals infused with crushed mint leaves, fresh lime juice, and wild forest honey over crushed ice.", "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=600&q=80", "attributes": { "Tea": "Wild Hibiscus Flowers", "Infusion": "Fresh Mint & Lime", "Sweetener": "Organic Raw Honey" }, "colors": [{ "name": "Ruby Hibiscus", "hex": "#DC2626", "imageId": "art-drink-04" }], "sizes": [{ "size": "Tall Glass (500ml)", "price": 280, "stock": 35, "sku": "FB-TEA-HIB" }], "status": "published", "createdDate": "2026-02-22" },
+    { "id": "fb-drk-005", "slug": "iced-vanilla-caramel-latte", "name": "Iced Madagascar Vanilla Latte", "brand": "FreshBox Coffee", "price": 380, "comparePrice": 460, "category": "drinks", "subcategories": ["coffee-tea", "coffee"], "badge": "KENYAN BEANS", "rating": 4.9, "reviewCount": 210, "description": "Double shot of single-origin Kenyan AA espresso poured over cold whole milk, pure Madagascar vanilla bean syrup, and crystal ice.", "image": "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=600&q=80", "attributes": { "Coffee": "100% Kenyan AA Arabica", "Syrup": "Madagascar Vanilla Bean", "Milk": "Creamy Whole Milk" }, "colors": [{ "name": "Iced Latte", "hex": "#78350F", "imageId": "art-drink-05" }], "sizes": [{ "size": "Regular (400ml)", "price": 380, "stock": 40, "sku": "FB-COF-LAT" }], "status": "published", "createdDate": "2026-02-15" },
+    { "id": "fb-des-001", "slug": "molten-chocolate-lava-cake", "name": "Molten Chocolate Lava Cake", "brand": "FreshBox Bakery", "price": 550, "comparePrice": 680, "category": "desserts", "subcategories": ["cakes", "chocolate"], "badge": "WARM DESSERT", "rating": 5.0, "reviewCount": 315, "description": "Rich 70% dark Belgian chocolate cake with a warm flowing molten center, dusted with powdered sugar and served with a scoop of vanilla bean ice cream.", "image": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80", "attributes": { "Chocolate": "70% Dark Belgian", "Center": "Warm Flowing Molten", "Includes": "Vanilla Bean Gelato" }, "colors": [{ "name": "Molten Dark", "hex": "#381207", "imageId": "art-dessert-01" }], "sizes": [{ "size": "Individual Cake + Gelato", "price": 550, "stock": 25, "sku": "FB-LAV-CAK" }], "status": "published", "createdDate": "2026-03-08" },
+    { "id": "fb-des-002", "slug": "spanish-cinnamon-churros-nutella", "name": "Spanish Cinnamon Churros with Nutella", "brand": "FreshBox Bakery", "price": 480, "comparePrice": 590, "category": "desserts", "subcategories": ["churros", "sharing"], "badge": "BEST SELLER", "rating": 4.9, "reviewCount": 240, "description": "Six golden crispy Spanish churros fried fresh to order, rolled in aromatic cinnamon sugar, and served with warm Nutella hazelnut chocolate dip.", "image": "https://images.unsplash.com/photo-1624353365286-3f8d62daad51?auto=format&fit=crop&w=600&q=80", "attributes": { "Count": "6 Long Churros", "Dip": "Warm Nutella Dip", "Sugar": "Cinnamon Sugar Rolled" }, "colors": [{ "name": "Golden Churro", "hex": "#D97706", "imageId": "art-dessert-02" }], "sizes": [{ "size": "Basket (6 Churros)", "price": 480, "stock": 35, "sku": "FB-CHR-6P" }, { "size": "Party Box (12 Churros + 2 Dips)", "price": 850, "stock": 20, "sku": "FB-CHR-12P" }], "status": "published", "createdDate": "2026-03-02" },
+    { "id": "fb-des-003", "slug": "new-york-salted-caramel-cheesecake", "name": "New York Salted Caramel Cheesecake", "brand": "FreshBox Bakery", "price": 520, "comparePrice": 640, "category": "desserts", "subcategories": ["cakes", "caramel"], "badge": "RICH & CREAMY", "rating": 4.8, "reviewCount": 170, "description": "Silky smooth Philadelphia cream cheese filling on a buttery graham cracker crust, topped with thick salted caramel drizzle and white chocolate curls.", "image": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=600&q=80", "attributes": { "Crust": "Buttery Graham Cracker", "Cheese": "Classic New York Style", "Caramel": "Sea Salted Caramel" }, "colors": [{ "name": "Salted Caramel", "hex": "#B45309", "imageId": "art-dessert-03" }], "sizes": [{ "size": "Large Slice", "price": 520, "stock": 20, "sku": "FB-CHK-SLC" }], "status": "published", "createdDate": "2026-02-22" },
+    { "id": "fb-des-004", "slug": "warm-apple-crumble-vanilla-gelato", "name": "Warm Apple Crumble & Vanilla Gelato", "brand": "FreshBox Bakery", "price": 500, "comparePrice": 620, "category": "desserts", "subcategories": ["pies", "warm"], "badge": "HOMEMADE", "rating": 4.8, "reviewCount": 125, "description": "Caramelized Granny Smith apples baked with cinnamon and brown sugar under a golden oat crumble topping. Served warm with vanilla bean ice cream.", "image": "https://images.unsplash.com/photo-1568571780765-9276ac8b75a2?auto=format&fit=crop&w=600&q=80", "attributes": { "Apples": "Spiced Granny Smith", "Topping": "Golden Oat Crumble", "Served": "Piping Warm" }, "colors": [{ "name": "Apple Crumble", "hex": "#78350F", "imageId": "art-dessert-04" }], "sizes": [{ "size": "Individual Skillet", "price": 500, "stock": 18, "sku": "FB-APL-CRM" }], "status": "published", "createdDate": "2026-02-14" }
+  ],
+  "dataRevision": 1
+}
+  </script>
+
+  <!-- STUDIO LIVE ENGINE (All 18 Interactive Editor Pages) -->
+  <script>
+  window.__FF_CONFIG__ = JSON.parse(document.getElementById("ff-config").textContent);
+  window.__FF_SITE__ = JSON.parse(document.getElementById("ff-site-data").textContent);
+
+  (function() {
+    'use strict';
+
+    const APP_MODE = 'studio'; // Admin Studio mode
+    const CFG = window.__FF_CONFIG__;
+    const initialSiteData = window.__FF_SITE__;
+
+    let site = JSON.parse(JSON.stringify(initialSiteData));
+    let undoStack = [];
+    let redoStack = [];
+    let currentTab = 'dashboard';
+    let secDraft = null;
+
+    // Studio tabs list
+    const STUDIO_TABS = [
+      { id: 'dashboard', label: '📊 Dashboard' },
+      { id: 'products', label: '🍔 Menu Dishes' },
+      { id: 'inventory', label: '📦 Stock & Availability' },
+      { id: 'categories', label: '📁 Categories' },
+      { id: 'sections', label: '🧱 Sections Builder' },
+      { id: 'hero-editor', label: '✨ Hero Banner' },
+      { id: 'themes', label: '🎨 Themes & Palettes' },
+      { id: 'typography', label: '✍️ Typography' },
+      { id: 'branding', label: '🏷️ Logo & Brand' },
+      { id: 'card-layouts', label: '📐 Card Layouts' },
+      { id: 'navigation', label: '🧭 Navigation Links' },
+      { id: 'pages', label: '📄 Custom Pages' },
+      { id: 'contact', label: '📞 Kitchen Contacts' },
+      { id: 'location', label: '🗺️ Map & Location' },
+      { id: 'floating', label: '💬 Floating Chat' },
+      { id: 'payments', label: '💳 Delivery & Payments' },
+      { id: 'cart-account', label: '🛒 Cart & Profile' },
+      { id: 'settings', label: '⚙️ Settings & Backup' }
+    ];
+
+    function loadState() {
+      try {
+        const rev = String(initialSiteData.dataRevision ?? initialSiteData.version);
+        const appliedRev = localStorage.getItem(CFG.storage.revisionKey);
+        if (appliedRev !== rev) localStorage.setItem(CFG.storage.revisionKey, rev);
+        const savedSite = appliedRev === rev ? localStorage.getItem(CFG.storage.siteKey) : null;
+        if (savedSite) {
+          const parsed = JSON.parse(savedSite);
+          if (parsed && parsed.products) site = parsed;
+        }
+      } catch (err) {
+        console.warn('Failed to load studio state:', err);
+      }
+    }
+
+    let saveTimeout = null;
+    function scheduleSave() {
+      if (saveTimeout) clearTimeout(saveTimeout);
+      const st = document.getElementById('studio-save-status');
+      if (st) st.textContent = 'Saving…';
+      saveTimeout = setTimeout(flushSave, 350);
+    }
+
+    function flushSave() {
+      try {
+        localStorage.setItem(CFG.storage.siteKey, JSON.stringify(site));
+        const st = document.getElementById('studio-save-status');
+        if (st) st.textContent = 'Saved ✓';
+      } catch (e) {
+        console.warn('Failed to save to storage:', e);
+      }
+    }
+
+    function pushUndoState() {
+      undoStack.push(JSON.stringify(site));
+      if (undoStack.length > 25) undoStack.shift();
+      redoStack = [];
+    }
+
+    function formatCurrency(amount) {
+      const sym = site.currencySymbol || 'KSh';
+      return sym + ' ' + Math.round(amount || 0).toLocaleString();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function setByPath(obj, path, val) {
+      const parts = path.split('.').filter(Boolean);
+      let curr = obj;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const p = parts[i];
+        if (p === '__proto__' || p === 'constructor' || p === 'prototype') return false;
+        if (!(p in curr) || curr[p] == null || typeof curr[p] !== 'object') {
+          curr[p] = /^\d+$/.test(parts[i + 1]) ? [] : {};
+        }
+        curr = curr[p];
+      }
+      curr[parts[parts.length - 1]] = val;
+      return true;
+    }
+
+    function showToast(msg) {
+      const existing = document.getElementById('global-toast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.id = 'global-toast';
+      toast.textContent = msg;
+      toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#381207; color:#FBBF24; font-size:12px; font-weight:900; letter-spacing:0.03em; padding:10px 22px; border-radius:9999px; box-shadow:0 8px 24px rgba(56, 18, 7, 0.35); z-index:99999; border:1px solid #F59E0B; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1);';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2400);
+    }
+    window.showToast = showToast;
+
+    // =========================================================================
+    // RENDER STUDIO TABS & CONTENT
+    // =========================================================================
+    function renderTabs() {
+      const tabEl = document.getElementById('studio-tab-bar');
+      if (!tabEl) return;
+      tabEl.innerHTML = STUDIO_TABS.map(t => `
+        <button class="studio-tab-btn ${t.id === currentTab ? 'active' : ''}" onclick="window.switchTab('${t.id}')">
+          ${t.label}
+        </button>
+      `).join('');
+    }
+
+    window.switchTab = function(tabId) {
+      currentTab = tabId;
+      renderTabs();
+      renderCurrentTabContent();
+    };
+
+    function renderCurrentTabContent() {
+      const area = document.getElementById('studio-content-area');
+      if (!area) return;
+
+      if (currentTab === 'dashboard') {
+        area.innerHTML = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+            <div style="background:#FFF9F2; border:1px solid #F3E5D4; padding:14px; border-radius:14px;">
+              <div style="font-size:11px; font-weight:900; color:#78350F; text-transform:uppercase;">TOTAL MENU ITEMS</div>
+              <div style="font-size:26px; font-weight:900; color:#381207; margin-top:4px;">${site.products.length} Dishes</div>
+            </div>
+            <div style="background:#FFF9F2; border:1px solid #F3E5D4; padding:14px; border-radius:14px;">
+              <div style="font-size:11px; font-weight:900; color:#78350F; text-transform:uppercase;">FOOD CATEGORIES</div>
+              <div style="font-size:26px; font-weight:900; color:#381207; margin-top:4px;">${site.categories.length} Active</div>
+            </div>
+          </div>
+
+          <div class="studio-card-box">
+            <h3 style="font-size:13px; font-weight:900; text-transform:uppercase; margin-bottom:8px;">STOREFRONT PREVIEW & SHORTCUTS</h3>
+            <p style="font-size:12px; color:#78350F; margin-bottom:14px;">Every change you make in Studio updates the customer storefront immediately in real time.</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <button class="btn-pill-action" onclick="window.switchTab('products')">MANAGE DISHES</button>
+              <button class="btn-pill-action" style="background:#381207; color:#FFFFFF;" onclick="window.switchTab('sections')">EDIT SECTIONS</button>
+              <button class="btn-pill-outline" onclick="window.switchTab('themes')">CHANGE THEME</button>
+              <button class="btn-pill-outline" onclick="window.switchTab('card-layouts')">GRID COLUMNS</button>
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'products') {
+        area.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div>
+              <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; color:#381207;">MENU CATALOG (${site.products.length})</h3>
+              <p style="font-size:11px; color:#78350F;">All food dishes, pricing, portions, and categories.</p>
+            </div>
+            <button class="btn-pill-action" style="font-size:11px; padding:6px 14px;" onclick="window.openNewProductModal()">+ ADD DISH</button>
+          </div>
+
+          <input type="text" class="form-input" id="search-prod-filter" placeholder="Filter dishes by name or category..." style="margin-bottom:12px;" oninput="window.filterProductList(this.value)" />
+
+          <div id="studio-product-list" style="display:flex; flex-direction:column; gap:8px; max-height:480px; overflow-y:auto;">
+            ${site.products.map(p => `
+              <div class="studio-prod-row" data-search="${(p.name + ' ' + p.category).toLowerCase()}" style="background:#FFF9F2; border:1px solid #F3E5D4; border-radius:12px; padding:10px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <div style="width:40px; height:40px; border-radius:8px; overflow:hidden; background:#FDF6ED; flex-shrink:0;">
+                  ${p.image ? `<img src="${p.image}" alt="" style="width:100%;height:100%;object-fit:cover;"/>` : '🍔'}
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <div style="font-size:12px; font-weight:900; color:#381207; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.name)}</div>
+                  <div style="font-size:10px; color:#78350F;">${escapeHtml(p.category.toUpperCase())} &bull; ${formatCurrency(p.price)}</div>
+                </div>
+                <div style="display:flex; gap:4px; flex-shrink:0;">
+                  <button class="btn-pill-outline" style="font-size:10px; padding:4px 8px;" onclick="window.openEditProductModal('${p.id}')">EDIT</button>
+                  <button class="btn-pill-outline" style="font-size:10px; padding:4px 8px; color:#DC2626; border-color:#FCA5A5;" onclick="window.deleteProduct('${p.id}')">✕</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'inventory') {
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div>
+                <h3 style="font-size:13px; font-weight:900; text-transform:uppercase;">KITCHEN AVAILABILITY</h3>
+                <p style="font-size:11px; color:#78350F;">Adjust stock levels and sold-out states.</p>
+              </div>
+              <button class="btn-pill-action" style="font-size:10px; padding:5px 12px;" onclick="window.restockAllDishes()">RESTOCK ALL (+15)</button>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table style="width:100%; font-size:11px; border-collapse:collapse; text-align:left;">
+                <thead>
+                  <tr style="border-bottom:1.5px solid #F3E5D4; color:#78350F; font-weight:900;">
+                    <th style="padding:6px 4px;">DISH</th>
+                    <th style="padding:6px 4px;">PORTION</th>
+                    <th style="padding:6px 4px;">PRICE</th>
+                    <th style="padding:6px 4px;">PORTIONS</th>
+                    <th style="padding:6px 4px; text-align:right;">ADJUST</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${site.products.flatMap(p => 
+                    (p.sizes || []).map(s => `
+                      <tr style="border-bottom:1px solid #F3E5D4;">
+                        <td style="padding:6px 4px; font-weight:800; max-width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(p.name)}</td>
+                        <td style="padding:6px 4px; color:#78350F;">${escapeHtml(s.size)}</td>
+                        <td style="padding:6px 4px; font-weight:900; color:#DC2626;">${formatCurrency(s.price)}</td>
+                        <td style="padding:6px 4px;">
+                          <span style="font-weight:900; padding:2px 6px; border-radius:4px; ${s.stock === 0 ? 'background:#FEE2E2; color:#DC2626;' : 'background:#DCFCE7; color:#15803D;'}">
+                            ${s.stock === 0 ? 'SOLD OUT' : s.stock + ' ready'}
+                          </span>
+                        </td>
+                        <td style="padding:6px 4px; text-align:right; white-space:nowrap;">
+                          <button style="border:1px solid #D1D5DB; border-radius:4px; padding:1px 6px; font-weight:900; background:#FFF;" onclick="window.adjustStock('${p.id}', '${s.size}', -1)">-</button>
+                          <button style="border:1px solid #D1D5DB; border-radius:4px; padding:1px 6px; font-weight:900; background:#FFF; margin-left:2px;" onclick="window.adjustStock('${p.id}', '${s.size}', 1)">+</button>
+                        </td>
+                      </tr>
+                    `)
+                  ).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'categories') {
+        area.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; color:#381207;">CATEGORIES (${site.categories.length})</h3>
+            <button class="btn-pill-action" style="font-size:11px; padding:6px 14px;" onclick="window.openNewCategoryModal()">+ ADD CATEGORY</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            ${site.categories.map((c, idx) => `
+              <div class="studio-card-box" style="margin-bottom:0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span style="font-size:14px; font-weight:900; color:#381207;">${escapeHtml(c.name)}</span>
+                  <div style="display:flex; gap:4px;">
+                    <button class="btn-pill-outline" style="font-size:10px; padding:3px 8px;" onclick="window.editCategoryModal(${idx})">EDIT</button>
+                    <button class="btn-pill-outline" style="font-size:10px; padding:3px 8px; color:#DC2626;" onclick="window.deleteCategory(${idx})">✕</button>
+                  </div>
+                </div>
+                <div style="font-size:11px; color:#78350F; margin-bottom:6px;">Slug: /category/${escapeHtml(c.slug)}</div>
+                <div style="font-size:11px; color:#4B5563; margin-bottom:8px;">${escapeHtml(c.description || '')}</div>
+                <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                  ${(c.subcategories || []).map((sc, j) => `
+                    <span style="font-size:9px; font-weight:900; background:#F3E5D4; color:#381207; padding:2px 7px; border-radius:9999px;">
+                      ${escapeHtml(sc)} <button style="color:#DC2626; font-weight:900; margin-left:3px;" onclick="window.removeSubcat(${idx}, ${j})">&times;</button>
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'sections') {
+        area.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; color:#381207;">HOMEPAGE SECTIONS</h3>
+            <button class="btn-pill-action" style="font-size:11px; padding:6px 14px;" onclick="window.openAddSectionModal()">+ ADD SECTION</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${(site.sections || []).map((sec, idx) => `
+              <div class="studio-card-box" style="margin-bottom:0; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <div>
+                  <div style="font-size:13px; font-weight:900; color:#381207;">${escapeHtml(sec.name || sec.title)}</div>
+                  <div style="font-size:10px; color:#78350F;">Type: ${sec.type} &bull; ${sec.enabled ? 'Visible' : 'Hidden'}</div>
+                </div>
+                <div style="display:flex; gap:4px;">
+                  <button class="btn-pill-outline" style="padding:4px 8px; font-size:10px;" onclick="window.moveSection(${idx}, -1)">▲</button>
+                  <button class="btn-pill-outline" style="padding:4px 8px; font-size:10px;" onclick="window.moveSection(${idx}, 1)">▼</button>
+                  <button class="btn-pill-outline" style="padding:4px 8px; font-size:10px;" onclick="window.toggleSection(${idx})">${sec.enabled ? 'HIDE' : 'SHOW'}</button>
+                  <button class="btn-pill-outline" style="padding:4px 8px; font-size:10px;" onclick="window.editSectionModal(${idx})">EDIT</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'hero-editor') {
+        const hero = (site.sections || []).find(s => s.type === 'hero') || {};
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">HERO BANNER CUSTOMIZER</h3>
+            <div class="form-group">
+              <label class="form-label">Hero Main Headline</label>
+              <input type="text" class="form-input" value="${escapeHtml(hero.title || '')}" oninput="window.updateHero('title', this.value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Promotional Subtitle</label>
+              <textarea class="form-textarea" rows="3" oninput="window.updateHero('subtitle', this.value)">${escapeHtml(hero.subtitle || '')}</textarea>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div class="form-group">
+                <label class="form-label">CTA Button Text</label>
+                <input type="text" class="form-input" value="${escapeHtml(hero.ctaText || 'EXPLORE MENU')}" oninput="window.updateHero('ctaText', this.value)" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">CTA Target Route</label>
+                <input type="text" class="form-input" value="${escapeHtml(hero.ctaRoute || '/browse')}" oninput="window.updateHero('ctaRoute', this.value)" />
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'themes') {
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">ACTIVE THEME SELECTION</h3>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              ${site.themes.map(t => `
+                <div style="background:#FFFFFF; border:1.5px solid ${t.id === site.activeThemeId ? '#F59E0B' : '#F3E5D4'}; border-radius:12px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div style="font-size:13px; font-weight:900; color:#381207;">${escapeHtml(t.name)}</div>
+                    <div style="font-size:10px; color:#78350F;">${escapeHtml(t.description)}</div>
+                  </div>
+                  <button class="btn-pill-action" style="font-size:10px; padding:5px 12px; ${t.id === site.activeThemeId ? 'background:#381207;color:#FFF;' : ''}" onclick="window.applyTheme('${t.id}')">
+                    ${t.id === site.activeThemeId ? 'ACTIVE ✓' : 'SELECT'}
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'typography') {
+        const ty = site.typography || {};
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">TYPOGRAPHY HIERARCHY</h3>
+            <div class="form-group">
+              <label class="form-label">Heading Font Family</label>
+              <select class="form-select" onchange="window.updateTypography('headingFont', this.value)">
+                <option value="'Plus Jakarta Sans', system-ui, sans-serif" ${ty.headingFont?.includes('Plus Jakarta Sans') ? 'selected' : ''}>Plus Jakarta Sans (FreshBox Brand)</option>
+                <option value="Impact, 'Arial Black', sans-serif" ${ty.headingFont?.includes('Impact') ? 'selected' : ''}>Impact Athletic Display</option>
+                <option value="'Trebuchet MS', system-ui, sans-serif" ${ty.headingFont?.includes('Trebuchet') ? 'selected' : ''}>Trebuchet Clean Sans</option>
+                <option value="Georgia, serif" ${ty.headingFont?.includes('Georgia') ? 'selected' : ''}>Editorial Georgia Serif</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Heading Transform</label>
+              <select class="form-select" onchange="window.updateTypography('headingTransform', this.value)">
+                <option value="uppercase" ${ty.headingTransform === 'uppercase' ? 'selected' : ''}>UPPERCASE</option>
+                <option value="none" ${ty.headingTransform === 'none' ? 'selected' : ''}>Standard Mixed Case</option>
+              </select>
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'branding') {
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">ANNOUNCEMENT BANNER TICKER</h3>
+            <div class="form-group">
+              <label class="form-label">Banner Text</label>
+              <input type="text" class="form-input" id="cfg-promo-text" value="${escapeHtml(site.tagline || '')}" onchange="window.updateSiteProperty('tagline', this.value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Restaurant Display Name</label>
+              <input type="text" class="form-input" value="${escapeHtml(site.name || '')}" onchange="window.updateSiteProperty('name', this.value)" />
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'card-layouts') {
+        const cl = site.cardLayoutSettings || {};
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">CARD GRID COLUMNS (1 TO 6)</h3>
+            <div style="display:flex; gap:6px; margin-bottom:16px;">
+              ${[0, 1, 2, 3, 4, 5, 6].map(n => `
+                <button class="btn-pill-outline" style="flex:1; padding:8px 0; font-size:12px; ${(parseInt(cl.columns, 10) || 0) === n ? 'background:#381207;color:#FFF;' : ''}" onclick="window.updateCardColumns(${n})">
+                  ${n === 0 ? 'AUTO' : n}
+                </button>
+              `).join('')}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Corner Radius: <span id="radius-val">${cl.radius || '20px'}</span></label>
+              <input type="range" min="0" max="36" value="${parseInt(cl.radius || '20')}" class="form-input" oninput="window.updateCardRadius(this.value)" />
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'navigation') {
+        area.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; color:#381207;">NAVIGATION MENU LINKS</h3>
+            <button class="btn-pill-action" style="font-size:10px; padding:6px 12px;" onclick="window.openAddNavModal()">+ ADD LINK</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${(site.navigation || []).map((n, idx) => `
+              <div class="studio-card-box" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:13px; font-weight:900; color:#381207;">${escapeHtml(n.label)}</div>
+                  <div style="font-size:10px; color:#78350F;">Destination: ${escapeHtml(n.route)}</div>
+                </div>
+                <div style="display:flex; gap:4px;">
+                  <button class="btn-pill-outline" style="padding:4px 8px; font-size:10px;" onclick="window.moveNav(${idx}, -1)">▲</button>
+                  <button class="btn-pill-outline" style="padding:4px 8px; font-size:10px;" onclick="window.moveNav(${idx}, 1)">▼</button>
+                  <button class="btn-pill-outline" style="padding:4px 8px; font-size:10px;" onclick="window.toggleNav(${idx})">${n.enabled ? 'ACTIVE' : 'OFF'}</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'pages') {
+        area.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; color:#381207;">CUSTOM CONTENT PAGES</h3>
+            <button class="btn-pill-action" style="font-size:10px; padding:6px 12px;" onclick="window.openAddPageModal()">+ NEW PAGE</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            ${(site.pages || []).map((p, idx) => `
+              <div class="studio-card-box" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:13px; font-weight:900; color:#381207;">${escapeHtml(p.name)}</div>
+                  <div style="font-size:10px; color:#78350F;">Route: /pages/${escapeHtml(p.slug)}</div>
+                </div>
+                <div style="display:flex; gap:4px;">
+                  <button class="btn-pill-outline" style="padding:4px 8px; font-size:10px;" onclick="window.editPageModal(${idx})">EDIT</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'contact') {
+        const c = site.contact || {};
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">RESTAURANT CONTACTS</h3>
+            <div class="form-group">
+              <label class="form-label">Phone Hotline</label>
+              <input type="text" class="form-input" value="${escapeHtml(c.phone || '')}" onchange="window.updateSiteProperty('contact.phone', this.value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">WhatsApp Number</label>
+              <input type="text" class="form-input" value="${escapeHtml(c.whatsapp || '')}" onchange="window.updateSiteProperty('contact.whatsapp', this.value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Customer Support Email</label>
+              <input type="email" class="form-input" value="${escapeHtml(c.email || '')}" onchange="window.updateSiteProperty('contact.email', this.value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kitchen Street Address</label>
+              <input type="text" class="form-input" value="${escapeHtml(c.address || '')}" onchange="window.updateSiteProperty('contact.address', this.value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Operating Hours</label>
+              <input type="text" class="form-input" value="${escapeHtml(c.hours || '')}" onchange="window.updateSiteProperty('contact.hours', this.value)" />
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'location') {
+        const loc = site.location || {};
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">MAP LOCATION COORDINATES</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div class="form-group">
+                <label class="form-label">Latitude</label>
+                <input type="number" step="0.0001" class="form-input" value="${loc.lat || -1.28333}" onchange="window.updateSiteProperty('location.lat', parseFloat(this.value))" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Longitude</label>
+                <input type="number" step="0.0001" class="form-input" value="${loc.lng || 36.82194}" onchange="window.updateSiteProperty('location.lng', parseFloat(this.value))" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Store Location Title</label>
+              <input type="text" class="form-input" value="${escapeHtml(loc.title || '')}" onchange="window.updateSiteProperty('location.title', this.value)" />
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'floating') {
+        const fl = site.floating || {};
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">FLOATING WIDGETS</h3>
+            <div class="form-group">
+              <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:900;">
+                <input type="checkbox" ${fl.whatsappEnabled !== false ? 'checked' : ''} onchange="window.updateSiteProperty('floating.whatsappEnabled', this.checked)" />
+                <span>Show Floating WhatsApp Button</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">WhatsApp Button Text</label>
+              <input type="text" class="form-input" value="${escapeHtml(fl.whatsappLabel || 'Order via WhatsApp')}" onchange="window.updateSiteProperty('floating.whatsappLabel', this.value)" />
+            </div>
+            <div class="form-group">
+              <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:900;">
+                <input type="checkbox" ${fl.chatbotEnabled !== false ? 'checked' : ''} onchange="window.updateSiteProperty('floating.chatbotEnabled', this.checked)" />
+                <span>Show Meal Assistant Chatbot Drawer</span>
+              </label>
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'payments') {
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">DELIVERY CHARGES & PAYMENTS</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+              <div class="form-group">
+                <label class="form-label">Flat Delivery Rate (${site.currencySymbol || 'KSh'})</label>
+                <input type="number" class="form-input" value="${site.shippingFlatRate || 250}" onchange="window.updateSiteProperty('shippingFlatRate', parseFloat(this.value))" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Free Delivery Threshold</label>
+                <input type="number" class="form-input" value="${site.freeShippingThreshold || 2500}" onchange="window.updateSiteProperty('freeShippingThreshold', parseFloat(this.value))" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">VAT / Tax Rate (e.g. 0.16 for 16%)</label>
+              <input type="number" step="0.01" class="form-input" value="${site.taxRate || 0.16}" onchange="window.updateSiteProperty('taxRate', parseFloat(this.value))" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Paystack Public Key</label>
+              <input type="text" class="form-input" value="${escapeHtml(site.paystack?.publicKey || '')}" onchange="window.updateSiteProperty('paystack.publicKey', this.value)" />
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'cart-account') {
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">CART & PROFILE SETTINGS</h3>
+            <div class="form-group">
+              <label class="form-label">Currency Code</label>
+              <input type="text" class="form-input" value="${escapeHtml(site.currency || 'KES')}" onchange="window.updateSiteProperty('currency', this.value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Currency Symbol</label>
+              <input type="text" class="form-input" value="${escapeHtml(site.currencySymbol || 'KSh')}" onchange="window.updateSiteProperty('currencySymbol', this.value)" />
+            </div>
+          </div>
+        `;
+      }
+
+      else if (currentTab === 'settings') {
+        area.innerHTML = `
+          <div class="studio-card-box">
+            <h3 style="font-size:14px; font-weight:900; text-transform:uppercase; margin-bottom:12px;">IMPORT, EXPORT & RESET</h3>
+            <div style="display:flex; gap:10px; margin-bottom:14px;">
+              <button class="btn-pill-action" style="flex:1;" onclick="window.exportJSON()">EXPORT JSON</button>
+              <button class="btn-pill-outline" style="flex:1;" onclick="window.promptImportJSON()">IMPORT JSON</button>
+            </div>
+            <div style="border-top:1px solid #F3E5D4; padding-top:14px;">
+              <button class="btn-pill-outline" style="color:#DC2626; border-color:#FCA5A5; width:100%;" onclick="window.resetStoreDefaults()">RESET ALL TO INITIAL DEFAULTS</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // STUDIO ACTIONS: UPDATE, EDIT, DELETE, RESTOCK
+    // =========================================================================
+    window.updateSiteProperty = function(path, val) {
+      pushUndoState();
+      setByPath(site, path, val);
+      scheduleSave();
+      showToast('Saved');
+    };
+
+    window.updateCardColumns = function(n) {
+      pushUndoState();
+      site.cardLayoutSettings = site.cardLayoutSettings || {};
+      site.cardLayoutSettings.columns = Number(n) || 0;
+      scheduleSave();
+      renderCurrentTabContent();
+      showToast('Card columns updated to ' + (n === 0 ? 'AUTO' : n));
+    };
+
+    window.updateCardRadius = function(val) {
+      pushUndoState();
+      site.cardLayoutSettings = site.cardLayoutSettings || {};
+      site.cardLayoutSettings.radius = val + 'px';
+      document.getElementById('radius-val').textContent = val + 'px';
+      scheduleSave();
+    };
+
+    window.applyTheme = function(tId) {
+      pushUndoState();
+      site.activeThemeId = tId;
+      scheduleSave();
+      renderCurrentTabContent();
+      showToast('Theme updated!');
+    };
+
+    window.updateHero = function(field, val) {
+      pushUndoState();
+      const hero = (site.sections || []).find(s => s.type === 'hero');
+      if (hero) hero[field] = val;
+      scheduleSave();
+    };
+
+    window.updateTypography = function(field, val) {
+      pushUndoState();
+      site.typography = site.typography || {};
+      site.typography[field] = val;
+      scheduleSave();
+      showToast('Typography updated');
+    };
+
+    window.moveSection = function(idx, delta) {
+      pushUndoState();
+      const t = idx + delta;
+      if (t < 0 || t >= site.sections.length) return;
+      const tmp = site.sections[idx];
+      site.sections[idx] = site.sections[t];
+      site.sections[t] = tmp;
+      scheduleSave();
+      renderCurrentTabContent();
+    };
+
+    window.toggleSection = function(idx) {
+      pushUndoState();
+      site.sections[idx].enabled = !site.sections[idx].enabled;
+      scheduleSave();
+      renderCurrentTabContent();
+    };
+
+    window.adjustStock = function(pId, size, delta) {
+      const p = site.products.find(x => x.id === pId);
+      if (!p) return;
+      const s = p.sizes.find(sz => sz.size === size);
+      if (!s) return;
+      s.stock = Math.max(0, (s.stock || 0) + delta);
+      scheduleSave();
+      renderCurrentTabContent();
+    };
+
+    window.restockAllDishes = function() {
+      pushUndoState();
+      site.products.forEach(p => {
+        (p.sizes || []).forEach(s => { s.stock = (s.stock || 0) + 15; });
+      });
+      scheduleSave();
+      renderCurrentTabContent();
+      showToast('Restocked +15 portions to all menu items!');
+    };
+
+    window.filterProductList = function(q) {
+      q = (q || '').toLowerCase();
+      document.querySelectorAll('.studio-prod-row').forEach(row => {
+        row.style.display = row.dataset.search.includes(q) ? 'flex' : 'none';
+      });
+    };
+
+    window.deleteProduct = function(pId) {
+      const p = site.products.find(x => x.id === pId);
+      if (!p || !confirm(`Delete dish "${p.name}" from menu?`)) return;
+      pushUndoState();
+      const idx = site.products.findIndex(x => x.id === pId);
+      site.products.splice(idx, 1);
+      scheduleSave();
+      renderCurrentTabContent();
+      showToast('Dish removed from menu');
+    };
+
+    // Product Modals
+    window.openNewProductModal = function() {
+      const sheet = document.getElementById('bottom-sheet');
+      const overlay = document.getElementById('sheet-overlay');
+      const title = document.getElementById('sheet-title');
+      const content = document.getElementById('sheet-content');
+      const footer = document.getElementById('sheet-footer');
+
+      title.textContent = 'CREATE NEW DISH';
+      content.innerHTML = `
+        <form id="new-dish-form" onsubmit="window.saveNewDish(event)">
+          <div class="form-group">
+            <label class="form-label">Dish Name *</label>
+            <input type="text" required class="form-input" id="nd-name" placeholder="e.g. Smashed Truffle Double" />
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label class="form-label">Price (${site.currencySymbol || 'KSh'}) *</label>
+              <input type="number" required class="form-input" id="nd-price" value="850" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select class="form-select" id="nd-cat">
+                ${site.categories.map(c => `<option value="${c.slug}">${c.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Photo URL</label>
+            <input type="text" class="form-input" id="nd-img" placeholder="https://..." value="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" rows="3" id="nd-desc" placeholder="Tasting notes and ingredients..."></textarea>
+          </div>
+        </form>
+      `;
+      footer.innerHTML = `
+        <button class="btn-pill-outline" style="flex:1;" onclick="window.closeSheet()">CANCEL</button>
+        <button class="btn-pill-action" style="flex:1;" onclick="document.getElementById('new-dish-form').requestSubmit()">SAVE DISH</button>
+      `;
+      overlay.classList.add('open');
+    };
+
+    window.saveNewDish = function(e) {
+      e.preventDefault();
+      const name = document.getElementById('nd-name').value;
+      const price = parseFloat(document.getElementById('nd-price').value) || 850;
+      const cat = document.getElementById('nd-cat').value;
+      const img = document.getElementById('nd-img').value;
+      const desc = document.getElementById('nd-desc').value || 'Freshly cooked gourmet dish.';
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+      pushUndoState();
+      site.products.unshift({
+        id: 'dish-' + Date.now(),
+        slug,
+        name,
+        brand: 'FreshBox',
+        price,
+        category: cat,
+        subcategories: ['new'],
+        badge: 'NEW DISH',
+        description: desc,
+        image: img,
+        attributes: { "Portion": "Standard", "PrepTime": "15 Mins" },
+        sizes: [
+          { size: "Regular Portion", price, stock: 25, sku: "FB-NEW-REG" },
+          { size: "Combo + Fries & Drink", price: price + 400, stock: 20, sku: "FB-NEW-CMB" }
+        ],
+        status: 'published',
+        createdDate: new Date().toISOString().split('T')[0]
+      });
+
+      scheduleSave();
+      window.closeSheet();
+      renderCurrentTabContent();
+      showToast(`Added ${name} to menu!`);
+    };
+
+    window.openEditProductModal = function(pId) {
+      const p = site.products.find(x => x.id === pId);
+      if (!p) return;
+      const sheet = document.getElementById('bottom-sheet');
+      const overlay = document.getElementById('sheet-overlay');
+      const title = document.getElementById('sheet-title');
+      const content = document.getElementById('sheet-content');
+      const footer = document.getElementById('sheet-footer');
+
+      title.textContent = 'EDIT DISH';
+      content.innerHTML = `
+        <form id="edit-dish-form" onsubmit="window.saveEditedDish(event, '${p.id}')">
+          <div class="form-group">
+            <label class="form-label">Dish Name</label>
+            <input type="text" required class="form-input" id="ed-name" value="${escapeHtml(p.name)}" />
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label class="form-label">Price (${site.currencySymbol || 'KSh'})</label>
+              <input type="number" required class="form-input" id="ed-price" value="${p.price}" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-select" id="ed-cat">
+                ${site.categories.map(c => `<option value="${c.slug}" ${c.slug === p.category ? 'selected' : ''}>${c.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Photo URL</label>
+            <input type="text" class="form-input" id="ed-img" value="${escapeHtml(p.image || '')}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Badge</label>
+            <input type="text" class="form-input" id="ed-badge" value="${escapeHtml(p.badge || '')}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" rows="3" id="ed-desc">${escapeHtml(p.description)}</textarea>
+          </div>
+        </form>
+      `;
+      footer.innerHTML = `
+        <button class="btn-pill-outline" style="flex:1;" onclick="window.closeSheet()">CANCEL</button>
+        <button class="btn-pill-action" style="flex:1;" onclick="document.getElementById('edit-dish-form').requestSubmit()">SAVE CHANGES</button>
+      `;
+      overlay.classList.add('open');
+    };
+
+    window.saveEditedDish = function(e, pId) {
+      e.preventDefault();
+      const p = site.products.find(x => x.id === pId);
+      if (!p) return;
+      pushUndoState();
+      p.name = document.getElementById('ed-name').value;
+      p.price = parseFloat(document.getElementById('ed-price').value) || p.price;
+      p.category = document.getElementById('ed-cat').value;
+      p.image = document.getElementById('ed-img').value;
+      p.badge = document.getElementById('ed-badge').value;
+      p.description = document.getElementById('ed-desc').value;
+      scheduleSave();
+      window.closeSheet();
+      renderCurrentTabContent();
+      showToast('Saved changes to ' + p.name);
+    };
+
+    // Category modal
+    window.openNewCategoryModal = function() {
+      const sheet = document.getElementById('bottom-sheet');
+      const overlay = document.getElementById('sheet-overlay');
+      const title = document.getElementById('sheet-title');
+      const content = document.getElementById('sheet-content');
+      const footer = document.getElementById('sheet-footer');
+
+      title.textContent = 'NEW CATEGORY';
+      content.innerHTML = `
+        <form id="new-cat-form" onsubmit="window.saveNewCategory(event)">
+          <div class="form-group">
+            <label class="form-label">Category Title *</label>
+            <input type="text" required class="form-input" id="nc-title" placeholder="e.g. Seafood & Grills" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subcategories (comma separated)</label>
+            <input type="text" class="form-input" id="nc-subs" placeholder="prawns, lobster, fish" />
+          </div>
+        </form>
+      `;
+      footer.innerHTML = `
+        <button class="btn-pill-outline" style="flex:1;" onclick="window.closeSheet()">CANCEL</button>
+        <button class="btn-pill-action" style="flex:1;" onclick="document.getElementById('new-cat-form').requestSubmit()">CREATE</button>
+      `;
+      overlay.classList.add('open');
+    };
+
+    window.saveNewCategory = function(e) {
+      e.preventDefault();
+      const title = document.getElementById('nc-title').value;
+      const subs = document.getElementById('nc-subs').value.split(',').map(s => s.trim()).filter(Boolean);
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      pushUndoState();
+      site.categories.push({ id: 'cat-' + Date.now(), name: title, slug, subcategories: subs });
+      scheduleSave();
+      window.closeSheet();
+      renderCurrentTabContent();
+      showToast('Category created');
+    };
+
+    window.deleteCategory = function(idx) {
+      if (!confirm(`Delete category "${site.categories[idx]?.name}"?`)) return;
+      pushUndoState();
+      site.categories.splice(idx, 1);
+      scheduleSave();
+      renderCurrentTabContent();
+    };
+
+    // Export & Import
+    window.exportJSON = function() {
+      const blob = new Blob([JSON.stringify(site, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = CFG.backupFileName;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    window.promptImportJSON = function() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const imported = JSON.parse(evt.target.result);
+            if (imported && imported.products) {
+              pushUndoState();
+              site = imported;
+              scheduleSave();
+              showToast('Site data imported successfully!');
+              renderCurrentTabContent();
+            }
+          } catch (err) {
+            alert('Failed to parse JSON backup file');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    };
+
+    window.resetStoreDefaults = function() {
+      if (confirm('Reset all store settings and dishes back to original defaults?')) {
+        pushUndoState();
+        site = JSON.parse(JSON.stringify(initialSiteData));
+        localStorage.clear();
+        scheduleSave();
+        showToast('Store reset to defaults!');
+        renderCurrentTabContent();
+      }
+    };
+
+    window.closeSheet = function() {
+      document.getElementById('sheet-overlay').classList.remove('open');
+    };
+    document.getElementById('sheet-close-btn').addEventListener('click', window.closeSheet);
+    document.getElementById('sheet-overlay').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) window.closeSheet();
+    });
+
+    // Initial Bootstrap
+    loadState();
+    renderTabs();
+    renderCurrentTabContent();
+
+  })();
+  </script>
+</body>
+</html>

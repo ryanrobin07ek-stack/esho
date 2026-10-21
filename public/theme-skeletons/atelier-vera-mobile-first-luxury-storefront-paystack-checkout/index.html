@@ -1,0 +1,3620 @@
+<!doctype html>
+<html lang="en" data-eshop-skeleton-preview=""><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="theme-color" content="">
+  <meta name="robots" content="">
+  <link rel="canonical" href="https://atelier-vera-demo.example.com/" id="canonical-link">
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="">
+  <meta property="og:site_name" content="">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:image" content="">
+  <meta name="twitter:card" content="">
+  <meta name="twitter:title" content="">
+  <meta name="twitter:description" content="">
+
+  <!-- Google Fonts: Cormorant Garamond (Display), Plus Jakarta Sans (Body), JetBrains Mono (Tabular Prices/Specs) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+
+  <!-- GSAP & ScrollTrigger CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer=""></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer=""></script>
+
+  <!-- Paystack Inline JS SDK -->
+  <script src="https://js.paystack.co/v1/inline.js" async=""></script>
+
+  <!-- Dynamic JSON-LD Structured Data -->
+  
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS & LIGHT LUXURY PALETTE (60-30-10 RULE)
+       ========================================================================== */
+    :root {
+      /* 60% Dominant Warm Ivory / Porcelain Canvas */
+      --bg-canvas: #FBF9F5;
+      --bg-elevated: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-01);
+      --bg-subtle: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-02);
+      --bg-stone: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-03);
+      --bg-champagne: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-04);
+      --bg-glass: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-05);
+
+      /* 30% Structural Surfaces, Borders & Typography */
+      --text-primary: #1C1917;
+      --text-secondary: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-06);
+      --text-muted: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-07);
+      --border-hairline: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-08);
+      --border-strong: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-09);
+
+      /* 10% High-Intent Accent Budget */
+      --accent-primary: #8C4A32;       /* Muted Terracotta / Sienna */
+      --accent-primary-hover: #733B27;
+      --accent-sage: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-10);          /* Botanical Sage */
+      --accent-paystack: #09A5DB;      /* Paystack Official Cyan-Blue */
+      --accent-paystack-dark: #011B33; /* Paystack Navy */
+      --status-success: #2E6F40;
+      --status-warning: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-11);
+      --status-danger: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-12);
+
+      /* Typography */
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Spacing & Layout */
+      --container-max: 1360px;
+      --header-h: 64px;
+      --bottom-nav-h: 64px;
+      --radius-xs: 6px;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --shadow-soft: 0 8px 28px -6px var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-13);
+      --shadow-float: 0 20px 44px -12px var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-14);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      min-height: 100vh;
+      padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 16px));
+    }
+
+    @media (min-width: 1024px) {
+      body {
+        padding-bottom: 0;
+      }
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent-primary);
+      outline-offset: 2px;
+    }
+
+    .tabular-nums {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ==========================================================================
+       2. SCROLL PROGRESS & TOPBAR CONTRACT
+       ========================================================================== */
+    #scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2.5px;
+      width: 0%;
+      background: var(--accent-primary);
+      z-index: 120;
+      transition: width 0.08s linear;
+    }
+
+    .announcement-bar {
+      background: var(--bg-stone);
+      color: var(--text-primary);
+      font-size: 0.75rem;
+      padding: 0.45rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+
+    .announcement-bar__inner {
+      max-width: var(--container-max);
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .announcement-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 500;
+    }
+
+    .currency-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-xs);
+      padding: 2px;
+      flex-shrink: 0;
+    }
+
+    .currency-btn {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out);
+    }
+
+    .currency-btn.active {
+      background: var(--text-primary);
+      color: var(--bg-canvas);
+    }
+
+    /* Sticky 3-Zone Top Bar Contract */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      height: var(--header-h);
+      background: var(--bg-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-hairline);
+      transition: box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out);
+    }
+
+    .site-header.scrolled {
+      box-shadow: var(--shadow-soft);
+      background: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-15);
+    }
+
+    .site-header__inner {
+      max-width: var(--container-max);
+      height: 100%;
+      margin: 0 auto;
+      padding: 0 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    @media (min-width: 768px) {
+      .site-header__inner {
+        padding: 0 2rem;
+      }
+    }
+
+    .brand-wordmark {
+      font-family: var(--font-display);
+      font-size: 1.55rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      color: var(--text-primary);
+    }
+
+    .primary-nav {
+      display: none;
+      align-items: center;
+      gap: 1.75rem;
+    }
+
+    @media (min-width: 1024px) {
+      .primary-nav {
+        display: flex;
+      }
+    }
+
+    .nav-link {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 0.5rem 0;
+      position: relative;
+      transition: color 0.15s var(--ease-out);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 2px;
+      width: 100%;
+      height: 1.5px;
+      background: var(--text-primary);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.2s var(--ease-out);
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--text-primary);
+    }
+
+    .nav-link:hover::after, .nav-link.active::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      min-width: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      position: relative;
+      transition: background 0.15s var(--ease-out);
+    }
+
+    .icon-btn:hover {
+      background: var(--bg-subtle);
+    }
+
+    .count-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      margin-left: 0.25rem;
+      color: var(--accent-primary);
+    }
+
+    /* ==========================================================================
+       3. MOBILE BOTTOM TAB BAR & THUMB-ZONE NAVIGATION
+       ========================================================================== */
+    .mobile-tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-16);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border-hairline);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      z-index: 95;
+    }
+
+    @media (min-width: 1024px) {
+      .mobile-tab-bar {
+        display: none;
+      }
+    }
+
+    .mobile-tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      gap: 2px;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: color 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+    }
+
+    .mobile-tab-item:active {
+      transform: scale(0.95);
+    }
+
+    .mobile-tab-item.active {
+      color: var(--accent-primary);
+    }
+
+    .mobile-tab-item svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.85;
+    }
+
+    /* ==========================================================================
+       4. LAYOUT CONTAINERS, GRIDS, TYPOGRAPHY & BUTTONS
+       ========================================================================== */
+    .container {
+      max-width: var(--container-max);
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        padding: 0 2rem;
+      }
+    }
+
+    .section {
+      padding: 3rem 0;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+
+    @media (min-width: 768px) {
+      .section {
+        padding: 4.5rem 0;
+      }
+    }
+
+    .section-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (min-width: 768px) {
+      .section-header {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 2.5rem;
+      }
+    }
+
+    .kicker {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--accent-primary);
+    }
+
+    .display-xl {
+      font-family: var(--font-display);
+      font-size: clamp(2.25rem, 4.2vw, 3.75rem);
+      font-weight: 600;
+      line-height: 1.08;
+      letter-spacing: -0.01em;
+      text-wrap: balance;
+    }
+
+    .display-lg {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 3vw, 2.65rem);
+      font-weight: 600;
+      line-height: 1.15;
+      text-wrap: balance;
+    }
+
+    .display-md {
+      font-family: var(--font-display);
+      font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .body-prose {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      max-width: 65ch;
+      line-height: 1.65;
+    }
+
+    .meta-line {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    /* Buttons (Minimum 44px touch target) */
+    .btn {
+      min-height: 46px;
+      padding: 0.65rem 1.35rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: transform 0.15s var(--ease-out), background 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--text-primary);
+      color: var(--bg-canvas);
+    }
+
+    .btn-primary:hover {
+      background: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-17);
+    }
+
+    .btn-accent {
+      background: var(--accent-primary);
+      color: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-01);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-primary-hover);
+    }
+
+    .btn-paystack {
+      background: var(--accent-paystack-dark);
+      color: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-01);
+      border: 1px solid var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-18);
+    }
+
+    .btn-paystack:hover {
+      background: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-19);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+    }
+
+    .btn-outline:hover {
+      background: var(--bg-subtle);
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    /* ==========================================================================
+       5. HERO, PARALLAX & EDITORIAL SECTIONS
+       ========================================================================== */
+    .hero-split {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      padding: 1.25rem 0 2.5rem;
+      align-items: stretch;
+    }
+
+    @media (min-width: 1024px) {
+      .hero-split {
+        grid-template-columns: 5fr 7fr;
+        gap: 2.5rem;
+        padding: 2.5rem 0 3.5rem;
+      }
+    }
+
+    .hero-copy-pane {
+      background: var(--bg-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1.75rem;
+      border: 1px solid var(--border-hairline);
+    }
+
+    @media (min-width: 768px) {
+      .hero-copy-pane {
+        padding: 2.75rem;
+      }
+    }
+
+    .hero-media-pane {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      min-height: 340px;
+      background: var(--bg-stone);
+      border: 1px solid var(--border-hairline);
+    }
+
+    @media (min-width: 1024px) {
+      .hero-media-pane {
+        min-height: 520px;
+      }
+    }
+
+    .hero-media-pane img {
+      width: 100%;
+      height: 115%;
+      object-fit: cover;
+      object-position: center;
+      will-change: transform;
+    }
+
+    .hero-scrim {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-20) 0%, var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-21) 50%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1.5rem;
+      color: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-01);
+    }
+
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-hairline);
+    }
+
+    @media (min-width: 768px) {
+      .kpi-strip {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    /* ==========================================================================
+       6. PRODUCT GRID & LUXURY PRODUCT CARDS
+       ========================================================================== */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem;
+    }
+
+    @media (min-width: 640px) {
+      .product-grid {
+        gap: 1.25rem;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .product-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.75rem;
+      }
+    }
+
+    @media (min-width: 1280px) {
+      .product-grid--4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .product-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+      position: relative;
+    }
+
+    .product-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .product-card__media {
+      position: relative;
+      aspect-ratio: 4 / 4.6;
+      background: var(--bg-subtle);
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .product-card__media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.45s var(--ease-out);
+    }
+
+    .product-card:hover .product-card__media img {
+      transform: scale(1.04);
+    }
+
+    .product-card__wishlist {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-22);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      color: var(--text-primary);
+      transition: transform 0.15s var(--ease-out), background 0.15s var(--ease-out);
+    }
+
+    .product-card__wishlist.active {
+      color: var(--accent-primary);
+    }
+
+    .product-card__body {
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      justify-content: space-between;
+      gap: 0.55rem;
+    }
+
+    @media (min-width: 768px) {
+      .product-card__body {
+        padding: 1.1rem;
+      }
+    }
+
+    .product-card__title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.35;
+      cursor: pointer;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    @media (min-width: 768px) {
+      .product-card__title {
+        font-size: 1rem;
+      }
+    }
+
+    .product-card__footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding-top: 0.45rem;
+      border-top: 1px solid var(--border-hairline);
+    }
+
+    .price-group {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .price-current {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .price-compare {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .quick-add-btn {
+      min-height: 40px;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--radius-xs);
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out);
+    }
+
+    .quick-add-btn:hover {
+      background: var(--text-primary);
+      color: var(--bg-canvas);
+    }
+
+    /* ==========================================================================
+       7. FILTER BAR, SEGMENTED TABS & INPUT CONTROLS
+       ========================================================================== */
+    .filter-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.85rem;
+      padding: 1rem;
+      background: var(--bg-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: 1.75rem;
+      border: 1px solid var(--border-hairline);
+    }
+
+    .segmented-scroll {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+      max-width: 100%;
+    }
+
+    .segmented-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .seg-btn {
+      min-height: 40px;
+      padding: 0.45rem 0.9rem;
+      border-radius: var(--radius-xs);
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+      background: transparent;
+      transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out);
+    }
+
+    .seg-btn.active {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-23);
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      min-height: 46px;
+      padding: 0.65rem 0.9rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-size: 0.92rem;
+      color: var(--text-primary);
+      transition: border-color 0.15s var(--ease-out);
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent-primary);
+      outline: none;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.35rem;
+    }
+
+    /* ==========================================================================
+       8. PRODUCT DETAIL SCREEN (PDP) & MOBILE STICKY BUY BAR
+       ========================================================================== */
+    .pdp-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (min-width: 1024px) {
+      .pdp-grid {
+        grid-template-columns: 7fr 5fr;
+        gap: 3.5rem;
+      }
+    }
+
+    .pdp-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .pdp-main-img {
+      aspect-ratio: 4 / 4.5;
+      background: var(--bg-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border-hairline);
+    }
+
+    .pdp-main-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .pdp-thumbs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.65rem;
+    }
+
+    .pdp-thumb {
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 2px solid transparent;
+      background: var(--bg-subtle);
+      cursor: pointer;
+    }
+
+    .pdp-thumb.active {
+      border-color: var(--accent-primary);
+    }
+
+    .pdp-purchase-module {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 1024px) {
+      .pdp-purchase-module {
+        position: sticky;
+        top: calc(var(--header-h) + 1.5rem);
+        padding: 2.25rem;
+      }
+    }
+
+    .mobile-pdp-bar {
+      position: fixed;
+      bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom, 0px));
+      left: 0;
+      right: 0;
+      background: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-15);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-strong);
+      padding: 0.65rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      z-index: 88;
+    }
+
+    @media (min-width: 1024px) {
+      .mobile-pdp-bar {
+        display: none;
+      }
+    }
+
+    /* ==========================================================================
+       9. PAYSTACK MOBILE-FIRST CHECKOUT & GATEWAY SHEET
+       ========================================================================== */
+    .checkout-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 1024px) {
+      .checkout-layout {
+        grid-template-columns: 7fr 5fr;
+        gap: 3rem;
+      }
+    }
+
+    .checkout-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-lg);
+      padding: 1.35rem;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (min-width: 768px) {
+      .checkout-card {
+        padding: 2rem;
+      }
+    }
+
+    .paystack-method-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+      .paystack-method-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .paystack-method-btn {
+      min-height: 68px;
+      padding: 0.75rem;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border-strong);
+      background: var(--bg-canvas);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      text-align: left;
+      transition: border-color 0.15s var(--ease-out), background 0.15s var(--ease-out);
+    }
+
+    .paystack-method-btn.active {
+      border-color: var(--accent-paystack);
+      background: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-24);
+    }
+
+    /* ==========================================================================
+       10. DRAWERS, BOTTOM SHEETS, ACCORDIONS & TOAST
+       ========================================================================== */
+    .backdrop-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-25);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s var(--ease-out);
+    }
+
+    .backdrop-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .slide-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 430px;
+      background: var(--bg-canvas);
+      z-index: 110;
+      transform: translateX(100%);
+      transition: transform 0.28s var(--ease-out);
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border-hairline);
+    }
+
+    .slide-drawer.open {
+      transform: translateX(0);
+    }
+
+    .bottom-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-height: 90vh;
+      background: var(--bg-canvas);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      z-index: 115;
+      transform: translateY(100%);
+      transition: transform 0.28s var(--ease-out);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--shadow-float);
+    }
+
+    @media (min-width: 768px) {
+      .bottom-sheet {
+        left: 50%;
+        bottom: auto;
+        top: 50%;
+        width: 92%;
+        max-width: 560px;
+        border-radius: var(--radius-lg);
+        transform: translate(-50%, -44%) scale(0.96);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.22s var(--ease-out), opacity 0.22s var(--ease-out);
+      }
+    }
+
+    .bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    @media (min-width: 768px) {
+      .bottom-sheet.open {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
+    .sheet-grabber {
+      width: 40px;
+      height: 5px;
+      background: var(--border-strong);
+      border-radius: 999px;
+      margin: 0.65rem auto 0.25rem;
+      flex-shrink: 0;
+    }
+
+    .accordion-item {
+      border-bottom: 1px solid var(--border-hairline);
+    }
+
+    .accordion-trigger {
+      width: 100%;
+      min-height: 52px;
+      padding: 1rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .accordion-content {
+      display: none;
+      padding-bottom: 1.15rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .accordion-item.open .accordion-content {
+      display: block;
+    }
+
+    #toast-container {
+      position: fixed;
+      top: calc(var(--header-h) + 0.75rem);
+      right: 1rem;
+      z-index: 140;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: calc(100vw - 2rem);
+    }
+
+    .toast-msg {
+      background: var(--text-primary);
+      color: var(--bg-canvas);
+      padding: 0.75rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: var(--shadow-float);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      animation: toastSlideIn 0.2s var(--ease-out);
+    }
+
+    @keyframes toastSlideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .site-footer {
+      background: var(--bg-subtle);
+      border-top: 1px solid var(--border-hairline);
+      padding: 4rem 0 2.5rem;
+      margin-top: 3rem;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2.25rem;
+    }
+
+    @media (min-width: 768px) {
+      .footer-grid {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-eshop-skeleton-styles="">.eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-26);vertical-align:middle}.eshop-placeholder-media{background:linear-gradient(135deg,var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-26),var(--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-27));object-fit:cover}</style><style data-theme-tokens="">:root{--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-01:#ffffff;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-02:#f4efe6;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-03:#ebe4d8;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-04:#f7f2e7;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-05:rgba(251,249,245,0.90);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-06:#57534e;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-07:#78716c;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-08:rgba(28,25,23,0.09);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-09:rgba(28,25,23,0.18);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-10:#4a5d4e;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-11:#b45309;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-12:#b91c1c;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-13:rgba(28,25,23,0.06);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-14:rgba(28,25,23,0.14);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-15:rgba(251,249,245,0.96);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-16:rgba(251,249,245,0.95);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-17:#332e2a;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-18:rgba(9,165,219,0.4);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-19:#032b4e;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-20:rgba(28,25,23,0.72);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-21:rgba(28,25,23,0.20);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-22:rgba(251,249,245,0.88);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-23:rgba(0,0,0,0.06);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-24:rgba(9,165,219,0.06);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-25:rgba(28,25,23,0.48);--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-26:#d1d5db;--theme-atelier-vera-mobile-first-luxury-storefront-paystack-checkout-color-27:#f3f4f6;}</style></head>
+<body>
+  <!-- Scroll Progress Indicator -->
+  <div id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- Slim Announcement Bar with Dual Currency Switcher (NGN / USD) -->
+  <div class="announcement-bar" role="region">
+    <div class="announcement-bar__inner">
+      <p class="announcement-text"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span><span id="free-ship-threshold-text" class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+      <div class="currency-toggle" role="group">
+        <button type="button" class="currency-btn active" data-action="set-currency" data-currency="NGN"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></button>
+        <button type="button" class="currency-btn" data-action="set-currency" data-currency="USD"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3-Zone Sticky Top Navigation Bar -->
+  <header class="site-header" id="site-header">
+    <div class="site-header__inner">
+      <!-- Zone 1: Brand Wordmark -->
+      <a href="#home" class="brand-wordmark"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+
+      <!-- Zone 2: 5 Single-Line Navigation Links -->
+      <nav class="primary-nav">
+        <a href="#shop" class="nav-link" data-nav="shop"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></a>
+        <a href="#category/apparel" class="nav-link" data-nav="category"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+        <a href="#deals" class="nav-link" data-nav="deals"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+        <a href="#about" class="nav-link" data-nav="about"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+        <a href="#contact" class="nav-link" data-nav="contact"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></a>
+      </nav>
+
+      <!-- Zone 3: Primary Action & Touch Utilities -->
+      <div class="header-actions">
+        <button type="button" class="icon-btn" data-action="open-search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        </button>
+        <a href="#wishlist" class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+          <span class="count-indicator" id="header-wishlist-count"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </a>
+        <a href="#account" class="icon-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </a>
+        <button type="button" class="btn btn-primary" data-action="open-cart-drawer" style="min-height:40px; padding:0.45rem 0.9rem; font-size:0.8rem;">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <span class="tabular-nums" id="header-cart-count"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </button>
+        <button type="button" class="icon-btn" data-action="open-mobile-menu" id="mobile-menu-trigger">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="4" x2="20" y1="7" y2="7"></line><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="17" y2="17"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- Main Dynamic Multi-Screen Viewport -->
+  <main id="app-main" role="main"></main>
+
+  <!-- Fixed Mobile Bottom Thumb-Zone Tab Bar (5 Core Destinations) -->
+  <nav class="mobile-tab-bar">
+    <a href="#home" class="mobile-tab-item active" data-mob-nav="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></span>
+    </a>
+    <a href="#shop" class="mobile-tab-item" data-mob-nav="shop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+    </a>
+    <button type="button" class="mobile-tab-item" data-action="open-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+    </button>
+    <a href="#wishlist" class="mobile-tab-item" data-mob-nav="wishlist">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span><span id="mob-wishlist-count" class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+    </a>
+    <a href="#checkout" class="mobile-tab-item" data-mob-nav="checkout">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" x2="22" y1="10" y2="10"></line></svg>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span><span id="mob-cart-count" class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+    </a>
+  </nav>
+
+  <!-- Shared Backdrop Overlay -->
+  <div class="backdrop-overlay" id="global-backdrop" data-action="close-overlays"></div>
+
+  <!-- Slide-Over Shopping Bag & Express Paystack Drawer -->
+  <aside class="slide-drawer" id="cart-drawer">
+    <div style="padding:1.25rem; border-bottom:1px solid var(--border-hairline); display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <h2 class="display-md"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></h2>
+        <p class="meta-line" id="drawer-free-ship-status"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+      </div>
+      <button type="button" class="icon-btn" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+    </div>
+    <div id="cart-drawer-items" style="flex:1; overflow-y:auto; padding:1.25rem; display:flex; flex-direction:column; gap:1rem;"></div>
+    <div id="cart-drawer-footer" style="padding:1.25rem; background:var(--bg-subtle); border-top:1px solid var(--border-hairline);"></div>
+  </aside>
+
+  <!-- Mobile Navigation Drawer -->
+  <aside class="slide-drawer" id="mobile-nav-drawer" style="left:0; right:auto; transform:translateX(-100%); border-right:1px solid var(--border-hairline); border-left:none;">
+    <div style="padding:1.25rem; border-bottom:1px solid var(--border-hairline); display:flex; align-items:center; justify-content:space-between;">
+      <span class="brand-wordmark"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span>
+      <button type="button" class="icon-btn" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></button>
+    </div>
+    <div style="padding:1.25rem; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:0.4rem;">
+      <p class="kicker" style="margin-bottom:0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></p>
+      <a href="#category/apparel" class="btn btn-outline" style="justify-content:space-between;" data-action="close-overlays"><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span></a>
+      <a href="#category/footwear" class="btn btn-outline" style="justify-content:space-between;" data-action="close-overlays"><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span></a>
+      <a href="#category/bags" class="btn btn-outline" style="justify-content:space-between;" data-action="close-overlays"><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span></a>
+      <a href="#category/accessories" class="btn btn-outline" style="justify-content:space-between;" data-action="close-overlays"><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span></a>
+      <a href="#category/home" class="btn btn-outline" style="justify-content:space-between;" data-action="close-overlays"><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span></a>
+      <a href="#category/beauty" class="btn btn-outline" style="justify-content:space-between;" data-action="close-overlays"><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span></a>
+      <a href="#category/electronics" class="btn btn-outline" style="justify-content:space-between;" data-action="close-overlays"><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span></a>
+      <hr style="border:none; border-top:1px solid var(--border-hairline); margin:1rem 0;">
+      <p class="kicker" style="margin-bottom:0.4rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></p>
+      <a href="#shop" class="nav-link" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a>
+      <a href="#deals" class="nav-link" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a>
+      <a href="#checkout" class="nav-link" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></a>
+      <a href="#cart" class="nav-link" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a>
+      <a href="#wishlist" class="nav-link" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a>
+      <a href="#account" class="nav-link" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a>
+      <a href="#about" class="nav-link" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a>
+      <a href="#contact" class="nav-link" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></a>
+      <a href="#policies" class="nav-link" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a>
+    </div>
+  </aside>
+
+  <!-- Quick Search & Product Quick-View / Paystack Bottom Sheet -->
+  <div class="bottom-sheet" id="dynamic-sheet" role="dialog" aria-modal="true">
+    <div class="sheet-grabber"></div>
+    <div id="dynamic-sheet-content" style="overflow-y:auto; padding:1.25rem 1.5rem 2rem; max-height:82vh;"></div>
+  </div>
+
+  <!-- Comprehensive Editorial Footer -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="#home" class="brand-wordmark" style="display:inline-block; margin-bottom:0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+          <p class="body-prose" style="margin-bottom:1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <form id="footer-newsletter-form" style="display:flex; gap:0.5rem; max-width:420px;">
+            <label for="footer-email" class=" form-label" style="position:absolute; width:1px; height:1px; overflow:hidden;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></label>
+            <input type="email" id="footer-email" class="form-input" required="">
+            <button type="submit" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></button>
+          </form>
+          <p id="footer-news-feedback" class="meta-line" style="margin-top:0.5rem;"></p>
+        </div>
+
+        <div>
+          <p class="kicker" style="margin-bottom:0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></p>
+          <ul style="list-style:none; display:flex; flex-direction:column; gap:0.55rem; font-size:0.88rem;">
+            <li><a href="#category/apparel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+            <li><a href="#category/footwear"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+            <li><a href="#category/bags"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></a></li>
+            <li><a href="#category/accessories"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></a></li>
+            <li><a href="#category/home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+            <li><a href="#category/beauty"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+            <li><a href="#category/electronics"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="kicker" style="margin-bottom:0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></p>
+          <ul style="list-style:none; display:flex; flex-direction:column; gap:0.55rem; font-size:0.88rem;">
+            <li><a href="#shop"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+            <li><a href="#deals"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></a></li>
+            <li><a href="#search"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a></li>
+            <li><a href="#cart"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a></li>
+            <li><a href="#wishlist"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+            <li><a href="#checkout"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+            <li><a href="#account"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="kicker" style="margin-bottom:0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></p>
+          <ul style="list-style:none; display:flex; flex-direction:column; gap:0.55rem; font-size:0.88rem;">
+            <li><a href="#about"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+            <li><a href="#contact"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></a></li>
+            <li><a href="#policies"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+            <li><a href="#policies"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+            <li><a href="#policies"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></a></li>
+            <li><button type="button" data-action="scroll-top" style="text-align:left; font-weight:600; color:var(--accent-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></button></li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--border-hairline); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem;">
+        <div class="meta-line">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+        </div>
+        <div class="meta-line">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       APPLICATION LOGIC, 84-PRODUCT CATALOGUE, ROUTER & PAYSTACK INTEGRATION
+       ========================================================================== -->
+  <script>
+  (function() {
+    'use strict';
+
+    /* --------------------------------------------------------------------------
+       1. EDITORIAL ASSETS & STUDIO SVG PRODUCT PHOTOGRAPHY GENERATOR
+       -------------------------------------------------------------------------- */
+    const EDITORIAL_IMAGES = {
+      hero: "",
+      apparel: "",
+      home: "",
+      story: ""
+    };
+
+    const CATEGORIES = [
+      {
+        slug: "",
+        code: "",
+        name: "",
+        shortName: "",
+        heroImg: EDITORIAL_IMAGES.apparel,
+        tagline: "",
+        description: ""
+      },
+      {
+        slug: "",
+        code: "",
+        name: "",
+        shortName: "",
+        heroImg: EDITORIAL_IMAGES.apparel,
+        tagline: "",
+        description: ""
+      },
+      {
+        slug: "",
+        code: "",
+        name: "",
+        shortName: "",
+        heroImg: EDITORIAL_IMAGES.hero,
+        tagline: "",
+        description: ""
+      },
+      {
+        slug: "",
+        code: "",
+        name: "",
+        shortName: "",
+        heroImg: EDITORIAL_IMAGES.story,
+        tagline: "",
+        description: ""
+      },
+      {
+        slug: "",
+        code: "",
+        name: "",
+        shortName: "",
+        heroImg: EDITORIAL_IMAGES.home,
+        tagline: "",
+        description: ""
+      },
+      {
+        slug: "",
+        code: "",
+        name: "",
+        shortName: "",
+        heroImg: EDITORIAL_IMAGES.home,
+        tagline: "",
+        description: ""
+      },
+      {
+        slug: "",
+        code: "",
+        name: "",
+        shortName: "",
+        heroImg: EDITORIAL_IMAGES.story,
+        tagline: "",
+        description: ""
+      }
+    ];
+
+    /**
+     * Generates a rich, high-resolution Studio Product Photography SVG data URI
+     * with travertine pedestal, directional sunlight shadows, and category-specific
+     * 3D-shaded silhouette so every product has unique, zero-broken-image visuals
+     * across 4 gallery angles.
+     */
+    function buildStudioImage(product, angleIdx) {
+      const angle = angleIdx || 0;
+      const palettes = [
+        { bg1: '#F7F3EB', bg2: '#EAE2D3', plinth: '#DFD5C4', primary: '#8C4A32', sec: '#4A3B32', accent: '#C8A97E' },
+        { bg1: '#F4F1EA', bg2: '#E5DEC9', plinth: '#D8CEBE', primary: '#4A5D4E', sec: '#2E3A31', accent: '#B5A886' },
+        { bg1: '#F8F4EE', bg2: '#E9DFD1', plinth: '#DDD0BE', primary: '#6E5039', sec: '#3B2B1E', accent: '#D4B483' },
+        { bg1: '#F3EFEA', bg2: '#E2DBD0', plinth: '#D2C8B8', primary: '#3E4C59', sec: '#242E38', accent: '#B89F7D' },
+        { bg1: '#F9F5F0', bg2: '#ECE3D5', plinth: '#DED2C0', primary: '#9C5A3C', sec: '#523426', accent: '#DFC39D' }
+      ];
+      const pal = palettes[(product.numId + angle) % palettes.length];
+      const scale = angle === 1 ? 1.12 : (angle === 2 ? 0.94 : 1.0);
+      const rot = angle === 1 ? -4 : (angle === 2 ? 5 : (angle === 3 ? -2 : 0));
+
+      let shapeSvg = '';
+      if (product.category === 'apparel') {
+        shapeSvg = `
+          <g transform="translate(300,290) scale(${scale}) rotate(${rot})">
+            <path d="M-95,-135 L-38,-155 L0,-125 L38,-155 L95,-135 L135,-20 L95,5 L78,-65 L82,145 L-82,145 L-78,-65 L-95,5 L-135,-20 Z" fill="${pal.primary}" stroke="${pal.sec}" stroke-width="3"/>
+            <path d="M-38,-155 L0,-75 L38,-155" fill="none" stroke="${pal.accent}" stroke-width="4"/>
+            <line x1="0" y1="-75" x2="0" y2="145" stroke="${pal.sec}" stroke-width="2.5"/>
+            <circle cx="-12" cy="-25" r="4.5" fill="${pal.accent}"/>
+            <circle cx="-12" cy="20" r="4.5" fill="${pal.accent}"/>
+            <circle cx="-12" cy="65" r="4.5" fill="${pal.accent}"/>
+          </g>`;
+      } else if (product.category === 'footwear') {
+        shapeSvg = `
+          <g transform="translate(300,325) scale(${scale}) rotate(${rot})">
+            <path d="M-145,35 C-145,-10 -95,-55 -40,-60 L25,-15 C75,-12 135,5 150,35 L150,55 L-145,55 Z" fill="${pal.primary}" stroke="${pal.sec}" stroke-width="3"/>
+            <rect x="-148" y="52" width="300" height="18" rx="6" fill="${pal.sec}"/>
+            <path d="M-55,-42 C-15,-38 25,-15 55,8" fill="none" stroke="${pal.accent}" stroke-width="3.5" stroke-dasharray="6,4"/>
+          </g>`;
+      } else if (product.category === 'bags') {
+        shapeSvg = `
+          <g transform="translate(300,305) scale(${scale}) rotate(${rot})">
+            <path d="M-55,-95 C-55,-165 55,-165 55,-95" fill="none" stroke="${pal.sec}" stroke-width="10" stroke-linecap="round"/>
+            <path d="M-115,-95 L115,-95 L130,105 C130,118 118,125 105,125 L-105,125 C-118,125 -130,118 -130,105 Z" fill="${pal.primary}" stroke="${pal.sec}" stroke-width="3"/>
+            <rect x="-28" y="-35" width="56" height="26" rx="4" fill="${pal.accent}" stroke="${pal.sec}" stroke-width="2"/>
+            <line x1="-112" y1="-45" x2="112" y2="-45" stroke="${pal.accent}" stroke-width="2" stroke-opacity="0.6"/>
+          </g>`;
+      } else if (product.category === 'accessories') {
+        shapeSvg = `
+          <g transform="translate(300,290) scale(${scale}) rotate(${rot})">
+            <rect x="-32" y="-165" width="64" height="330" rx="10" fill="${pal.sec}"/>
+            <circle cx="0" cy="0" r="88" fill="${pal.accent}" stroke="${pal.sec}" stroke-width="6"/>
+            <circle cx="0" cy="0" r="74" fill="${pal.bg1}" stroke="${pal.primary}" stroke-width="2"/>
+            <line x1="0" y1="0" x2="0" y2="-48" stroke="${pal.sec}" stroke-width="4" stroke-linecap="round"/>
+            <line x1="0" y1="0" x2="36" y2="18" stroke="${pal.primary}" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="0" cy="0" r="6" fill="${pal.primary}"/>
+          </g>`;
+      } else if (product.category === 'home') {
+        shapeSvg = `
+          <g transform="translate(300,295) scale(${scale}) rotate(${rot})">
+            <path d="M-48,-135 L48,-135 L36,-65 C88,-20 96,75 62,135 L-62,135 C-96,75 -88,-20 -36,-65 Z" fill="${pal.primary}" stroke="${pal.sec}" stroke-width="3"/>
+            <ellipse cx="0" cy="-135" rx="48" ry="12" fill="${pal.accent}" stroke="${pal.sec}" stroke-width="2.5"/>
+            <path d="M44,-95 C88,-95 88,-25 52,-15" fill="none" stroke="${pal.primary}" stroke-width="10" stroke-linecap="round"/>
+          </g>`;
+      } else if (product.category === 'beauty') {
+        shapeSvg = `
+          <g transform="translate(300,295) scale(${scale}) rotate(${rot})">
+            <path d="M-18,-155 C-18,-178 18,-178 18,-155 L22,-115 L-22,-115 Z" fill="${pal.sec}"/>
+            <rect x="-32" y="-115" width="64" height="24" rx="4" fill="${pal.accent}" stroke="${pal.sec}" stroke-width="2"/>
+            <path d="M-26,-91 L26,-91 L58,-45 L58,125 C58,136 48,142 36,142 L-36,142 C-48,142 -58,136 -58,125 L-58,-45 Z" fill="${pal.primary}" stroke="${pal.sec}" stroke-width="3"/>
+            <rect x="-46" y="-15" width="92" height="95" rx="3" fill="${pal.bg1}" stroke="${pal.accent}" stroke-width="1.5"/>
+            <text x="0" y="25" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="${pal.sec}" letter-spacing="2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></text>
+            <text x="0" y="48" text-anchor="middle" font-family="monospace" font-size="9" fill="${pal.primary}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></text>
+          </g>`;
+      } else {
+        shapeSvg = `
+          <g transform="translate(300,295) scale(${scale}) rotate(${rot})">
+            <rect x="-125" y="-115" width="250" height="230" rx="18" fill="${pal.primary}" stroke="${pal.sec}" stroke-width="4"/>
+            <circle cx="-18" cy="0" r="78" fill="${pal.sec}" stroke="${pal.accent}" stroke-width="3"/>
+            <circle cx="-18" cy="0" r="24" fill="${pal.accent}"/>
+            <line x1="82" y1="-75" x2="62" y2="55" stroke="${pal.accent}" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="82" cy="-75" r="14" fill="${pal.sec}" stroke="${pal.accent}" stroke-width="2.5"/>
+          </g>`;
+      }
+
+      const angleLabels = ['STUDIO FRONT', 'ATELIER PROFILE', 'MATERIAL MACRO', 'SCALE & PLINTH'];
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="" width="600" height="680">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="${pal.bg1}"/>
+            <stop offset="100%" stop-color="${pal.bg2}"/>
+          </linearGradient>
+          <radialGradient id="shadow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#1C1917" stop-opacity="0.24"/>
+            <stop offset="100%" stop-color="#1C1917" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="600" height="680" fill="none"/>
+        <path d="M0,470 L600,410 L600,680 L0,680 Z" fill="${pal.plinth}" opacity="0.55"/>
+        <rect x="95" y="425" width="410" height="90" rx="8" fill="${pal.plinth}" stroke="${pal.accent}" stroke-width="1.5"/>
+        <ellipse cx="300" cy="432" rx="145" ry="22" fill="none"/><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span><text x="42" y="52" font-family="Georgia, serif" font-size="14" fill="${pal.sec}" opacity="0.65" letter-spacing="2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></text>
+        <text x="42" y="632" font-family="sans-serif" font-weight="600" font-size="18" fill="#1C1917"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></text>
+        <text x="42" y="654" font-family="monospace" font-size="12" fill="#57534E"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></text>
+      </svg>`;
+
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    /* --------------------------------------------------------------------------
+       2. GENERATE 84 DISTINCT LUXURY PRODUCTS ACROSS 7 DEPARTMENTS
+       -------------------------------------------------------------------------- */
+    const RAW_CATALOG = [
+      // 01. Tailored Apparel (12 items)
+      ["", "", 420, 495, "", "", "", ["", "", "", "", ""], ["", "", ""]],
+      ["", "", 890, null, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 265, 310, "", "", "", ["", "", "", "", ""], ["", "", ""]],
+      ["", "", 230, null, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 540, 620, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 195, null, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 385, 440, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 340, null, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 175, 210, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 360, null, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 290, 345, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 215, null, "", "", "", ["", "", "", ""], ["", "", ""]],
+
+      // 02. Artisanal Footwear (12 items)
+      ["", "", 345, 395, "", "", "", ["", "", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 295, null, "", "", "", ["", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 370, 430, "", "", "", ["", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 280, null, "", "", "", ["", "", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 225, 260, "", "", "", ["", "", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 460, null, "", "", "", ["", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 185, 220, "", "", "", ["", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 315, null, "", "", "", ["", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 330, 380, "", "", "", ["", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 310, null, "", "", "", ["", "", "", "", "", ""], ["", "", ""]],
+      ["", "", 490, 560, "", "", "", ["", "", "", "", ""], ["", ""]],
+      ["", "", 210, null, "", "", "", ["", "", "", "", "", "", ""], ["", "", ""]],
+
+      // 03. Leather Goods & Bags (12 items)
+      ["", "", 680, 790, "", "", "", [""], ["", "", ""]],
+      ["", "", 495, null, "", "", "", [""], ["", "", ""]],
+      ["", "", 340, 390, "", "", "", ["", ""], ["", "", ""]],
+      ["", "", 310, null, "", "", "", [""], ["", "", ""]],
+      ["", "", 165, 195, "", "", "", [""], ["", "", ""]],
+      ["", "", 430, null, "", "", "", [""], ["", "", ""]],
+      ["", "", 520, 610, "", "", "", [""], ["", ""]],
+      ["", "", 115, null, "", "", "", [""], ["", "", ""]],
+      ["", "", 460, 530, "", "", "", [""], ["", ""]],
+      ["", "", 375, null, "", "", "", [""], ["", "", ""]],
+      ["", "", 210, 245, "", "", "", [""], ["", ""]],
+      ["", "", 95, null, "", "", "", [""], ["", "", ""]],
+
+      // 04. Timepieces & Eyewear (12 items)
+      ["", "", 940, 1100, "", "", "", ["", ""], ["", "", ""]],
+      ["", "", 320, null, "", "", "", ["", ""], ["", ""]],
+      ["", "", 275, 320, "", "", "", [""], ["", "", ""]],
+      ["", "", 180, null, "", "", "", ["", ""], ["", "", ""]],
+      ["", "", 195, 230, "", "", "", ["", "", "", "", ""], ["", "", ""]],
+      ["", "", 620, null, "", "", "", [""], ["", ""]],
+      ["", "", 145, 175, "", "", "", [""], ["", "", "", ""]],
+      ["", "", 240, null, "", "", "", ["", "", "", ""], ["", ""]],
+      ["", "", 260, 305, "", "", "", ["", "", "", ""], ["", "", ""]],
+      ["", "", 350, null, "", "", "", [""], ["", ""]],
+      ["", "", 155, null, "", "", "", ["", ""], ["", ""]],
+      ["", "", 285, 330, "", "", "", [""], ["", "", ""]],
+
+      // 05. Architectural Home (12 items)
+      ["", "", 240, 285, "", "", "", ["", ""], ["", ""]],
+      ["", "", 175, null, "", "", "", ["", ""], ["", "", ""]],
+      ["", "", 330, 385, "", "", "", [""], ["", ""]],
+      ["", "", 310, null, "", "", "", [""], ["", "", ""]],
+      ["", "", 125, 150, "", "", "", [""], ["", ""]],
+      ["", "", 450, 520, "", "", "", ["", "", ""], ["", "", ""]],
+      ["", "", 215, null, "", "", "", [""], [""]],
+      ["", "", 195, null, "", "", "", [""], ["", "", ""]],
+      ["", "", 165, 195, "", "", "", [""], ["", ""]],
+      ["", "", 110, null, "", "", "", ["", ""], ["", ""]],
+      ["", "", 390, 460, "", "", "", ["", ""], ["", ""]],
+      ["", "", 185, null, "", "", "", [""], [""]],
+
+      // 06. Botanical Skincare (12 items)
+      ["", "", 135, 160, "", "", "", ["", ""], [""]],
+      ["", "", 245, null, "", "", "", ["", ""], [""]],
+      ["", "", 120, 145, "", "", "", [""], [""]],
+      ["", "", 68, null, "", "", "", [""], ["", ""]],
+      ["", "", 148, null, "", "", "", [""], [""]],
+      ["", "", 78, 92, "", "", "", [""], [""]],
+      ["", "", 85, null, "", "", "", [""], [""]],
+      ["", "", 95, 115, "", "", "", [""], [""]],
+      ["", "", 115, null, "", "", "", [""], [""]],
+      ["", "", 165, 195, "", "", "", [""], [""]],
+      ["", "", 88, null, "", "", "", [""], [""]],
+      ["", "", 48, null, "", "", "", [""], ["", ""]],
+
+      // 07. Studio Acoustic Audio (12 items)
+      ["", "", 1250, 1450, "", "", "", [""], ["", ""]],
+      ["", "", 690, 790, "", "", "", [""], ["", ""]],
+      ["", "", 540, null, "", "", "", ["", ""], ["", ""]],
+      ["", "", 820, 950, "", "", "", [""], ["", ""]],
+      ["", "", 295, null, "", "", "", [""], ["", "", ""]],
+      ["", "", 640, 740, "", "", "", [""], [""]],
+      ["", "", 260, null, "", "", "", [""], ["", ""]],
+      ["", "", 210, 245, "", "", "", [""], ["", ""]],
+      ["", "", 880, null, "", "", "", [""], ["", ""]],
+      ["", "", 125, 148, "", "", "", [""], ["", ""]],
+      ["", "", 340, null, "", "", "", [""], ["", ""]],
+      ["", "", 145, null, "", "", "", ["", ""], [""]]
+    ];
+
+    const NGN_RATE = 1550; // 1 USD = 1,550 NGN for realistic dual-currency checkout
+
+    const PRODUCTS = RAW_CATALOG.map((item, idx) => {
+      const numId = idx + 1;
+      const [category, title, priceUSD, compareUSD, badge, material, origin, sizes, colors] = item;
+      const sku = `AV-${category.slice(0, 3).toUpperCase()}-${String(numId).padStart(3, '0')}`;
+      const productObj = {
+        id: `prod-${numId}`,
+        numId,
+        sku,
+        category,
+        title,
+        priceUSD,
+        compareUSD,
+        priceNGN: priceUSD * NGN_RATE,
+        compareNGN: compareUSD ? compareUSD * NGN_RATE : null,
+        badge,
+        material,
+        origin,
+        sizes,
+        colors,
+        rating: Number((4.6 + ((numId * 7) % 5) * 0.08).toFixed(1)),
+        reviewsCount: 14 + ((numId * 13) % 78),
+        stock: 3 + ((numId * 5) % 19),
+        isFeatured: numId % 7 === 1 || numId <= 6,
+        isNew: badge === 'New Season' || numId % 5 === 0,
+        isBestSeller: badge === 'Best Seller' || numId % 6 === 0,
+        isOnSale: Boolean(compareUSD),
+        description: `${title} is crafted in ${origin} from ${material}. Engineered with quiet architectural proportions, tactile surface depth, and enduring construction for daily utility and travel.`
+      };
+      productObj.images = [
+        buildStudioImage(productObj, 0),
+        buildStudioImage(productObj, 1),
+        buildStudioImage(productObj, 2),
+        buildStudioImage(productObj, 3)
+      ];
+      return productObj;
+    });
+
+    /* --------------------------------------------------------------------------
+       3. FAQ & POLICY DATA
+       -------------------------------------------------------------------------- */
+    const FAQ_ITEMS = [
+      {
+        q: "",
+        a: ""
+      },
+      {
+        q: "",
+        a: ""
+      },
+      {
+        q: "",
+        a: ""
+      },
+      {
+        q: "",
+        a: ""
+      },
+      {
+        q: "",
+        a: ""
+      }
+    ];
+
+    /* --------------------------------------------------------------------------
+       4. PERSISTENT STATE MANAGEMENT & CURRENCY / SEO HELPERS
+       -------------------------------------------------------------------------- */
+    const STORAGE_KEY = "";
+
+    const defaultState = {
+      currency: 'NGN', // NGN (₦) default for mobile Paystack focus; toggleable to USD ($)
+      cart: [
+        { productId: 'prod-1', qty: 1, size: 'M', color: 'Sand' },
+        { productId: 'prod-25', qty: 1, size: '48L Cabin', color: 'Cognac' }
+      ],
+      wishlist: ['prod-2', 'prod-13', 'prod-49', 'prod-61'],
+      recentlyViewed: ['prod-1', 'prod-13', 'prod-25', 'prod-37', 'prod-49', 'prod-61'],
+      orders: [
+        {
+          ref: 'PSK-AV-894210',
+          date: '10 Oct 2026',
+          method: 'Paystack Instant Transfer',
+          totalUSD: 680,
+          status: 'Confirmed — Preparing Courier Dispatch',
+          itemsCount: 1
+        }
+      ],
+      promoCode: '',
+      discountRate: 0,
+      shopFilter: {
+        query: '',
+        category: 'all',
+        sort: 'featured',
+        maxPriceUSD: 1500,
+        onlySale: false,
+        visibleCount: 24
+      },
+      checkoutMethod: 'card', // 'card' | 'transfer' | 'ussd' | 'applepay'
+      deliverySpeed: 'express', // 'standard' | 'express' | 'lagos_sameday'
+      userReviews: {}
+    };
+
+    let state = Object.assign({}, defaultState);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state = Object.assign({}, defaultState, parsed, {
+          shopFilter: Object.assign({}, defaultState.shopFilter, parsed.shopFilter || {})
+        });
+      }
+    } catch (e) {
+      // Fallback to in-memory state if storage is restricted
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+      updateHeaderCounts();
+    }
+
+    function formatPrice(usdAmount) {
+      if (state.currency === 'NGN') {
+        const ngn = Math.round(usdAmount * NGN_RATE);
+        return '₦' + ngn.toLocaleString('en-NG');
+      }
+      return '$' + Number(usdAmount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    function getProduct(id) {
+      return PRODUCTS.find(p => p.id === id) || PRODUCTS[0];
+    }
+
+    function getCartTotals() {
+      let subtotalUSD = 0;
+      let count = 0;
+      state.cart.forEach(item => {
+        const p = PRODUCTS.find(x => x.id === item.productId);
+        if (p) {
+          subtotalUSD += p.priceUSD * item.qty;
+          count += item.qty;
+        }
+      });
+      const discountUSD = Math.round(subtotalUSD * state.discountRate);
+      const freeShipThresholdUSD = 165; // ~₦250,000
+      let shippingUSD = 0;
+      if (subtotalUSD > 0 && subtotalUSD - discountUSD < freeShipThresholdUSD) {
+        shippingUSD = state.deliverySpeed === 'lagos_sameday' ? 18 : (state.deliverySpeed === 'express' ? 14 : 8);
+      }
+      const totalUSD = Math.max(0, subtotalUSD - discountUSD + shippingUSD);
+      return {
+        count,
+        subtotalUSD,
+        discountUSD,
+        shippingUSD,
+        totalUSD,
+        freeShipThresholdUSD,
+        qualifiesFreeShip: (subtotalUSD - discountUSD) >= freeShipThresholdUSD
+      };
+    }
+
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = 'toast-msg';
+      el.innerHTML = `<span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>`;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.2s ease';
+        setTimeout(() => el.remove(), 220);
+      }, 2800);
+    }
+
+    function updateHeaderCounts() {
+      const totals = getCartTotals();
+      const cartEl = document.getElementById('header-cart-count');
+      const mobCartEl = document.getElementById('mob-cart-count');
+      const wishEl = document.getElementById('header-wishlist-count');
+      const mobWishEl = document.getElementById('mob-wishlist-count');
+      const freeShipText = document.getElementById('free-ship-threshold-text');
+
+      if (cartEl) cartEl.textContent = `(${totals.count})`;
+      if (mobCartEl) mobCartEl.textContent = String(totals.count);
+      if (wishEl) wishEl.textContent = String(state.wishlist.length);
+      if (mobWishEl) mobWishEl.textContent = String(state.wishlist.length);
+      if (freeShipText) freeShipText.textContent = formatPrice(165);
+
+      document.querySelectorAll('[data-action="set-currency"]').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-currency') === state.currency);
+      });
+    }
+
+    function updateSEO(title, description, productObj) {
+      document.title = title;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', description);
+      const canonical = document.getElementById('canonical-link');
+      if (canonical) {
+        canonical.setAttribute('href', window.location.origin + window.location.pathname + (window.location.hash || '#home'));
+      }
+      const ldEl = document.getElementById('dynamic-json-ld');
+      if (ldEl) {
+        if (productObj) {
+          ldEl.textContent = JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: productObj.title,
+            sku: productObj.sku,
+            description: productObj.description,
+            brand: { '@type': 'Brand', name: 'ATELIER VÉRA' },
+            offers: {
+              '@type': 'Offer',
+              priceCurrency: state.currency,
+              price: state.currency === 'NGN' ? productObj.priceNGN : productObj.priceUSD,
+              availability: 'https://schema.org/InStock'
+            }
+          });
+        } else {
+          ldEl.textContent = JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'OnlineStore',
+            name: 'ATELIER VÉRA',
+            description: description,
+            currenciesAccepted: 'NGN, USD',
+            paymentAccepted: 'Paystack, Card, Bank Transfer, USSD'
+          });
+        }
+      }
+    }
+
+    /* --------------------------------------------------------------------------
+       5. REUSABLE PRODUCT CARD & CART DRAWER RENDERERS
+       -------------------------------------------------------------------------- */
+    function renderProductCard(p) {
+      const inWish = state.wishlist.includes(p.id);
+      const catObj = CATEGORIES.find(c => c.slug === p.category);
+      const catLabel = catObj ? catObj.shortName : p.category;
+      return `
+        <article class="product-card gs-reveal-card">
+          <div class="product-card__media" data-action="nav-product" data-id="${p.id}">
+            <img loading="lazy" referrerpolicy="no-referrer" / class="eshop-placeholder-media">
+            <button type="button" class="product-card__wishlist ${inWish ? 'active' : ''}" data-action="toggle-wishlist" data-id="${p.id}">
+              <svg width="18" height="18" viewBox="" fill="${inWish ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.9"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 .5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            </button>
+          </div>
+          <div class="product-card__body">
+            <div>
+              <div class="meta-line" style="margin-bottom:0.25rem;">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <span aria-hidden="true"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+              </div>
+              <h3 class="product-card__title" data-action="nav-product" data-id="${p.id}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h3>
+            </div>
+            <div class="product-card__footer">
+              <div class="price-group">
+                <span class="price-current"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+              <div style="display:flex; gap:0.3rem;">
+                <button type="button" class="quick-add-btn" data-action="quick-view" data-id="${p.id}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></button>
+                <button type="button" class="quick-add-btn" data-action="quick-add" data-id="${p.id}" style="background:var(--text-primary); color:var(--bg-canvas);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></button>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderCartDrawer() {
+      const itemsContainer = document.getElementById('cart-drawer-items');
+      const footerContainer = document.getElementById('cart-drawer-footer');
+      const statusEl = document.getElementById('drawer-free-ship-status');
+      if (!itemsContainer || !footerContainer) return;
+
+      const totals = getCartTotals();
+      if (statusEl) {
+        if (totals.qualifiesFreeShip) {
+          statusEl.textContent = '✓ Complimentary Express Insured Courier Unlocked';
+        } else {
+          const remaining = Math.max(0, totals.freeShipThresholdUSD - (totals.subtotalUSD - totals.discountUSD));
+          statusEl.textContent = `Add ${formatPrice(remaining)} more for Complimentary Express Courier`;
+        }
+      }
+
+      if (state.cart.length === 0) {
+        itemsContainer.innerHTML = `
+          <div style="text-align:center; padding:3rem 1rem;">
+            <p class="display-md" style="margin-bottom:0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+            <p class="body-prose" style="margin-bottom:1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#shop" class="btn btn-primary" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+          </div>
+        `;
+        footerContainer.innerHTML = '';
+        return;
+      }
+
+      itemsContainer.innerHTML = state.cart.map((item, idx) => {
+        const p = getProduct(item.productId);
+        return `
+          <div style="display:grid; grid-template-columns:76px 1fr; gap:0.85rem; padding-bottom:1rem; border-bottom:1px solid var(--border-hairline);">
+            <img style="width:76px; height:88px; object-fit:cover; border-radius:var(--radius-sm); background:var(--bg-subtle);" / class="eshop-placeholder-media">
+            <div style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div style="display:flex; justify-content:space-between; gap:0.5rem;">
+                  <a href="#product/${p.id}" data-action="close-overlays" style="font-weight:600; font-size:0.9rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></a>
+                  <button type="button" data-action="remove-cart-idx" data-idx="${idx}" style="font-size:0.78rem; color:var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></button>
+                </div>
+                <p class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></p>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.5rem;">
+                <div style="display:inline-flex; align-items:center; border:1px solid var(--border-strong); border-radius:var(--radius-xs);">
+                  <button type="button" data-action="cart-qty-delta" data-idx="${idx}" data-delta="-1" style="width:32px; height:32px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                  <span class="tabular-nums" style="padding:0 0.5rem; font-size:0.82rem; font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  <button type="button" data-action="cart-qty-delta" data-idx="${idx}" data-delta="1" style="width:32px; height:32px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                </div>
+                <span class="tabular-nums" style="font-weight:600; font-size:0.9rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      footerContainer.innerHTML = `
+        <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem; font-size:0.88rem;">
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></span>
+            <span class="tabular-nums" style="font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+          </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span><div style="display:flex; justify-content:space-between; font-size:1rem; font-weight:700; padding-top:0.5rem; border-top:1px solid var(--border-hairline);">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+            <span class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+          <a href="#cart" class="btn btn-outline" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+          <a href="#checkout" class="btn btn-paystack" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></a>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       6. SCREEN 1 — HOME (HERO PARALLAX, COLLECTIONS, BENTO, CRAFTSMANSHIP)
+       -------------------------------------------------------------------------- */
+    function renderHome() {
+      updateSEO(
+        'ATELIER VÉRA — Mobile-First Luxury Storefront & Paystack Checkout',
+        'Explore 84 luxury essentials across tailored apparel, artisanal footwear, leather bags, timepieces, architectural home, and botanical skincare.'
+      );
+      const featured = PRODUCTS.filter(p => p.isFeatured).slice(0, 6);
+      const newArrivals = PRODUCTS.filter(p => p.isNew).slice(0, 8);
+      const bestSellers = PRODUCTS.filter(p => p.isBestSeller).slice(0, 6);
+      const recentProducts = state.recentlyViewed.map(id => getProduct(id)).slice(0, 4);
+
+      return `
+        <!-- Hero Split with Parallax -->
+        <section class="container">
+          <div class="hero-split">
+            <div class="hero-copy-pane gs-hero-text">
+              <div>
+                <p class="kicker" style="margin-bottom:0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <h1 class="display-xl" style="margin-bottom:1.15rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h1>
+                <p class="body-prose"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.5rem;">
+                  <a href="#shop" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></a>
+                  <a href="#checkout" class="btn btn-paystack"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></a>
+                </div>
+                <div class="kpi-strip">
+                  <div>
+                    <div class="tabular-nums" style="font-size:1.25rem; font-weight:700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                    <div class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></div>
+                  </div>
+                  <div>
+                    <div class="tabular-nums" style="font-size:1.25rem; font-weight:700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                    <div class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></div>
+                  </div>
+                  <div>
+                    <div class="tabular-nums" style="font-size:1.25rem; font-weight:700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></div>
+                    <div class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                  </div>
+                  <div>
+                    <div class="tabular-nums" style="font-size:1.25rem; font-weight:700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></div>
+                    <div class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-media-pane">
+              <img class="gs-parallax-img eshop-placeholder-media" referrerpolicy="no-referrer" />
+              <div class="hero-scrim">
+                <p class="meta-line" style="color:rgba(255,255,255,0.85);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></p>
+                <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:1rem; margin-top:0.35rem;">
+                  <div>
+                    <h2 class="display-md" style="color:#FFFFFF;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+                    <p style="font-size:0.85rem; color:rgba(255,255,255,0.85);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                  <a href="#product/prod-1" class="btn btn-accent" style="min-height:42px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Department Quick-Tap Mobile Scroller & Bento Showcase -->
+        <section class="section">
+          <div class="container">
+            <div class="section-header gs-reveal-text">
+              <div>
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></p>
+                <h2 class="display-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h2>
+              </div>
+              <a href="#shop" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></a>
+            </div>
+
+            <div class="segmented-scroll" style="margin-bottom:1.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+
+        <!-- Featured Collection Grid -->
+        <section class="section">
+          <div class="container">
+            <div class="section-header gs-reveal-text">
+              <div>
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></p>
+                <h2 class="display-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></h2>
+              </div>
+              <a href="#shop" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></a>
+            </div>
+            <div class="product-grid"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+
+        <!-- Horizontal Auto-Advancing / Touch Carousel: New Season Arrivals -->
+        <section class="section" style="background:var(--bg-subtle);">
+          <div class="container">
+            <div class="section-header gs-reveal-text">
+              <div>
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></p>
+                <h2 class="display-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+              </div>
+              <div style="display:flex; gap:0.5rem;">
+                <button type="button" class="btn btn-outline" data-action="carousel-scroll" data-dir="-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></button>
+                <button type="button" class="btn btn-outline" data-action="carousel-scroll" data-dir="1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></button>
+              </div>
+            </div>
+            <div id="home-carousel" style="display:grid; grid-auto-flow:column; grid-auto-columns:minmax(250px, 310px); gap:1.15rem; overflow-x:auto; padding-bottom:0.75rem; scroll-snap-type:x mandatory; scrollbar-width:none;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+
+        <!-- Opposing Parallax Craftsmanship & Provenance Story -->
+        <section class="section">
+          <div class="container">
+            <div class="hero-split" style="align-items:center;">
+              <div class="hero-media-pane" style="min-height:380px;">
+                <img class="gs-parallax-img eshop-placeholder-media" loading="lazy" referrerpolicy="no-referrer" />
+              </div>
+              <div class="hero-copy-pane gs-reveal-text" style="background:var(--bg-elevated);">
+                <div>
+                  <p class="kicker" style="margin-bottom:0.65rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <h2 class="display-lg" style="margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+                  <p class="body-prose" style="margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <div class="meta-line" style="margin-bottom:1.5rem;">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                  </div>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
+                  <a href="#about" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></a>
+                  <a href="#deals" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Best Sellers & Client Favorites -->
+        <section class="section">
+          <div class="container">
+            <div class="section-header gs-reveal-text">
+              <div>
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></p>
+                <h2 class="display-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></h2>
+              </div>
+              <a href="#shop" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></a>
+            </div>
+            <div class="product-grid"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+
+        <!-- Recently Viewed & Personalized Discovery -->
+        <section class="section" style="border-bottom:none;">
+          <div class="container">
+            <div class="section-header gs-reveal-text">
+              <div>
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></p>
+                <h2 class="display-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h2>
+              </div>
+              <a href="#wishlist" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></a>
+            </div>
+            <div class="product-grid product-grid--4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       7. SCREEN 2 — SHOP ALL (84-PRODUCT CATALOGUE, FILTERS, SORT, PAGINATION)
+       -------------------------------------------------------------------------- */
+    function getFilteredProducts() {
+      const f = state.shopFilter;
+      const q = (f.query || '').trim().toLowerCase();
+      let list = PRODUCTS.filter(p => {
+        if (f.category !== 'all' && p.category !== f.category) return false;
+        if (f.onlySale && !p.isOnSale) return false;
+        if (p.priceUSD > f.maxPriceUSD) return false;
+        if (q) {
+          const hay = `${p.title} ${p.material} ${p.origin} ${p.category} ${p.sku} ${p.badge}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      if (f.sort === 'price-asc') list.sort((a, b) => a.priceUSD - b.priceUSD);
+      else if (f.sort === 'price-desc') list.sort((a, b) => b.priceUSD - a.priceUSD);
+      else if (f.sort === 'rating') list.sort((a, b) => b.rating - a.rating);
+      else if (f.sort === 'newest') list.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+
+      return list;
+    }
+
+    function renderShop() {
+      updateSEO(
+        'Shop All 84 Luxury Pieces — ATELIER VÉRA Catalogue',
+        'Browse all 84 products across tailored apparel, footwear, leather bags, timepieces, architectural home, skincare, and studio audio.'
+      );
+      const f = state.shopFilter;
+      const filtered = getFilteredProducts();
+      const visible = filtered.slice(0, f.visibleCount);
+
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+            </nav>
+
+            <div class="section-header">
+              <div>
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+                <h1 class="display-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></h1>
+              </div>
+              <div class="meta-line">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span><strong class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span><strong class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+              </div>
+            </div>
+
+            <!-- Interactive Filter & Sort Toolbar -->
+            <div class="filter-toolbar">
+              <div class="segmented-scroll" role="tablist">
+                <button type="button" class="seg-btn ${f.category === 'all' ? 'active' : ''}" data-action="set-shop-cat" data-cat="all"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></button><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+              <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.65rem; width:100%; justify-content:space-between; padding-top:0.5rem; border-top:1px solid var(--border-hairline);">
+                <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.65rem; flex:1;">
+                  <input type="search" id="shop-search-input" class="form-input" style="max-width:260px; min-height:40px; padding:0.4rem 0.75rem;" />
+                  <label style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.82rem; font-weight:600; cursor:pointer; min-height:40px; padding:0 0.5rem;">
+                    <input type="checkbox" id="shop-sale-toggle" ${f.onlySale ? 'checked' : ''} />
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </label>
+                  <div style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.8rem;">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span><strong class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong></span>
+                    <input type="range" id="shop-price-range" min="100" max="1500" step="50" style="accent-color:var(--accent-primary);" />
+                  </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <label for="shop-sort-select" style="font-size:0.8rem; color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></label>
+                  <select id="shop-sort-select" class="form-select" style="width:auto; min-height:40px; padding:0.35rem 0.75rem; font-size:0.82rem;">
+                    <option ${f.sort === 'featured' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></option>
+                    <option ${f.sort === 'newest' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></option>
+                    <option ${f.sort === 'price-asc' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                    <option ${f.sort === 'price-desc' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                    <option ${f.sort === 'rating' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></option>
+                  </select>
+                  <button type="button" class="btn btn-outline" data-action="reset-shop-filters" style="min-height:40px; padding:0.35rem 0.75rem; font-size:0.78rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></button>
+                </div>
+              </div>
+            </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       8. SCREEN 3 — DISTINCT CATEGORY PAGES (7 DEPARTMENTS)
+       -------------------------------------------------------------------------- */
+    function renderCategory(slug) {
+      const cat = CATEGORIES.find(c => c.slug === slug) || CATEGORIES[0];
+      const catProducts = PRODUCTS.filter(p => p.category === cat.slug);
+      updateSEO(
+        `${cat.name} (${catProducts.length} Pieces) — ATELIER VÉRA`,
+        `${cat.tagline} ${cat.description}`
+      );
+
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1.25rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><a href="#shop"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </nav>
+
+            <!-- Category Editorial Hero -->
+            <div class="hero-split" style="padding-top:0; margin-bottom:2rem;">
+              <div class="hero-copy-pane">
+                <div>
+                  <p class="kicker" style="margin-bottom:0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <h1 class="display-xl" style="margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+                  <p class="body-prose" style="margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+                  <p class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              </div>
+              <div class="hero-media-pane" style="min-height:300px;">
+                <img class="gs-parallax-img eshop-placeholder-media" referrerpolicy="no-referrer" />
+              </div>
+            </div>
+
+            <div class="product-grid product-grid--4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       9. SCREEN 4 — PRODUCT DETAILS (PDP) + MOBILE STICKY BUY BAR
+       -------------------------------------------------------------------------- */
+    let activePdpState = { productId: 'prod-1', imgIndex: 0, size: '', color: '', qty: 1 };
+
+    function renderProductDetail(productId) {
+      const p = getProduct(productId);
+      if (activePdpState.productId !== p.id) {
+        activePdpState = {
+          productId: p.id,
+          imgIndex: 0,
+          size: p.sizes[0],
+          color: p.colors[0],
+          qty: 1
+        };
+      }
+      // Track recently viewed
+      state.recentlyViewed = [p.id, ...state.recentlyViewed.filter(id => id !== p.id)].slice(0, 8);
+      saveState();
+
+      updateSEO(`${p.title} (${p.sku}) — ATELIER VÉRA`, p.description, p);
+
+      const catObj = CATEGORIES.find(c => c.slug === p.category) || CATEGORIES[0];
+      const related = PRODUCTS.filter(x => x.category === p.category && x.id !== p.id).slice(0, 4);
+      const customReviews = state.userReviews[p.id] || [];
+      const defaultReviews = [
+        { author: 'Adesuwa O. — Victoria Island, Lagos', date: '2 weeks ago', rating: 5, text: 'Exceptional material weight and finishing. Settled via Paystack Transfer and received same-day dispatch in Lagos.' },
+        { author: 'Matteo R. — Milan', date: '1 month ago', rating: 5, text: 'True to size with understated architectural proportions. The packaging and garment protection are first-rate.' }
+      ];
+      const allReviews = [...customReviews, ...defaultReviews];
+      const inWish = state.wishlist.includes(p.id);
+
+      return `
+        <section class="section" style="padding-top:1.75rem; border-bottom:none;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1.5rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <a href="#category/${catObj.slug}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </nav>
+
+            <div class="pdp-grid">
+              <!-- Multi-Angle Interactive Gallery -->
+              <div class="pdp-gallery">
+                <div class="pdp-main-img">
+                  <img id="pdp-primary-image" referrerpolicy="no-referrer" / class="eshop-placeholder-media">
+                </div>
+                <div class="pdp-thumbs"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              </div>
+
+              <!-- Contiguous Purchase Module -->
+              <div class="pdp-purchase-module">
+                <div>
+                  <div class="meta-line" style="margin-bottom:0.35rem;">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    <span style="color:var(--accent-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                  <h1 class="display-md" style="font-size:1.75rem; margin-bottom:0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:1rem;">
+                    <div class="price-group">
+                      <span class="price-current" style="font-size:1.35rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                    <span class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </div>
+                </div>
+
+                <p class="body-prose" style="font-size:0.92rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+
+                <!-- Color Variant Selector -->
+                <div>
+                  <span class="form-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></strong></span>
+                  <div style="display:flex; flex-wrap:wrap; gap:0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                </div>
+
+                <!-- Size / Specification Selector -->
+                <div>
+                  <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem;">
+                    <span class="form-label" style="margin-bottom:0;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></strong></span>
+                    <span class="meta-line" style="color:var(--status-success);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </div>
+                  <div style="display:flex; flex-wrap:wrap; gap:0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                </div>
+
+                <!-- Quantity & Primary Actions -->
+                <div style="display:flex; gap:0.75rem; align-items:center;">
+                  <div style="display:inline-flex; align-items:center; border:1px solid var(--border-strong); border-radius:var(--radius-sm); height:46px;">
+                    <button type="button" data-action="pdp-qty" data-delta="-1" style="width:42px; height:44px; font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                    <span class="tabular-nums" style="padding:0 0.75rem; font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <button type="button" data-action="pdp-qty" data-delta="1" style="width:42px; height:44px; font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                  </div>
+                  <button type="button" class="btn btn-primary" style="flex:1;" data-action="pdp-add-to-cart"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></button>
+                  <button type="button" class="btn btn-outline" data-action="toggle-wishlist" data-id="${p.id}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></button>
+                </div>
+
+                <!-- Express Mobile Paystack Buy Now Button -->
+                <button type="button" class="btn btn-paystack btn-block" data-action="pdp-buy-now-paystack">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                </button>
+
+                <!-- Specifications & Provenance Accordions -->
+                <div style="border-top:1px solid var(--border-hairline); margin-top:0.5rem;">
+                  <div class="accordion-item open">
+                    <button type="button" class="accordion-trigger" data-action="toggle-accordion">
+                      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    </button>
+                    <div class="accordion-content">
+                      <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                      <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                      <p><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                    </div>
+                  </div>
+                  <div class="accordion-item">
+                    <button type="button" class="accordion-trigger" data-action="toggle-accordion">
+                      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    </button>
+                    <div class="accordion-content"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Client Reviews Section -->
+            <div style="margin-top:4rem; padding-top:3rem; border-top:1px solid var(--border-hairline);">
+              <div class="section-header">
+                <div>
+                  <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></p>
+                  <h2 class="display-md"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+                </div>
+                <p class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem; margin-bottom:2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+              <form id="pdp-review-form" style="background:var(--bg-subtle); padding:1.5rem; border-radius:var(--radius-md); max-width:640px;">
+                <h3 class="display-md" style="margin-bottom:0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                  <input type="text" name="author" class="form-input" required />
+                  <select name="rating" class="form-select">
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></option>
+                    <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></option>
+                  </select>
+                </div>
+                <textarea name="text" class="form-textarea" rows="2" required style="margin-bottom:0.75rem;"></textarea>
+                <button type="submit" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></button>
+              </form>
+            </div>
+
+            <!-- Related Products -->
+            <div style="margin-top:4rem; padding-top:3rem; border-top:1px solid var(--border-hairline);">
+              <h2 class="display-lg" style="margin-bottom:1.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+              <div class="product-grid product-grid--4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Mobile Sticky Bottom Purchase Bar -->
+        <div class="mobile-pdp-bar">
+          <div>
+            <div style="font-size:0.78rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:155px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+            <div class="tabular-nums" style="font-size:0.9rem; font-weight:700; color:var(--accent-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+          </div>
+          <div style="display:flex; gap:0.45rem;">
+            <button type="button" class="btn btn-primary" style="padding:0.5rem 0.9rem; min-height:42px; font-size:0.8rem;" data-action="pdp-add-to-cart"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></button>
+            <button type="button" class="btn btn-paystack" style="padding:0.5rem 0.9rem; min-height:42px; font-size:0.8rem;" data-action="pdp-buy-now-paystack"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+          </div>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       10. SCREEN 5 — SEARCH RESULTS
+       -------------------------------------------------------------------------- */
+    function renderSearch(initialQuery) {
+      if (typeof initialQuery === 'string' && initialQuery.length > 0) {
+        state.shopFilter.query = initialQuery;
+      }
+      const q = (state.shopFilter.query || '').trim();
+      updateSEO(
+        q ? `Search: "${q}" — ATELIER VÉRA` : 'Search the 84-Piece Archive — ATELIER VÉRA',
+        'Search across 84 curated luxury pieces by garment name, material, origin, or SKU.'
+      );
+
+      const matches = PRODUCTS.filter(p => {
+        if (!q) return true;
+        const hay = `${p.title} ${p.material} ${p.origin} ${p.category} ${p.sku} ${p.badge}`.toLowerCase();
+        return hay.includes(q.toLowerCase());
+      });
+
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+            </nav>
+
+            <div style="background:var(--bg-subtle); padding:1.5rem; border-radius:var(--radius-lg); margin-bottom:2rem; border:1px solid var(--border-hairline);">
+              <h1 class="display-lg" style="margin-bottom:0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></h1>
+              <form id="dedicated-search-form" style="display:flex; gap:0.65rem; flex-wrap:wrap;">
+                <input type="search" id="dedicated-search-input" class="form-input" style="flex:1; min-width:220px;" />
+                <button type="submit" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></button><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></form>
+              <div class="meta-line" style="margin-top:0.75rem;">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                <button type="button" class="seg-btn" data-action="quick-search-term" data-term="Cashmere"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></button>
+                <button type="button" class="seg-btn" data-action="quick-search-term" data-term="Suede"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></button>
+                <button type="button" class="seg-btn" data-action="quick-search-term" data-term="Travertine"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></button>
+                <button type="button" class="seg-btn" data-action="quick-search-term" data-term="Serum"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></button>
+                <button type="button" class="seg-btn" data-action="quick-search-term" data-term="Florence"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></button>
+              </div>
+            </div>
+
+            <div class="section-header">
+              <h2 class="display-md"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h2>
+            </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       11. SCREEN 6 — SHOPPING CART (FULL BAG SCREEN)
+       -------------------------------------------------------------------------- */
+    function renderCart() {
+      updateSEO('Shopping Bag — ATELIER VÉRA', 'Review your selected pieces, apply archive privilege codes, and proceed to Paystack mobile checkout.');
+      const totals = getCartTotals();
+
+      if (state.cart.length === 0) {
+        return `
+          <section class="section" style="border-bottom:none;">
+            <div class="container" style="text-align:center; max-width:580px; padding:3rem 1rem;">
+              <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></p>
+              <h1 class="display-lg" style="margin:0.5rem 0 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h1>
+              <p class="body-prose" style="margin-bottom:2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+                <a href="#shop" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+                <a href="#wishlist" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></a>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></span>
+            </nav>
+
+            <h1 class="display-lg" style="margin-bottom:1.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h1>
+
+            <div class="checkout-layout">
+              <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+              <!-- Order Summary & Promo Code -->
+              <div>
+                <div class="checkout-card" style="position:sticky; top:calc(var(--header-h) + 1.5rem);">
+                  <h2 class="display-md" style="margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></h2>
+                  <form id="cart-promo-form" style="display:flex; gap:0.5rem; margin-bottom:1.25rem;">
+                    <input type="text" id="cart-promo-input" class="form-input" />
+                    <button type="submit" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></button>
+                  </form>
+
+                  <div style="display:flex; flex-direction:column; gap:0.65rem; font-size:0.92rem; padding-bottom:1rem; border-bottom:1px solid var(--border-hairline);">
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></span>
+                      <span class="tabular-nums" style="font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span><div style="display:flex; justify-content:space-between;">
+                      <span style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                      <span class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    </div>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between; font-size:1.15rem; font-weight:700; margin:1.15rem 0;">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+                    <span class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+
+                  <a href="#checkout" class="btn btn-paystack btn-block" style="margin-bottom:0.65rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></a>
+                  <a href="#shop" class="btn btn-outline btn-block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       12. SCREEN 7 — WISHLIST
+       -------------------------------------------------------------------------- */
+    function renderWishlist() {
+      updateSEO('Saved Wishlist — ATELIER VÉRA', 'Manage your saved Atelier Véra wardrobe and home pieces and move items directly to your shopping bag.');
+      const savedProducts = state.wishlist.map(id => getProduct(id));
+
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></span>
+            </nav>
+
+            <div class="section-header">
+              <div>
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                <h1 class="display-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></h1>
+              </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       13. SCREEN 8 — DEALS & PRIVATE ARCHIVE OFFERS
+       -------------------------------------------------------------------------- */
+    function renderDeals() {
+      updateSEO('Private Archive & Seasonal Offers — ATELIER VÉRA', 'Exclusive seasonal privileges on select past-season tailored apparel, footwear, leather goods, and acoustic objects.');
+      const saleItems = PRODUCTS.filter(p => p.isOnSale);
+
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></span>
+            </nav>
+
+            <div class="hero-copy-pane" style="margin-bottom:2.25rem; background:var(--bg-stone);">
+              <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1.5rem;">
+                <div>
+                  <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></p>
+                  <h1 class="display-lg" style="margin:0.35rem 0 0.65rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h1>
+                  <p class="body-prose"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></p>
+                </div>
+                <div style="display:flex; gap:0.65rem; flex-wrap:wrap;">
+                  <button type="button" class="btn btn-primary" data-action="apply-promo-quick" data-code="ATELIER15"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></button>
+                  <button type="button" class="btn btn-accent" data-action="apply-promo-quick" data-code="LAGOSVIP"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="product-grid product-grid--4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       14. SCREEN 9 — ABOUT THE STORE
+       -------------------------------------------------------------------------- */
+    function renderAbout() {
+      updateSEO('Our Craft, Provenance & Philosophy — ATELIER VÉRA', 'Learn how Atelier Véra unites Italian, Portuguese, and Japanese workshops with modern mobile Paystack commerce.');
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+            </nav>
+
+            <div class="hero-split" style="padding-top:0;">
+              <div class="hero-copy-pane">
+                <div>
+                  <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></p>
+                  <h1 class="display-xl" style="margin:0.5rem 0 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h1>
+                  <p class="body-prose" style="margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <p class="body-prose"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+                <div class="kpi-strip">
+                  <div><strong class="tabular-nums" style="font-size:1.3rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></strong><div class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div></div>
+                  <div><strong class="tabular-nums" style="font-size:1.3rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></strong><div class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></div></div>
+                  <div><strong class="tabular-nums" style="font-size:1.3rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></strong><div class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></div></div>
+                  <div><strong class="tabular-nums" style="font-size:1.3rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></strong><div class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></div></div>
+                </div>
+              </div>
+              <div class="hero-media-pane">
+                <img class="gs-parallax-img eshop-placeholder-media" referrerpolicy="no-referrer" />
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       15. SCREEN 10 — CONTACT & CLIENT CONCIERGE
+       -------------------------------------------------------------------------- */
+    function renderContact() {
+      updateSEO('Client Concierge & Support — ATELIER VÉRA', 'Contact our client advisors in Victoria Island Lagos, Milan, and London for sizing, private appointments, and Paystack order assistance.');
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </nav>
+
+            <div class="checkout-layout">
+              <div class="checkout-card">
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></p>
+                <h1 class="display-lg" style="margin:0.35rem 0 0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></h1>
+                <p class="body-prose" style="margin-bottom:1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+                <form id="concierge-contact-form" style="display:flex; flex-direction:column; gap:1rem;">
+                  <div>
+                    <label class="form-label" for="contact-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></label>
+                    <input type="text" id="contact-name" class="form-input" required />
+                  </div>
+                  <div>
+                    <label class="form-label" for="contact-email"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                    <input type="email" id="contact-email" class="form-input" required />
+                  </div>
+                  <div>
+                    <label class="form-label" for="contact-topic"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                    <select id="contact-topic" class="form-select">
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="form-label" for="contact-message"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></label>
+                    <textarea id="contact-message" class="form-textarea" rows="4" required></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></button>
+                  <p id="contact-form-feedback" class="meta-line" style="color:var(--status-success);"></p>
+                </form>
+              </div>
+
+              <div>
+                <div class="checkout-card">
+                  <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></p>
+                  <h2 class="display-md" style="margin:0.35rem 0 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h2>
+                  <div style="display:flex; flex-direction:column; gap:1rem; font-size:0.9rem;">
+                    <div style="padding-bottom:0.85rem; border-bottom:1px solid var(--border-hairline);">
+                      <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></strong>
+                      <p style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                    </div>
+                    <div style="padding-bottom:0.85rem; border-bottom:1px solid var(--border-hairline);">
+                      <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></strong>
+                      <p style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                    </div>
+                    <div>
+                      <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></strong>
+                      <p style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="checkout-card" style="background:var(--bg-subtle);">
+                  <h3 class="display-md" style="margin-bottom:0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h3>
+                  <p class="body-prose" style="margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <a href="#policies" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       16. SCREEN 11 — CLIENT ACCOUNT & ORDER TRACKER
+       -------------------------------------------------------------------------- */
+    function renderAccount() {
+      updateSEO('Client Account & Paystack Order History — ATELIER VÉRA', 'Sign in or register for your Atelier Véra client profile and track your Paystack orders.');
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+            </nav>
+
+            <!-- Honest Frontend Limitation Disclosure Banner -->
+            <div style="background:var(--bg-stone); padding:1rem 1.25rem; border-radius:var(--radius-md); margin-bottom:2rem; border:1px solid var(--border-strong); font-size:0.85rem;">
+              <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+
+            <div class="checkout-layout">
+              <div class="checkout-card">
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></p>
+                <h1 class="display-md" style="margin:0.35rem 0 1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></h1>
+
+                <form id="account-auth-form" style="display:flex; flex-direction:column; gap:1rem;">
+                  <div>
+                    <label class="form-label" for="acc-email"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                    <input type="email" id="acc-email" class="form-input" required />
+                  </div>
+                  <div>
+                    <label class="form-label" for="acc-password"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></label>
+                    <input type="password" id="acc-password" class="form-input" minlength="6" required />
+                  </div>
+                  <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></button>
+                    <button type="button" class="btn btn-outline" data-action="demo-register"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></button>
+                  </div>
+                  <p id="account-feedback" class="meta-line" style="color:var(--status-success);"></p>
+                </form>
+              </div>
+
+              <div class="checkout-card">
+                <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></p>
+                <h2 class="display-md" style="margin:0.35rem 0 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></h2>
+                <div style="display:flex; flex-direction:column; gap:0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       17. SCREEN 12 — MOBILE-FIRST CHECKOUT & PAYSTACK GATEWAY INTEGRATION
+       -------------------------------------------------------------------------- */
+    function renderCheckout() {
+      updateSEO('Mobile-First Paystack Checkout — ATELIER VÉRA', 'Complete your order securely via Paystack using Debit/Credit Card, Instant Bank Transfer, USSD, or Apple Pay.');
+      const totals = getCartTotals();
+
+      return `
+        <section class="section" style="border-bottom:none; padding-top:1.75rem;">
+          <div class="container">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><a href="#cart"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></span>
+            </nav>
+
+            <!-- Demonstration Mode Disclosure -->
+            <div style="background:var(--bg-stone); padding:0.9rem 1.25rem; border-radius:var(--radius-md); margin-bottom:1.75rem; border:1px solid var(--border-strong); font-size:0.84rem; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.75rem;">
+              <div>
+                <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span><code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></div>
+              <span class="tabular-nums" style="font-weight:700; color:var(--accent-paystack-dark);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+            </div>
+
+            <div class="checkout-layout">
+              <!-- Left Column: Mobile-Friendly Express Checkout Form -->
+              <form id="paystack-checkout-form">
+                <!-- Step 1: Contact & Delivery Destination -->
+                <div class="checkout-card">
+                  <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <h1 class="display-md" style="margin:0.3rem 0 1.15rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h1>
+
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.9rem; margin-bottom:0.9rem;">
+                    <div>
+                      <label class="form-label" for="chk-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></label>
+                      <input type="text" id="chk-name" class="form-input" required />
+                    </div>
+                    <div>
+                      <label class="form-label" for="chk-email"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></label>
+                      <input type="email" id="chk-email" class="form-input" required />
+                    </div>
+                  </div>
+
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.9rem; margin-bottom:0.9rem;">
+                    <div>
+                      <label class="form-label" for="chk-phone"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                      <input type="tel" id="chk-phone" class="form-input" required />
+                    </div>
+                    <div>
+                      <label class="form-label" for="chk-region"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></label>
+                      <select id="chk-region" class="form-select">
+                        <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></option>
+                        <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></option>
+                        <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></option>
+                        <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></option>
+                        <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="form-label" for="chk-address"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                    <input type="text" id="chk-address" class="form-input" required />
+                  </div>
+                </div>
+
+                <!-- Step 2: Courier Speed -->
+                <div class="checkout-card">
+                  <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></p>
+                  <h2 class="display-md" style="margin:0.3rem 0 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h2>
+                  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.75rem;">
+                    <button type="button" class="paystack-method-btn ${state.deliverySpeed === 'lagos_sameday' ? 'active' : ''}" data-action="set-delivery-speed" data-speed="lagos_sameday">
+                      <strong style="font-size:0.88rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></strong>
+                      <span class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></span>
+                    </button>
+                    <button type="button" class="paystack-method-btn ${state.deliverySpeed === 'express' ? 'active' : ''}" data-action="set-delivery-speed" data-speed="express">
+                      <strong style="font-size:0.88rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></strong>
+                      <span class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></span>
+                    </button>
+                    <button type="button" class="paystack-method-btn ${state.deliverySpeed === 'standard' ? 'active' : ''}" data-action="set-delivery-speed" data-speed="standard">
+                      <strong style="font-size:0.88rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong>
+                      <span class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Step 3: Paystack Payment Channel -->
+                <div class="checkout-card">
+                  <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+                    <div>
+                      <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></p>
+                      <h2 class="display-md"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></h2>
+                    </div>
+                    <span style="font-size:0.78rem; font-weight:700; color:var(--accent-paystack); background:rgba(9,165,219,0.1); padding:0.3rem 0.65rem; border-radius:4px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></span>
+                  </div>
+
+                  <div class="paystack-method-grid" style="margin-bottom:1.25rem;">
+                    <button type="button" class="paystack-method-btn ${state.checkoutMethod === 'card' ? 'active' : ''}" data-action="set-paystack-method" data-method="card">
+                      <span style="font-weight:700; font-size:0.88rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                      <span class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></span>
+                    </button>
+                    <button type="button" class="paystack-method-btn ${state.checkoutMethod === 'transfer' ? 'active' : ''}" data-action="set-paystack-method" data-method="transfer">
+                      <span style="font-weight:700; font-size:0.88rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                      <span class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+                    </button>
+                    <button type="button" class="paystack-method-btn ${state.checkoutMethod === 'ussd' ? 'active' : ''}" data-action="set-paystack-method" data-method="ussd">
+                      <span style="font-weight:700; font-size:0.88rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+                      <span class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></span>
+                    </button>
+                    <button type="button" class="paystack-method-btn ${state.checkoutMethod === 'applepay' ? 'active' : ''}" data-action="set-paystack-method" data-method="applepay">
+                      <span style="font-weight:700; font-size:0.88rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                      <span class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                    </button>
+                  </div>
+
+                  <div style="margin-bottom:1.25rem;">
+                    <label class="form-label" for="chk-paystack-key"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                    <input type="text" id="chk-paystack-key" class="form-input tabular-nums" />
+                  </div>
+
+                  <button type="submit" class="btn btn-paystack btn-block" style="min-height:54px; font-size:1rem;">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </button>
+                </div>
+              </form>
+
+              <!-- Right Column: Order Summary & Itemized List -->
+              <div>
+                <div class="checkout-card" style="position:sticky; top:calc(var(--header-h) + 1.5rem);">
+                  <h2 class="display-md" style="margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></h2>
+                  <div style="max-height:280px; overflow-y:auto; margin-bottom:1rem; padding-right:0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+                  <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.9rem; padding-bottom:0.85rem; border-bottom:1px solid var(--border-hairline);">
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                      <span class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span><div style="display:flex; justify-content:space-between;">
+                      <span style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                      <span class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    </div>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between; font-size:1.2rem; font-weight:700; margin-top:0.85rem;">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                    <span class="tabular-nums" style="color:var(--accent-primary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       18. SCREEN 13 — SHIPPING, RETURNS & FAQ ACCORDION
+       -------------------------------------------------------------------------- */
+    function renderPolicies() {
+      updateSEO('Shipping, Returns & FAQ — ATELIER VÉRA', 'Read our domestic Nigerian and international DHL shipping policies, 21-day complimentary returns, and Paystack FAQs.');
+      return `
+        <section class="section" style="border-bottom:none; padding-top:2rem;">
+          <div class="container" style="max-width:920px;">
+            <nav class="meta-line" style="margin-bottom:1rem;">
+              <a href="#home"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span style="color:var(--text-primary); font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></span>
+            </nav>
+
+            <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></p>
+            <h1 class="display-lg" style="margin:0.35rem 0 1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h1>
+
+            <div class="checkout-card">
+              <h2 class="display-md" style="margin-bottom:0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></h2>
+              <p class="body-prose" style="margin-bottom:0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <div class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+            </div>
+
+            <div class="checkout-card">
+              <h2 class="display-md" style="margin-bottom:0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></h2>
+              <p class="body-prose"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="checkout-card">
+              <h2 class="display-md" style="margin-bottom:1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></h2><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       19. SCREEN 14 — 404 NOT FOUND
+       -------------------------------------------------------------------------- */
+    function renderNotFound(badRoute) {
+      updateSEO('Page Not Found (404) — ATELIER VÉRA', 'The requested archive route could not be found.');
+      return `
+        <section class="section" style="border-bottom:none;">
+          <div class="container" style="text-align:center; max-width:560px; padding:4rem 1rem;">
+            <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></p>
+            <h1 class="display-lg" style="margin:0.5rem 0 1rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h1>
+            <p class="body-prose" style="margin-bottom:2rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span><code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+              <a href="#home" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a>
+              <a href="#shop" class="btn btn-outline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></a>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       20. INTERACTIVE SHEETS: SEARCH, QUICK-VIEW & PAYSTACK MOBILE GATEWAY
+       -------------------------------------------------------------------------- */
+    function closeAllOverlays() {
+      document.getElementById('global-backdrop')?.classList.remove('open');
+      document.getElementById('cart-drawer')?.classList.remove('open');
+      const mobNav = document.getElementById('mobile-nav-drawer');
+      if (mobNav) mobNav.style.transform = 'translateX(-100%)';
+      document.getElementById('dynamic-sheet')?.classList.remove('open');
+    }
+
+    function openSheetWithHTML(html) {
+      const sheet = document.getElementById('dynamic-sheet');
+      const content = document.getElementById('dynamic-sheet-content');
+      const backdrop = document.getElementById('global-backdrop');
+      if (!sheet || !content || !backdrop) return;
+      content.innerHTML = html;
+      backdrop.classList.add('open');
+      sheet.classList.add('open');
+    }
+
+    function openQuickView(productId) {
+      const p = getProduct(productId);
+      openSheetWithHTML(`
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+          <span class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></span>
+          <button type="button" class="icon-btn" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+        </div>
+        <div style="display:grid; grid-template-columns:110px 1fr; gap:1.15rem; align-items:center; margin-bottom:1.25rem;">
+          <img style="width:110px; height:128px; object-fit:cover; border-radius:var(--radius-sm);" / class="eshop-placeholder-media">
+          <div>
+            <h3 class="display-md" style="margin-bottom:0.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+            <p class="price-current" style="font-size:1.15rem; margin-bottom:0.35rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+            <p class="meta-line"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></p>
+          </div>
+        </div>
+        <p class="body-prose" style="font-size:0.88rem; margin-bottom:1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+          <button type="button" class="btn btn-primary" data-action="quick-add" data-id="${p.id}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+          <a href="#product/${p.id}" class="btn btn-outline" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a>
+        </div>
+      `);
+    }
+
+    function openSearchSheet() {
+      openSheetWithHTML(`
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem;">
+          <h3 class="display-md"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></h3>
+          <button type="button" class="icon-btn" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+        </div>
+        <form id="sheet-search-form" style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+          <input type="search" id="sheet-search-input" class="form-input" autofocus />
+          <button type="submit" class="btn btn-primary"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></button>
+        </form>
+        <div class="meta-line">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+      `);
+    }
+
+    function launchPaystackGateway(email, customerName, customPubKey) {
+      const totals = getCartTotals();
+      if (totals.totalUSD <= 0) {
+        showToast('Your bag is empty. Add a piece first.');
+        return;
+      }
+      const refCode = 'PSK-AV-' + Math.floor(100000 + Math.random() * 900000);
+      const amountNGN = Math.round(totals.totalUSD * NGN_RATE);
+
+      // If user supplied a real Paystack public key AND PaystackPop CDN loaded, invoke Paystack Inline SDK
+      if (customPubKey && customPubKey.startsWith('pk_') && window.PaystackPop) {
+        try {
+          const handler = window.PaystackPop.setup({
+            key: customPubKey.trim(),
+            email: email || "",
+            amount: amountNGN * 100, // Kobo
+            currency: 'NGN',
+            ref: refCode,
+            callback: function(response) {
+              completePaystackOrder(response.reference || refCode, 'Paystack Live Inline SDK', customerName);
+            },
+            onClose: function() {
+              showToast('Paystack window closed.');
+            }
+          });
+          handler.openIframe();
+          return;
+        } catch (err) {
+          // Fall through to built-in Interactive Paystack Mobile Gateway Sheet
+        }
+      }
+
+      // Interactive Mobile-Focused Paystack Checkout Gateway Sheet (Demonstration Mode)
+      const methodLabels = {
+        card: 'Debit / Credit Card (Visa · Mastercard · Verve)',
+        transfer: 'Paystack Instant Virtual Bank Transfer (Titan / Wema)',
+        ussd: 'Mobile USSD (*737*000*894# · GTBank / Zenith / Access)',
+        applepay: 'Apple Pay / Biometric Mobile Passkey'
+      };
+
+      openSheetWithHTML(`
+        <div style="background:var(--accent-paystack-dark); color:#FFFFFF; margin:-1.25rem -1.5rem 1.25rem; padding:1.25rem 1.5rem; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-size:0.72rem; letter-spacing:0.08em; color:var(--accent-paystack); font-weight:700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></div>
+            <div style="font-size:0.95rem; font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></div>
+          </div>
+          <div style="text-align:right;">
+            <div class="tabular-nums" style="font-size:1.15rem; font-weight:700; color:#4ADE80;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+            <div class="tabular-nums" style="font-size:0.75rem; opacity:0.8;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg-subtle); padding:1rem; border-radius:var(--radius-sm); margin-bottom:1rem; border:1px solid var(--border-hairline); font-size:0.86rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem;">
+            <span style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+            <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+            <span style="color:var(--text-secondary);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+            <span class="tabular-nums" style="font-weight:600;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+          </div>
+        </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span><div style="display:grid; grid-template-columns:1fr; gap:0.65rem;">
+          <button type="button" class="btn btn-paystack btn-block" data-action="confirm-paystack-demo" data-ref="${refCode}" style="min-height:50px;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></button>
+          <button type="button" class="btn btn-outline btn-block" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></button>
+        </div>
+      `);
+    }
+
+    function completePaystackOrder(refCode, methodUsed, customerName) {
+      const totals = getCartTotals();
+      const newOrder = {
+        ref: refCode,
+        date: '11 Oct 2026 (Just Now)',
+        method: `Paystack (${state.checkoutMethod.toUpperCase()})`,
+        totalUSD: totals.totalUSD,
+        status: 'Confirmed — Verified via Paystack',
+        itemsCount: totals.count || 1
+      };
+      state.orders.unshift(newOrder);
+      state.cart = [];
+      state.promoCode = '';
+      state.discountRate = 0;
+      saveState();
+
+      openSheetWithHTML(`
+        <div style="text-align:center; padding:1rem 0.5rem;">
+          <div style="width:56px; height:56px; border-radius:50%; background:rgba(46,111,64,0.12); color:var(--status-success); display:inline-flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:700; margin-bottom:0.85rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+          <p class="kicker"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></p>
+          <h3 class="display-md" style="margin:0.35rem 0 0.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></h3>
+          <p class="body-prose" style="margin:0 auto 1.25rem; font-size:0.9rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span><strong class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span><strong class="tabular-nums"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.65rem;">
+            <a href="#account" class="btn btn-primary" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a>
+            <a href="#shop" class="btn btn-outline" data-action="close-overlays"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+          </div>
+        </div>
+      `);
+      handleRoute();
+    }
+
+    /* --------------------------------------------------------------------------
+       21. GSAP & SCROLLTRIGGER PARALLAX / REVEAL ENGINE
+       -------------------------------------------------------------------------- */
+    function initGSAPAnimations() {
+      const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced || typeof window.gsap === 'undefined') return;
+
+      const gsap = window.gsap;
+      if (window.ScrollTrigger) {
+        gsap.registerPlugin(window.ScrollTrigger);
+        window.ScrollTrigger.getAll().forEach(t => t.kill());
+      }
+
+      // Hero Entrance Timeline
+      const heroText = document.querySelector('.gs-hero-text');
+      if (heroText) {
+        gsap.fromTo(heroText, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' });
+      }
+
+      // Parallax Images on Scroll
+      document.querySelectorAll('.gs-parallax-img').forEach(img => {
+        if (window.ScrollTrigger) {
+          gsap.fromTo(img,
+            { yPercent: -6, scale: 1.04 },
+            {
+              yPercent: 6,
+              scale: 1.0,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: img.parentElement,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: true
+              }
+            }
+          );
+        }
+      });
+
+      // Section Heading Reveals
+      document.querySelectorAll('.gs-reveal-text').forEach(el => {
+        if (window.ScrollTrigger) {
+          gsap.fromTo(el,
+            { opacity: 0, y: 16 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.55,
+              ease: 'power2.out',
+              scrollTrigger: {
+                trigger: el,
+                start: 'top 90%'
+              }
+            }
+          );
+        }
+      });
+
+      // Staggered Product Cards (First 12 visible to keep 60fps mobile performance)
+      const cards = Array.from(document.querySelectorAll('.gs-reveal-card')).slice(0, 12);
+      if (cards.length > 0) {
+        gsap.fromTo(cards,
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: 0.42, stagger: 0.04, ease: 'power2.out' }
+        );
+      }
+    }
+
+    /* --------------------------------------------------------------------------
+       22. CLIENT-SIDE ROUTER (ALL 14 SCREENS)
+       -------------------------------------------------------------------------- */
+    function handleRoute() {
+      const rawHash = (window.location.hash || '#home').replace(/^#/, '');
+      const parts = rawHash.split('/');
+      const route = parts[0] || 'home';
+      const param = decodeURIComponent(parts.slice(1).join('/'));
+      const main = document.getElementById('app-main');
+      if (!main) return;
+
+      let html = '';
+      if (route === 'home' || route === '') {
+        html = renderHome();
+      } else if (route === 'shop') {
+        html = renderShop();
+      } else if (route === 'category') {
+        html = renderCategory(param || 'apparel');
+      } else if (route === 'product') {
+        html = renderProductDetail(param || 'prod-1');
+      } else if (route === 'search') {
+        html = renderSearch(param);
+      } else if (route === 'cart') {
+        html = renderCart();
+      } else if (route === 'wishlist') {
+        html = renderWishlist();
+      } else if (route === 'deals') {
+        html = renderDeals();
+      } else if (route === 'about') {
+        html = renderAbout();
+      } else if (route === 'contact') {
+        html = renderContact();
+      } else if (route === 'account') {
+        html = renderAccount();
+      } else if (route === 'checkout') {
+        html = renderCheckout();
+      } else if (route === 'policies') {
+        html = renderPolicies();
+      } else {
+        html = renderNotFound(rawHash);
+      }
+
+      main.innerHTML = html;
+
+      // Sync Active States on Header & Mobile Bottom Tab Bar
+      document.querySelectorAll('.nav-link[data-nav]').forEach(link => {
+        link.classList.toggle('active', link.getAttribute('data-nav') === route);
+      });
+      document.querySelectorAll('.mobile-tab-item[data-mob-nav]').forEach(tab => {
+        tab.classList.toggle('active', tab.getAttribute('data-mob-nav') === route);
+      });
+
+      updateHeaderCounts();
+      renderCartDrawer();
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      requestAnimationFrame(() => initGSAPAnimations());
+    }
+
+    /* --------------------------------------------------------------------------
+       23. UNIFIED EVENT DELEGATION & FORM HANDLERS
+       -------------------------------------------------------------------------- */
+    document.addEventListener('click', function(e) {
+      const target = e.target.closest('[data-action]');
+      if (!target) return;
+      const action = target.getAttribute('data-action');
+
+      if (action === 'set-currency') {
+        state.currency = target.getAttribute('data-currency') || 'NGN';
+        saveState();
+        handleRoute();
+        showToast(`Currency switched to ${state.currency}`);
+      } else if (action === 'open-cart-drawer') {
+        renderCartDrawer();
+        document.getElementById('global-backdrop')?.classList.add('open');
+        document.getElementById('cart-drawer')?.classList.add('open');
+      } else if (action === 'open-mobile-menu') {
+        document.getElementById('global-backdrop')?.classList.add('open');
+        const mobNav = document.getElementById('mobile-nav-drawer');
+        if (mobNav) mobNav.style.transform = 'translateX(0)';
+      } else if (action === 'open-search') {
+        openSearchSheet();
+      } else if (action === 'close-overlays') {
+        closeAllOverlays();
+      } else if (action === 'scroll-top') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (action === 'nav-product') {
+        const id = target.getAttribute('data-id');
+        if (id) window.location.hash = `#product/${id}`;
+      } else if (action === 'quick-view') {
+        const id = target.getAttribute('data-id');
+        if (id) openQuickView(id);
+      } else if (action === 'quick-add') {
+        const id = target.getAttribute('data-id');
+        const p = getProduct(id);
+        const existing = state.cart.find(x => x.productId === p.id && x.size === p.sizes[0] && x.color === p.colors[0]);
+        if (existing) existing.qty += 1;
+        else state.cart.push({ productId: p.id, qty: 1, size: p.sizes[0], color: p.colors[0] });
+        saveState();
+        renderCartDrawer();
+        closeAllOverlays();
+        showToast(`${p.title} added to bag`);
+      } else if (action === 'toggle-wishlist') {
+        const id = target.getAttribute('data-id');
+        if (!id) return;
+        const idx = state.wishlist.indexOf(id);
+        const p = getProduct(id);
+        if (idx >= 0) {
+          state.wishlist.splice(idx, 1);
+          showToast(`Removed ${p.title} from wishlist`);
+        } else {
+          state.wishlist.push(id);
+          showToast(`Saved ${p.title} to wishlist`);
+        }
+        saveState();
+        handleRoute();
+      } else if (action === 'cart-qty-delta') {
+        const idx = Number(target.getAttribute('data-idx'));
+        const delta = Number(target.getAttribute('data-delta'));
+        if (state.cart[idx]) {
+          state.cart[idx].qty += delta;
+          if (state.cart[idx].qty <= 0) state.cart.splice(idx, 1);
+          saveState();
+          renderCartDrawer();
+          if (window.location.hash.startsWith('#cart') || window.location.hash.startsWith('#checkout')) handleRoute();
+        }
+      } else if (action === 'remove-cart-idx') {
+        const idx = Number(target.getAttribute('data-idx'));
+        if (state.cart[idx]) {
+          state.cart.splice(idx, 1);
+          saveState();
+          renderCartDrawer();
+          if (window.location.hash.startsWith('#cart') || window.location.hash.startsWith('#checkout')) handleRoute();
+        }
+      } else if (action === 'move-cart-to-wish') {
+        const idx = Number(target.getAttribute('data-idx'));
+        const item = state.cart[idx];
+        if (item) {
+          if (!state.wishlist.includes(item.productId)) state.wishlist.push(item.productId);
+          state.cart.splice(idx, 1);
+          saveState();
+          handleRoute();
+          showToast('Moved piece to your saved wishlist');
+        }
+      } else if (action === 'move-all-wish-to-cart') {
+        state.wishlist.forEach(id => {
+          const p = getProduct(id);
+          const ex = state.cart.find(x => x.productId === p.id);
+          if (ex) ex.qty += 1;
+          else state.cart.push({ productId: p.id, qty: 1, size: p.sizes[0], color: p.colors[0] });
+        });
+        state.wishlist = [];
+        saveState();
+        window.location.hash = '#cart';
+        showToast('Moved all saved pieces to your bag');
+      } else if (action === 'set-shop-cat') {
+        state.shopFilter.category = target.getAttribute('data-cat') || 'all';
+        state.shopFilter.visibleCount = 24;
+        saveState();
+        handleRoute();
+      } else if (action === 'load-more-shop') {
+        state.shopFilter.visibleCount += 24;
+        handleRoute();
+      } else if (action === 'reset-shop-filters') {
+        state.shopFilter = { query: '', category: 'all', sort: 'featured', maxPriceUSD: 1500, onlySale: false, visibleCount: 24 };
+        saveState();
+        handleRoute();
+      } else if (action === 'clear-search') {
+        state.shopFilter.query = '';
+        saveState();
+        handleRoute();
+      } else if (action === 'quick-search-term') {
+        state.shopFilter.query = target.getAttribute('data-term') || '';
+        saveState();
+        handleRoute();
+      } else if (action === 'pdp-select-img') {
+        activePdpState.imgIndex = Number(target.getAttribute('data-idx')) || 0;
+        handleRoute();
+      } else if (action === 'pdp-select-color') {
+        activePdpState.color = target.getAttribute('data-color') || '';
+        handleRoute();
+      } else if (action === 'pdp-select-size') {
+        activePdpState.size = target.getAttribute('data-size') || '';
+        handleRoute();
+      } else if (action === 'pdp-qty') {
+        const delta = Number(target.getAttribute('data-delta')) || 0;
+        activePdpState.qty = Math.max(1, activePdpState.qty + delta);
+        handleRoute();
+      } else if (action === 'pdp-add-to-cart') {
+        const p = getProduct(activePdpState.productId);
+        const ex = state.cart.find(x => x.productId === p.id && x.size === activePdpState.size && x.color === activePdpState.color);
+        if (ex) ex.qty += activePdpState.qty;
+        else state.cart.push({ productId: p.id, qty: activePdpState.qty, size: activePdpState.size, color: activePdpState.color });
+        saveState();
+        renderCartDrawer();
+        showToast(`Added ${activePdpState.qty} × ${p.title} to bag`);
+      } else if (action === 'pdp-buy-now-paystack') {
+        const p = getProduct(activePdpState.productId);
+        const ex = state.cart.find(x => x.productId === p.id && x.size === activePdpState.size && x.color === activePdpState.color);
+        if (!ex) {
+          state.cart.push({ productId: p.id, qty: activePdpState.qty, size: activePdpState.size, color: activePdpState.color });
+          saveState();
+        }
+        window.location.hash = '#checkout';
+      } else if (action === 'toggle-accordion') {
+        const item = target.closest('.accordion-item');
+        if (item) item.classList.toggle('open');
+      } else if (action === 'apply-promo-quick') {
+        const code = (target.getAttribute('data-code') || '').toUpperCase();
+        state.promoCode = code;
+        state.discountRate = code === 'LAGOSVIP' ? 0.20 : 0.15;
+        saveState();
+        showToast(`Activated privilege code ${code} (${Math.round(state.discountRate * 100)}% Off)`);
+      } else if (action === 'set-delivery-speed') {
+        state.deliverySpeed = target.getAttribute('data-speed') || 'express';
+        saveState();
+        handleRoute();
+      } else if (action === 'set-paystack-method') {
+        state.checkoutMethod = target.getAttribute('data-method') || 'card';
+        saveState();
+        handleRoute();
+      } else if (action === 'confirm-paystack-demo') {
+        const ref = target.getAttribute('data-ref') || 'PSK-AV-901244';
+        const cname = target.getAttribute('data-name') || 'Valued Client';
+        completePaystackOrder(ref, 'Paystack Mobile Gateway', cname);
+      } else if (action === 'demo-register') {
+        const fb = document.getElementById('account-feedback');
+        if (fb) fb.textContent = '✓ Client profile created in browser session. Your Paystack order ledger is synced.';
+        showToast('Client profile registered');
+      } else if (action === 'carousel-scroll') {
+        const dir = Number(target.getAttribute('data-dir')) || 1;
+        const track = document.getElementById('home-carousel');
+        if (track) track.scrollBy({ left: dir * 320, behavior: 'smooth' });
+      }
+    });
+
+    // Input & Change Listeners for Shop Filters
+    document.addEventListener('input', function(e) {
+      if (e.target.id === 'shop-search-input') {
+        state.shopFilter.query = e.target.value;
+        state.shopFilter.visibleCount = 24;
+        handleRoute();
+        const input = document.getElementById('shop-search-input');
+        if (input) {
+          input.focus();
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
+      } else if (e.target.id === 'shop-price-range') {
+        state.shopFilter.maxPriceUSD = Number(e.target.value) || 1500;
+        handleRoute();
+      }
+    });
+
+    document.addEventListener('change', function(e) {
+      if (e.target.id === 'shop-sale-toggle') {
+        state.shopFilter.onlySale = e.target.checked;
+        handleRoute();
+      } else if (e.target.id === 'shop-sort-select') {
+        state.shopFilter.sort = e.target.value;
+        handleRoute();
+      }
+    });
+
+    // Form Submissions (Search, Promo, Checkout, Reviews, Concierge, Newsletter)
+    document.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const form = e.target;
+
+      if (form.id === 'sheet-search-form') {
+        const q = document.getElementById('sheet-search-input')?.value || '';
+        state.shopFilter.query = q;
+        closeAllOverlays();
+        window.location.hash = `#search/${encodeURIComponent(q)}`;
+      } else if (form.id === 'dedicated-search-form') {
+        const q = document.getElementById('dedicated-search-input')?.value || '';
+        state.shopFilter.query = q;
+        handleRoute();
+      } else if (form.id === 'cart-promo-form') {
+        const raw = (document.getElementById('cart-promo-input')?.value || '').trim().toUpperCase();
+        if (raw === 'ATELIER15') {
+          state.promoCode = 'ATELIER15';
+          state.discountRate = 0.15;
+          showToast('Applied ATELIER15 (15% Privilege)');
+        } else if (raw === 'LAGOSVIP') {
+          state.promoCode = 'LAGOSVIP';
+          state.discountRate = 0.20;
+          showToast('Applied LAGOSVIP (20% VIP Privilege)');
+        } else {
+          state.promoCode = '';
+          state.discountRate = 0;
+          showToast('Try code ATELIER15 or LAGOSVIP');
+        }
+        saveState();
+        handleRoute();
+      } else if (form.id === 'paystack-checkout-form') {
+        const name = document.getElementById('chk-name')?.value || 'Valued Client';
+        const email = document.getElementById('chk-email')?.value || "";
+        const pubKey = document.getElementById('chk-paystack-key')?.value || '';
+        launchPaystackGateway(email, name, pubKey);
+      } else if (form.id === 'pdp-review-form') {
+        const pid = form.getAttribute('data-product-id');
+        const author = form.elements.author.value.trim();
+        const rating = Number(form.elements.rating.value) || 5;
+        const text = form.elements.text.value.trim();
+        if (pid && author && text) {
+          if (!state.userReviews[pid]) state.userReviews[pid] = [];
+          state.userReviews[pid].unshift({ author, date: 'Just now', rating, text });
+          saveState();
+          handleRoute();
+          showToast('Your review has been added');
+        }
+      } else if (form.id === 'concierge-contact-form') {
+        const fb = document.getElementById('contact-form-feedback');
+        if (fb) fb.textContent = '✓ Concierge dispatch logged. An advisor will reply within 2 hours.';
+        form.reset();
+        showToast('Concierge inquiry sent');
+      } else if (form.id === 'account-auth-form') {
+        const fb = document.getElementById('account-feedback');
+        if (fb) fb.textContent = '✓ Signed in to local demonstration profile.';
+        showToast('Signed in successfully');
+      } else if (form.id === 'footer-newsletter-form') {
+        const fb = document.getElementById('footer-news-feedback');
+        if (fb) fb.textContent = '✓ Subscribed to Private Archive dispatches. Use code ATELIER15 for 15% off.';
+        form.reset();
+        showToast('Subscribed to Atelier Véra Archive');
+      }
+    });
+
+    // Scroll Progress & Sticky Header Shadow
+    window.addEventListener('scroll', function() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const pct = Math.min(100, Math.max(0, (scrollTop / docHeight) * 100));
+      const bar = document.getElementById('scroll-progress');
+      if (bar) bar.style.width = pct + '%';
+
+      const hdr = document.getElementById('site-header');
+      if (hdr) hdr.classList.toggle('scrolled', scrollTop > 16);
+    }, { passive: true });
+
+    window.addEventListener('hashchange', handleRoute);
+    window.addEventListener('DOMContentLoaded', handleRoute);
+    if (document.readyState !== 'loading') {
+      handleRoute();
+    }
+  })();
+  </script>
+
+
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body></html>

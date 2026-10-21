@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { initializeSQLite } from './sqlite.js';
 import { createPosApp } from './pos.js';
 import { WEBSITE_THEME_CATALOG } from './theme-catalog.js';
+import './theme-web-editor.js';
 import { WEBSITE_FONTS, WEBSITE_COLOR_THEMES, WEBSITE_COLOR_FILTERS, WEBSITE_DESIGN_THEMES, WEBSITE_DESIGN_PRESETS, WEBSITE_CARD_SHAPES } from './website-appearance-presets.js';
 import './business-notifications.js';
 window.EshopWebsiteThemeCatalog = WEBSITE_THEME_CATALOG;

@@ -1,0 +1,3156 @@
+<!doctype html>
+<html lang="en" data-eshop-skeleton-preview=""><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+  <meta name="description" content="">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:type" content="">
+  <meta name="twitter:card" content="">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            veluna: {
+              black: '#0A0C10',
+              dark: '#12151C',
+              surface: '#FFFFFF',
+              canvas: '#F8F9FA',
+              border: '#E8EAED',
+              borderDark: '#12151C',
+              slate: '#2C445E',
+              slateDark: '#1E3247',
+              ivory: '#F5EBE1',
+              periwinkle: '#E5EBF8',
+              gold: '#8C7355',
+              muted: '#636D7E',
+              subtle: '#949EB0',
+              accent: '#0A0C10'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- GSAP & ScrollTrigger CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* Design Tokens & Reset */
+    :root {
+      --color-primary: var(--theme-veluna-grand-electronics-retail-store-color-01);
+      --color-surface: var(--theme-veluna-grand-electronics-retail-store-color-02);
+      --color-canvas: var(--theme-veluna-grand-electronics-retail-store-color-03);
+      --color-border: var(--theme-veluna-grand-electronics-retail-store-color-04);
+      --color-text-main: var(--theme-veluna-grand-electronics-retail-store-color-05);
+      --color-text-muted: var(--theme-veluna-grand-electronics-retail-store-color-06);
+      --color-slate-banner: var(--theme-veluna-grand-electronics-retail-store-color-07);
+      --color-ivory-banner: var(--theme-veluna-grand-electronics-retail-store-color-08);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --radius-pill: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--color-canvas);
+      color: var(--color-text-main);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--theme-veluna-grand-electronics-retail-store-color-09);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--theme-veluna-grand-electronics-retail-store-color-10);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--theme-veluna-grand-electronics-retail-store-color-11);
+    }
+
+    /* Typography Utilities */
+    .tracking-tight-headings {
+      letter-spacing: -0.035em;
+    }
+
+    /* Hide horizontal scroll indicators */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Card & Image Styling */
+    .product-card {
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -8px var(--theme-veluna-grand-electronics-retail-store-color-12);
+      border-color: var(--theme-veluna-grand-electronics-retail-store-color-10);
+    }
+
+    /* Swatch dot */
+    .swatch-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid var(--theme-veluna-grand-electronics-retail-store-color-13);
+      box-shadow: 0 0 0 1px var(--theme-veluna-grand-electronics-retail-store-color-14);
+      display: inline-block;
+      transition: transform 0.15s ease;
+    }
+    .swatch-dot:hover {
+      transform: scale(1.2);
+    }
+
+    /* Watermark text effect */
+    .watermark-text {
+      position: absolute;
+      font-size: clamp(4rem, 15vw, 13rem);
+      font-weight: 800;
+      line-height: 0.8;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.06;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: -0.05em;
+    }
+
+    /* Toast Animation */
+    @keyframes slideInUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .toast-anim {
+      animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Image zoom on hover */
+    .zoom-img-container {
+      overflow: hidden;
+    }
+    .zoom-img-container img {
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .product-card:hover .zoom-img-container img {
+      transform: scale(1.04);
+    }
+
+    /* Range slider custom thumb */
+    input[type=range] {
+      accent-color: var(--theme-veluna-grand-electronics-retail-store-color-01);
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-eshop-skeleton-styles="">.eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:var(--theme-veluna-grand-electronics-retail-store-color-14);vertical-align:middle}.eshop-placeholder-media{background:linear-gradient(135deg,var(--theme-veluna-grand-electronics-retail-store-color-14),var(--theme-veluna-grand-electronics-retail-store-color-15));object-fit:cover}</style><style data-theme-tokens="">:root{--theme-veluna-grand-electronics-retail-store-color-01:#0a0c10;--theme-veluna-grand-electronics-retail-store-color-02:#ffffff;--theme-veluna-grand-electronics-retail-store-color-03:#f8f9fa;--theme-veluna-grand-electronics-retail-store-color-04:#e8eaed;--theme-veluna-grand-electronics-retail-store-color-05:#12151c;--theme-veluna-grand-electronics-retail-store-color-06:#636d7e;--theme-veluna-grand-electronics-retail-store-color-07:#2b4561;--theme-veluna-grand-electronics-retail-store-color-08:#f6ece2;--theme-veluna-grand-electronics-retail-store-color-09:#f1f3f5;--theme-veluna-grand-electronics-retail-store-color-10:#cbd5e1;--theme-veluna-grand-electronics-retail-store-color-11:#94a3b8;--theme-veluna-grand-electronics-retail-store-color-12:rgba(10,12,16,0.08);--theme-veluna-grand-electronics-retail-store-color-13:#fff;--theme-veluna-grand-electronics-retail-store-color-14:#d1d5db;--theme-veluna-grand-electronics-retail-store-color-15:#f3f4f6;}</style></head>
+<body class="bg-[#F8F9FA] text-[#12151C] antialiased min-h-screen flex flex-col">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Quick Search Modal Overlay -->
+  <div id="search-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-start justify-center pt-20 p-4 transition-opacity">
+    <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in">
+      <div class="p-4 border-b border-gray-100 flex items-center gap-3">
+        <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+        <input id="modal-search-input" type="text" class="w-full text-base font-medium outline-none placeholder:text-gray-400" autocomplete="off">
+        <button onclick="closeSearchModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="search-modal-results" class="max-h-[60vh] overflow-y-auto p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></div>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button onclick="quickSearch('iPhone 17')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></button>
+          <button onclick="quickSearch('Galaxy Z Fold')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+          <button onclick="quickSearch('Airbeatz')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button>
+          <button onclick="quickSearch('MacBook')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+          <button onclick="quickSearch('Sony WH-1000XM5')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+          <button onclick="quickSearch('OLED TV')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Slide-Over Drawer -->
+  <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
+    <div onclick="toggleCartDrawer(false)" class="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col z-10">
+      <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <h3 class="font-bold text-lg text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></h3>
+          <span id="drawer-cart-count-badge" class="px-2 py-0.5 bg-gray-100 text-xs font-bold rounded-full text-gray-700"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </div>
+        <button onclick="toggleCartDrawer(false)" class="p-2 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="drawer-cart-items" class="flex-1 overflow-y-auto p-5 space-y-4">
+        <!-- Rendered items go here -->
+      </div>
+      <div id="drawer-cart-footer" class="p-5 border-t border-gray-100 bg-gray-50/50 space-y-3">
+        <!-- Footer subtotal & checkout button -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky Comparison Floating Bar -->
+  <div id="compare-bar" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-gray-900 text-white rounded-full px-5 py-3 shadow-2xl hidden items-center gap-4 border border-gray-800">
+    <div class="flex items-center gap-2 text-sm font-medium">
+      <i data-lucide="columns-2" class="w-4 h-4 text-blue-400"></i>
+      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span><span id="compare-bar-count"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+    </div>
+    <div id="compare-bar-thumbs" class="flex items-center gap-1.5"></div>
+    <div class="flex items-center gap-2">
+      <a href="#/compare" class="px-3.5 py-1.5 bg-white text-gray-900 text-xs font-bold rounded-full hover:bg-gray-100 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+      <button onclick="clearCompare()" class="p-1 text-gray-400 hover:text-white">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Announcement Utility Bar -->
+  <header class="w-full bg-[#0A0C10] text-gray-300 text-xs py-2 px-4 border-b border-gray-800">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5 text-emerald-400 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+        <span class="hidden md:inline text-gray-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <span class="hidden md:inline text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+        <span class="hidden lg:inline text-gray-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <span class="hidden lg:inline text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></span>
+      </div>
+      <div class="flex items-center gap-4 ml-auto">
+        <div class="flex items-center gap-1 cursor-pointer hover:text-white" onclick="toggleCurrency()">
+          <span id="current-currency-label" class="font-bold text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+        </div>
+        <a href="#/support" class="hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Navigation Header -->
+  <nav class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20 gap-4">
+        
+        <!-- Logo -->
+        <a href="#/" class="flex items-center gap-2.5 text-gray-900 hover:opacity-90 transition-opacity flex-shrink-0">
+          <span class="w-8 h-8 rounded-full bg-[#0A0C10] text-white flex items-center justify-center font-black text-base shadow-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <span class="font-extrabold text-2xl tracking-tighter text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <div class="hidden lg:flex items-center gap-7 text-sm font-semibold text-gray-700">
+          <a href="#/" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a>
+          <a href="#/category/phones" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></a>
+          <a href="#/category/computers" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></a>
+          <a href="#/category/audio" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></a>
+          <a href="#/category/gaming" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></a>
+          <a href="#/category/tvs" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a>
+          <a href="#/category/cameras" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></a>
+          <a href="#/category/wearables" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></a>
+          <a href="#/brands" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></a>
+          <a href="#/deals" class="text-rose-600 font-bold hover:text-rose-700 transition-colors flex items-center gap-1">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+          </a>
+        </div>
+
+        <!-- Right Side: Search, Wishlist, Compare, Cart, Account -->
+        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <!-- Search trigger -->
+          <button onclick="openSearchModal()" class="flex items-center gap-2 px-3 py-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-full transition-colors text-sm">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span class="hidden md:inline text-xs text-gray-400 font-normal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+          </button>
+
+          <!-- Wishlist link -->
+          <a href="#/wishlist" class="relative p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors">
+            <i data-lucide="heart" class="w-5 h-5"></i>
+            <span id="nav-wishlist-count" class="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </a>
+
+          <!-- Compare link -->
+          <a href="#/compare" class="relative p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors">
+            <i data-lucide="columns-2" class="w-5 h-5"></i>
+            <span id="nav-compare-count" class="absolute top-1 right-1 w-4 h-4 bg-blue-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </a>
+
+          <!-- Cart Drawer Trigger -->
+          <button onclick="toggleCartDrawer(true)" class="relative p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors">
+            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+            <span id="nav-cart-count" class="absolute top-1 right-1 w-4 h-4 bg-black text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </button>
+
+          <!-- Account -->
+          <a href="#/account" class="p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors">
+            <i data-lucide="user" class="w-5 h-5"></i>
+          </a>
+
+          <!-- Mobile menu toggle -->
+          <button onclick="toggleMobileNav()" class="lg:hidden p-2.5 text-gray-700 hover:text-black hover:bg-gray-100 rounded-full transition-colors">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Nav Drawer -->
+    <div id="mobile-nav" class="lg:hidden hidden border-t border-gray-100 bg-white px-4 pt-3 pb-6 space-y-2">
+      <div class="grid grid-cols-2 gap-2 text-sm font-semibold text-gray-800">
+        <a href="#/" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a>
+        <a href="#/category/phones" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a>
+        <a href="#/category/computers" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a>
+        <a href="#/category/audio" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+        <a href="#/category/gaming" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a>
+        <a href="#/category/tvs" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a>
+        <a href="#/category/cameras" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a>
+        <a href="#/category/wearables" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a>
+        <a href="#/brands" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></a>
+        <a href="#/deals" class="p-2 rounded-lg text-rose-600 hover:bg-rose-50" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></a>
+        <a href="#/support" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a>
+        <a href="#/account" class="p-2 rounded-lg hover:bg-gray-100" onclick="toggleMobileNav(false)"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Dynamic Application Container -->
+  <main id="app-root" class="flex-1 w-full"></main>
+
+  <!-- Global Footer -->
+  <footer class="bg-white border-t border-gray-200 mt-20 pt-16 pb-12 text-sm text-gray-600">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-14 border-b border-gray-100">
+        
+        <!-- Brand Info -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-full bg-[#0A0C10] text-white flex items-center justify-center font-bold text-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+            <span class="font-extrabold text-xl tracking-tighter text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+          </div>
+          <p class="text-gray-500 text-sm max-w-sm leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div class="pt-2">
+            <div class="text-xs font-bold uppercase tracking-wider text-gray-900 mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></div>
+            <form onsubmit="handleNewsletterSubmit(event)" class="flex gap-2 max-w-sm">
+              <input type="email" required="" class="flex-1 px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black">
+              <button type="submit" class="px-4 py-2.5 bg-black text-white font-semibold rounded-xl text-sm hover:bg-gray-800 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></button>
+            </form>
+            <p class="text-[11px] text-gray-400 mt-1.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          </div>
+        </div>
+
+        <!-- Shop Destinations -->
+        <div>
+          <h4 class="font-bold text-gray-900 text-sm mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="#/category/phones" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a></li>
+            <li><a href="#/category/computers" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+            <li><a href="#/category/audio" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></a></li>
+            <li><a href="#/category/gaming" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></li>
+            <li><a href="#/category/tvs" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a></li>
+            <li><a href="#/category/cameras" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></a></li>
+            <li><a href="#/category/wearables" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+          </ul>
+        </div>
+
+        <!-- Brands & Guides -->
+        <div>
+          <h4 class="font-bold text-gray-900 text-sm mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="#/brand/apple" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></li>
+            <li><a href="#/brand/samsung" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+            <li><a href="#/brand/sony" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+            <li><a href="#/brand/google" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a></li>
+            <li><a href="#/brand/bose" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+            <li><a href="#/brand/asus" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a></li>
+            <li><a href="#/brands" class="font-semibold text-black hover:underline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></a></li>
+          </ul>
+        </div>
+
+        <!-- Help & Legal -->
+        <div>
+          <h4 class="font-bold text-gray-900 text-sm mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="#/support" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a></li>
+            <li><a href="#/shipping" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></a></li>
+            <li><a href="#/returns" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></a></li>
+            <li><a href="#/account/orders" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></a></li>
+            <li><a href="#/contact" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></a></li>
+            <li><a href="#/privacy" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+            <li><a href="#/terms" class="hover:text-black transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+        <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1 font-mono text-gray-600">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script injection follows below -->
+  <!-- CORE SCRIPTS & ELECTRONICS STORE APPLICATION -->
+  <script>
+    // --- 1. GLOBAL STATE & CONFIGURATION ---
+    const CONFIG = {
+      storeName: "",
+      currencyUSD: "",
+      currencyKES: "",
+      exchangeRateKES: 130.0, // 1 USD = 130 KES
+      taxRate: 0.08, // 8% sales tax
+      freeShippingThreshold: 0,
+      standardShippingFee: 0,
+      expressShippingFee: 0
+    };
+
+    const STATE = {
+      currency: localStorage.getItem('veluna_currency') || 'USD',
+      cart: JSON.parse(localStorage.getItem('veluna_cart') || '[]'),
+      wishlist: JSON.parse(localStorage.getItem('veluna_wishlist') || '[]'),
+      compareList: JSON.parse(localStorage.getItem('veluna_compare') || '[]'),
+      user: JSON.parse(localStorage.getItem('veluna_user') || 'null'),
+      orders: JSON.parse(localStorage.getItem('veluna_orders') || '[]'),
+      searchHistory: JSON.parse(localStorage.getItem('veluna_search_history') || '[]'),
+      activeFilters: {
+        category: null,
+        brand: null,
+        maxPrice: null,
+        sortBy: "",
+        inStockOnly: false,
+        storage: null
+      }
+    };
+
+    function saveState(key) {
+      if (key === 'cart') localStorage.setItem('veluna_cart', JSON.stringify(STATE.cart));
+      if (key === 'wishlist') localStorage.setItem('veluna_wishlist', JSON.stringify(STATE.wishlist));
+      if (key === 'compare') localStorage.setItem('veluna_compare', JSON.stringify(STATE.compareList));
+      if (key === 'user') localStorage.setItem('veluna_user', JSON.stringify(STATE.user));
+      if (key === 'orders') localStorage.setItem('veluna_orders', JSON.stringify(STATE.orders));
+    }
+
+    // --- 2. HIGH-RELIABILITY IMAGE FALLBACK SYSTEM ---
+    // Generates pristine, crisp inline SVGs when an external image cannot be fetched
+    function handleImgError(imgEl, category, title) {
+      imgEl.onerror = null; // Prevent recursion
+      const cleanTitle = (title || 'Electronics Device').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const bgColors = {
+        phones: '#1E293B',
+        computers: '#0F172A',
+        audio: '#18181B',
+        gaming: '#1E1B4B',
+        tvs: '#111827',
+        cameras: '#1C1917',
+        wearables: '#134E4A',
+        accessories: '#1F2937',
+        default: '#1E293B'
+      };
+      const bg = bgColors[category] || bgColors.default;
+      
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="" fill="none">
+          <rect width="600" height="600" fill="${bg}"/>
+          <circle cx="300" cy="270" r="140" fill="white" fill-opacity="0.04" stroke="white" stroke-opacity="0.1" stroke-width="2"/>
+          <path d="M260 250H340M260 270H340M260 290H310" stroke="white" stroke-width="4" stroke-linecap="round" stroke-opacity="0.4"/>
+          <rect x="230" y="190" width="140" height="160" rx="16" stroke="white" stroke-width="3" stroke-opacity="0.3"/>
+          <text x="300" y="440" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="20" letter-spacing="-0.02em"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></text>
+          <text x="300" y="470" text-anchor="middle" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-weight="500" font-size="14"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></text>
+        </svg>
+      `;
+      imgEl.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
+
+    // --- 3. CURRENCY FORMATTER ---
+    function formatMoney(amountUSD) {
+      if (STATE.currency === 'KES') {
+        const kes = Math.round(amountUSD * CONFIG.exchangeRateKES);
+        return 'KES ' + kes.toLocaleString();
+      }
+      return '$' + amountUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function toggleCurrency() {
+      STATE.currency = STATE.currency === 'USD' ? 'KES' : 'USD';
+      localStorage.setItem('veluna_currency', STATE.currency);
+      const label = document.getElementById('current-currency-label');
+      if (label) label.textContent = STATE.currency === 'USD' ? 'USD ($)' : 'KES (Sh)';
+      renderRoute();
+      showToast(`Switched currency to ${STATE.currency}`);
+    }
+
+    // --- 4. EXTENSIVE MASTER PRODUCT CATALOGUE (50+ Real High-End Electronics) ---
+    const PRODUCTS = [
+      // == PHONES ==
+      {
+        id: 'iphone-17-pro-max',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", "", ""],
+        storage: "",
+        image: "",
+        gallery: [
+          "",
+          "",
+          ""
+        ],
+        specs: {
+          'Processor': "",
+          'Display': "",
+          'Main Camera': "",
+          'Battery': "",
+          'Build': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'galaxy-z-fold-7',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", "", ""],
+        storage: "",
+        image: "",
+        gallery: [
+          "",
+          ""
+        ],
+        specs: {
+          'Processor': "",
+          'Main Screen': "",
+          'Cover Screen': "",
+          'Cameras': "",
+          'Durability': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'oneplus-12-pro',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", ""],
+        storage: "",
+        image: "",
+        gallery: [""],
+        specs: {
+          'Processor': "",
+          'Display': "",
+          'Cameras': "",
+          'Charging': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'google-pixel-9-pro',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", "", ""],
+        storage: "",
+        image: "",
+        gallery: [""],
+        specs: {
+          'Processor': "",
+          'Display': "",
+          'Main Camera': "",
+          'Software': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'galaxy-s24-ultra',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", "", ""],
+        storage: "",
+        image: "",
+        gallery: [""],
+        specs: {
+          'Processor': "",
+          'Display': "",
+          'Cameras': "",
+          'S Pen': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'galaxy-z-flip-6',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", ""],
+        storage: "",
+        image: "",
+        gallery: [""],
+        specs: {
+          'Display': "",
+          'Cameras': "",
+          'Battery': ""
+        },
+        description: "",
+        inStock: true
+      },
+
+      // == AUDIO ==
+      {
+        id: 'airbeatz-pro-buds',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", ""],
+        image: "",
+        gallery: [
+          "",
+          ""
+        ],
+        specs: {
+          'Drivers': "",
+          'Noise Cancellation': "",
+          'Battery Life': "",
+          'Water Resistance': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'sony-wh1000xm5',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        image: "",
+        gallery: [
+          "",
+          ""
+        ],
+        specs: {
+          'Processors': "",
+          'Drivers': "",
+          'Battery': "",
+          'Microphones': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'bose-quietcomfort-ultra',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Audio Tech': "",
+          'CustomTune': "",
+          'Battery': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'cylinder-sound-hub',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Acoustic Field': "",
+          'Connectivity': "",
+          'Smart Hub': ""
+        },
+        description: "",
+        inStock: true
+      },
+
+      // == COMPUTERS & LAPTOPS ==
+      {
+        id: 'macbook-pro-16-m3-max',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", "", ""],
+        storage: "",
+        image: "",
+        gallery: [
+          "",
+          ""
+        ],
+        specs: {
+          'Processor': "",
+          'Memory': "",
+          'Display': "",
+          'Battery': "",
+          'Ports': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'dell-xps-15-oled',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" }
+        ],
+        variants: ["", ""],
+        storage: "",
+        image: "",
+        gallery: [""],
+        specs: {
+          'Processor': "",
+          'Graphics': "",
+          'Display': "",
+          'Chassis': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'asus-rog-zephyrus-g16',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", ""],
+        storage: "",
+        image: "",
+        gallery: [""],
+        specs: {
+          'Processor': "",
+          'Graphics': "",
+          'Display': "",
+          'Audio': ""
+        },
+        description: "",
+        inStock: true
+      },
+
+      // == GAMING ==
+      {
+        id: 'playstation-5-pro',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        storage: "",
+        image: "",
+        gallery: [""],
+        specs: {
+          'GPU': "",
+          'Upscaling': "",
+          'Ray Tracing': "",
+          'Storage': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'nintendo-switch-oled',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        storage: "",
+        image: "",
+        gallery: [""],
+        specs: {
+          'Display': "",
+          'Audio': "",
+          'Dock': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'pro-gaming-controller',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Sticks': "",
+          'Polling Rate': "",
+          'Triggers': ""
+        },
+        description: "",
+        inStock: true
+      },
+
+      // == TVS & HOME THEATRE ==
+      {
+        id: 'samsung-neo-qled-65',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" }
+        ],
+        variants: ["", "", ""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Display': "",
+          'Processor': "",
+          'Refresh Rate': "",
+          'Audio': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'q-series-soundbar',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Channels': "",
+          'Audio Formats': "",
+          'Gaming': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'curved-gaming-monitor',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Resolution': "",
+          'Refresh Rate': "",
+          'Curvature': ""
+        },
+        description: "",
+        inStock: true
+      },
+
+      // == CAMERAS & CONTENT GEAR ==
+      {
+        id: 'sony-a7-iv',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" }
+        ],
+        variants: ["", ""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Sensor': "",
+          'Video': "",
+          'Autofocus': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'dji-mini-4-pro',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Weight': "",
+          'Camera': "",
+          'Safety': ""
+        },
+        description: "",
+        inStock: true
+      },
+
+      // == WEARABLES ==
+      {
+        id: 'apple-watch-ultra-2',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: true,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", "", ""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Case': "",
+          'Screen': "",
+          'Battery': "",
+          'Water Rating': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'smart-ring-gen-3',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: ["", "", "", ""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Sensors': "",
+          'Battery Life': "",
+          'Water Resistance': ""
+        },
+        description: "",
+        inStock: true
+      },
+
+      // == ACCESSORIES & POWER ==
+      {
+        id: 'anker-prime-powerbank',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: true,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Total Output': "",
+          'Capacity': "",
+          'Display': ""
+        },
+        description: "",
+        inStock: true
+      },
+      {
+        id: 'belkin-magsafe-charger',
+        name: "",
+        brand: "",
+        category: "",
+        subCategory: "",
+        price: 0,
+        originalPrice: 0,
+        rating: 0,
+        reviewCount: 0,
+        isNew: false,
+        isFeatured: false,
+        colors: [
+          { name: "", hex: "" },
+          { name: "", hex: "" }
+        ],
+        variants: [""],
+        image: "",
+        gallery: [""],
+        specs: {
+          'Compatibility': "",
+          'Design': ""
+        },
+        description: "",
+        inStock: true
+      }
+    ];
+
+    // --- 5. CATEGORIES METADATA ---
+    const CATEGORIES = [
+      { id: 'phones', name: "", short: "", count: 18, icon: 'smartphone', desc: "" },
+      { id: 'computers', name: "", short: "", count: 14, icon: 'laptop', desc: "" },
+      { id: 'audio', name: "", short: "", count: 12, icon: 'headphones', desc: "" },
+      { id: 'gaming', name: "", short: "", count: 9, icon: 'gamepad-2', desc: "" },
+      { id: 'tvs', name: "", short: "", count: 8, icon: 'tv', desc: "" },
+      { id: 'cameras', name: "", short: "", count: 7, icon: 'camera', desc: "" },
+      { id: 'wearables', name: "", short: "", count: 6, icon: 'watch', desc: "" },
+      { id: 'accessories', name: "", short: "", count: 11, icon: 'zap', desc: "" }
+    ];
+
+    // --- 6. BRANDS DIRECTORY ---
+    const BRANDS = [
+      { id: 'apple', name: "", country: "", tagline: "", logo: "", count: 8 },
+      { id: 'samsung', name: "", country: "", tagline: "", logo: "", count: 9 },
+      { id: 'sony', name: "", country: "", tagline: "", logo: "", count: 6 },
+      { id: 'google', name: "", country: "", tagline: "", logo: "", count: 4 },
+      { id: 'oneplus', name: "", country: "", tagline: "", logo: "", count: 3 },
+      { id: 'bose', name: "", country: "", tagline: "", logo: "", count: 3 },
+      { id: 'asus', name: "", country: "", tagline: "", logo: "", count: 4 },
+      { id: 'dell', name: "", country: "", tagline: "", logo: "", count: 3 },
+      { id: 'dji', name: "", country: "", tagline: "", logo: "", count: 2 },
+      { id: 'nintendo', name: "", country: "", tagline: "", logo: "", count: 2 },
+      { id: 'anker', name: "", country: "", tagline: "", logo: "", count: 3 },
+      { id: 'belkin', name: "", country: "", tagline: "", logo: "", count: 2 }
+    ];
+    // --- 7. CART, WISHLIST & COMPARISON ACTIONS ---
+
+    function showToast(message, iconName = 'check-circle') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast-anim bg-gray-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-sm border border-gray-800 pointer-events-auto';
+      toast.innerHTML = `
+        <i data-lucide="${iconName}" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+      `;
+      container.appendChild(toast);
+      if (window.lucide) lucide.createIcons({ root: toast });
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 3000);
+    }
+
+    function updateBadges() {
+      // Cart badge
+      const cartCount = STATE.cart.reduce((sum, item) => sum + item.quantity, 0);
+      const navCartBadge = document.getElementById('nav-cart-count');
+      const drawerCartBadge = document.getElementById('drawer-cart-count-badge');
+      if (navCartBadge) {
+        navCartBadge.textContent = cartCount;
+        navCartBadge.classList.toggle('hidden', cartCount === 0);
+      }
+      if (drawerCartBadge) drawerCartBadge.textContent = cartCount;
+
+      // Wishlist badge
+      const navWishlistBadge = document.getElementById('nav-wishlist-count');
+      if (navWishlistBadge) {
+        navWishlistBadge.textContent = STATE.wishlist.length;
+        navWishlistBadge.classList.toggle('hidden', STATE.wishlist.length === 0);
+      }
+
+      // Compare bar
+      const navCompareBadge = document.getElementById('nav-compare-count');
+      if (navCompareBadge) {
+        navCompareBadge.textContent = STATE.compareList.length;
+        navCompareBadge.classList.toggle('hidden', STATE.compareList.length === 0);
+      }
+      const compareBar = document.getElementById('compare-bar');
+      const compareBarCount = document.getElementById('compare-bar-count');
+      const compareBarThumbs = document.getElementById('compare-bar-thumbs');
+      if (compareBar && compareBarCount && compareBarThumbs) {
+        compareBarCount.textContent = STATE.compareList.length;
+        if (STATE.compareList.length > 0) {
+          compareBar.classList.remove('hidden');
+          compareBar.classList.add('flex');
+          compareBarThumbs.innerHTML = STATE.compareList.map(id => {
+            const prod = PRODUCTS.find(p => p.id === id);
+            return prod ? `<img class="w-6 h-6 rounded-full object-cover border border-gray-700 eshop-placeholder-media">` : '';
+          }).join('');
+        } else {
+          compareBar.classList.add('hidden');
+          compareBar.classList.remove('flex');
+        }
+      }
+
+      renderCartDrawerItems();
+    }
+
+    function addToCart(productId, variant = null, color = null, qty = 1, showDrawer = true) {
+      const product = PRODUCTS.find(p => p.id === productId);
+      if (!product) return;
+
+      const chosenVariant = variant || (product.variants && product.variants.length > 0 ? product.variants[0] : 'Standard');
+      const chosenColor = color || (product.colors && product.colors.length > 0 ? product.colors[0].name : 'Default');
+
+      const existingIndex = STATE.cart.findIndex(item => 
+        item.id === productId && item.variant === chosenVariant && item.color === chosenColor
+      );
+
+      if (existingIndex > -1) {
+        STATE.cart[existingIndex].quantity += qty;
+      } else {
+        STATE.cart.push({
+          id: productId,
+          name: product.name,
+          brand: product.brand,
+          price: product.price,
+          image: product.image,
+          category: product.category,
+          variant: chosenVariant,
+          color: chosenColor,
+          quantity: qty
+        });
+      }
+
+      saveState('cart');
+      updateBadges();
+      showToast(`Added ${product.name} to cart`);
+      if (showDrawer) toggleCartDrawer(true);
+    }
+
+    function updateCartQuantity(index, delta) {
+      if (!STATE.cart[index]) return;
+      STATE.cart[index].quantity += delta;
+      if (STATE.cart[index].quantity <= 0) {
+        STATE.cart.splice(index, 1);
+      }
+      saveState('cart');
+      updateBadges();
+      // If we are on the /cart page, re-render it
+      if (window.location.hash.startsWith('#/cart')) {
+        renderRoute();
+      }
+    }
+
+    function removeFromCart(index) {
+      if (!STATE.cart[index]) return;
+      const name = STATE.cart[index].name;
+      STATE.cart.splice(index, 1);
+      saveState('cart');
+      updateBadges();
+      showToast(`Removed ${name} from cart`, 'trash-2');
+      if (window.location.hash.startsWith('#/cart')) {
+        renderRoute();
+      }
+    }
+
+    function toggleWishlist(productId) {
+      const index = STATE.wishlist.indexOf(productId);
+      const prod = PRODUCTS.find(p => p.id === productId);
+      const name = prod ? prod.name : 'Product';
+      if (index > -1) {
+        STATE.wishlist.splice(index, 1);
+        showToast(`Removed ${name} from wishlist`, 'heart-off');
+      } else {
+        STATE.wishlist.push(productId);
+        showToast(`Saved ${name} to wishlist`, 'heart');
+      }
+      saveState('wishlist');
+      updateBadges();
+      renderRoute();
+    }
+
+    function toggleCompare(productId) {
+      const index = STATE.compareList.indexOf(productId);
+      const prod = PRODUCTS.find(p => p.id === productId);
+      const name = prod ? prod.name : 'Product';
+      if (index > -1) {
+        STATE.compareList.splice(index, 1);
+        showToast(`Removed from comparison`, 'minus');
+      } else {
+        if (STATE.compareList.length >= 4) {
+          showToast(`Maximum 4 products in comparison`, 'alert-circle');
+          return;
+        }
+        STATE.compareList.push(productId);
+        showToast(`Added ${name} to comparison`, 'columns-2');
+      }
+      saveState('compare');
+      updateBadges();
+    }
+
+    function clearCompare() {
+      STATE.compareList = [];
+      saveState('compare');
+      updateBadges();
+      showToast(`Comparison list cleared`);
+      if (window.location.hash.startsWith('#/compare')) {
+        renderRoute();
+      }
+    }
+
+    function toggleCartDrawer(open) {
+      const drawer = document.getElementById('cart-drawer');
+      if (!drawer) return;
+      if (open) {
+        drawer.classList.remove('hidden');
+        renderCartDrawerItems();
+      } else {
+        drawer.classList.add('hidden');
+      }
+    }
+
+    function renderCartDrawerItems() {
+      const itemsContainer = document.getElementById('drawer-cart-items');
+      const footerContainer = document.getElementById('drawer-cart-footer');
+      if (!itemsContainer || !footerContainer) return;
+
+      if (STATE.cart.length === 0) {
+        itemsContainer.innerHTML = `
+          <div class="py-16 text-center text-gray-500 space-y-3">
+            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto text-gray-400">
+              <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+            </div>
+            <p class="font-bold text-gray-800 text-base"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></p>
+            <p class="text-xs text-gray-500 max-w-xs mx-auto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#/category/phones" onclick="toggleCartDrawer(false)" class="inline-block mt-2 px-5 py-2.5 bg-black text-white text-xs font-bold rounded-full hover:bg-gray-800 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a>
+          </div>
+        `;
+        footerContainer.innerHTML = '';
+        if (window.lucide) lucide.createIcons({ root: itemsContainer });
+        return;
+      }
+
+      let subtotal = 0;
+      itemsContainer.innerHTML = STATE.cart.map((item, idx) => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        return `
+          <div class="flex items-center gap-3 p-3 bg-gray-50/80 rounded-xl border border-gray-100">
+            <img class="w-16 h-16 object-cover rounded-lg bg-white flex-shrink-0 eshop-placeholder-media">
+            <div class="flex-1 min-w-0">
+              <h4 class="text-xs font-bold text-gray-900 truncate"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h4>
+              <p class="text-[11px] text-gray-500 truncate"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></p>
+              <div class="font-mono font-bold text-xs text-gray-900 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+            </div>
+            <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+              <button onclick="removeFromCart(${idx})" class="text-gray-400 hover:text-rose-600 transition-colors">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+              <div class="flex items-center border border-gray-200 rounded-md bg-white">
+                <button onclick="updateCartQuantity(${idx}, -1)" class="px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                <span class="px-2 py-0.5 text-xs font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                <button onclick="updateCartQuantity(${idx}, 1)" class="px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      footerContainer.innerHTML = `
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-gray-500 font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+          <span class="font-bold text-base text-gray-900 font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+        </div>
+        <p class="text-[11px] text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <a href="#/cart" onclick="toggleCartDrawer(false)" class="w-full text-center py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold text-xs rounded-xl transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a>
+          <a href="#/checkout" onclick="toggleCartDrawer(false)" class="w-full text-center py-2.5 bg-black hover:bg-gray-800 text-white font-bold text-xs rounded-xl transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+        </div>
+      `;
+
+      if (window.lucide) {
+        lucide.createIcons({ root: itemsContainer });
+        lucide.createIcons({ root: footerContainer });
+      }
+    }
+
+    // --- 8. SEARCH MODAL LOGIC ---
+    function openSearchModal() {
+      const modal = document.getElementById('search-modal');
+      const input = document.getElementById('modal-search-input');
+      if (modal && input) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        input.value = '';
+        input.focus();
+        handleSearchInput('');
+      }
+    }
+
+    function closeSearchModal() {
+      const modal = document.getElementById('search-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function quickSearch(q) {
+      closeSearchModal();
+      window.location.hash = `#/search?q=${encodeURIComponent(q)}`;
+    }
+
+    function handleSearchInput(q) {
+      const resultsContainer = document.getElementById('search-modal-results');
+      if (!resultsContainer) return;
+      const clean = q.trim().toLowerCase();
+      if (!clean) {
+        resultsContainer.innerHTML = `
+          <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button onclick="quickSearch('iPhone 17')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></button>
+            <button onclick="quickSearch('Galaxy Z Fold')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></button>
+            <button onclick="quickSearch('Airbeatz')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></button>
+            <button onclick="quickSearch('MacBook')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></button>
+            <button onclick="quickSearch('Sony WH-1000XM5')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></button>
+            <button onclick="quickSearch('OLED TV')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs font-medium rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></button>
+          </div>
+        `;
+        return;
+      }
+
+      const matches = PRODUCTS.filter(p => 
+        p.name.toLowerCase().includes(clean) ||
+        p.brand.toLowerCase().includes(clean) ||
+        p.category.toLowerCase().includes(clean) ||
+        p.description.toLowerCase().includes(clean)
+      ).slice(0, 6);
+
+      if (matches.length === 0) {
+        resultsContainer.innerHTML = `
+          <div class="py-8 text-center text-gray-500">
+            <p class="font-medium text-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <p class="text-xs text-gray-400 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        `;
+        return;
+      }
+
+      resultsContainer.innerHTML = `
+        <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+        <div class="space-y-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        <div class="pt-3 border-t border-gray-100 mt-3 text-center">
+          <button onclick="quickSearch('${q}')" class="text-xs font-bold text-black hover:underline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></button>
+        </div>
+      `;
+    }
+
+    // Modal search input keyup
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('modal-search-input');
+      if (input) {
+        input.addEventListener('input', (e) => handleSearchInput(e.target.value));
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && e.target.value.trim()) {
+            quickSearch(e.target.value.trim());
+          }
+        });
+      }
+    });
+
+    function toggleMobileNav(force) {
+      const nav = document.getElementById('mobile-nav');
+      if (!nav) return;
+      if (typeof force === 'boolean') {
+        nav.classList.toggle('hidden', !force);
+      } else {
+        nav.classList.toggle('hidden');
+      }
+    }
+
+    function handleNewsletterSubmit(e) {
+      e.preventDefault();
+      showToast('Thank you for subscribing to Veluna drops!', 'sparkles');
+      e.target.reset();
+    }
+    // --- 9. PRODUCT CARD COMPONENT ---
+    function createProductCardHTML(p) {
+      const isWishlisted = STATE.wishlist.includes(p.id);
+      const isCompared = STATE.compareList.includes(p.id);
+      const discountPercent = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+
+      const swatchHTML = p.colors && p.colors.length > 0 ? `
+        <div class="flex items-center gap-1.5 mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+      ` : '';
+
+      return `
+        <div class="product-card group relative bg-white rounded-2xl p-4 border border-gray-100 flex flex-col justify-between">
+          
+          <!-- Badges & Action Buttons -->
+          <div class="flex items-center justify-between z-10 mb-2">
+            <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleCompare('${p.id}')" class="p-1.5 rounded-full ${isCompared ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-black hover:bg-gray-100'} transition-colors">
+                <i data-lucide="columns-2" class="w-4 h-4"></i>
+              </button>
+              <button onclick="toggleWishlist('${p.id}')" class="p-1.5 rounded-full ${isWishlisted ? 'bg-rose-50 text-rose-600' : 'text-gray-400 hover:text-black hover:bg-gray-100'} transition-colors">
+                <i data-lucide="heart" class="w-4 h-4 ${isWishlisted ? 'fill-rose-600' : ''}"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Product Image Link -->
+          <a href="#/product/${p.id}" class="zoom-img-container block aspect-square bg-[#F8F9FA] rounded-xl overflow-hidden mb-4 p-4 flex items-center justify-center">
+            <img loading="lazy" class="w-full h-full object-contain mix-blend-multiply eshop-placeholder-media">
+          </a>
+
+          <!-- Details -->
+          <div class="flex-1 flex flex-col justify-between">
+            <div>
+              <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+              <a href="#/product/${p.id}" class="block font-bold text-sm text-gray-900 group-hover:text-black transition-colors line-clamp-1 mt-0.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+            <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <div>
+                <div class="font-mono font-bold text-base text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+              <button onclick="addToCart('${p.id}')" class="px-3 py-1.5 bg-black hover:bg-gray-800 text-white rounded-full text-xs font-bold transition-all shadow-sm flex items-center gap-1 active:scale-95">
+                <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      `;
+    }
+
+    // --- 10. HOMEPAGE VIEW RENDERER ---
+    function renderHomePage() {
+      const trendingProducts = PRODUCTS.slice(0, 6);
+      const newArrivals = PRODUCTS.filter(p => p.isNew).slice(0, 4);
+      const lineupAudioTVs = PRODUCTS.filter(p => p.category === 'tvs' || p.category === 'audio').slice(0, 4);
+
+      return `
+        <!-- HERO SECTION (Identical to screenshot reference) -->
+        <section class="relative bg-white pt-10 pb-16 lg:pt-16 lg:pb-24 overflow-hidden border-b border-gray-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <!-- Left Copy & CTA -->
+              <div class="lg:col-span-7 space-y-6 hero-text-block">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full text-xs font-bold text-gray-800">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight-headings text-gray-950 leading-[1.08]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span><br/><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></h1>
+                <p class="text-base sm:text-lg text-gray-600 max-w-xl leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <div class="flex flex-wrap items-center gap-4 pt-2">
+                  <a href="#/category/phones" class="px-8 py-3.5 bg-black text-white font-bold text-sm rounded-full hover:bg-gray-800 transition-all shadow-lg shadow-black/10 hover:shadow-xl active:scale-95"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+                  <a href="#/category/audio" class="px-6 py-3.5 bg-gray-100 text-gray-800 font-bold text-sm rounded-full hover:bg-gray-200 transition-all"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+                </div>
+
+                <!-- Customer Trust Proof (As seen in screenshot) -->
+                <div class="flex items-center gap-4 pt-4 border-t border-gray-100">
+                  <div class="flex -space-x-2">
+                    <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover eshop-placeholder-media">
+                    <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover eshop-placeholder-media">
+                    <img class="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover eshop-placeholder-media">
+                  </div>
+                  <div class="text-xs">
+                    <div class="font-extrabold text-gray-900 flex items-center gap-1">
+                      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                      <span class="text-amber-500"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></span>
+                    </div>
+                    <div class="text-gray-500 font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Visual: Thoughtful Model with Cream Headphones -->
+              <div class="lg:col-span-5 relative hero-image-block">
+                <div class="relative mx-auto max-w-md lg:max-w-none">
+                  <!-- Floating subtle decorative tech rings -->
+                  <div class="absolute -top-6 -right-6 w-32 h-32 rounded-full border border-gray-200/80 -z-10"></div>
+                  <div class="absolute -bottom-8 -left-8 w-48 h-48 rounded-full border border-dashed border-gray-200/80 -z-10"></div>
+
+                  <div class="relative rounded-3xl overflow-hidden bg-gradient-to-b from-[#F5EBE1] to-[#EAE0D5] aspect-[4/5] flex items-center justify-center shadow-2xl">
+                    <img 
+                         class="w-full h-full object-cover mix-blend-multiply eshop-placeholder-media">
+                    
+                    <div class="absolute bottom-5 left-5 right-5 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/50 flex items-center justify-between">
+                      <div>
+                        <div class="text-xs font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></div>
+                        <div class="text-[11px] text-gray-500 font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></div>
+                      </div>
+                      <span class="font-mono font-bold text-sm text-black"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 2: BEST PICKS FOR YOU (BENTO MASONRY AS IN SCREENSHOT) -->
+        <section class="py-16 bg-[#F8F9FA]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <a href="#/category/phones" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <!-- Bento Asymmetrical Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              
+              <!-- Large Card 1: Airbeatz Pro Buds (Takes 2 rows on desktop) -->
+              <div class="md:col-span-2 lg:col-span-2 relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#1C1D21] to-[#2B2D33] text-white p-6 sm:p-8 flex flex-col justify-between min-h-[360px] group shadow-sm">
+                <img 
+                     class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700 -z-0 eshop-placeholder-media">
+                <div class="relative z-10">
+                  <span class="text-xs uppercase tracking-widest text-emerald-400 font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+                  <h3 class="text-2xl sm:text-3xl font-black mt-2 text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h3>
+                  <p class="text-xs sm:text-sm text-gray-300 max-w-sm mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+                <div class="relative z-10 pt-6 flex items-center justify-between">
+                  <a href="#/product/airbeatz-pro-buds" class="px-5 py-2.5 bg-white text-black font-bold text-xs rounded-full hover:bg-gray-100 transition-colors shadow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+                  <span class="font-mono text-base font-bold text-white"></span>
+                </div>
+              </div>
+
+              <!-- Card 2: Gaming Controller with Action Round Indicator -->
+              <div class="relative rounded-3xl overflow-hidden bg-white p-5 border border-gray-200/80 flex flex-col justify-between group shadow-sm">
+                <div class="aspect-square rounded-2xl overflow-hidden bg-[#F1F3F5] relative mb-3">
+                  <img 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 eshop-placeholder-media">
+                  <a href="#/product/pro-gaming-controller" class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-black flex items-center justify-center shadow hover:scale-110 transition-transform">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </a>
+                </div>
+                <div>
+                  <div class="text-[11px] uppercase tracking-wider font-bold text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></div>
+                  <h4 class="font-bold text-sm text-gray-900 truncate"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></h4>
+                  <div class="font-mono font-bold text-xs text-gray-900 mt-1"></div>
+                </div>
+              </div>
+
+              <!-- Card 3: Cylindro Smart Speaker -->
+              <div class="relative rounded-3xl overflow-hidden bg-white p-5 border border-gray-200/80 flex flex-col justify-between group shadow-sm">
+                <div class="aspect-square rounded-2xl overflow-hidden bg-[#F1F3F5] relative mb-3">
+                  <img 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 eshop-placeholder-media">
+                  <a href="#/product/cylinder-sound-hub" class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-black flex items-center justify-center shadow hover:scale-110 transition-transform">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </a>
+                </div>
+                <div>
+                  <div class="text-[11px] uppercase tracking-wider font-bold text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></div>
+                  <h4 class="font-bold text-sm text-gray-900 truncate"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></h4>
+                  <div class="font-mono font-bold text-xs text-gray-900 mt-1"></div>
+                </div>
+              </div>
+
+              <!-- Card 4: Creator Laptop on Desk -->
+              <div class="relative rounded-3xl overflow-hidden bg-white p-5 border border-gray-200/80 flex flex-col justify-between group shadow-sm">
+                <div class="aspect-square rounded-2xl overflow-hidden bg-[#F1F3F5] relative mb-3">
+                  <img 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 eshop-placeholder-media">
+                  <a href="#/product/macbook-pro-16-m3-max" class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-black flex items-center justify-center shadow hover:scale-110 transition-transform">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </a>
+                </div>
+                <div>
+                  <div class="text-[11px] uppercase tracking-wider font-bold text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></div>
+                  <h4 class="font-bold text-sm text-gray-900 truncate"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h4>
+                  <div class="font-mono font-bold text-xs text-gray-900 mt-1"></div>
+                </div>
+              </div>
+
+              <!-- Card 5: Smart Health Ring -->
+              <div class="relative rounded-3xl overflow-hidden bg-white p-5 border border-gray-200/80 flex flex-col justify-between group shadow-sm">
+                <div class="aspect-square rounded-2xl overflow-hidden bg-[#F1F3F5] relative mb-3">
+                  <img 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 eshop-placeholder-media">
+                  <a href="#/product/smart-ring-gen-3" class="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm text-black flex items-center justify-center shadow hover:scale-110 transition-transform">
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </a>
+                </div>
+                <div>
+                  <div class="text-[11px] uppercase tracking-wider font-bold text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></div>
+                  <h4 class="font-bold text-sm text-gray-900 truncate"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></h4>
+                  <div class="font-mono font-bold text-xs text-gray-900 mt-1"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 3: NEW ARRIVALS CAROUSEL/GRID -->
+        <section class="py-16 bg-white border-b border-gray-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <a href="#/category/phones" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+
+        <!-- SECTION 4: GALAXY Z FOLD 7 EDITORIAL BANNER (Exact dusty slate-blue from screenshot) -->
+        <section class="relative bg-[#2B4561] text-white py-16 sm:py-24 overflow-hidden">
+          <!-- Giant subtle background typography watermark -->
+          <div class="watermark-text top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></div>
+          
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              
+              <div class="lg:col-span-7 space-y-6">
+                <span class="inline-block px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-xs font-bold uppercase tracking-wider text-blue-200"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+                <h2 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight-headings leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></h2>
+                <p class="text-sm sm:text-base text-blue-100/90 max-w-xl leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <div class="flex flex-wrap items-center gap-4 pt-2">
+                  <a href="#/product/galaxy-z-fold-7" class="px-7 py-3 bg-white text-gray-900 font-bold text-xs sm:text-sm rounded-full hover:bg-gray-100 transition-all shadow-lg active:scale-95"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+                  <a href="#/product/galaxy-z-fold-7" class="px-6 py-3 border border-white/40 text-white font-bold text-xs sm:text-sm rounded-full hover:bg-white/10 transition-all"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></a>
+                </div>
+              </div>
+
+              <!-- Product Render of Foldable -->
+              <div class="lg:col-span-5 flex justify-center">
+                <div class="relative max-w-sm sm:max-w-md">
+                  <img 
+                       class="w-full h-auto drop-shadow-2xl rounded-2xl eshop-placeholder-media">
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 5: SHOP BY CATEGORY (WITH PILL PRICE BADGES AS IN SCREENSHOT) -->
+        <section class="py-16 bg-[#F8F9FA]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <a href="#/category/phones" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <!-- Categories Horizontal Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              
+              <a href="#/category/audio" class="group relative rounded-2xl overflow-hidden bg-white p-4 border border-gray-200/80 hover:shadow-lg transition-all">
+                <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 relative">
+                  <img 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 eshop-placeholder-media">
+                  <span class="absolute bottom-2.5 left-2.5 px-2.5 py-1 bg-black/80 backdrop-blur-sm text-white text-[11px] font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></span>
+                </div>
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h3>
+                <p class="text-[11px] text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></p>
+              </a>
+
+              <a href="#/category/audio" class="group relative rounded-2xl overflow-hidden bg-white p-4 border border-gray-200/80 hover:shadow-lg transition-all">
+                <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 relative">
+                  <img 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 eshop-placeholder-media">
+                  <span class="absolute bottom-2.5 left-2.5 px-2.5 py-1 bg-black/80 backdrop-blur-sm text-white text-[11px] font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></span>
+                </div>
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+                <p class="text-[11px] text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+              </a>
+
+              <a href="#/category/gaming" class="group relative rounded-2xl overflow-hidden bg-white p-4 border border-gray-200/80 hover:shadow-lg transition-all">
+                <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 relative">
+                  <img 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 eshop-placeholder-media">
+                  <span class="absolute bottom-2.5 left-2.5 px-2.5 py-1 bg-black/80 backdrop-blur-sm text-white text-[11px] font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></span>
+                </div>
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></h3>
+                <p class="text-[11px] text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></p>
+              </a>
+
+              <a href="#/category/cameras" class="group relative rounded-2xl overflow-hidden bg-white p-4 border border-gray-200/80 hover:shadow-lg transition-all">
+                <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 relative">
+                  <img 
+                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 eshop-placeholder-media">
+                  <span class="absolute bottom-2.5 left-2.5 px-2.5 py-1 bg-black/80 backdrop-blur-sm text-white text-[11px] font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></span>
+                </div>
+                <h3 class="font-bold text-sm text-gray-900 group-hover:text-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+                <p class="text-[11px] text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></p>
+              </a>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 6: TWIN EDITORIAL BANNERS SIDE-BY-SIDE -->
+        <section class="py-12 bg-white">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              <!-- Left Banner: Sound of Pure Celebration (Warm Ivory) -->
+              <div class="rounded-3xl bg-[#F6ECE2] p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden">
+                <div class="space-y-4 max-w-xs text-center sm:text-left">
+                  <h3 class="text-2xl sm:text-3xl font-black text-gray-950 leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h3>
+                  <p class="text-xs sm:text-sm text-gray-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <a href="#/category/audio" class="inline-block px-5 py-2.5 bg-black text-white font-bold text-xs rounded-full hover:bg-gray-800 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+                </div>
+                <div class="w-48 sm:w-56 flex-shrink-0">
+                  <img 
+                       class="w-full h-auto rounded-2xl shadow-sm mix-blend-multiply eshop-placeholder-media">
+                </div>
+              </div>
+
+              <!-- Right Banner: Next-Gen Noise Cancellation (Luxury Gold/Black Headphones) -->
+              <div class="rounded-3xl bg-[#F1F3F5] p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden">
+                <div class="space-y-4 max-w-xs text-center sm:text-left">
+                  <h3 class="text-2xl sm:text-3xl font-black text-gray-950 leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></h3>
+                  <p class="text-xs sm:text-sm text-gray-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <a href="#/product/sony-wh1000xm5" class="inline-block px-5 py-2.5 bg-black text-white font-bold text-xs rounded-full hover:bg-gray-800 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+                </div>
+                <div class="w-48 sm:w-56 flex-shrink-0">
+                  <img 
+                       class="w-full h-auto rounded-2xl shadow-sm mix-blend-multiply eshop-placeholder-media">
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 7: TOP TRENDING FLAGSHIPS -->
+        <section class="py-16 bg-[#F8F9FA] border-t border-gray-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <a href="#/category/phones" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+
+        <!-- SECTION 8: APPLE PROMO BANNER (Celebrate Season with iPhone 17) -->
+        <section class="py-12 bg-white">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="rounded-3xl bg-gradient-to-r from-[#EAEFF9] to-[#DDE6F7] p-8 sm:p-12 border border-blue-100 flex flex-col lg:flex-row items-center justify-between gap-8">
+              
+              <div class="space-y-5 max-w-lg text-center lg:text-left">
+                <div class="inline-flex items-center gap-1.5 text-gray-800 text-xs font-bold">
+                  <i data-lucide="apple" class="w-4 h-4"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></span>
+                </div>
+                <h3 class="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-950 leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></h3>
+                <p class="text-sm text-gray-600 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <div class="pt-2">
+                  <a href="#/product/iphone-17-pro-max" class="inline-block px-8 py-3 bg-black text-white font-bold text-sm rounded-full hover:bg-gray-800 transition-colors shadow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+                </div>
+              </div>
+
+              <div class="w-full max-w-md lg:max-w-lg flex justify-center">
+                <img 
+                     class="w-full h-auto drop-shadow-xl rounded-2xl mix-blend-multiply eshop-placeholder-media">
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 9: GREAT DEALS BENTO (Smartphones, Laptops, Headphones + Living Room TV) -->
+        <section class="py-16 bg-[#F8F9FA]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <a href="#/deals" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <!-- Bento 3-columns top -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              
+              <a href="#/category/phones" class="group relative rounded-3xl overflow-hidden bg-gray-900 text-white p-6 min-h-[240px] flex flex-col justify-end">
+                <img 
+                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 eshop-placeholder-media">
+                <div class="relative z-10">
+                  <h4 class="font-bold text-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h4>
+                  <div class="text-xs text-gray-300 mt-1 font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></div>
+                </div>
+              </a>
+
+              <a href="#/category/computers" class="group relative rounded-3xl overflow-hidden bg-gray-900 text-white p-6 min-h-[240px] flex flex-col justify-end">
+                <img 
+                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 eshop-placeholder-media">
+                <div class="relative z-10">
+                  <h4 class="font-bold text-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h4>
+                  <div class="text-xs text-gray-300 mt-1 font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></div>
+                </div>
+              </a>
+
+              <a href="#/category/audio" class="group relative rounded-3xl overflow-hidden bg-gray-900 text-white p-6 min-h-[240px] flex flex-col justify-end">
+                <img 
+                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 eshop-placeholder-media">
+                <div class="relative z-10">
+                  <h4 class="font-bold text-lg"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></h4>
+                  <div class="text-xs text-gray-300 mt-1 font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></div>
+                </div>
+              </a>
+
+            </div>
+
+            <!-- Wide Banner Below: Unmatched Visual Clarity 4K TV -->
+            <div class="rounded-3xl bg-white border border-gray-200/80 p-8 sm:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 shadow-sm">
+              <div class="space-y-4 max-w-md">
+                <span class="text-xs font-bold uppercase tracking-wider text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+                <h3 class="text-2xl sm:text-4xl font-black text-gray-950 leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></h3>
+                <p class="text-sm text-gray-600 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <div class="pt-2">
+                  <a href="#/category/tvs" class="inline-block px-6 py-2.5 bg-black text-white font-bold text-xs rounded-full hover:bg-gray-800 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></a>
+                </div>
+              </div>
+
+              <div class="w-full max-w-lg">
+                <img 
+                     class="w-full h-auto rounded-2xl shadow-md eshop-placeholder-media">
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECTION 10: LATEST LINE-UP (TVs, Soundbars, Curved Monitors) -->
+        <section class="py-16 bg-white border-t border-gray-100">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+              <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h2>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <a href="#/category/tvs" class="text-xs font-bold text-black hover:underline flex items-center gap-1">
+                <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></span>
+                <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </section>
+      `;
+    }
+    // --- 11. DEEP CATEGORY VIEW RENDERER ---
+    function renderCategoryPage(categoryId) {
+      const category = CATEGORIES.find(c => c.id === categoryId) || {
+        id: categoryId,
+        name: 'All Electronics',
+        desc: 'Explore the complete Veluna electronics catalogue with official manufacturer warranties.'
+      };
+
+      // Filter products by category
+      let filtered = PRODUCTS.filter(p => p.category === categoryId);
+      
+      // Apply active sub-filters if present
+      const stateFilter = STATE.activeFilters;
+      if (stateFilter.brand) {
+        filtered = filtered.filter(p => p.brand.toLowerCase() === stateFilter.brand.toLowerCase());
+      }
+      if (stateFilter.maxPrice) {
+        filtered = filtered.filter(p => p.price <= stateFilter.maxPrice);
+      }
+      if (stateFilter.inStockOnly) {
+        filtered = filtered.filter(p => p.inStock);
+      }
+      if (stateFilter.storage) {
+        filtered = filtered.filter(p => p.storage === stateFilter.storage);
+      }
+
+      // Apply sorting
+      if (stateFilter.sortBy === 'price-low') {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (stateFilter.sortBy === 'price-high') {
+        filtered.sort((a, b) => b.price - a.price);
+      } else if (stateFilter.sortBy === 'rating') {
+        filtered.sort((a, b) => b.rating - a.rating);
+      } else if (stateFilter.sortBy === 'newest') {
+        filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+      }
+
+      // Available brands in this category
+      const catBrands = [...new Set(PRODUCTS.filter(p => p.category === categoryId).map(p => p.brand))];
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-8">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Breadcrumbs -->
+            <nav class="flex items-center gap-2 text-xs text-gray-400 mb-3 font-medium">
+              <a href="#/" class="hover:text-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </nav>
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+                <p class="text-xs sm:text-sm text-gray-500 max-w-2xl mt-1.5 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+              </div>
+              <div class="text-xs text-gray-500 font-mono font-bold bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- Filter Sidebar -->
+            <aside class="space-y-6 bg-white p-5 rounded-2xl border border-gray-200/80 h-fit">
+              <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <span class="font-bold text-sm text-gray-900 flex items-center gap-2">
+                  <i data-lucide="sliders-horizontal" class="w-4 h-4"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <button onclick="resetCategoryFilters('${categoryId}')" class="text-xs text-gray-400 hover:text-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></button>
+              </div>
+
+              <!-- Brand Filter -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></label>
+                <div class="space-y-2">
+                  <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                    <input type="radio" name="brand-filter" ${!stateFilter.brand ? 'checked' : ''} onchange="setCategoryFilter('brand', null, '${categoryId}')" class="rounded">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span>
+                  </label><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              </div>
+
+              <!-- Price Slider Filter -->
+              <div>
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-bold uppercase tracking-wider text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></span>
+                  <span class="font-mono font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                </div>
+                <input type="range" min="100" max="4000" step="50" 
+                       oninput="setCategoryFilter('maxPrice', Number(this.value), '${categoryId}')" class="w-full">
+              </div>
+
+              <!-- In-Stock Switch -->
+              <div class="pt-2 border-t border-gray-100">
+                <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer font-medium">
+                  <input type="checkbox" ${stateFilter.inStockOnly ? 'checked' : ''} onchange="setCategoryFilter('inStockOnly', this.checked, '${categoryId}')" class="rounded">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+                </label>
+              </div>
+
+              <!-- Sort Dropdown -->
+              <div class="pt-2 border-t border-gray-100">
+                <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></label>
+                <select onchange="setCategoryFilter('sortBy', this.value, '${categoryId}')" class="w-full text-xs font-medium bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:outline-none">
+                  <option ${stateFilter.sortBy === 'featured' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                  <option ${stateFilter.sortBy === 'price-low' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  <option ${stateFilter.sortBy === 'price-high' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></option>
+                  <option ${stateFilter.sortBy === 'rating' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></option>
+                  <option ${stateFilter.sortBy === 'newest' ? 'selected' : ''}><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></option>
+                </select>
+              </div>
+
+            </aside>
+
+            <!-- Products Results Area -->
+            <div class="lg:col-span-3"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    function setCategoryFilter(key, val, categoryId) {
+      STATE.activeFilters[key] = val;
+      renderRoute();
+    }
+
+    function resetCategoryFilters(categoryId) {
+      STATE.activeFilters = {
+        category: null,
+        brand: null,
+        maxPrice: null,
+        sortBy: 'featured',
+        inStockOnly: false,
+        storage: null
+      };
+      renderRoute();
+    }
+
+    // --- 12. BRANDS DIRECTORY & DEDICATED BRAND PAGES ---
+    function renderBrandsPage() {
+      return `
+        <div class="bg-white border-b border-gray-100 py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></h1>
+            <p class="text-sm text-gray-500 max-w-2xl mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        </div>
+      `;
+    }
+
+    function renderBrandPage(brandId) {
+      const brand = BRANDS.find(b => b.id.toLowerCase() === brandId.toLowerCase()) || {
+        id: brandId,
+        name: brandId.toUpperCase(),
+        country: 'Global Manufacturer',
+        tagline: 'Leading consumer electronics engineered for performance.'
+      };
+
+      const brandProducts = PRODUCTS.filter(p => p.brand.toLowerCase().includes(brandId.toLowerCase()));
+
+      return `
+        <div class="bg-gray-950 text-white py-14">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex items-center gap-2 text-xs text-gray-400 mb-4 font-medium">
+              <a href="#/" class="hover:text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <a href="#/brands" class="hover:text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </nav>
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div>
+                <span class="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <h1 class="text-3xl sm:text-5xl font-black tracking-tight-headings mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+                <p class="text-sm text-gray-300 max-w-xl mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></p>
+              </div>
+              <div class="bg-white/10 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 text-right">
+                <div class="text-xs text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></div>
+                <div class="text-2xl font-mono font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+      `;
+    }
+
+    // --- 13. INDIVIDUAL PRODUCT DETAIL PAGE (PDP) ---
+    function renderProductDetailPage(productId) {
+      const product = PRODUCTS.find(p => p.id === productId);
+      if (!product) {
+        return `
+          <div class="max-w-3xl mx-auto py-20 px-4 text-center">
+            <h2 class="text-2xl font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h2>
+            <p class="text-xs text-gray-500 mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#/" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></a>
+          </div>
+        `;
+      }
+
+      const isWishlisted = STATE.wishlist.includes(product.id);
+      const isCompared = STATE.compareList.includes(product.id);
+      const discountPercent = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+      const related = PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-4">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex items-center gap-2 text-xs text-gray-400 font-medium">
+              <a href="#/" class="hover:text-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <a href="#/category/${product.category}" class="hover:text-black capitalize"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></a>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-gray-900 truncate"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </nav>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- Left: Interactive Gallery -->
+            <div class="lg:col-span-7 space-y-4">
+              <div class="aspect-[4/3] rounded-3xl bg-[#F8F9FA] p-8 flex items-center justify-center border border-gray-200/80 overflow-hidden relative">
+                <img id="pdp-main-image" class="max-h-full max-w-full object-contain mix-blend-multiply eshop-placeholder-media"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+              <!-- Thumbnails -->
+              <div class="flex items-center gap-3 overflow-x-auto pb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+            </div>
+
+            <!-- Right: Product Purchase Configurator -->
+            <div class="lg:col-span-5 space-y-6">
+              <div>
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight-headings text-gray-950 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h1>
+                
+                <div class="flex items-center gap-3 mt-3">
+                  <div class="flex items-center text-amber-500 text-sm">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  </div>
+                  <span class="text-xs font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  <span class="text-xs text-gray-400"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                </div>
+              </div>
+
+              <!-- Price Breakdown -->
+              <div class="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                <div>
+                  <div class="font-mono text-3xl font-black text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                <div class="text-right">
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+                </div>
+              </div>
+
+              <!-- Variants / Storage Options --><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span><!-- Color Options --><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span><!-- Quantity & CTA Actions -->
+              <div class="space-y-3 pt-2">
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center border border-gray-200 rounded-full bg-white px-3 py-2">
+                    <button onclick="changePDPQty(-1)" class="text-sm font-bold text-gray-600 hover:text-black px-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                    <input id="pdp-qty-input" type="number" min="1" max="10" class="w-10 text-center text-xs font-bold outline-none" readonly>
+                    <button onclick="changePDPQty(1)" class="text-sm font-bold text-gray-600 hover:text-black px-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                  </div>
+                  <button onclick="handlePDPAddToCart('${product.id}')" class="flex-1 py-3.5 bg-black hover:bg-gray-800 text-white text-xs sm:text-sm font-bold rounded-full transition-all shadow-md active:scale-98 flex items-center justify-center gap-2">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></span>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <button onclick="handlePDPBuyNow('${product.id}')" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-full transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button>
+                  <button onclick="toggleWishlist('${product.id}')" class="w-full py-3 border border-gray-200 hover:bg-gray-50 text-gray-800 text-xs font-bold rounded-full transition-colors flex items-center justify-center gap-1.5">
+                    <i data-lucide="heart" class="w-4 h-4 ${isWishlisted ? 'fill-rose-500 text-rose-500' : ''}"></i>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Key Assurances -->
+              <div class="pt-4 border-t border-gray-100 space-y-2 text-xs text-gray-500">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i data-lucide="truck" class="w-4 h-4 text-emerald-600"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4 text-emerald-600"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Tabbed Technical Details & Reviews -->
+          <div class="mt-16 bg-white rounded-3xl p-6 sm:p-10 border border-gray-200/80">
+            <h3 class="text-xl font-extrabold text-gray-950 mb-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+            <div class="mt-8 pt-6 border-t border-gray-100">
+              <h4 class="text-sm font-bold text-gray-900 mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h4>
+              <div class="flex flex-wrap gap-2 text-xs text-gray-600">
+                <span class="px-3 py-1.5 bg-gray-100 rounded-lg font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                <span class="px-3 py-1.5 bg-gray-100 rounded-lg font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></span>
+                <span class="px-3 py-1.5 bg-gray-100 rounded-lg font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                <span class="px-3 py-1.5 bg-gray-100 rounded-lg font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Related Products Carousel --><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+      `;
+    }
+
+    let pdpSelectedVariant = null;
+    let pdpSelectedColor = null;
+
+    function selectPDPVariant(btn, variantName) {
+      pdpSelectedVariant = variantName;
+      const buttons = document.querySelectorAll('#pdp-variant-selector button');
+      buttons.forEach(b => {
+        b.className = 'px-4 py-2 border border-gray-200 bg-white text-gray-800 text-xs font-bold rounded-xl transition-all';
+      });
+      btn.className = 'px-4 py-2 border border-black bg-black text-white text-xs font-bold rounded-xl transition-all';
+    }
+
+    function selectPDPColor(colorName) {
+      pdpSelectedColor = colorName;
+      const label = document.getElementById('pdp-selected-color-label');
+      if (label) label.textContent = colorName;
+      showToast(`Selected color: ${colorName}`);
+    }
+
+    function changePDPQty(delta) {
+      const input = document.getElementById('pdp-qty-input');
+      if (!input) return;
+      let val = parseInt(input.value, 10) + delta;
+      if (val < 1) val = 1;
+      if (val > 10) val = 10;
+      input.value = val;
+    }
+
+    function handlePDPAddToCart(productId) {
+      const qtyInput = document.getElementById('pdp-qty-input');
+      const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+      addToCart(productId, pdpSelectedVariant, pdpSelectedColor, qty, true);
+    }
+
+    function handlePDPBuyNow(productId) {
+      const qtyInput = document.getElementById('pdp-qty-input');
+      const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+      addToCart(productId, pdpSelectedVariant, pdpSelectedColor, qty, false);
+      window.location.hash = '#/checkout';
+    }
+    // --- 14. SEARCH RESULTS VIEW ---
+    function renderSearchResultsPage(query) {
+      const q = (query || '').trim().toLowerCase();
+      const results = PRODUCTS.filter(p => 
+        p.name.toLowerCase().includes(q) ||
+        p.brand.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q)
+      );
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-10">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h1>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span><span class="font-bold text-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+      `;
+    }
+
+    // --- 15. COMPARISON MATRIX SCREEN ---
+    function renderComparePage() {
+      const items = STATE.compareList.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+
+      if (items.length === 0) {
+        return `
+          <div class="max-w-3xl mx-auto py-20 px-4 text-center">
+            <div class="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="columns-2" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h2>
+            <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#/category/phones" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></a>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-8">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <div>
+              <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></h1>
+              <p class="text-xs text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+            <button onclick="clearCompare()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-xs font-bold rounded-full text-gray-700"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></button>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 overflow-x-auto">
+          <table class="w-full min-w-[700px] border-collapse bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200">
+            <thead>
+              <tr class="border-b border-gray-200 bg-gray-50/50">
+                <th class="p-4 text-left text-xs font-bold uppercase tracking-wider text-gray-400 w-44"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></th><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-xs">
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></td><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></td><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></td><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></td><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></td><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></tr>
+              <tr>
+                <td class="p-4 font-bold text-gray-500 uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></td><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    // --- 16. WISHLIST VIEW ---
+    function renderWishlistPage() {
+      const items = STATE.wishlist.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+
+      if (items.length === 0) {
+        return `
+          <div class="max-w-3xl mx-auto py-20 px-4 text-center">
+            <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="heart" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h2>
+            <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#/category/phones" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></a>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-8">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h1>
+            <p class="text-xs text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        </div>
+      `;
+    }
+
+    // --- 17. FULL SHOPPING CART PAGE ---
+    function renderCartPage() {
+      if (STATE.cart.length === 0) {
+        return `
+          <div class="max-w-3xl mx-auto py-20 px-4 text-center">
+            <div class="w-16 h-16 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></h2>
+            <p class="text-xs text-gray-500 mt-2 max-w-sm mx-auto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#/category/phones" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+          </div>
+        `;
+      }
+
+      let subtotal = 0;
+      STATE.cart.forEach(item => {
+        subtotal += item.price * item.quantity;
+      });
+
+      const shipping = subtotal >= CONFIG.freeShippingThreshold ? 0 : CONFIG.standardShippingFee;
+      const tax = subtotal * CONFIG.taxRate;
+      const total = subtotal + shipping + tax;
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-8">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+            <p class="text-xs text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- Items Table -->
+            <div class="lg:col-span-8 space-y-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+            <!-- Order Summary Card -->
+            <div class="lg:col-span-4">
+              <div class="bg-white p-6 rounded-3xl border border-gray-200/80 space-y-4 shadow-sm">
+                <h3 class="font-extrabold text-lg text-gray-950 pb-3 border-b border-gray-100"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></h3>
+                
+                <div class="space-y-2 text-xs">
+                  <div class="flex justify-between text-gray-600">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                    <span class="font-mono font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                  <div class="flex justify-between text-gray-600">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <span class="font-mono font-bold ${shipping === 0 ? 'text-emerald-600' : 'text-gray-900'}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                  <div class="flex justify-between text-gray-600">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+                    <span class="font-mono font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                </div>
+
+                <div class="pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <span class="font-bold text-sm text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></span>
+                  <span class="font-mono font-black text-xl text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                </div>
+
+                <a href="#/checkout" class="block w-full py-3.5 bg-black hover:bg-gray-800 text-white font-bold text-xs text-center rounded-full transition-colors shadow"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></a>
+
+                <div class="text-[11px] text-gray-400 text-center flex items-center justify-center gap-1.5 pt-1">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 18. MULTI-STEP CHECKOUT VIEW (Card & M-Pesa Integration) ---
+    function renderCheckoutPage() {
+      if (STATE.cart.length === 0) {
+        return `
+          <div class="max-w-xl mx-auto py-20 px-4 text-center">
+            <h2 class="text-xl font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></h2>
+            <p class="text-xs text-gray-500 mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#/" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a>
+          </div>
+        `;
+      }
+
+      let subtotal = 0;
+      STATE.cart.forEach(item => subtotal += (item.price * item.quantity));
+      const shipping = subtotal >= CONFIG.freeShippingThreshold ? 0 : CONFIG.standardShippingFee;
+      const tax = subtotal * CONFIG.taxRate;
+      const total = subtotal + shipping + tax;
+
+      return `
+        <div class="bg-white border-b border-gray-100 py-6">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <h1 class="text-2xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h1>
+            <div class="flex items-center gap-2 text-xs text-emerald-600 font-bold">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <form onsubmit="handleCheckoutSubmit(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- Left Form Fields -->
+            <div class="lg:col-span-8 space-y-8">
+              
+              <!-- Contact Information -->
+              <div class="bg-white p-6 rounded-2xl border border-gray-200/80 space-y-4">
+                <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></label>
+                    <input type="email" required class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></label>
+                    <input type="tel" required class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Shipping Destination -->
+              <div class="bg-white p-6 rounded-2xl border border-gray-200/80 space-y-4">
+                <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <span class="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></label>
+                    <input type="text" required class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black">
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></label>
+                    <input type="text" required class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></label>
+                    <input type="text" required class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></label>
+                    <select class="w-full text-xs p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-black bg-white">
+                      <option selected><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></option>
+                      <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payment Method Selection -->
+              <div class="bg-white p-6 rounded-2xl border border-gray-200/80 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h3>
+                  <span class="text-[11px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="payment-method-selector">
+                  <label class="p-4 border-2 border-black rounded-xl cursor-pointer flex flex-col justify-between bg-gray-50/50">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-xs text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                      <input type="radio" name="payment-method" checked onchange="togglePaymentInputs('card')">
+                    </div>
+                    <div class="text-[11px] text-gray-500 mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></div>
+                  </label>
+
+                  <label class="p-4 border border-gray-200 rounded-xl cursor-pointer flex flex-col justify-between hover:border-black">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-xs text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                      <input type="radio" name="payment-method" onchange="togglePaymentInputs('mpesa')">
+                    </div>
+                    <div class="text-[11px] text-emerald-600 font-bold mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></div>
+                  </label>
+                </div>
+
+                <!-- Card Details Container -->
+                <div id="card-payment-details" class="space-y-3 pt-2">
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></label>
+                    <input type="text" class="w-full text-xs p-3 rounded-xl border border-gray-200 font-mono focus:outline-none">
+                  </div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></label>
+                      <input type="text" class="w-full text-xs p-3 rounded-xl border border-gray-200 font-mono focus:outline-none">
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></label>
+                      <input type="text" class="w-full text-xs p-3 rounded-xl border border-gray-200 font-mono focus:outline-none">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- M-Pesa Details Container -->
+                <div id="mpesa-payment-details" class="space-y-3 pt-2 hidden">
+                  <div class="p-3 bg-emerald-50 rounded-xl text-xs text-emerald-800 space-y-1">
+                    <div class="font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></div>
+                    <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></label>
+                    <input type="tel" class="w-full text-xs p-3 rounded-xl border border-gray-200 font-mono focus:outline-none">
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Right Column: Final Order Summary -->
+            <div class="lg:col-span-4 space-y-4">
+              <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-sm space-y-4 sticky top-28">
+                <h3 class="font-bold text-base text-gray-950 pb-3 border-b border-gray-100"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></h3>
+
+                <div class="space-y-3 max-h-60 overflow-y-auto pr-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+                <div class="pt-3 border-t border-gray-100 space-y-2 text-xs">
+                  <div class="flex justify-between text-gray-500">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                    <span class="font-mono font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                  <div class="flex justify-between text-gray-500">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                    <span class="font-mono font-bold ${shipping === 0 ? 'text-emerald-600' : 'text-gray-900'}"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                  <div class="flex justify-between text-gray-500">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+                    <span class="font-mono font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                  <div class="pt-2 border-t border-gray-100 flex justify-between items-center text-sm font-bold text-gray-950">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></span>
+                    <span class="font-mono text-lg font-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-black hover:bg-gray-800 text-white font-bold text-xs rounded-full transition-all shadow-md active:scale-98"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></button>
+
+                <p class="text-[10px] text-gray-400 text-center leading-normal"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      `;
+    }
+
+    function togglePaymentInputs(method) {
+      const cardBox = document.getElementById('card-payment-details');
+      const mpesaBox = document.getElementById('mpesa-payment-details');
+      if (!cardBox || !mpesaBox) return;
+      if (method === 'card') {
+        cardBox.classList.remove('hidden');
+        mpesaBox.classList.add('hidden');
+      } else {
+        cardBox.classList.add('hidden');
+        mpesaBox.classList.remove('hidden');
+      }
+    }
+
+    function handleCheckoutSubmit(e) {
+      e.preventDefault();
+      const orderId = 'VLN-' + Math.floor(100000 + Math.random() * 900000);
+      let subtotal = 0;
+      STATE.cart.forEach(item => subtotal += (item.price * item.quantity));
+      const total = subtotal + (subtotal * CONFIG.taxRate);
+
+      const newOrder = {
+        id: orderId,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        items: [...STATE.cart],
+        total: total,
+        status: 'Confirmed & Processing',
+        trackingNumber: 'TRK-' + Math.floor(10000000 + Math.random() * 90000000)
+      };
+
+      STATE.orders.unshift(newOrder);
+      STATE.cart = [];
+      saveState('orders');
+      saveState('cart');
+      updateBadges();
+
+      window.location.hash = `#/order-success/${orderId}`;
+    }
+
+    // --- 19. ORDER CONFIRMATION / SUCCESS VIEW ---
+    function renderOrderSuccessPage(orderId) {
+      const order = STATE.orders.find(o => o.id === orderId) || {
+        id: orderId,
+        date: 'Today',
+        items: [],
+        total: 1299,
+        status: 'Confirmed & Dispatched',
+        trackingNumber: 'TRK-98214490'
+      };
+
+      return `
+        <div class="max-w-3xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+          <div class="bg-white rounded-3xl p-8 sm:p-12 border border-gray-200/80 shadow-sm text-center space-y-6">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+              <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            
+            <div>
+              <span class="text-xs font-mono font-bold text-emerald-600 uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></span>
+              <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></h1>
+              <p class="text-xs sm:text-sm text-gray-500 mt-2 max-w-md mx-auto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span><span class="font-mono font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100 text-left max-w-md mx-auto space-y-3 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-500 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <span class="font-mono font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                <span class="font-bold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500 font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></span>
+                <span class="font-bold text-emerald-600"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+              </div>
+            </div>
+
+            <div class="pt-4 flex flex-wrap items-center justify-center gap-3">
+              <a href="#/account/orders" class="px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full hover:bg-gray-800 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></a>
+              <a href="#/" class="px-6 py-2.5 bg-gray-100 text-gray-900 text-xs font-bold rounded-full hover:bg-gray-200 transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 20. CUSTOMER ACCOUNT & SUPPORT SCREENS ---
+    function renderAccountPage() {
+      return `
+        <div class="bg-white border-b border-gray-100 py-10">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+            <p class="text-xs text-gray-500 mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <aside class="lg:col-span-4 bg-white p-6 rounded-2xl border border-gray-200/80 space-y-4 h-fit">
+              <div class="flex items-center gap-3 pb-4 border-b border-gray-100">
+                <div class="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center font-bold text-base"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                <div>
+                  <div class="font-bold text-sm text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></div>
+                  <div class="text-xs text-gray-400"></div>
+                </div>
+              </div>
+              <nav class="space-y-1 text-xs font-bold">
+                <a href="#/account" class="block p-2.5 rounded-xl bg-gray-100 text-black"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></a>
+                <a href="#/wishlist" class="block p-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></a>
+                <a href="#/support" class="block p-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></a>
+              </nav>
+            </aside>
+
+            <div class="lg:col-span-8 space-y-4">
+              <h3 class="font-extrabold text-lg text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h3><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 21. DEALS DESTINATION VIEW ---
+    function renderDealsPage() {
+      const deals = PRODUCTS.filter(p => p.originalPrice && p.originalPrice > p.price);
+      return `
+        <div class="bg-rose-950 text-white py-12">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-rose-300"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></span>
+            <h1 class="text-3xl sm:text-5xl font-black tracking-tight-headings mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></h1>
+            <p class="text-sm text-rose-100 max-w-xl mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        </div>
+      `;
+    }
+
+    // --- 22. SUPPORT & RETAIL INFORMATION ---
+    function renderSupportPage() {
+      return `
+        <div class="bg-white border-b border-gray-100 py-12">
+          <div class="max-w-4xl mx-auto px-4 text-center">
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight-headings text-gray-950"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></h1>
+            <p class="text-sm text-gray-500 mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-4 py-12 space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-gray-200/80">
+            <h3 class="font-bold text-base text-gray-900 mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+            <p class="text-xs text-gray-600 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-gray-200/80">
+            <h3 class="font-bold text-base text-gray-900 mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></h3>
+            <p class="text-xs text-gray-600 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-gray-200/80">
+            <h3 class="font-bold text-base text-gray-900 mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h3>
+            <p class="text-xs text-gray-600 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        </div>
+      `;
+    }
+    // --- 23. HASH ROUTER ENGINE ---
+    function renderRoute() {
+      const hash = window.location.hash || '#/';
+      const appRoot = document.getElementById('app-root');
+      if (!appRoot) return;
+
+      // Scroll smoothly to top on navigation
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
+      // Clean up previous GSAP ScrollTriggers to prevent duplicate handlers
+      if (window.ScrollTrigger) {
+        ScrollTrigger.getAll().forEach(t => t.kill());
+      }
+
+      if (hash === '#/' || hash === '' || hash === '#/home') {
+        appRoot.innerHTML = renderHomePage();
+      } else if (hash.startsWith('#/category/')) {
+        const catId = hash.replace('#/category/', '').split('?')[0];
+        appRoot.innerHTML = renderCategoryPage(catId);
+      } else if (hash === '#/brands') {
+        appRoot.innerHTML = renderBrandsPage();
+      } else if (hash.startsWith('#/brand/')) {
+        const brandId = hash.replace('#/brand/', '').split('?')[0];
+        appRoot.innerHTML = renderBrandPage(brandId);
+      } else if (hash.startsWith('#/product/')) {
+        const prodId = hash.replace('#/product/', '').split('?')[0];
+        appRoot.innerHTML = renderProductDetailPage(prodId);
+      } else if (hash.startsWith('#/search')) {
+        const params = new URLSearchParams(hash.split('?')[1] || '');
+        const query = params.get('q') || '';
+        appRoot.innerHTML = renderSearchResultsPage(query);
+      } else if (hash === '#/compare') {
+        appRoot.innerHTML = renderComparePage();
+      } else if (hash === '#/wishlist') {
+        appRoot.innerHTML = renderWishlistPage();
+      } else if (hash === '#/cart') {
+        appRoot.innerHTML = renderCartPage();
+      } else if (hash === '#/checkout') {
+        appRoot.innerHTML = renderCheckoutPage();
+      } else if (hash.startsWith('#/order-success/')) {
+        const orderId = hash.replace('#/order-success/', '').split('?')[0];
+        appRoot.innerHTML = renderOrderSuccessPage(orderId);
+      } else if (hash.startsWith('#/account')) {
+        appRoot.innerHTML = renderAccountPage();
+      } else if (hash === '#/deals') {
+        appRoot.innerHTML = renderDealsPage();
+      } else if (hash === '#/support' || hash === '#/contact' || hash === '#/shipping' || hash === '#/returns' || hash === '#/terms' || hash === '#/privacy') {
+        appRoot.innerHTML = renderSupportPage();
+      } else {
+        appRoot.innerHTML = `
+          <div class="max-w-xl mx-auto py-24 px-4 text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></h1>
+            <p class="text-sm text-gray-500 mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <a href="#/" class="inline-block mt-4 px-6 py-2.5 bg-black text-white text-xs font-bold rounded-full"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a>
+          </div>
+        `;
+      }
+
+      // Re-initialize Lucide Icons across all dynamic elements
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+
+      // Initialize GSAP Animations on newly rendered view
+      initGSAPAnimations();
+    }
+
+    // --- 24. GSAP & SCROLLTRIGGER ANIMATION SYSTEM ---
+    function initGSAPAnimations() {
+      // Respect user's motion preferences
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      if (!window.gsap) return;
+
+      try {
+        if (window.ScrollTrigger) {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Hero entrance animation
+        const heroText = document.querySelector('.hero-text-block');
+        const heroImg = document.querySelector('.hero-image-block');
+        if (heroText && heroImg) {
+          gsap.from(heroText.children, {
+            y: 24,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.12,
+            ease: 'power3.out'
+          });
+          gsap.from(heroImg, {
+            scale: 0.94,
+            opacity: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+            delay: 0.2
+          });
+        }
+
+        // Section ScrollTrigger reveals
+        if (window.ScrollTrigger) {
+          const cards = document.querySelectorAll('.product-card');
+          if (cards.length > 0) {
+            ScrollTrigger.batch(cards, {
+              onEnter: batch => gsap.from(batch, {
+                opacity: 0,
+                y: 20,
+                stagger: 0.08,
+                duration: 0.6,
+                ease: 'power2.out',
+                overwrite: true
+              }),
+              once: true
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('GSAP animation skipped:', err);
+      }
+    }
+
+    // --- 25. INITIALIZATION ---
+    window.addEventListener('hashchange', renderRoute);
+    window.addEventListener('DOMContentLoaded', () => {
+      updateBadges();
+      renderRoute();
+    });
+
+    // Keyboard shortcut (Cmd+K or Ctrl+K) to open search modal
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openSearchModal();
+      }
+      if (e.key === 'Escape') {
+        closeSearchModal();
+        toggleCartDrawer(false);
+      }
+    });
+  </script>
+
+
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body></html>

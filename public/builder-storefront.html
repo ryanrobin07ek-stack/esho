@@ -6931,7 +6931,7 @@ const AppController = {
   async init() {
     // Initialize SQLite Engine
     await SQLiteEngine.init(categories, products, storeInfo, plans, demoAnalytics);
-    if (window.__ESHOP_CLOUDFLARE_STOREFRONT__) {
+    if (window.__ESHOP_CLOUDFLARE_STOREFRONT__ && !builderPreviewMode) {
       try {
         await this.loadCloudflareCatalog();
       } catch (error) {
@@ -7575,6 +7575,7 @@ const AppController = {
   },
 
   async initPaystackReturn() {
+    if (builderPreviewMode) return;
     const [path, queryString] = this.currentRoute().split("?");
     if (path !== "/checkout/confirmation") return;
     const params = new URLSearchParams(queryString || "");

@@ -1,0 +1,2930 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth" data-eshop-skeleton-preview=""><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title></title>
+  <meta name="description" content="">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:type" content="">
+  <meta property="og:image" content="">
+  <meta name="twitter:card" content="">
+  <meta name="theme-color" content="">
+
+  <!-- Google Fonts: Cormorant Garamond, Cinzel & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&amp;family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&amp;family=Montserrat:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+
+  <!-- External Libraries: GSAP, ScrollTrigger, Lucide Icons, Paystack Inline -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <!-- Tailwind CSS via CDN for rapid atomic styling + Deep luxury custom styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#080808',
+            'obsidian-light': '#121111',
+            espresso: '#171210',
+            plum: '#1d0e17',
+            burgundy: '#230c16',
+            'gold-light': '#eed9b8',
+            'gold-antique': '#c5a880',
+            'gold-deep': '#9b7e56',
+            champagne: '#e9dfd0',
+            ivory: '#f8f5ee',
+            'charcoal-border': '#292524'
+          },
+          fontFamily: {
+            serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            cinzel: ['"Cinzel"', 'serif'],
+            sans: ['"Montserrat"', '-apple-system', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Absolute Luxury Custom Art Direction */
+    :root {
+      --bg-dark: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-01);
+      --gold-primary: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-02);
+      --gold-highlight: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-03);
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-heading: 'Cinzel', serif;
+      --font-sans: 'Montserrat', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-04);
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+      selection-background-color: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-02);
+      selection-color: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-01);
+    }
+
+    ::selection {
+      background: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-02);
+      color: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-01);
+    }
+
+    /* Subtle luxury scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-01);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-05);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-02);
+    }
+
+    /* Editorial Typography */
+    .font-cormorant { font-family: var(--font-serif); }
+    .font-cinzel { font-family: var(--font-heading); }
+    .gold-gradient-text {
+      background: linear-gradient(135deg, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-03) 0%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-02) 50%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-06) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .metallic-border {
+      border: 1px solid var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-07);
+    }
+    .metallic-border-subtle {
+      border: 1px solid var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-08);
+    }
+
+    /* Atmospheric Gradients */
+    .bg-gradient-radial-dark {
+      background: radial-gradient(circle at 50% 30%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-09) 0%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-10) 60%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-01) 100%);
+    }
+    .bg-gradient-hero {
+      background: linear-gradient(180deg, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-11) 0%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-12) 40%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-13) 100%);
+    }
+    .bg-diagonal-luxury {
+      background: linear-gradient(135deg, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-14) 0%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-15) 50%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-16) 100%);
+    }
+    .bg-ivory-editorial {
+      background-color: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-17);
+      color: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-14);
+    }
+
+    /* Sculptural Bottle Glow */
+    .bottle-glow {
+      position: absolute;
+      width: 380px;
+      height: 520px;
+      background: radial-gradient(circle, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-18) 0%, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-19) 60%, transparent 80%);
+      filter: blur(50px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Non-rectangular sculptural masks */
+    .mask-arch {
+      clip-path: ellipse(50% 50% at 50% 50%);
+    }
+    .mask-oval-portrait {
+      clip-path: ellipse(48% 50% at 50% 50%);
+    }
+    .mask-diagonal-slanted {
+      clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
+    }
+
+    /* Glassmorphism */
+    .glass-luxury {
+      background: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-20);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-21);
+    }
+    .glass-drawer {
+      background: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-22);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    /* Grain Texture Overlay */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 999;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='none'/%3E%3C/svg%3E");
+    }
+
+    /* Interactive button ripples & transitions */
+    .btn-luxury {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-luxury:hover {
+      box-shadow: 0 0 25px var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-07);
+    }
+    .btn-luxury::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-23), transparent);
+      transition: left 0.7s ease;
+    }
+    .btn-luxury:hover::after {
+      left: 100%;
+    }
+
+    /* Pyramid Accord visualization */
+    .pyramid-tier {
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .pyramid-tier:hover {
+      transform: scale(1.02);
+      border-color: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-02);
+    }
+
+    /* Custom engraving preview animation */
+    .engraved-text {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 0.25em;
+      color: var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-24);
+      text-shadow: 0 1px 2px var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-25), 0 0 1px var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-26);
+    }
+
+    /* Reduced Motion Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-eshop-skeleton-styles="">.eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-27);vertical-align:middle}.eshop-placeholder-media{background:linear-gradient(135deg,var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-27),var(--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-28));object-fit:cover}</style><style data-theme-tokens="">:root{--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-01:#080808;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-02:#c5a880;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-03:#eed9b8;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-04:#dfd8cf;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-05:#2b2622;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-06:#9b7e56;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-07:rgba(197,168,128,0.25);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-08:rgba(255,255,255,0.08);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-09:#1f1614;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-10:#0d0a09;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-11:rgba(8,8,8,0.3);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-12:rgba(29,14,23,0.4);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-13:rgba(8,8,8,1);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-14:#171210;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-15:#090909;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-16:#1d0e17;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-17:#f7f4ee;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-18:rgba(197,168,128,0.18);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-19:rgba(197,168,128,0.02);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-20:rgba(18,17,17,0.75);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-21:rgba(197,168,128,0.15);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-22:rgba(12,11,10,0.94);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-23:rgba(238,217,184,0.2);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-24:rgba(238,217,184,0.85);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-25:rgba(0,0,0,0.8);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-26:rgba(197,168,128,0.5);--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-27:#d1d5db;--theme-maison-alchemie-haute-parfumerie-niche-fragrances-18-place-vendo-color-28:#f3f4f6;}</style></head>
+
+<body class="antialiased text-[#e2ded9] bg-[#080808]">
+  <!-- Noise Texture -->
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <!-- ANNOUNCEMENT BANNER -->
+  <aside class="bg-[#120f0e] border-b border-[#24201c] text-[#a89f91] text-xs py-2 px-4 text-center tracking-widest uppercase flex items-center justify-center gap-4">
+    <span class="hidden sm:inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></span>
+    <span class="hidden sm:inline text-[#c5a880] text-opacity-50"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+    <span class="text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+    <span class="hidden md:inline text-[#c5a880] text-opacity-50"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+    <button onclick="app.openView('concierge')" class="hidden md:inline text-[#eed9b8] underline underline-offset-4 hover:text-white transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button>
+  </aside>
+
+  <!-- LUXURY FLOATING HEADER -->
+  <header id="main-header" class="sticky top-0 z-40 bg-[#080808]/90 backdrop-blur-md border-b border-[#221f1c] transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      
+      <!-- Mobile Menu Button & Search Trigger -->
+      <div class="flex items-center gap-5">
+        <button id="menu-toggle-btn" onclick="app.toggleMobileMenu()" class="lg:hidden text-[#c5a880] p-1.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#c5a880]">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+        <button onclick="app.openSearchModal()" class="flex items-center gap-2 text-xs tracking-widest text-[#a89f91] hover:text-[#eed9b8] transition-colors uppercase">
+          <i data-lucide="search" class="w-4 h-4 text-[#c5a880]"></i>
+          <span class="hidden sm:inline"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></span>
+        </button>
+      </div>
+
+      <!-- Brand Monogram & Wordmark -->
+      <div class="text-center cursor-pointer" onclick="app.openView('home')">
+        <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase mb-0.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></div>
+        <h1 class="font-cinzel text-xl sm:text-2xl md:text-3xl tracking-[0.22em] text-[#f4efe8] font-medium uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></h1>
+        <div class="text-[9px] tracking-[0.35em] text-[#8e8577] uppercase hidden sm:block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></div>
+      </div>
+
+      <!-- Action Utilities: Currency, Wishlist, Account, Bag -->
+      <div class="flex items-center gap-4 sm:gap-6">
+        <!-- Currency Selector -->
+        <div class="relative hidden md:block">
+          <select id="currency-select" onchange="app.changeCurrency(this.value)" class="bg-transparent text-xs text-[#a89f91] hover:text-[#eed9b8] cursor-pointer focus:outline-none border-none tracking-widest uppercase pr-2">
+            <option value="EUR" class="bg-[#121111] text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></option>
+            <option value="USD" selected="" class="bg-[#121111] text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></option>
+            <option value="GBP" class="bg-[#121111] text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></option>
+            <option value="NGN" class="bg-[#121111] text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></option>
+          </select>
+        </div>
+
+        <!-- Wishlist -->
+        <button onclick="app.openView('wishlist')" class="relative text-[#a89f91] hover:text-[#eed9b8] p-1 transition-colors">
+          <i data-lucide="heart" class="w-5 h-5"></i>
+          <span id="wishlist-badge" class="absolute -top-1 -right-1 text-[9px] w-4 h-4 rounded-full bg-[#c5a880] text-black font-semibold flex items-center justify-center hidden"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </button>
+
+        <!-- Account -->
+        <button onclick="app.openAccountModal()" class="text-[#a89f91] hover:text-[#eed9b8] p-1 transition-colors">
+          <i data-lucide="user" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Shopping Bag Trigger -->
+        <button onclick="app.toggleCartDrawer(true)" class="flex items-center gap-2 p-1 text-[#f4efe8] hover:text-[#eed9b8] transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-[#c5a880]">
+          <div class="relative">
+            <i data-lucide="shopping-bag" class="w-5 h-5 text-[#c5a880]"></i>
+            <span id="cart-badge" class="absolute -top-1.5 -right-2 text-[10px] w-4 h-4 rounded-full bg-[#eed9b8] text-[#080808] font-bold flex items-center justify-center"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+          </div>
+          <span id="header-cart-total" class="hidden lg:inline text-xs tracking-wider text-[#eed9b8] font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Desktop Navigation Bar -->
+    <nav class="hidden lg:block border-t border-[#1b1816] bg-[#0a0909]/95">
+      <ul class="max-w-6xl mx-auto px-6 h-12 flex items-center justify-center gap-10 text-[11px] tracking-[0.2em] uppercase text-[#b8afa3]">
+        <li><a href="#signature" onclick="app.navigateCategory('all'); return false;" class="hover:text-[#eed9b8] transition-colors py-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></a></li>
+        <li><a href="#collections" onclick="app.openView('collections'); return false;" class="hover:text-[#eed9b8] transition-colors py-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></a></li>
+        <li><a href="#discovery" onclick="app.openView('discovery'); return false;" class="hover:text-[#eed9b8] transition-colors py-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></li>
+        <li><a href="#fragrance-finder" onclick="app.openView('finder'); return false;" class="text-[#c5a880] hover:text-[#eed9b8] transition-colors py-2 font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></a></li>
+        <li><a href="#comparison" onclick="app.openView('comparison'); return false;" class="hover:text-[#eed9b8] transition-colors py-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a></li>
+        <li><a href="#gifting" onclick="app.openView('gifting'); return false;" class="hover:text-[#eed9b8] transition-colors py-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+        <li><a href="#craftsmanship" onclick="app.openView('craftsmanship'); return false;" class="hover:text-[#eed9b8] transition-colors py-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></li>
+        <li><a href="#journal" onclick="app.openView('journal'); return false;" class="hover:text-[#eed9b8] transition-colors py-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- MOBILE NAVIGATION DRAWER -->
+  <div id="mobile-menu-drawer" class="fixed inset-0 z-50 bg-[#080808]/95 backdrop-blur-xl transform -translate-x-full transition-transform duration-500 ease-out flex flex-col justify-between p-8" aria-modal="true" role="dialog">
+    <div class="flex items-center justify-between pb-6 border-b border-[#24201c]">
+      <div class="font-cinzel text-lg tracking-[0.2em] text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></div>
+      <button onclick="app.toggleMobileMenu()" class="p-2 text-[#c5a880] hover:text-white">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <nav class="my-auto py-6 space-y-5 text-center">
+      <div><a href="#" onclick="app.openView('home'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></a></div>
+      <div><a href="#" onclick="app.navigateCategory('all'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></a></div>
+      <div><a href="#" onclick="app.openView('collections'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></div>
+      <div><a href="#" onclick="app.openView('finder'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#c5a880] hover:text-[#eed9b8] block py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></a></div>
+      <div><a href="#" onclick="app.openView('comparison'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></a></div>
+      <div><a href="#" onclick="app.openView('gifting'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></a></div>
+      <div><a href="#" onclick="app.openView('discovery'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></a></div>
+      <div><a href="#" onclick="app.openView('craftsmanship'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></a></div>
+      <div><a href="#" onclick="app.openView('journal'); app.toggleMobileMenu(); return false;" class="font-cinzel text-lg tracking-[0.2em] uppercase text-[#e2ded9] hover:text-[#c5a880] block py-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></a></div>
+    </nav>
+
+    <div class="border-t border-[#24201c] pt-6 flex flex-col gap-4 text-xs text-center text-[#9c9384] tracking-wider">
+      <div class="flex justify-center gap-6">
+        <button onclick="app.openAccountModal(); app.toggleMobileMenu();" class="hover:text-[#eed9b8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></button>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <button onclick="app.openView('track'); app.toggleMobileMenu();" class="hover:text-[#eed9b8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <button onclick="app.openView('concierge'); app.toggleMobileMenu();" class="hover:text-[#eed9b8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></button>
+      </div>
+      <p class="text-[10px] text-[#635b50]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+    </div>
+  </div>
+
+  <!-- MAIN DYNAMIC CONTENT CONTAINER (31 NAVIGABLE VIEWS) -->
+  <main id="app-container" class="min-h-screen">
+    <!-- View content is dynamically swapped or revealed via app.renderView() -->
+  </main>
+
+  <!-- SEARCH MODAL -->
+  <div id="search-modal" class="fixed inset-0 z-50 bg-[#080808]/90 backdrop-blur-md hidden flex items-start justify-center pt-24 px-4" aria-modal="true" role="dialog">
+    <div class="bg-[#121111] border border-[#2b2724] w-full max-w-3xl rounded-none p-8 shadow-2xl relative">
+      <button onclick="app.closeSearchModal()" class="absolute top-6 right-6 text-[#9a9184] hover:text-white">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+      
+      <div class="text-xs uppercase tracking-[0.25em] text-[#c5a880] mb-2 font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></div>
+      <div class="relative border-b-2 border-[#c5a880]/50 pb-2 mb-6">
+        <input type="text" id="live-search-input" oninput="app.handleLiveSearch(this.value)" class="w-full bg-transparent text-lg md:text-xl text-[#f4efe8] placeholder-[#5c544a] focus:outline-none tracking-wide font-serif" autofocus="">
+      </div>
+
+      <!-- Quick note pills for searching -->
+      <div class="flex flex-wrap items-center gap-2 mb-6 text-xs text-[#a89f91]">
+        <span class="text-[#736a5e] tracking-widest uppercase text-[10px]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+        <button onclick="app.quickFilterSearch('Oud')" class="hover:text-[#eed9b8] underline underline-offset-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></button>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <button onclick="app.quickFilterSearch('Orris')" class="hover:text-[#eed9b8] underline underline-offset-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <button onclick="app.quickFilterSearch('Rose')" class="hover:text-[#eed9b8] underline underline-offset-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></button>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <button onclick="app.quickFilterSearch('Vanilla')" class="hover:text-[#eed9b8] underline underline-offset-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></button>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span></span>
+        <button onclick="app.quickFilterSearch('Leather')" class="hover:text-[#eed9b8] underline underline-offset-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></button>
+      </div>
+
+      <!-- Live Search Results Container -->
+      <div id="search-results-list" class="max-h-[60vh] overflow-y-auto space-y-4 pr-2">
+        <p class="text-xs text-[#736a5e] italic"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHOPPING BAG DRAWER -->
+  <div id="cart-drawer-overlay" onclick="app.toggleCartDrawer(false)" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300" aria-hidden="true"></div>
+  <aside id="cart-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-[#0e0c0b] border-l border-[#24201c] z-50 transform translate-x-full transition-transform duration-400 ease-out flex flex-col justify-between shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="p-6 border-b border-[#24201c] flex items-center justify-between">
+      <div class="flex items-baseline gap-3">
+        <h2 class="font-cinzel text-base tracking-[0.2em] text-[#f4efe8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></h2>
+        <span id="drawer-item-count" class="text-xs text-[#c5a880] tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></span>
+      </div>
+      <button onclick="app.toggleCartDrawer(false)" class="text-[#8e8577] hover:text-white p-1">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Free Delivery & Miniature Progress Bar -->
+    <div class="px-6 py-3 bg-[#151210] border-b border-[#24201c] text-xs">
+      <div class="flex justify-between text-[#c5a880] mb-1 text-[11px] tracking-wider">
+        <span id="shipping-tier-text"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 inline"></i>
+      </div>
+      <div class="w-full bg-[#292420] h-1 rounded-none overflow-hidden">
+        <div id="shipping-progress-bar" class="bg-[#c5a880] h-full w-full transition-all duration-300"></div>
+      </div>
+    </div>
+
+    <!-- Cart Items Scrollable List -->
+    <div id="drawer-cart-items" class="flex-1 overflow-y-auto p-6 space-y-6">
+      <!-- Items dynamically injected -->
+      <div class="text-center py-16 text-[#736a5e]">
+        <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto stroke-1 mb-4 text-[#443e37]"></i>
+        <p class="font-serif text-lg text-[#b8afa3] mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        <p class="text-xs tracking-wider text-[#736a5e] mb-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        <button onclick="app.toggleCartDrawer(false); app.openView('catalog')" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></button>
+      </div>
+    </div>
+
+    <!-- Promo code & Engraving summary -->
+    <div class="px-6 py-4 border-t border-[#24201c] bg-[#12100f] space-y-3">
+      <div class="flex gap-2">
+        <input type="text" id="voucher-code-input" class="flex-1 bg-[#1a1715] border border-[#2e2925] px-3 py-2 text-xs text-[#f4efe8] uppercase placeholder-[#5c544a] focus:outline-none focus:border-[#c5a880]">
+        <button onclick="app.applyVoucher()" class="px-4 py-2 bg-[#292420] hover:bg-[#c5a880] hover:text-black text-[#c5a880] text-xs uppercase tracking-wider font-cinzel transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></button>
+      </div>
+      <div id="voucher-message" class="text-[11px] text-[#c5a880] hidden"></div>
+    </div>
+
+    <!-- Drawer Footer: Subtotal & Checkout -->
+    <div class="p-6 border-t border-[#24201c] bg-[#0c0a09] space-y-4">
+      <div class="space-y-1.5 text-xs">
+        <div class="flex justify-between text-[#8e8577]">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></span>
+          <span id="drawer-subtotal" class="text-[#e2ded9]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+        </div>
+        <div class="flex justify-between text-[#8e8577]">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></span>
+          <span class="text-[#c5a880] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></span>
+        </div>
+        <div id="discount-row" class="flex justify-between text-[#c5a880] hidden">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></span>
+          <span id="drawer-discount"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 16%;"></span></span>
+        </div>
+        <div class="flex justify-between text-sm font-cinzel text-[#f4efe8] pt-2 border-t border-[#24201c]">
+          <span class="tracking-widest uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></span>
+          <span id="drawer-total" class="text-base text-[#eed9b8] font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 14%;"></span></span>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <button onclick="app.toggleCartDrawer(false); app.openView('checkout');" class="btn-luxury w-full py-3.5 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-semibold uppercase text-center block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button>
+        <button onclick="app.toggleCartDrawer(false); app.openView('cart');" class="w-full py-2.5 border border-[#332e29] hover:border-[#c5a880] text-[#a89f91] hover:text-white font-cinzel text-[11px] tracking-[0.2em] uppercase transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></button>
+      </div>
+      <div class="flex items-center justify-center gap-3 text-[10px] text-[#635b50] tracking-widest uppercase">
+        <i data-lucide="lock" class="w-3 h-3 text-[#c5a880]"></i>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- GATEWAY & BACKEND INTEGRATION DRAWER (For inspecting Paystack endpoints & configuring keys) -->
+  <div id="backend-settings-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4" aria-modal="true" role="dialog">
+    <div class="bg-[#12100f] border border-[#38312b] max-w-2xl w-full p-8 relative">
+      <button onclick="app.toggleBackendModal(false)" class="absolute top-6 right-6 text-[#8e8577] hover:text-white">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+      <div class="font-cinzel text-xs tracking-[0.25em] text-[#c5a880] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 86%;"></span></div>
+      <h3 class="font-cinzel text-xl text-[#f4efe8] uppercase mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h3>
+      
+      <p class="text-xs text-[#a89f91] leading-relaxed mb-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block text-[#c5a880] tracking-widest uppercase text-[10px] mb-1.5" for="paystack-pubkey-input"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></label>
+          <input type="text" id="paystack-pubkey-input" class="w-full bg-[#1b1715] border border-[#332e29] p-2.5 text-[#f4efe8] font-mono text-xs focus:border-[#c5a880] focus:outline-none">
+          <p class="text-[10px] text-[#635b50] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+        </div>
+
+        <div class="bg-[#171412] p-4 border border-[#292420]">
+          <h4 class="font-cinzel text-xs text-[#eed9b8] uppercase mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></h4>
+          <ul class="space-y-2 font-mono text-[11px] text-[#a89f91]">
+            <li><strong class="text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></li>
+            <li><strong class="text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 78%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span><code class="text-[#e2ded9]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></li>
+            <li><strong class="text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 70%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button onclick="app.savePaystackKey()" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH / ACCOUNT MODAL -->
+  <div id="account-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4" aria-modal="true" role="dialog">
+    <div class="bg-[#110f0e] border border-[#2e2925] max-w-md w-full p-8 relative">
+      <button onclick="app.closeAccountModal()" class="absolute top-6 right-6 text-[#8e8577] hover:text-white">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <!-- Account Tabs -->
+      <div class="flex border-b border-[#24201c] mb-6">
+        <button id="tab-login-btn" onclick="app.switchAuthTab('login')" class="flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#c5a880] border-b-2 border-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 19%;"></span></button>
+        <button id="tab-register-btn" onclick="app.switchAuthTab('register')" class="flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#736a5e] border-b-2 border-transparent"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="login-form" onsubmit="app.handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="login-email"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></label>
+          <input type="email" id="login-email" required="" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="login-password"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></label>
+          <input type="password" id="login-password" required="" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none">
+        </div>
+        <div class="flex justify-between items-center text-[10px] text-[#8e8577]">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" checked="" class="accent-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></label>
+          <button type="button" onclick="app.showForgotPassword()" class="hover:text-[#eed9b8] underline underline-offset-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button>
+        </div>
+        <button type="submit" class="btn-luxury w-full py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold mt-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 57%;"></span></button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" onsubmit="app.handleRegister(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="reg-name"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></label>
+          <input type="text" id="reg-name" required="" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="reg-email"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></label>
+          <input type="email" id="reg-email" required="" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] tracking-widest uppercase text-[#8e8577] mb-1" for="reg-pass"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 65%;"></span></label>
+          <input type="password" id="reg-pass" required="" class="w-full bg-[#171413] border border-[#292420] p-2.5 text-xs text-[#f4efe8] focus:border-[#c5a880] focus:outline-none">
+        </div>
+        <div class="text-[10px] text-[#8e8577] space-y-1">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" checked="" class="accent-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></label>
+        </div>
+        <button type="submit" class="btn-luxury w-full py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold mt-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- COOKIE & PRIVACY PREFERENCE BANNER (Luxury GDPR Compliant) -->
+  <aside id="cookie-banner" class="fixed bottom-6 left-6 right-6 md:left-auto md:right-8 md:max-w-md z-40 bg-[#12100f]/95 border border-[#332d27] p-5 shadow-2xl backdrop-blur-md hidden">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h4 class="font-cinzel text-xs text-[#c5a880] tracking-widest uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 59%;"></span></h4>
+        <p class="text-[11px] text-[#a89f91] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+      </div>
+      <button onclick="app.dismissCookieBanner()" class="text-[#8e8577] hover:text-white">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    <div class="flex gap-3 mt-4 pt-3 border-t border-[#24201c]">
+      <button onclick="app.acceptCookies()" class="btn-luxury flex-1 py-1.5 bg-[#c5a880] text-black font-cinzel text-[10px] tracking-widest uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></button>
+      <button onclick="app.openView('privacy'); app.dismissCookieBanner();" class="flex-1 py-1.5 border border-[#38312a] text-[#a89f91] font-cinzel text-[10px] tracking-widest uppercase hover:text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></button>
+    </div>
+  </aside>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-8 right-8 z-50 flex flex-col gap-2 pointer-events-none" aria-live="polite"></div>
+
+  <!-- FOOTER: HAUTE PARFUMERIE DIGITAL FLAGSHIP -->
+  <footer class="bg-[#050505] border-t border-[#1c1917] text-[#9c9384] pt-20 pb-12 mt-24">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <!-- Top Section: Brand Statement & Newsletter -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16 border-b border-[#1f1b19]">
+        <div class="lg:col-span-6 space-y-4">
+          <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></div>
+          <h2 class="font-cinzel text-2xl md:text-3xl text-[#f4efe8] tracking-[0.2em] uppercase font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 41%;"></span></h2>
+          <p class="font-serif italic text-lg text-[#b8afa3] max-w-lg leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <div class="text-xs text-[#736a5e] pt-2 tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        </div>
+
+        <div class="lg:col-span-6 flex flex-col justify-center">
+          <h3 class="font-cinzel text-sm text-[#eed9b8] uppercase tracking-[0.2em] mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 68%;"></span></h3>
+          <p class="text-xs text-[#8e8577] mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+          <form onsubmit="app.handleNewsletter(event)" class="flex flex-col sm:flex-row gap-2">
+            <input type="email" id="newsletter-email" required="" class="bg-[#12100f] border border-[#2b2622] px-4 py-3 text-xs text-[#f4efe8] placeholder-[#5c544a] focus:outline-none focus:border-[#c5a880] flex-1 tracking-wider">
+            <button type="submit" class="btn-luxury px-6 py-3 bg-[#c5a880] hover:bg-[#eed9b8] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></button>
+          </form>
+          <div id="newsletter-status" class="text-xs text-[#c5a880] mt-2 hidden"></div>
+        </div>
+      </div>
+
+      <!-- Middle Section: Navigation Columns -->
+      <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 py-16 border-b border-[#1f1b19] text-xs">
+        
+        <!-- Col 1: Fragrances -->
+        <div>
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></h4>
+          <ul class="space-y-2.5 text-[#8e8577]">
+            <li><button onclick="app.navigateCategory('all')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></button></li>
+            <li><button onclick="app.navigateCategory('Woody')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button></li>
+            <li><button onclick="app.navigateCategory('Amber')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button></li>
+            <li><button onclick="app.navigateCategory('Floral')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button></li>
+            <li><button onclick="app.navigateCategory('Gourmand')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button></li>
+            <li><button onclick="app.openView('discovery')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button></li>
+          </ul>
+        </div>
+
+        <!-- Col 2: The Maison -->
+        <div>
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 27%;"></span></h4>
+          <ul class="space-y-2.5 text-[#8e8577]">
+            <li><button onclick="app.openView('story')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button></li>
+            <li><button onclick="app.openView('craftsmanship')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></button></li>
+            <li><button onclick="app.openView('journal')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button></li>
+            <li><button onclick="app.openView('gifting')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button></li>
+            <li><button onclick="app.openView('comparison')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></button></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Client Care -->
+        <div>
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 30%;"></span></h4>
+          <ul class="space-y-2.5 text-[#8e8577]">
+            <li><button onclick="app.openView('concierge')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></button></li>
+            <li><button onclick="app.openView('track')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></button></li>
+            <li><button onclick="app.openView('shipping')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></button></li>
+            <li><button onclick="app.openView('returns')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 51%;"></span></button></li>
+            <li><button onclick="app.openView('faq')" class="hover:text-[#c5a880] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></button></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Private Flagships -->
+        <div>
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 24%;"></span></h4>
+          <ul class="space-y-2.5 text-[#8e8577] text-[11px]">
+            <li><strong class="text-[#c5a880] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 62%;"></span></li>
+            <li class="pt-1"><strong class="text-[#c5a880] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 73%;"></span></li>
+            <li class="pt-1"><strong class="text-[#c5a880] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 54%;"></span></li>
+            <li class="pt-1"><strong class="text-[#c5a880] block"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 32%;"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 81%;"></span></li>
+          </ul>
+        </div>
+
+        <!-- Col 5: Security & Verification -->
+        <div class="col-span-2 sm:col-span-2 md:col-span-4 lg:col-span-1">
+          <h4 class="font-cinzel text-[#eed9b8] uppercase tracking-[0.2em] mb-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 49%;"></span></h4>
+          <div class="p-3 bg-[#110f0e] border border-[#26211d] space-y-2 text-[10px]">
+            <div class="flex items-center gap-2 text-[#c5a880]">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <span class="font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 46%;"></span></span>
+            </div>
+            <p class="text-[#736a5e] leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></p>
+            <button onclick="app.toggleBackendModal(true)" class="text-[#eed9b8] underline underline-offset-2 hover:text-white block pt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 92%;"></span></button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-[#635b50]">
+        <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 8%;"></span><span id="current-year"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 11%;"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 96%;"></span></div>
+        <div class="flex flex-wrap gap-6 tracking-wider">
+          <button onclick="app.openView('privacy')" class="hover:text-[#9c9384] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 38%;"></span></button>
+          <button onclick="app.openView('terms')" class="hover:text-[#9c9384] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 35%;"></span></button>
+          <button onclick="app.openView('legal')" class="hover:text-[#9c9384] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 43%;"></span></button>
+          <button onclick="app.toggleBackendModal(true)" class="hover:text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width: 22%;"></span></button>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- SCRIPT LOGIC: COMPLETE ARCHITECTURE, GSAP ORCHESTRATION & STATE MANAGEMENT -->
+  <script>
+    /**
+     * MAISON ALCHÉMIE — MASTER ENGINE
+     * Self-contained luxury perfumery e-commerce application.
+     */
+
+    const PRODUCTS = [
+      {
+        id: 'oud-nocturne',
+        name: "",
+        subtitle: "",
+        collection: "",
+        tagline: "",
+        family: "",
+        familyDetailed: "",
+        concentration: "",
+        concentrationPercent: "",
+        prices: { EUR: 310, USD: 340, GBP: 275, NGN: 510000 },
+        sizes: ["", "", ""],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.41, '250ml Crystal Carafe': 2.8 },
+        topNotes: ["", "", ""],
+        heartNotes: ["", "", ""],
+        baseNotes: ["", "", "", ""],
+        longevity: "",
+        sillage: "",
+        season: "",
+        occasion: "",
+        inStock: true,
+        stockCount: 0,
+        isBestseller: true,
+        isLimited: false,
+        image: "",
+        secondaryImage: "",
+        description: "",
+        ritual: "",
+        rating: 0,
+        reviewsCount: 0
+      },
+      {
+        id: 'iris-celeste',
+        name: "",
+        subtitle: "",
+        collection: "",
+        tagline: "",
+        family: "",
+        familyDetailed: "",
+        concentration: "",
+        concentrationPercent: "",
+        prices: { EUR: 330, USD: 360, GBP: 290, NGN: 540000 },
+        sizes: ["", "", ""],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.42, '250ml Crystal Carafe': 2.75 },
+        topNotes: ["", "", ""],
+        heartNotes: ["", "", ""],
+        baseNotes: ["", "", ""],
+        longevity: "",
+        sillage: "",
+        season: "",
+        occasion: "",
+        inStock: true,
+        stockCount: 0,
+        isBestseller: true,
+        isLimited: false,
+        image: "",
+        secondaryImage: "",
+        description: "",
+        ritual: "",
+        rating: 0,
+        reviewsCount: 0
+      },
+      {
+        id: 'ambre-venitien',
+        name: "",
+        subtitle: "",
+        collection: "",
+        tagline: "",
+        family: "",
+        familyDetailed: "",
+        concentration: "",
+        concentrationPercent: "",
+        prices: { EUR: 265, USD: 290, GBP: 235, NGN: 435000 },
+        sizes: ["", ""],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.36 },
+        topNotes: ["", "", ""],
+        heartNotes: ["", "", ""],
+        baseNotes: ["", "", ""],
+        longevity: "",
+        sillage: "",
+        season: "",
+        occasion: "",
+        inStock: true,
+        stockCount: 0,
+        isBestseller: false,
+        isLimited: false,
+        image: "",
+        secondaryImage: "",
+        description: "",
+        ritual: "",
+        rating: 0,
+        reviewsCount: 0
+      },
+      {
+        id: 'santal-imperial',
+        name: "",
+        subtitle: "",
+        collection: "",
+        tagline: "",
+        family: "",
+        familyDetailed: "",
+        concentration: "",
+        concentrationPercent: "",
+        prices: { EUR: 295, USD: 320, GBP: 260, NGN: 480000 },
+        sizes: ["", ""],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.38 },
+        topNotes: ["", "", ""],
+        heartNotes: ["", "", ""],
+        baseNotes: ["", "", ""],
+        longevity: "",
+        sillage: "",
+        season: "",
+        occasion: "",
+        inStock: true,
+        stockCount: 0,
+        isBestseller: true,
+        isLimited: false,
+        image: "",
+        secondaryImage: "",
+        description: "",
+        ritual: "",
+        rating: 0,
+        reviewsCount: 0
+      },
+      {
+        id: 'rose-fumee-reserve',
+        name: "",
+        subtitle: "",
+        collection: "",
+        tagline: "",
+        family: "",
+        familyDetailed: "",
+        concentration: "",
+        concentrationPercent: "",
+        prices: { EUR: 355, USD: 390, GBP: 315, NGN: 585000 },
+        sizes: ["", ""],
+        sizeMultipliers: { '50ml Flacon (Numbered 1/500)': 1, '100ml Grand Flacon': 1.38 },
+        topNotes: ["", "", ""],
+        heartNotes: ["", "", ""],
+        baseNotes: ["", "", ""],
+        longevity: "",
+        sillage: "",
+        season: "",
+        occasion: "",
+        inStock: true,
+        stockCount: 0,
+        isBestseller: false,
+        isLimited: true,
+        image: "",
+        secondaryImage: "",
+        description: "",
+        ritual: "",
+        rating: 0,
+        reviewsCount: 0
+      },
+      {
+        id: 'vanille-bourbon-noire',
+        name: "",
+        subtitle: "",
+        collection: "",
+        tagline: "",
+        family: "",
+        familyDetailed: "",
+        concentration: "",
+        concentrationPercent: "",
+        prices: { EUR: 300, USD: 330, GBP: 265, NGN: 495000 },
+        sizes: ["", ""],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.39 },
+        topNotes: ["", "", ""],
+        heartNotes: ["", "", ""],
+        baseNotes: ["", "", ""],
+        longevity: "",
+        sillage: "",
+        season: "",
+        occasion: "",
+        inStock: true,
+        stockCount: 0,
+        isBestseller: true,
+        isLimited: false,
+        image: "",
+        secondaryImage: "",
+        description: "",
+        ritual: "",
+        rating: 0,
+        reviewsCount: 0
+      },
+      {
+        id: 'cuir-de-perse',
+        name: "",
+        subtitle: "",
+        collection: "",
+        tagline: "",
+        family: "",
+        familyDetailed: "",
+        concentration: "",
+        concentrationPercent: "",
+        prices: { EUR: 270, USD: 295, GBP: 240, NGN: 442000 },
+        sizes: ["", ""],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.39 },
+        topNotes: ["", "", ""],
+        heartNotes: ["", "", ""],
+        baseNotes: ["", "", "", ""],
+        longevity: "",
+        sillage: "",
+        season: "",
+        occasion: "",
+        inStock: true,
+        stockCount: 0,
+        isBestseller: false,
+        isLimited: false,
+        image: "",
+        secondaryImage: "",
+        description: "",
+        ritual: "",
+        rating: 0,
+        reviewsCount: 0
+      },
+      {
+        id: 'neroli-des-dieux',
+        name: "",
+        subtitle: "",
+        collection: "",
+        tagline: "",
+        family: "",
+        familyDetailed: "",
+        concentration: "",
+        concentrationPercent: "",
+        prices: { EUR: 250, USD: 275, GBP: 220, NGN: 412000 },
+        sizes: ["", ""],
+        sizeMultipliers: { '50ml Flacon': 1, '100ml Grand Flacon': 1.38 },
+        topNotes: ["", "", ""],
+        heartNotes: ["", "", ""],
+        baseNotes: ["", "", ""],
+        longevity: "",
+        sillage: "",
+        season: "",
+        occasion: "",
+        inStock: true,
+        stockCount: 0,
+        isBestseller: false,
+        isLimited: false,
+        image: "",
+        secondaryImage: "",
+        description: "",
+        ritual: "",
+        rating: 0,
+        reviewsCount: 0
+      },
+      {
+        id: 'coffret-decouverte',
+        name: "",
+        subtitle: "",
+        collection: "",
+        tagline: "",
+        family: "",
+        familyDetailed: "",
+        concentration: "",
+        concentrationPercent: "",
+        prices: { EUR: 115, USD: 125, GBP: 100, NGN: 187000 },
+        sizes: [""],
+        sizeMultipliers: { '5 x 10ml Flacon Set': 1 },
+        topNotes: [""],
+        heartNotes: [""],
+        baseNotes: [""],
+        longevity: "",
+        sillage: "",
+        season: "",
+        occasion: "",
+        inStock: true,
+        stockCount: 0,
+        isBestseller: true,
+        isLimited: false,
+        image: "",
+        secondaryImage: "",
+        description: "",
+        ritual: "",
+        rating: 0,
+        reviewsCount: 0
+      }
+    ];
+
+    // APPLICATION STATE STORE
+    const appState = {
+      currentView: 'home',
+      currentCategory: 'all',
+      selectedProductId: 'oud-nocturne',
+      currency: 'USD',
+      rates: { USD: 1, EUR: 0.92, GBP: 0.81, NGN: 1500 },
+      symbols: { USD: '$', EUR: '€', GBP: '£', NGN: '₦' },
+      cart: JSON.parse(localStorage.getItem('maison_cart') || '[]'),
+      wishlist: JSON.parse(localStorage.getItem('maison_wishlist') || '[]'),
+      appliedVoucher: null,
+      paystackPublicKey: localStorage.getItem('maison_paystack_key') || 'pk_test_sample_maison_key_demo',
+      currentUser: JSON.parse(localStorage.getItem('maison_user') || 'null'),
+      orders: JSON.parse(localStorage.getItem('maison_orders') || '[]'),
+      activeComparison: ['oud-nocturne', 'iris-celeste', 'santal-imperial'],
+      activeQuizStep: 0,
+      quizAnswers: {},
+      engravingDraft: { text: 'A·L', ribbon: 'Black Grosgrain', message: '' }
+    };
+
+    // CORE APPLICATION CONTROLLER
+    const app = {
+      init() {
+        this.renderView('home');
+        this.updateHeaderCartBadge();
+        this.updateWishlistBadge();
+        this.initGSAP();
+        this.checkCookieBanner();
+        if (window.lucide) lucide.createIcons();
+      },
+
+      initGSAP() {
+        if (window.gsap && window.ScrollTrigger) {
+          gsap.registerPlugin(ScrollTrigger);
+          // Hero entrance timeline
+          const tl = gsap.timeline();
+          tl.from('#hero-badge', { opacity: 0, y: -20, duration: 1, ease: 'power3.out' })
+            .from('#hero-headline', { opacity: 0, y: 30, duration: 1.2, ease: 'power3.out' }, '-=0.6')
+            .from('#hero-bottle-wrap', { opacity: 0, scale: 0.92, y: 40, duration: 1.4, ease: 'power2.out' }, '-=0.8')
+            .from('#hero-cta', { opacity: 0, y: 20, duration: 0.8, ease: 'power3.out' }, '-=0.6');
+
+          // Parallax for floating bottle and background
+          gsap.to('#hero-floating-bottle', {
+            scrollTrigger: {
+              trigger: '#hero-section',
+              start: 'top top',
+              end: 'bottom top',
+              scrub: 1.2
+            },
+            y: 80,
+            scale: 0.96
+          });
+        }
+      },
+
+      formatPrice(amountInUSD) {
+        const rate = appState.rates[appState.currency] || 1;
+        const sym = appState.symbols[appState.currency] || '$';
+        const converted = Math.round(amountInUSD * rate);
+        return `${sym}${converted.toLocaleString()}`;
+      },
+
+      changeCurrency(curr) {
+        appState.currency = curr;
+        this.renderView(appState.currentView);
+        this.updateHeaderCartBadge();
+        this.showToast(`Currency adjusted to ${curr}`);
+      },
+
+      openView(viewName, params = {}) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        appState.currentView = viewName;
+        if (params.productId) appState.selectedProductId = params.productId;
+        this.renderView(viewName, params);
+        if (window.lucide) setTimeout(() => lucide.createIcons(), 50);
+      },
+
+      navigateCategory(cat) {
+        appState.currentCategory = cat;
+        this.openView('catalog');
+      },
+
+      showToast(msg, isSuccess = true) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `p-4 bg-[#141211] border ${isSuccess ? 'border-[#c5a880]' : 'border-red-800'} text-[#f4efe8] text-xs font-serif shadow-2xl flex items-center gap-3 transform translate-y-4 opacity-0 transition-all duration-300 pointer-events-auto`;
+        toast.innerHTML = `
+          <i data-lucide="${isSuccess ? 'sparkles' : 'alert-circle'}" class="w-4 h-4 text-[#c5a880]"></i>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+        `;
+        container.appendChild(toast);
+        if (window.lucide) lucide.createIcons();
+
+        setTimeout(() => {
+          toast.classList.remove('translate-y-4', 'opacity-0');
+        }, 10);
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 400);
+        }, 4000);
+      },
+
+      // CART ACTIONS
+      addToCart(productId, size = '50ml Flacon', engraving = '') {
+        const prod = PRODUCTS.find(p => p.id === productId);
+        if (!prod) return;
+
+        const mult = prod.sizeMultipliers[size] || 1;
+        const unitPrice = prod.prices.USD * mult;
+        const existing = appState.cart.find(item => item.id === productId && item.size === size && item.engraving === engraving);
+
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          appState.cart.push({
+            id: prod.id,
+            name: prod.name,
+            subtitle: prod.subtitle,
+            size: size,
+            unitPrice: unitPrice,
+            image: prod.image,
+            qty: 1,
+            engraving: engraving
+          });
+        }
+        localStorage.setItem('maison_cart', JSON.stringify(appState.cart));
+        this.updateHeaderCartBadge();
+        this.renderCartDrawer();
+        this.toggleCartDrawer(true);
+        this.showToast(`${prod.name} (${size}) placed in shopping bag.`);
+      },
+
+      removeFromCart(index) {
+        appState.cart.splice(index, 1);
+        localStorage.setItem('maison_cart', JSON.stringify(appState.cart));
+        this.updateHeaderCartBadge();
+        this.renderCartDrawer();
+        if (appState.currentView === 'cart' || appState.currentView === 'checkout') {
+          this.renderView(appState.currentView);
+        }
+      },
+
+      updateCartQty(index, delta) {
+        if (!appState.cart[index]) return;
+        appState.cart[index].qty += delta;
+        if (appState.cart[index].qty <= 0) {
+          this.removeFromCart(index);
+          return;
+        }
+        localStorage.setItem('maison_cart', JSON.stringify(appState.cart));
+        this.updateHeaderCartBadge();
+        this.renderCartDrawer();
+        if (appState.currentView === 'cart' || appState.currentView === 'checkout') {
+          this.renderView(appState.currentView);
+        }
+      },
+
+      toggleCartDrawer(open) {
+        const drawer = document.getElementById('cart-drawer');
+        const overlay = document.getElementById('cart-drawer-overlay');
+        if (open) {
+          this.renderCartDrawer();
+          overlay.classList.remove('opacity-0', 'pointer-events-none');
+          drawer.classList.remove('translate-x-full');
+        } else {
+          overlay.classList.add('opacity-0', 'pointer-events-none');
+          drawer.classList.add('translate-x-full');
+        }
+        if (window.lucide) lucide.createIcons();
+      },
+
+      updateHeaderCartBadge() {
+        const count = appState.cart.reduce((sum, item) => sum + item.qty, 0);
+        const subtotal = appState.cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+        document.getElementById('cart-badge').textContent = count;
+        document.getElementById('header-cart-total').textContent = this.formatPrice(subtotal);
+      },
+
+      renderCartDrawer() {
+        const container = document.getElementById('drawer-cart-items');
+        const count = appState.cart.reduce((sum, item) => sum + item.qty, 0);
+        document.getElementById('drawer-item-count').textContent = `(${count} ${count === 1 ? 'Flacon' : 'Flacons'})`;
+
+        if (appState.cart.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-16 text-[#736a5e]">
+              <i data-lucide="shopping-bag" class="w-12 h-12 mx-auto stroke-1 mb-4 text-[#443e37]"></i>
+              <p class="font-serif text-lg text-[#b8afa3] mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <p class="text-xs tracking-wider text-[#736a5e] mb-6"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <button onclick="app.toggleCartDrawer(false); app.openView('catalog')" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></button>
+            </div>
+          `;
+          document.getElementById('drawer-subtotal').textContent = this.formatPrice(0);
+          document.getElementById('drawer-total').textContent = this.formatPrice(0);
+          if (window.lucide) lucide.createIcons();
+          return;
+        }
+
+        let html = '';
+        let subtotal = 0;
+
+        appState.cart.forEach((item, idx) => {
+          const itemTotal = item.unitPrice * item.qty;
+          subtotal += itemTotal;
+          html += `
+            <div class="flex gap-4 pb-4 border-b border-[#24201c]">
+              <img class="w-16 h-20 object-cover border border-[#2e2925] eshop-placeholder-media" />
+              <div class="flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="flex justify-between items-start">
+                    <h3 class="font-cinzel text-xs text-[#f4efe8] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+                    <button onclick="app.removeFromCart(${idx})" class="text-[#736a5e] hover:text-white p-0.5">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
+                  <div class="text-[10px] text-[#8e8577] tracking-wider mt-0.5"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                <div class="flex justify-between items-center pt-2">
+                  <div class="flex items-center border border-[#332e29]">
+                    <button onclick="app.updateCartQty(${idx}, -1)" class="px-2 py-0.5 text-xs text-[#a89f91] hover:text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                    <span class="px-2 text-xs font-mono text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    <button onclick="app.updateCartQty(${idx}, 1)" class="px-2 py-0.5 text-xs text-[#a89f91] hover:text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></button>
+                  </div>
+                  <div class="font-serif text-sm text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML = html;
+        document.getElementById('drawer-subtotal').textContent = this.formatPrice(subtotal);
+
+        let discount = 0;
+        if (appState.appliedVoucher) {
+          discount = subtotal * (appState.appliedVoucher.percent / 100);
+          document.getElementById('discount-row').classList.remove('hidden');
+          document.getElementById('drawer-discount').textContent = `-${this.formatPrice(discount)}`;
+        } else {
+          document.getElementById('discount-row').classList.add('hidden');
+        }
+
+        const grandTotal = Math.max(0, subtotal - discount);
+        document.getElementById('drawer-total').textContent = this.formatPrice(grandTotal);
+        if (window.lucide) lucide.createIcons();
+      },
+
+      applyVoucher() {
+        const code = document.getElementById('voucher-code-input').value.trim().toUpperCase();
+        const msgEl = document.getElementById('voucher-message');
+        if (code === 'MAISONVIP' || code === 'DISCOVERY50' || code === 'PARIS2026') {
+          appState.appliedVoucher = { code: code, percent: 15 };
+          msgEl.textContent = `Privilege code "${code}" active: 15% VIP reduction applied.`;
+          msgEl.classList.remove('hidden', 'text-red-400');
+          msgEl.classList.add('text-[#c5a880]');
+          this.renderCartDrawer();
+          this.showToast('Privilege discount validated.');
+        } else {
+          msgEl.textContent = 'Invalid or expired client privilege code.';
+          msgEl.classList.remove('hidden', 'text-[#c5a880]');
+          msgEl.classList.add('text-red-400');
+        }
+      },
+
+      // WISHLIST
+      toggleWishlist(prodId) {
+        const idx = appState.wishlist.indexOf(prodId);
+        if (idx > -1) {
+          appState.wishlist.splice(idx, 1);
+          this.showToast('Removed from saved fragrances.');
+        } else {
+          appState.wishlist.push(prodId);
+          this.showToast('Saved to private olfactory wishlist.');
+        }
+        localStorage.setItem('maison_wishlist', JSON.stringify(appState.wishlist));
+        this.updateWishlistBadge();
+        if (appState.currentView === 'wishlist') this.renderView('wishlist');
+      },
+
+      updateWishlistBadge() {
+        const badge = document.getElementById('wishlist-badge');
+        if (!badge) return;
+        const count = appState.wishlist.length;
+        badge.textContent = count;
+        if (count > 0) badge.classList.remove('hidden');
+        else badge.classList.add('hidden');
+      },
+
+      // SEARCH
+      openSearchModal() {
+        document.getElementById('search-modal').classList.remove('hidden');
+        document.getElementById('live-search-input').focus();
+        if (window.lucide) lucide.createIcons();
+      },
+
+      closeSearchModal() {
+        document.getElementById('search-modal').classList.add('hidden');
+      },
+
+      quickFilterSearch(term) {
+        document.getElementById('live-search-input').value = term;
+        this.handleLiveSearch(term);
+      },
+
+      handleLiveSearch(query) {
+        const list = document.getElementById('search-results-list');
+        const q = query.trim().toLowerCase();
+        if (q.length < 2) {
+          list.innerHTML = `<p class="text-xs text-[#736a5e] italic"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>`;
+          return;
+        }
+
+        const matches = PRODUCTS.filter(p => {
+          return p.name.toLowerCase().includes(q) ||
+                 p.family.toLowerCase().includes(q) ||
+                 p.familyDetailed.toLowerCase().includes(q) ||
+                 p.description.toLowerCase().includes(q) ||
+                 p.topNotes.some(n => n.toLowerCase().includes(q)) ||
+                 p.heartNotes.some(n => n.toLowerCase().includes(q)) ||
+                 p.baseNotes.some(n => n.toLowerCase().includes(q));
+        });
+
+        if (matches.length === 0) {
+          list.innerHTML = `
+            <div class="py-8 text-center text-[#736a5e]">
+              <p class="text-xs"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <button onclick="app.closeSearchModal(); app.openView('finder');" class="mt-3 text-[#c5a880] underline text-xs"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></button>
+            </div>
+          `;
+          return;
+        }
+
+        let html = '';
+        matches.forEach(p => {
+          html += `
+            <div onclick="app.closeSearchModal(); app.openProductDetail('${p.id}');" class="p-3 bg-[#171413] hover:bg-[#211c19] border border-[#2b2724] cursor-pointer flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-4">
+                <img class="w-12 h-14 object-cover border border-[#332e29] eshop-placeholder-media" />
+                <div>
+                  <h4 class="font-cinzel text-xs text-[#f4efe8] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h4>
+                  <div class="text-[10px] text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></div>
+                  <div class="text-[10px] text-[#8e8577] line-clamp-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></div>
+                </div>
+              </div>
+              <div class="font-serif text-sm text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+            </div>
+          `;
+        });
+        list.innerHTML = html;
+      },
+
+      openProductDetail(id) {
+        this.openView('product', { productId: id });
+      },
+
+      // MOBILE MENU
+      toggleMobileMenu() {
+        const drawer = document.getElementById('mobile-menu-drawer');
+        drawer.classList.toggle('-translate-x-full');
+        if (window.lucide) lucide.createIcons();
+      },
+
+      // PAYSTACK & BACKEND CONFIG
+      toggleBackendModal(open) {
+        const modal = document.getElementById('backend-settings-modal');
+        if (open) {
+          document.getElementById('paystack-pubkey-input').value = appState.paystackPublicKey;
+          modal.classList.remove('hidden');
+        } else {
+          modal.classList.add('hidden');
+        }
+      },
+
+      savePaystackKey() {
+        const key = document.getElementById('paystack-pubkey-input').value.trim();
+        appState.paystackPublicKey = key || 'pk_test_sample_maison_key_demo';
+        localStorage.setItem('maison_paystack_key', appState.paystackPublicKey);
+        this.toggleBackendModal(false);
+        this.showToast('Paystack gateway key preserved.');
+      },
+
+      // COOKIE CONSENT
+      checkCookieBanner() {
+        if (!localStorage.getItem('maison_cookie_consent')) {
+          document.getElementById('cookie-banner').classList.remove('hidden');
+        }
+      },
+      acceptCookies() {
+        localStorage.setItem('maison_cookie_consent', 'accepted');
+        document.getElementById('cookie-banner').classList.add('hidden');
+        this.showToast('Preferences preserved.');
+      },
+      dismissCookieBanner() {
+        document.getElementById('cookie-banner').classList.add('hidden');
+      },
+
+      // AUTHENTICATION
+      openAccountModal() {
+        if (appState.currentUser) {
+          this.openView('profile');
+        } else {
+          document.getElementById('account-modal').classList.remove('hidden');
+        }
+        if (window.lucide) lucide.createIcons();
+      },
+      closeAccountModal() {
+        document.getElementById('account-modal').classList.add('hidden');
+      },
+      switchAuthTab(tab) {
+        const loginForm = document.getElementById('login-form');
+        const regForm = document.getElementById('register-form');
+        const loginBtn = document.getElementById('tab-login-btn');
+        const regBtn = document.getElementById('tab-register-btn');
+
+        if (tab === 'login') {
+          loginForm.classList.remove('hidden');
+          regForm.classList.add('hidden');
+          loginBtn.className = 'flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#c5a880] border-b-2 border-[#c5a880]';
+          regBtn.className = 'flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#736a5e] border-b-2 border-transparent';
+        } else {
+          loginForm.classList.add('hidden');
+          regForm.classList.remove('hidden');
+          regBtn.className = 'flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#c5a880] border-b-2 border-[#c5a880]';
+          loginBtn.className = 'flex-1 pb-3 text-xs tracking-[0.2em] uppercase font-cinzel text-[#736a5e] border-b-2 border-transparent';
+        }
+      },
+      handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        appState.currentUser = { email: email, name: email.split('@')[0], tier: 'Private Client VIP' };
+        localStorage.setItem('maison_user', JSON.stringify(appState.currentUser));
+        this.closeAccountModal();
+        this.showToast(`Welcome back, ${appState.currentUser.name}`);
+        this.openView('profile');
+      },
+      handleRegister(e) {
+        e.preventDefault();
+        const name = document.getElementById('reg-name').value;
+        const email = document.getElementById('reg-email').value;
+        appState.currentUser = { email: email, name: name, tier: 'Private Client VIP' };
+        localStorage.setItem('maison_user', JSON.stringify(appState.currentUser));
+        this.closeAccountModal();
+        this.showToast(`Registry created. Welcome to Maison Alchémie, ${name}`);
+        this.openView('profile');
+      },
+      showForgotPassword() {
+        this.showToast('A secure passphrase recovery link has been dispatched to your email.');
+      },
+      handleLogout() {
+        appState.currentUser = null;
+        localStorage.removeItem('maison_user');
+        this.showToast('You have exited your private portal.');
+        this.openView('home');
+      },
+      handleNewsletter(e) {
+        e.preventDefault();
+        const email = document.getElementById('newsletter-email').value;
+        const status = document.getElementById('newsletter-status');
+        status.textContent = `Gratitude. Private correspondence dispatched to ${email}.`;
+        status.classList.remove('hidden');
+        this.showToast('Privileged invitation confirmed.');
+        e.target.reset();
+      },
+
+      // DYNAMIC VIEW RENDERER (ALL 31 REQUIRED VIEWS)
+      renderView(viewName, params = {}) {
+        const root = document.getElementById('app-container');
+        if (!root) return;
+
+        switch (viewName) {
+          case 'home':
+            root.innerHTML = this.views.home();
+            this.initGSAP();
+            break;
+          case 'catalog':
+            root.innerHTML = this.views.catalog();
+            break;
+          case 'collections':
+            root.innerHTML = this.views.collections();
+            break;
+          case 'product':
+            root.innerHTML = this.views.product(params.productId || appState.selectedProductId);
+            break;
+          case 'finder':
+            root.innerHTML = this.views.finder();
+            break;
+          case 'comparison':
+            root.innerHTML = this.views.comparison();
+            break;
+          case 'discovery':
+            root.innerHTML = this.views.discovery();
+            break;
+          case 'gifting':
+            root.innerHTML = this.views.gifting();
+            break;
+          case 'cart':
+            root.innerHTML = this.views.cartFull();
+            break;
+          case 'checkout':
+            root.innerHTML = this.views.checkout();
+            break;
+          case 'confirmation':
+            root.innerHTML = this.views.confirmation(params.orderId);
+            break;
+          case 'track':
+            root.innerHTML = this.views.track();
+            break;
+          case 'wishlist':
+            root.innerHTML = this.views.wishlist();
+            break;
+          case 'profile':
+            root.innerHTML = this.views.profile();
+            break;
+          case 'story':
+            root.innerHTML = this.views.story();
+            break;
+          case 'craftsmanship':
+            root.innerHTML = this.views.craftsmanship();
+            break;
+          case 'journal':
+            root.innerHTML = this.views.journal();
+            break;
+          case 'shipping':
+            root.innerHTML = this.views.shipping();
+            break;
+          case 'returns':
+            root.innerHTML = this.views.returns();
+            break;
+          case 'faq':
+            root.innerHTML = this.views.faq();
+            break;
+          case 'concierge':
+            root.innerHTML = this.views.concierge();
+            break;
+          case 'privacy':
+            root.innerHTML = this.views.privacy();
+            break;
+          case 'terms':
+            root.innerHTML = this.views.terms();
+            break;
+          case 'legal':
+            root.innerHTML = this.views.legal();
+            break;
+          default:
+            root.innerHTML = this.views.home();
+        }
+
+        if (window.lucide) lucide.createIcons();
+      }
+    };
+
+    // TEMPLATE DEFINITIONS FOR EVERY NAVIGABLE VIEW
+    app.views = {
+      home() {
+        return `
+          <!-- CHAPTER 1: HERO CAMPAIGN (CINEMATIC GSAP ASYMMETRIC ENTRANCE) -->
+          <section id="hero-section" class="relative min-h-[92vh] flex items-center justify-center overflow-hidden bg-gradient-radial-dark px-6 py-16">
+            <!-- Ambient Golden Glow behind flacon -->
+            <div class="bottle-glow" style="top: 20%; left: 50%; transform: translateX(-50%);"></div>
+
+            <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+              
+              <!-- Left Column: High-contrast Editorial Typography -->
+              <div class="lg:col-span-6 space-y-6 text-center lg:text-left pt-6 lg:pt-0">
+                <div id="hero-badge" class="inline-flex items-center gap-2 text-xs tracking-[0.35em] uppercase text-[#c5a880] font-cinzel">
+                  <span class="w-8 h-[1px] bg-[#c5a880]"></span>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></span>
+                </div>
+
+                <h1 id="hero-headline" class="font-cormorant text-4xl sm:text-6xl md:text-7xl lg:text-7xl text-[#f8f5ee] font-light leading-[1.08] tracking-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span><br />
+                  <span class="italic font-normal gold-gradient-text"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></span>
+                </h1>
+
+                <p class="font-serif italic text-lg sm:text-xl text-[#b8afa3] max-w-xl mx-auto lg:mx-0 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+                <!-- Actions -->
+                <div id="hero-cta" class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                  <button onclick="app.openView('catalog')" class="btn-luxury px-8 py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-semibold uppercase shadow-xl w-full sm:w-auto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></button>
+                  <button onclick="app.openView('finder')" class="px-8 py-4 border border-[#4a423b] hover:border-[#c5a880] text-[#f4efe8] hover:text-[#eed9b8] font-cinzel text-xs tracking-[0.25em] uppercase transition-colors w-full sm:w-auto"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></button>
+                </div>
+
+                <!-- Minimalist Trust Indicator -->
+                <div class="pt-6 flex items-center justify-center lg:justify-start gap-6 text-[11px] text-[#787063] tracking-widest uppercase">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                </div>
+              </div>
+
+              <!-- Right Column: Sculptural Floating Flacon Stage -->
+              <div id="hero-bottle-wrap" class="lg:col-span-6 flex justify-center relative">
+                <div class="relative w-full max-w-md aspect-[4/5] flex items-center justify-center">
+                  <!-- Diagonal Background Slate -->
+                  <div class="absolute inset-0 bg-[#161210] border border-[#2e2823] transform -rotate-3 scale-95 shadow-2xl"></div>
+                  
+                  <!-- Main Bottle Image with Scroll Parallax -->
+                  <div id="hero-floating-bottle" class="relative z-10 w-[88%] h-[88%] overflow-hidden border border-[#3d3630] shadow-2xl">
+                    <img class="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700 eshop-placeholder-media" />
+                    <!-- Flacon Info Overlay -->
+                    <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6 text-left">
+                      <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-[0.2em]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></div>
+                      <div class="font-serif text-2xl text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                      <div class="text-[11px] text-[#a89f91] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 text-[#736a5e] text-[10px] tracking-[0.3em] uppercase">
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+              <div class="w-[1px] h-8 bg-gradient-to-b from-[#c5a880] to-transparent animate-pulse"></div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 2: EDITORIAL MANIFESTO (WARM IVORY CONTRAST) -->
+          <section class="bg-[#f8f5ee] text-[#12100f] py-28 px-6 transition-colors">
+            <div class="max-w-5xl mx-auto text-center space-y-8">
+              <div class="font-cinzel text-xs text-[#9b7e56] tracking-[0.35em] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></div>
+              <blockquote class="font-cormorant text-3xl sm:text-5xl md:text-6xl font-light leading-[1.15] text-[#171311]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></blockquote>
+              <div class="w-16 h-[1px] bg-[#9b7e56] mx-auto"></div>
+              <p class="font-serif italic text-lg sm:text-xl text-[#524941] max-w-2xl mx-auto leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <div class="pt-4">
+                <button onclick="app.openView('story')" class="btn-luxury px-8 py-3.5 bg-[#171311] text-[#f8f5ee] font-cinzel text-xs tracking-[0.25em] uppercase hover:bg-[#9b7e56] transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></button>
+              </div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 3: SIGNATURE EXTRAITS SHOWCASE (SCULPTURAL CARDS) -->
+          <section id="signature" class="py-28 px-6 bg-[#080808]">
+            <div class="max-w-7xl mx-auto">
+              <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div>
+                  <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></div>
+                  <h2 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h2>
+                </div>
+                <div class="flex items-center gap-4">
+                  <button onclick="app.navigateCategory('all')" class="text-xs text-[#c5a880] tracking-widest uppercase hover:text-white underline underline-offset-8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></button>
+                </div>
+              </div>
+
+              <!-- Grid with Asymmetric Character -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 4: THE OLFACTORY PYRAMID & INGREDIENT REVELATION -->
+          <section class="py-28 px-6 bg-[#110e0d] border-y border-[#26201c] relative overflow-hidden">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              <div class="lg:col-span-5 space-y-6">
+                <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></div>
+                <h2 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span><br /><span class="italic text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                </h2>
+                <p class="text-xs text-[#a89f91] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+
+                <!-- Interactive Pyramid Display -->
+                <div class="space-y-3 pt-4">
+                  <div class="pyramid-tier p-4 bg-[#191513] border border-[#332b25]">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="font-cinzel text-xs text-[#eed9b8] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+                      <span class="text-[10px] text-[#c5a880] font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+                    </div>
+                    <p class="text-xs text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+
+                  <div class="pyramid-tier p-4 bg-[#1c1815] border border-[#3d342c]">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="font-cinzel text-xs text-[#eed9b8] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:86%"></span></span>
+                      <span class="text-[10px] text-[#c5a880] font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    </div>
+                    <p class="text-xs text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+
+                  <div class="pyramid-tier p-4 bg-[#1f1a17] border border-[#4a3f36]">
+                    <div class="flex justify-between items-center mb-1">
+                      <span class="font-cinzel text-xs text-[#eed9b8] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></span>
+                      <span class="text-[10px] text-[#c5a880] font-mono"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+                    </div>
+                    <p class="text-xs text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+
+                <div class="pt-2">
+                  <button onclick="app.openView('finder')" class="btn-luxury px-6 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:84%"></span></button>
+                </div>
+              </div>
+
+              <!-- Right: Sculptural Collage -->
+              <div class="lg:col-span-7 grid grid-cols-2 gap-4">
+                <div class="space-y-4">
+                  <div class="h-64 sm:h-80 overflow-hidden border border-[#2e2621]">
+                    <img class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700 eshop-placeholder-media" />
+                  </div>
+                  <div class="p-6 bg-[#161210] border border-[#2e2621]">
+                    <div class="font-cinzel text-xs text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></div>
+                    <p class="text-xs text-[#8e8577] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+                <div class="space-y-4 pt-8">
+                  <div class="p-6 bg-[#161210] border border-[#2e2621]">
+                    <div class="font-cinzel text-xs text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></div>
+                    <p class="text-xs text-[#8e8577] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                  <div class="h-64 sm:h-80 overflow-hidden border border-[#2e2621]">
+                    <img class="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700 eshop-placeholder-media" />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- CHAPTER 5: THE DISCOVERY WARDROBE (FIRST-CLASS SAMPLING) -->
+          <section id="discovery" class="py-28 px-6 bg-[#080808]">
+            <div class="max-w-7xl mx-auto">
+              <div class="bg-gradient-to-r from-[#171311] via-[#1a1512] to-[#0d0b0a] border border-[#332b25] p-8 md:p-16 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                
+                <div class="lg:col-span-6 space-y-6">
+                  <div class="inline-block text-xs font-cinzel text-[#c5a880] tracking-[0.3em] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                  <h2 class="font-cormorant text-3xl sm:text-5xl text-[#f4efe8] font-light leading-tight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span><br /><span class="italic text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                  </h2>
+                  <p class="text-xs sm:text-sm text-[#b8afa3] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  <div class="p-4 bg-[#110e0c] border border-[#2b241e] space-y-1">
+                    <div class="font-cinzel text-xs text-[#eed9b8] uppercase flex items-center gap-2">
+                      <i data-lucide="tag" class="w-3.5 h-3.5 text-[#c5a880]"></i>
+                      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                    </div>
+                    <p class="text-[11px] text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                  <div class="flex items-center gap-6 pt-2">
+                    <span class="font-serif text-2xl text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    <button onclick="app.addToCart('coffret-decouverte', '5 x 10ml Flacon Set')" class="btn-luxury px-8 py-3.5 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.2em] font-semibold uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></button>
+                  </div>
+                </div>
+
+                <div class="lg:col-span-6 flex justify-center">
+                  <div class="relative w-full max-w-md aspect-square overflow-hidden border border-[#3d342c] shadow-2xl">
+                    <img class="w-full h-full object-cover eshop-placeholder-media" />
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 6: BESPOKE LUXURY GIFTING & CALLIGRAPHY ENGRAVING -->
+          <section id="gifting" class="py-28 px-6 bg-[#130f0e] border-t border-[#26201c]">
+            <div class="max-w-6xl mx-auto text-center space-y-6">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></div>
+              <h2 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+              <p class="font-serif italic text-lg sm:text-xl text-[#b8afa3] max-w-2xl mx-auto leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <div class="pt-4 flex flex-col sm:flex-row justify-center gap-4">
+                <button onclick="app.openView('gifting')" class="btn-luxury px-8 py-4 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></button>
+                <button onclick="app.openView('comparison')" class="px-8 py-4 border border-[#3d342c] text-[#eed9b8] hover:border-[#c5a880] font-cinzel text-xs tracking-[0.2em] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></button>
+              </div>
+            </div>
+          </section>
+
+          <!-- CHAPTER 7: CLIENT REASSURANCE & REVIEWS -->
+          <section class="py-24 px-6 bg-[#080808]">
+            <div class="max-w-7xl mx-auto">
+              <div class="text-center mb-16 space-y-3">
+                <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></div>
+                <h2 class="font-cormorant text-3xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h2>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <div class="p-8 bg-[#110f0e] border border-[#241f1b] space-y-4">
+                  <div class="flex text-[#c5a880] gap-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></div>
+                  <blockquote class="font-serif italic text-base text-[#d1c8bd] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></blockquote>
+                  <div class="pt-2 border-t border-[#241f1b] text-xs">
+                    <strong class="text-[#eed9b8] block font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></strong>
+                    <span class="text-[#736a5e]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></span>
+                  </div>
+                </div>
+
+                <div class="p-8 bg-[#110f0e] border border-[#241f1b] space-y-4">
+                  <div class="flex text-[#c5a880] gap-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></div>
+                  <blockquote class="font-serif italic text-base text-[#d1c8bd] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></blockquote>
+                  <div class="pt-2 border-t border-[#241f1b] text-xs">
+                    <strong class="text-[#eed9b8] block font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></strong>
+                    <span class="text-[#736a5e]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></span>
+                  </div>
+                </div>
+
+                <div class="p-8 bg-[#110f0e] border border-[#241f1b] space-y-4">
+                  <div class="flex text-[#c5a880] gap-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></div>
+                  <blockquote class="font-serif italic text-base text-[#d1c8bd] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></blockquote>
+                  <div class="pt-2 border-t border-[#241f1b] text-xs">
+                    <strong class="text-[#eed9b8] block font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></strong>
+                    <span class="text-[#736a5e]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+        `;
+      },
+
+      renderProductCard(p) {
+        return `
+          <article class="group bg-[#110f0e] border border-[#26211d] hover:border-[#c5a880]/50 transition-all duration-500 flex flex-col justify-between">
+            <div class="relative overflow-hidden aspect-[3/4] bg-[#161311] cursor-pointer" onclick="app.openProductDetail('${p.id}')">
+              <img class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 eshop-placeholder-media" />
+              
+              <!-- Subtle Badge Overlay -->
+              <div class="absolute top-4 left-4 flex flex-col gap-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+
+              <!-- Wishlist Quick Toggle -->
+              <button onclick="event.stopPropagation(); app.toggleWishlist('${p.id}');" class="absolute top-4 right-4 p-2 bg-[#0e0c0b]/80 hover:bg-[#c5a880] text-white hover:text-black transition-colors">
+                <i data-lucide="heart" class="w-4 h-4 ${appState.wishlist.includes(p.id) ? 'fill-[#c5a880] text-[#c5a880]' : ''}"></i>
+              </button>
+
+              <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-5 text-left">
+                <div class="text-[10px] uppercase tracking-[0.2em] text-[#c5a880] font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                <h3 class="font-cinzel text-lg text-[#f4efe8] tracking-wider uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+              </div>
+            </div>
+
+            <!-- Content & Add to Bag -->
+            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+              <div>
+                <div class="flex items-center justify-between text-xs text-[#8e8577] mb-1">
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                </div>
+                <p class="text-xs text-[#b8afa3] line-clamp-2 leading-relaxed italic font-serif"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></p>
+                <div class="mt-3 text-[10px] text-[#787063] tracking-wider">
+                  <strong class="text-[#a89f91]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+              </div>
+
+              <div class="pt-3 border-t border-[#241f1b] flex items-center justify-between">
+                <span class="font-serif text-lg text-[#eed9b8] font-medium"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                <div class="flex gap-2">
+                  <button onclick="app.openProductDetail('${p.id}')" class="px-3 py-2 border border-[#38312a] hover:border-[#c5a880] text-[#eed9b8] text-[10px] tracking-wider font-cinzel uppercase transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button>
+                  <button onclick="app.addToCart('${p.id}', '${p.sizes[0]}')" class="btn-luxury px-4 py-2 bg-[#c5a880] hover:bg-[#eed9b8] text-black text-[10px] tracking-wider font-cinzel font-semibold uppercase transition-colors"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button>
+                </div>
+              </div>
+            </div>
+          </article>
+        `;
+      },
+
+      catalog() {
+        const cat = appState.currentCategory;
+        const filtered = PRODUCTS.filter(p => {
+          if (cat === 'all') return true;
+          return p.family.toLowerCase() === cat.toLowerCase();
+        });
+
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="text-center max-w-3xl mx-auto mb-16 space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></h1>
+              <p class="text-xs sm:text-sm text-[#a89f91] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="flex flex-wrap items-center justify-center gap-2 mb-12 border-y border-[#26201c] py-4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+            <!-- Products Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+          </div>
+        `;
+      },
+
+      collections() {
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto space-y-24">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></h1>
+              <p class="text-xs text-[#a89f91]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Collection 1: Signature Haute -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-[#26201c] p-8 bg-[#110e0c]">
+              <div class="lg:col-span-5 space-y-4">
+                <span class="text-xs font-cinzel text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></span>
+                <h2 class="font-cormorant text-3xl sm:text-4xl text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h2>
+                <p class="text-xs text-[#8e8577] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <button onclick="app.navigateCategory('Woody')" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></button>
+              </div>
+              <div class="lg:col-span-7 grid grid-cols-2 gap-4">
+                <img class="w-full h-64 object-cover border border-[#2b251f] eshop-placeholder-media" />
+                <img class="w-full h-64 object-cover border border-[#2b251f] eshop-placeholder-media" />
+              </div>
+            </div>
+
+            <!-- Collection 2: Les Fleurs Sombres -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border border-[#26201c] p-8 bg-[#110e0c]">
+              <div class="lg:col-span-7 grid grid-cols-2 gap-4 order-2 lg:order-1">
+                <img class="w-full h-64 object-cover border border-[#2b251f] eshop-placeholder-media" />
+                <img class="w-full h-64 object-cover border border-[#2b251f] eshop-placeholder-media" />
+              </div>
+              <div class="lg:col-span-5 space-y-4 order-1 lg:order-2">
+                <span class="text-xs font-cinzel text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+                <h2 class="font-cormorant text-3xl sm:text-4xl text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:49%"></span></h2>
+                <p class="text-xs text-[#8e8577] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                <button onclick="app.navigateCategory('Floral')" class="btn-luxury px-6 py-2.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      },
+
+      product(prodId) {
+        const p = PRODUCTS.find(x => x.id === prodId) || PRODUCTS[0];
+        const selectedSize = p.sizes[0];
+
+        return `
+          <div class="py-12 px-6 max-w-7xl mx-auto space-y-20">
+            <!-- Breadcrumbs -->
+            <nav class="flex items-center gap-2 text-xs text-[#787063] uppercase tracking-widest">
+              <button onclick="app.openView('home')" class="hover:text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></button>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <button onclick="app.navigateCategory('${p.family}')" class="hover:text-white"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></button>
+              <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+              <span class="text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+            </nav>
+
+            <!-- Product Main Showcase -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+              
+              <!-- Gallery Left -->
+              <div class="lg:col-span-7 space-y-4">
+                <div class="aspect-[4/5] bg-[#12100f] border border-[#2b251f] overflow-hidden relative shadow-2xl">
+                  <img id="detail-main-img" class="w-full h-full object-cover object-center eshop-placeholder-media" />
+                  
+                  <!-- Live Engraving Simulation Overlay on Bottle -->
+                  <div id="bottle-engraving-badge" class="absolute bottom-16 inset-x-0 text-center pointer-events-none hidden">
+                    <div class="inline-block bg-black/60 backdrop-blur-sm border border-[#c5a880]/40 px-4 py-1.5 rounded-none">
+                      <span id="live-engraving-text" class="engraved-text text-sm"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div onclick="document.getElementById('detail-main-img').src='${p.image}'" class="aspect-[4/3] bg-[#12100f] border border-[#2b251f] cursor-pointer overflow-hidden">
+                    <img class="w-full h-full object-cover eshop-placeholder-media" />
+                  </div>
+                  <div onclick="document.getElementById('detail-main-img').src='${p.secondaryImage}'" class="aspect-[4/3] bg-[#12100f] border border-[#2b251f] cursor-pointer overflow-hidden">
+                    <img class="w-full h-full object-cover eshop-placeholder-media" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Product Purchasing Details Right -->
+              <div class="lg:col-span-5 space-y-6">
+                <div>
+                  <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-[0.25em] mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                  <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h1>
+                  <div class="text-xs text-[#a89f91] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+                </div>
+
+                <div class="font-serif text-3xl text-[#eed9b8] font-medium" id="pdp-price-display"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+
+                <p class="text-xs sm:text-sm text-[#b8afa3] leading-relaxed font-serif italic"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></p>
+
+                <!-- Flacon Size Selector -->
+                <div class="space-y-2 pt-2">
+                  <label class="block text-[11px] font-cinzel text-[#eed9b8] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                </div>
+
+                <!-- Custom Engraving Toggle Section -->
+                <div class="p-4 bg-[#141110] border border-[#2b251f] space-y-3">
+                  <div class="flex items-center justify-between">
+                    <label class="font-cinzel text-xs text-[#c5a880] uppercase flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" id="engraving-toggle" onchange="app.togglePdpEngraving(this.checked)" class="accent-[#c5a880]" />
+                      <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></span>
+                    </label>
+                    <span class="text-[10px] text-[#8e8577] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+                  </div>
+                  <div id="engraving-input-wrap" class="hidden">
+                    <input type="text" id="engraving-text-input" oninput="app.updatePdpEngravingPreview(this.value)" maxlength="8" class="w-full bg-[#1b1715] border border-[#383029] p-2 text-xs font-cinzel text-[#eed9b8] tracking-[0.25em] uppercase focus:outline-none focus:border-[#c5a880]" />
+                    <p class="text-[10px] text-[#736a5e] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+
+                <!-- Add to Bag Action Button -->
+                <div class="space-y-3 pt-2">
+                  <button id="pdp-add-btn" onclick="app.addCurrentDetailToBag('${p.id}')" class="btn-luxury w-full py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-bold uppercase shadow-xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></button>
+                  <div class="flex items-center justify-between text-[11px] text-[#787063]">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></span>
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></span>
+                  </div>
+                </div>
+
+                <!-- Olfactory Metrics -->
+                <div class="pt-6 border-t border-[#241f1b] grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <span class="text-[#8e8577] block text-[10px] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+                    <strong class="text-[#eed9b8] font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></strong>
+                  </div>
+                  <div>
+                    <span class="text-[#8e8577] block text-[10px] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+                    <strong class="text-[#eed9b8] font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></strong>
+                  </div>
+                  <div>
+                    <span class="text-[#8e8577] block text-[10px] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+                    <strong class="text-[#eed9b8] font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></strong>
+                  </div>
+                  <div>
+                    <span class="text-[#8e8577] block text-[10px] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                    <strong class="text-[#eed9b8] font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></strong>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            <!-- Olfactory Pyramid Breakdown Section -->
+            <div class="border-t border-[#241f1b] pt-16">
+              <h2 class="font-cormorant text-3xl text-[#f4efe8] mb-8 text-center"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></h2>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 bg-[#110e0c] border border-[#2b241e] text-center space-y-2">
+                  <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></div>
+                  <div class="font-serif text-lg text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                  <p class="text-[11px] text-[#787063]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+                <div class="p-6 bg-[#110e0c] border border-[#2b241e] text-center space-y-2">
+                  <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></div>
+                  <div class="font-serif text-lg text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                  <p class="text-[11px] text-[#787063]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+                <div class="p-6 bg-[#110e0c] border border-[#2b241e] text-center space-y-2">
+                  <div class="font-cinzel text-xs text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></div>
+                  <div class="font-serif text-lg text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+                  <p class="text-[11px] text-[#787063]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ritual of Wear -->
+            <div class="p-8 bg-[#161210] border border-[#2e2621] space-y-3">
+              <h3 class="font-cinzel text-sm text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></h3>
+              <p class="text-xs text-[#b8afa3] leading-relaxed font-serif italic text-base"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></p>
+            </div>
+
+            <!-- Related Scents -->
+            <div class="space-y-8 pt-8">
+              <h3 class="font-cormorant text-3xl text-[#f4efe8] text-center"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+            </div>
+
+          </div>
+        `;
+      },
+
+      finder() {
+        return `
+          <div class="py-16 px-6 max-w-4xl mx-auto space-y-12">
+            <div class="text-center space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h1>
+              <p class="text-xs sm:text-sm text-[#a89f91] max-w-xl mx-auto leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Interactive Quiz Engine -->
+            <div id="quiz-container" class="bg-[#110f0e] border border-[#2b251f] p-8 md:p-12 shadow-2xl space-y-8">
+              
+              <!-- Question 1: Mood / Atmosphere -->
+              <div class="space-y-4">
+                <span class="text-[10px] font-mono text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+                <h3 class="font-cinzel text-lg sm:text-xl text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button onclick="app.setQuizAnswer('mood', 'nocturnal', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880] transition-colors">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></strong>
+                    <span class="text-[11px] text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('mood', 'ethereal', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880] transition-colors">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></strong>
+                    <span class="text-[11px] text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('mood', 'opulent', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880] transition-colors">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong>
+                    <span class="text-[11px] text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('mood', 'gourmand', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880] transition-colors">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></strong>
+                    <span class="text-[11px] text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Question 2: Intensity -->
+              <div class="space-y-4 pt-6 border-t border-[#26201c]">
+                <span class="text-[10px] font-mono text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+                <h3 class="font-cinzel text-lg sm:text-xl text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button onclick="app.setQuizAnswer('intensity', 'immense', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880]">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></strong>
+                    <span class="text-[11px] text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('intensity', 'balanced', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880]">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></strong>
+                    <span class="text-[11px] text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                  </button>
+                  <button onclick="app.setQuizAnswer('intensity', 'wardrobe', this)" class="quiz-btn p-4 border border-[#332a24] text-left hover:border-[#c5a880]">
+                    <strong class="font-cinzel text-xs text-[#eed9b8] block uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></strong>
+                    <span class="text-[11px] text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Action to calculate -->
+              <div class="pt-6 border-t border-[#26201c] flex justify-center">
+                <button onclick="app.calculateQuizRecommendation()" class="btn-luxury px-8 py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-semibold uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></button>
+              </div>
+
+              <!-- Results Area -->
+              <div id="quiz-result-area" class="hidden pt-8 border-t border-[#26201c] space-y-6"></div>
+
+            </div>
+          </div>
+        `;
+      },
+
+      comparison() {
+        const p1 = PRODUCTS.find(p => p.id === appState.activeComparison[0]) || PRODUCTS[0];
+        const p2 = PRODUCTS.find(p => p.id === appState.activeComparison[1]) || PRODUCTS[1];
+        const p3 = PRODUCTS.find(p => p.id === appState.activeComparison[2]) || PRODUCTS[3];
+
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto space-y-12">
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h1>
+              <p class="text-xs text-[#a89f91]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Comparison Matrix Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse border border-[#2b251f] text-xs">
+                <thead>
+                  <tr class="bg-[#141110] border-b border-[#2b251f]">
+                    <th class="p-4 font-cinzel text-[#c5a880] uppercase tracking-wider w-1/4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></th>
+                    <th class="p-4 font-cinzel text-[#eed9b8] uppercase tracking-wider w-1/4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></th>
+                    <th class="p-4 font-cinzel text-[#eed9b8] uppercase tracking-wider w-1/4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></th>
+                    <th class="p-4 font-cinzel text-[#eed9b8] uppercase tracking-wider w-1/4"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#241f1b]">
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></td>
+                    <td class="p-4"><img class="w-20 h-24 object-cover border border-[#2b251f] eshop-placeholder-media" /></td>
+                    <td class="p-4"><img class="w-20 h-24 object-cover border border-[#2b251f] eshop-placeholder-media" /></td>
+                    <td class="p-4"><img class="w-20 h-24 object-cover border border-[#2b251f] eshop-placeholder-media" /></td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></td>
+                    <td class="p-4 text-[#e2ded9]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></td>
+                    <td class="p-4 text-[#e2ded9]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 text-[#e2ded9]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></td>
+                    <td class="p-4 text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></td>
+                    <td class="p-4 text-[#b8afa3]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></td>
+                    <td class="p-4 text-[#b8afa3]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></td>
+                    <td class="p-4 text-[#b8afa3]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></td>
+                    <td class="p-4 text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></td>
+                    <td class="p-4 font-serif text-base text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 font-serif text-base text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                    <td class="p-4 font-serif text-base text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></td>
+                  </tr>
+                  <tr>
+                    <td class="p-4 font-cinzel text-[#8e8577] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></td>
+                    <td class="p-4"><button onclick="app.addToCart('${p1.id}')" class="btn-luxury px-3 py-1.5 bg-[#c5a880] text-black text-[10px] font-cinzel uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button></td>
+                    <td class="p-4"><button onclick="app.addToCart('${p2.id}')" class="btn-luxury px-3 py-1.5 bg-[#c5a880] text-black text-[10px] font-cinzel uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button></td>
+                    <td class="p-4"><button onclick="app.addToCart('${p3.id}')" class="btn-luxury px-3 py-1.5 bg-[#c5a880] text-black text-[10px] font-cinzel uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      },
+
+      discovery() {
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto space-y-16">
+            <div class="text-center max-w-3xl mx-auto space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h1>
+              <p class="text-xs sm:text-sm text-[#a89f91] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Discovery Sets Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+              
+              <!-- Set 1 -->
+              <div class="bg-[#12100f] border border-[#2b251f] p-8 flex flex-col justify-between space-y-6">
+                <div>
+                  <div class="aspect-[16/10] overflow-hidden mb-6 border border-[#26201a]">
+                    <img class="w-full h-full object-cover eshop-placeholder-media" />
+                  </div>
+                  <span class="text-xs font-cinzel text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+                  <h3 class="font-cormorant text-3xl text-[#f4efe8] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                  <p class="text-xs text-[#8e8577] mt-2 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t border-[#26201a]">
+                  <span class="font-serif text-2xl text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  <button onclick="app.addToCart('coffret-decouverte', '5 x 10ml Flacon Set')" class="btn-luxury px-6 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></button>
+                </div>
+              </div>
+
+              <!-- Set 2 -->
+              <div class="bg-[#12100f] border border-[#2b251f] p-8 flex flex-col justify-between space-y-6">
+                <div>
+                  <div class="aspect-[16/10] overflow-hidden mb-6 border border-[#26201a]">
+                    <img class="w-full h-full object-cover eshop-placeholder-media" />
+                  </div>
+                  <span class="text-xs font-cinzel text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span>
+                  <h3 class="font-cormorant text-3xl text-[#f4efe8] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h3>
+                  <p class="text-xs text-[#8e8577] mt-2 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t border-[#26201a]">
+                  <span class="font-serif text-2xl text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  <button onclick="app.addToCart('oud-nocturne', '100ml Grand Flacon')" class="btn-luxury px-6 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      },
+
+      gifting() {
+        return `
+          <div class="py-16 px-6 max-w-5xl mx-auto space-y-16">
+            <div class="text-center max-w-3xl mx-auto space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></h1>
+              <p class="text-xs sm:text-sm text-[#a89f91] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <!-- Interactive Gifting Studio Workbench -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center bg-[#12100f] border border-[#2b251f] p-8 md:p-12">
+              
+              <!-- Left: Live Preview Flacon -->
+              <div class="lg:col-span-6 flex justify-center">
+                <div class="relative w-full max-w-sm aspect-[4/5] bg-[#171412] border border-[#332b25] overflow-hidden flex items-center justify-center shadow-2xl">
+                  <img id="gifting-preview-img" class="w-full h-full object-cover eshop-placeholder-media" />
+                  
+                  <!-- Live Engraving Simulation -->
+                  <div class="absolute bottom-16 inset-x-0 text-center pointer-events-none">
+                    <div class="inline-block bg-black/60 backdrop-blur-sm border border-[#c5a880]/50 px-6 py-2 shadow-2xl">
+                      <span id="gifting-live-engraving" class="engraved-text text-base"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Form Controls -->
+              <div class="lg:col-span-6 space-y-6">
+                <div>
+                  <label class="block text-xs font-cinzel text-[#eed9b8] uppercase tracking-wider mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></label>
+                  <select id="gifting-fragrance-select" onchange="app.updateGiftingPreview(this.value)" class="w-full bg-[#1b1715] border border-[#383029] p-3 text-xs text-[#f4efe8] font-cinzel focus:outline-none focus:border-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></select>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-cinzel text-[#eed9b8] uppercase tracking-wider mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></label>
+                  <input type="text" id="gifting-text-input" oninput="app.updateGiftingEngraving(this.value)" maxlength="8" class="w-full bg-[#1b1715] border border-[#383029] p-3 text-xs text-[#eed9b8] font-cinzel tracking-[0.25em] uppercase focus:outline-none focus:border-[#c5a880]" />
+                  <p class="text-[10px] text-[#787063] mt-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-cinzel text-[#eed9b8] uppercase tracking-wider mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></label>
+                  <div class="grid grid-cols-3 gap-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-cinzel text-[#eed9b8] uppercase tracking-wider mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></label>
+                  <textarea id="gifting-card-message" rows="3" class="w-full bg-[#1b1715] border border-[#383029] p-3 text-xs text-[#f4efe8] placeholder-[#5c544a] focus:outline-none focus:border-[#c5a880]"></textarea>
+                </div>
+
+                <div class="pt-2">
+                  <button onclick="app.addGiftingFlaconToBag()" class="btn-luxury w-full py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-bold uppercase shadow-xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+      },
+
+      cartFull() {
+        const subtotal = appState.cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+        let discount = 0;
+        if (appState.appliedVoucher) {
+          discount = subtotal * (appState.appliedVoucher.percent / 100);
+        }
+        const total = Math.max(0, subtotal - discount);
+
+        return `
+          <div class="py-16 px-6 max-w-5xl mx-auto space-y-12">
+            <div class="text-center max-w-xl mx-auto space-y-2">
+              <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></h1>
+            </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        `;
+      },
+
+      checkout() {
+        const subtotal = appState.cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+        let discount = 0;
+        if (appState.appliedVoucher) {
+          discount = subtotal * (appState.appliedVoucher.percent / 100);
+        }
+        const total = Math.max(0, subtotal - discount);
+
+        return `
+          <div class="py-16 px-6 max-w-5xl mx-auto space-y-12">
+            <div class="text-center space-y-2">
+              <div class="font-cinzel text-xs tracking-[0.3em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></h1>
+            </div>
+
+            <form onsubmit="app.processCheckoutOrder(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+              
+              <!-- Left Form Fields -->
+              <div class="lg:col-span-7 space-y-8">
+                
+                <!-- 1. Customer Details -->
+                <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                  <h3 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></h3>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></label>
+                      <input type="text" id="checkout-fname" required class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                    </div>
+                    <div>
+                      <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></label>
+                      <input type="text" id="checkout-lname" required class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></label>
+                      <input type="email" id="checkout-email" required class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. Delivery Address -->
+                <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                  <h3 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h3>
+                  <div class="space-y-3 text-xs">
+                    <div>
+                      <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></label>
+                      <input type="text" id="checkout-address" required class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></label>
+                        <input type="text" id="checkout-city" required class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                      </div>
+                      <div>
+                        <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                        <input type="text" id="checkout-zip" required class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+                      </div>
+                      <div class="col-span-2 sm:col-span-1">
+                        <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></label>
+                        <select id="checkout-country" class="w-full bg-[#171412] border border-[#332a24] p-2.5 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none">
+                          <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></option>
+                          <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></option>
+                          <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></option>
+                          <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></option>
+                          <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></option>
+                          <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Payment Method: Paystack Real Gateway Integration -->
+                <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h3 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h3>
+                    <span class="text-[10px] text-[#eed9b8] flex items-center gap-1">
+                      <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#c5a880]"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></span>
+                  </div>
+                  <div class="p-4 bg-[#171412] border border-[#332a24] space-y-2 text-xs">
+                    <div class="flex items-center justify-between text-[#eed9b8]">
+                      <span class="font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+                      <span class="text-[10px] text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+                    </div>
+                    <p class="text-[11px] text-[#8e8577] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Right Order Summary Column -->
+              <div class="lg:col-span-5 p-6 bg-[#110e0c] border border-[#2b251f] space-y-6 h-fit">
+                <h3 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider pb-3 border-b border-[#26201b]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></h3>
+                
+                <div class="space-y-3 max-h-60 overflow-y-auto pr-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+
+                <div class="pt-4 border-t border-[#26201b] space-y-2 text-xs">
+                  <div class="flex justify-between text-[#8e8577]">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+                    <span class="text-[#e2ded9]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                  <div class="flex justify-between text-[#8e8577]">
+                    <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+                    <span class="text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></span>
+                  </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span><div class="flex justify-between font-cinzel text-base text-[#f4efe8] pt-3 border-t border-[#26201b]">
+                    <span class="uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+                    <span class="text-[#eed9b8] font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn-luxury w-full py-4 bg-gradient-to-r from-[#c5a880] to-[#eed9b8] text-black font-cinzel text-xs tracking-[0.25em] font-bold uppercase shadow-xl"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></button>
+
+                <div class="text-[10px] text-center text-[#665e53]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+              </div>
+
+            </form>
+          </div>
+        `;
+      },
+
+      confirmation(orderId) {
+        const order = appState.orders.find(o => o.id === orderId) || appState.orders[appState.orders.length - 1];
+
+        return `
+          <div class="py-20 px-6 max-w-3xl mx-auto text-center space-y-8">
+            <div class="w-16 h-16 rounded-full border border-[#c5a880] flex items-center justify-center mx-auto text-[#c5a880]">
+              <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+
+            <div>
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase mb-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h1>
+              <p class="text-xs sm:text-sm text-[#b8afa3] mt-2"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="p-6 bg-[#110e0c] border border-[#2b251f] text-left space-y-4 text-xs">
+              <div class="flex justify-between border-b border-[#26201b] pb-3 font-cinzel">
+                <span class="text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <span class="text-[#eed9b8] font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+              </div>
+              <div class="flex justify-between border-b border-[#26201b] pb-3">
+                <span class="text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <span class="text-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+              </div>
+              <div class="flex justify-between border-b border-[#26201b] pb-3">
+                <span class="text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+                <span class="text-[#e2ded9]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+              </div>
+              <div class="flex justify-between pt-1 font-cinzel text-sm">
+                <span class="text-[#f4efe8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></span>
+                <span class="text-[#eed9b8] font-bold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></span>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+              <button onclick="app.openView('track', { orderId: '${order ? order.id : '#MA-98421'}' })" class="btn-luxury px-8 py-3.5 bg-[#c5a880] text-black font-cinzel text-xs tracking-[0.2em] uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></button>
+              <button onclick="app.openView('home')" class="px-8 py-3.5 border border-[#332b25] text-[#eed9b8] font-cinzel text-xs tracking-[0.2em] uppercase hover:border-[#c5a880]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></button>
+            </div>
+          </div>
+        `;
+      },
+
+      track() {
+        return `
+          <div class="py-16 px-6 max-w-3xl mx-auto space-y-12">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></h1>
+              <p class="text-xs text-[#a89f91]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <div class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-6">
+              <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="track-ref-input" class="flex-1 bg-[#171412] border border-[#332a24] p-3 text-xs text-[#f4efe8] font-mono focus:outline-none focus:border-[#c5a880]" />
+                <button onclick="app.queryOrderTracking()" class="btn-luxury px-6 py-3 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+              </div>
+
+              <!-- Tracking Timeline -->
+              <div id="tracking-timeline-display" class="pt-6 border-t border-[#241f1b] space-y-6 text-xs">
+                <div class="flex gap-4 items-start">
+                  <div class="w-6 h-6 rounded-full bg-[#c5a880] text-black flex items-center justify-center font-bold text-[10px]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                  <div>
+                    <h4 class="font-cinzel text-[#eed9b8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h4>
+                    <p class="text-[11px] text-[#787063]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+                <div class="flex gap-4 items-start">
+                  <div class="w-6 h-6 rounded-full bg-[#c5a880] text-black flex items-center justify-center font-bold text-[10px]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                  <div>
+                    <h4 class="font-cinzel text-[#eed9b8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h4>
+                    <p class="text-[11px] text-[#787063]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+                <div class="flex gap-4 items-start">
+                  <div class="w-6 h-6 rounded-full border border-[#c5a880] text-[#c5a880] flex items-center justify-center font-bold text-[10px]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></div>
+                  <div>
+                    <h4 class="font-cinzel text-[#f4efe8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></h4>
+                    <p class="text-[11px] text-[#787063]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      wishlist() {
+        const saved = PRODUCTS.filter(p => appState.wishlist.includes(p.id));
+
+        return `
+          <div class="py-16 px-6 max-w-7xl mx-auto space-y-12">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+              <p class="text-xs text-[#a89f91]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+        `;
+      },
+
+      profile() {
+        const user = appState.currentUser || { name: 'Esteemed Guest', email: "", tier: 'Private Client Circle' };
+
+        return `
+          <div class="py-16 px-6 max-w-4xl mx-auto space-y-12">
+            <div class="text-center space-y-2">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h1>
+            </div>
+
+            <div class="bg-[#110e0c] border border-[#2b251f] p-8 space-y-6">
+              <div class="flex justify-between items-start border-b border-[#26201b] pb-6">
+                <div>
+                  <h3 class="font-cinzel text-lg text-[#eed9b8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h3>
+                  <div class="text-xs text-[#8e8577]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+                  <div class="inline-block mt-2 text-[10px] text-[#c5a880] tracking-widest uppercase font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></div>
+                </div>
+                <button onclick="app.handleLogout()" class="px-4 py-2 border border-[#332b25] text-xs text-[#8e8577] hover:text-white uppercase font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></button>
+              </div>
+
+              <div class="space-y-4">
+                <h4 class="font-cinzel text-xs text-[#c5a880] uppercase tracking-wider"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h4><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+            </div>
+          </div>
+        `;
+      },
+
+      story() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-16">
+            <div class="text-center space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></h1>
+            </div>
+
+            <div class="prose prose-invert max-w-none space-y-8 font-serif text-lg text-[#b8afa3] leading-relaxed">
+              <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <div class="my-10 border-y border-[#26201b] py-8 text-center">
+                <blockquote class="font-cormorant text-2xl sm:text-3xl italic text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></blockquote>
+              </div>
+              <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+          </div>
+        `;
+      },
+
+      craftsmanship() {
+        return `
+          <div class="py-20 px-6 max-w-5xl mx-auto space-y-16">
+            <div class="text-center space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></h1>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-xs">
+              <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-3">
+                <h3 class="font-cinzel text-sm text-[#eed9b8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></h3>
+                <p class="text-[#8e8577] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-3">
+                <h3 class="font-cinzel text-sm text-[#eed9b8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></h3>
+                <p class="text-[#8e8577] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+              <div class="p-6 bg-[#110e0c] border border-[#2b251f] space-y-3">
+                <h3 class="font-cinzel text-sm text-[#eed9b8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h3>
+                <p class="text-[#8e8577] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      journal() {
+        return `
+          <div class="py-20 px-6 max-w-5xl mx-auto space-y-16">
+            <div class="text-center space-y-4">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-6xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></h1>
+            </div>
+
+            <div class="space-y-12">
+              <article class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                <span class="text-[10px] font-mono text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+                <h2 class="font-cormorant text-3xl text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></h2>
+                <p class="text-xs text-[#a89f91] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </article>
+              <article class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-4">
+                <span class="text-[10px] font-mono text-[#c5a880] uppercase tracking-widest"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></span>
+                <h2 class="font-cormorant text-3xl text-[#eed9b8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></h2>
+                <p class="text-xs text-[#a89f91] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </article>
+            </div>
+          </div>
+        `;
+      },
+
+      shipping() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-12 text-xs">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h1>
+            </div>
+            <div class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-6 text-[#a89f91] leading-relaxed">
+              <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+          </div>
+        `;
+      },
+
+      returns() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-12 text-xs">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></h1>
+            </div>
+            <div class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-6 text-[#a89f91] leading-relaxed">
+              <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+          </div>
+        `;
+      },
+
+      faq() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-12">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></h1>
+            </div>
+
+            <div class="space-y-4 text-xs">
+              <details class="p-6 bg-[#110e0c] border border-[#2b251f] text-[#8e8577]">
+                <summary class="font-cinzel text-sm text-[#eed9b8] uppercase cursor-pointer"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></summary>
+                <p class="mt-3 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </details>
+              <details class="p-6 bg-[#110e0c] border border-[#2b251f] text-[#8e8577]">
+                <summary class="font-cinzel text-sm text-[#eed9b8] uppercase cursor-pointer"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></summary>
+                <p class="mt-3 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </details>
+              <details class="p-6 bg-[#110e0c] border border-[#2b251f] text-[#8e8577]">
+                <summary class="font-cinzel text-sm text-[#eed9b8] uppercase cursor-pointer"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></summary>
+                <p class="mt-3 leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+              </details>
+            </div>
+          </div>
+        `;
+      },
+
+      concierge() {
+        return `
+          <div class="py-20 px-6 max-w-3xl mx-auto space-y-12">
+            <div class="text-center space-y-3">
+              <div class="font-cinzel text-xs tracking-[0.35em] text-[#c5a880] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></div>
+              <h1 class="font-cormorant text-4xl sm:text-5xl text-[#f4efe8] font-light"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h1>
+              <p class="text-xs text-[#a89f91]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); app.showToast('Your private inquiry has been assigned to a Maison Concierge.'); event.target.reset();" class="p-8 bg-[#110e0c] border border-[#2b251f] space-y-4 text-xs">
+              <div>
+                <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></label>
+                <input type="text" required class="w-full bg-[#171412] border border-[#332a24] p-3 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></label>
+                <input type="email" required class="w-full bg-[#171412] border border-[#332a24] p-3 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></label>
+                <select class="w-full bg-[#171412] border border-[#332a24] p-3 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none">
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></option>
+                  <option><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-[#8e8577] uppercase mb-1"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span></label>
+                <textarea rows="4" required class="w-full bg-[#171412] border border-[#332a24] p-3 text-[#f4efe8] focus:border-[#c5a880] focus:outline-none"></textarea>
+              </div>
+              <button type="submit" class="btn-luxury w-full py-4 bg-[#c5a880] text-black font-cinzel text-xs tracking-wider uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></button>
+            </form>
+          </div>
+        `;
+      },
+
+      privacy() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-8 text-xs text-[#a89f91] leading-relaxed">
+            <h1 class="font-cormorant text-4xl text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></h1>
+            <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        `;
+      },
+
+      terms() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-8 text-xs text-[#a89f91] leading-relaxed">
+            <h1 class="font-cormorant text-4xl text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></h1>
+            <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        `;
+      },
+
+      legal() {
+        return `
+          <div class="py-20 px-6 max-w-4xl mx-auto space-y-8 text-xs text-[#a89f91] leading-relaxed">
+            <h1 class="font-cormorant text-4xl text-[#f4efe8]"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></h1>
+            <p><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        `;
+      }
+    };
+
+    // PDP SCRIPT INTERACTIVITY HELPERS
+    app.selectDetailSize = function(prodId, size, btn) {
+      const p = PRODUCTS.find(x => x.id === prodId);
+      if (!p) return;
+      const mult = p.sizeMultipliers[size] || 1;
+      const newPrice = p.prices.USD * mult;
+      document.getElementById('pdp-price-display').textContent = app.formatPrice(newPrice);
+
+      const buttons = btn.parentElement.querySelectorAll('button');
+      buttons.forEach(b => {
+        b.className = 'p-2.5 text-xs font-cinzel uppercase border border-[#332b25] text-[#8e8577] hover:border-[#c5a880]';
+      });
+      btn.className = 'p-2.5 text-xs font-cinzel uppercase border border-[#c5a880] text-[#eed9b8] bg-[#1a1512]';
+      btn.dataset.selectedSize = size;
+    };
+
+    app.togglePdpEngraving = function(checked) {
+      const wrap = document.getElementById('engraving-input-wrap');
+      const badge = document.getElementById('bottle-engraving-badge');
+      if (checked) {
+        wrap.classList.remove('hidden');
+        badge.classList.remove('hidden');
+      } else {
+        wrap.classList.add('hidden');
+        badge.classList.add('hidden');
+      }
+    };
+
+    app.updatePdpEngravingPreview = function(val) {
+      document.getElementById('live-engraving-text').textContent = val || 'A·L';
+    };
+
+    app.addCurrentDetailToBag = function(prodId) {
+      const p = PRODUCTS.find(x => x.id === prodId);
+      if (!p) return;
+      const activeSizeBtn = document.querySelector('[data-selected-size]');
+      const size = activeSizeBtn ? activeSizeBtn.dataset.selectedSize : p.sizes[0];
+      const isEngraved = document.getElementById('engraving-toggle')?.checked;
+      const engravingText = isEngraved ? (document.getElementById('engraving-text-input')?.value || 'A·L') : '';
+
+      app.addToCart(prodId, size, engravingText);
+    };
+
+    // GIFTING STUDIO HELPERS
+    app.updateGiftingPreview = function(prodId) {
+      const p = PRODUCTS.find(x => x.id === prodId);
+      if (p) document.getElementById('gifting-preview-img').src = p.image;
+    };
+
+    app.updateGiftingEngraving = function(val) {
+      appState.engravingDraft.text = val || 'A·L';
+      document.getElementById('gifting-live-engraving').textContent = appState.engravingDraft.text;
+    };
+
+    app.setGiftingRibbon = function(ribbon, btn) {
+      appState.engravingDraft.ribbon = ribbon;
+      const buttons = btn.parentElement.querySelectorAll('button');
+      buttons.forEach(b => b.className = 'p-2.5 text-[11px] font-cinzel border border-[#383029] hover:border-[#c5a880] text-[#a89f91] uppercase');
+      btn.className = 'p-2.5 text-[11px] font-cinzel border border-[#c5a880] text-[#eed9b8] bg-[#1a1512] uppercase';
+    };
+
+    app.addGiftingFlaconToBag = function() {
+      const prodId = document.getElementById('gifting-fragrance-select').value;
+      const p = PRODUCTS.find(x => x.id === prodId);
+      if (!p) return;
+      app.addToCart(prodId, p.sizes[0], appState.engravingDraft.text);
+      app.showToast(`Bespoke Engraved ${p.name} added to your bag.`);
+    };
+
+    // FRAGRANCE FINDER QUIZ HELPERS
+    app.setQuizAnswer = function(qKey, val, btn) {
+      appState.quizAnswers[qKey] = val;
+      const buttons = btn.parentElement.querySelectorAll('.quiz-btn');
+      buttons.forEach(b => {
+        b.classList.remove('border-[#c5a880]', 'bg-[#1a1512]');
+        b.classList.add('border-[#332a24]');
+      });
+      btn.classList.add('border-[#c5a880]', 'bg-[#1a1512]');
+      btn.classList.remove('border-[#332a24]');
+    };
+
+    app.calculateQuizRecommendation = function() {
+      const mood = appState.quizAnswers['mood'] || 'nocturnal';
+      let match = PRODUCTS[0]; // Oud Nocturne default
+
+      if (mood === 'ethereal') match = PRODUCTS[1]; // Iris Céleste
+      else if (mood === 'opulent') match = PRODUCTS[2]; // Ambre Vénitien
+      else if (mood === 'gourmand') match = PRODUCTS[5]; // Vanille Bourbon Noire
+
+      const resultArea = document.getElementById('quiz-result-area');
+      resultArea.classList.remove('hidden');
+      resultArea.innerHTML = `
+        <div class="p-6 bg-[#171412] border border-[#c5a880] flex flex-col md:flex-row gap-6 items-center">
+          <img class="w-28 h-36 object-cover border border-[#2b251f] eshop-placeholder-media" />
+          <div class="space-y-2 flex-1">
+            <span class="text-[10px] text-[#c5a880] uppercase tracking-widest font-cinzel"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></span>
+            <h3 class="font-cinzel text-xl text-[#f4efe8] uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></h3>
+            <p class="text-xs text-[#b8afa3] leading-relaxed"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+            <div class="pt-2 flex gap-3">
+              <button onclick="app.openProductDetail('${match.id}')" class="btn-luxury px-4 py-2 bg-[#c5a880] text-black font-cinzel text-xs uppercase font-semibold"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></button>
+              <button onclick="app.addToCart('${match.id}')" class="px-4 py-2 border border-[#3d342c] hover:border-[#c5a880] text-[#eed9b8] font-cinzel text-xs uppercase"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:92%"></span></button>
+            </div>
+          </div>
+        </div>
+      `;
+      if (window.lucide) lucide.createIcons();
+    };
+
+    // CHECKOUT PROCESSOR WITH PAYSTACK REAL GATEWAY OR VERIFIED SIMULATION
+    app.processCheckoutOrder = function(e) {
+      e.preventDefault();
+      if (appState.cart.length === 0) {
+        app.showToast('Your bag is empty.');
+        return;
+      }
+
+      const email = document.getElementById('checkout-email').value;
+      const fname = document.getElementById('checkout-fname').value;
+      const lname = document.getElementById('checkout-lname').value;
+      const subtotal = appState.cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+      let discount = 0;
+      if (appState.appliedVoucher) {
+        discount = subtotal * (appState.appliedVoucher.percent / 100);
+      }
+      const totalAmount = Math.max(0, subtotal - discount);
+      const orderRef = 'MA-' + Math.floor(100000 + Math.random() * 900000);
+
+      // Check if Paystack script is present and valid key is set
+      const pubKey = appState.paystackPublicKey;
+      const isRealKey = pubKey && pubKey.startsWith('pk_');
+
+      if (window.PaystackPop && isRealKey && pubKey !== 'pk_test_sample_maison_key_demo') {
+        // Real Paystack Inline popup
+        const handler = PaystackPop.setup({
+          key: pubKey,
+          email: email,
+          amount: Math.round(totalAmount * (appState.currency === 'NGN' ? 1 : 100)), // kobo or cents
+          currency: appState.currency === 'NGN' ? 'NGN' : 'USD',
+          ref: orderRef,
+          metadata: {
+            custom_fields: [
+              { display_name: "Client Name", variable_name: "client_name", value: `${fname} ${lname}` },
+              { display_name: "Flacons Count", variable_name: "flacons_count", value: appState.cart.length }
+            ]
+          },
+          callback: function(response) {
+            // Payment verified by Paystack
+            app.finalizeOrder(orderRef, totalAmount, response.reference || orderRef);
+          },
+          onClose: function() {
+            app.showToast('Payment window closed. Transaction preserved in pending state.');
+          }
+        });
+        handler.openIframe();
+      } else {
+        // High-Fidelity Luxury Simulation Mode (Transparent demonstration)
+        app.showToast('Initializing Paystack Transaction Gateway...');
+        setTimeout(() => {
+          app.finalizeOrder(orderRef, totalAmount, 'PSTK-' + orderRef);
+        }, 1200);
+      }
+    };
+
+    app.finalizeOrder = function(orderId, total, pRef) {
+      const order = {
+        id: orderId,
+        reference: pRef,
+        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        total: total,
+        itemsCount: appState.cart.reduce((s, i) => s + i.qty, 0),
+        status: 'Confirmed & In Grasse Cold Cellar'
+      };
+
+      appState.orders.unshift(order);
+      localStorage.setItem('maison_orders', JSON.stringify(appState.orders));
+      appState.cart = [];
+      localStorage.setItem('maison_cart', JSON.stringify([]));
+      app.updateHeaderCartBadge();
+      app.openView('confirmation', { orderId: orderId });
+      app.showToast(`Order ${orderId} verified and confirmed!`);
+    };
+
+    app.queryOrderTracking = function() {
+      const ref = document.getElementById('track-ref-input').value;
+      app.showToast(`Status updated for commission ${ref}`);
+    };
+
+    // Initialize application on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      app.init();
+    });
+  </script>
+
+
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body></html>

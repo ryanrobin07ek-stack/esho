@@ -1,0 +1,3966 @@
+<!DOCTYPE html>
+<html lang="en" data-eshop-skeleton-preview="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Store</title>
+  <meta name="description" content="" />
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+  <meta property="og:type" content="" />
+  <meta name="twitter:card" content="" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Oswald -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- GSAP & ScrollTrigger CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & RESET
+       ========================================================================== */
+    :root {
+      --font-display: 'Oswald', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --bg-canvas: #FAFAFA;
+      --bg-card: #FFFFFF;
+      --bg-dark: #0A0E17;
+      --bg-dark-card: #121824;
+      --bg-muted: #F1F4F9;
+
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --text-light: #94A3B8;
+      --text-inverse: #F8FAFC;
+
+      --border-subtle: rgba(15, 23, 42, 0.08);
+      --border-dark: rgba(255, 255, 255, 0.1);
+
+      --color-brand-red: #DC2626;
+      --color-brand-red-dark: #B91C1C;
+      --color-accent-amber: #F59E0B;
+      --color-success: #059669;
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 30px rgba(0,0,0,0.12);
+      --shadow-xl: 0 20px 40px rgba(0,0,0,0.18);
+
+      --container-max: 1380px;
+      --header-height: 72px;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Tabular figures for numbers */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-mono);
+    }
+
+    /* Headlines */
+    h1, h2, h3, h4, .font-display {
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1.05;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .container {
+      max-width: var(--container-max);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F4F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+
+    /* ==========================================================================
+       UTILITY COMPONENTS & BUTTONS
+       ========================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      border-radius: var(--radius-sm);
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      user-select: none;
+    }
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+    }
+    .btn-lg {
+      padding: 0.95rem 2rem;
+      font-size: 0.95rem;
+    }
+    .btn-primary {
+      background: var(--bg-dark);
+      color: #FFFFFF;
+    }
+    .btn-primary:hover {
+      background: #1E293B;
+      transform: translateY(-1px);
+    }
+    .btn-red {
+      background: var(--color-brand-red);
+      color: #FFFFFF;
+    }
+    .btn-red:hover {
+      background: var(--color-brand-red-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background: #FFFFFF;
+      border-color: var(--text-main);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-main);
+    }
+    .btn-ghost:hover {
+      background: rgba(0,0,0,0.05);
+    }
+    .btn-white {
+      background: #FFFFFF;
+      color: var(--bg-dark);
+    }
+    .btn-white:hover {
+      background: #F1F5F9;
+    }
+
+    /* Clean metadata (no pill enclosures) */
+    .meta-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .meta-sep {
+      color: #CBD5E1;
+      user-select: none;
+    }
+
+    /* ==========================================================================
+       TOP ANNOUNCEMENT & HEADER
+       ========================================================================== */
+    .announcement-bar {
+      background: #090D15;
+      color: #94A3B8;
+      font-size: 0.75rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .announcement-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .announcement-contacts {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    header.main-header {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      height: var(--header-height);
+    }
+
+    /* Brand Logo */
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--bg-dark);
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      background: var(--bg-dark);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      position: relative;
+      overflow: hidden;
+    }
+    .brand-mark::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 100%;
+      background: var(--color-brand-red);
+      right: 0;
+      top: 0;
+    }
+    .brand-logo span.highlight {
+      color: var(--color-brand-red);
+    }
+
+    /* Nav links */
+    .main-nav {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .nav-link {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #334155;
+      padding: 0.5rem 0.25rem;
+      position: relative;
+      white-space: nowrap;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--color-brand-red);
+    }
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--color-brand-red);
+    }
+
+    /* Header Actions */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .header-icon-btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-sm);
+      color: #334155;
+      transition: all 0.15s ease;
+    }
+    .header-icon-btn:hover {
+      background: var(--bg-muted);
+      color: var(--text-main);
+    }
+    .badge-count {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: var(--color-brand-red);
+      color: #FFFFFF;
+      font-size: 0.65rem;
+      font-weight: 700;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+    }
+
+    /* Vehicle Bar Strip */
+    .vehicle-status-strip {
+      background: #F8FAFC;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.6rem 0;
+      font-size: 0.8125rem;
+    }
+    .vehicle-strip-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .vehicle-active-tag {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 600;
+      color: #1E293B;
+    }
+    .vehicle-active-tag i {
+      color: var(--color-brand-red);
+    }
+
+    /* ==========================================================================
+       HERO COMPOSITION (ACCORDING TO REFERENCE IMAGE)
+       ========================================================================== */
+    .hero-section {
+      background: #FFFFFF;
+      padding: 3.5rem 0 2rem 0;
+      position: relative;
+      border-bottom: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.35fr;
+      align-items: center;
+      gap: 2.5rem;
+    }
+    .hero-headline-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .hero-pretitle {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--color-brand-red);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .hero-title {
+      font-size: clamp(3rem, 6vw, 5.25rem);
+      font-weight: 700;
+      color: var(--bg-dark);
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+    }
+    .hero-title .word-outline {
+      color: transparent;
+      -webkit-text-stroke: 1.5px var(--bg-dark);
+    }
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+      max-width: 480px;
+      line-height: 1.6;
+    }
+    .hero-ctas {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.75rem;
+    }
+    .hero-image-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-car-img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 25px 35px rgba(0,0,0,0.14));
+      transform: scale(1.02);
+      transition: transform 0.4s ease;
+    }
+    .hero-car-img:hover {
+      transform: scale(1.04);
+    }
+
+    /* Category Icon Strip (Below Hero) */
+    .category-icon-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1rem;
+      padding: 1.75rem 0 0.5rem 0;
+      border-top: 1px solid var(--border-subtle);
+      margin-top: 2rem;
+    }
+    .cat-icon-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 1.25rem 0.5rem;
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .cat-icon-card:hover {
+      border-color: var(--color-brand-red);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+    .cat-icon-card i {
+      color: #475569;
+      transition: color 0.2s ease;
+    }
+    .cat-icon-card:hover i {
+      color: var(--color-brand-red);
+    }
+    .cat-icon-card span {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #1E293B;
+    }
+
+    /* ==========================================================================
+       VEHICLE FITMENT SELECTOR WIDGET
+       ========================================================================== */
+    .vehicle-selector-panel {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.75rem;
+      margin: 2rem 0;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+    .vehicle-selector-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-brand-red), var(--bg-dark));
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+    .v-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .v-panel-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--bg-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .v-selector-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) auto;
+      gap: 1rem;
+      align-items: end;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .form-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #475569;
+    }
+    .form-select, .form-input {
+      width: 100%;
+      height: 44px;
+      padding: 0 0.85rem;
+      font-size: 0.875rem;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .form-select:focus, .form-input:focus {
+      border-color: var(--color-brand-red);
+      background: #FFFFFF;
+    }
+
+    /* ==========================================================================
+       SECTION: "DRIVEN TO DELIVER QUALITY" (REFERENCE IMAGE CENTERPIECE)
+       ========================================================================== */
+    .quality-pillar-section {
+      padding: 4.5rem 0;
+      background: #FAFAFA;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .section-heading-center {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 3rem auto;
+    }
+    .section-eyebrow {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--color-brand-red);
+      margin-bottom: 0.4rem;
+    }
+    .section-main-title {
+      font-size: clamp(2rem, 3.5vw, 2.75rem);
+      color: var(--bg-dark);
+      letter-spacing: 0.02em;
+    }
+    .quality-tri-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr 1fr;
+      align-items: center;
+      gap: 2.5rem;
+    }
+    .pillar-col {
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+    .pillar-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .pillar-item.text-right {
+      text-align: right;
+    }
+    .pillar-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--bg-dark);
+    }
+    .pillar-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .pillar-center-visual {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pillar-center-img {
+      width: 100%;
+      max-width: 440px;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 30px rgba(0,0,0,0.18));
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .pillar-center-img:hover {
+      transform: scale(1.05) rotate(4deg);
+    }
+
+    /* ==========================================================================
+       SECTION: "SPARES FOR PREMIUM BRANDS" (3 TALL VISUAL CARDS)
+       ========================================================================== */
+    .brands-showcase-section {
+      padding: 4.5rem 0;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .brand-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .brand-hero-card {
+      position: relative;
+      height: 440px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.3s ease;
+    }
+    .brand-hero-card:hover {
+      transform: translateY(-4px);
+    }
+    .brand-hero-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.75) 100%);
+      transition: opacity 0.3s ease;
+    }
+    .brand-hero-card:hover::before {
+      background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%);
+    }
+    .brand-card-content {
+      position: relative;
+      z-index: 2;
+      color: #FFFFFF;
+    }
+    .brand-card-logo-text {
+      font-family: var(--font-display);
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .brand-card-sub {
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ==========================================================================
+       PRODUCT GRID & CARDS ("EXPLORE PARTS")
+       ========================================================================== */
+    .product-section {
+      padding: 4.5rem 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .section-row-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      gap: 1rem;
+    }
+    .section-title-wrap h3 {
+      font-size: 1.85rem;
+      color: var(--bg-dark);
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+    .product-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .product-card:hover {
+      border-color: #CBD5E1;
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .product-card-media {
+      position: relative;
+      height: 220px;
+      background: #F8FAFC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      overflow: hidden;
+    }
+    .product-card-img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+    .product-card:hover .product-card-img {
+      transform: scale(1.05);
+    }
+    .fitment-tag {
+      position: absolute;
+      top: 0.75rem;
+      left: 0.75rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: var(--radius-sm);
+      background: #FFFFFF;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .fitment-tag.fit-exact {
+      color: var(--color-success);
+      border: 1px solid #A7F3D0;
+    }
+    .fitment-tag.fit-universal {
+      color: #475569;
+      border: 1px solid #E2E8F0;
+    }
+    .wishlist-btn-card {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 32px;
+      height: 32px;
+      background: #FFFFFF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748B;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      transition: all 0.15s ease;
+    }
+    .wishlist-btn-card:hover {
+      color: var(--color-brand-red);
+      transform: scale(1.1);
+    }
+    .wishlist-btn-card.active {
+      color: var(--color-brand-red);
+      fill: var(--color-brand-red);
+    }
+
+    .product-card-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .product-brand-kicker {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .product-card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--bg-dark);
+      line-height: 1.35;
+      cursor: pointer;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.6rem;
+    }
+    .product-card-title:hover {
+      color: var(--color-brand-red);
+    }
+    .product-card-oem {
+      font-size: 0.72rem;
+      color: #64748B;
+      font-family: var(--font-mono);
+    }
+    .product-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 0.85rem;
+      margin-top: auto;
+    }
+    .product-price-box {
+      display: flex;
+      flex-direction: column;
+    }
+    .price-curr {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .price-val {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--bg-dark);
+      font-family: var(--font-mono);
+    }
+    .add-cart-icon-btn {
+      width: 38px;
+      height: 38px;
+      background: var(--bg-dark);
+      color: #FFFFFF;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .add-cart-icon-btn:hover {
+      background: var(--color-brand-red);
+      transform: scale(1.05);
+    }
+
+    /* ==========================================================================
+       EDITORIAL BANNER: "SAFETY GEAR FOR SMOKY DRIVES" (REFERENCE IMAGE)
+       ========================================================================== */
+    .editorial-banner-section {
+      position: relative;
+      background: #090D15;
+      color: #FFFFFF;
+      padding: 6rem 0;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .editorial-banner-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.55;
+      filter: saturate(1.1);
+    }
+    .editorial-banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(9,13,21,0.95) 0%, rgba(9,13,21,0.4) 60%, rgba(9,13,21,0.85) 100%);
+    }
+    .editorial-banner-content {
+      position: relative;
+      z-index: 2;
+      max-width: 680px;
+    }
+    .editorial-eyebrow {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #F87171;
+      margin-bottom: 0.75rem;
+    }
+    .editorial-title {
+      font-size: clamp(2.5rem, 4.5vw, 4rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      margin-bottom: 1.25rem;
+    }
+    .editorial-desc {
+      font-size: 1rem;
+      color: #CBD5E1;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* Maintenance Article Cards (3 Horizontal Cards below banner) */
+    .article-cards-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+      position: relative;
+      z-index: 2;
+    }
+    .article-card {
+      background: #FFFFFF;
+      color: var(--text-main);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+    .article-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    .article-card-img {
+      height: 180px;
+      width: 100%;
+      object-fit: cover;
+    }
+    .article-card-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .article-card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--bg-dark);
+      line-height: 1.25;
+    }
+    .article-card-desc {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ==========================================================================
+       SECTION: "BEHIND THE SCENES / VISUALS" (MASONRY GALLERY TILES)
+       ========================================================================== */
+    .visuals-gallery-section {
+      padding: 5rem 0;
+      background: #FAFAFA;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .visuals-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 220px;
+      gap: 1rem;
+    }
+    .visual-tile {
+      position: relative;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: #111827;
+      cursor: pointer;
+    }
+    .visual-tile.span-2-row {
+      grid-row: span 2;
+    }
+    .visual-tile.span-2-col {
+      grid-column: span 2;
+    }
+    .visual-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .visual-tile:hover img {
+      transform: scale(1.06);
+    }
+    .visual-tile-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.8) 100%);
+      display: flex;
+      align-items: flex-end;
+      padding: 1.25rem;
+      color: #FFFFFF;
+      opacity: 0.85;
+      transition: opacity 0.2s ease;
+    }
+    .visual-tile:hover .visual-tile-overlay {
+      opacity: 1;
+    }
+    .visual-tile-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ==========================================================================
+       SECTION: "FORMULA ONE & HEAVY-DUTY TYRES" (BOTTOM CAMPAIGN BANNER)
+       ========================================================================== */
+    .tyre-campaign-section {
+      background: #090D15;
+      color: #FFFFFF;
+      padding: 4.5rem 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .tyre-campaign-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      align-items: center;
+      gap: 3rem;
+    }
+    .tyre-campaign-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .tyre-campaign-price {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+    .tyre-price-kes {
+      font-size: 3rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: #FFFFFF;
+      line-height: 1;
+    }
+    .tyre-price-orig {
+      font-size: 1.25rem;
+      color: #64748B;
+      text-decoration: line-through;
+      font-family: var(--font-mono);
+    }
+    .tyre-spec-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      font-size: 0.825rem;
+      color: #94A3B8;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 1rem 0;
+    }
+    .tyre-img-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tyre-img-wrap img {
+      max-height: 420px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+    }
+
+    /* ==========================================================================
+       DEDICATED CATALOG / SHOP VIEW WITH RICH FILTERS
+       ========================================================================== */
+    .catalog-view-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2rem;
+      padding: 2.5rem 0 5rem 0;
+    }
+    .filter-sidebar {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 1.5rem;
+      height: fit-content;
+      position: sticky;
+      top: 90px;
+    }
+    .filter-group {
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .filter-group:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+    .filter-heading {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--bg-dark);
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filter-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .filter-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.825rem;
+      color: #334155;
+      cursor: pointer;
+      user-select: none;
+    }
+    .filter-checkbox-label input {
+      accent-color: var(--color-brand-red);
+      width: 16px;
+      height: 16px;
+    }
+    .filter-count {
+      margin-left: auto;
+      font-size: 0.72rem;
+      color: #94A3B8;
+      font-family: var(--font-mono);
+    }
+
+    /* Catalog controls bar */
+    .catalog-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 1rem;
+    }
+    .catalog-count-info {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .catalog-count-info strong {
+      color: var(--bg-dark);
+    }
+    .catalog-sort-select {
+      height: 38px;
+      padding: 0 0.85rem;
+      border: 1px solid #CBD5E1;
+      border-radius: var(--radius-sm);
+      font-size: 0.8125rem;
+      background: #FFFFFF;
+      outline: none;
+    }
+
+    /* ==========================================================================
+       PRODUCT DETAIL VIEW (PDP)
+       ========================================================================== */
+    .pdp-layout {
+      padding: 3rem 0 5rem 0;
+    }
+    .pdp-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 3.5rem;
+    }
+    .pdp-gallery {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 480px;
+    }
+    .pdp-main-img {
+      max-height: 420px;
+      width: auto;
+      object-fit: contain;
+    }
+    .pdp-info-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .pdp-fitment-banner {
+      padding: 0.85rem 1.25rem;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .pdp-fitment-banner.fit-verified {
+      background: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+    }
+    .pdp-fitment-banner.fit-warn {
+      background: #FFFBEB;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+    }
+
+    .pdp-title {
+      font-size: 2.25rem;
+      color: var(--bg-dark);
+      line-height: 1.1;
+    }
+    .pdp-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+    }
+    .pdp-price {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--bg-dark);
+      font-family: var(--font-mono);
+    }
+    .pdp-qty-and-buy {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .qty-stepper {
+      display: flex;
+      align-items: center;
+      border: 1px solid #CBD5E1;
+      border-radius: var(--radius-sm);
+      height: 48px;
+      background: #FFFFFF;
+    }
+    .qty-btn {
+      width: 44px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #334155;
+    }
+    .qty-btn:hover {
+      background: #F1F5F9;
+    }
+    .qty-input {
+      width: 48px;
+      text-align: center;
+      border: none;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    /* Specifications Table */
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+    }
+    .specs-table tr {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .specs-table td {
+      padding: 0.65rem 0;
+    }
+    .specs-table td.spec-key {
+      color: var(--text-muted);
+      width: 40%;
+      font-weight: 500;
+    }
+    .specs-table td.spec-val {
+      color: var(--text-main);
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    /* ==========================================================================
+       CART & CHECKOUT (KENYAN MARKET FOCUS)
+       ========================================================================== */
+    /* Slide-over Cart Drawer */
+    .cart-drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .cart-drawer-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: 440px;
+      background: #FFFFFF;
+      z-index: 201;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-drawer.open {
+      transform: translateX(0);
+    }
+    .cart-drawer-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cart-drawer-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .cart-item-row {
+      display: grid;
+      grid-template-columns: 70px 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .cart-item-thumb {
+      width: 70px;
+      height: 70px;
+      background: #F8FAFC;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+    }
+    .cart-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .cart-item-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .cart-item-price {
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--color-brand-red);
+    }
+    .cart-drawer-footer {
+      padding: 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+      background: #F8FAFC;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .cart-subtotal-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    /* Checkout Page Grid */
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 3rem;
+      padding: 3rem 0 5rem 0;
+    }
+    .checkout-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .checkout-step-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--bg-dark);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .payment-option-tab {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      border: 1px solid #CBD5E1;
+      border-radius: var(--radius-sm);
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .payment-option-tab.active {
+      border-color: var(--color-brand-red);
+      background: #FEF2F2;
+    }
+    .mpesa-badge-logo {
+      background: #00A859;
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-sm);
+      letter-spacing: 0.05em;
+    }
+    .paystack-badge-logo {
+      background: #00C3F7;
+      color: #0A0E17;
+      font-weight: 800;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: var(--radius-sm);
+      letter-spacing: 0.05em;
+    }
+
+    /* ==========================================================================
+       COMMERCIAL / B2B FLEET & GARAGE QUOTE FORM
+       ========================================================================== */
+    .commercial-hero-banner {
+      background: var(--bg-dark);
+      color: #FFFFFF;
+      padding: 4.5rem 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .commercial-form-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 3rem;
+      padding: 4rem 0;
+    }
+
+    /* ==========================================================================
+       MODALS & OVERLAYS
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+    .modal-box {
+      background: #FFFFFF;
+      border-radius: var(--radius-md);
+      max-width: 520px;
+      width: 100%;
+      padding: 2rem;
+      position: relative;
+      box-shadow: var(--shadow-xl);
+      animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalFadeIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-close-btn {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      color: #64748B;
+      cursor: pointer;
+    }
+    .modal-close-btn:hover {
+      color: var(--text-main);
+    }
+
+    /* Live Search Modal */
+    .search-modal-box {
+      max-width: 680px;
+      padding: 1.5rem;
+    }
+    .search-modal-input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 2px solid var(--color-brand-red);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .search-modal-input {
+      width: 100%;
+      font-size: 1.2rem;
+      border: none;
+      outline: none;
+      font-family: inherit;
+    }
+    .search-results-list {
+      max-height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    /* ==========================================================================
+       FOOTER (COMPREHENSIVE AUTOMOTIVE AFTERMARKET FOOTER)
+       ========================================================================== */
+    footer.main-footer {
+      background: var(--bg-dark);
+      color: #94A3B8;
+      padding: 5rem 0 2rem 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr 1.25fr;
+      gap: 3rem;
+      padding-bottom: 3.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-col-title {
+      font-size: 0.95rem;
+      color: #FFFFFF;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.05em;
+    }
+    .footer-links-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      font-size: 0.85rem;
+      list-style: none;
+    }
+    .footer-links-list a:hover {
+      color: #FFFFFF;
+      padding-left: 4px;
+    }
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 2rem;
+      font-size: 0.785rem;
+    }
+    .payment-icons-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .payment-badge {
+      background: rgba(255,255,255,0.08);
+      color: #FFFFFF;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ==========================================================================
+       RESPONSIVE BREAKPOINTS
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .hero-headline-block {
+        align-items: center;
+      }
+      .hero-ctas {
+        justify-content: center;
+      }
+      .category-icon-strip {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .quality-tri-layout {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .pillar-item.text-right {
+        text-align: center;
+      }
+      .v-selector-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .tyre-campaign-grid {
+        grid-template-columns: 1fr;
+      }
+      .brand-cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .article-cards-strip {
+        grid-template-columns: 1fr;
+      }
+      .visuals-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .catalog-view-layout {
+        grid-template-columns: 1fr;
+      }
+      .filter-sidebar {
+        position: static;
+      }
+      .pdp-grid {
+        grid-template-columns: 1fr;
+      }
+      .checkout-grid {
+        grid-template-columns: 1fr;
+      }
+      .commercial-form-grid {
+        grid-template-columns: 1fr;
+      }
+      .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .announcement-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .announcement-contacts {
+        display: none;
+      }
+      .main-nav {
+        display: none;
+      }
+      .category-icon-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .v-selector-grid {
+        grid-template-columns: 1fr;
+      }
+      .product-grid {
+        grid-template-columns: 1fr;
+      }
+      .visuals-grid {
+        grid-template-columns: 1fr;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+      .footer-bottom {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+    }
+  </style>
+<link rel="stylesheet" href="./eshop-mobile.css?v=3">
+<style data-eshop-skeleton-styles="">.eshop-skeleton-bar{display:inline-block;max-width:100%;height:.72em;min-width:2.5em;border-radius:999px;background:#d1d5db;vertical-align:middle}.eshop-placeholder-media{background:linear-gradient(135deg,#d1d5db,#f3f4f6);object-fit:cover}</style></head>
+<body>
+
+  <!-- ==========================================================================
+       TOP ANNOUNCEMENT BAR
+       ========================================================================== -->
+  <aside class="announcement-bar">
+    <div class="container announcement-inner">
+      <div class="meta-line">
+        <span style="color:#F87171; font-weight:700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+        <span class="meta-sep"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+      </div>
+      <div class="announcement-contacts">
+        <div class="meta-line">
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></span>
+          <span class="meta-sep"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+          <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></span>
+          <span class="meta-sep"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+          <span style="color:#34D399;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==========================================================================
+       MAIN NAVIGATION HEADER
+       ========================================================================== -->
+  <header class="main-header">
+    <div class="container header-inner">
+      <!-- Zone 1: Brand Wordmark -->
+      <a href="#home" class="brand-logo" onclick="navigateTo('home'); return false;">
+        <div class="brand-mark">
+          <i data-lucide="wrench" style="width:18px; height:18px;"></i>
+        </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span><span class="highlight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+      </a>
+
+      <!-- Zone 2: Navigation Links -->
+      <nav class="main-nav">
+        <a href="#home" class="nav-link active" id="nav-home" onclick="navigateTo('home'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></a>
+        <a href="#catalog" class="nav-link" id="nav-catalog" onclick="navigateTo('catalog'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></a>
+        <a href="#brands" class="nav-link" id="nav-brands" onclick="navigateTo('brands'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></a>
+        <a href="#commercial" class="nav-link" id="nav-commercial" onclick="navigateTo('commercial'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></a>
+        <a href="#guides" class="nav-link" id="nav-guides" onclick="navigateTo('guides'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:30%"></span></a>
+        <a href="#contact" class="nav-link" id="nav-contact" onclick="navigateTo('contact'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a>
+      </nav>
+
+      <!-- Zone 3: Primary Actions -->
+      <div class="header-actions">
+        <!-- Live Search Button -->
+        <button class="header-icon-btn" onclick="openSearchModal()">
+          <i data-lucide="search" style="width:20px; height:20px;"></i>
+        </button>
+
+        <!-- Wishlist -->
+        <button class="header-icon-btn" onclick="navigateTo('wishlist')">
+          <i data-lucide="heart" style="width:20px; height:20px;"></i>
+          <span class="badge-count" id="wishlist-badge"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+        </button>
+
+        <!-- Cart Trigger -->
+        <button class="header-icon-btn" onclick="openCartDrawer()">
+          <i data-lucide="shopping-cart" style="width:20px; height:20px;"></i>
+          <span class="badge-count" id="cart-badge"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+        </button>
+
+        <!-- Primary CTA: Vehicle Finder Quick-Jump -->
+        <button class="btn btn-red btn-sm" onclick="scrollToVehicleFinder()">
+          <i data-lucide="car" style="width:16px; height:16px;"></i><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:38%"></span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       PERSISTENT SELECTED-VEHICLE ACTIVE STRIP
+       ========================================================================== -->
+  <div class="vehicle-status-strip" id="vehicle-status-strip">
+    <div class="container vehicle-strip-inner">
+      <div class="vehicle-active-tag">
+        <i data-lucide="check-circle-2" style="width:16px; height:16px;"></i>
+        <span id="active-vehicle-label"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+      </div>
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost btn-sm" style="padding:0.25rem 0.5rem; font-size:0.75rem;" onclick="scrollToVehicleFinder()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></button>
+        <button id="clear-vehicle-btn" class="btn btn-ghost btn-sm" style="display:none; padding:0.25rem 0.5rem; font-size:0.75rem; color:#EF4444;" onclick="clearSelectedVehicle()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MAIN APP VIEW CONTAINER (ROUTED DYNAMICALLY)
+       ========================================================================== -->
+  <main id="app-root">
+    <!-- Content injected dynamically via renderCurrentView() -->
+  </main>
+
+  <!-- ==========================================================================
+       SLIDE-OVER CART DRAWER
+       ========================================================================== -->
+  <div class="cart-drawer-backdrop" id="cart-backdrop" onclick="closeCartDrawer()"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-drawer-header">
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <i data-lucide="shopping-bag" style="width:20px; height:20px; color:var(--color-brand-red);"></i>
+        <h4 style="font-size:1.15rem; font-weight:700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span><span id="drawer-cart-count"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></h4>
+      </div>
+      <button onclick="closeCartDrawer()" style="padding:0.25rem; color:#64748B;">
+        <i data-lucide="x" style="width:22px; height:22px;"></i>
+      </button>
+    </div>
+
+    <div class="cart-drawer-body" id="cart-items-container">
+      <!-- Injected dynamically -->
+    </div>
+
+    <div class="cart-drawer-footer">
+      <div class="cart-subtotal-row">
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></span>
+        <span class="tabular-nums" id="cart-subtotal-kes" style="color:var(--color-brand-red);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></span>
+      </div>
+      <p style="font-size:0.75rem; color:var(--text-muted);"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+      <div style="display:flex; gap:0.75rem; margin-top:0.5rem;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeCartDrawer(); navigateTo('catalog');"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span></button>
+        <button class="btn btn-red" style="flex:1;" onclick="closeCartDrawer(); navigateTo('checkout');"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:32%"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       GLOBAL SEARCH MODAL
+       ========================================================================== -->
+  <div class="modal-backdrop" id="search-modal" onclick="if(event.target===this) closeSearchModal();">
+    <div class="modal-box search-modal-box">
+      <button class="modal-close-btn" onclick="closeSearchModal()">
+        <i data-lucide="x" style="width:20px; height:20px;"></i>
+      </button>
+      <div class="search-modal-input-row">
+        <i data-lucide="search" style="width:24px; height:24px; color:var(--color-brand-red);"></i>
+        <input type="text" id="global-search-input" class="search-modal-input" oninput="handleLiveSearch(this.value)" />
+      </div>
+      <div class="meta-line" style="margin-bottom:0.75rem;">
+        <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></span>
+        <button class="btn btn-ghost btn-sm" style="padding:0; font-size:0.72rem; color:var(--color-brand-red);" onclick="quickSearch('Probox oil filter')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></button>
+        <span class="meta-sep"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+        <button class="btn btn-ghost btn-sm" style="padding:0; font-size:0.72rem; color:var(--color-brand-red);" onclick="quickSearch('Forester shocks')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></button>
+        <span class="meta-sep"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+        <button class="btn btn-ghost btn-sm" style="padding:0; font-size:0.72rem; color:var(--color-brand-red);" onclick="quickSearch('Prado brake pads')"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></button>
+      </div>
+      <div class="search-results-list" id="search-results-box">
+        <!-- Results rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       M-PESA DEMO MODAL
+       ========================================================================== -->
+  <div class="modal-backdrop" id="mpesa-modal">
+    <div class="modal-box" style="text-align:center;">
+      <div style="width:64px; height:64px; background:#ECFDF5; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem; color:#059669;">
+        <i data-lucide="smartphone" style="width:32px; height:32px;"></i>
+      </div>
+      <h3 style="font-size:1.5rem; margin-bottom:0.5rem; color:#065F46;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></h3>
+      <p style="font-size:0.875rem; color:#475569; margin-bottom:1.5rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span><strong id="mpesa-modal-phone"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:24%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span><strong id="mpesa-modal-amount"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:14%"></span></strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span><br/><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+      <div style="padding:1rem; background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:var(--radius-sm); font-size:0.78rem; color:#64748B; margin-bottom:1.5rem; text-align:left;">
+        <strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:76%"></span></strong><br/><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span><code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></code><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:95%"></span></div>
+      <div style="display:flex; gap:0.75rem;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeMpesaModal()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></button>
+        <button class="btn btn-red" style="flex:1;" onclick="simulateMpesaSuccess()"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       SITE FOOTER
+       ========================================================================== -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Col 1: About & Depot -->
+        <div>
+          <a href="#home" class="brand-logo" style="color:#FFFFFF; margin-bottom:1rem;" onclick="navigateTo('home'); return false;">
+            <div class="brand-mark" style="background:#FFFFFF; color:#0A0E17;">
+              <i data-lucide="wrench" style="width:18px; height:18px;"></i>
+            </div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:19%"></span><span class="highlight"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:8%"></span></span>
+          </a>
+          <p style="font-size:0.85rem; line-height:1.6; margin-bottom:1.25rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          <div class="meta-line" style="color:#94A3B8;">
+            <span><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></span>
+          </div>
+        </div>
+
+        <!-- Col 2: Top Systems -->
+        <div>
+          <h4 class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></h4>
+          <ul class="footer-links-list">
+            <li><a href="#catalog" onclick="filterByCategory('Engine Parts'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:81%"></span></a></li>
+            <li><a href="#catalog" onclick="filterByCategory('Braking System'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></a></li>
+            <li><a href="#catalog" onclick="filterByCategory('Suspension & Steering'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:89%"></span></a></li>
+            <li><a href="#catalog" onclick="filterByCategory('Transmission & Drivetrain'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:70%"></span></a></li>
+            <li><a href="#catalog" onclick="filterByCategory('Electrical & Lighting'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></a></li>
+            <li><a href="#catalog" onclick="filterByCategory('Tyres & Wheels'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:78%"></span></a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Popular Kenyan Vehicles -->
+        <div>
+          <h4 class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></h4>
+          <ul class="footer-links-list">
+            <li><a href="#catalog" onclick="selectQuickVehicle('Toyota', 'Land Cruiser Prado'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></a></li>
+            <li><a href="#catalog" onclick="selectQuickVehicle('Toyota', 'Hilux / Fortuner'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:62%"></span></a></li>
+            <li><a href="#catalog" onclick="selectQuickVehicle('Subaru', 'Forester'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:57%"></span></a></li>
+            <li><a href="#catalog" onclick="selectQuickVehicle('Nissan', 'X-Trail'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></a></li>
+            <li><a href="#catalog" onclick="selectQuickVehicle('Mazda', 'Demio'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></a></li>
+            <li><a href="#catalog" onclick="selectQuickVehicle('Isuzu', 'D-Max'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:59%"></span></a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Trade & B2B -->
+        <div>
+          <h4 class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h4>
+          <ul class="footer-links-list">
+            <li><a href="#commercial" onclick="navigateTo('commercial'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></a></li>
+            <li><a href="#commercial" onclick="navigateTo('commercial'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:73%"></span></a></li>
+            <li><a href="#commercial" onclick="navigateTo('commercial'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:68%"></span></a></li>
+            <li><a href="#guides" onclick="navigateTo('guides'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span></a></li>
+            <li><a href="#catalog" onclick="filterByCategory('Workshop Tools & Scanners'); return false;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:65%"></span></a></li>
+          </ul>
+        </div>
+
+        <!-- Col 5: Contact & Logistics -->
+        <div>
+          <h4 class="footer-col-title"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></h4>
+          <p style="font-size:0.85rem; line-height:1.6; margin-bottom:0.75rem;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:46%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:54%"></span></strong><br/><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:35%"></span><strong><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:43%"></span></strong><br/><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          <div style="margin-top:1rem;">
+            <div class="meta-line" style="margin-bottom:0.5rem; color:#FFFFFF; font-weight:700;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:51%"></span></div>
+            <p style="font-size:0.785rem; color:#94A3B8;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:96%"></span></div>
+        <div class="payment-icons-strip">
+          <span class="payment-badge" style="background:#00A859;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:16%"></span></span>
+          <span class="payment-badge" style="background:#00C3F7; color:#000;"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:22%"></span></span>
+          <span class="payment-badge"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:11%"></span></span>
+          <span class="payment-badge"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:27%"></span></span>
+          <span class="payment-badge"><span class="eshop-skeleton-bar" data-skeleton-text="" style="width:41%"></span></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       APPLICATION DATA & ENGINE JAVASCRIPT
+       ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       1. STRUCTURED VEHICLE DATASET (KENYAN MARKET ACCURACY)
+       ========================================================================== */
+    const VEHICLES_DATABASE = [
+      {
+        id: 'v_toyota_prado_j150',
+        make: 'Toyota',
+        model: 'Land Cruiser Prado',
+        generation: 'J150 (2010-2022)',
+        years: [2010, 2012, 2015, 2018, 2020, 2022],
+        engines: ['2.8L 1GD-FTV Diesel Turbo', '3.0L 1KD-FTV D-4D', '2.7L 2TR-FE Petrol'],
+        transmission: 'Automatic 6-Speed / 5-Speed',
+        drive: '4WD'
+      },
+      {
+        id: 'v_toyota_hilux_revo',
+        make: 'Toyota',
+        model: 'Hilux / Fortuner',
+        generation: 'AN120 / AN130 (2015-2024)',
+        years: [2015, 2016, 2018, 2020, 2022, 2024],
+        engines: ['2.4L 2GD-FTV Turbo Diesel', '2.8L 1GD-FTV Turbo Diesel', '2.7L 2TR-FE Petrol'],
+        transmission: 'Manual 6-Speed / Automatic 6-Speed',
+        drive: '4WD / 2WD'
+      },
+      {
+        id: 'v_toyota_probox_xp160',
+        make: 'Toyota',
+        model: 'Probox / Succeed',
+        generation: 'NCP160 / NSP160 (2014-2024)',
+        years: [2014, 2016, 2018, 2020, 2022],
+        engines: ['1.5L 1NZ-FE VVTi', '1.3L 1NR-FE VVTi'],
+        transmission: 'CVT / Manual 5-Speed',
+        drive: 'FWD / 4WD'
+      },
+      {
+        id: 'v_subaru_forester_sj',
+        make: 'Subaru',
+        model: 'Forester',
+        generation: 'SJ / SK (2013-2023)',
+        years: [2013, 2015, 2017, 2019, 2021, 2023],
+        engines: ['2.0L FA20 DIT Turbo', '2.0L FB20 NA', '2.5L FB25 Boxer'],
+        transmission: 'Lineartronic CVT',
+        drive: 'Symmetrical AWD'
+      },
+      {
+        id: 'v_nissan_xtrail_t32',
+        make: 'Nissan',
+        model: 'X-Trail',
+        generation: 'T32 (2013-2021)',
+        years: [2014, 2016, 2018, 2020],
+        engines: ['2.0L MR20DD Petrol', '2.5L QR25DE Petrol', '1.6L dCi Diesel'],
+        transmission: 'Xtronic CVT',
+        drive: 'All-Mode 4x4-i'
+      },
+      {
+        id: 'v_mazda_demio_dj',
+        make: 'Mazda',
+        model: 'Demio',
+        generation: 'DJ / Mazda 2 (2014-2023)',
+        years: [2014, 2016, 2018, 2020, 2022],
+        engines: ['1.3L SkyActiv-G Petrol', '1.5L SkyActiv-D Clean Diesel'],
+        transmission: 'SkyActiv-Drive 6-Speed AT',
+        drive: 'FWD'
+      },
+      {
+        id: 'v_isuzu_dmax_rt50',
+        make: 'Isuzu',
+        model: 'D-Max',
+        generation: 'RT50 / RG01 (2012-2023)',
+        years: [2013, 2016, 2019, 2021, 2023],
+        engines: ['2.5L 4JK1-TCX Turbo Diesel', '3.0L 4JJ1-TCX Turbo Diesel'],
+        transmission: 'Manual 5/6-Speed / Automatic',
+        drive: '4x4 / 4x2'
+      },
+      {
+        id: 'v_vw_golf_mk7',
+        make: 'Volkswagen',
+        model: 'Golf',
+        generation: 'MK7 / MK7.5 (2013-2020)',
+        years: [2013, 2015, 2017, 2019],
+        engines: ['1.4L TSI EA211', '2.0L TSI EA888 (GTI)', '2.0L TDI'],
+        transmission: '7-Speed DSG / 6-Speed Manual',
+        drive: 'FWD'
+      },
+      {
+        id: 'v_mercedes_c_w205',
+        make: 'Mercedes-Benz',
+        model: 'C-Class',
+        generation: 'W205 (2014-2021)',
+        years: [2014, 2016, 2018, 2020],
+        engines: ['C200 2.0L M274 Turbo', 'C250 / C300 M274', 'C220d OM651'],
+        transmission: '7G-Tronic / 9G-Tronic Plus',
+        drive: 'RWD / 4MATIC'
+      }
+    ];
+
+    /* ==========================================================================
+       2. COMPREHENSIVE AUTOMOTIVE PARTS CATALOGUE
+       ========================================================================== */
+    const PRODUCTS_DATABASE = /*__ESHOP_DATA_products__*/ [
+      {
+        id: 'p-01',
+        name: 'Denso Iridium TT Spark Plugs (Set of 4, IK20TT)',
+        brand: 'Denso',
+        category: 'Engine Parts',
+        priceKes: 5800,
+        origKes: 6800,
+        oemCode: 'IK20TT-4702',
+        image: './src/assets/images/engine_bay_detail_1791799145302.jpg',
+        condition: 'Brand New (Genuine OEM)',
+        stock: 38,
+        rating: 5.0,
+        compatibility: ['Toyota Land Cruiser Prado', 'Toyota Probox / Succeed', 'Subaru Forester', 'Nissan X-Trail'],
+        specs: {
+          'Thread Diameter': '14 mm',
+          'Hex Size': '16 mm (5/8 in)',
+          'Reach': '19 mm',
+          'Center Electrode': '0.4 mm Iridium',
+          'Ground Electrode': '0.7 mm Platinum'
+        },
+        description: 'Engineered with patented Twin-Tip technology for superior ignitability, faster throttle response, and extended 100,000 km service intervals on Kenyan fuel.'
+      }];
+
+    /* ==========================================================================
+       3. BRANDS DATABASE
+       ========================================================================== */
+    const BRANDS_DATABASE = [
+      { name: 'Toyota Genuine Parts', country: 'Japan', desc: 'Direct OEM factory components engineered for Toyota Land Cruiser, Hilux, Prado, and Probox.', count: 420 },
+      { name: 'Denso', country: 'Japan', desc: 'World leader in spark plugs, alternators, starter motors, and common rail diesel injectors.', count: 280 },
+      { name: 'Brembo', country: 'Italy', desc: 'High-performance braking systems, ceramic pads, and slotted rotors for ultimate stopping control.', count: 140 },
+      { name: 'KYB (Kayaba)', country: 'Japan', desc: 'Precision hydraulic and gas shock absorbers supplying 1 in 4 vehicles rolling off global assembly lines.', count: 195 },
+      { name: 'AISIN', country: 'Japan', desc: 'Toyota Group transmission master manufacturing original clutches, water pumps, and drive train gearboxes.', count: 160 },
+      { name: 'Bosch', country: 'Germany', desc: 'Automotive sensors, high-output batteries, wiper blades, and diesel injection precision.', count: 310 },
+      { name: 'Shell Lubricants', country: 'Netherlands', desc: 'PurePlus synthetic motor oils engineered from natural gas for optimal engine cleanliness and protection.', count: 75 },
+      { name: 'Goodyear / Michelin', country: 'USA & France', desc: 'Ultra high-performance street tyres and reinforced all-terrain SUV tyres built for African topography.', count: 90 },
+      { name: 'Amaron', country: 'India / USA', desc: 'SilverX alloy long-life zero-maintenance batteries designed for extreme tropical heat and heavy stop-and-go cycling.', count: 65 },
+      { name: 'Launch Tech', country: 'International', desc: 'Professional bi-directional diagnostic scanners, ECU coding tablets, and workshop reset tools.', count: 35 }
+    ];
+
+    /* ==========================================================================
+       4. APPLICATION STATE & LOCALSTORAGE PERSISTENCE
+       ========================================================================== */
+    const AppState = {
+      currentView: 'home',
+      selectedVehicle: null, // { make, model, year, engine }
+      cart: [], // [ { product, quantity } ]
+      wishlist: [], // [ productId ]
+      filters: {
+        category: 'all',
+        brand: 'all',
+        maxPrice: 100000,
+        onlyCompatible: false,
+        searchQuery: '',
+        sortBy: 'popular'
+      },
+      currentProductDetailId: null
+    };
+
+    // Load persisted demo cart & wishlist
+    try {
+      const savedCart = localStorage.getItem('autopro_cart');
+      if (savedCart) AppState.cart = JSON.parse(savedCart);
+      const savedWishlist = localStorage.getItem('autopro_wishlist');
+      if (savedWishlist) AppState.wishlist = JSON.parse(savedWishlist);
+      const savedVehicle = localStorage.getItem('autopro_vehicle');
+      if (savedVehicle) AppState.selectedVehicle = JSON.parse(savedVehicle);
+    } catch(e) {
+      console.warn('Storage access restricted:', e);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem('autopro_cart', JSON.stringify(AppState.cart));
+        localStorage.setItem('autopro_wishlist', JSON.stringify(AppState.wishlist));
+        if (AppState.selectedVehicle) {
+          localStorage.setItem('autopro_vehicle', JSON.stringify(AppState.selectedVehicle));
+        } else {
+          localStorage.removeItem('autopro_vehicle');
+        }
+      } catch(e) {}
+      updateCounters();
+      updateVehicleStrip();
+    }
+
+    /* ==========================================================================
+       5. ROUTING & VIEW NAVIGATION
+       ========================================================================== */
+    function navigateTo(viewName, param = null) {
+      AppState.currentView = viewName;
+      if (viewName === 'pdp' && param) {
+        AppState.currentProductDetailId = param;
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      renderCurrentView();
+
+      // Update Nav active classes
+      document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+      const activeNav = document.getElementById(`nav-${viewName}`);
+      if (activeNav) activeNav.classList.add('active');
+
+      // Refresh icons & ScrollTrigger
+      setTimeout(() => {
+        if (window.lucide) lucide.createIcons();
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
+      }, 50);
+    }
+
+    /* ==========================================================================
+       6. VIEW RENDERERS
+       ========================================================================== */
+    function renderCurrentView() {
+      const root = document.getElementById('app-root');
+
+      switch(AppState.currentView) {
+        case 'home':
+          root.innerHTML = renderHomeView();
+          initHomeAnimations();
+          break;
+        case 'catalog':
+          root.innerHTML = renderCatalogView();
+          break;
+        case 'pdp':
+          root.innerHTML = renderProductDetailView(AppState.currentProductDetailId);
+          break;
+        case 'brands':
+          root.innerHTML = renderBrandsView();
+          break;
+        case 'commercial':
+          root.innerHTML = renderCommercialView();
+          break;
+        case 'guides':
+          root.innerHTML = renderGuidesView();
+          break;
+        case 'wishlist':
+          root.innerHTML = renderWishlistView();
+          break;
+        case 'checkout':
+          root.innerHTML = renderCheckoutView();
+          break;
+        case 'order-success':
+          root.innerHTML = renderOrderSuccessView();
+          break;
+        case 'contact':
+          root.innerHTML = renderContactView();
+          break;
+        default:
+          root.innerHTML = renderHomeView();
+          initHomeAnimations();
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: HOMEPAGE (Faithful Translation of Reference Image)
+       -------------------------------------------------------------------------- */
+    function renderHomeView() {
+      return `
+        <!-- HERO SECTION -->
+        <section class="hero-section">
+          <div class="container">
+            <div class="hero-grid">
+              <div class="hero-headline-block">
+                <div class="hero-pretitle">
+                  <i data-lucide="shield-check" style="width:16px; height:16px;"></i>
+                  Direct Aftermarket &amp; OEM Import
+                </div>
+                <h1 class="hero-title">
+                  DRIVE <span class="word-outline">READY.</span><br/>
+                  SELL <span style="color:var(--color-brand-red);">PARTS.</span><br/>
+                  DOMINATE.
+                </h1>
+                <p class="hero-sub">
+                  Kenya's authoritative catalog of genuine automotive spares, race engineering components, heavy-duty suspension and certified fluids. Fitted with exact vehicle precision.
+                </p>
+                <div class="hero-ctas">
+                  <button class="btn btn-red btn-lg" onclick="navigateTo('catalog')">
+                    <i data-lucide="package-search" style="width:18px; height:18px;"></i>
+                    Explore 10,000+ Parts
+                  </button>
+                  <button class="btn btn-outline btn-lg" onclick="scrollToVehicleFinder()">
+                    Select Vehicle
+                  </button>
+                </div>
+              </div>
+
+              <div class="hero-image-wrap">
+                <img src="./src/assets/images/hero_sports_car_1791799095346.jpg" alt="Pristine white performance sportscar hero" class="hero-car-img" onerror="this.src='./src/assets/images/wheel_rim_alloy_1791799106377.jpg';" />
+              </div>
+            </div>
+
+            <!-- Category Icon Rail (Directly matching reference) -->
+            <div class="category-icon-strip">
+              <div class="cat-icon-card" onclick="filterByCategory('Engine Parts')">
+                <i data-lucide="cpu" style="width:28px; height:28px;"></i>
+                <span>Engine Spares</span>
+              </div>
+              <div class="cat-icon-card" onclick="filterByCategory('Braking System')">
+                <i data-lucide="disc" style="width:28px; height:28px;"></i>
+                <span>Brake Discs &amp; Pads</span>
+              </div>
+              <div class="cat-icon-card" onclick="filterByCategory('Suspension & Steering')">
+                <i data-lucide="activity" style="width:28px; height:28px;"></i>
+                <span>Shock Absorbers</span>
+              </div>
+              <div class="cat-icon-card" onclick="filterByCategory('Tyres & Wheels')">
+                <i data-lucide="circle-dot" style="width:28px; height:28px;"></i>
+                <span>Alloy Rims &amp; Tyres</span>
+              </div>
+              <div class="cat-icon-card" onclick="filterByCategory('Electrical & Lighting')">
+                <i data-lucide="zap" style="width:28px; height:28px;"></i>
+                <span>Batteries &amp; Starters</span>
+              </div>
+              <div class="cat-icon-card" onclick="filterByCategory('Oils, Fluids & Chemicals')">
+                <i data-lucide="droplet" style="width:28px; height:28px;"></i>
+                <span>Oils &amp; Lubricants</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VEHICLE FITMENT SELECTOR PANEL -->
+        <div class="container" id="vehicle-finder-anchor">
+          <div class="vehicle-selector-panel">
+            <div class="v-panel-header">
+              <h3 class="v-panel-title">
+                <i data-lucide="car" style="width:22px; height:22px; color:var(--color-brand-red);"></i>
+                Find Exact Spares For Your Vehicle
+              </h3>
+              <span class="meta-line">Explicit fitment data · Guaranteed no incorrect orders</span>
+            </div>
+            <div class="v-selector-grid">
+              <div class="form-group">
+                <label class="form-label">1. Make</label>
+                <select id="v-sel-make" class="form-select" onchange="onMakeChange(this.value)">
+                  <option value="">Select Make (e.g. Toyota, Subaru)...</option>
+                  ${[...new Set(VEHICLES_DATABASE.map(v => v.make))].map(m => `<option value="${m}">${m}</option>`).join('')}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">2. Model</label>
+                <select id="v-sel-model" class="form-select" disabled onchange="onModelChange(this.value)">
+                  <option value="">Select Make First</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">3. Year</label>
+                <select id="v-sel-year" class="form-select" disabled>
+                  <option value="">Select Model First</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">4. Engine / Trim</label>
+                <select id="v-sel-engine" class="form-select" disabled>
+                  <option value="">Select Model First</option>
+                </select>
+              </div>
+
+              <button class="btn btn-red" style="height:44px;" onclick="applyVehicleFitment()">
+                <i data-lucide="search" style="width:16px; height:16px;"></i>
+                Apply Fitment
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: "DRIVEN TO DELIVER QUALITY" (CENTERPIECE FROM REFERENCE IMAGE) -->
+        <section class="quality-pillar-section">
+          <div class="container">
+            <div class="section-heading-center">
+              <div class="section-eyebrow">UNCOMPROMISING PRECISION</div>
+              <h2 class="section-main-title">DRIVEN TO DELIVER QUALITY</h2>
+              <p style="font-size:0.95rem; color:var(--text-muted); margin-top:0.5rem;">
+                Every component is factory-inspected, batch-tested, and certified for harsh African terrain.
+              </p>
+            </div>
+
+            <div class="quality-tri-layout">
+              <!-- Left Pillars -->
+              <div class="pillar-col">
+                <div class="pillar-item text-right">
+                  <h4 class="pillar-title">100% Genuine Automotive Spares</h4>
+                  <p class="pillar-desc">Sourced directly from verified Japanese, European &amp; OE manufacturer distributor supply chains.</p>
+                </div>
+                <div class="pillar-item text-right">
+                  <h4 class="pillar-title">Master Mechanic Technical Support</h4>
+                  <p class="pillar-desc">Speak directly with certified automotive parts technicians who verify OEM codes before dispatch.</p>
+                </div>
+              </div>
+
+              <!-- Center Visual Wheel -->
+              <div class="pillar-center-visual">
+                <img src="./src/assets/images/wheel_rim_alloy_1791799106377.jpg" alt="Forged Alloy Wheel Centerpiece" class="pillar-center-img" />
+              </div>
+
+              <!-- Right Pillars -->
+              <div class="pillar-col">
+                <div class="pillar-item">
+                  <h4 class="pillar-title">Tested Tough for Harsh Roads</h4>
+                  <p class="pillar-desc">Heavy-duty suspension bushings, dust-shielded ball joints, and high-temp brake compounds built to last.</p>
+                </div>
+                <div class="pillar-item">
+                  <h4 class="pillar-title">Rapid Same-Day Kenyan Delivery</h4>
+                  <p class="pillar-desc">Instant courier deliveries across Nairobi and secure daily dispatch via Fargo and G4S countrywide.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION: "SPARES FOR PREMIUM BRANDS" (3 ICONIC CARDS FROM REFERENCE) -->
+        <section class="brands-showcase-section">
+          <div class="container">
+            <div class="section-row-header">
+              <div class="section-title-wrap">
+                <div class="section-eyebrow">PRECISION COMPATIBILITY</div>
+                <h3>SPARES FOR POPULAR &amp; PREMIUM PLATFORMS</h3>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="navigateTo('brands')">View All 40+ Brands</button>
+            </div>
+
+            <div class="brand-cards-grid">
+              <!-- Card 1: Toyota & Japanese Workhorses -->
+              <div class="brand-hero-card" style="background-image: url('./src/assets/images/hero_sports_car_1791799095346.jpg');" onclick="selectQuickVehicle('Toyota', 'Land Cruiser Prado')">
+                <div class="brand-card-content">
+                  <div class="brand-card-logo-text">TOYOTA &amp; LEXUS</div>
+                  <div class="brand-card-sub">Prado J150 · Hilux · Land Cruiser · Probox · Premio</div>
+                  <div style="margin-top:0.75rem;">
+                    <span class="btn btn-white btn-sm">Browse 1,450+ Spares</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2: Subaru & All-Wheel Drive -->
+              <div class="brand-hero-card" style="background-image: url('./src/assets/images/smoke_drift_car_1791799123089.jpg');" onclick="selectQuickVehicle('Subaru', 'Forester')">
+                <div class="brand-card-content">
+                  <div class="brand-card-logo-text">SUBARU BOXER</div>
+                  <div class="brand-card-sub">Forester XT/SJ · Outback · Impreza WRX · Legacy</div>
+                  <div style="margin-top:0.75rem;">
+                    <span class="btn btn-white btn-sm">Browse 820+ Spares</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 3: European Precision -->
+              <div class="brand-hero-card" style="background-image: url('./src/assets/images/engine_bay_detail_1791799145302.jpg');" onclick="selectQuickVehicle('Volkswagen', 'Golf')">
+                <div class="brand-card-content">
+                  <div class="brand-card-logo-text">EUROPEAN PERFORMANCE</div>
+                  <div class="brand-card-sub">Volkswagen · Mercedes-Benz · BMW · Audi</div>
+                  <div style="margin-top:0.75rem;">
+                    <span class="btn btn-white btn-sm">Browse 960+ Spares</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION: "EXPLORE PARTS / TRENDING SPARES" (PRODUCT GRID) -->
+        <section class="product-section">
+          <div class="container">
+            <div class="section-row-header">
+              <div class="section-title-wrap">
+                <div class="section-eyebrow">VERIFIED STOCK IN NAIROBI DEPOT</div>
+                <h3>TRENDING REPLACEMENT PARTS</h3>
+              </div>
+              <button class="btn btn-red btn-sm" onclick="navigateTo('catalog')">
+                View Full Catalog
+                <i data-lucide="arrow-right" style="width:16px; height:16px;"></i>
+              </button>
+            </div>
+
+            <div class="product-grid">
+              ${PRODUCTS_DATABASE.slice(0, 8).map(product => renderProductCard(product)).join('')}
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION: "SAFETY GEAR FOR SMOKY DRIVES" (EDITORIAL TRACK BANNER FROM REFERENCE) -->
+        <section class="editorial-banner-section">
+          <div class="editorial-banner-bg" style="background-image: url('./src/assets/images/smoke_drift_car_1791799123089.jpg');"></div>
+          <div class="editorial-banner-overlay"></div>
+          <div class="container">
+            <div class="editorial-banner-content">
+              <div class="editorial-eyebrow">TRUE DRIVERS EMBRACE TOUGH ROADS</div>
+              <h2 class="editorial-title">HEAVY-DUTY BRAKING &amp; SMOKE-PROVEN CHASSIS GEAR</h2>
+              <p class="editorial-desc">
+                Whether towing over the Mau Summit or negotiating high-temperature city traffic, our motorsport-grade brake compounds and nitrogen gas struts eliminate thermal fade and protect suspension mounts.
+              </p>
+              <div style="display:flex; gap:1rem;">
+                <button class="btn btn-red btn-lg" onclick="filterByCategory('Braking System')">Shop Braking Systems</button>
+                <button class="btn btn-white btn-lg" onclick="filterByCategory('Suspension & Steering')">Shop Suspension</button>
+              </div>
+            </div>
+
+            <!-- 3 Article Cards (Directly matching reference) -->
+            <div class="article-cards-strip">
+              <div class="article-card" onclick="navigateTo('guides')">
+                <img src="./src/assets/images/engine_bay_detail_1791799145302.jpg" alt="Engine maintenance guide" class="article-card-img" />
+                <div class="article-card-body">
+                  <div class="meta-line"><span>TECH GUIDE #01</span><span class="meta-sep">/</span><span>ENGINE HEALTH</span></div>
+                  <h4 class="article-card-title">Early Symptoms of Engine Overheating</h4>
+                  <p class="article-card-desc">Recognise sticky thermostats, fan clutch slipping, and radiator micro-cracks before cylinder head warp occurs.</p>
+                </div>
+              </div>
+
+              <div class="article-card" onclick="navigateTo('guides')">
+                <img src="./src/assets/images/wheel_rim_alloy_1791799106377.jpg" alt="Brake wear guide" class="article-card-img" />
+                <div class="article-card-body">
+                  <div class="meta-line"><span>TECH GUIDE #02</span><span class="meta-sep">/</span><span>BRAKE MASTERY</span></div>
+                  <h4 class="article-card-title">Ceramic vs Semi-Metallic Brake Pads</h4>
+                  <p class="article-card-desc">Why ceramic pads save your rotors from groove scoring in dusty, dry African road conditions.</p>
+                </div>
+              </div>
+
+              <div class="article-card" onclick="navigateTo('guides')">
+                <img src="../src/assets/images/tyre_stack_performance_1791799132999.jpg" alt="Tyre pressure guide" class="article-card-img" />
+                <div class="article-card-body">
+                  <div class="meta-line"><span>TECH GUIDE #03</span><span class="meta-sep">/</span><span>TYRE WEAR</span></div>
+                  <h4 class="article-card-title">Preventing Premature Shoulder Wear</h4>
+                  <p class="article-card-desc">Understanding camber angles, worn tie-rod ends, and optimum tyre pressure for Safari and highway cruising.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION: "BEHIND THE SCENES / VISUALS" (MASONRY TILES FROM REFERENCE IMAGE) -->
+        <section class="visuals-gallery-section">
+          <div class="container">
+            <div class="section-row-header">
+              <div class="section-title-wrap">
+                <div class="section-eyebrow">ENGINEERING GALLERY</div>
+                <h3>BEHIND THE SCENES &amp; MOTORSPORT VISUALS</h3>
+              </div>
+              <div class="meta-line"><span>GENUINE HARDWARE</span><span class="meta-sep">·</span><span>TESTED UNDER LOAD</span></div>
+            </div>
+
+            <div class="visuals-grid">
+              <div class="visual-tile span-2-row" style="background-image:url('./src/assets/images/hero_sports_car_1791799095346.jpg'); background-size:cover; background-position:center;">
+                <div class="visual-tile-overlay">
+                  <div class="visual-tile-title">Aerodynamic Coupe Chassis &amp; Suspension Tuning</div>
+                </div>
+              </div>
+
+              <div class="visual-tile" style="background-image:url('./src/assets/images/wheel_rim_alloy_1791799106377.jpg'); background-size:cover; background-position:center;">
+                <div class="visual-tile-overlay">
+                  <div class="visual-tile-title">Forged Monoblock Rim Machining</div>
+                </div>
+              </div>
+
+              <div class="visual-tile" style="background-image:url('./src/assets/images/smoke_drift_car_1791799123089.jpg'); background-size:cover; background-position:center;">
+                <div class="visual-tile-overlay">
+                  <div class="visual-tile-title">High Speed Track Friction Testing</div>
+                </div>
+              </div>
+
+              <div class="visual-tile span-2-col" style="background-image:url('./src/assets/images/engine_bay_detail_1791799145302.jpg'); background-size:cover; background-position:center;">
+                <div class="visual-tile-overlay">
+                  <div class="visual-tile-title">Twin Turbo V8 Plenum &amp; Ignition Hardware</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION: "FORMULA ONE & HEAVY TYRES" (BOTTOM BANNER FROM REFERENCE IMAGE) -->
+        <section class="tyre-campaign-section">
+          <div class="container">
+            <div class="tyre-campaign-grid">
+              <div class="tyre-campaign-content">
+                <div class="section-eyebrow" style="color:#F87171;">LIMITED ALLOCATION SHIPMENT</div>
+                <h2 style="font-size: clamp(2.2rem, 4vw, 3.5rem); line-height: 1.05;">
+                  GOODYEAR EAGLE F1 &amp; ALL-TERRAIN PERFORMANCE TYRES
+                </h2>
+                <div class="tyre-campaign-price">
+                  <span class="tyre-price-kes">KES 56,000</span>
+                  <span class="tyre-price-orig">KES 68,000</span>
+                  <span style="font-size:0.85rem; color:#34D399; font-weight:700;">Set of 4 · Save KES 12,000</span>
+                </div>
+                <div class="tyre-spec-row">
+                  <div><span>COMPOUND:</span> <strong>Reinforced Silica Resin</strong></div>
+                  <div><span>SPEED INDEX:</span> <strong>Y (300 km/h)</strong></div>
+                  <div><span>BRAKING DISTANCE:</span> <strong>-15% in Wet Rain</strong></div>
+                </div>
+                <p style="font-size:0.9rem; color:#94A3B8; line-height:1.6;">
+                  Fresh 2026 production batch with reinforced 2-ply rayon sidewall construction designed to resist curb pinching and pothole impacts on Kenyan bypasses.
+                </p>
+                <div style="display:flex; gap:1rem; margin-top:0.5rem;">
+                  <button class="btn btn-red btn-lg" onclick="addToCart('p-06')">
+                    <i data-lucide="shopping-cart" style="width:18px; height:18px;"></i>
+                    Order Tyre Set Now
+                  </button>
+                  <button class="btn btn-outline btn-lg" style="color:#FFFFFF; border-color:rgba(255,255,255,0.2);" onclick="navigateTo('pdp', 'p-06')">
+                    View Full Specifications
+                  </button>
+                </div>
+              </div>
+
+              <div class="tyre-img-wrap">
+                <img src="../src/assets/images/tyre_stack_performance_1791799132999.jpg" alt="Goodyear Eagle F1 tyre stack" />
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: PARTS CATALOG (WITH MULTI-FACETED FILTERING)
+       -------------------------------------------------------------------------- */
+    function renderCatalogView() {
+      const filteredProducts = getFilteredProducts();
+
+      const categories = [
+        'all',
+        'Engine Parts',
+        'Braking System',
+        'Suspension & Steering',
+        'Transmission & Drivetrain',
+        'Tyres & Wheels',
+        'Cooling System',
+        'Electrical & Lighting',
+        'Oils, Fluids & Chemicals',
+        'Heavy Commercial & Fleet',
+        'Workshop Tools & Scanners'
+      ];
+
+      return `
+        <div class="container">
+          <div style="padding-top:2.5rem;">
+            <div class="meta-line">
+              <a href="#home" onclick="navigateTo('home'); return false;">Home</a>
+              <span class="meta-sep">/</span>
+              <span>All Automotive Spares Catalog</span>
+            </div>
+            <h2 style="font-size:2.5rem; margin-top:0.5rem;">Automotive Spares &amp; Components</h2>
+          </div>
+
+          <div class="catalog-view-layout">
+            <!-- Sidebar Filters -->
+            <aside class="filter-sidebar">
+              <!-- Active Vehicle Filter Banner -->
+              <div style="margin-bottom:1.5rem; padding:0.85rem; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:var(--radius-sm);">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.35rem;">
+                  Vehicle Fitment Filter:
+                </div>
+                ${AppState.selectedVehicle ? `
+                  <div style="font-size:0.825rem; font-weight:700; color:var(--color-brand-red); line-height:1.3;">
+                    ${AppState.selectedVehicle.year} ${AppState.selectedVehicle.make} ${AppState.selectedVehicle.model}
+                  </div>
+                  <div style="font-size:0.72rem; color:#64748B; margin-top:0.25rem;">
+                    ${AppState.selectedVehicle.engine || ''}
+                  </div>
+                  <button class="btn btn-ghost btn-sm" style="padding:0; margin-top:0.5rem; font-size:0.72rem; color:#EF4444;" onclick="clearSelectedVehicle()">
+                    Remove Vehicle Filter
+                  </button>
+                ` : `
+                  <div style="font-size:0.825rem; color:#64748B;">No vehicle selected.</div>
+                  <button class="btn btn-outline btn-sm" style="margin-top:0.5rem; width:100%;" onclick="scrollToVehicleFinder()">
+                    Select Vehicle
+                  </button>
+                `}
+              </div>
+
+              <!-- Filter: System Category -->
+              <div class="filter-group">
+                <div class="filter-heading">Category</div>
+                <div class="filter-list">
+                  ${categories.map(cat => `
+                    <label class="filter-checkbox-label">
+                      <input type="radio" name="cat-filter" value="${cat}" ${AppState.filters.category === cat ? 'checked' : ''} onchange="setFilterCategory('${cat}')" />
+                      <span>${cat === 'all' ? 'All Systems' : cat}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Filter: Brand -->
+              <div class="filter-group">
+                <div class="filter-heading">Manufacturer</div>
+                <div class="filter-list">
+                  <label class="filter-checkbox-label">
+                    <input type="radio" name="brand-filter" value="all" ${AppState.filters.brand === 'all' ? 'checked' : ''} onchange="setFilterBrand('all')" />
+                    <span>All Brands</span>
+                  </label>
+                  ${['Toyota Genuine Parts', 'Denso', 'Brembo', 'KYB (Kayaba)', 'AISIN', 'Goodyear', 'Shell', 'Amaron', 'Launch Tech'].map(b => `
+                    <label class="filter-checkbox-label">
+                      <input type="radio" name="brand-filter" value="${b}" ${AppState.filters.brand === b ? 'checked' : ''} onchange="setFilterBrand('${b}')" />
+                      <span>${b}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Filter: Max Price -->
+              <div class="filter-group">
+                <div class="filter-heading">
+                  <span>Max Budget (KES)</span>
+                  <span class="tabular-nums" id="price-slider-val" style="color:var(--color-brand-red); font-size:0.8rem;">KES ${AppState.filters.maxPrice.toLocaleString()}</span>
+                </div>
+                <input type="range" min="2000" max="100000" step="2000" value="${AppState.filters.maxPrice}" style="width:100%; accent-color:var(--color-brand-red);" oninput="setFilterMaxPrice(this.value)" />
+              </div>
+
+              <button class="btn btn-outline" style="width:100%;" onclick="resetAllFilters()">
+                Reset All Filters
+              </button>
+            </aside>
+
+            <!-- Product Grid Area -->
+            <div>
+              <div class="catalog-top-bar">
+                <div class="catalog-count-info">
+                  Showing <strong>${filteredProducts.length}</strong> parts in stock
+                  ${AppState.selectedVehicle ? ` compatible with <strong>${AppState.selectedVehicle.make} ${AppState.selectedVehicle.model}</strong>` : ''}
+                </div>
+
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                  <span style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--text-muted);">Sort:</span>
+                  <select class="catalog-sort-select" onchange="setSortBy(this.value)">
+                    <option value="popular" ${AppState.filters.sortBy === 'popular' ? 'selected' : ''}>Most Popular</option>
+                    <option value="price-asc" ${AppState.filters.sortBy === 'price-asc' ? 'selected' : ''}>Price: Low to High</option>
+                    <option value="price-desc" ${AppState.filters.sortBy === 'price-desc' ? 'selected' : ''}>Price: High to Low</option>
+                    <option value="brand" ${AppState.filters.sortBy === 'brand' ? 'selected' : ''}>Brand Name</option>
+                  </select>
+                </div>
+              </div>
+
+              ${filteredProducts.length === 0 ? `
+                <div style="text-align:center; padding:5rem 2rem; background:#FFFFFF; border:1px solid var(--border-subtle); border-radius:var(--radius-sm);">
+                  <i data-lucide="package-x" style="width:48px; height:48px; color:#94A3B8; margin-bottom:1rem;"></i>
+                  <h3 style="font-size:1.5rem; margin-bottom:0.5rem;">No exact match for your active filter criteria</h3>
+                  <p style="color:var(--text-muted); max-width:440px; margin:0 auto 1.5rem auto; font-size:0.875rem;">
+                    Try widening your vehicle selection or resetting category constraints. We can also custom source rare OEM part numbers via our international air freight desk.
+                  </p>
+                  <button class="btn btn-red" onclick="resetAllFilters()">Clear Filters</button>
+                </div>
+              ` : `
+                <div class="product-grid" style="grid-template-columns: repeat(3, 1fr);">
+                  ${filteredProducts.map(p => renderProductCard(p)).join('')}
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: PRODUCT DETAIL PAGE (PDP)
+       -------------------------------------------------------------------------- */
+    function renderProductDetailView(productId) {
+      const product = PRODUCTS_DATABASE.find(p => p.id === productId) || PRODUCTS_DATABASE[0];
+      const isWishlisted = AppState.wishlist.includes(product.id);
+
+      // Fitment status check
+      let fitmentStatus = 'neutral';
+      let fitmentText = 'Select your vehicle to confirm fitment before ordering.';
+      if (AppState.selectedVehicle) {
+        const isMatch = product.compatibility.some(c =>
+          c.toLowerCase().includes(AppState.selectedVehicle.model.toLowerCase()) ||
+          c.toLowerCase().includes(AppState.selectedVehicle.make.toLowerCase()) ||
+          c.toLowerCase().includes('universal')
+        );
+        if (isMatch) {
+          fitmentStatus = 'exact';
+          fitmentText = `GUARANTEED FIT for your ${AppState.selectedVehicle.year} ${AppState.selectedVehicle.make} ${AppState.selectedVehicle.model}.`;
+        } else {
+          fitmentStatus = 'mismatch';
+          fitmentText = `May NOT fit your selected ${AppState.selectedVehicle.make} ${AppState.selectedVehicle.model}. Consult our mechanics team on +254 700 892 450 to verify.`;
+        }
+      }
+
+      return `
+        <div class="container pdp-layout">
+          <div class="meta-line" style="margin-bottom:1.5rem;">
+            <a href="#home" onclick="navigateTo('home'); return false;">Home</a>
+            <span class="meta-sep">/</span>
+            <a href="#catalog" onclick="filterByCategory('${product.category}'); return false;">${product.category}</a>
+            <span class="meta-sep">/</span>
+            <span style="color:var(--text-main); font-weight:600;">${product.name}</span>
+          </div>
+
+          <div class="pdp-grid">
+            <!-- Left: High-Res Image Gallery -->
+            <div class="pdp-gallery">
+              <img src="${product.image}" alt="${product.name}" class="pdp-main-img" onerror="this.src='./src/assets/images/wheel_rim_alloy_1791799106377.jpg';" />
+            </div>
+
+            <!-- Right: Purchasing & Fitment Information Module -->
+            <div class="pdp-info-panel">
+              <div>
+                <div class="meta-line" style="margin-bottom:0.4rem;">
+                  <span style="font-weight:700; color:var(--color-brand-red);">${product.brand}</span>
+                  <span class="meta-sep">·</span>
+                  <span>OEM REF: ${product.oemCode}</span>
+                  <span class="meta-sep">·</span>
+                  <span style="color:#059669;">IN STOCK (${product.stock} UNITS)</span>
+                </div>
+                <h1 class="pdp-title">${product.name}</h1>
+              </div>
+
+              <!-- Compatibility Banner -->
+              <div class="pdp-fitment-banner ${fitmentStatus === 'exact' ? 'fit-verified' : (fitmentStatus === 'mismatch' ? 'fit-warn' : 'fit-warn')}">
+                <i data-lucide="${fitmentStatus === 'exact' ? 'check-circle-2' : 'alert-circle'}" style="width:20px; height:20px; flex-shrink:0;"></i>
+                <div>
+                  <div>${fitmentText}</div>
+                  ${!AppState.selectedVehicle ? `
+                    <button class="btn btn-ghost btn-sm" style="padding:0; margin-top:0.25rem; font-size:0.75rem; text-decoration:underline;" onclick="scrollToVehicleFinder()">
+                      Check with your vehicle model now
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+
+              <!-- Price Row -->
+              <div class="pdp-price-row">
+                <div class="pdp-price">KES ${product.priceKes.toLocaleString()}</div>
+                ${product.origKes ? `<div style="text-decoration:line-through; color:#94A3B8; font-family:var(--font-mono); font-size:1.15rem;">KES ${product.origKes.toLocaleString()}</div>` : ''}
+                <div class="meta-line" style="color:#059669; font-weight:700;">INCLUSIVE OF 16% KENYAN VAT</div>
+              </div>
+
+              <p style="font-size:0.95rem; color:#475569; line-height:1.6;">
+                ${product.description}
+              </p>
+
+              <!-- Qty Stepper & Buy Actions -->
+              <div class="pdp-qty-and-buy">
+                <div class="qty-stepper">
+                  <button class="qty-btn" onclick="decrementPdpQty()">-</button>
+                  <input type="text" id="pdp-qty-input" class="qty-input" value="1" readonly />
+                  <button class="qty-btn" onclick="incrementPdpQty()">+</button>
+                </div>
+
+                <button class="btn btn-red btn-lg" style="flex:1;" onclick="addToCartFromPdp('${product.id}')">
+                  <i data-lucide="shopping-cart" style="width:18px; height:18px;"></i>
+                  Add to Cart
+                </button>
+
+                <button class="header-icon-btn ${isWishlisted ? 'active' : ''}" style="width:48px; height:48px; border:1px solid #CBD5E1;" onclick="toggleWishlist('${product.id}')" title="Save to Wishlist">
+                  <i data-lucide="heart" style="width:22px; height:22px;"></i>
+                </button>
+              </div>
+
+              <!-- Express Delivery Summary -->
+              <div style="background:#F8FAFC; border:1px solid var(--border-subtle); padding:1rem; border-radius:var(--radius-sm); font-size:0.8rem; line-height:1.5;">
+                <div style="display:flex; align-items:center; gap:0.5rem; font-weight:700; margin-bottom:0.25rem; color:#1E293B;">
+                  <i data-lucide="truck" style="width:16px; height:16px; color:var(--color-brand-red);"></i>
+                  Kenyan Logistics &amp; Dispatch Guarantee
+                </div>
+                <div>Nairobi Express Courier: Dispatched within 2 hours from Industrial Area Hub.</div>
+                <div>Upcountry: G4S / Fargo Courier delivery within 24 hours to major towns.</div>
+              </div>
+
+              <!-- Technical Specifications Table -->
+              <div>
+                <h4 style="font-size:1.1rem; margin-top:1rem; margin-bottom:0.5rem;">Verified Technical Specifications</h4>
+                <table class="specs-table">
+                  <tbody>
+                    <tr>
+                      <td class="spec-key">Condition</td>
+                      <td class="spec-val">${product.condition}</td>
+                    </tr>
+                    <tr>
+                      <td class="spec-key">Manufacturer Part #</td>
+                      <td class="spec-val">${product.oemCode}</td>
+                    </tr>
+                    ${Object.entries(product.specs).map(([key, val]) => `
+                      <tr>
+                        <td class="spec-key">${key}</td>
+                        <td class="spec-val">${val}</td>
+                      </tr>
+                    `).join('')}
+                    <tr>
+                      <td class="spec-key">Confirmed Compatible Vehicles</td>
+                      <td class="spec-val">${product.compatibility.join(', ')}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Related Spares -->
+          <div style="margin-top:5rem;">
+            <div class="section-row-header">
+              <div class="section-title-wrap">
+                <div class="section-eyebrow">FREQUENTLY BOUGHT TOGETHER</div>
+                <h3>MATCHING SERVICE &amp; MAINTENANCE ITEMS</h3>
+              </div>
+            </div>
+            <div class="product-grid">
+              ${PRODUCTS_DATABASE.filter(p => p.id !== product.id).slice(0, 4).map(p => renderProductCard(p)).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: BRANDS DIRECTORY
+       -------------------------------------------------------------------------- */
+    function renderBrandsView() {
+      return `
+        <div class="container" style="padding:3rem 0 5rem 0;">
+          <div class="meta-line">
+            <a href="#home" onclick="navigateTo('home'); return false;">Home</a>
+            <span class="meta-sep">/</span>
+            <span>Manufacturer Directory</span>
+          </div>
+          <h2 style="font-size:2.5rem; margin-top:0.5rem; margin-bottom:0.75rem;">Verified Automotive Brands &amp; OE Suppliers</h2>
+          <p style="color:var(--text-muted); max-width:680px; margin-bottom:2.5rem; line-height:1.6;">
+            We maintain direct trade accounts with Tier-1 Japanese, German and international automotive suppliers. We do not stock grey-market or counterfeit imitations.
+          </p>
+
+          <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:1.5rem;">
+            ${BRANDS_DATABASE.map(brand => `
+              <div style="background:#FFFFFF; border:1px solid var(--border-subtle); padding:1.75rem; border-radius:var(--radius-sm); display:flex; flex-direction:column; justify-content:space-between; gap:1rem;">
+                <div>
+                  <div class="meta-line" style="margin-bottom:0.25rem;">
+                    <span>ORIGIN: ${brand.country}</span>
+                    <span class="meta-sep">·</span>
+                    <span style="color:#059669;">${brand.count} ACTIVE CATALOG ITEMS</span>
+                  </div>
+                  <h3 style="font-size:1.6rem; color:var(--bg-dark);">${brand.name}</h3>
+                  <p style="font-size:0.875rem; color:var(--text-muted); margin-top:0.5rem; line-height:1.5;">
+                    ${brand.desc}
+                  </p>
+                </div>
+                <button class="btn btn-outline btn-sm" style="align-self:flex-start;" onclick="filterByBrand('${brand.name}')">
+                  Filter Catalog for ${brand.name}
+                  <i data-lucide="arrow-right" style="width:14px; height:14px;"></i>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: COMMERCIAL, FLEET & GARAGE WHOLESALE ORDERS
+       -------------------------------------------------------------------------- */
+    function renderCommercialView() {
+      return `
+        <div class="commercial-hero-banner">
+          <div class="container">
+            <div class="meta-line" style="color:#F87171; margin-bottom:0.5rem;">B2B COMMERCIAL TRADE ACCOUNTS</div>
+            <h1 style="font-size:clamp(2.2rem, 4.5vw, 3.75rem); max-width:800px; line-height:1.05;">
+              SUPPLYING INDEPENDENT WORKSHOPS, FLEETS &amp; PARTS RESELLERS
+            </h1>
+            <p style="font-size:1.05rem; color:#CBD5E1; max-width:640px; margin-top:1rem; line-height:1.6;">
+              Access scheduled wholesale pricing, multi-line OEM bill-of-materials quotes, and 30-day credit accounts for registered Kenyan transport companies.
+            </p>
+          </div>
+        </div>
+
+        <div class="container">
+          <div class="commercial-form-grid">
+            <!-- Left: RFQ Submission Form -->
+            <div style="background:#FFFFFF; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:2rem;">
+              <h3 style="font-size:1.5rem; margin-bottom:0.5rem;">Request Multi-Item Bulk Quotation</h3>
+              <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">
+                Submit your fleet part numbers, vehicle chassis codes, or workshop replenishment list. Our technical sales team responds within 2 business hours.
+              </p>
+
+              <form onsubmit="handleCommercialSubmit(event)">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                  <div class="form-group">
+                    <label class="form-label">Business / Garage Name *</label>
+                    <input type="text" class="form-input" required placeholder="e.g. Apex Auto Garage Ltd" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Contact Person *</label>
+                    <input type="text" class="form-input" required placeholder="e.g. John Mwangi (Workshop Head)" />
+                  </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                  <div class="form-group">
+                    <label class="form-label">Direct Phone / WhatsApp *</label>
+                    <input type="tel" class="form-input" required placeholder="+254 712 345 678" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Business Email *</label>
+                    <input type="email" class="form-input" required placeholder="service@garage.co.ke" />
+                  </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                  <div class="form-group">
+                    <label class="form-label">Location / County *</label>
+                    <input type="text" class="form-input" required placeholder="e.g. Industrial Area, Nairobi / Mombasa" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Fleet Size / Monthly Volume</label>
+                    <select class="form-select">
+                      <option>1 - 5 Vehicles (Independent Garage)</option>
+                      <option>6 - 25 Vehicles (Fleet / Matatu Sacco)</option>
+                      <option>26+ Heavy Commercial / Long Haul Fleet</option>
+                      <option>Parts Retailer / Wholesaler</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:1.5rem;">
+                  <label class="form-label">List of Required Parts, OEM Codes &amp; Quantities *</label>
+                  <textarea class="form-input" style="height:120px; padding:0.75rem;" required placeholder="e.g.:&#10;1. 10x Denso IK20TT Spark Plugs&#10;2. 5x Isuzu D-Max Fuel Filters (8-98159693-0)&#10;3. 4x Toyota Prado Front Brake Pads (04465-35290)"></textarea>
+                </div>
+
+                <div style="padding:1rem; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:var(--radius-sm); font-size:0.75rem; color:#64748B; margin-bottom:1.5rem;">
+                  <strong>Enterprise Processing Notice:</strong> All commercial orders are issued with official KRA ETR compliant tax invoices with PIN validation.
+                </div>
+
+                <button type="submit" class="btn btn-red btn-lg" style="width:100%;">
+                  <i data-lucide="send" style="width:18px; height:18px;"></i>
+                  Submit Formal RFQ for Processing
+                </button>
+              </form>
+            </div>
+
+            <!-- Right: B2B Benefits -->
+            <div>
+              <h3 style="font-size:1.4rem; margin-bottom:1.5rem;">Trade Account Advantages</h3>
+              <div style="display:flex; flex-direction:column; gap:1.25rem;">
+                <div style="display:flex; gap:1rem; align-items:flex-start;">
+                  <div style="width:40px; height:40px; background:#FEF2F2; color:var(--color-brand-red); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i data-lucide="percent" style="width:20px; height:20px;"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size:1.05rem; margin-bottom:0.25rem;">Volume Tiered Pricing</h4>
+                    <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Structured margins for recurring trade buyers and certified garages across East Africa.</p>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:1rem; align-items:flex-start;">
+                  <div style="width:40px; height:40px; background:#FEF2F2; color:var(--color-brand-red); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i data-lucide="file-check" style="width:20px; height:20px;"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size:1.05rem; margin-bottom:0.25rem;">KRA ETR Compliant Invoicing</h4>
+                    <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Direct corporate VAT invoices issued with automated electronic tax register receipts.</p>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:1rem; align-items:flex-start;">
+                  <div style="width:40px; height:40px; background:#FEF2F2; color:var(--color-brand-red); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i data-lucide="truck" style="width:20px; height:20px;"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size:1.05rem; margin-bottom:0.25rem;">Priority Warehouse Dispatch</h4>
+                    <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">Dedicated logistics riders dispatched directly to your garage bay to minimise vehicle downtime.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: TECH & WORKSHOP GUIDES (EDITORIAL SECTION FROM REFERENCE IMAGE)
+       -------------------------------------------------------------------------- */
+    function renderGuidesView() {
+      return `
+        <div class="container" style="padding:3rem 0 5rem 0;">
+          <div class="meta-line">
+            <a href="#home" onclick="navigateTo('home'); return false;">Home</a>
+            <span class="meta-sep">/</span>
+            <span>Master Technician Guides</span>
+          </div>
+          <h2 style="font-size:2.5rem; margin-top:0.5rem; margin-bottom:0.75rem;">Workshop Engineering &amp; Preventive Maintenance</h2>
+          <p style="color:var(--text-muted); max-width:640px; margin-bottom:3rem; line-height:1.6;">
+            Practical field knowledge written by certified automotive diagnosticians for Kenyan driving environments.
+          </p>
+
+          <div style="display:flex; flex-direction:column; gap:2.5rem;">
+            <article style="background:#FFFFFF; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); overflow:hidden; display:grid; grid-template-columns:400px 1fr; gap:2rem;">
+              <img src="./src/assets/images/engine_bay_detail_1791799145302.jpg" alt="Engine Overheating Diagnostic" style="width:100%; height:100%; object-fit:cover;" />
+              <div style="padding:2rem 2rem 2rem 0; display:flex; flex-direction:column; justify-content:center;">
+                <div class="meta-line" style="margin-bottom:0.5rem;">
+                  <span>GUIDE #01</span><span class="meta-sep">·</span><span>COOLING SYSTEM DIAGNOSTICS</span>
+                </div>
+                <h3 style="font-size:1.75rem; color:var(--bg-dark); margin-bottom:0.75rem;">Signs of Overheating &amp; Cylinder Head Warp in Turbo Diesels</h3>
+                <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.25rem;">
+                  Toyota D-4D and Isuzu diesel engines generate immense combustion chamber pressures. A clogged intercooler or sticky 82°C thermostat causes micro-boiling in the cylinder head passages. Always verify coolant expansion tank bubbling and pressure-test the radiator cap before long upcountry journeys.
+                </p>
+                <button class="btn btn-red btn-sm" style="align-self:flex-start;" onclick="filterByCategory('Cooling System')">Browse Replacement Radiators &amp; Coolants</button>
+              </div>
+            </article>
+
+            <article style="background:#FFFFFF; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); overflow:hidden; display:grid; grid-template-columns:400px 1fr; gap:2rem;">
+              <img src="./src/assets/images/wheel_rim_alloy_1791799106377.jpg" alt="Braking System Guide" style="width:100%; height:100%; object-fit:cover;" />
+              <div style="padding:2rem 2rem 2rem 0; display:flex; flex-direction:column; justify-content:center;">
+                <div class="meta-line" style="margin-bottom:0.5rem;">
+                  <span>GUIDE #02</span><span class="meta-sep">·</span><span>BRAKE DYNAMICS</span>
+                </div>
+                <h3 style="font-size:1.75rem; color:var(--bg-dark); margin-bottom:0.75rem;">Why Cheap Brake Pads Warp Rotors on Kenyan Highways</h3>
+                <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.25rem;">
+                  Counterfeit semi-metallic pads have inconsistent resin distribution that forms cementite hotspots on cast iron rotors above 350°C. Upgrading to Brembo ceramic formulations dissipates heat symmetrically and saves costly rotor replacement.
+                </p>
+                <button class="btn btn-red btn-sm" style="align-self:flex-start;" onclick="filterByCategory('Braking System')">Shop Certified Ceramic Pads</button>
+              </div>
+            </article>
+          </div>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: WISHLIST
+       -------------------------------------------------------------------------- */
+    function renderWishlistView() {
+      const savedProducts = PRODUCTS_DATABASE.filter(p => AppState.wishlist.includes(p.id));
+
+      return `
+        <div class="container" style="padding:3rem 0 5rem 0;">
+          <div class="meta-line">
+            <a href="#home" onclick="navigateTo('home'); return false;">Home</a>
+            <span class="meta-sep">/</span>
+            <span>Saved Parts &amp; Spares</span>
+          </div>
+          <h2 style="font-size:2.5rem; margin-top:0.5rem; margin-bottom:1.5rem;">My Saved Automotive Parts (${savedProducts.length})</h2>
+
+          ${savedProducts.length === 0 ? `
+            <div style="text-align:center; padding:5rem 2rem; background:#FFFFFF; border:1px solid var(--border-subtle); border-radius:var(--radius-sm);">
+              <i data-lucide="heart" style="width:48px; height:48px; color:#CBD5E1; margin-bottom:1rem;"></i>
+              <h3 style="font-size:1.4rem; margin-bottom:0.5rem;">Your Wishlist is Empty</h3>
+              <p style="color:var(--text-muted); font-size:0.875rem; margin-bottom:1.5rem;">Click the heart icon on any product card to bookmark parts for upcoming scheduled servicing.</p>
+              <button class="btn btn-red" onclick="navigateTo('catalog')">Browse Parts Catalog</button>
+            </div>
+          ` : `
+            <div class="product-grid">
+              ${savedProducts.map(p => renderProductCard(p)).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: CHECKOUT (WITH KENYAN M-PESA & PAYSTACK WORKFLOWS)
+       -------------------------------------------------------------------------- */
+    function renderCheckoutView() {
+      if (AppState.cart.length === 0) {
+        return `
+          <div class="container" style="padding:5rem 0; text-align:center;">
+            <i data-lucide="shopping-cart" style="width:48px; height:48px; color:#94A3B8; margin-bottom:1rem;"></i>
+            <h2 style="font-size:2rem; margin-bottom:0.5rem;">Your Cart is Empty</h2>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">Add automotive spares to your cart before proceeding to checkout.</p>
+            <button class="btn btn-red" onclick="navigateTo('catalog')">Browse Catalog</button>
+          </div>
+        `;
+      }
+
+      const subtotal = AppState.cart.reduce((sum, item) => sum + (item.product.priceKes * item.quantity), 0);
+      const deliveryFee = 600; // Flat Nairobi standard delivery
+      const grandTotal = subtotal + deliveryFee;
+
+      return `
+        <div class="container">
+          <div style="padding-top:2.5rem;">
+            <div class="meta-line">
+              <a href="#home" onclick="navigateTo('home'); return false;">Home</a>
+              <span class="meta-sep">/</span>
+              <span>Checkout Order</span>
+            </div>
+            <h1 style="font-size:2.5rem; margin-top:0.5rem;">Secure Checkout</h1>
+          </div>
+
+          <form onsubmit="handleCheckoutSubmit(event)">
+            <div class="checkout-grid">
+              <!-- Left Column: Customer & Delivery Information -->
+              <div>
+                <!-- Step 1: Customer Contact -->
+                <div class="checkout-card">
+                  <h3 class="checkout-step-title">
+                    <span style="width:28px; height:28px; background:var(--bg-dark); color:#FFFFFF; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">1</span>
+                    Customer Contact &amp; M-Pesa Number
+                  </h3>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                    <div class="form-group">
+                      <label class="form-label">Full Name *</label>
+                      <input type="text" id="chk-name" class="form-input" required placeholder="e.g. David Kiprono" />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Email Address (For Tax Receipt) *</label>
+                      <input type="email" id="chk-email" class="form-input" required placeholder="david@example.com" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Safaricom Mobile Phone (For M-Pesa STK Push) *</label>
+                    <input type="tel" id="chk-phone" class="form-input" required placeholder="e.g. 0712 345 678 or +254 712 345 678" />
+                  </div>
+                </div>
+
+                <!-- Step 2: Delivery Destination -->
+                <div class="checkout-card">
+                  <h3 class="checkout-step-title">
+                    <span style="width:28px; height:28px; background:var(--bg-dark); color:#FFFFFF; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">2</span>
+                    Delivery Locality &amp; Address
+                  </h3>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                    <div class="form-group">
+                      <label class="form-label">County / Region *</label>
+                      <select class="form-select" id="chk-county">
+                        <option>Nairobi County</option>
+                        <option>Kiambu County</option>
+                        <option>Mombasa County</option>
+                        <option>Nakuru County</option>
+                        <option>Kisumu County</option>
+                        <option>Uasin Gishu (Eldoret)</option>
+                        <option>Machakos County</option>
+                        <option>Kajiado County</option>
+                        <option>Other Upcountry County</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Delivery Method *</label>
+                      <select class="form-select" id="chk-method">
+                        <option>Same-Day Nairobi Express Rider (KES 600)</option>
+                        <option>Upcountry G4S / Fargo Courier Depot Pickup (KES 850)</option>
+                        <option>Self-Collection at Industrial Area Depot, Nairobi (FREE)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Street / Garage / House Details *</label>
+                    <input type="text" id="chk-address" class="form-input" required placeholder="e.g. Workshop Bay 4, Lusaka Road, Industrial Area" />
+                  </div>
+                </div>
+
+                <!-- Step 3: Payment Method -->
+                <div class="checkout-card">
+                  <h3 class="checkout-step-title">
+                    <span style="width:28px; height:28px; background:var(--bg-dark); color:#FFFFFF; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">3</span>
+                    Choose Payment Channel
+                  </h3>
+
+                  <!-- M-Pesa Option -->
+                  <div class="payment-option-tab active" id="pay-opt-mpesa" onclick="selectPaymentMethod('mpesa')">
+                    <input type="radio" name="payment_channel" value="mpesa" checked />
+                    <span class="mpesa-badge-logo">M-PESA</span>
+                    <div>
+                      <div style="font-weight:700; font-size:0.95rem;">Lipa na M-Pesa (Instant STK Push)</div>
+                      <div style="font-size:0.75rem; color:#64748B;">Enter your Safaricom PIN directly on your phone when prompted.</div>
+                    </div>
+                  </div>
+
+                  <!-- Paystack Option -->
+                  <div class="payment-option-tab" id="pay-opt-paystack" onclick="selectPaymentMethod('paystack')">
+                    <input type="radio" name="payment_channel" value="paystack" />
+                    <span class="paystack-badge-logo">PAYSTACK</span>
+                    <div>
+                      <div style="font-weight:700; font-size:0.95rem;">Debit / Credit Card &amp; Apple Pay via Paystack</div>
+                      <div style="font-size:0.75rem; color:#64748B;">PCI-DSS Level 1 certified gateway processing Visa &amp; Mastercard.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Column: Order Summary & Pay Button -->
+              <div>
+                <div class="checkout-card" style="position:sticky; top:90px;">
+                  <h3 style="font-size:1.3rem; margin-bottom:1rem; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">Order Summary</h3>
+                  <div style="display:flex; flex-direction:column; gap:0.85rem; margin-bottom:1.5rem; max-height:260px; overflow-y:auto;">
+                    ${AppState.cart.map(item => `
+                      <div style="display:flex; justify-content:space-between; gap:0.5rem; font-size:0.85rem;">
+                        <div>
+                          <div style="font-weight:700;">${item.product.name}</div>
+                          <div style="font-size:0.72rem; color:var(--text-muted); font-family:var(--font-mono);">QTY: ${item.quantity} × KES ${item.product.priceKes.toLocaleString()}</div>
+                        </div>
+                        <div class="tabular-nums" style="font-weight:700;">
+                          KES ${(item.product.priceKes * item.quantity).toLocaleString()}
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+
+                  <div style="border-top:1px solid var(--border-subtle); padding-top:1rem; display:flex; flex-direction:column; gap:0.5rem; font-size:0.875rem;">
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:var(--text-muted);">Parts Subtotal:</span>
+                      <span class="tabular-nums">KES ${subtotal.toLocaleString()}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:var(--text-muted);">Delivery Charge:</span>
+                      <span class="tabular-nums">KES ${deliveryFee.toLocaleString()}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                      <span style="color:var(--text-muted);">VAT (16% Included):</span>
+                      <span class="tabular-nums">KES ${Math.round(grandTotal * 0.16).toLocaleString()}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:1.25rem; font-weight:800; border-top:1px solid var(--border-subtle); padding-top:0.75rem; margin-top:0.5rem;">
+                      <span>Total Amount:</span>
+                      <span class="tabular-nums" style="color:var(--color-brand-red);">KES ${grandTotal.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-red btn-lg" style="width:100%; margin-top:1.5rem;">
+                    <i data-lucide="lock" style="width:18px; height:18px;"></i>
+                    Proceed to Pay (KES ${grandTotal.toLocaleString()})
+                  </button>
+                  <p style="text-align:center; font-size:0.72rem; color:var(--text-muted); margin-top:0.75rem;">
+                    256-bit SSL encrypted. Safe payments powered by Safaricom &amp; Paystack.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: ORDER SUCCESS CONFIRMATION
+       -------------------------------------------------------------------------- */
+    function renderOrderSuccessView() {
+      const orderNumber = 'APX-' + Math.floor(100000 + Math.random() * 900000);
+      return `
+        <div class="container" style="padding:5rem 0; text-align:center; max-width:640px;">
+          <div style="width:72px; height:72px; background:#ECFDF5; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1.5rem; color:#059669;">
+            <i data-lucide="check-circle" style="width:40px; height:40px;"></i>
+          </div>
+          <h1 style="font-size:2.5rem; margin-bottom:0.5rem;">Order Confirmed!</h1>
+          <p style="font-size:1.05rem; color:var(--text-muted); margin-bottom:1.5rem;">
+            Your order <strong>#${orderNumber}</strong> has been logged in our Nairobi dispatch management system.
+          </p>
+          <div style="background:#FFFFFF; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:1.5rem; text-align:left; margin-bottom:2rem; font-size:0.875rem;">
+            <div style="margin-bottom:0.75rem; font-weight:700; color:var(--bg-dark);">Next Dispatch Steps:</div>
+            <ul style="padding-left:1.25rem; display:flex; flex-direction:column; gap:0.4rem; color:#475569;">
+              <li>Our parts technician will phone you to confirm chassis fitment before packaging.</li>
+              <li>You will receive an automated Safaricom SMS with the rider/G4S parcel tracking waybill.</li>
+              <li>A digital KRA tax invoice has been routed to your registered email address.</li>
+            </ul>
+          </div>
+          <button class="btn btn-red btn-lg" onclick="navigateTo('home')">Return to Storefront</button>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       VIEW: CONTACT & INDUSTRIAL AREA HUB
+       -------------------------------------------------------------------------- */
+    function renderContactView() {
+      return `
+        <div class="container" style="padding:3rem 0 5rem 0;">
+          <div class="meta-line">
+            <a href="#home" onclick="navigateTo('home'); return false;">Home</a>
+            <span class="meta-sep">/</span>
+            <span>Depot &amp; Contact Desk</span>
+          </div>
+          <h2 style="font-size:2.5rem; margin-top:0.5rem; margin-bottom:0.75rem;">AutoPro Central Distribution Hub</h2>
+          <p style="color:var(--text-muted); max-width:680px; margin-bottom:3rem; line-height:1.6;">
+            Visit our physical parts counter in Nairobi's Industrial Area for in-person inspection, OEM cross-reference verification, or collection of heavy truck assemblies.
+          </p>
+
+          <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:3rem;">
+            <div style="background:#FFFFFF; border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:2rem;">
+              <h3 style="font-size:1.5rem; margin-bottom:1.25rem;">Depot Details</h3>
+              <div style="display:flex; flex-direction:column; gap:1.25rem; font-size:0.9rem;">
+                <div>
+                  <div class="meta-line" style="margin-bottom:0.25rem;">PHYSICAL ADDRESS</div>
+                  <strong style="color:var(--bg-dark);">Commercial Street, Next to Associated Motors, Industrial Area, Nairobi, Kenya</strong>
+                </div>
+                <div>
+                  <div class="meta-line" style="margin-bottom:0.25rem;">TELEPHONE &amp; WHATSAPP DIRECT</div>
+                  <strong style="color:var(--bg-dark);">+254 700 892 450 / +254 722 000 123</strong>
+                </div>
+                <div>
+                  <div class="meta-line" style="margin-bottom:0.25rem;">OPERATING HOURS</div>
+                  <div>Monday to Friday: <strong>7:30 AM – 6:30 PM</strong></div>
+                  <div>Saturday: <strong>8:00 AM – 4:00 PM</strong></div>
+                  <div>Sunday &amp; Public Holidays: Closed (Emergency breakdown hotline available)</div>
+                </div>
+                <div>
+                  <div class="meta-line" style="margin-bottom:0.25rem;">PAYMENT CHANNELS ACCEPTED AT COUNTER</div>
+                  <div>Lipa na M-Pesa (Buy Goods Till 882910), Visa, Mastercard, Bank RTGS.</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#F8FAFC; border:1px solid #CBD5E1; border-radius:var(--radius-sm); padding:2rem;">
+              <h3 style="font-size:1.5rem; margin-bottom:1rem;">Technical Fitment Query</h3>
+              <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem;">
+                Not sure if a specific part fits your engine or chassis? Send your chassis number (VIN) to our engineering team.
+              </p>
+              <form onsubmit="alert('Thank you! Our technical specialist will inspect the parts catalogue for your chassis number and WhatsApp you.'); event.preventDefault();">
+                <div class="form-group" style="margin-bottom:0.85rem;">
+                  <label class="form-label">Vehicle Chassis # (VIN)</label>
+                  <input type="text" class="form-input" required placeholder="e.g. KDJ150-0019284 / NZE141-..." />
+                </div>
+                <div class="form-group" style="margin-bottom:0.85rem;">
+                  <label class="form-label">Part Needed</label>
+                  <input type="text" class="form-input" required placeholder="e.g. Front steering rack assembly" />
+                </div>
+                <div class="form-group" style="margin-bottom:1.25rem;">
+                  <label class="form-label">Your WhatsApp Phone #</label>
+                  <input type="tel" class="form-input" required placeholder="+254 7..." />
+                </div>
+                <button type="submit" class="btn btn-red" style="width:100%;">Send Fitment Request</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* --------------------------------------------------------------------------
+       REUSABLE PRODUCT CARD COMPONENT
+       -------------------------------------------------------------------------- */
+    function renderProductCard(product) {
+      const isWishlisted = AppState.wishlist.includes(product.id);
+
+      // Fitment tag
+      let fitmentTag = '';
+      if (AppState.selectedVehicle) {
+        const isMatch = product.compatibility.some(c =>
+          c.toLowerCase().includes(AppState.selectedVehicle.model.toLowerCase()) ||
+          c.toLowerCase().includes(AppState.selectedVehicle.make.toLowerCase()) ||
+          c.toLowerCase().includes('universal')
+        );
+        if (isMatch) {
+          fitmentTag = `<div class="fitment-tag fit-exact"><i data-lucide="check" style="width:12px; height:12px;"></i> Fits ${AppState.selectedVehicle.model}</div>`;
+        } else {
+          fitmentTag = `<div class="fitment-tag fit-universal">Universal / Other</div>`;
+        }
+      } else {
+        fitmentTag = `<div class="fitment-tag fit-universal">${product.brand}</div>`;
+      }
+
+      return `
+        <article class="product-card">
+          <div class="product-card-media" onclick="navigateTo('pdp', '${product.id}')" style="cursor:pointer;">
+            ${fitmentTag}
+            <button class="wishlist-btn-card ${isWishlisted ? 'active' : ''}" onclick="event.stopPropagation(); toggleWishlist('${product.id}')" title="Bookmark part">
+              <i data-lucide="heart" style="width:16px; height:16px;"></i>
+            </button>
+            <img src="${product.image}" alt="${product.name}" class="product-card-img" onerror="this.src='./src/assets/images/wheel_rim_alloy_1791799106377.jpg';" />
+          </div>
+
+          <div class="product-card-body">
+            <div>
+              <div class="product-brand-kicker">${product.brand}</div>
+              <h4 class="product-card-title" onclick="navigateTo('pdp', '${product.id}')">${product.name}</h4>
+              <div class="product-card-oem">OEM: ${product.oemCode}</div>
+            </div>
+
+            <div class="product-card-footer">
+              <div class="product-price-box">
+                <span class="price-curr">KES</span>
+                <span class="price-val">${product.priceKes.toLocaleString()}</span>
+              </div>
+              <button class="add-cart-icon-btn" onclick="addToCart('${product.id}')" title="Add to cart">
+                <i data-lucide="plus" style="width:20px; height:20px;"></i>
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    /* ==========================================================================
+       7. CATALOG FILTERING LOGIC
+       ========================================================================== */
+    function getFilteredProducts() {
+      return PRODUCTS_DATABASE.filter(product => {
+        // Category filter
+        if (AppState.filters.category !== 'all' && product.category !== AppState.filters.category) {
+          return false;
+        }
+
+        // Brand filter
+        if (AppState.filters.brand !== 'all' && product.brand !== AppState.filters.brand) {
+          return false;
+        }
+
+        // Price filter
+        if (product.priceKes > AppState.filters.maxPrice) {
+          return false;
+        }
+
+        // Search query filter
+        if (AppState.filters.searchQuery) {
+          const q = AppState.filters.searchQuery.toLowerCase();
+          const matchName = product.name.toLowerCase().includes(q);
+          const matchBrand = product.brand.toLowerCase().includes(q);
+          const matchOem = product.oemCode.toLowerCase().includes(q);
+          const matchComp = product.compatibility.some(c => c.toLowerCase().includes(q));
+          if (!matchName && !matchBrand && !matchOem && !matchComp) {
+            return false;
+          }
+        }
+
+        // Fitment filter (if user selected a vehicle)
+        if (AppState.selectedVehicle) {
+          const isMatch = product.compatibility.some(c =>
+            c.toLowerCase().includes(AppState.selectedVehicle.model.toLowerCase()) ||
+            c.toLowerCase().includes(AppState.selectedVehicle.make.toLowerCase()) ||
+            c.toLowerCase().includes('universal')
+          );
+          if (!isMatch) return false;
+        }
+
+        return true;
+      }).sort((a, b) => {
+        if (AppState.filters.sortBy === 'price-asc') return a.priceKes - b.priceKes;
+        if (AppState.filters.sortBy === 'price-desc') return b.priceKes - a.priceKes;
+        if (AppState.filters.sortBy === 'brand') return a.brand.localeCompare(b.brand);
+        return 0; // popular default
+      });
+    }
+
+    function filterByCategory(cat) {
+      AppState.filters.category = cat;
+      navigateTo('catalog');
+    }
+
+    function filterByBrand(brand) {
+      AppState.filters.brand = brand;
+      navigateTo('catalog');
+    }
+
+    function setFilterCategory(cat) {
+      AppState.filters.category = cat;
+      renderCurrentView();
+    }
+
+    function setFilterBrand(brand) {
+      AppState.filters.brand = brand;
+      renderCurrentView();
+    }
+
+    function setFilterMaxPrice(val) {
+      AppState.filters.maxPrice = Number(val);
+      const label = document.getElementById('price-slider-val');
+      if (label) label.textContent = 'KES ' + Number(val).toLocaleString();
+      renderCurrentView();
+    }
+
+    function setSortBy(val) {
+      AppState.filters.sortBy = val;
+      renderCurrentView();
+    }
+
+    function resetAllFilters() {
+      AppState.filters = {
+        category: 'all',
+        brand: 'all',
+        maxPrice: 100000,
+        onlyCompatible: false,
+        searchQuery: '',
+        sortBy: 'popular'
+      };
+      AppState.selectedVehicle = null;
+      saveState();
+      renderCurrentView();
+    }
+
+    /* ==========================================================================
+       8. VEHICLE FITMENT SELECTOR HANDLERS
+       ========================================================================== */
+    function scrollToVehicleFinder() {
+      if (AppState.currentView !== 'home') {
+        navigateTo('home');
+      }
+      setTimeout(() => {
+        const el = document.getElementById('vehicle-finder-anchor');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+
+    function onMakeChange(make) {
+      const modelSelect = document.getElementById('v-sel-model');
+      const yearSelect = document.getElementById('v-sel-year');
+      const engineSelect = document.getElementById('v-sel-engine');
+
+      if (!make) {
+        modelSelect.innerHTML = '<option value="">Select Make First</option>';
+        modelSelect.disabled = true;
+        yearSelect.disabled = true;
+        engineSelect.disabled = true;
+        return;
+      }
+
+      const availableModels = VEHICLES_DATABASE.filter(v => v.make === make);
+      modelSelect.innerHTML = '<option value="">Select Model...</option>' +
+        availableModels.map(v => `<option value="${v.model}">${v.model} (${v.generation})</option>`).join('');
+      modelSelect.disabled = false;
+      yearSelect.disabled = true;
+      engineSelect.disabled = true;
+    }
+
+    function onModelChange(model) {
+      const make = document.getElementById('v-sel-make').value;
+      const yearSelect = document.getElementById('v-sel-year');
+      const engineSelect = document.getElementById('v-sel-engine');
+
+      const vehicle = VEHICLES_DATABASE.find(v => v.make === make && v.model === model);
+      if (!vehicle) return;
+
+      yearSelect.innerHTML = '<option value="">Select Year...</option>' +
+        vehicle.years.map(y => `<option value="${y}">${y}</option>`).join('');
+      yearSelect.disabled = false;
+
+      engineSelect.innerHTML = '<option value="">Select Engine...</option>' +
+        vehicle.engines.map(e => `<option value="${e}">${e}</option>`).join('');
+      engineSelect.disabled = false;
+    }
+
+    function applyVehicleFitment() {
+      const make = document.getElementById('v-sel-make').value;
+      const model = document.getElementById('v-sel-model').value;
+      const year = document.getElementById('v-sel-year').value;
+      const engine = document.getElementById('v-sel-engine').value;
+
+      if (!make || !model) {
+        alert('Please choose at least Make and Model to filter compatible parts.');
+        return;
+      }
+
+      AppState.selectedVehicle = {
+        make,
+        model,
+        year: year || 'All Years',
+        engine: engine || 'All Engines'
+      };
+      saveState();
+      navigateTo('catalog');
+    }
+
+    function selectQuickVehicle(make, model) {
+      const vehicle = VEHICLES_DATABASE.find(v => v.make === make && v.model.includes(model)) || {
+        make,
+        model,
+        year: '2018',
+        engine: 'Standard'
+      };
+      AppState.selectedVehicle = {
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.years ? vehicle.years[0] : '2018',
+        engine: vehicle.engines ? vehicle.engines[0] : ''
+      };
+      saveState();
+      navigateTo('catalog');
+    }
+
+    function clearSelectedVehicle() {
+      AppState.selectedVehicle = null;
+      saveState();
+      renderCurrentView();
+    }
+
+    function updateVehicleStrip() {
+      const label = document.getElementById('active-vehicle-label');
+      const clearBtn = document.getElementById('clear-vehicle-btn');
+      if (!label) return;
+
+      if (AppState.selectedVehicle) {
+        label.innerHTML = `Shopping for: <strong style="color:var(--color-brand-red);">${AppState.selectedVehicle.year} ${AppState.selectedVehicle.make} ${AppState.selectedVehicle.model}</strong> (${AppState.selectedVehicle.engine || 'All trims'}) · Guaranteed Fitment Active`;
+        if (clearBtn) clearBtn.style.display = 'inline-flex';
+      } else {
+        label.innerHTML = `No vehicle selected. Choose your make &amp; model for guaranteed fitment.`;
+        if (clearBtn) clearBtn.style.display = 'none';
+      }
+    }
+
+    /* ==========================================================================
+       9. CART & WISHLIST LOGIC
+       ========================================================================== */
+    function addToCart(productId, qty = 1) {
+      const product = PRODUCTS_DATABASE.find(p => p.id === productId);
+      if (!product) return;
+
+      const existing = AppState.cart.find(item => item.product.id === productId);
+      if (existing) {
+        existing.quantity += qty;
+      } else {
+        AppState.cart.push({ product, quantity: qty });
+      }
+
+      saveState();
+      renderCartDrawerItems();
+      openCartDrawer();
+    }
+
+    function addToCartFromPdp(productId) {
+      const qtyInput = document.getElementById('pdp-qty-input');
+      const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+      addToCart(productId, qty);
+    }
+
+    function incrementPdpQty() {
+      const input = document.getElementById('pdp-qty-input');
+      if (input) input.value = parseInt(input.value) + 1;
+    }
+
+    function decrementPdpQty() {
+      const input = document.getElementById('pdp-qty-input');
+      if (input && parseInt(input.value) > 1) {
+        input.value = parseInt(input.value) - 1;
+      }
+    }
+
+    function updateCartItemQty(productId, delta) {
+      const item = AppState.cart.find(i => i.product.id === productId);
+      if (!item) return;
+
+      item.quantity += delta;
+      if (item.quantity <= 0) {
+        AppState.cart = AppState.cart.filter(i => i.product.id !== productId);
+      }
+      saveState();
+      renderCartDrawerItems();
+      if (AppState.currentView === 'checkout') renderCurrentView();
+    }
+
+    function toggleWishlist(productId) {
+      if (AppState.wishlist.includes(productId)) {
+        AppState.wishlist = AppState.wishlist.filter(id => id !== productId);
+      } else {
+        AppState.wishlist.push(productId);
+      }
+      saveState();
+      renderCurrentView();
+    }
+
+    function updateCounters() {
+      const cartCount = AppState.cart.reduce((sum, i) => sum + i.quantity, 0);
+      const cartBadge = document.getElementById('cart-badge');
+      if (cartBadge) cartBadge.textContent = cartCount;
+
+      const drawerCartCount = document.getElementById('drawer-cart-count');
+      if (drawerCartCount) drawerCartCount.textContent = cartCount;
+
+      const wishBadge = document.getElementById('wishlist-badge');
+      if (wishBadge) wishBadge.textContent = AppState.wishlist.length;
+
+      const subtotal = AppState.cart.reduce((sum, item) => sum + (item.product.priceKes * item.quantity), 0);
+      const subtotalEl = document.getElementById('cart-subtotal-kes');
+      if (subtotalEl) subtotalEl.textContent = 'KES ' + subtotal.toLocaleString();
+    }
+
+    function openCartDrawer() {
+      renderCartDrawerItems();
+      const backdrop = document.getElementById('cart-backdrop');
+      const drawer = document.getElementById('cart-drawer');
+      if (backdrop && drawer) {
+        backdrop.classList.add('open');
+        drawer.classList.add('open');
+      }
+    }
+
+    function closeCartDrawer() {
+      const backdrop = document.getElementById('cart-backdrop');
+      const drawer = document.getElementById('cart-drawer');
+      if (backdrop && drawer) {
+        backdrop.classList.remove('open');
+        drawer.classList.remove('open');
+      }
+    }
+
+    function renderCartDrawerItems() {
+      const container = document.getElementById('cart-items-container');
+      if (!container) return;
+
+      if (AppState.cart.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:3rem 1rem; color:var(--text-muted);">
+            <i data-lucide="shopping-cart" style="width:40px; height:40px; color:#CBD5E1; margin-bottom:0.75rem;"></i>
+            <p style="font-size:0.95rem; font-weight:600; color:var(--bg-dark);">Your cart is empty</p>
+            <p style="font-size:0.75rem; margin-top:0.25rem;">Explore our catalog to find matching replacement spares.</p>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = AppState.cart.map(item => `
+        <div class="cart-item-row">
+          <div class="cart-item-thumb">
+            <img src="${item.product.image}" alt="${item.product.name}" style="max-height:100%; object-fit:contain;" />
+          </div>
+          <div class="cart-item-info">
+            <div class="cart-item-title">${item.product.name}</div>
+            <div class="cart-item-price">KES ${item.product.priceKes.toLocaleString()}</div>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.35rem;">
+              <div class="qty-stepper" style="height:28px;">
+                <button class="qty-btn" style="width:24px; font-size:0.8rem;" onclick="updateCartItemQty('${item.product.id}', -1)">-</button>
+                <span style="padding:0 0.4rem; font-size:0.75rem; font-weight:700; font-family:var(--font-mono);">${item.quantity}</span>
+                <button class="qty-btn" style="width:24px; font-size:0.8rem;" onclick="updateCartItemQty('${item.product.id}', 1)">+</button>
+              </div>
+            </div>
+          </div>
+          <button style="color:#94A3B8; padding:0.25rem;" onclick="updateCartItemQty('${item.product.id}', -${item.quantity})" title="Remove item">
+            <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
+          </button>
+        </div>
+      `).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    /* ==========================================================================
+       10. SEARCH MODAL & LIVE SEARCH
+       ========================================================================== */
+    function openSearchModal() {
+      const modal = document.getElementById('search-modal');
+      const input = document.getElementById('global-search-input');
+      if (modal) modal.classList.add('open');
+      if (input) {
+        input.value = '';
+        setTimeout(() => input.focus(), 100);
+      }
+      handleLiveSearch('');
+    }
+
+    function closeSearchModal() {
+      const modal = document.getElementById('search-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function quickSearch(term) {
+      const input = document.getElementById('global-search-input');
+      if (input) input.value = term;
+      handleLiveSearch(term);
+    }
+
+    function handleLiveSearch(query) {
+      const box = document.getElementById('search-results-box');
+      if (!box) return;
+
+      const q = query.trim().toLowerCase();
+      let matches = PRODUCTS_DATABASE;
+      if (q) {
+        matches = PRODUCTS_DATABASE.filter(p =>
+          p.name.toLowerCase().includes(q) ||
+          p.brand.toLowerCase().includes(q) ||
+          p.oemCode.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.compatibility.some(c => c.toLowerCase().includes(q))
+        );
+      }
+
+      if (matches.length === 0) {
+        box.innerHTML = `
+          <div style="padding:2rem; text-align:center; color:var(--text-muted); font-size:0.875rem;">
+            No items matched "${query}". You can request a special OEM order with our parts counter.
+          </div>
+        `;
+        return;
+      }
+
+      box.innerHTML = matches.slice(0, 6).map(p => `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.75rem; border-bottom:1px solid var(--border-subtle); cursor:pointer;" onclick="closeSearchModal(); navigateTo('pdp', '${p.id}');">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <img src="${p.image}" style="width:44px; height:44px; object-fit:contain; background:#F8FAFC; border-radius:var(--radius-sm); padding:0.25rem;" />
+            <div>
+              <div style="font-size:0.85rem; font-weight:700; color:var(--bg-dark);">${p.name}</div>
+              <div class="meta-line"><span>${p.brand}</span><span class="meta-sep">·</span><span>OEM: ${p.oemCode}</span></div>
+            </div>
+          </div>
+          <div class="tabular-nums" style="font-weight:700; color:var(--color-brand-red); font-size:0.95rem;">
+            KES ${p.priceKes.toLocaleString()}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ==========================================================================
+       11. CHECKOUT & PAYMENT INTEGRATION SIMULATION
+       ========================================================================== */
+    let selectedPaymentChannel = 'mpesa';
+
+    function selectPaymentMethod(channel) {
+      selectedPaymentChannel = channel;
+      document.querySelectorAll('.payment-option-tab').forEach(tab => tab.classList.remove('active'));
+      const activeTab = document.getElementById(`pay-opt-${channel}`);
+      if (activeTab) activeTab.classList.add('active');
+    }
+
+    function handleCheckoutSubmit(e) {
+      e.preventDefault();
+
+      const phone = document.getElementById('chk-phone').value;
+      const subtotal = AppState.cart.reduce((sum, item) => sum + (item.product.priceKes * item.quantity), 0);
+      const grandTotal = subtotal + 600;
+
+      if (selectedPaymentChannel === 'mpesa') {
+        const phoneModalEl = document.getElementById('mpesa-modal-phone');
+        const amountModalEl = document.getElementById('mpesa-modal-amount');
+        if (phoneModalEl) phoneModalEl.textContent = phone;
+        if (amountModalEl) amountModalEl.textContent = 'KES ' + grandTotal.toLocaleString();
+
+        const mpesaModal = document.getElementById('mpesa-modal');
+        if (mpesaModal) mpesaModal.classList.add('open');
+      } else {
+        // Paystack boundary simulation
+        alert(`Connecting to Paystack Secure Checkout for KES ${grandTotal.toLocaleString()}...\n\nIntegration Notice: In production, this securely redirects to Paystack Inline / Standard checkout API (https://api.paystack.co/transaction/initialize) with server-side secret key protection.`);
+        AppState.cart = [];
+        saveState();
+        navigateTo('order-success');
+      }
+    }
+
+    function closeMpesaModal() {
+      const modal = document.getElementById('mpesa-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function simulateMpesaSuccess() {
+      closeMpesaModal();
+      AppState.cart = [];
+      saveState();
+      navigateTo('order-success');
+    }
+
+    function handleCommercialSubmit(e) {
+      e.preventDefault();
+      alert('Thank you! Your formal commercial quotation request has been received by AutoPro B2B Operations. A dedicated parts representative will contact you with KRA-compliant pricing within 2 hours.');
+      navigateTo('home');
+    }
+
+    /* ==========================================================================
+       12. GSAP & SCROLLTRIGGER ANIMATION INITIALISATION
+       ========================================================================== */
+    function initHomeAnimations() {
+      if (!window.gsap) return;
+
+      // Respect prefers-reduced-motion
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      try {
+        if (window.ScrollTrigger) {
+          gsap.registerPlugin(ScrollTrigger);
+        }
+
+        // Hero Entrance
+        gsap.from('.hero-headline-block', {
+          opacity: 0,
+          y: 30,
+          duration: 0.8,
+          ease: 'power3.out'
+        });
+
+        gsap.from('.hero-car-img', {
+          opacity: 0,
+          x: 40,
+          duration: 1,
+          ease: 'power3.out',
+          delay: 0.2
+        });
+
+        // Category Cards Stagger
+        gsap.from('.cat-icon-card', {
+          opacity: 0,
+          y: 20,
+          stagger: 0.08,
+          duration: 0.6,
+          ease: 'power2.out',
+          delay: 0.4
+        });
+      } catch(err) {
+        console.warn('GSAP Animation notice:', err);
+      }
+    }
+
+    /* ==========================================================================
+       13. APPLICATION BOOTSTRAP
+       ========================================================================== */
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCurrentView();
+      updateCounters();
+      updateVehicleStrip();
+
+      // Keyboard escape closes modals & drawers
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeCartDrawer();
+          closeSearchModal();
+          closeMpesaModal();
+        }
+      });
+    });
+  </script>
+<script data-eshop-skeleton-scrubber="">(()=>{if(!document.documentElement.hasAttribute("data-eshop-skeleton-preview"))return;const bar=n=>{if(!n||!n.parentElement||n.parentElement.closest("script,style,noscript,svg,[data-skeleton-text]"))return;const t=n.textContent.trim();if(!/\S/u.test(t))return;const e=document.createElement("span");e.className="eshop-skeleton-bar";e.dataset.skeletonText="";e.style.width=Math.max(8,Math.min(96,Math.round(t.length*2.7)))+"%";n.replaceWith(e)};const clean=r=>{const nodes=[];if(r.nodeType===1)nodes.push(r);if(r.querySelectorAll)nodes.push(...r.querySelectorAll("*"));for(const e of nodes){for(const a of ["alt","title","aria-label","placeholder","value","srcset"])e.removeAttribute(a);if(e.tagName==="IMG"){e.removeAttribute("src");e.classList.add("eshop-placeholder-media")}if(e.hasAttribute("href")&&!e.getAttribute("href").startsWith("#"))e.removeAttribute("href");if(e.hasAttribute("style")&&/url\s*\(/i.test(e.getAttribute("style"))){e.style.backgroundImage="linear-gradient(135deg,#d1d5db,#f3f4f6)"}}if(r.nodeType===3)bar(r);if(r.querySelectorAll){const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))bar(n)}};clean(document.body);new MutationObserver(()=>clean(document.body)).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["alt","title","aria-label","placeholder","value","src","srcset","href","style"]})})();</script></body>
+</html>
