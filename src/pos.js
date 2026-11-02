@@ -645,6 +645,33 @@ async function recordSharedStockUpdate(sku, stock) {
   }
 }
 
+async function applyMainStoreAllocations(tenantId, allocations) {
+  if (!tenantId || !Array.isArray(allocations)) {
+    throw new Error('Main Store allocations need a website and a product list.');
+  }
+  const createdAt = nowIso();
+  await transaction([
+    stmt(`INSERT INTO pos_settings (key,value) VALUES ('shared_tenant_id',?)
+      ON CONFLICT(key) DO UPDATE SET value=excluded.value`, [tenantId]),
+    ...allocations.flatMap((allocation) => {
+      const sku = String(allocation?.sku || '').trim();
+      const stock = Number(allocation?.pos_stock);
+      if (!sku || !Number.isSafeInteger(stock) || stock < 0) {
+        throw new Error('Each Main Store POS allocation needs a SKU and a whole-number stock value.');
+      }
+      return [
+        stmt('UPDATE pos_products SET stock_count=? WHERE sku=?', [stock, sku]),
+        stmt(`INSERT INTO shared_inventory (tenant_id,sku,stock,updated_at) VALUES (?,?,?,?)
+          ON CONFLICT(tenant_id,sku) DO UPDATE SET stock=excluded.stock,updated_at=excluded.updated_at`,
+        [tenantId, sku, stock, createdAt])
+      ];
+    })
+  ]);
+  await loadState();
+  await render();
+  return true;
+}
+
 async function addCategory(name) {
   const value = String(name || '').trim();
   if (!value) throw new Error('Enter a category name.');
@@ -1133,8 +1160,8 @@ export function createPosApp() {
     return `
     <main class="container pos-main ${hasSectionNav ? 'pos-main-with-tabs' : ''}">
       <header class="pos-header">
-        <a href="/" data-route="/" data-home-screen class="pos-brand ${path === '/pos/overview' ? 'pos-brand-overview' : ''}" aria-label="Craft home">
-          <img src="/eshop-logo.png" alt="">
+        <a href="/" data-route="/" data-home-screen class="pos-brand pos-brand-back ${path === '/pos/overview' ? 'pos-brand-overview' : ''}" aria-label="Back to Craft home">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
           ${title ? `<span>${escapeHtml(title)}</span>` : ''}
         </a>
       </header>
@@ -5342,7 +5369,7 @@ export function createPosApp() {
 
   return {
     init, render, refresh, recordSharedLocalSale, syncInventory: syncInventorySales,
-    recordSharedStockUpdate, saveProduct, listProducts, listCategories, listSales, listExpenses, listInstances,
+    recordSharedStockUpdate, applyMainStoreAllocations, saveProduct, listProducts, listCategories, listSales, listExpenses, listInstances,
     getCloudSyncStatus, syncCloudNow, switchCloudSyncTenant, replaceWithCloudShop, disconnectCloudSync, stopNearbySync,
     getSettings, addCategory, deleteProduct, listBusinessRecords, findProductByCode, addScannedBarcode
   };

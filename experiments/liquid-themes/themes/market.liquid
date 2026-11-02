@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ store.name | escape }}</title>
+    <style>
+      body { margin: 0; background: #eef4f7; color: #172b3a; font: 16px Arial, sans-serif; }
+      main { max-width: 1200px; margin: auto; padding: 32px 20px; }
+      h1 { font-size: clamp(2rem, 6vw, 3.5rem); }
+      .categories { display: flex; flex-wrap: wrap; gap: 10px; }
+      .categories article { background: #d7e8f0; border-radius: 999px; padding: 10px 16px; }
+      .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+      .product { background: white; border: 1px solid #c8d8e0; border-radius: 14px; padding: 12px; }
+      .product img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 9px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>{{ store.name | escape }}</h1>
+      <section class="categories" aria-label="Categories">
+        {% for category in categories %}
+          <article>{{ category.name | escape }}</article>
+        {% endfor %}
+      </section>
+      <section class="products" aria-label="Products">
+        {% for product in products %}
+          <article class="product">
+            {% if product.image %}<img src="{{ product.image | escape }}" alt="{{ product.name | escape }}">{% endif %}
+            <h2>{{ product.name | escape }}</h2>
+            <p>{{ product.price }}</p>
+          </article>
+        {% endfor %}
+      </section>
+    </main>
+  </body>
+</html>

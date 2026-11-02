@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import worker from "../cloudflare/worker.js";
 
@@ -12,7 +13,8 @@ function createEnv(selectedThemeId = themeId) {
   const catalog = {
     store: { website_theme_id: selectedThemeId },
     products: [{ id: 1, name: "Owner Product One" }],
-    categories: []
+    categories: [],
+    pages: [{ slug: "about", title: "About", content: "About our shop." }]
   };
   return {
     values,
@@ -47,9 +49,23 @@ function createEnv(selectedThemeId = themeId) {
     },
     ASSETS: {
       async fetch(request) {
-        return new Response("<html>internal template</html>", {
-          headers: { "Content-Type": "text/html; charset=utf-8" }
-        });
+        const prefix = "/liquid-themes/my-own-theme/";
+        const pathname = new URL(request.url).pathname;
+        if (!pathname.startsWith(prefix)) {
+          return new Response("<html>internal template</html>", {
+            headers: { "Content-Type": "text/html; charset=utf-8" }
+          });
+        }
+        try {
+          const contents = await readFile(new URL(
+            `../public/liquid-themes/my-own-theme/${pathname.slice(prefix.length)}`,
+            import.meta.url
+          ), "utf8");
+          return new Response(contents);
+        } catch (error) {
+          if (error.code !== "ENOENT") throw error;
+          return new Response("Not found", { status: 404 });
+        }
       }
     }
   };
@@ -86,7 +102,7 @@ test("Worker persists only a complete supported fill and serves that same publis
   assert.match(pointer.key, /^published-sites\/main\/cira-atelier-event-architecture-management\//);
   assert.equal(env.objects.get(pointer.key).body, publishedHtml);
 
-  const storefront = await worker.fetch(new Request("https://rrobin.co.ke/"), env);
+  const storefront = await worker.fetch(new Request("https://eshop-storefront.workers.dev/"), env);
   assert.equal(storefront.status, 200);
   const html = await storefront.text();
   assert.match(html, /Owner Product One/);
@@ -126,27 +142,27 @@ test("Worker rejects unsupported, incomplete, stale, and unauthenticated theme p
   assert.equal(env.objects.size, 0);
 });
 
-test("Worker accepts the Craft main storefront as a filled published theme", async () => {
-  const craftThemeId = "craft-main-storefront";
-  const env = createEnv(craftThemeId);
-  const html = publishedHtml
-    .replaceAll(themeId, craftThemeId)
-    .replace("<h1>Owner Shop</h1>", "<h1>Craft storefront</h1>");
-  const response = await worker.fetch(publishRequest({
-    theme_id: craftThemeId,
-    catalog_updated_at: catalogUpdatedAt,
-    html
-  }), env);
-  assert.equal(response.status, 200);
-  const body = await response.json();
-  assert.equal(body.theme_id, craftThemeId);
-  const pointer = JSON.parse(env.values.get("published-theme:main"));
-  assert.match(pointer.key, /^published-sites\/main\/craft-main-storefront\//);
+test("Worker accepts both new Liquid HTML storefront themes", async () => {
+  for (const themeId of ["aviya-luxury", "stepz-footwear"]) {
+    const env = createEnv(themeId);
+    const html = `<!doctype html><html><head><meta name="eshop-filled-theme" content="${themeId}"><meta name="eshop-liquid-theme" content="standalone"></head><body><script type="application/json" id="eshop-liquid-theme-catalog">{}</script><script src="/theme-packages/liquid-catalog-runtime.js" defer></script></body></html>`;
+    const response = await worker.fetch(publishRequest({
+      theme_id: themeId,
+      catalog_updated_at: catalogUpdatedAt,
+      html
+    }), env);
+
+    assert.equal(response.status, 200, `${themeId} should be publishable`);
+    assert.equal((await response.json()).theme_id, themeId);
+    const pointer = JSON.parse(env.values.get("published-theme:main"));
+    assert.equal(pointer.themeId, themeId);
+    assert.equal(env.objects.get(pointer.key).body, html);
+  }
 });
 
 test("storefront fails closed instead of serving an unpublished template", async () => {
   const env = createEnv();
-  const response = await worker.fetch(new Request("https://rrobin.co.ke/"), env);
+  const response = await worker.fetch(new Request("https://eshop-storefront.workers.dev/"), env);
   assert.equal(response.status, 503);
   assert.match(await response.text(), /not been filled and published/);
 });

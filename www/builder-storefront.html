@@ -5548,6 +5548,20 @@ const PageRenderers = {
                 </div>
               </div>
 
+              ${product.stock > 0 ? `
+                <details style="margin-top: 18px; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
+                  <summary style="cursor: pointer; font-weight: 600;">Request a hold</summary>
+                  <p style="color: var(--text-muted); margin: 10px 0 14px;">Send a request to the shop. The item is not reserved unless the owner approves it; approved holds expire after 24 hours.</p>
+                  <form data-product-hold-form data-product-id="${AppUtils.escapeHTML(product.id)}" style="display: grid; gap: 12px;">
+                    <label class="form-field"><span class="form-label">Your name</span><input class="form-input" name="customerName" autocomplete="name" maxlength="160" required></label>
+                    <label class="form-field"><span class="form-label">Email or phone</span><input class="form-input" name="contact" autocomplete="email" maxlength="240" required></label>
+                    <label class="form-field"><span class="form-label">Quantity</span><input class="form-input" name="quantity" type="number" min="1" max="${Math.min(99, Math.max(1, Number(product.stock) || 1))}" value="1" required></label>
+                    <button type="submit" class="btn-secondary">Send hold request</button>
+                    <p data-hold-status role="status" aria-live="polite" style="color:var(--text-muted);margin:0;"></p>
+                  </form>
+                </details>
+              ` : ""}
+
               <!-- Accordions: Specifications, Shipping, Provenance -->
               <div class="accordion-list">
                 <div class="accordion-item">
@@ -6928,6 +6942,97 @@ const AppController = {
   carouselTimer: null,
   carouselIndex: 0,
 
+  storefrontVisitorId() {
+    if (!window.__ESHOP_CLOUDFLARE_STOREFRONT__ || builderPreviewMode) return "";
+    try {
+      const key = "ESHOP_STOREFRONT_VISITOR_V1";
+      let id = window.localStorage.getItem(key);
+      if (!id) {
+        id = globalThis.crypto?.randomUUID?.() || "";
+        if (id) window.localStorage.setItem(key, id);
+      }
+      return id;
+    } catch (error) {
+      console.error("Anonymous storefront activity could not be initialized.", error);
+      return "";
+    }
+  },
+
+  recordStorefrontVisit(path) {
+    const visitorId = this.storefrontVisitorId();
+    if (!visitorId || path === "/account" || path.startsWith("/account/") || path === "/pos" || path.startsWith("/pos/")) return;
+    void fetch("/api/analytics/visit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visitor_id: visitorId, path: path.split(/[?#]/, 1)[0] || "/" })
+    }).then(response => {
+      if (!response.ok) throw new Error(`Visit analytics request failed (${response.status}).`);
+    }).catch(error => console.error("Storefront visit could not be reported.", error));
+  },
+
+  recordProductInterest(productId, action, value) {
+    const visitorId = this.storefrontVisitorId();
+    if (!visitorId) return;
+    const detail = action === "cart" ? { quantity: value } : { saved: value };
+    void fetch("/api/product-interest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visitor_id: visitorId, product_id: productId, action, ...detail })
+    }).then(response => {
+      if (!response.ok) throw new Error(`Product interest request failed (${response.status}).`);
+    }).catch(error => console.error("Product interest could not be reported.", error));
+  },
+
+  recordCartInterest(productId) {
+    const quantity = SQLiteEngine.getCart()
+      .filter(item => Number(item.product_id) === Number(productId))
+      .reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    this.recordProductInterest(productId, "cart", quantity);
+  },
+
+  async submitProductHold(form) {
+    const status = form.querySelector("[data-hold-status]");
+    const submit = form.querySelector('button[type="submit"]');
+    const productId = form.dataset.productId;
+    const formData = new FormData(form);
+    const quantity = Number(formData.get("quantity"));
+    const customerName = String(formData.get("customerName") || "").trim();
+    const contact = String(formData.get("contact") || "").trim();
+    if (!customerName || !contact || !Number.isSafeInteger(quantity) || quantity < 1) {
+      if (status) status.textContent = "Enter your name, a valid contact, and quantity.";
+      return;
+    }
+    if (submit) submit.disabled = true;
+    if (status) status.textContent = "Sending your request…";
+    try {
+      const idempotencyKey = form.dataset.idempotencyKey || globalThis.crypto.randomUUID();
+      form.dataset.idempotencyKey = idempotencyKey;
+      const response = await fetch("/api/product-holds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idempotency_key: idempotencyKey,
+          product_id: productId,
+          quantity,
+          customer_name: customerName,
+          contact
+        })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.hold?.id) {
+        throw new Error(result.error || `The shop could not accept this request (${response.status}).`);
+      }
+      delete form.dataset.idempotencyKey;
+      form.reset();
+      if (status) status.textContent = "Request sent. The product is not reserved unless the shop owner approves it.";
+    } catch (error) {
+      console.error("Product hold request could not be sent.", error);
+      if (status) status.textContent = error instanceof Error ? error.message : "Your request could not be sent. Please retry.";
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  },
+
   async init() {
     // Initialize SQLite Engine
     await SQLiteEngine.init(categories, products, storeInfo, plans, demoAnalytics);
@@ -7141,6 +7246,7 @@ const AppController = {
 
     const [path, queryString] = fullPath.split("?");
     const params = new URLSearchParams(queryString || "");
+    this.recordStorefrontVisit(path || "/");
 
     let html = "";
 
@@ -7411,6 +7517,7 @@ const AppController = {
         const activeSize = document.querySelector("#product-size-chips .option-chip.active");
         const activeColor = document.querySelector("#product-color-chips .option-chip.active");
         SQLiteEngine.addToCart(prodId, qty, activeSize ? activeSize.getAttribute("data-val") : null, activeColor ? activeColor.getAttribute("data-val") : null);
+        this.recordCartInterest(prodId);
         AppUtils.showToast("Artifact added to your shopping bag");
         this.updateNavBadges();
       };
@@ -7425,7 +7532,21 @@ const AppController = {
         const activeSize = document.querySelector("#product-size-chips .option-chip.active");
         const activeColor = document.querySelector("#product-color-chips .option-chip.active");
         SQLiteEngine.addToCart(prodId, qty, activeSize ? activeSize.getAttribute("data-val") : null, activeColor ? activeColor.getAttribute("data-val") : null);
+        this.recordCartInterest(prodId);
         this.navigate("/checkout");
+      };
+    }
+
+    const btnFavorite = document.getElementById("btn-prod-fav");
+    if (btnFavorite) {
+      btnFavorite.onclick = () => {
+        const prodId = Number(btnFavorite.getAttribute("data-id"));
+        const added = SQLiteEngine.toggleFavorite(prodId);
+        btnFavorite.classList.toggle("active", added);
+        const icon = btnFavorite.querySelector("svg");
+        if (icon) icon.setAttribute("fill", added ? "#E11D48" : "none");
+        this.recordProductInterest(prodId, "wishlist", added);
+        AppUtils.showToast(added ? "Saved to your favorites" : "Removed from favorites");
       };
     }
 
@@ -7482,6 +7603,7 @@ const AppController = {
             }, cart);
             SQLiteEngine.insert("orders", order);
             SQLiteEngine.clearCart();
+            for (const productId of new Set(cart.map(item => item.product_id))) this.recordProductInterest(productId, "cart", 0);
             this.navigate(`/checkout/confirmation?orderId=${encodeURIComponent(order.order_number)}`);
             return;
           } else {
@@ -7540,6 +7662,7 @@ const AppController = {
               created_at: order.created_at
             });
             SQLiteEngine.clearCart();
+            for (const productId of new Set(cart.map(item => item.product_id))) this.recordProductInterest(productId, "cart", 0);
           }
         } catch (error) {
           console.error("Could not save the checkout order.", error);
@@ -7883,6 +8006,7 @@ const AppController = {
         e.stopPropagation();
         const prodId = Number(quickAddBtn.getAttribute("data-id"));
         SQLiteEngine.addToCart(prodId, 1);
+        this.recordCartInterest(prodId);
         AppUtils.showToast("Artifact added to your shopping bag");
         this.updateNavBadges();
         return;
@@ -7894,6 +8018,7 @@ const AppController = {
         e.stopPropagation();
         const prodId = Number(favBtn.getAttribute("data-id"));
         const added = SQLiteEngine.toggleFavorite(prodId);
+        this.recordProductInterest(prodId, "wishlist", added);
         favBtn.classList.toggle("active", added);
         const svg = favBtn.querySelector("svg");
         if (svg) svg.setAttribute("fill", added ? "#E11D48" : "none");
@@ -7906,7 +8031,9 @@ const AppController = {
       if (cartQtyBtn) {
         const cartId = Number(cartQtyBtn.getAttribute("data-id"));
         const delta = Number(cartQtyBtn.getAttribute("data-delta"));
+        const productId = SQLiteEngine.getCart().find(item => Number(item.id) === cartId)?.product_id;
         SQLiteEngine.updateCartQty(cartId, delta);
+        if (productId != null) this.recordCartInterest(productId);
         this.handleRoute("/bag", false);
         return;
       }
@@ -7915,7 +8042,9 @@ const AppController = {
       const cartRemoveBtn = e.target.closest("[data-action='cart-remove']");
       if (cartRemoveBtn) {
         const cartId = Number(cartRemoveBtn.getAttribute("data-id"));
+        const productId = SQLiteEngine.getCart().find(item => Number(item.id) === cartId)?.product_id;
         SQLiteEngine.removeCartItem(cartId);
+        if (productId != null) this.recordCartInterest(productId);
         this.handleRoute("/bag", false);
         return;
       }
@@ -8028,6 +8157,13 @@ const AppController = {
         }
         return;
       }
+    });
+
+    document.addEventListener("submit", event => {
+      const form = event.target.closest("[data-product-hold-form]");
+      if (!form) return;
+      event.preventDefault();
+      void this.submitProductHold(form);
     });
 
     // Mobile Search Input

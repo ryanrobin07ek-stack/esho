@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Craft App Database Map</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0c111b;
+      --panel: #141d2b;
+      --panel-2: #101825;
+      --line: #26364b;
+      --text: #edf4ff;
+      --muted: #a8b6c9;
+      --cyan: #5bd7d0;
+      --blue: #8db8ff;
+      --violet: #c2a0ff;
+      --amber: #ffd27d;
+      --green: #90e3a2;
+      --pink: #ff9fba;
+      font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: radial-gradient(ellipse at 12% 0, #18314b 0, transparent 34rem), var(--bg); color: var(--text); }
+    a { color: var(--cyan); }
+    code, pre { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
+    code { color: #d8e7ff; overflow-wrap: anywhere; }
+    .wrap { width: min(1280px, calc(100% - 36px)); margin: auto; }
+    header { padding: 42px 0 28px; }
+    .eyebrow { color: var(--cyan); font-size: .75rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+    h1 { margin: 8px 0; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.08; letter-spacing: -.045em; }
+    h2 { margin: 0 0 12px; font-size: 1.5rem; letter-spacing: -.02em; }
+    h3 { margin: 0 0 7px; font-size: 1.02rem; }
+    p { margin: 8px 0; color: var(--muted); }
+    .lede { max-width: 850px; font-size: 1.08rem; }
+    .callout { margin: 22px 0; padding: 16px 18px; border: 1px solid #426678; border-left: 4px solid var(--cyan); border-radius: 12px; background: #11212c; }
+    .callout strong { color: white; }
+    .nav { position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; padding: 10px 0; overflow-x: auto; background: #0c111beF; backdrop-filter: blur(12px); }
+    .nav a { flex: 0 0 auto; padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); text-decoration: none; font-size: .84rem; }
+    .nav a:hover { border-color: var(--cyan); }
+    section { padding: 30px 0 18px; scroll-margin-top: 58px; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .section-head p { margin: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 12px; }
+    .card { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(145deg, #172335, var(--panel) 58%); }
+    .card p { font-size: .9rem; }
+    .tag { display: inline-block; margin: 0 5px 5px 0; padding: 2px 8px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); font-size: .72rem; }
+    .local h3 { color: var(--cyan); }
+    .pos h3 { color: var(--blue); }
+    .d1 h3 { color: var(--violet); }
+    .cloud h3 { color: var(--amber); }
+    .fields { color: #d4deec; font-size: .82rem; }
+    .fields code { color: #d4deec; }
+    .diagram { margin: 15px 0; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: #0e1724; overflow-x: auto; }
+    .diagram svg { display: block; width: 100%; min-width: 820px; height: auto; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 9px 0 0; color: var(--muted); font-size: .8rem; }
+    .legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 3px; background: var(--cyan); }
+    .legend .l-pos::before { background: var(--blue); }
+    .legend .l-d1::before { background: var(--violet); }
+    .legend .l-cloud::before { background: var(--amber); }
+    .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 9px; counter-reset: step; }
+    .flow div { position: relative; min-height: 92px; padding: 13px 13px 13px 44px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); color: var(--muted); font-size: .87rem; }
+    .flow div::before { counter-increment: step; content: counter(step); position: absolute; top: 13px; left: 13px; display: grid; width: 22px; height: 22px; place-items: center; border-radius: 50%; background: #1e4550; color: var(--cyan); font-weight: 800; }
+    .flow strong { display: block; margin-bottom: 3px; color: var(--text); }
+    .notice { padding: 14px 16px; border: 1px solid #594b2d; border-radius: 12px; background: #211d13; color: #ffe7b3; }
+    footer { padding: 32px 0 48px; color: var(--muted); font-size: .82rem; }
+    @media (max-width: 640px) { .wrap { width: min(100% - 24px, 1280px); } header { padding-top: 30px; } .section-head { display: block; } }
+    @media print {
+      :root { color-scheme: light; --bg: white; --panel: #f6f8fb; --panel-2: #f6f8fb; --line: #b8c2cf; --text: #111827; --muted: #374151; }
+      body { background: white; color: #111827; }
+      .nav { display: none; }
+      .card, .callout, .diagram, .flow div { break-inside: avoid; background: white; }
+      .fields, code, .fields code { color: #182334; }
+      a { color: #111827; }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <div class="eyebrow">Architecture reference · generated from app source and migrations</div>
+    <h1>Craft app database map</h1>
+    <p class="lede">A map of where the app keeps shop, product, inventory, sales, website, customer, and account data—and how those pieces connect.</p>
+    <div class="callout"><strong>Important: “Main Store” in the app is not the website tenant named <code>main</code>.</strong>
+      The in-app Main Store is the merchant’s local shop workspace and POS data. The Cloudflare tenant <code>main</code> is a separate web/API identity. A shop such as Chapa has its own tenant-isolated catalogue, inventory, orders, and storefront activity.</div>
+    <nav class="nav" aria-label="Sections">
+      <a href="#overview">Overview</a><a href="#local">App shop database</a><a href="#pos">POS database</a>
+      <a href="#cloud">Cloudflare D1</a><a href="#kv-r2">Cloudflare KV &amp; R2</a><a href="#flows">Data flows</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section id="overview">
+      <div class="section-head"><div><h2>At a glance</h2><p>Local app data and cloud data are related, but they are not one database.</p></div></div>
+      <div class="diagram">
+        <svg viewBox="0 0 1120 500" role="img" aria-labelledby="diagram-title diagram-desc">
+          <title id="diagram-title">Craft application data architecture</title>
+          <desc id="diagram-desc">The app contains a local shop database and a POS database. Shop catalogue and selected POS data sync to Cloudflare D1 per tenant. Storefront HTML and media are stored in R2, while tenant identity and published pointers live in KV.</desc>
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7185a0"/></marker>
+            <style>
+              .box{rx:16;stroke-width:2}.t{font:700 18px system-ui;fill:#edf4ff}.s{font:14px system-ui;fill:#a8b6c9}.edge{stroke:#7185a0;stroke-width:2;fill:none;marker-end:url(#arrow)}.label{font:12px system-ui;fill:#bdcbe0}
+            </style>
+          </defs>
+          <rect class="box" x="24" y="60" width="320" height="180" fill="#10262a" stroke="#5bd7d0"/>
+          <text class="t" x="48" y="96">App shop database · SQLite</text>
+          <text class="s" x="48" y="128">store · products · categories · orders</text>
+          <text class="s" x="48" y="153">inventory · cart · favourites · pages</text>
+          <text class="s" x="48" y="178">tenant catalogs · themes · visits · allocations</text>
+          <text class="s" x="48" y="211">Split shop caches tenant stock allocations.</text>
+
+          <rect class="box" x="24" y="294" width="320" height="154" fill="#111f34" stroke="#8db8ff"/>
+          <text class="t" x="48" y="331">POS database · SQLite</text>
+          <text class="s" x="48" y="363">POS products · stock · sales · payments</text>
+          <text class="s" x="48" y="388">expenses · invoices · cash · sync queues</text>
+          <text class="s" x="48" y="420">POS sales update its Main Store allocation.</text>
+
+          <rect class="box" x="421" y="145" width="302" height="230" fill="#201933" stroke="#c2a0ff"/>
+          <text class="t" x="450" y="184">Cloudflare D1 · tenant-scoped</text>
+          <text class="s" x="450" y="217">catalog snapshots · POS/Web allocations</text>
+          <text class="s" x="450" y="242">POS sync · online orders · holds</text>
+          <text class="s" x="450" y="267">cart / wishlist interest · visits</text>
+          <text class="s" x="450" y="292">accounts · newsletter · payments setup</text>
+          <text class="s" x="450" y="332">Rows for different tenant IDs are isolated.</text>
+
+          <rect class="box" x="804" y="60" width="290" height="166" fill="#292211" stroke="#ffd27d"/>
+          <text class="t" x="833" y="99">Cloudflare KV</text>
+          <text class="s" x="833" y="132">tenant records and access metadata</text>
+          <text class="s" x="833" y="157">published-theme pointer per tenant</text>
+          <text class="s" x="833" y="187">temporary auth / cache records</text>
+
+          <rect class="box" x="804" y="282" width="290" height="166" fill="#292211" stroke="#ffd27d"/>
+          <text class="t" x="833" y="321">Cloudflare R2</text>
+          <text class="s" x="833" y="354">published storefront HTML versions</text>
+          <text class="s" x="833" y="379">product / category media</text>
+          <text class="s" x="833" y="409">branch snapshots and archived files</text>
+
+          <path class="edge" d="M344 135 C380 135 380 192 421 192"/><text class="label" x="350" y="120">catalog publish</text>
+          <path class="edge" d="M344 357 C382 357 382 322 421 322"/><text class="label" x="348" y="382">sales / stock sync</text>
+          <path class="edge" d="M723 197 C760 197 760 145 804 145"/><text class="label" x="731" y="173">tenant / pointer</text>
+          <path class="edge" d="M723 322 C760 322 760 355 804 355"/><text class="label" x="730" y="344">HTML / media</text>
+          <path class="edge" d="M804 187 C768 187 768 234 723 234"/><text class="label" x="735" y="216">published route</text>
+        </svg>
+      </div>
+      <div class="legend"><span>App shop SQLite</span><span class="l-pos">POS SQLite</span><span class="l-d1">Cloudflare D1</span><span class="l-cloud">Cloudflare KV / R2</span></div>
+    </section>
+
+    <section id="local">
+      <div class="section-head"><div><h2>1 · In-app shop database</h2><p>SQLite database name: <code>eshop</code>. These app tables store each row as a JSON <code>payload</code>.</p></div></div>
+      <div class="grid">
+        <article class="card local"><h3>Shop identity &amp; catalogue</h3><p><span class="tag">store</span><span class="tag">categories</span><span class="tag">products</span><span class="tag">pages</span><span class="tag">hero_slides</span></p><p class="fields">Each table: <code>row_id</code> primary key, <code>payload</code> JSON text. Holds shop settings, product/category data, editable pages, and homepage slides.</p></article>
+        <article class="card local"><h3>Commerce &amp; customer app data</h3><p><span class="tag">inventory</span><span class="tag">favorites</span><span class="tag">cart_items</span><span class="tag">orders</span><span class="tag">customer_points</span><span class="tag">payment_methods</span><span class="tag">main_store_inventory</span></p><p class="fields">Each table uses <code>row_id</code> and JSON <code>payload</code>. <code>main_store_inventory</code> is a tenant-scoped local cache of POS/Web/Reserved allocations; Cloudflare D1 is the online authority.</p></article>
+        <article class="card local"><h3>App activity &amp; content settings</h3><p><span class="tag">analytics</span><span class="tag">web_visits</span><span class="tag">web_events</span><span class="tag">newsletter_subscribers</span><span class="tag">booking_holds</span></p><p class="fields">Each table uses <code>row_id</code> and JSON <code>payload</code>. Local records are not automatically identical to tenant-wide online activity.</p></article>
+        <article class="card local"><h3>Workspace / Studio records</h3><p><span class="tag">plans</span><span class="tag">tenant_catalogs</span><span class="tag">website_themes</span><span class="tag">studio_settings</span></p><p class="fields">Each table uses <code>row_id</code> and JSON <code>payload</code>. Stores local plans, shop catalogs cached on-device, theme library records, and Studio configuration.</p></article>
+      </div>
+      <div class="notice" style="margin-top:12px"><strong>Main Store, in plain language:</strong> Split shop is the explicit allocation screen. Products stay in their original channel until selected; a product deliberately shared between POS and Web has one master quantity divided into POS, Web, and Reserved units. The cloud allocation is tenant-scoped and keyed by SKU.</div>
+    </section>
+
+    <section id="pos">
+      <div class="section-head"><div><h2>2 · POS database inside the app</h2><p>These are additional relational SQLite tables created by the POS module.</p></div></div>
+      <div class="grid">
+        <article class="card pos"><h3>Products &amp; configuration</h3><p><span class="tag">pos_categories</span><span class="tag">pos_products</span><span class="tag">pos_settings</span></p><p class="fields"><code>pos_products</code>: id, name, category_id → pos_categories.id, price_cents, buying_price_cents, stock_count, sku, barcode, image_uri, expiry_date, image_embedding, low_stock_threshold, active, created_at. <code>pos_categories</code>: id, name. <code>pos_settings</code>: key, value.</p></article>
+        <article class="card pos"><h3>POS sales</h3><p><span class="tag">pos_sales</span><span class="tag">pos_sale_items</span><span class="tag">pos_sale_payments</span></p><p class="fields"><code>pos_sales</code>: id, receipt_number, subtotal/tax/discount/total cents, currency, payment_method, paid, customer_name/phone, due_date, payment_status, amount_paid_cents, created_at. Items reference sale_id and record product/name/quantity/prices/cost. Payments reference sale_id and record method, amount, fee, status, M-Pesa reference, sender, time.</p></article>
+        <article class="card pos"><h3>Expenses, invoices &amp; cash</h3><p><span class="tag">pos_expenses</span><span class="tag">pos_invoices</span><span class="tag">pos_invoice_items</span><span class="tag">pos_cash_movements</span><span class="tag">pos_till_closes</span></p><p class="fields">Expenses have date/category/label/amount/currency/method/note and sync_key. Invoice headers store customer, due date, notes and totals; invoice items reference invoice_id. Cash movements and till-close records store amounts and reconciliation.</p></article>
+        <article class="card pos"><h3>POS devices &amp; sync queues</h3><p><span class="tag">pos_instances</span><span class="tag">pos_business_records</span><span class="tag">pos_cloud_outbox</span><span class="tag">pos_inventory_queue</span></p><p class="fields">Instances track timed/counting sessions. Business records are keyed by tenant_id + entity + record_id and contain JSON payload/revision/deleted flags. Outbox queues records to Cloudflare. Inventory queue tracks stock connect/sale events and sync status/errors.</p></article>
+        <article class="card pos"><h3>Connected inventory mirror</h3><p><span class="tag">shared_inventory</span><span class="tag">shared_inventory_events</span><span class="tag">shared_inventory_event_items</span></p><p class="fields"><code>shared_inventory</code> is keyed by tenant_id + SKU and stores current stock. Event headers and line items record stock changes. Database triggers reject sales that exceed stock and deduct the quantity. This is distinct from the product’s saved catalogue stock field.</p></article>
+      </div>
+    </section>
+
+    <section id="cloud">
+      <div class="section-head"><div><h2>3 · Cloudflare D1 database</h2><p>Configured D1 database: <code>eshop-catalog</code>. Shop-facing data is scoped by <code>tenant_id</code> unless account-global.</p></div></div>
+      <div class="grid">
+        <article class="card d1"><h3>Shop catalogue</h3><p><span class="tag">catalog_snapshots</span></p><p class="fields"><code>tenant_id</code> primary key; <code>payload</code> JSON (published products/categories/store/pages, including each product’s saved stock); <code>admin_payload</code> private JSON; <code>updated_at</code>. This is the snapshot the hold handler currently reads.</p></article>
+        <article class="card d1"><h3>Accounts &amp; shop ownership</h3><p><span class="tag">accounts</span><span class="tag">account_tenants</span><span class="tag">account_google_identities</span></p><p class="fields"><code>accounts</code>: username, password_salt/hash, created_at, email. <code>account_tenants</code>: username → accounts.username, tenant_id unique. <code>account_google_identities</code>: google_sub, unique username → accounts.username, email, created_at.</p></article>
+        <article class="card d1"><h3>Main Store allocations &amp; POS stock</h3><p><span class="tag">main_store_inventory</span><span class="tag">inventory_stock</span><span class="tag">inventory_events</span><span class="tag">inventory_event_items</span></p><p class="fields"><code>main_store_inventory</code>: tenant_id + SKU key; channel ownership, enabled flags, master_stock, pos_stock, web_stock, reserved_stock, updated_at. A CHECK enforces master = POS + Web + Reserved. POS events and stock sync update this allocation; triggers prevent POS from using stock outside its allocation. <code>inventory_stock</code> remains the POS event mirror.</p></article>
+        <article class="card d1"><h3>POS sync &amp; branches</h3><p><span class="tag">pos_sync_changes</span><span class="tag">business_branches</span></p><p class="fields"><code>pos_sync_changes</code>: revision, tenant_id, change_id, device_id, entity, record_id, JSON payload, deleted, changed_at. Unique (tenant_id, change_id). <code>business_branches</code>: tenant_id, store_id, store_name, snapshot_id, r2_key, updated_at.</p></article>
+        <article class="card d1"><h3>Online orders &amp; activity</h3><p><span class="tag">storefront_orders</span><span class="tag">storefront_visits</span><span class="tag">storefront_product_interest</span></p><p class="fields"><code>storefront_orders</code>: tenant_id/order_number, idempotency_key, status, customer/contact/shipping, currency, totals in cents, items_json, payment_status/reference/authorization_url/paid_at, timestamps. <code>storefront_visits</code>: id, tenant_id, visitor_hash, path/referrer/device/country/region, created_at. <code>storefront_product_interest</code>: tenant_id + visitor_hash + product_id, cart_quantity, wishlist_active, timestamps.</p></article>
+        <article class="card d1"><h3>Holds, web stock deductions &amp; newsletter</h3><p><span class="tag">storefront_hold_requests</span><span class="tag">storefront_inventory_deductions</span><span class="tag">newsletter_subscribers</span></p><p class="fields">Approved holds reserve against available Web stock. Paid order deductions are unique by tenant + order + SKU; triggers check Web allocation and active holds before decreasing both web_stock and master_stock. Subscribers: id, tenant_id, email/name/status, confirmation/unsubscribe tokens, consent/confirmation/unsubscribe timestamps.</p></article>
+        <article class="card d1"><h3>Payment configuration</h3><p><span class="tag">paystack_subaccounts</span><span class="tag">paystack_owner_defaults</span></p><p class="fields"><code>paystack_subaccounts</code>: tenant_id, subaccount_code, status, bank_name, account_last4, timestamps. <code>paystack_owner_defaults</code>: owner_username, source_tenant_id, timestamps.</p></article>
+        <article class="card d1"><h3>Nearby pairing &amp; notifications</h3><p><span class="tag">nearby_pairings</span><span class="tag">push_subscriptions</span></p><p class="fields"><code>nearby_pairings</code>: id, tenant_id, host/guest token hashes, offer/answer SDP, created_at, expires_at. <code>push_subscriptions</code>: tenant_id, endpoint_hash, endpoint, p256dh, auth, created_at.</p></article>
+      </div>
+    </section>
+
+    <section id="kv-r2">
+      <div class="section-head"><div><h2>4 · Cloudflare KV and R2</h2><p>These stores are not relational tables.</p></div></div>
+      <div class="grid">
+        <article class="card cloud"><h3>KV namespace · tenant and pointer records</h3><p class="fields"><code>tenant:&lt;tenantId&gt;</code> stores tenant metadata and owner-token hashes. <code>published-theme:&lt;tenantId&gt;</code> points to the current filled theme object and catalogue version. Other keys support sign-in sessions, password recovery, Google sign-in state, verification, rate limits, and short-lived caches.</p></article>
+        <article class="card cloud"><h3>R2 bucket · files and snapshots</h3><p class="fields"><code>published-sites/&lt;tenantId&gt;/&lt;themeId&gt;/&lt;version&gt;.html</code> stores published storefronts. <code>media/&lt;tenantId&gt;/...</code> stores shop media. Branch archives and push archives are stored as separate objects. The KV published-theme pointer identifies the active published HTML.</p></article>
+      </div>
+    </section>
+
+    <section id="flows">
+      <div class="section-head"><div><h2>5 · How the data moves</h2><p>These connections matter when stock or storefront activity appears inconsistent.</p></div></div>
+      <div class="flow">
+        <div><strong>App product record</strong>Product name, price, images, SKU and stock are saved in local app SQLite.</div>
+        <div><strong>Publish website</strong>The app sends a copy of products/categories/settings to D1 <code>catalog_snapshots</code>, then stores filled HTML in R2.</div>
+        <div><strong>Customer storefront</strong>The published theme renders the catalogue snapshot for that hostname’s tenant.</div>
+        <div><strong>Main Store allocation</strong>The Split shop screen saves tenant + SKU channel membership and exact POS/Web/Reserved quantities to D1 <code>main_store_inventory</code>.</div>
+        <div><strong>POS stock changes</strong>POS sales/restocks change <code>inventory_stock</code>; D1 triggers mirror that difference into the POS and master allocation while preserving Web and Reserved stock.</div>
+        <div><strong>What website reads</strong>The catalogue API returns <code>web_stock</code> for explicitly allocated products and zero for products disabled for Web. Products without an allocation keep the published catalogue stock.</div>
+        <div><strong>Web orders</strong>Order requests check Web allocation and active holds. On successful payment, a unique deduction row and triggers decrease Web and master quantities once.</div>
+        <div><strong>Orders &amp; activity</strong>Online orders, visits, cart/wishlist interest, holds, and newsletter signups are stored in separate tenant-scoped D1 tables.</div>
+      </div>
+      <div class="notice" style="margin-top:14px"><strong>Important:</strong> products without a saved allocation continue using their existing channel stock. Allocations are not backfilled or guessed; the owner must explicitly select products and confirm any shared product’s master quantity.</div>
+    </section>
+  </main>
+  <footer class="wrap">Source map: <code>src/sqlite.js</code>, <code>src/pos.js</code>, <code>cloudflare/migrations/</code>, <code>cloudflare/worker.js</code>, and <code>cloudflare/wrangler.jsonc</code>. This page describes structure and data flow; it does not display live shop records or secrets.</footer>
+</body>
+</html>

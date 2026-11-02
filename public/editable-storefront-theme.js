@@ -14,6 +14,7 @@ const googleFontFamilies = {
   "Plus Jakarta Sans": "Plus Jakarta Sans:wght@400;500;600;700;800",
   "Bricolage Grotesque": "Bricolage Grotesque:wght@400;500;600;700;800",
   Inter: "Inter:wght@400;500;600;700",
+  "Playfair Display": "Playfair Display:wght@400;500;600;700",
   Manrope: "Manrope:wght@400;500;600;700;800",
   Anton: "Anton",
   Caveat: "Caveat:wght@400;500;600;700",
@@ -44,6 +45,7 @@ function shopCatalog(catalog) {
     .map((category, index) => ({
       id: String(category.id ?? `category-${index + 1}`),
       name: String(category.name || ""),
+      slug: slugify(category.slug || category.name),
       parentId: category.parentId ?? category.parent_id ?? null,
       image: String(category.image || category.image_uri || category.image_url || category.media || "")
     }));
@@ -62,6 +64,7 @@ function shopCatalog(catalog) {
       return {
         id: String(product.id ?? `product-${index + 1}`),
         name: String(product.name || ""),
+        slug: slugify(product.slug || product.name),
         price: Number(product.price ?? product.selling_price ?? product.sellingPrice) || 0,
         description: String(product.description || ""),
         brand: String(product.brand || ""),
@@ -72,6 +75,56 @@ function shopCatalog(catalog) {
       };
     });
   return { categories, products };
+}
+
+function makeSlugsUnique(records) {
+  const counts = new Map();
+  records.forEach(record => counts.set(record.slug, (counts.get(record.slug) || 0) + 1));
+  const candidates = records.map(record => ({
+    record,
+    base: record.slug,
+    slug: counts.get(record.slug) > 1
+      ? `${record.slug}-${slugify(record.id)}`
+      : record.slug,
+    generated: counts.get(record.slug) > 1
+  })).sort((left, right) =>
+    Number(left.generated) - Number(right.generated) ||
+    (left.slug < right.slug ? -1 : left.slug > right.slug ? 1 : 0) ||
+    (String(left.record.id) < String(right.record.id) ? -1 :
+      String(left.record.id) > String(right.record.id) ? 1 : 0)
+  );
+  const used = new Set();
+  candidates.forEach(item => {
+    let candidate = item.slug;
+    let suffix = 2;
+    while (used.has(candidate)) {
+      candidate = `${item.slug}-${suffix}`;
+      suffix += 1;
+    }
+    item.record.slug = candidate;
+    used.add(candidate);
+  });
+}
+
+export function craftStudioAppearance(savedStudio) {
+  const theme = savedStudio?.published?.theme;
+  if (!theme || typeof theme !== "object" || Array.isArray(theme)) return null;
+  const colors = theme.colors && typeof theme.colors === "object" && !Array.isArray(theme.colors)
+    ? theme.colors
+    : {};
+  const fonts = theme.fonts && typeof theme.fonts === "object" && !Array.isArray(theme.fonts)
+    ? theme.fonts
+    : {};
+  const radius = Number(theme.radius);
+  return {
+    published: {
+      theme: {
+        colors: { ...colors },
+        fonts: { ...fonts },
+        ...(Number.isFinite(radius) ? { radius } : {})
+      }
+    }
+  };
 }
 
 export function fillEditableStorefrontTheme(source, catalog = {}, assetUrl, savedStudio = null) {
@@ -102,6 +155,8 @@ export function fillEditableStorefrontTheme(source, catalog = {}, assetUrl, save
     categories: Array.isArray(studioPublished.categories) ? studioPublished.categories : catalog.categories
   } : catalog;
   const data = shopCatalog(storefrontCatalog);
+  makeSlugsUnique(data.categories);
+  makeSlugsUnique(data.products);
   const currencyConfig = `currency: { code: ${safeJSON(currency)}, locale: ${safeJSON(locale)}, symbol: ${safeJSON(symbol)} }`;
   const baseHref = new URL(".", assetUrl).href.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
   const studioCss = craftStudioThemeCss(savedStudio);
@@ -114,8 +169,7 @@ export function fillEditableStorefrontTheme(source, catalog = {}, assetUrl, save
     `${match}<base href="${baseHref}"><meta name="eshop-filled-theme" content="craft-main-storefront">` +
       (studioFonts ? `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="${studioFonts}">` : "") +
       (studioCss ? `<style id="eshop-craft-studio-theme">${studioCss}</style>` : "") +
-      (studioData ? `<script type="application/json" id="eshop-studio-data">${studioData}</script>` : "") +
-      `<script>if(location.hash!=="#/home")location.hash="#/home";</script>`);
+      (studioData ? `<script type="application/json" id="eshop-studio-data">${studioData}</script>` : ""));
   return output;
 }
 
@@ -159,7 +213,8 @@ export function craftStudioThemeCss(savedStudio) {
     color("headerBackground") && `--header-bg:${color("headerBackground")}`,
     color("navigationBackground") && `--nav-bg:${color("navigationBackground")}`,
     color("footerBackground") && `--footer-bg:${color("footerBackground")}`,
-    `--border:${color("wine") || "#2f9fdd"}2e`,
+    color("footerText") && `--footer-text:${color("footerText")}`,
+    `--border:${color("border") || `${color("wine") || "#2f9fdd"}2e`}`,
     `--accent-wash:${color("wine") || "#2f9fdd"}1a`,
     radius !== null && `--radius:${radius}px;--radius-sm:${Math.min(radius, 8)}px;--radius-lg:${Math.min(radius + 4, 32)}px`
   ].filter(Boolean);
@@ -177,6 +232,7 @@ export function craftStudioThemeCss(savedStudio) {
   if (color("headerBackground")) rules.push(`.site-header{background-color:${color("headerBackground")}!important}`);
   if (color("navigationBackground")) rules.push(`.bottom-nav{background-color:${color("navigationBackground")}!important}`);
   if (color("footerBackground")) rules.push(`.site-footer{background-color:${color("footerBackground")}!important}`);
+  if (color("footerText")) rules.push(`.site-footer,.site-footer .footer-links a{color:${color("footerText")}!important}`);
   if (color("text")) rules.push(`body{color:${color("text")}!important}`);
   if (radius !== null) {
     rules.push(`.product-card,.product-media,.cat-item{border-radius:${radius}px!important}`);

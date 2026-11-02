@@ -3,7 +3,7 @@ import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import { defineCustomElements } from 'jeep-sqlite/loader';
 import { hasPersistedSQLiteData } from './sqlite-snapshot.js';
 const NAME='eshop';
-const TABLES=['store','categories','products','pages','inventory','favorites','cart_items','orders','hero_slides','plans','analytics','tenant_catalogs','website_themes','web_visits','web_events','newsletter_subscribers','booking_holds','customer_points','payment_methods','studio_settings'];
+const TABLES=['store','categories','products','pages','inventory','favorites','cart_items','orders','hero_slides','plans','analytics','tenant_catalogs','website_themes','web_visits','web_events','newsletter_subscribers','booking_holds','customer_points','payment_methods','studio_settings','main_store_inventory'];
 let sqlite, db, queue=Promise.resolve(), timer, pendingSnapshot;
 function enqueue(operation){const result=queue.catch(console.error).then(operation);queue=result.then(()=>undefined);return result;}
 export async function initializeSQLite(){
