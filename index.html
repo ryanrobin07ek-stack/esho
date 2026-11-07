@@ -85,6 +85,36 @@ body.app-shell #app {
   background-color: var(--bg);
 }
 
+#craft-video-splash {
+  position: fixed;
+  z-index: 30000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+  opacity: 1;
+  transition: opacity .45s ease, visibility .45s ease;
+}
+
+#craft-video-splash[hidden] { display: none !important; }
+
+#craft-video-splash video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+#craft-video-splash.is-hiding {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #craft-video-splash { transition: none; }
+}
+
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -2500,6 +2530,85 @@ a.launchpad-link:focus-visible {
   background: var(--surface);
 }
 
+.store-bulk-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.store-bulk-item {
+  display: flex;
+  min-width: 0;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.store-bulk-item input,
+.store-bulk-select-all input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.store-bulk-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 12px 0;
+}
+
+.store-bulk-select-all {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.store-bulk-selection-count {
+  color: var(--text-muted);
+  font-size: .76rem;
+  white-space: nowrap;
+}
+
+.store-bulk-actions [data-bulk-remove] {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 12px;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+.store-product-detail-wrap,
+.store-category-wrap {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff 0%, #f1f1f1 100%);
+  box-shadow: 0 12px 24px -22px #000;
+}
+
+.store-product-detail-wrap > .store-workspace-row,
+.store-category-wrap > .store-workspace-row {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.store-product-detail-wrap[open] > .store-workspace-row,
+.store-category-wrap[open] > .store-workspace-row {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
 .store-workspace-row > div {
   display: grid;
   gap: 1px;
@@ -2521,7 +2630,7 @@ a.launchpad-link:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: .9rem;
+  font-size: .84rem;
   line-height: 1.2;
 }
 
@@ -2542,9 +2651,8 @@ a.launchpad-link:focus-visible {
 
 .store-product-detail {
   padding: 8px 10px 12px;
-  border: 1px solid var(--border);
-  border-top: 0;
-  background: var(--surface);
+  border: 0;
+  background: var(--surface-subtle);
   font-size: .8rem;
 }
 
@@ -2568,8 +2676,6 @@ a.launchpad-link:focus-visible {
 
 .store-category-details {
   padding: 8px;
-  border: 1px solid var(--border);
-  border-top: 0;
   background: var(--surface-subtle);
 }
 
@@ -2583,7 +2689,32 @@ a.launchpad-link:focus-visible {
   padding: 7px 9px;
   background: var(--surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 6px;
+  border-radius: 12px;
+}
+
+.store-category-import-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff 0%, #f1f1f1 100%);
+}
+
+.store-category-import-row > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.store-category-import-row > button {
+  flex: 0 0 auto;
+  max-width: 50%;
+  white-space: normal;
 }
 
 .store-category-product summary {
@@ -3311,7 +3442,7 @@ a.launchpad-link:focus-visible {
   }
 
   .metric-card {
-    padding: 14px;
+    padding: 12px;
   }
 }
 
@@ -3621,6 +3752,10 @@ a.launchpad-link:focus-visible {
   padding-bottom: 104px;
 }
 
+.pos-main.pos-sell-screen .pos-header-divider {
+  margin-bottom: 0;
+}
+
 .pos-header,
 .pos-section-heading,
 .pos-total-line,
@@ -3776,30 +3911,6 @@ a.launchpad-link:focus-visible {
   content: "";
 }
 
-.pos-tabs {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding: 0 0 14px;
-  margin-bottom: 14px;
-  border-bottom: 1px solid var(--border);
-  scrollbar-width: thin;
-}
-
-.pos-subnav {
-  position: sticky;
-  top: env(safe-area-inset-top, 0px);
-  z-index: 20;
-  display: flex;
-  gap: 2px;
-  margin: 0 -16px 12px;
-  padding: 4px 16px;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
-  scrollbar-width: none;
-}
-
 .pos-main-with-tabs .pos-header { padding-bottom: 2px; }
 .pos-main-with-tabs .pos-brand {
   gap: 9px;
@@ -3811,36 +3922,35 @@ a.launchpad-link:focus-visible {
 .pos-main-with-tabs .pos-header-divider { display: none; }
 .pos-main-with-tabs > .pos-content > .pos-section-heading h2 { display: none; }
 
-.pos-overview-tabs {
-  position: sticky;
-  top: env(safe-area-inset-top, 0px);
-  z-index: 90;
-  background: var(--bg);
-}
-
-.pos-subnav::-webkit-scrollbar {
-  display: none;
-}
-
-.pos-subnav .pos-tab.is-active::after,
-.pos-overview-tabs .pos-tab.is-active::after {
-  display: block;
-}
-
-.pos-subnav .pos-tab.is-active,
-.pos-overview-tabs .pos-tab.is-active {
-  background: transparent !important;
-  color: #18181b !important;
-}
-
-.pos-subnav .pos-tab {
-  min-height: 34px;
-  padding: 0 12px;
-}
-
 .pos-more-links {
   display: grid;
   gap: 8px;
+}
+
+.pos-content .pos-more-card {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding: 0;
+  overflow: hidden;
+}
+
+.pos-more-link {
+  display: flex;
+  min-height: 104px;
+  align-items: center;
+  padding: 22px 24px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pos-more-link strong {
+  font-size: 1.2rem;
+  font-weight: 650;
+}
+
+.pos-more-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
 }
 
 .pos-quote-product {
@@ -3849,38 +3959,6 @@ a.launchpad-link:focus-visible {
   gap: 8px;
   padding: 8px;
   border-bottom: 1px solid var(--border);
-}
-
-.pos-overview-tabs {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  gap: 1px;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain;
-  touch-action: pan-x;
-  -webkit-overflow-scrolling: touch;
-}
-
-.pos-overview-controls {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  width: 100%;
-  min-width: 0;
-  justify-items: stretch;
-  gap: 3px;
-}
-
-.pos-overview-tabs .pos-tab {
-  flex: 0 0 auto;
-  min-height: 30px;
-  padding: 0 7px;
-  font-size: 0.68rem;
 }
 
 .pos-ranges {
@@ -3923,6 +4001,10 @@ a.launchpad-link:focus-visible {
   min-width: 0;
   gap: 14px;
   padding-bottom: 32px;
+}
+
+.pos-content > .pos-scanner-entry {
+  margin-top: -14px;
 }
 
 .pos-section-heading {
@@ -3984,6 +4066,7 @@ a.launchpad-link:focus-visible {
 }
 
 .pos-product-tile {
+  position: relative;
   min-width: 0;
   min-height: 170px;
   padding: 10px;
@@ -3991,6 +4074,43 @@ a.launchpad-link:focus-visible {
   border-radius: 16px;
   background: var(--surface);
   text-align: left;
+}
+
+.pos-quote-product-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pos-quote-product {
+  display: block;
+  cursor: pointer;
+}
+
+.pos-quote-product input[type="checkbox"] {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.pos-quote-product:has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.pos-quote-product .pos-product-placeholder {
+  font-size: 1.5rem;
+}
+
+.pos-quote-product-grid > .pos-help {
+  grid-column: 1 / -1;
+}
+
+.pos-orders-new-sale {
+  border: 0 !important;
 }
 
 .pos-product-tile img,
@@ -4067,6 +4187,7 @@ a.launchpad-link:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.9rem;
 }
 
 .pos-cart-items {
@@ -4153,7 +4274,7 @@ a.launchpad-link:focus-visible {
   border-radius: 12px;
   background: var(--bg);
   color: var(--text-main);
-  font: 650 0.68rem var(--font-main);
+  font: 650 0.76rem var(--font-main);
   cursor: pointer;
 }
 
@@ -4174,19 +4295,6 @@ a.launchpad-link:focus-visible {
   stroke-width: 1.7;
 }
 
-.pos-payment-mpesa {
-  display: inline-flex;
-  width: 17px;
-  height: 17px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #39a935;
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 800;
-}
-
 .pos-customer-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4198,13 +4306,13 @@ a.launchpad-link:focus-visible {
 }
 
 .pos-customer-fields .pos-field > span {
-  font-size: 0.63rem;
+  font-size: 0.72rem;
 }
 
 .pos-customer-fields input {
   min-height: 30px;
   padding: 0 7px;
-  font-size: 0.76rem;
+  font-size: 0.82rem;
 }
 
 .pos-checkout-totals {
@@ -4219,17 +4327,17 @@ a.launchpad-link:focus-visible {
 
 .pos-checkout .pos-total-line {
   padding: 3px 0;
-  font-size: 0.74rem;
+  font-size: 0.82rem;
 }
 
 .pos-checkout .pos-total-line.is-total {
   padding: 6px 0 2px;
-  font-size: 0.86rem;
+  font-size: 0.98rem;
 }
 
 .pos-credit-details {
   color: var(--text-muted);
-  font-size: 0.7rem;
+  font-size: 0.76rem;
 }
 
 .pos-credit-details summary {
@@ -4238,7 +4346,7 @@ a.launchpad-link:focus-visible {
 
 .pos-checkout-actions {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 7px;
 }
 
@@ -4247,7 +4355,7 @@ a.launchpad-link:focus-visible {
   min-height: 30px;
   padding: 0 6px;
   border-radius: 10px;
-  font-size: 0.66rem;
+  font-size: 0.76rem;
 }
 
 .pos-checkout-actions .btn-primary,
@@ -4255,6 +4363,97 @@ a.launchpad-link:focus-visible {
   height: 30px;
   min-height: 30px;
   padding: 0 6px;
+}
+
+.pos-checkout-complete {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 0.76rem;
+}
+
+.pos-discount-modal {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.pos-discount-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: rgba(0, 0, 0, 0.52);
+}
+
+.pos-discount-dialog {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 320px);
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text-main);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+
+.pos-discount-dialog h3,
+.pos-discount-dialog p {
+  margin: 0;
+}
+
+.pos-discount-dialog h3 {
+  font-size: 1rem;
+}
+
+.pos-discount-dialog p,
+.pos-discount-dialog small {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.pos-discount-form,
+.pos-discount-field {
+  display: grid;
+  gap: 7px;
+}
+
+.pos-discount-field {
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.pos-discount-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.pos-discount-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.pos-discount-actions button {
+  min-height: 36px;
+  font-size: 0.78rem;
 }
 
 .pos-checkout .pos-help {
@@ -4436,6 +4635,7 @@ a.launchpad-link:focus-visible {
 }
 
 .pos-filter-row {
+  display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
@@ -4484,6 +4684,98 @@ a.launchpad-link:focus-visible {
   overflow-x: auto;
 }
 
+.pos-mobile-catalogue {
+  display: none;
+}
+
+.pos-catalogue-item {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--app-silver, var(--border));
+  border-radius: var(--app-card-radius, var(--radius-lg));
+  background: var(--surface);
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.pos-catalogue-item[open] {
+  border-color: var(--app-silver, var(--border));
+  background: var(--app-card-surface, linear-gradient(145deg, #f5f5f6, #e4e5e7));
+}
+
+.pos-catalogue-item > summary {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 11px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.pos-catalogue-item > summary::-webkit-details-marker {
+  display: none;
+}
+
+.pos-catalogue-item > summary strong {
+  min-width: 0;
+  overflow: hidden;
+  flex: 1 1 auto;
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pos-catalogue-detail-values strong {
+  overflow-wrap: anywhere;
+}
+
+.pos-catalogue-item > summary small,
+.pos-catalogue-detail-values small {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.pos-catalogue-item > summary small {
+  flex: 0 0 auto;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pos-catalogue-chevron::before {
+  content: "+";
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.pos-catalogue-item[open] .pos-catalogue-chevron::before {
+  content: "−";
+}
+
+.pos-catalogue-item-details {
+  display: grid;
+  gap: 12px;
+  padding: 10px 11px 11px;
+}
+
+.pos-catalogue-detail-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pos-catalogue-detail-values > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.pos-catalogue-item-details .pos-row-actions {
+  flex-wrap: wrap;
+}
+
 .pos-table {
   width: 100%;
   border-collapse: collapse;
@@ -4506,7 +4798,38 @@ a.launchpad-link:focus-visible {
 
 .pos-row-actions {
   display: flex;
+  align-items: center;
   gap: 5px;
+}
+
+.pos-row-actions .pos-icon-action {
+  display: grid;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 4px;
+  place-items: center;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+.pos-row-actions .product-list-edit {
+  color: var(--text-muted);
+}
+
+.pos-row-actions .product-list-edit:hover {
+  color: var(--accent);
+}
+
+.pos-row-actions .product-list-delete {
+  color: var(--danger);
+}
+
+.pos-category-row > .pos-row-actions {
+  flex: 0 0 auto;
+  gap: 0;
 }
 
 .pos-row-actions .btn-primary,
@@ -5081,17 +5404,141 @@ a.launchpad-link:focus-visible {
   }
 
   .pos-store-layout {
-    grid-template-areas: "products" "cart";
+    grid-template-areas: "products";
     grid-template-columns: 1fr;
   }
 
   .pos-product-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 6px;
+    padding-bottom: calc(42vh + env(safe-area-inset-bottom, 0px));
+  }
+
+  .pos-filter-row {
+    position: sticky;
+    z-index: 841;
+    top: 0;
+    padding: 5px 0;
+    background: var(--bg);
+  }
+
+  .pos-scanner-entry {
+    position: sticky;
+    z-index: 840;
+    top: 50px;
+    padding: 4px 0;
+    background: var(--bg);
   }
 
   .pos-cart {
-    position: static;
+    position: fixed;
+    z-index: 950;
+    right: 12px;
+    top: auto;
+    bottom: env(safe-area-inset-bottom, 0px);
+    left: 12px;
+    display: flex;
+    height: min(42vh, 360px);
+    max-height: min(42vh, 360px);
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
+    transition: transform 220ms ease-out, opacity 220ms ease-out;
+  }
+
+  .pos-cart.is-empty {
+    display: none;
+  }
+
+  .pos-cart.is-entering {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  .pos-cart-heading {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 0.96rem;
+  }
+
+  .pos-cart-heading span {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+  }
+
+  .pos-cart-items {
+    max-height: 78px;
+    flex: 0 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .pos-cart .pos-cart-item input[type="number"] {
+    width: 38px;
+    height: 28px;
+    min-height: 28px;
+    flex: 0 0 38px;
+    padding: 0 3px;
+    font-size: 0.76rem;
+  }
+
+  .pos-cart .pos-quantity-button {
+    width: 24px;
+    height: 24px;
+    min-height: 24px;
+    flex: 0 0 24px;
+    font-size: 0.9rem;
+  }
+
+  .pos-checkout {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .pos-checkout-actions {
+    position: sticky;
+    z-index: 1;
+    bottom: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 6px 0;
+    background: var(--surface);
+  }
+
+  .pos-cart .pos-checkout-actions button {
+    width: 100%;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 3px !important;
+    font-size: 0.65rem !important;
+    white-space: nowrap;
+  }
+
+  .pos-cart .pos-checkout-complete {
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 6px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .pos-discount-button {
+    min-height: 30px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface-subtle);
+    color: var(--text-main);
+    font-size: 0.76rem;
+    font-weight: 650;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pos-cart { transition: none; }
   }
 }
 
@@ -5099,6 +5546,15 @@ a.launchpad-link:focus-visible {
   .pos-main {
     padding-right: 12px;
     padding-left: 12px;
+  }
+
+  .pos-catalogue-desktop-list {
+    display: none;
+  }
+
+  .pos-mobile-catalogue {
+    display: grid;
+    gap: 10px;
   }
 
   .pos-header {
@@ -5940,32 +6396,53 @@ a.launchpad-link:focus-visible {
   right: 8px;
   bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   left: 8px;
-  min-height: 54px;
-  padding: 4px;
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: 0 2px 8px rgba(29, 30, 25, 0.12);
+  display: grid;
+  width: min(620px, calc(100% - 24px));
+  min-height: 68px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 7px;
+  border: 1px solid rgba(208, 208, 211, .9);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .84);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, .14);
+  -webkit-backdrop-filter: blur(24px) saturate(155%);
+  backdrop-filter: blur(24px) saturate(155%);
 }
 
-.pos-tab {
-  flex: 1 0 auto;
-  min-height: 42px;
-  padding: 0 10px;
-  font-size: 0.75rem;
+.pos-bottom-nav .pos-tab {
+  display: flex;
+  min-width: 0;
+  min-height: 52px;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0 4px;
+  border-radius: 17px;
+  color: #737378;
+  font-size: .67rem;
+  font-weight: 700;
+  text-decoration: none;
 }
 
-.pos-tab + .pos-tab {
+.pos-bottom-nav .pos-nav-icon {
+  font-size: 1.14rem;
+  line-height: 1;
+}
+
+.pos-bottom-nav .pos-tab.is-active {
+  border-radius: 17px;
+  background: #ededee !important;
+  color: #18181b !important;
+  font-weight: 700;
+}
+
+.pos-bottom-nav .pos-tab + .pos-tab {
   border-left: 0;
 }
 
-.pos-tab.is-active {
-  border-radius: 4px;
-  background: transparent !important;
-  color: var(--accent-hover);
-  font-weight: 650;
-}
-
-.pos-tab.is-active::after {
+.pos-bottom-nav .pos-tab.is-active::after {
   display: none;
 }
 
@@ -5982,7 +6459,7 @@ a.launchpad-link:focus-visible {
   border-radius: 999px !important;
 }
 
-.pos-content .pos-filter-row input,
+.pos-content .pos-filter-row input[name="search"],
 .pos-content .pos-filter-row select {
   height: 36px !important;
   min-height: 36px !important;
@@ -6011,13 +6488,159 @@ a.launchpad-link:focus-visible {
   padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
 
+.app-background-emblem {
+  display: none;
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  color: var(--text-main);
+  pointer-events: none;
+}
+
+body.app-background-emblem-active {
+  position: relative;
+  isolation: isolate;
+}
+
+body.app-background-emblem-active .app-background-emblem {
+  display: block;
+}
+
+body.app-background-emblem-active #app {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+body.craft-app-ui.app-background-emblem-active #app {
+  background: transparent;
+}
+
+.app-background-emblem-mark {
+  position: absolute;
+  top: 115px;
+  right: -95px;
+  width: 330px;
+  height: 330px;
+  opacity: .12;
+  transform-origin: center;
+  transform-style: preserve-3d;
+  perspective: 800px;
+  animation: app-background-emblem-spin 34s linear infinite;
+}
+
+.app-background-emblem-ring {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  backface-visibility: hidden;
+}
+
+.app-background-emblem-core {
+  position: absolute;
+  inset: 70px;
+  border-radius: 100px;
+  background: currentColor;
+  opacity: .12;
+}
+
+.app-background-emblem-center {
+  position: absolute;
+  inset: 108px;
+  border: 2px solid currentColor;
+  border-radius: 100px;
+  opacity: .45;
+}
+
+.app-background-emblem-glow {
+  position: absolute;
+  top: 400px;
+  left: -130px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .055;
+}
+
+@keyframes app-background-emblem-spin {
+  to { transform: rotate(360deg); }
+}
+
 .home-screen {
   min-height: 100svh;
-  padding: max(18px, env(safe-area-inset-top)) clamp(18px, 5vw, 56px) max(20px, env(safe-area-inset-bottom));
-  background: var(--bg);
-  color: var(--text-main);
+  --home-horizontal-gutter: clamp(18px, 5vw, 56px);
+  --home-light-surface: #f5f5f5;
+  --home-light-foreground: #111;
+  --home-dark-surface: #050505;
+  --home-dark-card: #111;
+  --home-dark-foreground: #fff;
+  --home-dark-muted: #a7aab1;
+  position: relative;
+  isolation: isolate;
+  padding: max(18px, env(safe-area-inset-top)) var(--home-horizontal-gutter) max(20px, env(safe-area-inset-bottom));
+  background: var(--home-dark-surface);
+  color: var(--home-dark-foreground);
   display: flex;
   flex-direction: column;
+}
+
+.home-background {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: clamp(540px, 74vh, 600px);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.home-background-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  filter: blur(1px) saturate(.9) contrast(1.2);
+  transform: scale(1.04);
+  transition: opacity 1.5s ease, transform 8.5s linear;
+}
+
+.home-background-image.is-active {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.home-background-tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(245 245 245 / 25%) 0,
+    rgb(245 245 245 / 34%) clamp(150px, 22vh, 190px),
+    rgb(245 245 245 / 45%) clamp(330px, 46vh, 370px),
+    rgb(209 209 209 / 62%) clamp(390px, 54vh, 430px),
+    rgb(102 102 102 / 92%) clamp(470px, 64vh, 520px),
+    rgb(5 5 5 / 97%) clamp(540px, 74vh, 600px),
+    rgb(5 5 5 / 97%) 100%
+  );
+}
+
+.home-screen > :not(.home-background) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-background-image {
+    transition: none;
+    transform: none;
+  }
 }
 
 .home-screen-header {
@@ -6027,15 +6650,14 @@ a.launchpad-link:focus-visible {
   justify-content: space-between;
   gap: 16px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #000;
 }
 
-.home-screen-logo {
-  display: block;
-  width: 112px;
-  height: 42px;
-  object-fit: contain;
-  object-position: left center;
+.home-screen-greeting {
+  margin: 0;
+  color: var(--home-light-foreground);
+  font-size: clamp(1.05rem, 3vw, 1.3rem);
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .home-screen-profile {
@@ -6044,16 +6666,16 @@ a.launchpad-link:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
+  border: 1px solid #1113;
   border-radius: 50%;
-  background: var(--surface);
-  color: var(--text-main);
+  background: var(--home-light-surface);
+  color: var(--home-light-foreground);
   text-decoration: none;
 }
 
 .home-screen-profile:hover,
 .home-screen-profile:focus-visible {
-  background: var(--surface-hover);
+  background: #e8e8e8;
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -6062,173 +6684,507 @@ a.launchpad-link:focus-visible {
   width: 100%;
   flex: 1;
   margin: 0 auto;
-  padding: clamp(12px, 2.5vh, 28px) 0 28px;
-  display: grid;
-  align-content: start;
-  gap: 18px;
+  max-width: 860px;
+  padding: 12px 0 28px;
 }
 
-.home-credit-card {
-  position: relative;
-  width: min(100%, 700px);
-  aspect-ratio: 1.62;
-  overflow: hidden;
-  padding: clamp(22px, 5vw, 38px);
-  border: 1px solid #000;
-  border-radius: 22px;
-  background: #000;
-  color: #fff;
-  box-shadow: 0 18px 42px #00000030, inset 0 1px #ffffff20;
-}
-
-.home-store-card {
-  width: min(100%, 700px);
-  min-height: 48px;
-  padding: 8px 24px;
+.home-launcher-group {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #000;
-  border-radius: 999px;
-  background: #000;
-  color: #fff;
-  text-decoration: none;
-  transition: background-color 140ms ease, transform 140ms ease;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid rgba(235, 250, 255, .56);
+  border-radius: 12px;
+  background: rgba(225, 243, 248, .035);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .06), inset 0 1px 0 rgba(255, 255, 255, .52);
+  -webkit-backdrop-filter: blur(4px) saturate(155%);
+  backdrop-filter: blur(4px) saturate(155%);
 }
 
-.home-store-card:hover { background: #222; transform: translateY(-1px); }
-.home-store-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.home-store-card strong { font-size: .95rem; font-weight: 650; }
-
-.home-overall-metrics {
-  width: 100%;
+.home-pos-card {
   display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  min-height: 90px;
+  padding: 14px;
+  border: 1px solid #ffffff30;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f4f5f7, #c3c6cc);
+  color: #0a0a0a;
+  text-decoration: none;
+}
+
+.home-pos-mark {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #0a0a0a;
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 750;
+  letter-spacing: .04em;
+}
+
+.home-pos-copy strong,
+.home-pos-copy small {
+  display: block;
+}
+
+.home-pos-copy strong {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.home-pos-copy small {
+  margin-top: 3px;
+  color: #45484e;
+  font-size: .78rem;
+}
+
+.home-pos-arrow {
+  font-size: 1.4rem;
+  text-align: right;
+}
+
+.home-workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.home-overall-metric {
-  min-height: 62px;
-  padding: 12px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border: 1px solid #000;
-  border-radius: 12px;
-  background: #fff;
-  color: #000;
+.home-shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
 }
 
-.home-overall-metric span { font-size: .92rem; font-weight: 650; }
-.home-overall-metric strong { font-size: 1.02rem; font-weight: 750; text-align: right; }
-
-.home-credit-card::before,
-.home-credit-card::after {
-  position: absolute;
-  right: -72px;
-  bottom: -200px;
-  width: 360px;
-  height: 360px;
-  border: 1px solid #ffffff18;
-  border-radius: 50%;
-  content: "";
-  pointer-events: none;
-}
-
-.home-credit-card::after {
-  right: -28px;
-  bottom: -156px;
-  width: 272px;
-  height: 272px;
-}
-
-.home-credit-card-heading {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: #fff;
-}
-
-.home-credit-card-eyebrow {
-  color: #fff;
-  font-size: .88rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-}
-
-.home-credit-card-heading strong {
-  font-size: clamp(1.4rem, 4vw, 2rem);
-  font-weight: 760;
-  letter-spacing: -.035em;
-  line-height: 1;
-}
-
-.home-credit-card-actions {
-  position: absolute;
-  z-index: 1;
-  right: clamp(14px, 3vw, 24px);
-  bottom: clamp(12px, 2.5vw, 20px);
-  left: clamp(14px, 3vw, 24px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.home-credit-card-link {
+.home-shortcut-link {
   min-width: 0;
-  min-height: 52px;
-  padding: 6px 10px;
+  min-height: 40px;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  border-radius: 10px;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 4px;
+  border: 1px solid rgba(255, 255, 255, .48);
+  border-radius: 9px;
+  background: rgba(15, 20, 22, .34);
   color: #fff;
+  font-size: .58rem;
+  font-weight: 650;
   text-decoration: none;
-  transition: background-color 140ms ease, transform 140ms ease;
+  white-space: nowrap;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
-.home-credit-card-link:last-child { justify-content: flex-end; }
-.home-credit-card-link:hover { background: #ffffff18; transform: translateY(-2px); }
-.home-credit-card-link:focus-visible {
-  outline: 2px solid var(--accent);
+.home-shortcut-link svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.home-workspace-card {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  display: flex;
+  min-height: 136px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px;
+  border: 1px solid #ffffff1a;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.home-workspace-card:hover,
+.home-workspace-card:focus-visible,
+.home-pos-card:hover,
+.home-pos-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: #ffffff70;
+}
+
+.home-workspace-card:focus-visible,
+.home-pos-card:focus-visible,
+.home-quick-link:focus-visible,
+.home-panel-link:focus-visible {
+  outline: 2px solid #fff;
   outline-offset: 3px;
 }
 
-.home-credit-card-logo {
-  width: 36px;
-  height: 36px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid #ffffff70;
-  border-radius: 9px;
-  background: #fff;
+.home-workspace-card-main {
+  background: radial-gradient(circle at top left, #2a2a2a 0%, #000 75%);
+  color: #fff;
+}
+
+.home-workspace-card-craft {
+  border-color: #ddd;
+  background: linear-gradient(145deg, #f5f5f5, #c3c6cc);
   color: #111;
 }
 
-.home-credit-card-logo img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.home-credit-card-logo svg { width: 24px; height: 24px; }
-.home-credit-card-label { color: #fff; font-size: .98rem; font-weight: 700; letter-spacing: -.02em; }
-
-.studio-card-live-web {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
+.home-workspace-card strong {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(1.05rem, 4vw, 1.35rem);
+  font-weight: 750;
+  letter-spacing: -.025em;
 }
 
-@media (max-width: 560px) {
-  .home-screen { padding-right: 18px; padding-left: 18px; }
-  .home-screen-main { padding: 10px 0 24px; }
-  .home-credit-card { aspect-ratio: 1.58; border-radius: 18px; }
-  .home-credit-card-link { min-height: 44px; gap: 7px; padding: 4px 6px; }
-  .home-credit-card-logo { width: 32px; height: 32px; }
-  .home-credit-card-logo svg { width: 21px; height: 21px; }
-  .home-credit-card-label { font-size: .86rem; }
+.home-workspace-card small {
+  position: relative;
+  z-index: 1;
+  color: #b7b7b7;
+  font-size: .74rem;
+}
+
+.home-workspace-card-craft small {
+  color: #45484e;
+}
+
+.home-dashboard {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.home-dashboard-loading,
+.home-dashboard-error {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #ffffff1a;
+  border-radius: 12px;
+  background: var(--home-dark-card);
+  color: var(--home-dark-foreground);
+  font-size: .88rem;
+}
+
+.home-dashboard-error {
+  color: #ffc9c9;
+}
+
+.home-dashboard-loading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.home-dashboard-skeleton {
+  display: grid;
+  gap: 12px;
+}
+
+.home-dashboard-skeleton .home-data-card,
+.home-dashboard-skeleton .home-panel {
+  border-color: rgba(255, 255, 255, .16);
+  background: rgba(255, 255, 255, .12);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+.home-skeleton-line,
+.workspace-skeleton-line {
+  display: block;
+  height: 10px;
+  max-width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(100deg, rgba(255,255,255,.1) 20%, rgba(255,255,255,.36) 42%, rgba(255,255,255,.1) 64%);
+  background-size: 220% 100%;
+  animation: craft-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.home-skeleton-line.is-short { width: 36%; }
+.home-skeleton-line.is-medium { width: 58%; }
+.home-skeleton-line.is-long { width: 78%; }
+.home-skeleton-line.is-value { width: 46%; height: clamp(26px, 7.5vw, 34px); justify-self: end; }
+.home-skeleton-line.is-heading { height: 24px; }
+.home-dashboard-skeleton .home-data-label.home-skeleton-line,
+.home-dashboard-skeleton .home-panel-kicker.home-skeleton-line { height: 17px; }
+.home-dashboard-skeleton .home-data-card .home-data-note {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  height: 18px;
+}
+.home-dashboard-skeleton .home-attention-row strong.home-skeleton-line,
+.home-dashboard-skeleton .home-recent-row strong.home-skeleton-line { height: 20px; }
+.home-dashboard-skeleton .home-attention-row small.home-skeleton-line,
+.home-dashboard-skeleton .home-recent-row small.home-skeleton-line { height: 16px; }
+.home-dashboard-skeleton .home-attention-count.home-skeleton-line {
+  box-sizing: border-box;
+  width: 28px;
+  min-width: 28px;
+  height: 26px;
+  padding: 0;
+}
+
+.workspace-loading-skeleton {
+  display: grid;
+  gap: 12px;
+  padding: 2px 0 16px;
+}
+
+.workspace-skeleton-panel {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.workspace-skeleton-panel { min-height: 190px; }
+.workspace-skeleton-line {
+  background: linear-gradient(100deg, #ececee 20%, #fafafa 42%, #ececee 64%);
+  background-size: 220% 100%;
+}
+.workspace-skeleton-line.is-short { width: 34%; }
+.workspace-skeleton-line.is-medium { width: 58%; }
+.workspace-skeleton-line.is-long { width: 84%; }
+.workspace-skeleton-line.is-value { width: 48%; height: 22px; }
+
+@keyframes craft-skeleton-shimmer {
+  to { background-position: -220% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-skeleton-line,
+  .workspace-skeleton-line { animation: none; }
+}
+
+.home-metric-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-top: clamp(48px, 9vh, 72px);
+}
+
+.home-data-card,
+.home-panel {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #ffffff1a;
+  border-radius: 12px;
+  background: var(--home-dark-card);
+  color: var(--home-dark-foreground);
+}
+
+.home-data-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 2px 12px;
+  padding: 9px 16px;
+  border-radius: 12px;
+}
+
+.home-panel-compact {
+  padding: 10px 14px;
+}
+
+.home-panel-compact .home-panel-heading {
+  margin-bottom: 5px;
+}
+
+.home-panel-compact .home-attention-row {
+  padding: 7px 0;
+}
+
+.home-data-label,
+.home-panel-kicker {
+  display: block;
+  color: var(--home-dark-muted);
+  font-size: .7rem;
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.home-data-label {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.home-data-value {
+  display: block;
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 0;
+  font-size: clamp(1.1rem, 5vw, 1.4rem);
+  font-weight: 750;
+  letter-spacing: -.03em;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.home-data-note {
+  display: block;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin-top: 0;
+  color: var(--home-dark-muted);
+  font-size: .73rem;
+}
+
+.home-panel-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.home-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.home-panel-heading h2 {
+  margin: 4px 0 0;
+  color: var(--home-dark-foreground);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.home-empty {
+  margin: 0;
+  color: var(--home-dark-muted);
+  font-size: .8rem;
+  line-height: 1.45;
+}
+
+.home-attention-row,
+.home-recent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #ffffff1a;
+}
+
+.home-attention-row:first-of-type,
+.home-recent-row:first-of-type {
+  border-top: 0;
+}
+
+.home-attention-row span:first-child,
+.home-recent-copy,
+.home-recent-total {
+  min-width: 0;
+}
+
+.home-attention-row strong,
+.home-recent-copy strong,
+.home-recent-total strong {
+  display: block;
+  color: var(--home-dark-foreground);
+  font-size: .84rem;
+  font-weight: 650;
+}
+
+.home-attention-row small,
+.home-recent-copy small,
+.home-recent-total small {
+  display: block;
+  margin-top: 3px;
+  color: var(--home-dark-muted);
+  font-size: .72rem;
+  line-height: 1.35;
+}
+
+.home-attention-count {
+  flex: 0 0 auto;
+  min-width: 28px;
+  padding: 4px 8px;
+  border-radius: 99px;
+  background: #242424;
+  color: #fff;
+  font-size: .76rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.home-recent-copy {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.home-recent-total {
+  flex: 0 0 auto;
+  text-align: right;
+}
+
+.home-panel-link {
+  color: var(--home-dark-foreground);
+  font-size: .75rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.home-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.home-quick-link {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 0 10px;
+  border: 1px solid #ffffff30;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: .77rem;
+  text-decoration: none;
+}
+
+@media (min-width: 620px) {
+  .home-panel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 360px) {
+  .home-workspace-card {
+    padding: 12px;
+  }
+
+  .home-data-card,
+  .home-panel {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .home-launcher-group {
+    width: calc(100% + var(--home-horizontal-gutter) + var(--home-horizontal-gutter));
+    margin-left: calc(0px - var(--home-horizontal-gutter));
+    margin-bottom: -46px;
+    padding-bottom: clamp(24px, 3.5vh, 30px);
+    border-right: 1px solid rgba(235, 250, 255, .56);
+    border-left: 1px solid rgba(235, 250, 255, .56);
+    border-radius: 12px;
+  }
 }
 
 .native-app-shell .profile-menu-overlay {
@@ -6414,80 +7370,165 @@ a.launchpad-link:focus-visible {
   gap: 13px;
 }
 
-.studio-hamburger {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid #e0e0e2;
-  border-radius: 14px;
-  background: #fff;
-  color: #202023;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .06);
-}
-
-.studio-hamburger svg {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
-  stroke-linecap: round;
-}
-
-.studio-workspace-top-nav,
-.studio-nested-nav {
-  position: sticky;
-  top: env(safe-area-inset-top, 0px);
-  z-index: 90;
+.studio-workspace-header-actions {
   display: flex;
-  gap: 7px;
-  margin: 0 -2px 18px;
-  padding: 5px 2px 9px;
-  background: #fff;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  box-shadow: 0 5px 8px -8px rgba(0, 0, 0, .45);
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
-.studio-workspace-top-nav::-webkit-scrollbar,
-.studio-nested-nav::-webkit-scrollbar {
-  display: none;
+.pos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.studio-workspace-top-link,
-.studio-nested-nav a {
-  flex: 0 0 auto;
+.pos-overview-controls {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.pos-overview-controls .pos-ranges {
+  flex: 1 1 0;
+  width: auto;
+}
+
+.pos-content .pos-overview-refresh {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px !important;
+  min-width: 32px;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 50%;
+  place-items: center;
+}
+
+.pos-overview-refresh svg {
+  display: block;
+  width: 19px;
+  height: 19px;
+}
+
+.workspace-menu {
   position: relative;
-  padding: 0 13px 8px;
+  z-index: 1100;
+  margin-left: auto;
+}
+
+.workspace-menu[open] { z-index: 1202; }
+
+.workspace-menu summary {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
   border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #66666b;
-  font-size: .8rem;
-  font-weight: 700;
-  text-decoration: none;
+  background: #fff;
+  color: #050505;
+  cursor: pointer;
+  list-style: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-.studio-workspace-top-link.is-active,
-.studio-nested-nav a.is-active {
-  color: #18181b;
+.workspace-menu summary::-webkit-details-marker { display: none; }
+.workspace-menu summary svg { width: 22px; height: 22px; }
+
+.workspace-sidebar-scrim {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  background: rgba(0, 0, 0, .48);
 }
 
-.studio-workspace-top-link.is-active::after,
-.studio-nested-nav a.is-active::after {
-  position: absolute;
-  right: 35%;
-  bottom: 2px;
-  left: 35%;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--accent);
-  content: "";
+.workspace-sidebar {
+  position: fixed;
+  z-index: 1201;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(86vw, 360px);
+  padding: max(24px, calc(env(safe-area-inset-top, 0px) + 16px)) 18px max(24px, env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  border-left: 1px solid #29292e;
+  background: #09090b;
+  color: #f5f5f7;
+  box-shadow: -18px 0 50px rgba(0, 0, 0, .24);
 }
+
+.workspace-sidebar h2 {
+  margin: 0 0 18px;
+  color: #fff;
+  font-size: 1.08rem;
+  letter-spacing: -.02em;
+}
+
+.workspace-sidebar-links { display: grid; gap: 6px; }
+
+.workspace-sidebar-divider {
+  height: 1px;
+  margin: 16px 0;
+  background: #2b2b30;
+}
+
+.workspace-sidebar-link {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: #d7d7dc;
+  font-size: .88rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: background-color .16s ease, color .16s ease, border-color .16s ease;
+}
+
+.workspace-sidebar-link:hover { background: #1b1b20; color: #fff; }
+
+.workspace-sidebar-link.is-active,
+.workspace-sidebar-link:focus-visible {
+  background: #f5f5f7;
+  color: #09090b;
+  outline: none;
+}
+
+.workspace-sidebar-logout {
+  margin-top: 12px;
+  border: 1px solid #633535;
+  background: #211314;
+  color: #ffc1c1;
+}
+
+.workspace-sidebar-logout:hover {
+  border-color: #9b4b4b;
+  background: #32191a;
+  color: #fff;
+}
+
+.workspace-sidebar-logout svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.studio-workspace-heading { gap: 10px; }
+.studio-workspace-title { min-width: 0; }
+.studio-workspace-tab-title { min-width: 0; }
 
 .studio-workspace-bottom-nav {
   position: fixed;
@@ -6724,6 +7765,28 @@ a.launchpad-link:focus-visible {
   flex: 0 0 auto;
 }
 
+.studio-inline-actions.web-product-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 72px;
+  gap: 8px;
+  width: 100%;
+}
+
+.web-product-actions > .web-product-action-card {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 72px;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 10px;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
 .studio-feature-panel,
 .studio-empty-intelligence {
   display: grid;
@@ -6938,7 +8001,17 @@ a.launchpad-link:focus-visible {
 .bl-date-filter select,
 .bl-date-filter input,
 .bl-inline-filter select,
-.bl-inline-filter input,
+.bl-inline-filter input {
+  min-height: 32px;
+  max-width: 150px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: #fff;
+  color: #202024;
+  font-size: 11px;
+}
+
 .bl-settings-form input,
 .bl-settings-form select {
   min-height: 32px;
@@ -6961,7 +8034,7 @@ a.launchpad-link:focus-visible {
 .bl-inline-filter { display: grid; gap: 3px; color: #707075; font-size: 10px; }
 .bl-inline-filter span { padding-left: 2px; font-size: 9px; letter-spacing: .07em; text-transform: uppercase; }
 .bl-inline-filter select, .bl-inline-filter input { min-height: 32px; max-width: 210px; }
-.bl-filter-row button { min-height: 32px; padding: 5px 10px; border: 1px solid #dedee1; border-radius: 9px; background: #fff; color: #202024; font-size: 11px; }
+.bl-filter-row button { min-height: 32px; padding: 5px 10px; border: 0; border-radius: 9px; background: #fff; color: #202024; font-size: 11px; }
 .bl-trading-calendar { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 4px; max-width: 420px; margin-top: 8px; }
 .bl-trading-calendar > div { display: grid; aspect-ratio: 1; place-items: center; border-radius: 5px; background: rgba(25,25,25,var(--activity)); color: #242424; font-size: 10px; }
 .bl-trading-calendar > div[style*="--activity:0.06"] { color: #818187; }
@@ -6976,15 +8049,6 @@ a.launchpad-link:focus-visible {
 }
 
 .business-lens-shell .studio-workspace-title { align-items: center; gap: 6px; }
-.business-lens-shell .studio-hamburger {
-  width: 28px;
-  height: 28px;
-  padding: 4px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
 .business-lens-shell .studio-workspace-kicker { font-size: .5rem; line-height: 1; letter-spacing: .1em; }
 .business-lens-shell .studio-workspace-title h1 { margin: 2px 0 0; font-size: 1rem; line-height: 1; }
 .business-lens-shell .studio-workspace-title p { margin-top: 2px; font-size: .62rem; }
@@ -6998,15 +8062,11 @@ a.launchpad-link:focus-visible {
   font-family: inherit;
 }
 .business-lens-shell .bl-filter-toggle svg { width: 22px; height: 22px; }
-.business-lens-shell .studio-workspace-top-nav {
-  top: env(safe-area-inset-top, 0px);
-  margin: 0 0 7px;
-  padding: 2px 0 6px;
-  gap: 5px;
-}
-.business-lens-shell .studio-workspace-top-link { padding: 0 11px 7px; font-size: .72rem; }
+.business-lens-shell .studio-workspace-header-actions { gap: 4px; }
+.business-lens-shell .workspace-menu summary { width: 38px; height: 38px; }
+.business-lens-shell .workspace-sidebar-link { font-size: .76rem; }
 .business-lens-shell .studio-workspace-bottom-nav { min-height: 57px; padding: 5px; border-radius: 18px; }
-.business-lens-shell .studio-workspace-bottom-link { gap: 2px; font-size: .61rem; }
+.business-lens-shell .studio-workspace-bottom-link { gap: 2px; font-size: .55rem; }
 .business-lens-shell .studio-nav-icon { font-size: 1rem; }
 .business-lens-content { display: grid; gap: 9px; padding-top: 0 !important; }
 .bl-kpis, .bl-insight-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; }
@@ -7225,18 +8285,15 @@ body.craft-app-ui #app .plan-card,
 body.craft-app-ui #app .checkout-card,
 body.craft-app-ui #app .order-summary,
 body.craft-app-ui #app .store-workspace-form,
-body.craft-app-ui #app .home-credit-card,
 body.craft-app-ui #app .home-store-card,
-body.craft-app-ui #app .home-overall-metric,
 body.craft-app-ui #app .bl-card {
   border: 1px solid #e5e5e5 !important;
-  border-radius: 0 !important;
+  border-radius: 12px !important;
   background-color: #fff !important;
   color: #050505 !important;
   box-shadow: 0 18px 40px -28px #000 !important;
 }
 
-body.craft-app-ui #app .home-credit-card,
 body.craft-app-ui #app .home-store-card {
   border-color: #050505 !important;
   background-color: #050505 !important;
@@ -7244,12 +8301,19 @@ body.craft-app-ui #app .home-store-card {
   box-shadow: 0 18px 40px -28px #fff !important;
 }
 
-body.craft-app-ui #app .home-credit-card-label {
-  color: #fff;
+body.craft-app-ui #app .home-store-card {
+  min-height: 56px;
+  border-radius: 12px !important;
+}
+
+body.craft-app-ui #app .pos-overview-card {
+  border-color: #111 !important;
+  background-color: #111 !important;
+  color: #fff !important;
 }
 
 body.craft-app-ui #app .store-workspace-row {
-  border-radius: 0;
+  border-radius: 12px;
   box-shadow: none;
 }
 
@@ -7304,19 +8368,6 @@ body.craft-app-ui #app .studio-workspace-tab-title {
   text-align: right;
 }
 
-body.craft-app-ui #app .studio-workspace-top-nav {
-  gap: 7px;
-  margin-bottom: 18px;
-  padding: 5px 2px 9px;
-}
-
-body.craft-app-ui #app .studio-workspace-top-link {
-  min-height: 34px;
-  padding: 0 13px 8px;
-  font-size: .8rem;
-  letter-spacing: 0;
-}
-
 body.craft-app-ui #app .pos-header {
   min-height: 34px;
   padding-bottom: 2px;
@@ -7326,17 +8377,6 @@ body.craft-app-ui #app .pos-brand-back {
   min-height: 30px;
   gap: 7px;
   font-size: .9rem;
-}
-
-body.craft-app-ui #app .pos-subnav {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-body.craft-app-ui #app .pos-subnav .pos-tab {
-  min-height: 34px;
-  padding-inline: 12px;
-  font-size: .75rem;
 }
 
 body.craft-app-ui #app .studio-module-back {
@@ -7381,7 +8421,7 @@ body.craft-app-ui #app .pos-brand-back img {
 
 body.craft-app-ui #app .studio-workspace-heading {
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 12px;
   min-height: 30px;
   margin: 0 0 4px;
@@ -7416,12 +8456,6 @@ body.craft-app-ui #app .studio-workspace-tab-title {
   text-transform: uppercase;
 }
 
-body.craft-app-ui #app .studio-workspace-top-link.is-active::after {
-  right: 20%;
-  left: 20%;
-  height: 3px;
-}
-
 body.craft-app-ui #app .web-studio-shell .studio-panel .studio-list-row {
   display: flex;
   box-sizing: border-box;
@@ -7433,6 +8467,7 @@ body.craft-app-ui #app .web-studio-shell .studio-panel .studio-list-row {
   overflow: hidden;
   padding: 8px 10px;
   border: 1px solid #e5e5e5;
+  border-radius: 12px;
   background: #fff;
   box-shadow: 0 18px 40px -28px #000;
 }
@@ -7447,6 +8482,36 @@ body.craft-app-ui #app select,
 body.craft-app-ui #app textarea {
   border-radius: 0;
   font-family: var(--font-main);
+}
+
+body.craft-app-ui #app .web-product-actions .web-product-action-card,
+body.craft-app-ui #app .store-bulk-actions [data-bulk-remove] {
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff 0%, #f0f0f0 100%);
+  color: #111;
+  box-shadow: 0 12px 24px -22px #000;
+}
+
+body.craft-app-ui #app .store-product-detail-wrap,
+body.craft-app-ui #app .store-category-wrap,
+body.craft-app-ui #app .store-category-import-row,
+body.craft-app-ui #app .store-category-product,
+body.craft-app-ui #app .store-product-detail-wrap > .store-workspace-row,
+body.craft-app-ui #app .store-category-wrap > .store-workspace-row {
+  border-radius: 12px;
+}
+
+body.craft-app-ui #app .store-product-detail-wrap > .store-workspace-row,
+body.craft-app-ui #app .store-category-wrap > .store-workspace-row {
+  border-radius: 0;
+}
+
+body.craft-app-ui #app .store-product-detail button,
+body.craft-app-ui #app .store-category-details button,
+body.craft-app-ui #app .store-category-details a,
+body.craft-app-ui #app .store-category-import-row button {
+  border-radius: 12px;
 }
 
 body.craft-app-ui #app .btn-primary,
@@ -7500,6 +8565,25 @@ body.craft-app-ui #app .launchpad-link {
   <link rel="manifest" href="/manifest.webmanifest">
 </head>
 <body>
+  <div id="craft-video-splash" hidden aria-hidden="true">
+    <video muted playsinline preload="none"></video>
+  </div>
+  <div class="app-background-emblem" aria-hidden="true">
+    <div class="app-background-emblem-mark">
+      <span class="app-background-emblem-ring" style="transform:rotateY(0deg)"></span>
+      <span class="app-background-emblem-ring" style="transform:rotateY(20deg)"></span>
+      <span class="app-background-emblem-ring" style="transform:rotateY(40deg)"></span>
+      <span class="app-background-emblem-ring" style="transform:rotateY(60deg)"></span>
+      <span class="app-background-emblem-ring" style="transform:rotateY(80deg)"></span>
+      <span class="app-background-emblem-ring" style="transform:rotateY(100deg)"></span>
+      <span class="app-background-emblem-ring" style="transform:rotateY(120deg)"></span>
+      <span class="app-background-emblem-ring" style="transform:rotateY(140deg)"></span>
+      <span class="app-background-emblem-ring" style="transform:rotateY(160deg)"></span>
+      <span class="app-background-emblem-core"></span>
+      <span class="app-background-emblem-center"></span>
+    </div>
+    <span class="app-background-emblem-glow"></span>
+  </div>
   <div id="app"></div>
   <script type="module" src="/src/business-lens.js"></script>
   <script>
@@ -10003,6 +11087,15 @@ const WEBSITE_THEME_BUSINESS_GROUPS = {
 };
 
 const StudioRenderers = {
+  mainShopSnapshotCache: null,
+
+  getCachedMainShopSnapshot() {
+    const activeTenantId = AppController.getActiveTenant().id;
+    return this.mainShopSnapshotCache?.tenantId === activeTenantId
+      ? this.mainShopSnapshotCache.snapshot
+      : null;
+  },
+
   renderAppAccount() {
     const username = window.localStorage.getItem("ESHOP_ACCOUNT_USERNAME_V1") || "";
     const recoveryEmail = window.localStorage.getItem("ESHOP_ACCOUNT_EMAIL_V1") || "";
@@ -10134,6 +11227,53 @@ const StudioRenderers = {
     return this.renderMainShopWorkspace("/account/main-shop");
   },
 
+  renderWorkspaceSidebar(title, items, activeRoute) {
+    const label = AppUtils.escapeHTML(title);
+    const route = AppUtils.escapeHTML(activeRoute);
+    const profileLinks = [
+      { title: "Profile", route: "/account/profile/profile" },
+      { title: "Webs", route: "/account/profile/webs" },
+      { title: "Accounts", route: "/account/profile/accounts" },
+      { title: "Privacy", route: "/account/profile/privacy" },
+      { title: "Recommended actions", route: "/account/profile/recommended-actions" },
+      { title: "Link devices", route: "/account/profile/link-devices" },
+      { title: "Updates", route: "/account/profile/updates" }
+    ];
+    return `<details class="workspace-menu">
+      <summary aria-label="Open ${label} menu" title="Open menu">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+      </summary>
+      <a class="workspace-sidebar-scrim" href="${route}" data-route="${route}" aria-label="Close ${label} menu"></a>
+      <aside class="workspace-sidebar" aria-label="${label} menu">
+        <h2>${label}</h2>
+        <nav class="workspace-sidebar-links" aria-label="${label} pages">
+          ${items.map(item => `<a href="${AppUtils.escapeHTML(item.route)}" data-route="${AppUtils.escapeHTML(item.route)}" class="workspace-sidebar-link ${item.route === activeRoute ? "is-active" : ""}" ${item.route === activeRoute ? 'aria-current="page"' : ""}>${AppUtils.escapeHTML(item.title)}</a>`).join("")}
+        </nav>
+        <div class="workspace-sidebar-divider" aria-hidden="true"></div>
+        <nav class="workspace-sidebar-links" aria-label="Profile and app links">
+          ${profileLinks.map(item => `<a href="${item.route}" data-route="${item.route}" class="workspace-sidebar-link">${item.title}</a>`).join("")}
+        </nav>
+        <a class="workspace-sidebar-link workspace-sidebar-logout" href="/" data-route="/" data-home-screen aria-label="Log out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg><span>Log out</span></a>
+      </aside>
+    </details>`;
+  },
+
+  renderWorkspaceLoading(label) {
+    const accessibleLabel = AppUtils.escapeHTML(`Loading ${label}`);
+    return `<div class="workspace-loading-skeleton" role="status" aria-label="${accessibleLabel}" aria-busy="true">
+      <div class="studio-metric-grid" aria-hidden="true">
+        ${Array.from({ length: 3 }, () => `<article class="studio-data-card"><span class="workspace-skeleton-line is-short"></span><strong class="workspace-skeleton-line is-value"></strong><small class="workspace-skeleton-line is-medium"></small></article>`).join("")}
+      </div>
+      <article class="studio-panel workspace-skeleton-panel" aria-hidden="true">
+        <span class="workspace-skeleton-line is-short"></span>
+        <span class="workspace-skeleton-line is-long"></span>
+        <span class="workspace-skeleton-line is-medium"></span>
+        <span class="workspace-skeleton-line is-long"></span>
+        <span class="workspace-skeleton-line is-medium"></span>
+      </article>
+    </div>`;
+  },
+
   renderMainShopWorkspace(path) {
     if (path === "/account/web" || path.startsWith("/account/web/studio/")) {
       return this.renderWebStudioWorkspace(path);
@@ -10144,10 +11284,10 @@ const StudioRenderers = {
       { route: "/store/revenue", title: "Sales", section: "sales", icon: "↗" },
       { route: "/store/products", title: "Products", section: "products", icon: "▦" },
       { route: "/account/customers", title: "Customers", section: "customers", icon: "◉" },
-      { route: "/account/main-shop/finance", title: "More", section: "more", icon: "•••" }
+      { route: "/account/main-shop/finance", title: "More", section: "more", icon: "⋮" }
     ];
     const section = path === "/account/main-shop" || path === "/account/main-shop/insights" ? "overview"
-      : ["/store/revenue", "/store/channels", "/store/sales"].includes(path) ? "sales"
+      : ["/store/revenue", "/store/channels", "/store/sales", "/store/orders", "/store/payments"].includes(path) ? "sales"
         : ["/store/products", "/store/inventory", "/store/categories", "/store/split-shop"].includes(path) ? "products"
           : path.startsWith("/account/customers") || path === "/account/main-shop/marketing" ? "customers"
             : path.startsWith("/account/main-shop/") ? "more"
@@ -10160,7 +11300,9 @@ const StudioRenderers = {
       sales: [
         { route: "/store/revenue", title: "Revenue" },
         { route: "/store/channels", title: "Channels" },
-        { route: "/store/sales", title: "Transactions" }
+        { route: "/store/sales", title: "Transactions" },
+        { route: "/store/orders", title: "Orders" },
+        { route: "/store/payments", title: "Payments" }
       ],
       products: [
         { route: "/store/products", title: "Products" },
@@ -10185,6 +11327,13 @@ const StudioRenderers = {
       : path === "/store/sales" ? "/store/sales"
         : path;
     const page = pages.find(item => item.route === canonicalPath) || pages[0];
+    const sectionSidebar = this.renderWorkspaceSidebar(
+      `${section[0].toUpperCase()}${section.slice(1)} screens`, pages, canonicalPath
+    );
+    const cachedSnapshot = this.getCachedMainShopSnapshot();
+    const initialContent = cachedSnapshot
+      ? this.renderMainShopContent(path, cachedSnapshot)
+      : this.renderWorkspaceLoading("business records");
     AppUtils.updateSEO({
       title: `${page.title} — Your Business — Craft`,
       description: "Business overview, sales, product, customer, finance and store intelligence."
@@ -10193,12 +11342,14 @@ const StudioRenderers = {
       <main class="container account-dashboard-main store-workspace-shell studio-workspace business-lens-shell" style="padding:12px 0 92px;">
         <header class="studio-workspace-heading">
           <div class="studio-workspace-title">
-            <a class="studio-hamburger" href="/account/profile" data-route="/account/profile" aria-label="Open account and website menu" title="Accounts and websites"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></a>
             <div><span class="studio-workspace-kicker">YOUR BUSINESS</span><h1>${page.title}</h1></div>
           </div>
-          <button type="button" class="studio-preview-link bl-filter-toggle" data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"/></svg>
-          </button>
+          <div class="studio-workspace-header-actions">
+            <button type="button" class="studio-preview-link bl-filter-toggle" data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"/></svg>
+            </button>
+            ${sectionSidebar}
+          </div>
         </header>
         <nav id="business-date-filters" class="bl-date-filter" aria-label="Business filters" hidden>
           <label><span>Range</span><select class="business-filter" data-filter="range"><option value="today" ${businessFilters.range === "today" ? "selected" : ""}>Today</option><option value="7d" ${businessFilters.range === "7d" ? "selected" : ""}>7 days</option><option value="30d" ${(!businessFilters.range || businessFilters.range === "30d") ? "selected" : ""}>30 days</option><option value="90d" ${businessFilters.range === "90d" ? "selected" : ""}>90 days</option><option value="month" ${businessFilters.range === "month" ? "selected" : ""}>This month</option><option value="ytd" ${businessFilters.range === "ytd" ? "selected" : ""}>Year to date</option><option value="all" ${businessFilters.range === "all" ? "selected" : ""}>All time</option><option value="custom" ${businessFilters.range === "custom" ? "selected" : ""}>Custom</option></select></label>
@@ -10216,15 +11367,8 @@ const StudioRenderers = {
             </a>
           `).join("")}
         </nav>
-        <nav class="studio-workspace-top-nav" aria-label="${section} screens">
-          ${pages.map(item => `
-            <a href="${item.route}" class="studio-workspace-top-link ${item.route === canonicalPath ? "is-active" : ""}" data-route="${item.route}" ${item.route === canonicalPath ? 'aria-current="page"' : ""}>
-              ${item.title}
-            </a>
-          `).join("")}
-        </nav>
         <section id="store-workspace-content" class="store-workspace-content business-lens-content" aria-live="polite" style="min-height:180px;padding-top:10px;">
-          <p style="text-align:center;color:var(--text-muted);">Loading your business records…</p>
+          ${initialContent}
         </section>
       </main>
     `;
@@ -10339,18 +11483,20 @@ const StudioRenderers = {
   renderWebStudioWorkspace(path) {
     const sections = this.webStudioNavigation();
     const page = this.webStudioPage(path);
+    const cachedSnapshot = this.getCachedMainShopSnapshot();
+    const initialContent = cachedSnapshot
+      ? this.renderMainShopContent(path, cachedSnapshot)
+      : this.renderWorkspaceLoading("Web Studio");
     AppUtils.updateSEO({ title: `${page.title} — Web Studio`, description: "Manage your website, visitors, customers, store, and payments." });
     return `
       <main class="container account-dashboard-main store-workspace-shell studio-workspace web-studio-shell" style="padding:16px 0 100px;">
         <header class="studio-workspace-heading">
           <a class="studio-workspace-back" href="/" data-route="/" data-home-screen aria-label="Back to Craft home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg></a>
           <h1 class="studio-workspace-tab-title">${AppUtils.escapeHTML(page.title)}</h1>
+          ${this.renderWorkspaceSidebar(`${page.section.title} screens`, page.section.tabs, page.route)}
         </header>
-        ${page.section.tabs.length > 1 ? `<nav class="studio-workspace-top-nav" aria-label="${page.section.title} tabs">
-          ${page.section.tabs.map(tab => `<a href="${tab.route}" class="studio-workspace-top-link ${tab.route === page.route ? "is-active" : ""}" data-route="${tab.route}" ${tab.route === page.route ? 'aria-current="page"' : ""}>${tab.title}</a>`).join("")}
-        </nav>` : ""}
         <section id="store-workspace-content" class="store-workspace-content studio-workspace-section" aria-live="polite" style="min-height:180px;padding-top:10px;">
-          <p style="text-align:center;color:var(--text-muted);">Loading Web Studio…</p>
+          ${initialContent}
         </section>
         <nav class="studio-workspace-bottom-nav" aria-label="Web Studio sections">
           ${sections.map(section => `<a href="${section.route}" class="studio-workspace-bottom-link ${section.title === page.section.title ? "is-active" : ""}" data-route="${section.route}" ${section.title === page.section.title ? 'aria-current="page"' : ""}><span class="studio-nav-icon" aria-hidden="true">${section.icon}</span><span>${section.title}</span></a>`).join("")}
@@ -10361,15 +11507,12 @@ const StudioRenderers = {
   async getMainShopSnapshot() {
     const settings = await window.ShopPOS.getSettings();
     const tenantId = settings.cloudSyncTenantId || window.EshopInventoryBridge?.activeWebsiteId?.() || AppController.getActiveTenant().id;
-    const [posProducts, posCategories, posSales, expenses, instances, suppliers, purchaseOrders, tickets] = await Promise.all([
+    const [posProducts, posCategories, posSales, expenses, instances] = await Promise.all([
       window.ShopPOS.listProducts(),
       window.ShopPOS.listCategories(),
       window.ShopPOS.listSales(),
       window.ShopPOS.listExpenses ? window.ShopPOS.listExpenses() : Promise.resolve([]),
-      window.ShopPOS.listInstances ? window.ShopPOS.listInstances() : Promise.resolve([]),
-      window.ShopPOS.listBusinessRecords ? window.ShopPOS.listBusinessRecords("supplier", tenantId) : Promise.resolve([]),
-      window.ShopPOS.listBusinessRecords ? window.ShopPOS.listBusinessRecords("purchase", tenantId) : Promise.resolve([]),
-      window.ShopPOS.listBusinessRecords ? window.ShopPOS.listBusinessRecords("ticket", tenantId) : Promise.resolve([])
+      window.ShopPOS.listInstances ? window.ShopPOS.listInstances() : Promise.resolve([])
     ]);
     const webProducts = SQLiteEngine.select("products", product => product.status !== "archived");
     const webCategories = SQLiteEngine.getCategories();
@@ -10511,12 +11654,17 @@ const StudioRenderers = {
       });
     });
     sales.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-    return {
+    const snapshot = {
       products, categories, sales, posCategories, posProducts, expenses, instances, settings,
-      suppliers, purchaseOrders, tickets, currency: settings.currency || "KES",
+      currency: settings.currency || "KES",
       localAllocations: SQLiteEngine.select("main_store_inventory",
         allocation => allocation.tenant_id === AppController.getActiveTenant().id)
     };
+    this.mainShopSnapshotCache = {
+      tenantId: AppController.getActiveTenant().id,
+      snapshot
+    };
+    return snapshot;
   },
 
   formatMainShopMoney(amount, currency) {
@@ -10528,68 +11676,6 @@ const StudioRenderers = {
       }).format(Number(amount) || 0);
     } catch {
       return `${currency || "KES"} ${(Number(amount) || 0).toFixed(2)}`;
-    }
-  },
-
-  async loadHomeOverallMetrics() {
-    const metrics = document.querySelector(".home-overall-metrics");
-    if (!metrics) return;
-    try {
-      const snapshot = await this.getMainShopSnapshot();
-      if (!document.querySelector(".home-overall-metrics")) return;
-      const sales = snapshot.sales.filter(sale => sale.collected > 0);
-      const currencyTotals = (entries, valueFor) => {
-        const totals = new Map();
-        entries.forEach(entry => totals.set(entry.currency, (totals.get(entry.currency) || 0) + valueFor(entry)));
-        return [...totals].map(([currency, amount]) => this.formatMainShopMoney(amount, currency)).join(" + ")
-          || this.formatMainShopMoney(0, snapshot.currency);
-      };
-      const revenue = currencyTotals(sales, sale => sale.collected);
-      const customerKeys = new Set();
-      sales.forEach(sale => {
-        const email = String(sale.customerEmail || "").trim().toLocaleLowerCase();
-        const phone = String(sale.customerPhone || "").replace(/\D/g, "");
-        const key = email || phone;
-        if (key) customerKeys.add(key);
-      });
-      const paidSales = sales.filter(sale => ["paid", "completed"].includes(sale.status));
-      const paidOrderCounts = new Map();
-      paidSales.forEach(sale => paidOrderCounts.set(sale.currency, (paidOrderCounts.get(sale.currency) || 0) + 1));
-      const profitCostsKnown = paidSales.every(sale => sale.lineItems.length > 0
-        && sale.lineItems.every(item => Number.isFinite(item.costPrice)));
-      let profit = "Cost data unavailable";
-      if (profitCostsKnown) {
-        const profitByCurrency = new Map();
-        paidSales.forEach(sale => {
-          const costs = sale.lineItems.reduce((sum, item) => sum + item.costPrice * item.quantity, 0);
-          profitByCurrency.set(sale.currency,
-            (profitByCurrency.get(sale.currency) || 0) + sale.total - costs);
-        });
-        snapshot.expenses.forEach(expense => {
-          profitByCurrency.set(expense.currency,
-            (profitByCurrency.get(expense.currency) || 0) - Number(expense.amount || 0));
-        });
-        profit = [...profitByCurrency].map(([currency, amount]) => this.formatMainShopMoney(amount, currency)).join(" + ")
-          || this.formatMainShopMoney(0, snapshot.currency);
-      }
-      const averageOrder = [...paidOrderCounts].map(([currency, count]) => {
-        const total = paidSales.filter(sale => sale.currency === currency)
-          .reduce((sum, sale) => sum + sale.total, 0);
-        return this.formatMainShopMoney(total / count, currency);
-      }).join(" + ") || this.formatMainShopMoney(0, snapshot.currency);
-      const values = {
-        revenue,
-        profit,
-        customers: String(customerKeys.size),
-        "average-order": averageOrder
-      };
-      Object.entries(values).forEach(([key, value]) => {
-        const output = metrics.querySelector(`[data-home-metric="${key}"]`);
-        if (output) output.textContent = value;
-      });
-    } catch (error) {
-      console.error("Overall home metrics could not be loaded.", error);
-      metrics.querySelectorAll("[data-home-metric]").forEach(output => { output.textContent = "Unavailable"; });
     }
   },
 
@@ -11196,8 +12282,7 @@ const StudioRenderers = {
     if (path === "/store/orders" || path === "/store/sales" || path === "/store/payments") {
       const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
       const view = path === "/store/sales" ? "sales" : path === "/store/payments" ? "payments" : "orders";
-      const orderTabs = [{ route: "/store/orders", title: "Orders" }, { route: "/store/sales", title: "Sales" }, { route: "/store/payments", title: "Payments" }];
-      return `<section class="studio-workspace-section"><nav class="studio-nested-nav" aria-label="Orders screens">${orderTabs.map(tab => `<a href="${tab.route}" data-route="${tab.route}" class="${path === tab.route ? "is-active" : ""}">${tab.title}</a>`).join("")}</nav>
+      return `<section class="studio-workspace-section">
         ${view === "orders" ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Web orders</h2><span>${orders.length} recorded on this device</span></div>${orderRows(orders)}</article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Cloudflare online orders</h2><button type="button" class="btn-secondary" data-business-online-orders-load>Load online orders</button></div>
             <p class="studio-panel-note" data-online-orders-status>${snapshot.remoteOrdersError ? AppUtils.escapeHTML(snapshot.remoteOrdersError) : "Orders and Paystack payment status are stored privately for this shop."}</p>
@@ -11229,10 +12314,15 @@ const StudioRenderers = {
       }));
       return `
         <p class="studio-panel-note">Website products are saved in app SQLite, separately from Store/POS inventory. Expand a product and choose <strong>Add to Store/POS</strong> to create its inventory record, or remove it from this website without deleting a separate Store/POS record. Publish to update the live site.</p>
-        <div class="studio-inline-actions"><button type="button" class="btn-secondary" id="store-add-product-trigger">Add from Store</button><button type="button" class="btn-primary" id="store-create-web-product">Add web product</button><a class="btn-secondary" href="/account/products" data-route="/account/products">Advanced web catalog</a><button type="button" class="btn-secondary" id="btn-publish-cloudflare">Publish to ${AppUtils.escapeHTML(activeTenant.hostname)}</button></div>
+        <div class="studio-inline-actions web-product-actions">
+          <button type="button" class="btn-secondary web-product-action-card" id="store-add-product-trigger">Add from Store</button>
+          <button type="button" class="btn-primary web-product-action-card" id="store-create-web-product">Add web product</button>
+          <a class="btn-secondary web-product-action-card" href="/account/products" data-route="/account/products">Advanced web catalog</a>
+          <button type="button" class="btn-secondary web-product-action-card" id="btn-publish-cloudflare">Publish to ${AppUtils.escapeHTML(activeTenant.hostname)}</button>
+        </div>
         <p class="studio-panel-note">New products and categories are saved in this app first. Publish to make your updates visible at ${AppUtils.escapeHTML(activeTenant.hostname)}.</p>
         <div id="product-modal-container"></div>
-        ${webProducts.length ? `<div class="store-bulk-actions" data-bulk-removal="products" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0;"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" data-bulk-select-all> Select all products</label><span data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected products</button></div>` : ""}
+        ${webProducts.length ? `<div class="store-bulk-actions" data-bulk-removal="products"><label class="store-bulk-select-all"><input type="checkbox" data-bulk-select-all><span>Select all products</span></label><span class="store-bulk-selection-count" data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected products</button></div>` : ""}
         <form class="store-workspace-form store-existing-product-form" data-store-web-import hidden>
           <h2>Add from main Store</h2>
           <p class="studio-panel-note">Select one or more products. Existing Store images are copied when available.</p>
@@ -11265,11 +12355,11 @@ const StudioRenderers = {
                 : !posSku && !webSku && String(pos.name || "").trim().toLowerCase() === String(product.name || "").trim().toLowerCase();
             });
             return `
-            <div class="store-bulk-row" style="display:flex;align-items:flex-start;gap:10px;margin:8px 0;">
-            <label class="store-bulk-item" aria-label="Select ${AppUtils.escapeHTML(product.name)}" style="display:flex;align-items:center;gap:6px;padding-top:12px;"><input type="checkbox" data-bulk-item="${product.id}"><span>Select</span></label>
-            <details class="store-product-detail-wrap" data-store-search="${AppUtils.escapeHTML(`${product.name} ${product.sku || ""} ${categoryName}`.toLocaleLowerCase())}" style="flex:1;min-width:0;">
+            <div class="store-bulk-row">
+            <label class="store-bulk-item" aria-label="Select ${AppUtils.escapeHTML(product.name)}"><input type="checkbox" data-bulk-item="${product.id}"></label>
+            <details class="store-product-detail-wrap" data-store-search="${AppUtils.escapeHTML(`${product.name} ${product.sku || ""} ${categoryName}`.toLocaleLowerCase())}">
               <summary class="store-workspace-row">
-                <div><strong class="store-product-name">${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(categoryName)} · ${AppUtils.escapeHTML(product.sku || "No SKU")}</span></div>
+                <div><strong class="store-product-name">${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(categoryName)} · ${this.formatMainShopMoney(product.price, currency)}</span></div>
                 <div class="store-product-sources"><span class="store-product-source">Web</span></div>
               </summary>
               <div class="store-product-detail">
@@ -11299,15 +12389,15 @@ const StudioRenderers = {
           <h2>Create website category</h2><label>Category name<input name="name" required maxlength="120"></label><button type="submit" class="btn-primary">Add website category</button><p role="status"></p>
         </form>
         <section class="studio-panel"><div class="studio-panel-heading"><h2>Categories available in Store inventory</h2></div>
-          ${storeOnlyCategories.map(category => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(category.name)}</strong><button type="button" class="btn-secondary" data-store-website-category="${AppUtils.escapeHTML(category.name)}">Add from Store</button></article>`).join("") || `<p class="store-workspace-empty">No additional Store categories to import.</p>`}
+          ${storeOnlyCategories.map(category => `<article class="store-category-import-row"><strong>${AppUtils.escapeHTML(category.name)}</strong><button type="button" class="btn-secondary" data-store-website-category="${AppUtils.escapeHTML(category.name)}">Add from Store</button></article>`).join("") || `<p class="store-workspace-empty">No additional Store categories to import.</p>`}
         </section>
-        ${websiteCategories.length ? `<div class="store-bulk-actions" data-bulk-removal="categories" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0;"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" data-bulk-select-all> Select all categories</label><span data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected categories</button></div>` : ""}
+        ${websiteCategories.length ? `<div class="store-bulk-actions" data-bulk-removal="categories"><label class="store-bulk-select-all"><input type="checkbox" data-bulk-select-all><span>Select all categories</span></label><span class="store-bulk-selection-count" data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected categories</button></div>` : ""}
         <div class="store-workspace-list">${websiteCategories.map(category => {
           const categoryProducts = webProducts.filter(product => Number(product.category_id) === Number(category.id));
           return `
-          <div class="store-bulk-row" style="display:flex;align-items:flex-start;gap:10px;margin:8px 0;">
-          <label class="store-bulk-item" aria-label="Select ${AppUtils.escapeHTML(category.name)}" style="display:flex;align-items:center;gap:6px;padding-top:12px;"><input type="checkbox" data-bulk-item="${category.id}"><span>Select</span></label>
-          <details class="store-category-wrap" style="flex:1;min-width:0;">
+          <div class="store-bulk-row">
+          <label class="store-bulk-item" aria-label="Select ${AppUtils.escapeHTML(category.name)}"><input type="checkbox" data-bulk-item="${category.id}"></label>
+          <details class="store-category-wrap">
             <summary class="store-workspace-row">
               <div><strong class="store-product-name">${AppUtils.escapeHTML(category.name)}</strong><span>${categoryProducts.length} products</span></div>
               <div class="store-product-sources"><span class="store-product-source">Web only</span></div>
@@ -11820,6 +12910,14 @@ const StudioRenderers = {
         const activeTenant = AppController.getActiveTenant();
         const instance = snapshot.instances?.[0];
         const storeId = this.businessStoreId(tenantId);
+        if (!window.ShopPOS?.listBusinessRecords) {
+          throw new Error("Register business records are not available for cloud sync.");
+        }
+        const [suppliers, purchaseOrders, tickets] = await Promise.all([
+          window.ShopPOS.listBusinessRecords("supplier", tenantId),
+          window.ShopPOS.listBusinessRecords("purchase", tenantId),
+          window.ShopPOS.listBusinessRecords("ticket", tenantId)
+        ]);
         const synced = await AppController.cloudflareRequest(
           `/api/business/sync?tenant=${encodeURIComponent(tenantId)}`,
           {
@@ -11843,9 +12941,9 @@ const StudioRenderers = {
                 points: SQLiteEngine.select("customer_points", item => item.tenant_id === tenantId),
                 bookings: SQLiteEngine.select("booking_holds", item => item.tenant_id === tenantId),
                 instances: snapshot.instances,
-                suppliers: snapshot.suppliers || [],
-                purchase_orders: snapshot.purchaseOrders || [],
-                tickets: snapshot.tickets || [],
+                suppliers,
+                purchase_orders: purchaseOrders,
+                tickets,
                 settings: snapshot.settings || {}
               }
             })
@@ -12031,6 +13129,10 @@ const StudioRenderers = {
           console.error(`Could not load live ${key} for the active shop.`, result.reason);
         }
       });
+      this.mainShopSnapshotCache = {
+        tenantId: activeTenant.id,
+        snapshot: renderSnapshot
+      };
       const currentContent = document.getElementById("store-workspace-content");
       if (!currentContent || AppController.currentRoute().split("?")[0] !== path) return;
       currentContent.innerHTML = this.renderMainShopContent(path, renderSnapshot);
@@ -13171,7 +14273,7 @@ const StudioRenderers = {
       const availableThemes = this.websiteThemesForPicker();
       const selectedTheme = availableThemes.some(theme => theme.id === saved.selected_theme)
         ? saved.selected_theme
-        : availableThemes[0]?.id || "aviya-luxury";
+        : availableThemes[0]?.id || "elora-linen";
       return {
         products: Array.isArray(saved.products) ? saved.products : [],
         categories: Array.isArray(saved.categories) ? saved.categories : [],
@@ -13354,11 +14456,11 @@ const StudioRenderers = {
     const requestedTheme = editorParams.get("theme") ||
       (isNewWebsite
         ? newWebsiteDraft.selected_theme || ""
-        : store.website_theme_id) || "aviya-luxury";
+        : store.website_theme_id) || "elora-linen";
     const availableThemes = this.websiteThemesForPicker();
     const selectedTheme = availableThemes.some(theme => theme.id === requestedTheme)
       ? requestedTheme
-      : availableThemes[0]?.id || "aviya-luxury";
+      : availableThemes[0]?.id || "elora-linen";
     if (draftEditor && newWebsiteDraft && editorParams.has("theme")) {
       newWebsiteDraft.selected_theme = selectedTheme;
       this.saveWebsiteBuilderDraft(newWebsiteDraft);
@@ -14380,7 +15482,7 @@ const AppController = {
     const draftStore = {
       name: "New website draft",
       title: "New website draft",
-      website_theme_id: selectedTheme?.id || "aviya-luxury",
+      website_theme_id: selectedTheme?.id || "elora-linen",
       section_layout: draft.section_layout,
       primary_color: "#18181B",
       background_color: "#FAFAF8",
@@ -14901,44 +16003,246 @@ const AppController = {
 
   renderLaunchpad() {
     document.title = "Home — Craft";
+    const hasAccountSession = Boolean(window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1"));
+    const username = hasAccountSession
+      ? window.localStorage.getItem("ESHOP_ACCOUNT_USERNAME_V1")?.trim() || "there"
+      : "there";
     return `
       <main class="home-screen" aria-label="Craft home">
+        <div class="home-background" aria-hidden="true">
+          <img class="home-background-image is-active" data-home-background-current alt="">
+          <img class="home-background-image" data-home-background-next alt="">
+          <div class="home-background-tint"></div>
+        </div>
         <header class="home-screen-header">
-          <img class="home-screen-logo" src="/eshop-logo.png" alt="Craft">
+          <p class="home-screen-greeting">Hi, ${AppUtils.escapeHTML(username)} <span aria-hidden="true">👋</span></p>
           <a class="home-screen-profile" href="/app-account" data-route="/app-account" aria-label="Account" title="Account">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2z"/></svg>
           </a>
         </header>
         <section class="home-screen-main" aria-label="Shop workspaces">
-          <div class="home-credit-card" role="group" aria-label="Choose Web Studio or POS">
-            <div class="home-credit-card-heading">
-              <span class="home-credit-card-eyebrow">CRAFT · BUSINESS</span>
-            </div>
-            <nav class="home-credit-card-actions" aria-label="Choose a workspace">
-              <a class="home-credit-card-link" href="/account/web" data-route="/account/web" aria-label="Craft Web Studio">
-                <span class="home-credit-card-logo" aria-hidden="true"><img src="/eshop-mark.png" alt=""></span>
-                <span class="home-credit-card-label">Craft</span>
+          <div class="home-launcher-group" role="group" aria-label="POS and workspaces">
+            <a class="home-pos-card" href="/pos" data-route="/pos" aria-label="Open POS">
+              <span class="home-pos-mark" aria-hidden="true">POS</span>
+              <span class="home-pos-copy"><strong>Open POS</strong><small>Start a sale or manage payments</small></span>
+              <span class="home-pos-arrow" aria-hidden="true">→</span>
+            </a>
+            <nav class="home-workspace-grid" aria-label="Choose a workspace">
+              <a class="home-workspace-card home-workspace-card-main" href="/account/main-shop" data-route="/account/main-shop" aria-label="Main Store">
+                <strong>Main Store</strong>
+                <small>Products, orders and inventory</small>
               </a>
-              <a class="home-credit-card-link" href="/pos" data-route="/pos" aria-label="Point of Sale">
-                <span class="home-credit-card-label">POS</span>
-                <span class="home-credit-card-logo" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.2 11.1a2 2 0 0 0 2 1.6h8.7a2 2 0 0 0 1.9-1.4L22 8H6"/><circle cx="10" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/></svg>
-                </span>
+              <a class="home-workspace-card home-workspace-card-craft" href="/account/web" data-route="/account/web" aria-label="Craft Web Studio">
+                <strong>Craft</strong>
+                <small>Build and manage your storefront</small>
+              </a>
+            </nav>
+            <nav class="home-shortcut-grid" aria-label="Quick actions">
+              <a class="home-shortcut-link" href="/store/products" data-route="/store/products">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3z"/><path d="M4 7.5V16l8 5 8-5V7.5M12 12v9"/></svg>
+                <span>Products</span>
+              </a>
+              <a class="home-shortcut-link" href="/store/inventory" data-route="/store/inventory">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M7 4v4M12 10v4M17 16v4"/></svg>
+                <span>Inventory</span>
+              </a>
+              <a class="home-shortcut-link" href="/store/orders" data-route="/store/orders">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 8h6M9 12h6"/></svg>
+                <span>Orders</span>
+              </a>
+              <a class="home-shortcut-link" href="/store/categories" data-route="/store/categories">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+                <span>Categories</span>
               </a>
             </nav>
           </div>
-          <a class="home-store-card" href="/account/main-shop" data-route="/account/main-shop" aria-label="Main Store">
-            <strong>Main Store</strong>
-          </a>
-          <section class="home-overall-metrics" aria-label="Overall business metrics">
-            <article class="home-overall-metric"><span>Overall Revenue</span><strong data-home-metric="revenue">Loading…</strong></article>
-            <article class="home-overall-metric"><span>Overall Profit</span><strong data-home-metric="profit">Loading…</strong></article>
-            <article class="home-overall-metric"><span>Overall Customers</span><strong data-home-metric="customers">Loading…</strong></article>
-            <article class="home-overall-metric"><span>Average Order</span><strong data-home-metric="average-order">Loading…</strong></article>
+          <section class="home-dashboard" data-home-dashboard aria-label="Store overview" aria-live="polite" aria-busy="true">
+            <p class="home-dashboard-loading" role="status">Loading your store overview…</p>
+            <div class="home-dashboard-skeleton" aria-hidden="true">
+              <div class="home-metric-grid">
+                ${Array.from({ length: 3 }, () => `<article class="home-data-card"><span class="home-data-label home-skeleton-line is-short"></span><strong class="home-data-value home-skeleton-line is-value"></strong><small class="home-data-note home-skeleton-line is-medium"></small></article>`).join("")}
+              </div>
+              <div class="home-panel-grid">
+                <section class="home-panel home-panel-compact">
+                  <div class="home-panel-heading"><div><span class="home-panel-kicker home-skeleton-line is-short"></span><h2 class="home-skeleton-line is-medium is-heading"></h2></div></div>
+                </section>
+                <section class="home-panel home-panel-compact">
+                  <div class="home-panel-heading"><div><span class="home-panel-kicker home-skeleton-line is-short"></span><h2 class="home-skeleton-line is-medium is-heading"></h2></div></div>
+                  ${Array.from({ length: 2 }, () => `<div class="home-attention-row"><span><strong class="home-skeleton-line is-medium"></strong><small class="home-skeleton-line is-long"></small></span><span class="home-attention-count home-skeleton-line"></span></div>`).join("")}
+                </section>
+              </div>
+              <section class="home-panel">
+                <div class="home-panel-heading"><div><span class="home-panel-kicker home-skeleton-line is-short"></span><h2 class="home-skeleton-line is-medium is-heading"></h2></div><span class="home-skeleton-line is-short"></span></div>
+                ${Array.from({ length: 3 }, () => `<div class="home-recent-row"><div class="home-recent-copy"><strong class="home-skeleton-line is-medium"></strong><small class="home-skeleton-line is-short"></small></div><div class="home-recent-total"><strong class="home-skeleton-line is-short"></strong><small class="home-skeleton-line is-medium"></small></div></div>`).join("")}
+              </section>
+            </div>
           </section>
         </section>
       </main>
     `;
+  },
+
+  setupHomeBackground() {
+    const home = document.querySelector(".home-screen");
+    const currentLayer = home?.querySelector("[data-home-background-current]");
+    const nextLayer = home?.querySelector("[data-home-background-next]");
+    if (!(currentLayer instanceof HTMLImageElement) || !(nextLayer instanceof HTMLImageElement)) return;
+    const images = Array.from({ length: 9 }, (_, index) => {
+      const number = String(index + 1).padStart(2, "0");
+      return {
+        desktop: `/home-backgrounds/home-${number}.jpg`,
+        mobile: `/home-backgrounds/mobile-${number}.jpg`
+      };
+    });
+    const mobileViewport = window.matchMedia("(max-width: 600px)");
+    let useMobileImages = mobileViewport.matches;
+    const imageSource = index => useMobileImages ? images[index].mobile : images[index].desktop;
+    let activeIndex = 0;
+    let requestVersion = 0;
+    let visibleLayer = currentLayer;
+    let hiddenLayer = nextLayer;
+    visibleLayer.src = imageSource(activeIndex);
+    visibleLayer.classList.add("is-active");
+
+    const showImage = index => {
+      const version = ++requestVersion;
+      const source = imageSource(index);
+      const preload = new Image();
+      preload.onload = () => {
+        if (!home.isConnected || version !== requestVersion) return;
+        const incomingLayer = hiddenLayer;
+        const outgoingLayer = visibleLayer;
+        incomingLayer.src = source;
+        requestAnimationFrame(() => {
+          if (!home.isConnected || version !== requestVersion) return;
+          incomingLayer.classList.add("is-active");
+          outgoingLayer.classList.remove("is-active");
+          visibleLayer = incomingLayer;
+          hiddenLayer = outgoingLayer;
+          activeIndex = index;
+          window.setTimeout(() => {
+            if (home.isConnected && !outgoingLayer.classList.contains("is-active")) {
+              outgoingLayer.removeAttribute("src");
+            }
+          }, 1600);
+        });
+      };
+      preload.onerror = () => console.error("Could not load a Craft home background image.", source);
+      preload.src = source;
+    };
+
+    const rotateBackground = () => showImage((activeIndex + 1) % images.length);
+    const handleViewportChange = () => {
+      const nextUseMobileImages = mobileViewport.matches;
+      if (nextUseMobileImages === useMobileImages) return;
+      useMobileImages = nextUseMobileImages;
+      showImage(activeIndex);
+    };
+    this.homeBackgroundResizeHandler = handleViewportChange;
+    window.addEventListener("resize", handleViewportChange);
+
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      this.homeBackgroundTimer = window.setInterval(rotateBackground, 8500);
+    }
+  },
+
+  async loadHomeDashboard() {
+    const dashboard = document.querySelector("[data-home-dashboard]");
+    if (!dashboard) return;
+    try {
+      const snapshot = await StudioRenderers.getMainShopSnapshot();
+      if (!dashboard.isConnected) return;
+      const currency = String(snapshot.currency || "KES").toUpperCase();
+      const excludedStatuses = new Set(["refunded", "voided", "cancelled", "canceled", "failed"]);
+      const sales = snapshot.sales.filter(sale =>
+        sale.currency === currency && !excludedStatuses.has(String(sale.status || "").toLowerCase()));
+      const localDateKey = value => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      };
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const todayKey = localDateKey(today);
+      const yesterdayKey = localDateKey(yesterday);
+      const todaySales = sales.filter(sale => localDateKey(sale.date) === todayKey);
+      const yesterdaySales = sales.filter(sale => localDateKey(sale.date) === yesterdayKey);
+      const totalFor = items => items.reduce((sum, sale) => sum + (Number(sale.total) || 0), 0);
+      const todayTotal = totalFor(todaySales);
+      const lowStockCount = snapshot.products.filter(product =>
+        product.stock != null && Number.isFinite(Number(product.stock)) && Number(product.stock) <= 5).length;
+      const pendingPaymentCount = sales.filter(sale =>
+        Number(sale.collected) < Number(sale.total)).length;
+      const money = amount => StudioRenderers.formatMainShopMoney(amount, currency);
+      const recentSales = sales.slice(0, 3);
+      const recentRows = recentSales.length
+        ? recentSales.map(sale => {
+          const itemName = (sale.lineItems || []).map(item => String(item.name || "").trim()).find(Boolean)
+            || `${Number(sale.itemCount) || 0} items`;
+          const nameCharacters = Array.from(itemName);
+          const itemLabel = nameCharacters.length > 12
+            ? `${nameCharacters.slice(0, 11).join("")}…`
+            : itemName;
+          const channelLabel = /web|online/i.test(String(sale.channel || "")) ? "Web" : "POS";
+          return `<div class="home-recent-row">
+            <div class="home-recent-copy">
+              <strong>${AppUtils.escapeHTML(itemLabel)}</strong>
+              <small>${channelLabel}</small>
+            </div>
+            <div class="home-recent-total">
+              <strong>${AppUtils.escapeHTML(money(sale.total))}</strong>
+              <small>Payment</small>
+            </div>
+          </div>`;
+        }).join("")
+        : `<p class="home-empty">No sales recorded yet.</p>`;
+      dashboard.innerHTML = `
+        <div class="home-metric-grid" aria-label="Today’s sales summary">
+          <article class="home-data-card">
+            <span class="home-data-label">Sales today</span>
+            <strong class="home-data-value">${AppUtils.escapeHTML(money(todayTotal))}</strong>
+            <small class="home-data-note">${todaySales.length} sale${todaySales.length === 1 ? "" : "s"} recorded</small>
+          </article>
+          <article class="home-data-card">
+            <span class="home-data-label">Orders</span>
+            <strong class="home-data-value">${todaySales.length}</strong>
+            <small class="home-data-note">Today across POS and web</small>
+          </article>
+          <article class="home-data-card">
+            <span class="home-data-label">Average order</span>
+            <strong class="home-data-value">${AppUtils.escapeHTML(money(todaySales.length ? todayTotal / todaySales.length : 0))}</strong>
+            <small class="home-data-note">Today</small>
+          </article>
+        </div>
+        <div class="home-panel-grid">
+          <section class="home-panel home-panel-compact" aria-label="Yesterday’s sales">
+            <div class="home-panel-heading">
+              <div><span class="home-panel-kicker">Yesterday</span><h2>${yesterdaySales.length} sale${yesterdaySales.length === 1 ? "" : "s"}</h2></div>
+            </div>
+          </section>
+          <section class="home-panel home-panel-compact" aria-label="Needs attention">
+            <div class="home-panel-heading"><div><span class="home-panel-kicker">Needs attention</span><h2>Store checks</h2></div></div>
+            <div class="home-attention-row"><span><strong>Low stock</strong><small>5 units or fewer</small></span><span class="home-attention-count">${lowStockCount}</span></div>
+            <div class="home-attention-row"><span><strong>Payment follow-up</strong><small>Unpaid or part-paid sales</small></span><span class="home-attention-count">${pendingPaymentCount}</span></div>
+          </section>
+        </div>
+        <section class="home-panel" aria-label="Recent orders">
+          <div class="home-panel-heading">
+            <div><span class="home-panel-kicker">Activity</span><h2>Recent orders</h2></div>
+            <a class="home-panel-link" href="/store/orders" data-route="/store/orders">View all</a>
+          </div>
+          ${recentRows}
+        </section>
+      `;
+      dashboard.setAttribute("aria-busy", "false");
+    } catch (error) {
+      console.error("Could not load the Craft home dashboard.", error);
+      if (dashboard.isConnected) {
+        dashboard.innerHTML = `<p class="home-dashboard-error" role="alert">Store overview could not be loaded: ${AppUtils.escapeHTML(error instanceof Error ? error.message : String(error))}</p>`;
+        dashboard.setAttribute("aria-busy", "false");
+      }
+    }
   },
 
   async init() {
@@ -14971,6 +16275,7 @@ const AppController = {
 
     // Handle initial route
     this.handleRoute(this.currentRoute());
+    window.dispatchEvent(new Event("craft:app-ready"));
 
     // Browser back / forward buttons
     window.addEventListener("hashchange", () => {
@@ -15146,9 +16451,12 @@ const AppController = {
   setAppShellTheme(path) {
     const isAppShell = path === "/" || path === "" || path === "/account" ||
       path.startsWith("/account/") || path === "/app-account" || path === "/pos" || path.startsWith("/pos/");
+    const showBackgroundEmblem = (isAppShell || path.startsWith("/store/")) &&
+      path !== "/" && path !== "/account/web/site";
     const isCraftAppUi = isAppShell && path !== "/account/web/site";
     document.body.classList.toggle("app-shell", isAppShell);
     document.body.classList.toggle("craft-app-ui", isCraftAppUi);
+    document.body.classList.toggle("app-background-emblem-active", showBackgroundEmblem);
     if (isAppShell) {
       this.applyThemeSettings();
       return;
@@ -15188,7 +16496,12 @@ const AppController = {
     if (!appRoot) return;
 
     const [path, queryString] = fullPath.split("?");
+    document.body.classList.toggle("app-interior-theme", path !== "/");
     const params = new URLSearchParams(queryString || "");
+    if (path === "/mpesa" || path.startsWith("/mpesa/")) {
+      this.navigate("/", true);
+      return;
+    }
     if (path === "/account/web/site" && params.get("new") !== "1" && params.has("tenant")) {
       const tenantId = params.get("tenant");
       const catalog = this.tenantCatalogs().find(item => item.tenant_id === tenantId);
@@ -15354,7 +16667,6 @@ const AppController = {
         console.error("Website domains route is invalid.", error);
       }
     }
-    if (path === "/" || path === "") void StudioRenderers.loadHomeOverallMetrics();
     if (previousPath !== fullPath) this.recordWebVisit(path);
     this.lastRenderedPath = fullPath;
     if (shouldScroll) window.scrollTo(0, 0);
@@ -15561,13 +16873,25 @@ const AppController = {
 
   postRenderSetup(path, params) {
     const draftEditor = params.get("new") === "1" && params.get("edit") === "1";
+    if (this.homeBackgroundResizeHandler) {
+      window.removeEventListener("resize", this.homeBackgroundResizeHandler);
+      this.homeBackgroundResizeHandler = null;
+    }
+    if (this.homeBackgroundTimer) {
+      window.clearInterval(this.homeBackgroundTimer);
+      this.homeBackgroundTimer = null;
+    }
+    if (path === "/") {
+      this.setupHomeBackground();
+      void this.loadHomeDashboard();
+    }
     if (path === "/account/web/site") {
       const frame = document.getElementById("builder-theme-studio");
       const saveButton = document.getElementById("builder-theme-studio-save");
       const status = document.getElementById("builder-theme-studio-status");
       if (frame && saveButton && status) {
         const themeId = params.get("theme") ||
-          StudioRenderers.websiteThemesForPicker()[0]?.id || "aviya-luxury";
+          StudioRenderers.websiteThemesForPicker()[0]?.id || "elora-linen";
         saveButton.onclick = () => {
           status.textContent = "Capturing the current design…";
           frame.contentWindow?.postMessage({ type: "eshop-theme-studio-export-request" }, window.location.origin);
@@ -16745,7 +18069,8 @@ const AppController = {
           return source.replace(/<head\b[^>]*>/i, match => `${match}${bootstrap}`);
         }
         if (theme.editor_mode === "app" && !isThemeStudioAsset) {
-          const { fillEditableStorefrontTheme, craftStudioAppearance } = await import("/editable-storefront-theme.js");
+          const { fillEditableStorefrontTheme, craftStudioAppearance } =
+            await window.EshopThemeRuntime.loadEditableStorefrontTheme();
           let savedStudio = null;
           if (theme.id === "craft-main-storefront") {
             try {
@@ -16975,7 +18300,7 @@ const AppController = {
           !/^[a-z0-9][a-z0-9-]{0,63}$/.test(theme.id)) {
         throw new Error("The selected theme URL is invalid.");
       }
-      const { fillThemeForShop } = await import("/theme-skeleton-client.js");
+      const { fillThemeForShop } = await window.EshopThemeRuntime.loadThemeSkeleton();
       const filledHtml = await fillThemeForShop(theme.id, catalog, {
         baseHref: themeUrl.href
       });
@@ -17715,8 +19040,8 @@ const AppController = {
       submitButton.disabled = true;
       submitButton.textContent = "Preparing images…";
       try {
-        const themeClient = await import("/theme-skeleton-client.js");
-      const themeId = String(store.website_theme_id || "aviya-luxury");
+        const themeClient = await window.EshopThemeRuntime.loadThemeSkeleton();
+      const themeId = String(store.website_theme_id || "elora-linen");
         const selectedTheme = StudioRenderers.websiteThemes().find(theme => theme.id === themeId);
         const appEditableTheme = selectedTheme?.editor_mode === "app";
       const liquidHtmlTheme = selectedTheme?.editor_mode === "liquid-html";

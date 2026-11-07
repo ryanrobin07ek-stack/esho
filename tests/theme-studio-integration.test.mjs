@@ -8,7 +8,7 @@ const read = path => readFile(new URL(path, import.meta.url), "utf8");
 
 test("CHESSER styling is limited to Craft app routes and excludes Theme Studio", async () => {
   const [app, pos] = await Promise.all([read("../index.html"), read("../src/pos.js")]);
-  const themeSetup = app.match(/setAppShellTheme\(path\) \{([\s\S]*?)\n  \},\n\n  currentRoute/)?.[1];
+  const themeSetup = app.match(/setAppShellTheme\(path\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  currentRoute/)?.[1];
   const craftStyles = app.match(/\/\* CHESSER visual system for Craft app screens only\. \*\/([\s\S]*?)<\/style>/)?.[1];
 
   assert.ok(themeSetup);
@@ -19,17 +19,22 @@ test("CHESSER styling is limited to Craft app routes and excludes Theme Studio",
   assert.match(craftStyles, /font-family: "Craft Barlow Condensed"/);
   assert.match(craftStyles, /body\.craft-app-ui #app/);
   assert.match(craftStyles, /border: 1px solid #e5e5e5 !important/);
-  assert.match(craftStyles, /border-radius: 0 !important/);
+  assert.match(craftStyles, /border-radius: 12px !important/);
   assert.match(craftStyles, /box-shadow: 0 18px 40px -28px #000 !important/);
-  assert.match(craftStyles, /studio-workspace-top-link \{[\s\S]*?font-size: \.8rem/);
+  assert.match(app, /\.workspace-menu summary\s*\{[\s\S]*?width:\s*40px/);
   assert.match(craftStyles, /studio-module-navbar \.nav-container \{[\s\S]*?height: 56px/);
-  assert.match(craftStyles, /studio-workspace-heading \{[\s\S]*?justify-content: flex-start/);
+  assert.match(craftStyles, /studio-workspace-heading \{[\s\S]*?justify-content: space-between/);
   assert.match(craftStyles, /studio-workspace-tab-title \{[\s\S]*?text-align: right/);
   assert.match(craftStyles, /studio-workspace-back \{[\s\S]*?width: 24px/);
   assert.match(craftStyles, /studio-workspace-back \{[\s\S]*?border: 0/);
   assert.match(craftStyles, /web-studio-shell \{[\s\S]*?padding-top: 2px !important/);
-  assert.match(craftStyles, /studio-workspace-top-link\.is-active::after \{[\s\S]*?height: 3px/);
-  assert.match(craftStyles, /home-credit-card,[\s\S]*?box-shadow: 0 18px 40px -28px #fff !important/);
+  assert.match(app, /\.workspace-sidebar-link\.is-active,[\s\S]*?background:\s*#f5f5f7/);
+  assert.match(app, /\.workspace-sidebar\s*\{[\s\S]*?background:\s*#09090b/);
+  assert.match(app, /\.workspace-sidebar\s*\{[\s\S]*?padding:\s*max\(24px, calc\(env\(safe-area-inset-top, 0px\) \+ 16px\)\)/);
+  assert.match(app, /\.workspace-sidebar-logout\s*\{[\s\S]*?background:\s*#211314[\s\S]*?color:\s*#ffc1c1/);
+  assert.match(app, /workspace-sidebar-logout[^>]*aria-label="Log out"><svg/);
+  assert.match(craftStyles, /home-store-card \{[\s\S]*?background-color: #050505 !important[\s\S]*?box-shadow: 0 18px 40px -28px #fff !important/);
+  assert.match(craftStyles, /home-store-card \{[\s\S]*?border-radius: 12px !important/);
   assert.match(craftStyles, /web-studio-shell \.studio-panel \.studio-list-row \{[\s\S]*?height: 68px/);
   for (const card of [
     ".studio-card", ".category-circle-card", ".product-card", ".campaign-card", ".bag-item-card",
@@ -39,7 +44,7 @@ test("CHESSER styling is limited to Craft app routes and excludes Theme Studio",
     ".pos-card", ".pos-overview-card", ".pos-revenue-card", ".metric-card", ".profile-page-card",
     ".settings-card", ".store-website-panel", ".store-workspace-card", ".studio-data-card",
     ".studio-department-content", ".plan-card", ".checkout-card", ".order-summary",
-    ".store-workspace-form", ".home-credit-card", ".home-store-card", ".home-overall-metric", ".bl-card"
+    ".store-workspace-form", ".home-store-card", ".bl-card"
   ]) {
     assert.ok(craftStyles.includes(`body.craft-app-ui #app ${card}`));
   }
@@ -53,7 +58,7 @@ test("CHESSER styling is limited to Craft app routes and excludes Theme Studio",
 test("theme choices open the shared Liquid Studio and auto-load each bundled HTML theme", async () => {
   const studio = await read("../public/liquid-themes/theme-studio.html");
   const app = await read("../index.html");
-  const editor = app.match(/renderWebsiteEditor\(isNewWebsite = false\) \{([\s\S]*?)\n  \},\n\n  renderWebsiteStoreEditor/)?.[1];
+  const editor = app.match(/renderWebsiteEditor\(isNewWebsite = false\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  renderWebsiteStoreEditor/)?.[1];
 
   assert.ok(editor);
   for (const theme of WEBSITE_THEME_CATALOG) {
@@ -96,7 +101,7 @@ test("theme choices open the shared Liquid Studio and auto-load each bundled HTM
   assert.ok(WEBSITE_THEME_CATALOG.every(theme => theme.editor_mode === "liquid-html"));
   assert.deepEqual(
     WEBSITE_THEME_CATALOG.filter(theme => theme.validation_status === "passed").map(theme => theme.id),
-    ["aviya-luxury", "stepz-footwear"]
+    ["elora-linen"]
   );
 });
 

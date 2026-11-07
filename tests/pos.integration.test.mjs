@@ -10,6 +10,126 @@ import {
   parseProductLabel, rankImageMatches, suggestImageCategories
 } from '../src/pos.js';
 
+test('POS cart interactions render locally without reloading saved POS state', async () => {
+  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const addCart = source.match(/else if \(action === 'add-cart'\) \{([\s\S]*?)\n      \} else if \(action === 'cart-plus'/)?.[1];
+  const addProduct = source.match(/async function addProductToSale\([\s\S]*?\n  \}/)?.[0];
+  assert.ok(addCart);
+  assert.match(addCart, /updateCartPanel\(\)/);
+  assert.doesNotMatch(addCart, /await refresh\(\)/);
+  assert.ok(addProduct);
+  assert.match(addProduct, /updateCartPanel\(\)/);
+  assert.doesNotMatch(addProduct, /await refresh\(\)/);
+});
+
+test('POS sales load all line items in one batch instead of querying once per sale', async () => {
+  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const listSales = source.match(/async function listSales\(\) \{([\s\S]*?)\n\}/)?.[1];
+  assert.ok(listSales);
+  assert.match(listSales, /FROM pos_sale_items WHERE sale_id IN \(SELECT id FROM pos_sales\)/);
+  assert.doesNotMatch(listSales, /for \(const sale of sales\) \{[\s\S]*?await rows\(/);
+});
+
+test('POS product and inventory rows expose pencil and trash actions', async () => {
+  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const inventory = source.match(/if \(screen === '\/catalogue\/inventory'\) \{([\s\S]*?)\n    \}\n    return `<section class="pos-content">/)?.[1];
+  assert.ok(inventory, 'POS inventory screen should have a bounded renderer.');
+  assert.match(inventory, /iconLink\(`\/pos\/inventory\?edit=\$\{item\.id\}`/);
+  assert.match(inventory, /iconButton\('delete-product'/);
+  const products = source.match(/if \(screen === '\/catalogue\/products'\) \{([\s\S]*?)\n    \}\n    if \(screen === '\/catalogue\/categories'\)/)?.[1];
+  assert.ok(products, 'POS products screen should have a bounded renderer.');
+  assert.match(products, /iconLink\(`\/pos\/catalogue\/products\?edit=\$\{item\.id\}`/);
+  assert.match(products, /iconButton\('delete-product'/);
+  assert.match(source, /if \(screen === '\/catalogue\/products'\)[\s\S]*?params\.get\('edit'\)[\s\S]*?productForm\(product\)/);
+  const categories = source.match(/if \(screen === '\/catalogue\/categories'\) \{([\s\S]*?)\n    \}\n    if \(screen === '\/catalogue\/suppliers'\)/)?.[1];
+  assert.ok(categories, 'POS categories screen should have a bounded renderer.');
+  assert.match(categories, /iconButton\('rename-category'/);
+  assert.match(categories, /iconButton\('delete-category'/);
+  assert.match(categories, /Default category/);
+  assert.match(source, /<details class="pos-catalogue-item">[\s\S]*?iconButton\('rename-category'/);
+  assert.match(source, /productDetailsCards\('\/pos\/catalogue\/products'\)/);
+  assert.match(source, /productDetailsCards\('\/pos\/inventory', 'inventory'\)/);
+  assert.match(source, /summaryMode === 'inventory'[\s\S]*?in stock/);
+  assert.match(source, /categoryDetailsCards\(\)/);
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(pageSource, /\.pos-row-actions \.pos-icon-action \{[\s\S]*?border: 0 !important;[\s\S]*?background: transparent !important/);
+  assert.match(pageSource, /\.pos-row-actions \.product-list-delete \{[\s\S]*?color: var\(--danger\)/);
+  assert.match(pageSource, /@media \(max-width: 520px\) \{[\s\S]*?\.pos-catalogue-desktop-list \{\s*display: none/);
+  assert.match(pageSource, /@media \(max-width: 520px\) \{[\s\S]*?\.pos-mobile-catalogue \{\s*display: grid/);
+  assert.match(pageSource, /\.pos-catalogue-item\[open\] \{[\s\S]*?background: var\(--app-card-surface/);
+  assert.match(pageSource, /\.pos-catalogue-item > summary strong \{[\s\S]*?font-size: 0\.84rem;[\s\S]*?font-weight: 500/);
+});
+
+test('Orders removes the New sale border and quotations use selectable three-column product cards', async () => {
+  const [source, pageSource] = await Promise.all([
+    readFile(new URL('../src/pos.js', import.meta.url), 'utf8'),
+    readFile(new URL('../index.html', import.meta.url), 'utf8')
+  ]);
+  const orders = source.match(/function renderOrders\(\) \{([\s\S]*?)\n  \}/)?.[1];
+  const quotations = source.match(/function renderQuotations\(\) \{([\s\S]*?)\n  \}/)?.[1];
+
+  assert.ok(orders, 'Orders renderer should exist.');
+  assert.match(orders, /class="btn-secondary pos-orders-new-sale">New sale/);
+  assert.ok(quotations, 'Quotations renderer should exist.');
+  assert.match(quotations, /class="pos-product-picks pos-quote-product-grid"/);
+  assert.match(quotations, /class="pos-product-tile pos-quote-product"/);
+  assert.match(quotations, /type="checkbox" name="products" value="\$\{product\.id\}"/);
+  assert.match(quotations, /product\.imageUri[\s\S]*?pos-product-placeholder/);
+  assert.match(pageSource, /\.pos-orders-new-sale\s*\{\s*border:\s*0 !important/);
+  assert.match(pageSource, /\.pos-quote-product-grid\s*\{\s*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(pageSource, /\.pos-quote-product input\[type="checkbox"\]\s*\{[\s\S]*?position:\s*absolute/);
+});
+
+test('More keeps its three destinations in separate full-width cards', async () => {
+  const [source, pageSource] = await Promise.all([
+    readFile(new URL('../src/pos.js', import.meta.url), 'utf8'),
+    readFile(new URL('../index.html', import.meta.url), 'utf8')
+  ]);
+  const more = source.match(/function renderMore\(\) \{([\s\S]*?)\n  \}/)?.[1];
+
+  assert.ok(more, 'More renderer should exist.');
+  assert.equal((more.match(/'pos-more-card'/g) || []).length, 3);
+  assert.match(more, /Business instances/);
+  assert.match(more, /Sales &amp; receipts/);
+  assert.match(more, /Settings/);
+  assert.match(pageSource, /\.pos-content \.pos-more-card\s*\{[^}]*width:\s*100vw[^}]*margin-left:\s*calc\(50% - 50vw\)/);
+  assert.match(pageSource, /\.pos-more-link\s*\{[^}]*min-height:\s*104px/);
+});
+
+test('workspace screen navigation uses side drawers and loading placeholders use skeletons', async () => {
+  const [pageSource, posSource] = await Promise.all([
+    readFile(new URL('../index.html', import.meta.url), 'utf8'),
+    readFile(new URL('../src/pos.js', import.meta.url), 'utf8')
+  ]);
+  assert.match(pageSource, /renderWorkspaceSidebar\(title, items, activeRoute\)[\s\S]*?workspace-sidebar-scrim[\s\S]*?workspace-sidebar-links[\s\S]*?aria-current="page"/);
+  assert.match(pageSource, /title: "Orders" \},\s*\{ route: "\/store\/payments", title: "Payments" \}/);
+  assert.doesNotMatch(pageSource, /class="studio-workspace-top-nav"|class="studio-nested-nav"/);
+  assert.match(posSource, /const sectionMenu = \(title, items, current\)[\s\S]*?workspace-sidebar-scrim[\s\S]*?workspace-sidebar-links/);
+  assert.match(posSource, /sectionMenu\('Overview sections', tabs\.map/);
+  assert.doesNotMatch(posSource, /pos-subnav|pos-overview-tabs/);
+  const businessRenderer = pageSource.match(/renderMainShopWorkspace\(path\) \{([\s\S]*?)\r?\n  webStudioNavigation\(/)?.[1];
+  const webStudioRenderer = pageSource.match(/renderWebStudioWorkspace\(path\) \{([\s\S]*?)\r?\n  async getMainShopSnapshot\(/)?.[1];
+  assert.match(businessRenderer || '', /getCachedMainShopSnapshot\(\)[\s\S]*?renderMainShopContent\(path, cachedSnapshot\)[\s\S]*?renderWorkspaceLoading/);
+  assert.match(webStudioRenderer || '', /getCachedMainShopSnapshot\(\)[\s\S]*?renderMainShopContent\(path, cachedSnapshot\)[\s\S]*?renderWorkspaceLoading/);
+  assert.match(pageSource, /const profileLinks = \[[\s\S]*?title: "Profile"[\s\S]*?title: "Webs"[\s\S]*?title: "Accounts"[\s\S]*?title: "Privacy"[\s\S]*?title: "Recommended actions"[\s\S]*?title: "Link devices"[\s\S]*?title: "Updates"/);
+  assert.match(pageSource, /Profile and app links[\s\S]*?profileLinks\.map[\s\S]*?workspace-sidebar-logout/);
+  assert.match(posSource, /workspace-sidebar-divider[\s\S]*?Profile and app links[\s\S]*?Profile[\s\S]*?Webs[\s\S]*?Accounts[\s\S]*?Privacy[\s\S]*?Recommended actions[\s\S]*?Link devices[\s\S]*?Updates[\s\S]*?Log out/, 'POS drawer should append the profile, account and privacy links and logout.');
+  assert.doesNotMatch(pageSource, /studio-hamburger/);
+  assert.match(pageSource, /const sectionSidebar = this\.renderWorkspaceSidebar/);
+  assert.match(pageSource, /\$\{this\.renderWorkspaceSidebar\(`\$\{page\.section\.title\} screens`/);
+  assert.match(pageSource, /\.business-lens-shell \.workspace-sidebar-link \{\s*font-size:\s*\.76rem/);
+  assert.match(pageSource, /\.business-lens-shell \.studio-workspace-bottom-link \{\s*gap:\s*2px;\s*font-size:\s*\.55rem/);
+  assert.match(pageSource, /\.bl-date-filter select,[\s\S]*?\.bl-inline-filter input \{\s*min-height:\s*32px;[\s\S]*?border:\s*0;/);
+  assert.match(pageSource, /\.bl-filter-row button \{[^}]*border:\s*0;/);
+  assert.match(pageSource, /\.workspace-sidebar-logout\s*\{[\s\S]*?color:\s*#ffc1c1/);
+  const mainShopSnapshot = pageSource.match(/async getMainShopSnapshot\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  formatMainShopMoney/)?.[1];
+  assert.ok(mainShopSnapshot);
+  assert.doesNotMatch(mainShopSnapshot, /listBusinessRecords/);
+  assert.match(pageSource, /const \[suppliers, purchaseOrders, tickets\] = await Promise\.all\([\s\S]*?listBusinessRecords\("supplier", tenantId\)[\s\S]*?listBusinessRecords\("purchase", tenantId\)[\s\S]*?listBusinessRecords\("ticket", tenantId\)/);
+  assert.match(pageSource, /home-dashboard-skeleton[\s\S]*?home-data-card[\s\S]*?home-data-label home-skeleton-line[\s\S]*?home-data-value home-skeleton-line[\s\S]*?home-data-note home-skeleton-line[\s\S]*?home-attention-row[\s\S]*?home-recent-row/);
+  assert.match(pageSource, /renderWorkspaceLoading\(label\)[\s\S]*?studio-metric-grid[\s\S]*?studio-data-card[\s\S]*?studio-panel workspace-skeleton-panel/);
+});
+
 test('barcode and QR scanning formats route safely without treating QR text as a product', () => {
   assert.deepEqual(classifyQrCode('ESHOP-RECEIPT:POS-123'), {
     type: 'receipt', label: 'Receipt reference', content: 'ESHOP-RECEIPT:POS-123'
@@ -140,10 +260,16 @@ test('POS sales and received purchases queue refreshed product stock for cloud s
   const paymentStart = posSource.indexOf("case 'payment': {", checkoutStart);
   const receivePurchase = posSource.slice(receiveStart, syncStart);
   const checkout = posSource.slice(checkoutStart, paymentStart);
+  const saveCheckoutStart = posSource.indexOf('async function saveCheckout(');
+  const saveCheckoutEnd = posSource.indexOf('async function queueCloudRecord(', saveCheckoutStart);
+  const saveCheckout = posSource.slice(saveCheckoutStart, saveCheckoutEnd);
   assert.ok(receiveStart >= 0 && syncStart > receiveStart, 'Purchase receiving should have a bounded implementation.');
   assert.ok(checkoutStart >= 0 && paymentStart > checkoutStart, 'POS checkout should have a bounded implementation.');
+  assert.ok(saveCheckoutStart >= 0 && saveCheckoutEnd > saveCheckoutStart, 'POS checkout should reuse the shared sale-save flow.');
   assert.match(receivePurchase, /const products = await listProducts\(\)[\s\S]*?await queueProduct\(product\)/);
-  assert.match(checkout, /const productsAfterSale = await listProducts\(\)[\s\S]*?await queueProduct\(product\)/);
+  assert.match(saveCheckout, /const productsAfterSale = await listProducts\(\)[\s\S]*?await queueProduct\(product\)/);
+  assert.match(checkout, /await saveCheckout\(data, method, Boolean\(method\)\)/);
+  assert.doesNotMatch(posSource, /beginMpesaWait|finishMpesaSale|matchesMpesaSalePayment/);
   const appStart = posSource.indexOf('export function createPosApp()');
   const queueCategory = posSource.indexOf('async function queueCategory(category', appStart);
   const seedCatalogue = posSource.indexOf('async function seedCatalogueSync()', appStart);
@@ -334,6 +460,64 @@ test('Main Store shows Split products beside Categories in the Products navigati
   assert.match(pageSource, /if \(path === "\/store\/split-shop"\) return this\.renderSplitShop\(snapshot, activeTenant\)/);
   assert.match(pageSource, /"\/store\/categories", "\/store\/inventory", "\/store\/split-shop"/);
   assert.match(pageSource, /this\.bindSplitShopEvents\(renderSnapshot, path\)/);
+});
+
+test('M-Pesa workspace is removed and old deep links return to home', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const [bootstrap, archivedUi, archivedTools] = await Promise.all([
+    readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8'),
+    readFile(new URL('../archive/mpesa-ui/index.html.snapshot', import.meta.url), 'utf8'),
+    readFile(new URL('../archive/mpesa-ui/mpesa-tools.js', import.meta.url), 'utf8')
+  ]);
+  assert.doesNotMatch(pageSource, /home-bento-mpesa|M-Pesa|mpesa-screen|renderMpesaScreen|ShopMpesaTools/);
+  assert.match(pageSource, /if \(path === "\/mpesa" \|\| path\.startsWith\("\/mpesa\/"\)\)\s*\{\s*this\.navigate\("\/", true\)/);
+  assert.doesNotMatch(bootstrap, /MpesaTools|mpesa-tools/);
+  assert.match(archivedUi, /renderMpesaScreen/);
+  assert.match(archivedTools, /renderMpesaToolScreen/);
+});
+
+test('M-Pesa notification listener is archived and absent from the active app', async () => {
+  const [manifest, mainActivity, bootstrap, pageSource, posSource,
+    archivedService, archivedParser, archivedPlugin, archivedBridge, archivedUi] = await Promise.all([
+    readFile(new URL('../android/app/src/main/AndroidManifest.xml', import.meta.url), 'utf8'),
+    readFile(new URL('../android/app/src/main/java/com/eshop/atelier/MainActivity.java', import.meta.url), 'utf8'),
+    readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8'),
+    readFile(new URL('../index.html', import.meta.url), 'utf8'),
+    readFile(new URL('../src/pos.js', import.meta.url), 'utf8'),
+    readFile(new URL('../archive/mpesa-notification-listener/android/app/src/main/java/com/eshop/atelier/MpesaNotificationListenerService.kt', import.meta.url), 'utf8'),
+    readFile(new URL('../archive/mpesa-notification-listener/android/app/src/main/java/com/eshop/atelier/MpesaNotificationParser.kt', import.meta.url), 'utf8'),
+    readFile(new URL('../archive/mpesa-notification-listener/android/app/src/main/java/com/eshop/atelier/MpesaNotificationsPlugin.kt', import.meta.url), 'utf8'),
+    readFile(new URL('../archive/mpesa-notification-listener/src/mpesa-notifications.js', import.meta.url), 'utf8'),
+    readFile(new URL('../archive/mpesa-ui/index.html.snapshot', import.meta.url), 'utf8')
+  ]);
+  assert.doesNotMatch(manifest, /MpesaNotificationListenerService|BIND_NOTIFICATION_LISTENER_SERVICE/);
+  assert.doesNotMatch(manifest, /READ_SMS|RECEIVE_SMS/);
+  assert.doesNotMatch(mainActivity, /MpesaNotificationsPlugin/);
+  assert.doesNotMatch(bootstrap, /MpesaNotifications|mpesa-notifications/);
+  assert.doesNotMatch(pageSource, /bindMpesaNotificationEvents|MpesaNotifications|mpesa-self-identifiers|NotificationListenerService|renderMpesaScreen|ShopMpesaTools/);
+  assert.doesNotMatch(posSource, /beginMpesaWait|finishMpesaSale|matchesMpesaSalePayment|MpesaNotifications/);
+  assert.match(archivedUi, /renderMpesaScreen/);
+  assert.match(archivedService, /NotificationListenerService/);
+  assert.match(archivedParser, /sender\.equals\("MPESA", ignoreCase = true\)/);
+  assert.match(archivedPlugin, /ACTION_NOTIFICATION_LISTENER_SETTINGS/);
+  assert.match(archivedBridge, /transactionReceived/);
+  assert.doesNotMatch(pageSource, /data-mpesa-transaction-list|renderMpesaScreen|ShopMpesaTools/);
+  await Promise.all([
+    assert.rejects(readFile(new URL('../android/app/src/main/java/com/eshop/atelier/MpesaNotificationListenerService.kt', import.meta.url))),
+    assert.rejects(readFile(new URL('../android/app/src/main/java/com/eshop/atelier/MpesaNotificationParser.kt', import.meta.url))),
+    assert.rejects(readFile(new URL('../android/app/src/main/java/com/eshop/atelier/MpesaNotificationsPlugin.kt', import.meta.url))),
+    assert.rejects(readFile(new URL('../src/mpesa-notifications.js', import.meta.url))),
+    assert.rejects(readFile(new URL('../src/mpesa-tools.js', import.meta.url)))
+  ]);
+});
+
+test('classic inline app script avoids Vite rewriting dynamic module imports', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const bootstrap = await readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(pageSource, /await import\(["']\//);
+  assert.match(pageSource, /EshopThemeRuntime\.loadEditableStorefrontTheme\(\)/);
+  assert.equal((pageSource.match(/EshopThemeRuntime\.loadThemeSkeleton\(\)/g) || []).length, 2);
+  assert.match(bootstrap, /loadPublicThemeModule = path => import\(\/\* @vite-ignore \*\/ new URL\(path, window\.location\.origin\)\.href\)/);
 });
 
 test('filled themes use the shared fill engine while legacy adapter behavior remains available', async () => {
@@ -657,8 +841,8 @@ test('uploaded catalog photos are compressed before saving and uploaded before d
 
 test('Web Studio website products and categories can be removed without deleting Store/POS records', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const websiteWorkspace = pageSource.match(/if \(path === "\/store\/products"\) \{([\s\S]*?)\n    \}\n    if \(path === "\/store\/categories"\)/)?.[1];
-  const categoryWorkspace = pageSource.match(/if \(path === "\/store\/categories"\) \{([\s\S]*?)\n    \}\n    if \(path === "\/store\/inventory"\)/)?.[1];
+  const websiteWorkspace = pageSource.match(/if \(path === "\/store\/products"\) \{([\s\S]*?)\r?\n    \}\r?\n    if \(path === "\/store\/categories"\)/)?.[1];
+  const categoryWorkspace = pageSource.match(/if \(path === "\/store\/categories"\) \{([\s\S]*?)\r?\n    \}\r?\n    if \(path === "\/store\/inventory"\)/)?.[1];
   const productRemoval = pageSource.match(/document\.querySelectorAll\("\[data-remove-website-product\]"\)([\s\S]*?)document\.querySelectorAll\("\[data-remove-website-category\]"\)/)?.[1];
   const categoryRemoval = pageSource.match(/document\.querySelectorAll\("\[data-remove-website-category\]"\)([\s\S]*?)document\.querySelectorAll\("\[data-store-pos-category\]"\)/)?.[1];
   const bulkRemovalBinding = pageSource.match(/currentContent\.querySelectorAll\("\[data-bulk-removal\]"\)([\s\S]*?)document\.querySelectorAll\("\.business-filter"\)/)?.[1];
@@ -678,6 +862,13 @@ test('Web Studio website products and categories can be removed without deleting
   assert.match(categoryRemoval, /remain on this website as uncategorized/);
   assert.match(websiteWorkspace, /Select all products[\s\S]*?Remove selected products[\s\S]*?data-bulk-item="\$\{product\.id\}"/);
   assert.match(categoryWorkspace, /Select all categories[\s\S]*?Remove selected categories[\s\S]*?data-bulk-item="\$\{category\.id\}"/);
+  assert.match(websiteWorkspace, /class="studio-inline-actions web-product-actions"[\s\S]*?class="btn-secondary web-product-action-card"[\s\S]*?class="btn-primary web-product-action-card"[\s\S]*?class="btn-secondary web-product-action-card"[\s\S]*?class="btn-secondary web-product-action-card"/);
+  assert.match(pageSource, /\.studio-inline-actions\.web-product-actions\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)[^}]*grid-auto-rows:\s*72px/);
+  assert.match(pageSource, /\.store-bulk-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/);
+  assert.match(pageSource, /\.store-bulk-actions \[data-bulk-remove\]\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0/);
+  assert.match(websiteWorkspace, /class="store-product-detail-wrap"[\s\S]*?store-product-name[\s\S]*?formatMainShopMoney\(product\.price,\s*currency\)/);
+  assert.match(categoryWorkspace, /class="store-category-import-row"[\s\S]*?class="store-category-wrap"/);
+  assert.match(pageSource, /\.store-product-detail-wrap,\s*\.store-category-wrap\s*\{[^}]*border-radius:\s*12px/);
   assert.match(bulkRemovalBinding, /selectAll\.onchange[\s\S]*?items\.forEach\(item => \{ item\.onchange = updateSelection; \}\)[\s\S]*?SQLiteEngine\.deleteProduct\(id\)[\s\S]*?SQLiteEngine\.deleteCategory\(id\)[\s\S]*?await window\.ShopSQLite\.flush\(\)/);
 });
 
@@ -697,10 +888,10 @@ test('Web Studio can add multiple Store products at once and carries their image
 
 test('managing a website opens its Web Studio products and exposes publishing', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const manageHandler = pageSource.match(/const manageWebsite = e\.target\.closest\("\[data-manage-website\]"\);([\s\S]*?)\n      }\n\n      const editWebsite/)?.[1];
+  const manageHandler = pageSource.match(/const manageWebsite = e\.target\.closest\("\[data-manage-website\]"\);([\s\S]*?)\r?\n      }\r?\n\r?\n      const editWebsite/)?.[1];
   assert.ok(manageHandler, 'Website management should have a dedicated click handler.');
   assert.match(manageHandler, /this\.setActiveTenantCatalog\([\s\S]*?this\.navigate\("\/account\/web\/studio\/store\/products"\)/);
-  const productsWorkspace = pageSource.match(/if \(path === "\/store\/products"\) \{([\s\S]*?)\n    \}\n    if \(path === "\/store\/categories"\)/)?.[1];
+  const productsWorkspace = pageSource.match(/if \(path === "\/store\/products"\) \{([\s\S]*?)\r?\n    \}\r?\n    if \(path === "\/store\/categories"\)/)?.[1];
   assert.ok(productsWorkspace, 'Web Studio should render the website product workspace.');
   assert.match(productsWorkspace, /id="btn-publish-cloudflare">Publish to \$\{AppUtils\.escapeHTML\(activeTenant\.hostname\)\}/);
   assert.match(productsWorkspace, /Publish to make your updates visible at/);
@@ -777,12 +968,10 @@ test('new-website Webmaker stages catalog before themes and keeps existing websi
   assert.doesNotMatch(pageSource, /websiteBusinessType\(draft\.business_type\)|Choose a business type before/);
   const mainThemes = WEBSITE_THEME_CATALOG.filter(theme => theme.is_main === true);
   assert.deepEqual(mainThemes.map(theme => theme.id), [
-    'aviya-luxury',
-    'stepz-footwear'
+    'elora-linen'
   ], 'Only the current storefront themes are registered.');
   assert.deepEqual(WEBSITE_THEME_CATALOG.filter(theme => theme.validation_status === 'passed').map(theme => theme.id), [
-    'aviya-luxury',
-    'stepz-footwear'
+    'elora-linen'
   ], 'Only standalone themes that pass validation are selectable.');
   assert.match(pageSource, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" && theme\.editor_mode === "liquid-html"\)/);
   assert.match(pageSource, /NEW WEBSITE · FINAL SETUP[\s\S]*?Shop \/ website name[\s\S]*?Website address[\s\S]*?>Set up</);
@@ -855,7 +1044,7 @@ test('new website draft discards a stale Chapa catalog and rejects non-main them
     categories: [{ id: 'draft-category', name: 'Draft category' }],
     products: [{ id: 'draft-product', name: 'Draft product', category_id: 'draft-category', price: 5, stock: 2 }],
     section_layout: { order: [], hidden: [], removed: [], added: [] },
-    selected_theme: 'aviya-luxury'
+    selected_theme: 'elora-linen'
   };
   const signature = JSON.stringify({
     categories: draft.categories.map(category => [String(category.id), category.name]),
@@ -932,7 +1121,7 @@ test('new website draft discards a stale Chapa catalog and rejects non-main them
   )(
     SQLiteEngine,
     { websiteThemesForPicker: () => [
-      { id: 'aviya-luxury', is_main: true, editor_mode: 'liquid-html', validation_status: 'passed' }
+      { id: 'elora-linen', is_main: true, editor_mode: 'liquid-html', validation_status: 'passed' }
     ], saveWebsiteBuilderDraft: () => {} },
     window,
     '__new_website_draft__',
@@ -947,7 +1136,7 @@ test('new website draft discards a stale Chapa catalog and rejects non-main them
   assert.deepEqual(tables.inventory, []);
   assert.deepEqual(tables.pages, []);
   assert.equal(SQLiteEngine.getStore().name, 'New website draft');
-  assert.equal(SQLiteEngine.getStore().website_theme_id, 'aviya-luxury');
+  assert.equal(SQLiteEngine.getStore().website_theme_id, 'elora-linen');
   assert.equal(tables.tenant_catalogs.find(item => item.tenant_id === '__new_website_draft__').draft_signature, signature);
 });
 
@@ -974,6 +1163,74 @@ test('main app inline script parses before packaging', async () => {
   for (const script of inlineScripts.filter(item => /\btype\s*=\s*["']module["']/i.test(item[1]))) {
     assert.doesNotThrow(() => new Script(script[2], { filename: 'index.html:inline-module-script' }));
   }
+});
+
+test('home fade moves from light surroundings to dark dashboard surfaces', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const homeStyle = pageSource.match(/\.home-screen\s*\{([^}]*)\}/)?.[1];
+  const tintStyle = pageSource.match(/\.home-background-tint\s*\{([^}]*)\}/)?.[1];
+  assert.ok(homeStyle, 'The home screen should define its own color treatment.');
+  assert.ok(tintStyle, 'The background images should be covered by the home fade.');
+  assert.match(homeStyle, /--home-light-foreground:\s*#111/);
+  assert.match(homeStyle, /--home-dark-foreground:\s*#fff/);
+  assert.match(tintStyle, /linear-gradient\(\s*180deg,[\s\S]*?rgb\(245 245 245 \/ 25%\)[\s\S]*?rgb\(245 245 245 \/ 34%\)[\s\S]*?rgb\(245 245 245 \/ 45%\)[\s\S]*?rgb\(5 5 5 \/ 97%\)/);
+  assert.match(pageSource, /\.home-screen-greeting\s*\{[^}]*color:\s*var\(--home-light-foreground\)/);
+  assert.match(pageSource, /\.home-data-card,\s*\.home-panel\s*\{[^}]*background:\s*var\(--home-dark-card\)[^}]*color:\s*var\(--home-dark-foreground\)/);
+});
+
+test('home backdrop cycles through cropped reference images', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(pageSource, /class="home-background" aria-hidden="true"[\s\S]*?data-home-background-current[\s\S]*?data-home-background-next[\s\S]*?home-background-tint/);
+  assert.match(pageSource, /desktop: `\/home-backgrounds\/home-\$\{number\}\.jpg`/);
+  assert.match(pageSource, /mobile: `\/home-backgrounds\/mobile-\$\{number\}\.jpg`/);
+  assert.match(pageSource, /window\.matchMedia\("\(max-width: 600px\)"\)/);
+  assert.match(pageSource, /window\.setInterval\(rotateBackground,\s*8500\)/);
+  assert.match(pageSource, /window\.matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches/);
+  assert.match(pageSource, /window\.clearInterval\(this\.homeBackgroundTimer\)/);
+  assert.match(pageSource, /window\.removeEventListener\("resize", this\.homeBackgroundResizeHandler\)/);
+  const images = await Promise.all(Array.from({ length: 18 }, (_, index) => {
+    const variant = index < 9 ? 'home' : 'mobile';
+    const number = String(index % 9 + 1).padStart(2, '0');
+    return readFile(new URL(`../public/home-backgrounds/${variant}-${number}.jpg`, import.meta.url));
+  }));
+  for (const image of images) assert.deepEqual([...image.subarray(0, 3)], [0xff, 0xd8, 0xff]);
+});
+
+test('PesaFlow-style background emblem rotates outside Home and Theme Studio', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const emblem = pageSource.match(/<div class="app-background-emblem" aria-hidden="true">([\s\S]*?)<\/div>\s*<div id="app">/)?.[1];
+  assert.ok(emblem, 'The decorative emblem should be a static, hidden-from-accessibility layer.');
+  assert.equal((emblem.match(/class="app-background-emblem-ring"/g) || []).length, 9);
+  assert.match(pageSource, /\.app-background-emblem-mark\s*\{[^}]*animation:\s*app-background-emblem-spin 34s linear infinite/);
+  assert.match(pageSource, /@keyframes app-background-emblem-spin\s*\{\s*to\s*\{\s*transform:\s*rotate\(360deg\)/);
+  assert.match(pageSource, /const showBackgroundEmblem = \(isAppShell \|\| path\.startsWith\("\/store\/"\)\)\s*&&\s*path !== "\/"\s*&&\s*path !== "\/account\/web\/site"/);
+  assert.match(pageSource, /classList\.toggle\("app-background-emblem-active", showBackgroundEmblem\)/);
+  assert.match(pageSource, /body\.app-background-emblem-active #app\s*\{[^}]*background:\s*transparent/);
+  assert.match(pageSource, /body\.craft-app-ui\.app-background-emblem-active #app\s*\{[^}]*background:\s*transparent/);
+});
+
+test('home summary metrics are compact full-width cards', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const metricGrid = pageSource.match(/\.home-metric-grid\s*\{([^}]*)\}/)?.[1];
+  const metricCard = pageSource.match(/\.home-data-card\s*\{([^}]*)\}/)?.[1];
+  const launchpad = pageSource.match(/renderLaunchpad\(\)\s*\{[\s\S]*?return `([\s\S]*?)`;\s*\n\s*\},/)?.[1];
+  assert.match(metricGrid || '', /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  assert.match(metricCard || '', /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1\.2fr\)/);
+  assert.match(metricCard || '', /border-radius:\s*12px/);
+  assert.match(metricGrid || '', /margin-top:\s*clamp\(48px,\s*9vh,\s*72px\)/);
+  assert.match(pageSource, /\.home-data-note\s*\{[^}]*grid-column:\s*1 \/ -1/);
+  assert.match(pageSource, /class="home-panel" aria-label="Recent orders"/);
+  assert.match(pageSource, /class="home-panel home-panel-compact" aria-label="Yesterday’s sales"/);
+  assert.match(pageSource, /class="home-panel home-panel-compact" aria-label="Needs attention"/);
+});
+
+test('recent orders show a short product name, payment amount and POS or Web', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(pageSource, /const nameCharacters = Array\.from\(itemName\);[\s\S]*?nameCharacters\.length > 12[\s\S]*?nameCharacters\.slice\(0,\s*11\)\.join\(""\)/);
+  assert.match(pageSource, /const channelLabel = \/web\|online\/i\.test\(String\(sale\.channel \|\| ""\)\) \? "Web" : "POS"/);
+  assert.match(pageSource, /<strong>\$\{AppUtils\.escapeHTML\(itemLabel\)\}<\/strong>[\s\S]*?<small>\$\{channelLabel\}<\/small>[\s\S]*?<strong>\$\{AppUtils\.escapeHTML\(money\(sale\.total\)\)\}<\/strong>[\s\S]*?<small>Payment<\/small>/);
+  assert.doesNotMatch(pageSource, /sale\.reference \|\| "Sale"|dateLabel|Recorded sales in|yesterdayTotal/);
+  assert.match(pageSource, /Yesterday<\/span><h2>\$\{yesterdaySales\.length\} sale/);
 });
 
 test('mobile Studio notifications sit above the fixed bottom navigation', async () => {
@@ -1083,6 +1340,7 @@ test('POS persists products, manual payments, invoices and business instances in
   const SQL = await initSqlJs({
     locateFile: (file) => fileURLToPath(new URL(`../node_modules/sql.js/dist/${file}`, import.meta.url))
   });
+
   const db = new SQL.Database();
   const handlers = {};
   const root = { innerHTML: '' };
@@ -1190,12 +1448,13 @@ test('POS persists products, manual payments, invoices and business instances in
     const storeMarkup = app.render('/pos');
     assert.match(storeMarkup, /class="pos-bottom-nav"/);
     assert.equal((storeMarkup.match(/class="pos-tab /g) || []).length, 5);
-    assert.match(storeMarkup, />Sell</);
-    assert.match(storeMarkup, />Catalogue</);
-    assert.match(storeMarkup, />Orders</);
+    assert.match(storeMarkup, /class="pos-nav-icon" aria-hidden="true">＋<\/span><span>Sell<\/span>/);
+    assert.match(storeMarkup, /class="pos-nav-icon" aria-hidden="true">▦<\/span><span>Catalogue<\/span>/);
+    assert.match(storeMarkup, /class="pos-nav-icon" aria-hidden="true">▤<\/span><span>Orders<\/span>/);
     assert.doesNotMatch(storeMarkup, /Open app account|>Account<\/a>/);
+    assert.match(storeMarkup, /aria-label="POS screens menu"[\s\S]*?href="\/account\/profile\/webs"[\s\S]*?href="\/account\/profile\/accounts"[\s\S]*?href="\/account\/profile\/privacy"/);
     const inventoryMarkup = app.render('/pos/inventory');
-    assert.match(inventoryMarkup, /class="[^"]*pos-main pos-main-with-tabs"[\s\S]*?class="pos-brand[^"]*"[\s\S]*?<span>Inventory<\/span>[\s\S]*?<nav class="pos-tabs pos-subnav"[\s\S]*?<\/nav>[\s\S]*?<section class="pos-content"/);
+    assert.match(inventoryMarkup, /class="[^"]*pos-main pos-main-with-tabs"[\s\S]*?class="pos-brand[^"]*"[\s\S]*?<span>Inventory<\/span>[\s\S]*?<details class="workspace-menu pos-section-menu"[\s\S]*?aria-label="Catalogue screens menu"[\s\S]*?class="workspace-sidebar-link is-active" aria-current="page">Inventory<\/a>[\s\S]*?<\/details>[\s\S]*?<section class="pos-content"/);
     assert.doesNotMatch(inventoryMarkup, /<span>POS<\/span>/);
     assert.doesNotMatch(inventoryMarkup, /Open checkout|Open app account|>Account<\/a>/);
     assert.match(inventoryMarkup, /Export inventory/);
@@ -1235,13 +1494,14 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.doesNotMatch(overviewMarkup, /<span>POS<\/span>/);
     assert.doesNotMatch(overviewMarkup, /<h2>Overview<\/h2>/);
     assert.match(overviewMarkup, /class="pos-overview-controls"/);
+    assert.match(overviewMarkup, /aria-label="Overview sections menu"[\s\S]*?class="workspace-sidebar-link is-active" aria-current="page">Summary<\/a>/);
     assert.doesNotMatch(overviewMarkup, /Business overview|Manage expenses|Store performance/);
     assert.match(overviewMarkup, /class="pos-overview-card"[^>]*aria-label="Business totals"/);
     assert.match(overviewMarkup, /<small>Revenue<\/small>/);
     assert.match(overviewMarkup, /<small>Profit<\/small>/);
     assert.match(overviewMarkup, /<small>Operating profit<\/small>/);
     assert.match(overviewMarkup, /<small>Credit<\/small>/);
-    assert.equal((overviewMarkup.match(/class="pos-overview-metric"/g) || []).length, 4);
+    assert.equal((overviewMarkup.match(/class="pos-overview-metric"/g) || []).length, 5);
     assert.match(overviewMarkup, /class="pos-card pos-revenue-card"/);
     assert.match(app.render('/pos'), /<span>Sell<\/span>/);
     const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
@@ -1312,14 +1572,23 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /renderAppAccount\(\)[\s\S]*?Craft app account[\s\S]*?id="app-account-form"[\s\S]*?Cloudflare human verification/);
     const launchpad = pageSource.match(/renderLaunchpad\(\)\s*\{[\s\S]*?return `([\s\S]*?)`;\s*\n\s*\},/)?.[1];
     assert.ok(launchpad, 'The app should render a dedicated Home screen.');
-    const homeRoutes = [...launchpad.matchAll(/class="home-credit-card-link" href="([^"]+)" data-route=/g)].map(([, route]) => route);
-    assert.deepEqual(homeRoutes, ['/account/web', '/pos']);
-    assert.match(launchpad, /<img class="home-screen-logo" src="\/eshop-logo\.png" alt="Craft">/);
+    const homeRoutes = [...launchpad.matchAll(/class="home-workspace-card home-workspace-card-(?:main|craft)" href="([^"]+)" data-route=/g)].map(([, route]) => route);
+    assert.deepEqual(homeRoutes, ['/account/main-shop', '/account/web']);
+    assert.doesNotMatch(launchpad, /home-screen-logo|<img[^>]+eshop-logo/);
+    assert.match(launchpad, /<p class="home-screen-greeting">Hi, \$\{AppUtils\.escapeHTML\(username\)\} <span aria-hidden="true">👋<\/span><\/p>/);
+    assert.match(pageSource, /renderLaunchpad\(\)\s*\{[\s\S]*?ESHOP_ACCOUNT_SESSION_V1[\s\S]*?ESHOP_ACCOUNT_USERNAME_V1/);
+    assert.match(pageSource, /\.home-screen-greeting\s*\{[^}]*color:\s*var\(--home-light-foreground\)/);
     assert.match(launchpad, /class="home-screen-profile" href="\/app-account" data-route="\/app-account" aria-label="Account"/);
-    assert.match(launchpad, /class="home-credit-card" role="group"/);
-    assert.match(launchpad, /class="home-store-card" href="\/account\/main-shop" data-route="\/account\/main-shop" aria-label="Main Store">\s*<strong>Main Store<\/strong>/);
-    assert.match(launchpad, /class="home-overall-metrics" aria-label="Overall business metrics"[\s\S]*?Overall Revenue[\s\S]*?data-home-metric="revenue"[\s\S]*?Overall Profit[\s\S]*?data-home-metric="profit"[\s\S]*?Overall Customers[\s\S]*?data-home-metric="customers"[\s\S]*?Average Order[\s\S]*?data-home-metric="average-order"/);
-    assert.match(pageSource, /loadHomeOverallMetrics\(\)[\s\S]*?getMainShopSnapshot\(\)[\s\S]*?Cost data unavailable[\s\S]*?averageOrder/);
+    assert.match(launchpad, /class="home-pos-card" href="\/pos" data-route="\/pos" aria-label="Open POS"/);
+    assert.match(launchpad, /class="home-launcher-group" role="group" aria-label="POS and workspaces"[\s\S]*class="home-pos-card"[\s\S]*class="home-workspace-grid" aria-label="Choose a workspace"[\s\S]*Main Store[\s\S]*Craft/);
+    assert.match(launchpad, /data-home-dashboard aria-label="Store overview" aria-live="polite"/);
+    assert.match(launchpad, /data-home-dashboard aria-label="Store overview" aria-live="polite" aria-busy="true"[\s\S]*?home-dashboard-skeleton[\s\S]*?home-skeleton-line/);
+    assert.match(pageSource, /async loadHomeDashboard\(\)[\s\S]*?StudioRenderers\.getMainShopSnapshot\(\)[\s\S]*?Sales today[\s\S]*?Recent orders/);
+    assert.match(launchpad, /class="home-shortcut-grid" aria-label="Quick actions"[\s\S]*?href="\/store\/products" data-route="\/store\/products"[\s\S]*?Products[\s\S]*?href="\/store\/inventory" data-route="\/store\/inventory"[\s\S]*?Inventory[\s\S]*?href="\/store\/orders" data-route="\/store\/orders"[\s\S]*?Orders[\s\S]*?href="\/store\/categories" data-route="\/store\/categories"[\s\S]*?Categories/);
+    assert.equal((launchpad.match(/class="home-shortcut-link"/g) || []).length, 4);
+    assert.match(pageSource, /if \(path === "\/"\) void this\.loadHomeDashboard\(\)/);
+    assert.doesNotMatch(launchpad, /Overall Revenue|Overall Profit|Overall Customers|Average Order|home-overall-metric/);
+    assert.doesNotMatch(pageSource, /loadHomeOverallMetrics|home-overall-metric|home-overall-metrics/);
     assert.match(pageSource, /path === "\/account\/main-shop" \|\| path\.startsWith\("\/account\/main-shop\/"\)[\s\S]*?renderMainShopWorkspace\(path\)/);
     assert.match(pageSource, /renderMainShopWorkspace\(path\)\s*\{[\s\S]*?title: "Overview"[\s\S]*?title: "Sales"[\s\S]*?title: "Products"[\s\S]*?title: "Customers"[\s\S]*?title: "More"[\s\S]*?title: "Insights"[\s\S]*?title: "Revenue"[\s\S]*?title: "Channels"[\s\S]*?title: "Transactions"[\s\S]*?title: "Inventory"[\s\S]*?title: "Categories"[\s\S]*?title: "Marketing"[\s\S]*?title: "Newsletter"[\s\S]*?title: "Finance"[\s\S]*?title: "Stores"[\s\S]*?title: "Settings"[\s\S]*?title: "Help"/);
     assert.match(pageSource, /data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false"[\s\S]*?viewBox="0 0 24 24"[\s\S]*?id="business-date-filters" class="bl-date-filter" aria-label="Business filters" hidden/);
@@ -1331,12 +1600,14 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /window\.ShopPOS\.listExpenses \? window\.ShopPOS\.listExpenses\(\)/);
     assert.match(pageSource, /window\.ShopPOS\.listInstances \? window\.ShopPOS\.listInstances\(\)/);
     assert.match(pageSource, /if \(path === "\/account" \|\| path === "\/account\/main-shop" \|\| path === "\/account\/main-shop\/" \|\| path === "\/account\/dashboard"\)[\s\S]*?Gross web revenue[\s\S]*?Customer visits[\s\S]*?Awaiting payments[\s\S]*?What’s moving/);
-    assert.match(pageSource, /studio-hamburger" href="\/account\/profile" data-route="\/account\/profile" aria-label="Open account and website menu/);
-    assert.match(pageSource, /\.studio-workspace-top-nav,\s*\.studio-nested-nav\s*\{[^}]*position:\s*sticky[^}]*top:\s*env\(safe-area-inset-top,\s*0px\)/);
+    assert.doesNotMatch(pageSource, /studio-hamburger/);
+    assert.match(pageSource, /\.workspace-sidebar\s*\{[^}]*position:\s*fixed[^}]*right:\s*0[^}]*bottom:\s*0[^}]*width:\s*min\(86vw,\s*360px\)/);
+    assert.doesNotMatch(pageSource, /class="studio-workspace-top-nav"|class="studio-nested-nav"/);
+    assert.match(pageSource, /renderWorkspaceSidebar\(title, items, activeRoute\)[\s\S]*?workspace-sidebar-links[\s\S]*?aria-current="page"/);
+    assert.match(pageSource, /renderWorkspaceLoading\(label\)[\s\S]*?studio-metric-grid[\s\S]*?studio-data-card[\s\S]*?studio-panel workspace-skeleton-panel/);
     assert.match(pageSource, /\.business-lens-shell \.studio-workspace-heading\s*\{[^}]*align-items:\s*center/);
     assert.doesNotMatch(pageSource.match(/\.business-lens-shell \.studio-workspace-heading\s*\{([^}]*)\}/)?.[1] || "", /position:\s*sticky/);
-    assert.match(pageSource, /\.business-lens-shell \.studio-workspace-top-nav\s*\{[^}]*top:\s*env\(safe-area-inset-top,\s*0px\)/);
-    assert.match(pageSource, /\.pos-overview-tabs\s*\{[^}]*position:\s*sticky[^}]*top:\s*env\(safe-area-inset-top,\s*0px\)/);
+    assert.match(pageSource, /\.business-lens-shell \.workspace-menu summary\s*\{[^}]*width:\s*38px/);
     assert.match(pageSource, /\.pos-tab\.is-active\s*\{[^}]*background:\s*transparent/);
     assert.doesNotMatch(pageSource, /pos-screen-enter|@keyframes pos-screen-enter/);
     assert.match(pageSource, /label: "Webs"[\s\S]*?profile-sidebar-link/);
@@ -1347,18 +1618,16 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /path === "\/store\/website"[\s\S]*?Deploy storefront to web/);
     assert.match(pageSource, /generateProductSku\(\)[\s\S]*?ESHOP-\$\{Array\.from\(bytes/);
     assert.doesNotMatch(pageSource, /name="sku" value="\$\{AppUtils\.escapeHTML\(product \? product\.sku : `ESHOP-\$\{Date\.now\(\)\}`\)\}"/);
-    assert.match(pageSource, /\.home-credit-card\s*\{[^}]*aspect-ratio:\s*1\.62[^}]*background:\s*#000[^}]*color:\s*#fff/);
-    assert.match(pageSource, /\.home-screen-main\s*\{[^}]*width:\s*100%[^}]*padding:\s*clamp\(12px,\s*2\.5vh,\s*28px\)/);
-    assert.match(pageSource, /\.home-overall-metrics\s*\{[^}]*width:\s*100%[^}]*display:\s*grid/);
-    assert.match(pageSource, /\.home-overall-metric\s*\{[^}]*display:\s*flex[^}]*justify-content:\s*space-between/);
-    assert.match(pageSource, /\.home-credit-card\s*\{[^}]*width:\s*min\(100%,\s*700px\)/);
-    assert.match(pageSource, /\.home-credit-card-heading\s*\{[^}]*gap:\s*12px/);
-    assert.match(pageSource, /\.home-screen-header\s*\{[^}]*border-bottom:\s*2px solid #000/);
-    assert.match(pageSource, /\.home-store-card\s*\{[^}]*min-height:\s*48px[^}]*border-radius:\s*999px[^}]*background:\s*#000/);
-    assert.match(launchpad, /home-credit-card-eyebrow">CRAFT · BUSINESS/);
-    assert.doesNotMatch(launchpad, /home-credit-card-chip|Workspace access|Web Studio \+ POS|WEB &nbsp; •••• &nbsp; POS/);
-    assert.match(launchpad, /href="\/account\/web" data-route="\/account\/web" aria-label="Craft Web Studio"[\s\S]*?src="\/eshop-mark\.png"[\s\S]*?home-credit-card-label">Craft/);
-    assert.match(launchpad, /href="\/pos" data-route="\/pos" aria-label="Point of Sale"[\s\S]*?home-credit-card-label">POS[\s\S]*?<svg viewBox="0 0 24 24"[\s\S]*?M3 4h2l2\.2 11\.1/);
+    assert.match(pageSource, /\.home-screen-main\s*\{[^}]*width:\s*100%[^}]*max-width:\s*860px/);
+    assert.match(pageSource, /\.home-launcher-group\s*\{[^}]*justify-content:\s*flex-start[^}]*gap:\s*12px[^}]*padding:\s*12px[^}]*border-radius:\s*16px[^}]*backdrop-filter:\s*blur\(4px\)/);
+    assert.match(pageSource, /\.home-launcher-group\s*\{[^}]*background:\s*rgba\(225,\s*243,\s*248,\s*\.035\)/);
+    assert.match(pageSource, /\.home-pos-card\s*\{[^}]*grid-template-columns:\s*42px minmax\(0,\s*1fr\) 24px[^}]*min-height:\s*90px/);
+    assert.match(pageSource, /\.home-workspace-card\s*\{[^}]*min-height:\s*136px/);
+    assert.match(pageSource, /\.home-workspace-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+    assert.match(pageSource, /@media \(max-width: 600px\)\s*\{\s*\.home-launcher-group\s*\{[^}]*width:\s*calc\(100% \+ var\(--home-horizontal-gutter\) \+ var\(--home-horizontal-gutter\)\)[^}]*margin-left:\s*calc\(0px - var\(--home-horizontal-gutter\)\)[^}]*margin-bottom:\s*-46px[^}]*padding-bottom:\s*clamp\(24px,\s*3\.5vh,\s*30px\)[^}]*border-right:\s*1px solid rgba\(235,\s*250,\s*255,\s*\.56\)[^}]*border-left:\s*1px solid rgba\(235,\s*250,\s*255,\s*\.56\)[^}]*border-radius:\s*0/);
+    assert.match(pageSource, /\.home-metric-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+    assert.doesNotMatch(pageSource, /\.home-screen-header\s*\{[^}]*border-bottom:/);
+    assert.doesNotMatch(launchpad, /home-bento-card|home-credit-card|home-cube/);
     assert.doesNotMatch(launchpad, /Where would you like to go|Manage your online shop/);
     assert.match(pageSource, /renderLaunchpad\(\)\s*\{\s*document\.title = "Home — Craft"/);
     assert.match(webManifest, /"name":"Craft","short_name":"Craft"/);
@@ -1386,14 +1655,13 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.doesNotMatch(pageSource, /@keyframes pos-screen-enter|classList\.add\("pos-screen-enter"\)/);
     assert.match(pageSource, /\.pos-tab\.is-active\s*\{[^}]*background:\s*transparent !important/);
     assert.match(pageSource, /\.pos-tab:active\s*\{\s*background:\s*transparent/);
-    assert.match(pageSource, /\.pos-subnav\s*\{[^}]*position:\s*sticky[^}]*top:\s*env\(safe-area-inset-top,\s*0px\)/);
+    assert.match(pageSource, /\.workspace-menu\[open\]\s*\{\s*z-index:\s*1202/);
     assert.match(pageSource, /\.pos-main-with-tabs \.pos-header-divider\s*\{\s*display:\s*none/);
     assert.match(pageSource, /\.pos-main-with-tabs > \.pos-content > \.pos-section-heading h2\s*\{\s*display:\s*none/);
     assert.match(pageSource, /\.pos-filter-row input\s*\{[^}]*height:\s*38px[^}]*border-radius:\s*999px/);
     assert.match(pageSource, /\.pos-filter-row select\s*\{[^}]*flex:\s*0 1 132px[^}]*border-radius:\s*999px/);
     assert.match(pageSource, /\.pos-scanner-entry \.btn-secondary\s*\{[^}]*min-height:\s*38px[^}]*border-radius:\s*999px/);
-    assert.match(pageSource, /\.studio-workspace-top-link\.is-active::after,\s*\.studio-nested-nav a\.is-active::after/);
-    assert.match(pageSource, /\.pos-subnav \.pos-tab\.is-active::after,\s*\.pos-overview-tabs \.pos-tab\.is-active::after\s*\{\s*display:\s*block/);
+    assert.match(pageSource, /\.workspace-sidebar-link\.is-active,\s*\.workspace-sidebar-link:focus-visible/);
     assert.match(pageSource, /const managementSurface = activePath\.startsWith\("\/account"\) \|\| activePath === "\/app-account"[\s\S]*?\$\{managementSurface \? "" : `<div class="nav-center">[\s\S]*?href="\/bag"[\s\S]*?managementSurface \? "" :/);
     assert.match(pageSource, /Cloudflare verification failed[\s\S]*?allowed hostnames, including localhost for Android/);
     assert.match(pageSource, /\.native-app-shell \.profile-page-back,[\s\S]*?\.native-app-shell \.studio-back-link,[\s\S]*?display:\s*none !important/);
@@ -1417,7 +1685,7 @@ test('POS persists products, manual payments, invoices and business instances in
     ]);
     assert.match(pageSource, /title: "Live Web", description: "Preview the customer-facing Craft website\.", route: "\/web"/);
     assert.match(pageSource, /studio-profile-btn[\s\S]*?aria-label="Profile"/);
-    assert.match(pageSource, /profile-sidebar[\s\S]*?Recommended actions[\s\S]*?Link devices[\s\S]*?Privacy/);
+    assert.match(pageSource, /profile-sidebar[\s\S]*?Privacy[\s\S]*?Updates/);
     assert.match(pageSource, /\.profile-menu-overlay\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*0;[^}]*justify-content:\s*flex-end;[^}]*background:\s*rgba\(0,\s*0,\s*0,\s*\.56\)/);
     assert.match(pageSource, /\.profile-sidebar\s*\{[^}]*width:\s*min\(50vw,\s*420px\);[^}]*height:\s*100dvh;[^}]*background:\s*#171717/);
     assert.match(pageSource, /renderProfileScreen\(path = "\/account\/profile"\)/);
@@ -1631,23 +1899,24 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(cloudflareWorkerSource, /tenantIdFromRequest/);
     assert.match(cloudflareWorkerSource, /api\/tenants/);
     assert.match(cloudflareWorkerSource, /__ESHOP_CLOUDFLARE_STOREFRONT__ = true/);
-    assert.match(pageSource, /\.pos-overview-controls\s*\{[^}]*gap:\s*3px/);
+    assert.match(pageSource, /\.pos-overview-controls\s*\{[^}]*display:\s*flex[^}]*gap:\s*8px/);
     assert.match(pageSource, /navigate\(path,\s*openWorkspaceHome\s*=\s*false\)/);
     assert.match(pageSource, /this\.navigate\(route,\s*link\.hasAttribute\("data-home-screen"\)\)/);
     assert.match(pageSource, /class="brand-logo studio-module-brand studio-module-back" data-route="\/" data-home-screen aria-label="Back to Craft home"/);
     assert.match(pageSource, /class="brand-logo" data-route="\$\{storefrontHome\}" \$\{options\.builderPreview \? "" : "data-home-screen"\} aria-label="Craft home"/);
     assert.match(pageSource, /\.studio-module-navbar \.studio-profile-btn\s*\{[^}]*border-radius:\s*50%[^}]*background:\s*#000[^}]*color:\s*#fff/);
-    assert.match(pageSource, /\.pos-overview-controls\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
-    assert.match(pageSource, /\.pos-overview-tabs\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0[^}]*overflow-x:\s*auto[^}]*touch-action:\s*pan-x/);
+    assert.match(pageSource, /\.workspace-menu\s*\{[^}]*margin-left:\s*auto/);
     assert.match(pageSource, /\.pos-ranges\s*\{[^}]*min-width:\s*0[^}]*max-width:\s*100%[^}]*overflow-x:\s*auto[^}]*touch-action:\s*pan-x/);
-    assert.match(pageSource, /\.pos-overview-tabs \.pos-tab\s*\{[^}]*min-height:\s*30px/);
     assert.match(pageSource, /\.pos-overview-card\s*\{[^}]*min-height:\s*260px[^}]*border:\s*0[^}]*background:\s*#111/);
+    assert.match(pageSource, /body\.craft-app-ui #app \.pos-overview-card\s*\{[^}]*background-color:\s*#111 !important;[^}]*color:\s*#fff !important;/);
     assert.match(pageSource, /\.pos-overview-metrics\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
     assert.match(pageSource, /\.pos-overview-metrics\s*\{[^}]*align-content:\s*space-between/);
     assert.match(pageSource, /\.pos-overview-metric:nth-child\(even\)\s*\{[^}]*text-align:\s*right/);
     assert.match(pageSource, /\.pos-revenue-card\s*\{[^}]*min-height:\s*320px/);
     assert.match(pageSource, /\.pos-revenue-chart-line\s*\{[^}]*stroke:\s*var\(--accent\)/);
     assert.match(pageSource, /\.pos-bottom-nav\s*\{[^}]*overflow-x:\s*auto/);
+    assert.match(pageSource, /\.pos-bottom-nav \.pos-tab\s*\{[^}]*flex-direction:\s*column/);
+    assert.match(pageSource, /\.pos-bottom-nav \.pos-tab\.is-active\s*\{[^}]*background:\s*#ededee !important/);
     assert.match(pageSource, /\.pos-payment-option\s*\{[^}]*min-height:\s*36px/);
     assert.match(pageSource, /\.pos-customer-fields input\s*\{[^}]*min-height:\s*30px/);
     assert.match(pageSource, /\.pos-checkout-actions \.btn-primary,[\s\S]*?height:\s*30px/);
@@ -1761,6 +2030,7 @@ test('POS persists products, manual payments, invoices and business instances in
         return selector === '[data-product-submit-status]' ? missingPriceStatus : null;
       }
     });
+
     assert.equal(focusedRequiredField, 'price');
     assert.match(missingPriceStatus.textContent, /selling price/i);
     assert.match(toast.textContent, /selling price/i);
@@ -1775,6 +2045,16 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.equal(queryRows('SELECT expiry_date FROM pos_products WHERE id=1')[0].expiry_date, '2027-04-15');
     assert.equal((await app.findProductByCode('123456789012')).id, 1);
     assert.equal((await app.findProductByCode('ESHOP-UNKNOWN')), null);
+    assert.match(app.render('/pos/catalogue/inventory'), /aria-label="Edit Canvas Tote"/);
+    const editMarkup = app.render('/pos/catalogue/products', new URLSearchParams('edit=1'));
+    assert.match(editMarkup, /<h3>Edit product<\/h3>[\s\S]*?name="id" value="1"[\s\S]*?name="name" value="Canvas Tote"/);
+    await submit('product', {
+      id: '1', name: 'Canvas Tote', categoryId: '1', price: '18.50',
+      buyingPrice: '7.25', stock: '4', barcode: '123456789012', expiryDate: '2027-04-15',
+      imageUri: '', lowStockThreshold: '3', active: '1'
+    });
+    assert.equal(queryRows('SELECT name,price_cents FROM pos_products WHERE id=1')[0].name, 'Canvas Tote');
+    assert.equal(queryRows('SELECT price_cents FROM pos_products WHERE id=1')[0].price_cents, 1850);
     await app.addScannedBarcode('123456789012');
     assert.match(root.innerHTML, /data-pos-quantity="1"/);
     await click('cancel-sale');
@@ -1805,6 +2085,18 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(root.innerHTML, /pos-payment-logo/);
     assert.match(root.innerHTML, />Tax · 0%/);
     assert.doesNotMatch(root.innerHTML, /SMS|automatic matching/);
+    await click('set-discount');
+    assert.match(root.innerHTML, /role="dialog" aria-modal="true"/);
+    await submit('discount', { discountAmount: '3.7' });
+    assert.match(root.innerHTML, /Discount · 20%/);
+    assert.match(root.innerHTML, /name="discount" value="3\.7"/);
+    await click('set-discount');
+    await submit('discount', { discountAmount: '500' });
+    assert.match(toast.textContent, /no greater than the sale subtotal/i);
+    assert.match(root.innerHTML, /Discount · 20%/);
+    assert.match(root.innerHTML, /role="dialog" aria-modal="true"/);
+    await click('close-discount');
+    assert.doesNotMatch(root.innerHTML, /role="dialog" aria-modal="true"/);
     await handlers.change[0]({
       type: 'change',
       target: { value: '2', dataset: { posQuantity: '1' }, closest: (selector) =>
@@ -1914,10 +2206,17 @@ test('POS persists products, manual payments, invoices and business instances in
     window.location.hash = '#/pos';
     await app.refresh();
     await click('add-cart', { id: '1' });
+    await click('checkout-method', { method: 'Mobile money' });
+    assert.match(root.innerHTML, /Confirm the payment with the mobile-money provider before completing this sale/);
     await submit('checkout', { paymentMethod: 'Mobile money', customerName: '', customerPhone: '', dueDate: '' });
-    const pending = queryRows("SELECT id,paid,payment_status FROM pos_sales WHERE payment_method='Mobile money'")[0];
-    assert.equal(pending.paid, 0);
-    assert.equal(pending.payment_status, 'pending');
+    const manuallyRecordedSale = queryRows("SELECT id,paid,payment_status,total_cents FROM pos_sales WHERE payment_method='Mobile money'")[0];
+    assert.equal(manuallyRecordedSale.paid, 1);
+    assert.equal(manuallyRecordedSale.payment_status, 'confirmed');
+    assert.equal(manuallyRecordedSale.total_cents, 1850);
+    const manualPayment = queryRows("SELECT mpesa_ref,sender_name,sender_phone FROM pos_sale_payments WHERE sale_id=?", [manuallyRecordedSale.id])[0];
+    assert.equal(manualPayment.mpesa_ref, null);
+    assert.equal(manualPayment.sender_name, null);
+    assert.equal(manualPayment.sender_phone, null);
     assert.equal(queryRows("SELECT status FROM pos_inventory_queue")[0].status, 'pending');
     await app.refresh();
     assert.match(app.render('/pos/inventory'), /Offline: shared stock changes are saved locally and queued for D1 sync/);
@@ -1939,12 +2238,17 @@ test('POS persists products, manual payments, invoices and business instances in
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(sharedSales.length, 2);
     assert.deepEqual(sharedSales[1].body.items, [{ sku: 'TOTE-1', quantity: 2 }]);
-    assert.equal(queryRows('SELECT COUNT(*) AS count FROM pos_sale_payments')[0].count, 2);
+    assert.equal(queryRows('SELECT COUNT(*) AS count FROM pos_sale_payments')[0].count, 3);
 
-    await submit('payment', { saleId: String(pending.id), amount: '5', method: 'Mobile money' });
-    assert.equal(queryRows('SELECT payment_status FROM pos_sales WHERE id=?', [pending.id])[0].payment_status, 'partial');
-    await submit('payment', { saleId: String(pending.id), amount: '13.50', method: 'Mobile money' });
-    assert.equal(queryRows('SELECT paid FROM pos_sales WHERE id=?', [pending.id])[0].paid, 1);
+    runSql(`INSERT INTO pos_sales
+      (receipt_number,subtotal_cents,tax_cents,discount_cents,total_cents,currency,payment_method,paid,
+       customer_name,customer_phone,due_date,payment_status,amount_paid_cents,created_at)
+      VALUES ('MANUAL-PENDING',1850,0,0,1850,'KES','Mobile money',0,NULL,NULL,NULL,'pending',0,'2026-01-01T00:00:00.000Z')`);
+    const manualPending = queryRows("SELECT id FROM pos_sales WHERE receipt_number='MANUAL-PENDING'")[0];
+    await submit('payment', { saleId: String(manualPending.id), amount: '5', method: 'Mobile money' });
+    assert.equal(queryRows('SELECT payment_status FROM pos_sales WHERE id=?', [manualPending.id])[0].payment_status, 'partial');
+    await submit('payment', { saleId: String(manualPending.id), amount: '13.50', method: 'Mobile money' });
+    assert.equal(queryRows('SELECT paid FROM pos_sales WHERE id=?', [manualPending.id])[0].paid, 1);
 
     window.location.hash = '#/pos/invoices?new=1';
     await app.refresh();

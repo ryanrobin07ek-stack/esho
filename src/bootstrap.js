@@ -3,6 +3,7 @@ import { Browser } from '@capacitor/browser';
 import { Capacitor } from '@capacitor/core';
 import { initializeSQLite } from './sqlite.js';
 import { createPosApp } from './pos.js';
+import './app-visual-theme.css';
 import { WEBSITE_THEME_CATALOG } from './theme-catalog.js';
 import { renderLiquidStorefront } from './liquid-storefront-renderer.js';
 import './theme-web-editor.js';
@@ -13,6 +14,54 @@ window.EshopLiquidStorefront = { render: renderLiquidStorefront };
 window.EshopLiquidHtmlThemeRenderer = window.EshopImportedThemeRenderer;
 window.EshopAuthBrowser = Browser;
 window.EshopWebsiteAppearance = { fonts: WEBSITE_FONTS, colors: WEBSITE_COLOR_THEMES, filters: WEBSITE_COLOR_FILTERS, designs: WEBSITE_DESIGN_THEMES, designPresets: WEBSITE_DESIGN_PRESETS, shapes: WEBSITE_CARD_SHAPES };
+const loadPublicThemeModule = path => import(/* @vite-ignore */ new URL(path, window.location.origin).href);
+window.EshopThemeRuntime = {
+  loadEditableStorefrontTheme: () => loadPublicThemeModule('/editable-storefront-theme.js'),
+  loadThemeSkeleton: () => loadPublicThemeModule('/theme-skeleton-client.js')
+};
+if (Capacitor.isNativePlatform()) {
+  const splash = document.getElementById('craft-video-splash');
+  const video = splash?.querySelector('video');
+  if (splash && video) {
+    let appReady = false;
+    let videoComplete = false;
+    let dismissed = false;
+    let failSafeTimer;
+    const dismissWhenReady = () => {
+      if (dismissed || !appReady || !videoComplete) return;
+      dismissed = true;
+      clearTimeout(failSafeTimer);
+      splash.classList.add('is-hiding');
+      window.setTimeout(() => splash.remove(), 500);
+    };
+    const finishVideo = () => {
+      videoComplete = true;
+      dismissWhenReady();
+    };
+    splash.hidden = false;
+    window.addEventListener('craft:app-ready', () => {
+      appReady = true;
+      dismissWhenReady();
+    }, { once: true });
+    video.addEventListener('ended', finishVideo, { once: true });
+    video.addEventListener('error', finishVideo, { once: true });
+    failSafeTimer = window.setTimeout(() => {
+      appReady = true;
+      finishVideo();
+    }, 16000);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finishVideo();
+    } else {
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      video.src = '/craft-splash.mp4';
+      video.load();
+      const playback = video.play();
+      if (playback?.catch) playback.catch(finishVideo);
+    }
+  }
+}
 // The inline app controller can start on DOMContentLoaded while this module is
 // still awaiting native SQLite setup. Publish the startup promise so the app
 // waits for the bridge before reading or seeding its database.

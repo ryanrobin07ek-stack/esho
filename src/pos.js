@@ -354,6 +354,8 @@ async function initializePosDatabase() {
       sender_phone TEXT,
       created_at TEXT NOT NULL
     );
+    CREATE UNIQUE INDEX IF NOT EXISTS pos_sale_payments_mpesa_ref_unique
+      ON pos_sale_payments(mpesa_ref) WHERE mpesa_ref IS NOT NULL AND mpesa_ref != '';
     CREATE TABLE IF NOT EXISTS pos_expenses (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sync_key TEXT UNIQUE,
@@ -732,8 +734,10 @@ async function saveSale(items, { paymentMethod, paid, customerName, customerPhon
       product.buying_price_cents == null ? null : Number(product.buying_price_cents), receipt]);
   });
   const paymentStatement = isPaid && totalCents > 0
-    ? [stmt(`INSERT INTO pos_sale_payments (sale_id,method,amount_cents,created_at)
-      SELECT id,?,?,? FROM pos_sales WHERE receipt_number=?`, [method, totalCents, createdAt, receipt])]
+    ? [stmt(`INSERT INTO pos_sale_payments
+      (sale_id,method,amount_cents,mpesa_ref,sender_name,sender_phone,created_at)
+      SELECT id,?,?,?,?,?,? FROM pos_sales WHERE receipt_number=?`,
+    [method, totalCents, null, null, null, createdAt, receipt])]
     : [];
   const stockStatements = [...quantityMap].map(([productId, quantity]) =>
     stmt('UPDATE pos_products SET stock_count=MAX(0,stock_count-?) WHERE id=? AND stock_count IS NOT NULL', [quantity, productId]));
@@ -809,15 +813,28 @@ async function recordSharedLocalSale(tenantId, eventId, items, updateMirrors = t
 
 async function listSales() {
   const sales = await rows('SELECT * FROM pos_sales ORDER BY created_at DESC, id DESC');
+  const items = await rows(`SELECT sale_id,product_id AS productId,name,quantity,unit_price_cents,unit_cost_cents
+    FROM pos_sale_items WHERE sale_id IN (SELECT id FROM pos_sales) ORDER BY sale_id,id`);
+  const itemsBySale = new Map();
+  for (const item of items) {
+    const saleId = String(item.sale_id);
+    const saleItems = itemsBySale.get(saleId) || [];
+    saleItems.push({
+      productId: item.productId || 0,
+      name: item.name,
+      quantity: item.quantity,
+      unitPrice: fromCents(item.unit_price_cents),
+      historicalUnitCost: item.unit_cost_cents == null ? null : fromCents(item.unit_cost_cents)
+    });
+    itemsBySale.set(saleId, saleItems);
+  }
   for (const sale of sales) {
     sale.subtotal = fromCents(sale.subtotal_cents);
     sale.tax = fromCents(sale.tax_cents);
     sale.discount = fromCents(sale.discount_cents);
     sale.total = fromCents(sale.total_cents);
     sale.amountPaid = fromCents(sale.amount_paid_cents);
-    sale.items = (await rows('SELECT product_id AS productId,name,quantity,unit_price_cents,unit_cost_cents FROM pos_sale_items WHERE sale_id=? ORDER BY id', [sale.id]))
-      .map((item) => ({ productId: item.productId || 0, name: item.name, quantity: item.quantity,
-        unitPrice: fromCents(item.unit_price_cents), historicalUnitCost: item.unit_cost_cents == null ? null : fromCents(item.unit_cost_cents) }));
+    sale.items = itemsBySale.get(String(sale.id)) || [];
   }
   return sales;
 }
@@ -1091,7 +1108,7 @@ async function instanceTotals(instance, currency) {
     const amount = fromCents(payment.amount_cents);
     revenue += amount;
     count++;
-    const method = payment.method === 'Mobile money' ? 'M-Pesa' : payment.method || 'Other';
+    const method = payment.method || 'Other';
     methods[method] = (methods[method] || 0) + amount;
     const date = new Date(payment.created_at);
     const day = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -1107,7 +1124,7 @@ async function instanceTotals(instance, currency) {
 
 export function createPosApp() {
   const state = { cart: [], invoiceItems: [], invoiceDraftId: null, search: '', category: '', expandedSale: 0, paymentMethod: '',
-    sharedTenantId: '', pendingInventoryEvents: 0, inventorySyncError: '', discount: 0, activeTicketId: '',
+    sharedTenantId: '', pendingInventoryEvents: 0, inventorySyncError: '', discount: 0, discountDialogOpen: false, activeTicketId: '',
     suppliers: [], purchases: [], tickets: [], cloudSales: [], cloudSyncError: '', cloudScopeId: 'local',
     nearbySyncStatus: '' };
   let initialized = false;
@@ -1127,14 +1144,34 @@ export function createPosApp() {
   let nearbyTransport = '';
   let nearbyBluetoothListeners = [];
 
-  const routeLink = (path, label, selected) =>
-    `<a href="${path}" data-route="${path}" class="pos-tab ${selected ? 'is-active' : ''}">${label}</a>`;
+  const primaryNavLink = (path, label, icon, selected) =>
+    `<a href="${path}" data-route="${path}" class="pos-tab ${selected ? 'is-active' : ''}"><span class="pos-nav-icon" aria-hidden="true">${icon}</span><span>${label}</span></a>`;
   const primarySection = (path) => path.startsWith('/pos/catalogue') || path === '/pos/inventory' ? 'catalogue'
     : path.startsWith('/pos/orders') || path === '/pos/invoices' ? 'orders'
       : path === '/pos' ? 'sell' : path.startsWith('/pos/overview') ? 'overview' : 'more';
-  const subnav = (items, current) => `<nav class="pos-tabs pos-subnav" aria-label="Section navigation">
-    ${items.map(([route, label]) => routeLink(route, label, current === route)).join('')}
-  </nav>`;
+  const sectionMenu = (title, items, current) => `<details class="workspace-menu pos-section-menu">
+    <summary aria-label="Open ${escapeHtml(title)} menu" title="Open menu">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+    </summary>
+    <a class="workspace-sidebar-scrim" href="${escapeHtml(current)}" data-route="${escapeHtml(current)}" aria-label="Close ${escapeHtml(title)} menu"></a>
+    <aside class="workspace-sidebar" aria-label="${escapeHtml(title)} menu">
+      <h2>${escapeHtml(title)}</h2>
+      <nav class="workspace-sidebar-links" aria-label="${escapeHtml(title)} pages">
+        ${items.map(([route, label]) => `<a href="${escapeHtml(route)}" data-route="${escapeHtml(route)}" class="workspace-sidebar-link ${current === route ? 'is-active' : ''}" ${current === route ? 'aria-current="page"' : ''}>${escapeHtml(label)}</a>`).join('')}
+      </nav>
+      <div class="workspace-sidebar-divider" aria-hidden="true"></div>
+      <nav class="workspace-sidebar-links" aria-label="Profile and app links">
+        <a href="/account/profile/profile" data-route="/account/profile/profile" class="workspace-sidebar-link">Profile</a>
+        <a href="/account/profile/webs" data-route="/account/profile/webs" class="workspace-sidebar-link">Webs</a>
+        <a href="/account/profile/accounts" data-route="/account/profile/accounts" class="workspace-sidebar-link">Accounts</a>
+        <a href="/account/profile/privacy" data-route="/account/profile/privacy" class="workspace-sidebar-link">Privacy</a>
+        <a href="/account/profile/recommended-actions" data-route="/account/profile/recommended-actions" class="workspace-sidebar-link">Recommended actions</a>
+        <a href="/account/profile/link-devices" data-route="/account/profile/link-devices" class="workspace-sidebar-link">Link devices</a>
+        <a href="/account/profile/updates" data-route="/account/profile/updates" class="workspace-sidebar-link">Updates</a>
+      </nav>
+      <a class="workspace-sidebar-link workspace-sidebar-logout" href="/" data-route="/" data-home-screen aria-label="Log out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg><span>Log out</span></a>
+    </aside>
+  </details>`;
   const screenTitle = (path) => {
     if (path === '/pos') return 'Sell';
     if (path === '/pos/overview') return 'Overview';
@@ -1154,24 +1191,26 @@ export function createPosApp() {
     if (path === '/pos/more') return 'More';
     return '';
   };
-  const commonHeader = (path) => {
-    const hasSectionNav = Boolean(renderSectionNav(path));
+  const commonHeader = (path, params) => {
+    const sectionMenuMarkup = renderSectionNav(path, params);
+    const hasSectionNav = Boolean(sectionMenuMarkup);
     const title = screenTitle(path);
     return `
-    <main class="container pos-main ${hasSectionNav ? 'pos-main-with-tabs' : ''}">
+    <main class="container pos-main${path === '/pos' ? ' pos-sell-screen' : ''} ${hasSectionNav ? 'pos-main-with-tabs' : ''}">
       <header class="pos-header">
         <a href="/" data-route="/" data-home-screen class="pos-brand pos-brand-back ${path === '/pos/overview' ? 'pos-brand-overview' : ''}" aria-label="Back to Craft home">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
           ${title ? `<span>${escapeHtml(title)}</span>` : ''}
         </a>
+        ${sectionMenuMarkup}
       </header>
       <div class="pos-header-divider" aria-hidden="true"></div>
       <nav class="pos-bottom-nav" aria-label="Point of sale">
-        ${routeLink('/pos', 'Sell', primarySection(path) === 'sell')}
-        ${routeLink('/pos/overview', 'Overview', primarySection(path) === 'overview')}
-        ${routeLink('/pos/catalogue/inventory', 'Catalogue', primarySection(path) === 'catalogue')}
-        ${routeLink('/pos/orders', 'Orders', primarySection(path) === 'orders')}
-        ${routeLink('/pos/more', 'More', primarySection(path) === 'more')}
+        ${primaryNavLink('/pos', 'Sell', '＋', primarySection(path) === 'sell')}
+        ${primaryNavLink('/pos/overview', 'Overview', '⌂', primarySection(path) === 'overview')}
+        ${primaryNavLink('/pos/catalogue/inventory', 'Catalogue', '▦', primarySection(path) === 'catalogue')}
+        ${primaryNavLink('/pos/orders', 'Orders', '▤', primarySection(path) === 'orders')}
+        ${primaryNavLink('/pos/more', 'More', '⋮', primarySection(path) === 'more')}
       </nav>`;
   };
 
@@ -1191,6 +1230,12 @@ export function createPosApp() {
     </select></label>`;
   const button = (label, action, attrs = '', secondary = false) =>
     `<button type="button" class="btn-${secondary ? 'secondary' : 'primary'}" data-pos-action="${action}" ${attrs}>${label}</button>`;
+  const editIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>';
+  const deleteIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>';
+  const iconButton = (action, id, label, icon, extraClass = '') =>
+    `<button type="button" class="product-list-${action === 'rename-category' ? 'edit' : 'delete'} pos-icon-action ${extraClass}" data-pos-action="${action}" data-id="${id}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${icon}</button>`;
+  const iconLink = (path, label) =>
+    `<a href="${path}" data-route="${path}" class="product-list-edit pos-icon-action" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${editIcon}</a>`;
   const statusTag = (text, tone = '') => `<span class="pos-status ${tone}">${escapeHtml(text)}</span>`;
   const empty = (title, detail) => `<div class="pos-empty"><strong>${escapeHtml(title)}</strong> <span>${escapeHtml(detail)}</span></div>`;
   const tabsTitle = (title, detail, action = '') =>
@@ -1205,7 +1250,7 @@ export function createPosApp() {
   function render(path = '/pos', params = new URLSearchParams()) {
     const route = path.startsWith('/pos/') ? path : '/pos';
     const screen = route.slice('/pos'.length) || '/';
-    return `${commonHeader(route)}${renderSectionNav(route)}${screen === '/' ? renderStore() :
+    return `${commonHeader(route, params)}${screen === '/' ? renderStore() :
       screen === '/inventory' || screen.startsWith('/catalogue') ? renderInventory(params, screen) :
       screen === '/sales' ? renderSales(params) :
       screen === '/customers' ? renderCustomers() :
@@ -1218,10 +1263,28 @@ export function createPosApp() {
       screen === '/overview' ? renderOverview(params) : empty('POS page not found', 'Choose a section above.')}${pageEnd}`;
   }
 
-  function renderSectionNav(path) {
+  function renderSectionNav(path, params = new URLSearchParams()) {
+    if (path === '/pos') {
+      return sectionMenu('POS screens', [
+        ['/pos', 'Sell'],
+        ['/pos/overview', 'Overview'],
+        ['/pos/catalogue/inventory', 'Catalogue'],
+        ['/pos/orders', 'Orders'],
+        ['/pos/more', 'More']
+      ], path);
+    }
+    if (path.startsWith('/pos/overview')) {
+      const period = ['today', '7d', '30d', '90d', 'all'].includes(params.get('range')) ? params.get('range') : '30d';
+      const requestedTab = params.get('tab') === 'Insights' ? 'Reports' : params.get('tab');
+      const tab = ['Summary', 'Revenue', 'Profit', 'Products', 'Stock', 'Payments', 'Reports'].includes(requestedTab)
+        ? requestedTab : 'Summary';
+      const routeFor = (nextTab) => `/pos/overview?tab=${encodeURIComponent(nextTab)}&range=${encodeURIComponent(period)}`;
+      const tabs = ['Summary', 'Revenue', 'Profit', 'Products', 'Stock', 'Payments', 'Reports'];
+      return sectionMenu('Overview sections', tabs.map((item) => [routeFor(item), item]), routeFor(tab));
+    }
     if (path.startsWith('/pos/catalogue') || path === '/pos/inventory') {
       const current = path === '/pos/inventory' ? '/pos/catalogue/inventory' : path;
-      return subnav([
+      return sectionMenu('Catalogue screens', [
         ['/pos/catalogue/inventory', 'Inventory'],
         ['/pos/catalogue/products', 'Products'],
         ['/pos/catalogue/categories', 'Categories'],
@@ -1230,14 +1293,14 @@ export function createPosApp() {
     }
     if (path.startsWith('/pos/orders') || path === '/pos/invoices') {
       const current = path === '/pos/invoices' ? '/pos/orders/invoices' : path;
-      return subnav([
+      return sectionMenu('Orders screens', [
         ['/pos/orders', 'Orders'],
         ['/pos/orders/invoices', 'Invoices'],
         ['/pos/orders/quotations', 'Quotations']
       ], current);
     }
     if (path.startsWith('/pos/more') || path === '/pos/sales' || path === '/pos/customers') {
-      return subnav([
+      return sectionMenu('More screens', [
         ['/pos/more', 'More'],
         ['/pos/sales', 'Sales & receipts'],
         ['/pos/customers', 'Customers'],
@@ -1259,19 +1322,45 @@ export function createPosApp() {
         ${button('Scan with camera', 'scan-sale-barcode', '', true)}
       </div>
       <div class="pos-store-layout">
-        <section class="pos-card pos-cart">
-          ${state.cart.length ? `<div class="pos-cart-items">${state.cart.map((item) => `
-            <div class="pos-cart-item">
-              <strong>${escapeHtml(item.name)}</strong>
-              <button type="button" class="pos-quantity-button" data-pos-action="cart-minus" data-id="${item.productId}" aria-label="Decrease">−</button>
-              <input type="number" min="1" max="99999" value="${item.quantity}" aria-label="Quantity" data-pos-quantity="${item.productId}">
-              <button type="button" class="pos-quantity-button" data-pos-action="cart-plus" data-id="${item.productId}" aria-label="Increase">+</button>
-            </div>`).join('')}</div>` : empty('Your sale is empty', 'Tap a product to add it here.')}
-          ${renderCartFooter()}
-        </section>
+        ${renderCartPanelMarkup()}
         <section id="pos-product-grid" class="pos-product-grid" aria-label="Products">${renderProductTiles()}</section>
       </div>
     </section>`;
+  }
+
+  function renderCartPanelMarkup() {
+    const emptyCart = state.cart.length === 0;
+    return `<section id="pos-cart-panel" class="pos-card pos-cart ${emptyCart ? 'is-empty' : 'is-open'}" aria-label="Sale receipt">
+      <div class="pos-cart-heading"><strong>Receipt</strong><span>${state.cart.length} item${state.cart.length === 1 ? '' : 's'}</span></div>
+      ${state.cart.length ? `<div class="pos-cart-items">${state.cart.map((item) => `
+        <div class="pos-cart-item">
+          <strong>${escapeHtml(item.name)}</strong>
+          <button type="button" class="pos-quantity-button" data-pos-action="cart-minus" data-id="${item.productId}" aria-label="Decrease">−</button>
+          <input type="number" min="1" max="99999" value="${item.quantity}" aria-label="Quantity" data-pos-quantity="${item.productId}">
+          <button type="button" class="pos-quantity-button" data-pos-action="cart-plus" data-id="${item.productId}" aria-label="Increase">+</button>
+        </div>`).join('')}</div>` : empty('Your sale is empty', 'Tap a product to add it here.')}
+      ${renderCartFooter()}
+      ${renderDiscountModalMarkup()}
+    </section>`;
+  }
+
+  function updateCartPanel() {
+    const panel = document.getElementById('pos-cart-panel');
+    if (!panel) {
+      renderCurrent();
+      return;
+    }
+    const shouldAnimate = panel.classList.contains('is-empty') && state.cart.length > 0;
+    panel.outerHTML = renderCartPanelMarkup();
+    if (state.discountDialogOpen) document.querySelector?.('[data-pos-discount-input]')?.focus();
+    if (shouldAnimate && window.matchMedia?.('(max-width: 760px)').matches) {
+      const updatedPanel = document.getElementById('pos-cart-panel');
+      if (updatedPanel) {
+        updatedPanel.classList.add('is-entering');
+        void updatedPanel.offsetHeight;
+        window.requestAnimationFrame(() => updatedPanel.classList.remove('is-entering'));
+      }
+    }
   }
 
   function renderProductTiles() {
@@ -1289,6 +1378,7 @@ export function createPosApp() {
     if (!state.cart.length) return '';
     const subtotal = state.cart.reduce((sum, item) => sum + toCents(item.unitPrice) * item.quantity, 0);
     const discountCents = Math.min(subtotal, Math.max(0, toCents(state.discount || 0)));
+    const discountPercent = subtotal ? (discountCents / subtotal * 100).toFixed(1).replace(/\.0$/, '') : '0';
     const tax = Math.round((subtotal - discountCents) * state.settings.taxRate / 100);
     return `<form class="pos-form pos-checkout" data-pos-form="checkout">
       <input type="hidden" name="paymentMethod" value="${escapeHtml(state.paymentMethod)}">
@@ -1298,28 +1388,29 @@ export function createPosApp() {
         </button>
         <button class="pos-payment-option ${state.paymentMethod === 'Mobile money' ? 'is-selected' : ''}" type="button"
           data-pos-action="checkout-method" data-method="Mobile money" aria-pressed="${state.paymentMethod === 'Mobile money'}">
-          <span class="pos-payment-logo pos-payment-mpesa" aria-hidden="true">M</span><span>M-Pesa</span>
-        </button>
-        <button class="pos-payment-option ${state.paymentMethod === 'Bank' ? 'is-selected' : ''}" type="button"
-          data-pos-action="checkout-method" data-method="Bank" aria-pressed="${state.paymentMethod === 'Bank'}"><span>Bank</span>
+          <span>Mobile money</span>
         </button>
         <button class="pos-payment-option ${state.paymentMethod === 'Card' ? 'is-selected' : ''}" type="button"
           data-pos-action="checkout-method" data-method="Card" aria-pressed="${state.paymentMethod === 'Card'}">
           <svg class="pos-payment-logo" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg><span>Card</span>
         </button>
+        <button class="pos-payment-option ${state.paymentMethod === 'Bank' ? 'is-selected' : ''}" type="button"
+          data-pos-action="checkout-method" data-method="Bank" aria-pressed="${state.paymentMethod === 'Bank'}"><span>Bank</span>
+        </button>
         <button class="pos-payment-option ${state.paymentMethod === 'Other' ? 'is-selected' : ''}" type="button"
           data-pos-action="checkout-method" data-method="Other" aria-pressed="${state.paymentMethod === 'Other'}">
-          <svg class="pos-payment-logo" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>Other</span>
+          <svg class="pos-payment-logo" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg><span>Other</span>
         </button>
       </div>
+      ${state.paymentMethod === 'Mobile money' ? '<p class="pos-help">Confirm the payment with the mobile-money provider before completing this sale.</p>' : ''}
       <div class="pos-customer-fields">
         ${field('Name', 'customerName', '', { placeholder: 'Optional' })}
         ${field('Phone', 'customerPhone', '', { placeholder: 'Optional', type: 'tel' })}
       </div>
       <div class="pos-checkout-totals">
         <div class="pos-total-line"><span>Subtotal</span><b>${money(fromCents(subtotal), state.settings.currency)}</b></div>
-        <label class="pos-field"><span>Discount</span><input name="discount" type="number" min="0" max="${fromCents(subtotal).toFixed(2)}" step="0.01" value="${state.discount || ''}" data-pos-discount></label>
-        ${discountCents ? `<div class="pos-total-line"><span>Discount applied</span><b>−${money(fromCents(discountCents), state.settings.currency)}</b></div>` : ''}
+        <input type="hidden" name="discount" value="${state.discount || 0}">
+        ${discountCents ? `<div class="pos-total-line"><span>Discount · ${discountPercent}%</span><b>−${money(fromCents(discountCents), state.settings.currency)}</b></div>` : ''}
         <div class="pos-total-line"><span>Tax · ${state.settings.taxRate}%</span><b>${money(fromCents(tax), state.settings.currency)}</b></div>
         <div class="pos-total-line is-total"><span>Total</span><b>${money(fromCents(subtotal - discountCents + tax), state.settings.currency)}</b></div>
       </div>
@@ -1327,9 +1418,36 @@ export function createPosApp() {
       <div class="pos-checkout-actions">
         <button class="btn-secondary" type="button" data-pos-action="park-ticket">Park order</button>
         <button class="btn-secondary" type="button" data-pos-action="cancel-sale">Cancel sale</button>
-        <button class="btn-primary" type="submit">Complete sale</button>
+        <button class="btn-secondary pos-discount-button" type="button" data-pos-action="set-discount">
+          Discount${discountCents ? ` · ${discountPercent}%` : ''}
+        </button>
+        <button class="btn-primary pos-checkout-complete" type="submit">Complete sale</button>
       </div>
     </form>`;
+  }
+
+  function renderDiscountModalMarkup() {
+    if (!state.discountDialogOpen || !state.cart.length) return '';
+    const subtotal = state.cart.reduce((sum, item) => sum + toCents(item.unitPrice) * item.quantity, 0);
+    return `<div class="pos-discount-modal">
+      <button class="pos-discount-backdrop" type="button" data-pos-action="close-discount" aria-label="Close discount dialog"></button>
+      <section class="pos-discount-dialog" role="dialog" aria-modal="true" aria-labelledby="pos-discount-title">
+        <h3 id="pos-discount-title">Enter discount amount</h3>
+        <p>Amount in ${escapeHtml(state.settings.currency)}. The percentage is calculated from the subtotal.</p>
+        <form class="pos-discount-form" data-pos-form="discount">
+          <label class="pos-discount-field">
+            <span>Discount amount</span>
+            <input type="number" name="discountAmount" min="0" step="0.01" value="${state.discount || ''}"
+              inputmode="decimal" data-pos-discount-input aria-describedby="pos-discount-hint">
+          </label>
+          <small id="pos-discount-hint">Cannot exceed ${money(fromCents(subtotal), state.settings.currency)}.</small>
+          <div class="pos-discount-actions">
+            <button class="btn-secondary" type="button" data-pos-action="close-discount">Cancel</button>
+            <button class="btn-primary" type="submit">Apply</button>
+          </div>
+        </form>
+      </section>
+    </div>`;
   }
 
   function renderInventory(params, screen = '/inventory') {
@@ -1378,22 +1496,68 @@ export function createPosApp() {
         ${item ? `<a href="/pos/inventory" data-route="/pos/inventory" class="btn-secondary">Cancel</a>` : ''}</div>
       <p class="pos-help" data-product-submit-status role="status" aria-live="polite">Selling price is required. Photo matching is prepared after the product is saved.</p>
     </form>`;
+    const categoryDetailsCards = () => `<div class="pos-mobile-catalogue" aria-label="Categories">
+      ${categories.map((category) => {
+        const productsInCategory = state.products.filter((item) => item.categoryId === category.id);
+        const productNames = productsInCategory.slice(0, 5).map((item) => escapeHtml(item.name)).join(', ');
+        const remainingCount = productsInCategory.length - 5;
+        const isDefault = category.name.toLowerCase() === 'other';
+        return `<details class="pos-catalogue-item">
+          <summary><strong>${escapeHtml(category.name)}</strong><span class="pos-catalogue-chevron" aria-hidden="true"></span></summary>
+          <div class="pos-catalogue-item-details">
+            <p class="pos-help">${productNames ? `Products: ${productNames}${remainingCount > 0 ? ` and ${remainingCount} more` : ''}` : 'No products in this category.'}</p>
+            ${isDefault ? '<p class="pos-help">Default category · cannot be deleted.</p>' : `<div class="pos-row-actions">
+              ${iconButton('rename-category', category.id, `Edit ${category.name}`, editIcon)}
+              ${iconButton('delete-category', category.id, `Delete ${category.name}`, deleteIcon)}
+            </div>`}
+          </div>
+        </details>`;
+      }).join('')}
+    </div>`;
+    const productDetailsCards = (editPath, summaryMode = 'product', includeSync = false) => `<div class="pos-mobile-catalogue" aria-label="Products">
+      ${state.products.map((item) => `<details class="pos-catalogue-item">
+        <summary>
+          <strong>${escapeHtml(item.name)}</strong>
+          <small>${summaryMode === 'inventory'
+            ? item.stock === null ? 'Not tracked' : `${item.stock} in stock`
+            : money(item.price, state.settings.currency)}</small>
+          <span class="pos-catalogue-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="pos-catalogue-item-details">
+          <div class="pos-catalogue-detail-values">
+            <div><small>SKU</small><strong>${escapeHtml(item.sku || '—')}</strong></div>
+            <div><small>Stock</small><strong>${item.stock === null ? 'Not tracked' : `${item.stock} on hand`}</strong></div>
+            <div><small>Unit cost</small><strong>${item.buyingPrice == null ? 'Not recorded' : money(item.buyingPrice, state.settings.currency)}</strong></div>
+            <div><small>Reorder at</small><strong>${item.lowStockThreshold}</strong></div>
+            <div><small>Status</small><strong>${item.active ? 'Active' : 'Disabled'}</strong></div>
+            <div><small>Expiry date</small><strong>${escapeHtml(item.expiryDate || 'Not set')}</strong></div>
+          </div>
+          <div class="pos-row-actions">
+            ${iconLink(`${editPath}?edit=${item.id}`, `Edit ${item.name}`)}
+            ${iconButton('delete-product', item.id, `Delete ${item.name}`, deleteIcon)}
+            ${includeSync && item.sku ? button('Sync details to active website draft', 'sync-product-details', `data-id="${item.id}"`, true) : ''}
+          </div>
+        </div>
+      </details>`).join('') || '<p class="pos-help">No products yet.</p>'}
+    </div>`;
     if (screen === '/catalogue/products') {
       return `<section class="pos-content">
         ${tabsTitle('Products', `${state.products.length} products`, `<a href="/pos/catalogue/products?new=1" data-route="/pos/catalogue/products?new=1" class="btn-primary">Add product</a>`)}
         ${params.get('edit') || params.get('new') === '1' ? card(`<h3>${product ? 'Edit product' : 'Add product'}</h3>${productForm(product)}`) : ''}
-        ${card(`<div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody>
-          ${state.products.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.categoryName)}</td><td>${money(item.price, state.settings.currency)}</td><td>${item.stock === null ? '—' : item.stock}</td><td><a href="/pos/catalogue/products?edit=${item.id}" data-route="/pos/catalogue/products?edit=${item.id}" class="btn-secondary">Edit</a></td></tr>`).join('') || '<tr><td colspan="5">No products yet.</td></tr>'}
-        </tbody></table></div>`)}</section>`;
+        ${card(`<div class="pos-catalogue-desktop-list"><div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody>
+          ${state.products.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.categoryName)}</td><td>${money(item.price, state.settings.currency)}</td><td>${item.stock === null ? '—' : item.stock}</td><td class="pos-row-actions">
+            ${iconLink(`/pos/catalogue/products?edit=${item.id}`, `Edit ${item.name}`)}
+            ${iconButton('delete-product', item.id, `Delete ${item.name}`, deleteIcon)}
+          </td></tr>`).join('') || '<tr><td colspan="5">No products yet.</td></tr>'}
+        </tbody></table></div></div>${productDetailsCards('/pos/catalogue/products')}`)}</section>`;
     }
     if (screen === '/catalogue/categories') {
       return `<section class="pos-content">
         ${tabsTitle('Categories', 'Organize your catalogue.')}
         ${card(`<form class="pos-inline-form" data-pos-form="category"><input name="name" required placeholder="New category name"><button class="btn-primary">Add category</button></form>
-          <div class="pos-category-list">${categories.map((cat) => `<div class="pos-category-row"><strong>${escapeHtml(cat.name)}</strong><span>${state.products.filter((p) => p.categoryId === cat.id).length} products</span>
-            ${cat.name.toLowerCase() === 'other' ? '<small>Default category</small>' : button('Rename', 'rename-category', `data-id="${cat.id}"`, true)}
-            ${cat.name.toLowerCase() === 'other' ? '' : button('Delete', 'delete-category', `data-id="${cat.id}"`, true)}
-          </div>`).join('') || '<p class="pos-help">No categories yet.</p>'}</div>`)}</section>`;
+          <div class="pos-catalogue-desktop-list"><div class="pos-category-list">${categories.map((cat) => `<div class="pos-category-row"><strong>${escapeHtml(cat.name)}</strong><span>${state.products.filter((p) => p.categoryId === cat.id).length} products</span>
+            ${cat.name.toLowerCase() === 'other' ? '<small>Default category</small>' : `<div class="pos-row-actions">${iconButton('rename-category', cat.id, `Edit ${cat.name}`, editIcon)}${iconButton('delete-category', cat.id, `Delete ${cat.name}`, deleteIcon)}</div>`}
+          </div>`).join('') || '<p class="pos-help">No categories yet.</p>'}</div></div>${categoryDetailsCards()}`)}</section>`;
     }
     if (screen === '/catalogue/suppliers') return renderSuppliers(params);
     if (screen === '/catalogue/inventory') {
@@ -1404,9 +1568,12 @@ export function createPosApp() {
             <p class="pos-help">${inventoryCloudLinked ? `Connected · ${escapeHtml(websites.find((item) => item.tenant_id === state.sharedTenantId)?.name || state.sharedTenantId)}. ${state.pendingInventoryEvents} POS sales waiting to sync.` : state.sharedTenantId ? 'Local products and stock remain available. Cloud stock sync is paused until this shop is linked once.' : 'Load website stock to import products into this device’s POS. POS-to-website live stock sync is a separate shop connection.'}</p>
             <div class="pos-form-actions">${button('Use POS stock for website', 'sync-shared-stock', 'data-source="pos"', true)}${button('Load website stock into POS', 'sync-shared-stock', 'data-source="website"', true)}</div>`
             : '<p class="pos-help">Create or select a website in Studio to connect inventory.</p>'}`)}
-        ${card(`<div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>On hand</th><th>Reorder at</th><th>Status</th></tr></thead><tbody>
-          ${state.products.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.sku || '—')}</td><td>${escapeHtml(item.categoryName)}</td><td>${item.stock === null ? 'Not tracked' : item.stock}</td><td>${item.lowStockThreshold}</td><td>${item.active ? 'Active' : 'Disabled'}</td></tr>`).join('') || '<tr><td colspan="6">No products yet.</td></tr>'}
-        </tbody></table></div>`)}</section>`;
+        ${card(`<div class="pos-catalogue-desktop-list"><div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>On hand</th><th>Reorder at</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+          ${state.products.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.sku || '—')}</td><td>${escapeHtml(item.categoryName)}</td><td>${item.stock === null ? 'Not tracked' : item.stock}</td><td>${item.lowStockThreshold}</td><td>${item.active ? 'Active' : 'Disabled'}</td><td class="pos-row-actions">
+            ${iconLink(`/pos/inventory?edit=${item.id}`, `Edit ${item.name}`)}
+            ${iconButton('delete-product', item.id, `Delete ${item.name}`, deleteIcon)}
+          </td></tr>`).join('') || '<tr><td colspan="7">No products yet.</td></tr>'}
+        </tbody></table></div></div>${productDetailsCards('/pos/inventory', 'inventory')}`)}</section>`;
     }
     return `<section class="pos-content">
       ${tabsTitle('Inventory', 'Manage POS products, categories and stock.',
@@ -1434,22 +1601,21 @@ export function createPosApp() {
       ${card(`<h3>Add product</h3>${productForm()}`)}
       ${card(`<h3>Categories</h3>
         <form class="pos-inline-form" data-pos-form="category"><input name="name" required placeholder="New category name"><button class="btn-secondary">Add category</button></form>
-        <div class="pos-category-list">${categories.map((cat) => `<div class="pos-category-row">
+        <div class="pos-catalogue-desktop-list"><div class="pos-category-list">${categories.map((cat) => `<div class="pos-category-row">
           <strong>${escapeHtml(cat.name)}</strong><span>${state.products.filter((p) => p.categoryId === cat.id).length} products</span>
-          ${cat.name.toLowerCase() === 'other' ? '<small>Default category</small>' : button('Rename', 'rename-category', `data-id="${cat.id}"`, true)}
-          ${cat.name.toLowerCase() === 'other' ? '' : button('Delete', 'delete-category', `data-id="${cat.id}"`, true)}
-        </div>`).join('')}</div>`)}
+          ${cat.name.toLowerCase() === 'other' ? '<small>Default category</small>' : `<div class="pos-row-actions">${iconButton('rename-category', cat.id, `Edit ${cat.name}`, editIcon)}${iconButton('delete-category', cat.id, `Delete ${cat.name}`, deleteIcon)}</div>`}
+        </div>`).join('')}</div></div>${categoryDetailsCards()}`)}
       ${card(`${tabsTitle('Products', `${state.products.length} products`)}
-        <div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Price</th><th>Cost</th><th>Stock</th><th>Reorder at</th><th>Status</th><th></th></tr></thead><tbody>
+        <div class="pos-catalogue-desktop-list"><div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>Price</th><th>Cost</th><th>Stock</th><th>Reorder at</th><th>Status</th><th></th></tr></thead><tbody>
               ${state.products.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.sku || '—')}</td>
             <td>${escapeHtml(item.categoryName)}</td>
             <td>${money(item.price, state.settings.currency)}</td><td>${item.buyingPrice == null ? '—' : money(item.buyingPrice, state.settings.currency)}</td>
             <td>${item.stock === null ? '—' : item.stock}</td><td>${item.lowStockThreshold}</td><td>${item.active ? 'Active' : 'Disabled'}</td><td class="pos-row-actions">
-              <a href="/pos/inventory?edit=${item.id}" data-route="/pos/inventory?edit=${item.id}" class="btn-secondary">Edit</a>
+              ${iconLink(`/pos/catalogue/products?edit=${item.id}`, `Edit ${item.name}`)}
+              ${iconButton('delete-product', item.id, `Delete ${item.name}`, deleteIcon)}
               ${item.sku ? button('Sync details to active website draft', 'sync-product-details', `data-id="${item.id}"`, true) : ''}
-              ${button('Delete', 'delete-product', `data-id="${item.id}"`, true)}
             </td></tr>`).join('') || '<tr><td colspan="9">No products yet.</td></tr>'}
-        </tbody></table></div>`)}
+        </tbody></table></div></div>${productDetailsCards('/pos/catalogue/products', 'product', true)}`)}
     </section>`;
   }
 
@@ -1626,7 +1792,7 @@ export function createPosApp() {
 
   function renderOrders() {
     return `<section class="pos-content">${tabsTitle('Orders', 'Park an unpaid cart and resume it later or on another synced device.',
-      `<a href="/pos" data-route="/pos" class="btn-secondary">New sale</a>`)}
+      `<a href="/pos" data-route="/pos" class="btn-secondary pos-orders-new-sale">New sale</a>`)}
       ${card(`<h3>Saved orders · ${state.tickets.length}</h3>
         ${state.tickets.map((ticket) => `<div class="pos-category-row">
           <strong>${escapeHtml(ticket.name || 'Saved order')}<small>${ticket.items.length} item${ticket.items.length === 1 ? '' : 's'} · ${new Date(ticket.createdAt).toLocaleString()}</small></strong>
@@ -1644,7 +1810,12 @@ export function createPosApp() {
         ${field('Customer name', 'customerName', '', { required: true })}
         ${field('Contact · optional', 'customerContact', '')}
         <h4>Catalogue products</h4>
-        <div class="pos-product-picks">${state.products.map((product) => `<label class="pos-quote-product"><input type="checkbox" name="products" value="${product.id}"><span>${escapeHtml(product.name)} · ${money(product.price, state.settings.currency)}</span></label>`).join('') || '<p class="pos-help">No products in catalogue yet.</p>'}</div>
+        <div class="pos-product-picks pos-quote-product-grid">${state.products.map((product) => `<label class="pos-product-tile pos-quote-product">
+          <input type="checkbox" name="products" value="${product.id}" aria-label="Select ${escapeHtml(product.name)}">
+          ${product.imageUri ? `<img src="${escapeHtml(product.imageUri)}" alt="">` : '<span class="pos-product-placeholder">+</span>'}
+          <strong>${escapeHtml(product.name)}</strong>
+          <span>${money(product.price, state.settings.currency)}</span>
+        </label>`).join('') || '<p class="pos-help">No products in catalogue yet.</p>'}</div>
         <h4>Custom item</h4>${field('Item name', 'customName', '')}${field('Price', 'customPrice', '', { type: 'number', min: '0', step: '0.01' })}
         <button type="submit" class="btn-primary">Create / print quotation</button>
       </form>`)}</section>`;
@@ -1652,9 +1823,10 @@ export function createPosApp() {
 
   function renderMore() {
     return `<section class="pos-content">${tabsTitle('More', 'Business tools and settings.')}
-      ${card(`<a class="btn-secondary" href="/pos/more/instances" data-route="/pos/more/instances">Business instances</a>
-        <a class="btn-secondary" href="/pos/sales" data-route="/pos/sales">Sales & receipts</a>
-        <a class="btn-secondary" href="/pos/more/settings" data-route="/pos/more/settings">Settings</a>`)}</section>`;
+      ${card('<a class="pos-more-link" href="/pos/more/instances" data-route="/pos/more/instances"><strong>Business instances</strong></a>', 'pos-more-card')}
+      ${card('<a class="pos-more-link" href="/pos/sales" data-route="/pos/sales"><strong>Sales &amp; receipts</strong></a>', 'pos-more-card')}
+      ${card('<a class="pos-more-link" href="/pos/more/settings" data-route="/pos/more/settings"><strong>Settings</strong></a>', 'pos-more-card')}
+    </section>`;
   }
 
   function renderStartInstance() {
@@ -1717,18 +1889,20 @@ export function createPosApp() {
     const inRange = (date) => !fromDate || localDateKey(date) >= fromDate;
     const selectedSales = sales.filter((sale) => sale.currency === settings.currency && inRange(sale.created_at));
     const paidSales = selectedSales.filter((sale) => sale.paid);
+    const recordedSales = selectedSales;
+    const recordedSalesTotal = selectedSales.reduce((sum, sale) => sum + sale.total, 0);
     const selectedExpenses = expenses.filter((expense) => expense.currency === settings.currency && inRange(expense.expense_date));
     const selectedPayments = payments.filter((payment) => payment.currency === settings.currency && inRange(payment.created_at));
     const paymentRevenue = selectedPayments.reduce((sum, payment) => sum + fromCents(payment.amount_cents), 0);
-    const revenue = paidSales.reduce((sum, sale) => sum + sale.subtotal, 0);
-    const taxCollected = paidSales.reduce((sum, sale) => sum + sale.tax, 0);
-    const grossReceipts = paidSales.reduce((sum, sale) => sum + sale.total, 0);
+    const revenue = recordedSales.reduce((sum, sale) => sum + sale.subtotal, 0);
+    const taxCollected = recordedSales.reduce((sum, sale) => sum + sale.tax, 0);
+    const grossReceipts = recordedSales.reduce((sum, sale) => sum + sale.total, 0);
     const currentMonth = new Date();
     const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
     const monthStartKey = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}-01`;
     const nextMonthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
     const monthEndDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
-    const monthRevenue = sales.filter((sale) => sale.currency === settings.currency && sale.paid
+    const monthRevenue = sales.filter((sale) => sale.currency === settings.currency
       && localDateKey(sale.created_at) >= monthStartKey
       && localDateKey(sale.created_at) < `${nextMonthStart.getFullYear()}-${String(nextMonthStart.getMonth() + 1).padStart(2, '0')}-01`)
       .reduce((sum, sale) => sum + sale.subtotal, 0);
@@ -1740,15 +1914,15 @@ export function createPosApp() {
     const elapsedMonthDays = currentMonth.getDate();
     const requiredDailyRevenue = monthlyGoal ? Math.max(0, monthlyGoal - monthRevenue) / Math.max(1, monthEndDay - elapsedMonthDays) : null;
     const monthRunRate = monthRevenue / Math.max(1, elapsedMonthDays) * monthEndDay;
-    const cogs = paidSales.reduce((sum, sale) => sum + sale.items.reduce((lineSum, item) =>
+    const cogs = recordedSales.reduce((sum, sale) => sum + sale.items.reduce((lineSum, item) =>
       lineSum + (item.historicalUnitCost == null ? 0 : item.historicalUnitCost * item.quantity), 0), 0);
-    const costCoverageUnits = paidSales.reduce((sum, sale) => sum + sale.items.reduce((lineSum, item) =>
+    const costCoverageUnits = recordedSales.reduce((sum, sale) => sum + sale.items.reduce((lineSum, item) =>
       lineSum + (item.historicalUnitCost == null ? 0 : item.quantity), 0), 0);
-    const totalSoldUnits = paidSales.reduce((sum, sale) => sum + sale.items.reduce((lineSum, item) => lineSum + item.quantity, 0), 0);
+    const totalSoldUnits = recordedSales.reduce((sum, sale) => sum + sale.items.reduce((lineSum, item) => lineSum + item.quantity, 0), 0);
     const costCoverage = totalSoldUnits ? costCoverageUnits / totalSoldUnits * 100 : 0;
     const operatingExpenses = selectedExpenses.reduce((sum, expense) => sum + fromCents(expense.amount_cents), 0);
     const productSales = new Map();
-    paidSales.forEach((sale) => sale.items.forEach((item) => {
+    recordedSales.forEach((sale) => sale.items.forEach((item) => {
       const current = productSales.get(item.productId) || { id: item.productId, name: item.name, units: 0, revenue: 0, cost: 0, knownCostUnits: 0 };
       current.units += item.quantity;
       current.revenue += item.quantity * item.unitPrice;
@@ -1761,7 +1935,7 @@ export function createPosApp() {
     const productById = new Map(products.map((product) => [product.id, product]));
     const categories = new Map();
     const basketPairs = new Map();
-    paidSales.forEach((sale) => {
+    recordedSales.forEach((sale) => {
       const productIds = [...new Set(sale.items.map((item) => Number(item.productId)).filter(Boolean))].sort((a, b) => a - b);
       for (let index = 0; index < productIds.length; index += 1) {
         for (let next = index + 1; next < productIds.length; next += 1) {
@@ -1789,7 +1963,7 @@ export function createPosApp() {
     const categoryRows = [...categories.values()].sort((a, b) => b.revenue - a.revenue);
     const totalCategoryRevenue = categoryRows.reduce((sum, category) => sum + category.revenue, 0);
     const frequentPairs = [...basketPairs.values()].sort((a, b) => b.count - a.count).slice(0, 5);
-    const previousSales = periodDays ? sales.filter((sale) => sale.paid && sale.currency === settings.currency
+    const previousSales = periodDays ? sales.filter((sale) => sale.currency === settings.currency
       && localDateKey(sale.created_at) >= previousStartKey && localDateKey(sale.created_at) < fromDate) : [];
     const previousCategoryRevenue = new Map();
     previousSales.forEach((sale) => sale.items.forEach((item) => {
@@ -1816,7 +1990,7 @@ export function createPosApp() {
     const overdueCredit = sales.filter((sale) => !sale.paid && sale.currency === settings.currency
       && sale.due_date && sale.due_date < todayKey);
     const daily = {};
-    paidSales.forEach((sale) => {
+    recordedSales.forEach((sale) => {
       const date = new Date(sale.created_at);
       const day = Number.isFinite(date.getTime())
         ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -1844,7 +2018,7 @@ export function createPosApp() {
     const weekdayCounts = Array.from({ length: 7 }, () => 0);
     const hourTotals = Array.from({ length: 24 }, () => 0);
     const hourCounts = Array.from({ length: 24 }, () => 0);
-    paidSales.forEach((sale) => {
+    recordedSales.forEach((sale) => {
       const date = new Date(sale.created_at);
       if (!Number.isFinite(date.getTime())) return;
       const amount = sale.subtotal;
@@ -1863,10 +2037,10 @@ export function createPosApp() {
     recentMonth.setDate(recentMonth.getDate() - 29);
     const recentMonthKey = `${recentMonth.getFullYear()}-${String(recentMonth.getMonth() + 1).padStart(2, '0')}-${String(recentMonth.getDate()).padStart(2, '0')}`;
     const recentProductUnits = new Map();
-    sales.filter((sale) => sale.paid && sale.currency === settings.currency && localDateKey(sale.created_at) >= recentMonthKey)
+    sales.filter((sale) => sale.currency === settings.currency && localDateKey(sale.created_at) >= recentMonthKey)
       .forEach((sale) => sale.items.forEach((item) =>
         recentProductUnits.set(item.productId, (recentProductUnits.get(item.productId) || 0) + item.quantity)));
-    const recentlySoldProductIds = new Set(sales.filter((sale) => sale.paid && sale.currency === settings.currency
+    const recentlySoldProductIds = new Set(sales.filter((sale) => sale.currency === settings.currency
       && localDateKey(sale.created_at) >= recentDateKey).flatMap((sale) => sale.items.map((item) => item.productId)));
     const dormantStock = products.filter((product) => product.stock > 0 && !recentlySoldProductIds.has(product.id));
     const restockSuggestions = lowStock.map((product) => {
@@ -1894,7 +2068,7 @@ export function createPosApp() {
       expensesByCategory[expense.category] = (expensesByCategory[expense.category] || 0) + fromCents(expense.amount_cents);
     });
     const customersByPhone = new Map();
-    sales.filter((sale) => sale.paid && sale.currency === settings.currency && sale.customer_phone && sale.customer_name)
+    sales.filter((sale) => sale.currency === settings.currency && sale.customer_phone && sale.customer_name)
       .forEach((sale) => {
         const phone = String(sale.customer_phone).replace(/\D/g, '');
         if (!phone) return;
@@ -1927,15 +2101,13 @@ export function createPosApp() {
     const paceEstimate = recentDailyValues.filter((amount) => amount > 0).length >= 4
       ? recentDailyValues.reduce((sum, amount) => sum + amount, 0) : null;
     const periods = [['today', 'Today'], ['7d', '7 days'], ['30d', '30 days'], ['90d', '90 days'], ['all', 'All time']];
-    const tabs = ['Revenue', 'Profit', 'Products', 'Stock', 'Payments', 'Reports'];
     const routeFor = (nextTab, nextPeriod = period) => `/pos/overview?tab=${encodeURIComponent(nextTab)}&range=${encodeURIComponent(nextPeriod)}`;
-    const tabLinks = tabs.map((item) => `<a class="pos-tab ${item === tab ? 'is-active' : ''}" href="${routeFor(item)}" data-route="${routeFor(item)}">${item}</a>`).join('');
     const rangeLinks = periods.map(([value, label]) => `<a class="pos-range ${value === period ? 'is-active' : ''}" href="${routeFor(tab, value)}" data-route="${routeFor(tab, value)}">${label}</a>`).join('');
     const revenueSeries = Object.entries(daily).sort(([first], [second]) => first.localeCompare(second)).slice(-14);
     const revenueTable = [...revenueSeries].reverse()
       .map(([date, amount]) => `<tr><td>${escapeHtml(date)}</td><td>${money(amount, settings.currency)}</td></tr>`).join('');
     const operatingProfitByDate = {};
-    paidSales.forEach((sale) => {
+    recordedSales.forEach((sale) => {
       const key = localDateKey(sale.created_at);
       operatingProfitByDate[key] = (operatingProfitByDate[key] || 0) + sale.subtotal - sale.items.reduce((sum, item) =>
         sum + (item.historicalUnitCost == null ? 0 : item.historicalUnitCost * item.quantity), 0);
@@ -1957,7 +2129,7 @@ export function createPosApp() {
     const topProductRows = productContribution.slice(0, 5).map((item, index) =>
       `<div class="pos-category-row"><strong>${index + 1}. ${escapeHtml(item.name)}<small>${item.units} units · ${item.share.toFixed(0)}% item revenue · ${item.knownCostUnits === item.units && item.revenue > 0 ? `${((item.revenue - item.cost) / item.revenue * 100).toFixed(0)}% known-cost margin` : `${item.knownCostUnits} of ${item.units} units costed`} · ${item.pareto} group</small></strong><b>${money(item.revenue, settings.currency)}</b></div>`).join('');
     const costHistory = new Map();
-    sales.filter((sale) => sale.paid && sale.currency === settings.currency).forEach((sale) => sale.items.forEach((item) => {
+    sales.filter((sale) => sale.currency === settings.currency).forEach((sale) => sale.items.forEach((item) => {
       if (item.historicalUnitCost == null) return;
       const history = costHistory.get(item.productId) || { name: item.name, entries: [] };
       history.entries.push({ date: sale.created_at, cost: item.historicalUnitCost });
@@ -1979,15 +2151,15 @@ export function createPosApp() {
       const middle = Math.floor(sorted.length / 2);
       return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
     };
-    const receiptValues = paidSales.map((sale) => sale.total);
+    const receiptValues = recordedSales.map((sale) => sale.total);
     const receiptMedian = medianValue(receiptValues);
     const receiptMad = medianValue(receiptValues.map((amount) => Math.abs(amount - receiptMedian)));
     const largeReceiptThreshold = Math.max(receiptMedian * 2.5, receiptMedian + receiptMad * 3);
-    const largeReceipts = paidSales.length >= 10 && receiptMedian > 0
-      ? [...paidSales].filter((sale) => sale.total >= largeReceiptThreshold).sort((a, b) => b.total - a.total).slice(0, 3)
+    const largeReceipts = recordedSales.length >= 10 && receiptMedian > 0
+      ? [...recordedSales].filter((sale) => sale.total >= largeReceiptThreshold).sort((a, b) => b.total - a.total).slice(0, 3)
       : [];
-    const timePatternDays = new Set(paidSales.map((sale) => localDateKey(sale.created_at))).size;
-    const hasTimePatterns = paidSales.length >= 7 && timePatternDays >= 3;
+    const timePatternDays = new Set(recordedSales.map((sale) => localDateKey(sale.created_at))).size;
+    const hasTimePatterns = recordedSales.length >= 7 && timePatternDays >= 3;
     const breakEvenRevenue = revenue > cogs && operatingExpenses > 0 && costCoverage >= 99.999
       ? operatingExpenses / ((revenue - cogs) / revenue) : null;
     const cashSaleValues = paidSales.filter((sale) => sale.payment_method === 'Cash').map((sale) => sale.total);
@@ -1995,12 +2167,12 @@ export function createPosApp() {
     const largeCashSales = cashSaleValues.length >= 10 && medianCashSale > 0
       ? paidSales.filter((sale) => sale.payment_method === 'Cash' && sale.total >= medianCashSale * 3)
         .sort((a, b) => b.total - a.total).slice(0, 5) : [];
-    const overnightSales = paidSales.filter((sale) => {
+    const overnightSales = recordedSales.filter((sale) => {
       const date = new Date(sale.created_at);
       return Number.isFinite(date.getTime()) && date.getHours() >= 0 && date.getHours() < 5;
     });
     const monthSegments = (() => {
-      const datedSales = sales.filter((sale) => sale.paid && sale.currency === settings.currency)
+      const datedSales = sales.filter((sale) => sale.currency === settings.currency)
         .map((sale) => ({ sale, date: new Date(sale.created_at) }))
         .filter((item) => Number.isFinite(item.date.getTime())
           && (item.date.getFullYear() < currentMonth.getFullYear()
@@ -2030,12 +2202,12 @@ export function createPosApp() {
       }).filter((segment) => segment.activeMonths >= 2);
     })();
     const weekdayDayCounts = Array.from({ length: 7 }, () => 0);
-    const firstPaymentTimestamp = paidSales.reduce((earliest, sale) => {
+    const firstSaleTimestamp = sales.filter((sale) => sale.currency === settings.currency).reduce((earliest, sale) => {
       const timestamp = Date.parse(sale.created_at);
       return Number.isFinite(timestamp) ? Math.min(earliest, timestamp) : earliest;
     }, Number.POSITIVE_INFINITY);
-    const observedStart = period === 'all' && Number.isFinite(firstPaymentTimestamp)
-      ? new Date(firstPaymentTimestamp) : firstDate;
+    const observedStart = period === 'all' && Number.isFinite(firstSaleTimestamp)
+      ? new Date(firstSaleTimestamp) : firstDate;
     const dayCursor = Number.isFinite(observedStart.getTime()) ? new Date(observedStart) : new Date();
     dayCursor.setHours(0, 0, 0, 0);
     const observationEnd = new Date();
@@ -2050,9 +2222,9 @@ export function createPosApp() {
     })).filter((day) => day.dates > 0).sort((a, b) => b.average - a.average);
     const validSalesDates = sales.map((sale) => new Date(sale.created_at)).filter((date) => Number.isFinite(date.getTime()));
     const dataQuality = {
-      paidSalesWithoutCustomer: paidSales.filter((sale) => !sale.customer_phone || !sale.customer_name).length,
-      paidSalesWithoutLines: paidSales.filter((sale) => !sale.items.length).length,
-      paidSalesWithoutCosts: paidSales.filter((sale) => sale.items.some((item) => item.historicalUnitCost == null)).length,
+      recordedSalesWithoutCustomer: recordedSales.filter((sale) => !sale.customer_phone || !sale.customer_name).length,
+      recordedSalesWithoutLines: recordedSales.filter((sale) => !sale.items.length).length,
+      recordedSalesWithoutCosts: recordedSales.filter((sale) => sale.items.some((item) => item.historicalUnitCost == null)).length,
       invalidDates: sales.length - validSalesDates.length
     };
     const alertCards = [];
@@ -2086,9 +2258,9 @@ export function createPosApp() {
       detail: `At least the greater of 2.5× the median receipt (${money(receiptMedian, settings.currency)}) or median + 3 MAD. This is a review prompt, not a fraud finding.`,
       href: '/pos/sales'
     });
-    if (overnightSales.length >= 2 && paidSales.length >= 10) alertCards.push({
+    if (overnightSales.length >= 2 && recordedSales.length >= 10) alertCards.push({
       id: `overnight-sales-${monthStartKey}`,
-      severity: 'warning', title: `${overnightSales.length} paid receipts between midnight and 5am`,
+      severity: 'warning', title: `${overnightSales.length} receipts created between midnight and 5am`,
       detail: 'Review the receipts if the store is normally closed at those times. Timestamps use the device clock and can be inaccurate.',
       href: '/pos/sales'
     });
@@ -2111,7 +2283,7 @@ export function createPosApp() {
     const dismissedAlertCount = savedPreferences.dismissed.length;
     const monthlyBenchmarks = (() => {
       const totals = new Map();
-      sales.filter((sale) => sale.currency === settings.currency && sale.paid).forEach((sale) => {
+      sales.filter((sale) => sale.currency === settings.currency).forEach((sale) => {
         const date = new Date(sale.created_at);
         if (!Number.isFinite(date.getTime()) || (date.getFullYear() === currentMonth.getFullYear() && date.getMonth() === currentMonth.getMonth())) return;
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -2119,14 +2291,15 @@ export function createPosApp() {
       });
       return [...totals.entries()].sort((a, b) => b[1] - a[1]);
     })();
-    const credit = sales.filter((sale) => !sale.paid).reduce((sum, sale) =>
-      sum + (sale.currency === settings.currency ? sale.total - sale.amountPaid : 0), 0);
+    const unpaidSales = selectedSales.filter((sale) => !sale.paid);
+    const credit = unpaidSales.reduce((sum, sale) => sum + sale.total - sale.amountPaid, 0);
     const missingCosts = products.filter((product) => product.buyingPrice == null).length;
     let panel = '';
     if (tab === 'Summary') {
       panel = `<section class="pos-overview-card" aria-label="Business totals">
         <div class="pos-overview-metrics">
-          ${overviewMetric('Revenue', money(revenue, settings.currency), `Before tax · ${paidSales.length} fully paid sales`)}
+          ${overviewMetric('Sales recorded', money(recordedSalesTotal, settings.currency), `${selectedSales.length} receipts · includes unpaid sales`)}
+          ${overviewMetric('Revenue', money(revenue, settings.currency), `Before tax · ${recordedSales.length} recorded sales`)}
           ${overviewMetric('Profit', money(revenue - cogs, settings.currency), `Sale-time costs cover ${costCoverage.toFixed(0)}% of units`)}
           ${overviewMetric('Operating profit', money(revenue - cogs - operatingExpenses, settings.currency), `${money(operatingExpenses, settings.currency)} expenses · recorded costs only`)}
           ${overviewMetric('Credit', money(credit, settings.currency), 'All unpaid balances')}
@@ -2134,8 +2307,8 @@ export function createPosApp() {
       </section>
       ${card(`<h3>Recent revenue</h3>${renderRevenueChart(revenueSeries, settings.currency)}`, 'pos-revenue-card')}
       ${card(`<h3>Period comparison</h3>
-        <div class="pos-insight-row"><strong>Paid net sales · before tax</strong><span>${money(revenue, settings.currency)} · ${changeLabel(revenue, previousRevenue)}</span></div>
-        <div class="pos-insight-row"><strong>Recorded expenses</strong><span>${money(operatingExpenses, settings.currency)} · ${changeLabel(operatingExpenses, previousExpenseTotal)}</span></div>`)}
+        <div class="pos-insight-row"><strong>Net sales · before tax</strong><span>${money(revenue, settings.currency)} · ${changeLabel(revenue, previousRevenue)}</span></div>
+        <div class="pos-insight-row"><strong>Recorded expenses</strong><span>${money(operatingExpenses, settings.currency)} · ${changeLabel(operatingExpenses, previousExpenseTotal)}</span></div>`, 'pos-period-comparison-card')}
       ${card(`<h3>Top products</h3>${topProductRows || '<p class="pos-help">Product rankings appear after sales are recorded.</p>'}`)}
       ${paceEstimate === null ? '' : card(`<h3>Revenue pace estimate</h3><strong>${money(paceEstimate, settings.currency)}</strong><p class="pos-help">Estimated next 7 days from average daily net sales before tax over the last 7 days. A simple pace estimate, not a guarantee.</p>`)}
       ${card(`<h3>Quick insights</h3><div class="pos-insights">
@@ -2148,30 +2321,30 @@ export function createPosApp() {
         <div class="pos-goal-track" role="progressbar" aria-label="Monthly revenue goal progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100, monthProgress).toFixed(0)}"><span style="width:${Math.min(100, monthProgress).toFixed(1)}%"></span></div>
         <p class="pos-help">${monthRevenue >= monthlyGoal ? 'Monthly target reached.' : `${money(requiredDailyRevenue, settings.currency)} per remaining day is needed to reach the goal; straight-line pace projects ${money(monthRunRate, settings.currency)}.`}</p>`) : ''}`;
     } else if (tab === 'Revenue') {
-      panel = `<div class="pos-metrics">${metric('Net sales · before tax', money(revenue, settings.currency), `${paidSales.length} fully paid sales`)}
+      panel = `<div class="pos-metrics">${metric('Net sales · before tax', money(revenue, settings.currency), `${recordedSales.length} recorded sales`)}
         ${metric('Payments received', money(paymentRevenue, settings.currency), `${selectedPayments.length} confirmed payments · includes tax`)}
-        ${metric('Average paid sale', money(paidSales.length ? revenue / paidSales.length : 0, settings.currency), 'Net subtotal per fully paid sale')}</div>
-        ${card(`<h3>Net sales by receipt date</h3>${renderRevenueChart(revenueSeries, settings.currency)}<div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Date</th><th>Net sales · before tax</th></tr></thead><tbody>${revenueTable || '<tr><td colspan="2">No paid sales in this period.</td></tr>'}</tbody></table></div>`)}`;
+        ${metric('Average recorded sale', money(recordedSales.length ? revenue / recordedSales.length : 0, settings.currency), 'Net subtotal per receipt')}</div>
+        ${card(`<h3>Net sales by receipt date</h3>${renderRevenueChart(revenueSeries, settings.currency)}<div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Date</th><th>Net sales · before tax</th></tr></thead><tbody>${revenueTable || '<tr><td colspan="2">No sales recorded in this period.</td></tr>'}</tbody></table></div>`)}`;
     } else if (tab === 'Profit') {
-      panel = `<div class="pos-metrics">${metric('Net sales · before tax', money(revenue, settings.currency), `${paidSales.length} fully paid sales`)}
+      panel = `<div class="pos-metrics">${metric('Net sales · before tax', money(revenue, settings.currency), `${recordedSales.length} recorded sales`)}
         ${metric('Cost of goods', money(cogs, settings.currency), 'Historical unit costs')}
         ${metric('Gross profit', money(revenue - cogs, settings.currency), 'Revenue less cost of goods')}
         ${metric('Operating profit', money(revenue - cogs - operatingExpenses, settings.currency), 'After recorded expenses')}</div>
         ${card(`<h3>Profit and loss</h3>
           <div class="pos-total-line"><span>Net sales · before tax</span><b>${money(revenue, settings.currency)}</b></div>
-          <div class="pos-total-line"><span>Tax on fully paid sales</span><b>${money(taxCollected, settings.currency)}</b></div>
-          <div class="pos-total-line"><span>Fully paid receipt total</span><b>${money(grossReceipts, settings.currency)}</b></div>
+          <div class="pos-total-line"><span>Tax on recorded sales</span><b>${money(taxCollected, settings.currency)}</b></div>
+          <div class="pos-total-line"><span>Recorded receipt total · including tax</span><b>${money(grossReceipts, settings.currency)}</b></div>
           <div class="pos-total-line"><span>Payments received this period</span><b>${money(paymentRevenue, settings.currency)}</b></div>
           <div class="pos-total-line"><span>Recorded cost of goods</span><b>− ${money(cogs, settings.currency)}</b></div>
           <div class="pos-total-line"><strong>Gross profit</strong><b>${money(revenue - cogs, settings.currency)}</b></div>
           <div class="pos-total-line"><span>Recorded operating expenses</span><b>− ${money(operatingExpenses, settings.currency)}</b></div>
           <div class="pos-total-line"><strong>Operating profit</strong><b>${money(revenue - cogs - operatingExpenses, settings.currency)}</b></div>
-          ${breakEvenRevenue === null ? `<p class="pos-help">${costCoverage < 99.999 ? `Break-even is withheld because saved sale-time costs cover only ${costCoverage.toFixed(0)}% of sold units.` : 'Break-even needs positive paid revenue, recorded product costs below revenue, and expenses in this period.'}</p>` : `<p class="pos-help">Approximate revenue to cover this period’s recorded expenses at the current gross margin: ${money(breakEvenRevenue, settings.currency)}. This does not separate fixed and variable costs.</p>`}
-          <p class="pos-help">Sales revenue is the pre-tax subtotal of fully paid receipts by receipt-created date. Tax is shown separately, not treated as profit. Payments received follow payment dates and can include partial or cross-period settlements.</p>
+          ${breakEvenRevenue === null ? `<p class="pos-help">${costCoverage < 99.999 ? `Break-even is withheld because saved sale-time costs cover only ${costCoverage.toFixed(0)}% of sold units.` : 'Break-even needs positive recorded sales, recorded product costs below sales, and expenses in this period.'}</p>` : `<p class="pos-help">Approximate sales needed to cover this period’s recorded expenses at the current gross margin: ${money(breakEvenRevenue, settings.currency)}. This does not separate fixed and variable costs.</p>`}
+          <p class="pos-help">Sales revenue is the pre-tax subtotal of all recorded receipts by receipt-created date, whether paid or unpaid. Tax is shown separately, not treated as profit. Payments received follow payment dates and can include partial or cross-period settlements.</p>
           <p class="pos-help">${costCoverage < 99.999 ? `Only ${costCoverage.toFixed(0)}% of sold units have saved sale-time costs; missing costs make profit estimates too high.` : 'Profit uses saved sale-time unit costs and recorded POS expenses only.'}</p>`)
         }
         ${card(`<h3>Recorded operating-profit trend</h3>${renderProfitChart(operatingProfitSeries, settings.currency)}
-          <p class="pos-help">Daily view uses pre-tax subtotals of fully paid receipts by sale-created date, less saved line costs and expenses entered for that date. It may not match payment-date cash totals above.</p>`)}
+          <p class="pos-help">Daily view uses pre-tax subtotals of recorded receipts by sale-created date, less saved line costs and expenses entered for that date. It may not match payment-date cash totals above.</p>`)}
         ${card(`<h3>Expenses</h3>${selectedExpenses.map((expense) => `<div class="pos-category-row"><strong>${escapeHtml(expense.label)}<small>${escapeHtml(expense.category)} · ${escapeHtml(expense.expense_date)}</small></strong><b>${money(fromCents(expense.amount_cents), expense.currency)}</b></div>`).join('') || '<p class="pos-help">No expenses in this period.</p>'}`)}`;
     } else if (tab === 'Products') {
       panel = card(`<h3>Product performance</h3><div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>Units</th><th>Revenue</th><th>Gross profit</th></tr></thead><tbody>
@@ -2189,7 +2362,9 @@ export function createPosApp() {
         </tbody></table></div>
         <p class="pos-help">Days cover is current stock divided by units sold per day during the last 30 days. It is a rough run rate and does not account for lead time or seasonality.</p>`)}`;
     } else if (tab === 'Payments') {
-      panel = card(`<h3>Payment method totals</h3>${Object.entries(byMethod).map(([method, amount]) => `<div class="pos-category-row"><strong>${escapeHtml(method)}</strong><b>${money(amount, settings.currency)}</b></div>`).join('') || '<p class="pos-help">No confirmed payments in this period.</p>'}`);
+      panel = `<div class="pos-metrics">${metric('Payments received', money(paymentRevenue, settings.currency), `${selectedPayments.length} confirmed payments`)}
+        ${metric('Outstanding credit', money(credit, settings.currency), `${unpaidSales.length} unpaid receipts`)}</div>
+        ${card(`<h3>Payment method totals</h3>${Object.entries(byMethod).map(([method, amount]) => `<div class="pos-category-row"><strong>${escapeHtml(method)}</strong><b>${money(amount, settings.currency)}</b></div>`).join('') || '<p class="pos-help">No confirmed payments in this period.</p>'}`)}`;
     } else {
       const topProducts = productContribution.slice(0, 5);
       const expenseRows = Object.entries(expensesByCategory).sort((a, b) => b[1] - a[1]);
@@ -2211,20 +2386,20 @@ export function createPosApp() {
         ${card(`<h3>Sales trends</h3>
           <div class="pos-insight-row"><strong>Net sales before tax</strong><span>${money(revenue, settings.currency)} · ${changeLabel(revenue, previousRevenue)}</span></div>
           <div class="pos-insight-row"><strong>Sales created</strong><span>${selectedSales.length} in this period</span></div>
-          <div class="pos-insight-row"><strong>Average paid sale</strong><span>${money(paidSales.length ? revenue / paidSales.length : 0, settings.currency)}</span></div>
+          <div class="pos-insight-row"><strong>Average recorded sale</strong><span>${money(recordedSales.length ? revenue / recordedSales.length : 0, settings.currency)}</span></div>
           <div class="pos-insight-row"><strong>Busiest day</strong><span>${hasTimePatterns ? weekdayNames[busiestWeekday] : 'Not enough sales history yet'}</span></div>
           <div class="pos-insight-row"><strong>Strongest recorded hour</strong><span>${hasTimePatterns ? `${String(busiestHour).padStart(2, '0')}:00` : 'Not enough sales history yet'}</span></div>
-          ${paceEstimate === null ? '<p class="pos-help">Revenue pace estimate needs fully paid sales on at least four separate days.</p>' : `<p class="pos-help">At the recent pace, the next 7 days net-sales estimate is ${money(paceEstimate, settings.currency)} before tax. This is a simple estimate, not a guarantee.</p>`}`)}
+          ${paceEstimate === null ? '<p class="pos-help">Sales pace estimate needs recorded sales on at least four separate days.</p>' : `<p class="pos-help">At the recent pace, the next 7 days net-sales estimate is ${money(paceEstimate, settings.currency)} before tax. This is a simple estimate, not a guarantee.</p>`}`)}
         ${card(`<h3>Revenue rhythm</h3>
-          ${weekdayAverageRows.length && paidSales.length >= 14
+          ${weekdayAverageRows.length && recordedSales.length >= 14
             ? `<div class="pos-insight-row"><strong>Best average weekday</strong><span>${escapeHtml(weekdayAverageRows[0].name)} · ${money(weekdayAverageRows[0].average, settings.currency)}/calendar day</span></div>
               ${weekdayAverageRows.length > 1 ? `<div class="pos-insight-row"><strong>Slowest observed weekday</strong><span>${escapeHtml(weekdayAverageRows[weekdayAverageRows.length - 1].name)} · ${money(weekdayAverageRows[weekdayAverageRows.length - 1].average, settings.currency)}/calendar day</span></div>` : ''}
-              <p class="pos-help">Weekday averages divide pre-tax net sales by every calendar occurrence in the selected range, including zero-sales days. Need at least 14 fully paid sales for comparison.</p>`
-            : '<p class="pos-help">Weekday patterns need at least 14 fully paid sales in this period.</p>'}
+              <p class="pos-help">Weekday averages divide pre-tax net sales by every calendar occurrence in the selected range, including zero-sales days. Need at least 14 recorded sales for comparison.</p>`
+            : '<p class="pos-help">Weekday patterns need at least 14 recorded sales in this period.</p>'}
           ${monthSegments.length ? (() => {
             const topSegment = [...monthSegments].sort((a, b) => b.averagePerCalendarDay - a.averagePerCalendarDay)[0];
-            return `<div class="pos-insight-row"><strong>Strongest month segment</strong><span>${escapeHtml(topSegment.label)} · ${money(topSegment.averagePerCalendarDay, settings.currency)} per calendar day</span></div><p class="pos-help">Based on at least 30 paid sales over three or more months; revenue is divided by observed calendar days in each segment. This is descriptive, not proof of a payday effect.</p>`;
-          })() : '<p class="pos-help">Month-segment patterns need at least 30 paid sales across 3 different months.</p>'}`)}
+            return `<div class="pos-insight-row"><strong>Strongest month segment</strong><span>${escapeHtml(topSegment.label)} · ${money(topSegment.averagePerCalendarDay, settings.currency)} per calendar day</span></div><p class="pos-help">Based on at least 30 recorded sales over three or more months; revenue is divided by observed calendar days in each segment. This is descriptive, not proof of a payday effect.</p>`;
+          })() : '<p class="pos-help">Month-segment patterns need at least 30 recorded sales across 3 different months.</p>'}`)}
         ${card(`<h3>Product performance</h3>
           ${topProducts.map((item) => `<div class="pos-category-row"><strong>${escapeHtml(item.name)}<small>${item.units} units · ${item.share.toFixed(0)}% of sold-item revenue · ${item.knownCostUnits === item.units && item.revenue > 0 ? `${((item.revenue - item.cost) / item.revenue * 100).toFixed(0)}% fully costed margin` : `${item.knownCostUnits}/${item.units} units costed`} · ${item.pareto} contribution group</small></strong><b>${money(item.revenue, settings.currency)}</b></div>`).join('')
             || '<p class="pos-help">Not enough sales history to rank products.</p>'}
@@ -2239,30 +2414,30 @@ export function createPosApp() {
           }).join('')}
           <p class="pos-help">Margins use saved sale-time unit costs; missing costs count as zero, so actual profit may be lower.</p>`)}
         ${card(`<h3>Category performance</h3>
-          ${categoryChanges.map((category) => `<div class="pos-category-row"><strong>${escapeHtml(category.name)}<small>${category.units} units · ${category.share.toFixed(0)}% mix · ${category.margin === null ? `${category.knownCostUnits}/${category.units} units costed` : `${category.margin.toFixed(0)}% fully costed margin`} · ${category.orders.size} paid sales${category.change === null ? '' : ` · ${category.change >= 0 ? '+' : ''}${category.change.toFixed(0)}% vs prior period`}</small></strong><b>${money(category.revenue, settings.currency)}</b></div>`).join('')
+          ${categoryChanges.map((category) => `<div class="pos-category-row"><strong>${escapeHtml(category.name)}<small>${category.units} units · ${category.share.toFixed(0)}% mix · ${category.margin === null ? `${category.knownCostUnits}/${category.units} units costed` : `${category.margin.toFixed(0)}% fully costed margin`} · ${category.orders.size} recorded sales${category.change === null ? '' : ` · ${category.change >= 0 ? '+' : ''}${category.change.toFixed(0)}% vs prior period`}</small></strong><b>${money(category.revenue, settings.currency)}</b></div>`).join('')
             || '<p class="pos-help">Category comparisons appear after recorded sales. Categories use each product’s current assignment.</p>'}
           ${categoryChanges.length && !categoryChanges.some((category) => category.previous > 0) ? '<p class="pos-help">A prior-period category comparison needs sales in both periods.</p>' : ''}`)}
         ${card(`<h3>Basket patterns</h3>
           ${frequentPairs.map((pair) => `<div class="pos-category-row"><strong>${escapeHtml(pair.first)} + ${escapeHtml(pair.second)}<small>Recorded together</small></strong><b>${pair.count} sales</b></div>`).join('')
             || '<p class="pos-help">No multi-product baskets recorded in this period yet.</p>'}
-          <p class="pos-help">Pairs count only paid sales containing both products; this is descriptive, not proof that one product caused the other sale.</p>`)}
+          <p class="pos-help">Pairs count recorded receipts containing both products; this is descriptive, not proof that one product caused the other sale.</p>`)}
         ${card(`<h3>Customers</h3>
           <div class="pos-insight-row"><strong>Identified customers</strong><span>${customers.length}</span></div>
           <div class="pos-insight-row"><strong>First known purchase in period</strong><span>${newCustomersInRange.length}</span></div>
           <div class="pos-insight-row"><strong>New-in-period customers with a later repeat</strong><span>${repeatBuyersInRange.length}</span></div>
           <div class="pos-insight-row"><strong>Repeat customers</strong><span>${repeatCustomers.length} · ${customerRepeatRate.toFixed(0)}% of identified</span></div>
           <div class="pos-insight-row"><strong>Single-purchase customers</strong><span>${oneTimeCustomers.length}</span></div>
-          <div class="pos-insight-row"><strong>Loyal · 3+ paid sales</strong><span>${loyalCustomers.length}</span></div>
+          <div class="pos-insight-row"><strong>Loyal · 3+ purchases</strong><span>${loyalCustomers.length}</span></div>
           <div class="pos-insight-row"><strong>Lapsed repeat customers</strong><span>${lapsedRepeatCustomers.length} · no sale in 60+ days</span></div>
           <div class="pos-insight-row"><strong>Top 20% spend share</strong><span>${customerConcentration.toFixed(0)}% of identified-customer revenue</span></div>
           <div class="pos-insight-row"><strong>Identified-customer sales</strong><span>${money(customerRevenue, settings.currency)}</span></div>
-          ${customerRows.map((customer) => `<div class="pos-category-row"><strong>${escapeHtml(customer.name)}<small>${customer.orders} paid sales</small></strong><b>${money(customer.spend, settings.currency)}</b></div>`).join('')
+          ${customerRows.map((customer) => `<div class="pos-category-row"><strong>${escapeHtml(customer.name)}<small>${customer.orders} recorded sales</small></strong><b>${money(customer.spend, settings.currency)}</b></div>`).join('')
             || '<p class="pos-help">Save customer name and phone at checkout to see repeat and top-customer patterns.</p>'}
-          <p class="pos-help">${inactiveCustomers.length} identified customers have no paid sale recorded in 60+ days.</p>
-          <p class="pos-help">Customers are matched using their saved phone number and paid receipts.</p>`)}
+          <p class="pos-help">${inactiveCustomers.length} identified customers have no sale recorded in 60+ days.</p>
+          <p class="pos-help">Customers are matched using their saved phone number and recorded receipts.</p>`)}
         ${card(`<h3>Busy days and hours</h3>
-          ${weekdayRows.map((day) => `<div class="pos-category-row"><strong>${day.name}<small>${day.count} fully paid receipts</small></strong><b>${money(day.amount, settings.currency)}</b></div>`).join('')
-            || '<p class="pos-help">Day and hour patterns need fully paid receipts.</p>'}
+          ${weekdayRows.map((day) => `<div class="pos-category-row"><strong>${day.name}<small>${day.count} recorded receipts</small></strong><b>${money(day.amount, settings.currency)}</b></div>`).join('')
+            || '<p class="pos-help">Day and hour patterns need recorded receipts.</p>'}
           <div class="pos-insight-row"><strong>Strongest hour</strong><span>${busiestHourEntry ? `${String(busiestHourEntry.hour).padStart(2, '0')}:00 · ${busiestHourEntry.count} receipts` : 'Not enough sales yet'}</span></div>
           <p class="pos-help">Net sales by receipt-created time; these totals are not normalized for different opening hours.</p>`)}
         ${card(`<h3>Recorded cost changes</h3>
@@ -2279,7 +2454,7 @@ export function createPosApp() {
           <p class="pos-help">Payments are manually recorded in the POS; this does not reconcile mobile-money statements.</p>`)}
         ${card(`<h3>Large-receipt review</h3>
           ${largeReceipts.map((sale) => `<div class="pos-insight-row"><div><strong>${escapeHtml(sale.receipt_number)} · ${money(sale.total, settings.currency)}</strong><p>${escapeHtml(sale.customer_name || 'No customer saved')} · ${escapeHtml(sale.created_at.slice(0, 16).replace('T', ' '))}</p></div><a href="/pos/sales?open=${sale.id}" data-route="/pos/sales?open=${sale.id}" class="btn-secondary">Review</a></div>`).join('')
-            || `<p class="pos-help">${paidSales.length < 10 ? 'Large-receipt review needs at least 10 paid sales in this period.' : 'No paid receipt exceeds the robust median/MAD review threshold.'}</p>`}
+            || `<p class="pos-help">${recordedSales.length < 10 ? 'Large-receipt review needs at least 10 recorded sales in this period.' : 'No recorded receipt exceeds the robust median/MAD review threshold.'}</p>`}
           <p class="pos-help">Threshold is the greater of 2.5× the median or median + 3 median absolute deviations. This is a review prompt, not a fraud finding.</p>`)}
         ${card(`<h3>Cash receipt review</h3>
           ${largeCashSales.map((sale) => `<div class="pos-insight-row"><div><strong>${escapeHtml(sale.receipt_number)} · ${money(sale.total, settings.currency)}</strong><p>${escapeHtml(sale.created_at.slice(0, 16).replace('T', ' '))}</p></div><a href="/pos/sales?open=${sale.id}" data-route="/pos/sales?open=${sale.id}" class="btn-secondary">Review</a></div>`).join('')
@@ -2287,27 +2462,27 @@ export function createPosApp() {
           <p class="pos-help">Median-based review reduces sensitivity to a few very large sales. This is not a fraud finding.</p>`)}
         ${card(`<h3>Seasonality and selling periods</h3>
           ${monthSegments.length ? monthSegments.map((segment) => `<div class="pos-category-row"><strong>${escapeHtml(segment.label)}<small>Revenue across ${segment.days} calendar days · sales in ${segment.activeMonths} months</small></strong><b>${money(segment.averagePerCalendarDay, settings.currency)}/day</b></div>`).join('')
-            : '<p class="pos-help">Not enough history for a month-of-year or month-segment pattern: need 30 paid sales across at least 3 months. We do not label one month as seasonal from a single observation.</p>'}
+            : '<p class="pos-help">Not enough history for a month-of-year or month-segment pattern: need 30 recorded sales across at least 3 months. We do not label one month as seasonal from a single observation.</p>'}
           <p class="pos-help">These patterns can reflect opening days, recording habits, promotions, or seasonality. They are not causal or a forecast.</p>`)}
         ${card(`<h3>Data quality and confidence</h3>
-          <div class="pos-insight-row"><strong>Receipts with missing line costs</strong><span>${dataQuality.paidSalesWithoutCosts} of ${paidSales.length}</span></div>
-          <div class="pos-insight-row"><strong>Paid receipts without customer details</strong><span>${dataQuality.paidSalesWithoutCustomer}</span></div>
-          <div class="pos-insight-row"><strong>Paid receipts without item lines</strong><span>${dataQuality.paidSalesWithoutLines}</span></div>
+          <div class="pos-insight-row"><strong>Receipts with missing line costs</strong><span>${dataQuality.recordedSalesWithoutCosts} of ${recordedSales.length}</span></div>
+          <div class="pos-insight-row"><strong>Receipts without customer details</strong><span>${dataQuality.recordedSalesWithoutCustomer}</span></div>
+          <div class="pos-insight-row"><strong>Receipts without item lines</strong><span>${dataQuality.recordedSalesWithoutLines}</span></div>
           <div class="pos-insight-row"><strong>Receipts with unreadable dates</strong><span>${dataQuality.invalidDates}</span></div>
-          <p class="pos-help">Known-cost coverage is ${totalSoldUnits ? costCoverage.toFixed(0) : '0'}% of units in fully paid receipts. Expenses are user-entered; missing records cannot be inferred.</p>`)}
+          <p class="pos-help">Known-cost coverage is ${totalSoldUnits ? costCoverage.toFixed(0) : '0'}% of units in recorded receipts. Expenses are user-entered; missing records cannot be inferred.</p>`)}
         ${card(`<h3>Actionable recommendations</h3>
           ${missingCosts ? `<p class="pos-help">Add buying costs for ${missingCosts} products to improve profit and product-margin estimates.</p>` : ''}
           ${belowCostProducts.length ? `<p class="pos-help">Review the price or saved buying cost for ${belowCostProducts.slice(0, 3).map((item) => escapeHtml(item.name)).join(', ')}; recorded costs exceed sales revenue.</p>` : ''}
           ${dormantStock.length ? `<p class="pos-help">Review ${dormantStock.slice(0, 3).map((product) => escapeHtml(product.name)).join(', ')}: these items have stock but no sale in 60 days.</p>` : ''}
           ${topSeller && topEarner && topSeller.id !== topEarner.id ? `<p class="pos-help">${escapeHtml(topSeller.name)} sells the most units, while ${escapeHtml(topEarner.name)} has the highest recorded gross profit. Compare their pricing and costs.</p>` : ''}
-          ${frequentPairs.length ? `<p class="pos-help">Consider testing a bundle for ${escapeHtml(frequentPairs[0].first)} and ${escapeHtml(frequentPairs[0].second)}; they appeared together in ${frequentPairs[0].count} paid sales.</p>` : ''}
+          ${frequentPairs.length ? `<p class="pos-help">Consider testing a bundle for ${escapeHtml(frequentPairs[0].first)} and ${escapeHtml(frequentPairs[0].second)}; they appeared together in ${frequentPairs[0].count} recorded sales.</p>` : ''}
           ${!missingCosts && !belowCostProducts.length && !lowMarginProducts.length && !dormantStock.length && !(topSeller && topEarner && topSeller.id !== topEarner.id) && !frequentPairs.length ? '<p class="pos-help">No specific product action stands out from the currently recorded data.</p>' : ''}`)}
         ${card(`<h3>Goals and benchmarks</h3>
           ${monthlyGoal ? `<div class="pos-insight-row"><strong>Current month</strong><span>${money(monthRevenue, settings.currency)} / ${money(monthlyGoal, settings.currency)} · ${Math.min(100, monthProgress).toFixed(0)}%</span></div>
             <div class="pos-goal-track" role="progressbar" aria-label="Monthly revenue goal progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100, monthProgress).toFixed(0)}"><span style="width:${Math.min(100, monthProgress).toFixed(1)}%"></span></div>
             <p class="pos-help">${monthRevenue >= monthlyGoal ? 'You reached this month’s target.' : `Needed per remaining day: ${money(requiredDailyRevenue, settings.currency)}. Straight-line month-end pace: ${money(monthRunRate, settings.currency)}; this assumes the current daily average continues.`}</p>`
-            : `<p class="pos-help">${staleGoalCurrency ? `A saved goal is in ${escapeHtml(staleGoalCurrency)} while the store now uses ${escapeHtml(settings.currency)}. Save a new goal in the current currency to restart tracking.` : 'Set a monthly paid-revenue goal to track progress, required daily pace, and a simple run-rate comparison.'}</p>`}
-          ${monthlyBenchmarks.length ? `<p class="pos-help">Best complete recorded month: ${escapeHtml(monthlyBenchmarks[0][0])} · ${money(monthlyBenchmarks[0][1], settings.currency)}. Personal historical benchmark only, not an industry comparison.</p>` : '<p class="pos-help">A complete-month benchmark appears after at least one previous month with recorded payments.</p>'}
+            : `<p class="pos-help">${staleGoalCurrency ? `A saved goal is in ${escapeHtml(staleGoalCurrency)} while the store now uses ${escapeHtml(settings.currency)}. Save a new goal in the current currency to restart tracking.` : 'Set a monthly sales target to track progress, required daily pace, and a simple run-rate comparison.'}</p>`}
+          ${monthlyBenchmarks.length ? `<p class="pos-help">Best complete recorded month: ${escapeHtml(monthlyBenchmarks[0][0])} · ${money(monthlyBenchmarks[0][1], settings.currency)}. Personal historical benchmark only, not an industry comparison.</p>` : '<p class="pos-help">A complete-month benchmark appears after at least one previous month with recorded sales.</p>'}
           <form class="pos-inline-form" data-pos-form="revenue-goal">
             <label for="pos-monthly-goal">Monthly net-sales target · before tax</label>
             <input id="pos-monthly-goal" name="amount" type="number" min="0.01" step="0.01" required value="${monthlyGoal == null ? '' : monthlyGoal}" placeholder="e.g. 50000">
@@ -2333,8 +2508,13 @@ export function createPosApp() {
     }
     return `<section class="pos-content">
       <div class="pos-overview-controls">
-        <nav class="pos-tabs pos-overview-tabs" aria-label="Overview sections">${tabLinks}</nav>
         <nav class="pos-ranges" aria-label="Analytics period">${rangeLinks}</nav>
+        <button type="button" class="pos-overview-refresh" data-pos-action="refresh-overview"
+          aria-label="Refresh overview" title="Refresh overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 11a8 8 0 0 0-14.9-3M4 4v4h4M4 13a8 8 0 0 0 14.9 3M20 20v-4h-4"/>
+          </svg>
+        </button>
       </div>
       ${panel}
     </section>`;
@@ -2345,7 +2525,7 @@ export function createPosApp() {
   }
 
   function renderRevenueChart(series, currency) {
-    if (!series.length) return '<p class="pos-help">No fully paid sales in this period.</p>';
+    if (!series.length) return '<p class="pos-help">No sales recorded in this period.</p>';
     const width = 600;
     const height = 220;
     const left = 30;
@@ -2376,7 +2556,7 @@ export function createPosApp() {
   }
 
   function renderProfitChart(series, currency) {
-    if (!series.length) return '<p class="pos-help">No fully paid receipts or expenses in this period to chart.</p>';
+    if (!series.length) return '<p class="pos-help">No recorded sales or expenses in this period to chart.</p>';
     const width = 600;
     const height = 220;
     const left = 30;
@@ -2485,9 +2665,16 @@ export function createPosApp() {
 
   async function refresh() {
     const path = (window.location.hash || '#/pos').slice(1).split('?')[0] || '/pos';
-    const params = new URLSearchParams((window.location.hash || '').split('?')[1] || '');
     if (!path.startsWith('/pos')) return;
     await loadState();
+    renderCurrent();
+  }
+
+  function renderCurrent() {
+    const hash = window.location.hash || '#/pos';
+    const path = hash.slice(1).split('?')[0] || '/pos';
+    if (!path.startsWith('/pos')) return;
+    const params = new URLSearchParams(hash.split('?')[1] || '');
     const app = document.getElementById('app');
     if (app) app.innerHTML = render(path, params);
   }
@@ -2531,6 +2718,39 @@ export function createPosApp() {
     const summaries = await Promise.all(instances.map(async (instance) =>
       [instance.id, await instanceTotals(instance, settings.currency)]));
     state.instanceSummaries = new Map(summaries);
+  }
+
+  async function saveCheckout(data, method, paid) {
+    const items = state.cart.map((item) => ({ ...item }));
+    let sale;
+    try {
+      sale = await saveSale(items, { ...data, paymentMethod: method, paid });
+    } catch (error) {
+      if (!(error instanceof Error) || !/in stock, \d+ requested/.test(error.message)
+        || !confirm(`${error.message}\n\nSell anyway? Stock will not go below zero.`)) throw error;
+      sale = await saveSale(items, {
+        ...data, paymentMethod: method, paid, allowOutOfStock: true
+      });
+    }
+    const savedSale = (await listSales()).find((item) => item.id === sale.id);
+    if (savedSale) await queueCloudRecord('sale', savedSale.receipt_number, savedSale);
+    const productsAfterSale = await listProducts();
+    for (const productId of new Set(items.map((item) => item.productId))) {
+      const product = productsAfterSale.find((item) => item.id === productId);
+      if (!product) throw new Error('The sale was saved, but an updated product could not be loaded for sync.');
+      await queueProduct(product);
+    }
+    if (state.activeTicketId) {
+      await queueCloudRecord('ticket', state.activeTicketId, { id: state.activeTicketId }, true);
+      state.activeTicketId = '';
+    }
+    const pendingSharedSales = await syncInventorySales();
+    state.cart = [];
+    state.paymentMethod = '';
+    state.discount = 0;
+    state.discountDialogOpen = false;
+    toast(`Receipt ${sale.receiptNumber} saved${pendingSharedSales ? ' · shared stock sync pending' : ''}.`);
+    await refresh();
   }
 
   async function queueCloudRecord(entity, recordId, payload, deleted = false, serverRevision = 0) {
@@ -4115,7 +4335,7 @@ export function createPosApp() {
         case 'store-filter':
           state.search = String(data.search || '').trim();
           state.category = String(data.category || '');
-          await refresh();
+          renderCurrent();
           return;
         case 'product': {
           const requiredField = !String(data.name || '').trim()
@@ -4205,33 +4425,21 @@ export function createPosApp() {
           break;
         case 'checkout': {
           const method = data.paymentMethod || null;
-          const paid = Boolean(method && method !== 'Mobile money');
-          let sale;
-          try {
-            sale = await saveSale(state.cart, { ...data, paymentMethod: method, paid });
-          } catch (error) {
-            if (!(error instanceof Error) || !/in stock, \d+ requested/.test(error.message)
-              || !confirm(`${error.message}\n\nSell anyway? Stock will not go below zero.`)) throw error;
-            sale = await saveSale(state.cart, { ...data, paymentMethod: method, paid, allowOutOfStock: true });
+          await saveCheckout(data, method, Boolean(method));
+          return;
+        }
+        case 'discount': {
+          const subtotalCents = state.cart.reduce((sum, item) => sum + toCents(item.unitPrice) * item.quantity, 0);
+          const entered = String(data.discountAmount ?? '').trim();
+          const amount = entered === '' ? 0 : Number(entered);
+          const discountCents = toCents(amount);
+          if (!Number.isFinite(amount) || !Number.isSafeInteger(discountCents)
+            || discountCents < 0 || discountCents > subtotalCents) {
+            throw new Error('Enter a valid discount amount no greater than the sale subtotal.');
           }
-          const savedSale = (await listSales()).find((item) => item.id === sale.id);
-          if (savedSale) await queueCloudRecord('sale', savedSale.receipt_number, savedSale);
-          const productsAfterSale = await listProducts();
-          for (const productId of new Set(state.cart.map((item) => item.productId))) {
-            const product = productsAfterSale.find((item) => item.id === productId);
-            if (!product) throw new Error('The sale was saved, but an updated product could not be loaded for sync.');
-            await queueProduct(product);
-          }
-          if (state.activeTicketId) {
-            await queueCloudRecord('ticket', state.activeTicketId, { id: state.activeTicketId }, true);
-            state.activeTicketId = '';
-          }
-          const pendingSharedSales = await syncInventorySales();
-          state.cart = [];
-          state.paymentMethod = '';
-          state.discount = 0;
-          toast(`Receipt ${sale.receiptNumber} saved${method === 'Mobile money' ? ' · awaiting manual confirmation' : ''}${pendingSharedSales ? ' · shared stock sync pending' : ''}.`);
-          await refresh();
+          state.discount = fromCents(discountCents);
+          state.discountDialogOpen = false;
+          updateCartPanel();
           return;
         }
         case 'payment': {
@@ -4374,7 +4582,7 @@ export function createPosApp() {
       productId, name: product.name, quantity: 1, unitPrice
     });
     if (closeScanner) await barcodeScanner?.close();
-    await refresh();
+    updateCartPanel();
     toast(`${product.name} added to this sale.`);
     return { added: true, name: product.name, closeScanner };
   }
@@ -4864,6 +5072,10 @@ export function createPosApp() {
           return { captured: true };
         }, { allowProductLabel: true, productForm: form });
         return;
+      } else if (action === 'refresh-overview') {
+        await refresh();
+        toast('Overview refreshed from saved POS records.');
+        return;
       } else if (action === 'take-product-photo') {
         const form = target.closest('form[data-pos-form="product"]');
         if (!form) return;
@@ -4947,11 +5159,17 @@ export function createPosApp() {
       } else if (action === 'scan-sale-barcode') {
         await openBarcodeScanner(addScannedBarcode, { allowProductLabel: true });
         return;
+      } else if (action === 'set-discount') {
+        state.discountDialogOpen = true;
+        updateCartPanel();
+      } else if (action === 'close-discount') {
+        state.discountDialogOpen = false;
+        updateCartPanel();
       } else if (action === 'checkout-method') {
         const method = target.dataset.method;
         if (!PAYMENT_METHODS.includes(method)) throw new Error('Choose a valid payment method.');
         state.paymentMethod = method;
-        await refresh();
+        updateCartPanel();
       } else if (action === 'park-ticket') {
         if (!state.cart.length) throw new Error('Add products before parking this order.');
         const existing = state.tickets.find((item) => item.id === state.activeTicketId);
@@ -4967,6 +5185,7 @@ export function createPosApp() {
         await queueCloudRecord('ticket', id, ticket);
         state.cart = [];
         state.discount = 0;
+        state.discountDialogOpen = false;
         state.paymentMethod = '';
         state.activeTicketId = '';
         toast('Order parked.');
@@ -5091,7 +5310,8 @@ export function createPosApp() {
         state.cart = [];
         state.paymentMethod = '';
         state.discount = 0;
-        await refresh();
+        state.discountDialogOpen = false;
+        updateCartPanel();
         toast('Sale cancelled.');
       } else if (action === 'add-cart') {
         const product = state.products.find((item) => item.id === id);
@@ -5099,17 +5319,17 @@ export function createPosApp() {
         const existing = state.cart.find((item) => item.productId === id);
         if (existing) existing.quantity = Math.min(99999, existing.quantity + 1);
         else state.cart.push({ productId: id, name: product.name, quantity: 1, unitPrice: product.price });
-        await refresh();
+        updateCartPanel();
       } else if (action === 'cart-plus' || action === 'cart-minus') {
         state.cart = state.cart.flatMap((item) => {
           if (item.productId !== id) return [item];
           const quantity = item.quantity + (action === 'cart-plus' ? 1 : -1);
           return quantity > 0 ? [{ ...item, quantity }] : [];
         });
-        await refresh();
+        updateCartPanel();
       } else if (action === 'toggle-sale') {
         state.expandedSale = state.expandedSale === id ? 0 : id;
-        await refresh();
+        renderCurrent();
       } else if (action === 'delete-product') {
         if (confirm('Delete this POS product? Saved receipts will keep their original line details.')) {
           const product = state.products.find((item) => item.id === id);
@@ -5155,10 +5375,10 @@ export function createPosApp() {
         const found = state.invoiceItems.find((item) => item.productId === id);
         if (found) found.quantity = Math.min(99999, found.quantity + 1);
         else state.invoiceItems.push({ productId: id, name: product.name, quantity: 1, unitPrice: product.price });
-        await refresh();
+        renderCurrent();
       } else if (action === 'invoice-remove') {
         state.invoiceItems.splice(Number(target.dataset.index), 1);
-        await refresh();
+        renderCurrent();
       } else if (action.startsWith('instance-')) {
         const operation = action.replace('instance-', '');
         if (operation === 'stop' && !confirm('Stop and save this business instance?')) return;
@@ -5261,12 +5481,6 @@ export function createPosApp() {
   }
 
   function handleInput(event) {
-    const discount = event.target.closest('[data-pos-discount]');
-    if (discount) {
-      state.discount = discount.value === '' ? 0 : Number(discount.value);
-      if (event.type === 'change') void refresh();
-      return;
-    }
     const searchInput = event.target.closest('.pos-filter-row input[name="search"]');
     if (searchInput) {
       state.search = searchInput.value.trim().toLocaleLowerCase();
@@ -5285,7 +5499,7 @@ export function createPosApp() {
       const next = Number(quantity.value);
       if (item && Number.isSafeInteger(next) && next > 0 && next <= 99999) {
         item.quantity = next;
-        void refresh();
+        updateCartPanel();
       }
     }
     const invoiceQuantity = event.target.closest('[data-invoice-qty]');
@@ -5294,7 +5508,7 @@ export function createPosApp() {
       const next = Number(invoiceQuantity.value);
       if (item && Number.isSafeInteger(next) && next > 0 && next <= 99999) {
         item.quantity = next;
-        void refresh();
+        renderCurrent();
       }
     }
     const invoicePrice = event.target.closest('[data-invoice-price]');
@@ -5303,7 +5517,7 @@ export function createPosApp() {
       const next = Number(invoicePrice.value);
       if (item && Number.isFinite(next) && next >= 0) {
         item.unitPrice = next;
-        void refresh();
+        renderCurrent();
       }
     }
   }
@@ -5319,6 +5533,12 @@ export function createPosApp() {
     document.addEventListener('input', handleInput);
     document.addEventListener('change', handleInput);
     document.addEventListener('change', handleFileChange);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' &&
+          (window.location.hash || '').slice(1).split('?')[0] === '/pos/overview') {
+        void refresh();
+      }
+    });
     window.addEventListener('online', () => {
       void syncInventorySales().then(() => refresh()).catch((error) => {
         toast(error instanceof Error ? error.message : 'Could not sync POS inventory.', true);
