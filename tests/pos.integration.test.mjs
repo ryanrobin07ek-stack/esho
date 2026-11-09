@@ -1263,7 +1263,11 @@ test('website currency control is native-app-only in Payments, not in the websit
 
 test('app shell keeps readable text on white surfaces while preserving accent button contrast', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const themeSettings = pageSource.match(/applyThemeSettings\(appearance = this\.getStudioAppearance\(\)\) \{([\s\S]*?)\n  \},\n\n  setAppShellTheme/)?.[1];
+  const themeSettingsStart = pageSource.indexOf('  applyThemeSettings(appearance = this.getStudioAppearance()) {');
+  const themeSettingsEnd = pageSource.indexOf('  setAppShellTheme(', themeSettingsStart);
+  const themeSettings = themeSettingsStart >= 0 && themeSettingsEnd > themeSettingsStart
+    ? pageSource.slice(themeSettingsStart, themeSettingsEnd)
+    : null;
   assert.ok(themeSettings, 'App shell theme settings should have a bounded method scope.');
   assert.match(themeSettings, /const foreground = "#18181B";/);
   assert.match(themeSettings, /const accentForeground = isWhiteAccent \|\| !isDarkAccent \? "#18181B" : "#FFFFFF";/);
@@ -1868,12 +1872,14 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /--font-display: Impact, Haettenschweiler, "Arial Narrow", "sans-serif-condensed", sans-serif/);
     assert.match(pageSource, /font-family: var\(--font-display\)/);
     assert.doesNotMatch(pageSource, /name="fontFamily"|Typography<\/label>/);
-    const appearanceMethod = pageSource.match(/applyThemeSettings\(appearance = this\.getStudioAppearance\(\)\)\s*\{[\s\S]*?\n  \},\n\n  setAppShellTheme/)[0];
+    const appearanceStart = pageSource.indexOf("  applyThemeSettings(appearance = this.getStudioAppearance()) {");
+    const appearanceEnd = pageSource.indexOf("  setAppShellTheme(", appearanceStart);
+    const appearanceMethod = pageSource.slice(appearanceStart, appearanceEnd);
     assert.doesNotMatch(appearanceMethod, /--font-main|--font-serif|--font-display/);
     assert.match(pageSource, /input\[type="radio"\][\s\S]*?accent-color: var\(--accent\)/);
     assert.match(pageSource, /body\.app-shell #app\s*\{[^}]*background-color:\s*var\(--bg\)/);
-    assert.match(pageSource, /setAppShellTheme\(path\)[\s\S]*?path === "\/pos" \|\| path\.startsWith\("\/pos\/"\)/);
-    assert.match(pageSource, /this\.setAppShellTheme\(path\)/);
+    assert.match(pageSource, /setAppShellTheme\(path, params = new URLSearchParams\(\)\)[\s\S]*?path === "\/pos" \|\| path\.startsWith\("\/pos\/"\)/);
+    assert.match(pageSource, /this\.setAppShellTheme\(path, params\)/);
     assert.match(pageSource, /forEach\(property => document\.documentElement\.style\.removeProperty\(property\)\)/);
     assert.match(pageSource, /cacheActiveTenantCatalog\(\);[\s\S]*?AppUtils\.showToast\("App appearance saved/);
     assert.match(originalStorefront, /root\.style\.setProperty\("--radius-lg", largeRadius\)/);

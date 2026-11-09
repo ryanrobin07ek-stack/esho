@@ -1,19 +1,16 @@
 export const WEBSITE_THEME_CATALOG = [
   {
-    id: "aviya-luxury",
-    name: "Aviya Jewellery",
-    description: "A full luxury jewellery storefront, filled with your shop's products and categories.",
-    preview_url: "/theme-packages/aviya-luxury/index.html",
-    studio_url: "/liquid-themes/theme-studio.html",
-    editor_mode: "liquid-html",
-    is_main: true,
+    id: "litrus-mixer",
+    name: "Litrus Mixer",
+    description: "Build and preview a complete storefront with the Litrus Mixer.",
+    editor_mode: "litrus",
     validation_status: "passed"
   },
   {
-    id: "stepz-footwear",
-    name: "Stepz Footwear",
-    description: "A full footwear storefront, filled with your shop's products and categories.",
-    preview_url: "/theme-packages/stepz-footwear/index.html",
+    id: "elora-linen",
+    name: "Elora Linen",
+    description: "An editorial linen storefront that displays your shop's products and categories.",
+    preview_url: "/theme-packages/elora-linen/index.html",
     studio_url: "/liquid-themes/theme-studio.html",
     editor_mode: "liquid-html",
     is_main: true,

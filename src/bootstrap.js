@@ -26,9 +26,24 @@ if (Capacitor.isNativePlatform()) {
     let appReady = false;
     let videoComplete = false;
     let dismissed = false;
+    let fallbackStartedAt = 0;
     let failSafeTimer;
+    const failVideo = () => {
+      if (fallbackStartedAt) return;
+      fallbackStartedAt = performance.now();
+      video.hidden = true;
+      splash.classList.add('is-video-unavailable');
+      finishVideo();
+    };
     const dismissWhenReady = () => {
       if (dismissed || !appReady || !videoComplete) return;
+      if (fallbackStartedAt) {
+        const remaining = 1000 - (performance.now() - fallbackStartedAt);
+        if (remaining > 0) {
+          window.setTimeout(dismissWhenReady, remaining);
+          return;
+        }
+      }
       dismissed = true;
       clearTimeout(failSafeTimer);
       splash.classList.add('is-hiding');
@@ -44,21 +59,33 @@ if (Capacitor.isNativePlatform()) {
       dismissWhenReady();
     }, { once: true });
     video.addEventListener('ended', finishVideo, { once: true });
-    video.addEventListener('error', finishVideo, { once: true });
+    video.addEventListener('error', failVideo, { once: true });
     failSafeTimer = window.setTimeout(() => {
       appReady = true;
-      finishVideo();
+      if (videoComplete) dismissWhenReady();
+      else failVideo();
     }, 16000);
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      video.hidden = true;
       finishVideo();
     } else {
       video.muted = true;
+      video.defaultMuted = true;
+      video.autoplay = true;
       video.playsInline = true;
+      video.controls = false;
       video.preload = 'auto';
-      video.src = '/craft-splash.mp4';
-      video.load();
-      const playback = video.play();
-      if (playback?.catch) playback.catch(finishVideo);
+      video.poster = '/craft-splash-poster.jpg';
+      const startPlayback = () => {
+        if (Number.isFinite(video.duration) && video.duration > 1.25) {
+          video.currentTime = Math.min(1.25, video.duration - 0.1);
+        }
+        const playback = video.play();
+        if (playback?.catch) playback.catch(failVideo);
+      };
+      if (video.error) failVideo();
+      else if (video.readyState >= HTMLMediaElement.HAVE_METADATA) startPlayback();
+      else video.addEventListener('loadedmetadata', startPlayback, { once: true });
     }
   }
 }

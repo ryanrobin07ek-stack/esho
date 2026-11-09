@@ -6,7 +6,7 @@ import { importStandaloneTheme, validateFilledTheme } from "../public/theme-impo
 import { renderLiquidHtmlTheme } from "../public/liquid-html-theme-renderer.js";
 
 const parser = new JSDOM("").window.DOMParser;
-const themeIds = ["stepz-footwear", "aviya-luxury"];
+const themeIds = ["elora-linen"];
 const catalog = {
   store: { currency: "KES", name: "Owner Store" },
   categories: [
@@ -46,17 +46,23 @@ for (const themeId of themeIds) {
     const source = await themeSource(themeId);
     const imported = importStandaloneTheme(source, { themeId, DOMParser: parser });
     assert.equal(imported.manifest.status, "passed");
-    assert.equal(imported.manifest.productCount, themeId === "stepz-footwear" ? 60 : 8);
+    assert.equal(imported.manifest.productCount, 8);
     assert.ok(imported.manifest.fieldMap.required.includes("id"));
     assert.ok(imported.manifest.fieldMap.required.includes("category"));
-    assert.ok(imported.manifest.repeaters.some(item => item.name === "products"));
+    assert.equal(imported.manifest.fieldMap.collectionKey, "products");
 
     const html = await renderLiquidHtmlTheme(themeId, catalog, {
       DOMParser: parser,
       baseUrl: "https://shop.example.test/",
       loadFile: async () => source
     });
-    const document = new JSDOM(html).window.document;
+    const dom = new JSDOM(html, {
+      runScripts: "dangerously",
+      url: "https://shop.example.test/",
+      beforeParse(window) { window.scrollTo = () => {}; }
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const document = dom.window.document;
     const productIds = new Set(catalog.products.map(product => product.id));
     assert.equal(document.querySelectorAll("[data-eshop-filled-products]").length, 1);
     assert.deepEqual(
@@ -69,7 +75,15 @@ for (const themeId of themeIds) {
       productIds.has(element.getAttribute("data-id"))));
     assert.match(html, /Merchant Runner/);
     assert.match(html, /"categoryId":"craft-category-running"/);
-    assert.doesNotMatch(html, /images\.unsplash\.com|STPZ-CN-001|Cloud Nine Ultra Prime|Wedding Ring/);
+    assert.doesNotMatch(html, /images\.unsplash\.com|PRODUCTS FOR KIDS|Linen Shift Dress/);
+    assert.match(html, /Owner Running/);
+    assert.match(html, /Owner Casual/);
+    assert.equal(document.querySelectorAll(".product-card").length, 2);
+    assert.deepEqual(
+      [...document.querySelectorAll(".category-card h3")].map(element => element.textContent),
+      ["Owner Running", "Owner Casual"]
+    );
+    dom.window.close();
     assert.equal(validateFilledTheme(html, imported.manifest, catalog, { DOMParser: parser }).ok, true);
   });
 
@@ -81,22 +95,28 @@ for (const themeId of themeIds) {
       DOMParser: parser,
       loadFile: async () => source
     });
-    const document = new JSDOM(html).window.document;
+    const dom = new JSDOM(html, {
+      runScripts: "dangerously",
+      url: "https://shop.example.test/",
+      beforeParse(window) { window.scrollTo = () => {}; }
+    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const document = dom.window.document;
     assert.deepEqual(JSON.parse(document.querySelector("[data-eshop-filled-products]").textContent), []);
     assert.equal(document.querySelectorAll("[data-product-id]").length, 0);
     assert.ok(document.querySelector(".eshop-empty-catalog"));
     assert.equal(validateFilledTheme(html, imported.manifest, emptyCatalog, { DOMParser: parser }).ok, true);
-    assert.doesNotMatch(html, /Cloud Nine Ultra Prime|Wedding Ring|STPZ-CN-001/);
+    assert.doesNotMatch(html, /PRODUCTS FOR KIDS|REST LINEN FOR KIDS|Linen Shift Dress/);
+    dom.window.close();
   });
 }
 
-test("generic importer resets sample state and disables simulated payment success", async () => {
-  const source = await themeSource("stepz-footwear");
-  const imported = importStandaloneTheme(source, { themeId: "stepz-footwear", DOMParser: parser });
-  assert.ok(imported.manifest.stateReset.includes("cart"));
-  assert.ok(imported.manifest.stateReset.includes("wishlist"));
-  assert.ok(imported.manifest.stateReset.some(name => /simulate.*success/i.test(name)));
-  assert.doesNotMatch(imported.html, /navigateTo\(['"]payment-success['"]\)/);
+test("Elora does not claim an unconfigured checkout succeeded", async () => {
+  const source = await themeSource("elora-linen");
+  const imported = importStandaloneTheme(source, { themeId: "elora-linen", DOMParser: parser });
+  assert.match(imported.html, /Checkout is not configured for this store yet\./);
+  assert.doesNotMatch(imported.html, /Checkout complete!/);
+  assert.doesNotMatch(imported.html, /alert\(/);
 });
 
 test("sample validation allows shop data that coincidentally matches a theme sample token", () => {
@@ -111,13 +131,13 @@ test("sample validation allows shop data that coincidentally matches a theme sam
   assert.deepEqual(result, { ok: true, errors: [] });
 });
 
-test("saved Studio HTML keeps its design while rendering the current shop catalog", async () => {
-  const source = await themeSource("aviya-luxury");
+test("saved Elora Studio HTML keeps its design while rendering the current shop catalog", async () => {
+  const source = await themeSource("elora-linen");
   const savedDesign = source.replace(
-    "<title>Aviya Luxury Jewellery — Pure. Elegant. Forever.</title>",
+    "<title>Elora - Women Linen Wear</title>",
     "<title>Merchant Studio Design</title>"
   );
-  const html = await renderLiquidHtmlTheme("aviya-luxury", catalog, {
+  const html = await renderLiquidHtmlTheme("elora-linen", catalog, {
     DOMParser: parser,
     baseUrl: "https://shop.example.test/",
     loadFile: async path => {
@@ -128,7 +148,7 @@ test("saved Studio HTML keeps its design while rendering the current shop catalo
 
   assert.match(html, /<title>Merchant Studio Design<\/title>/);
   assert.match(html, /Merchant Runner/);
-  assert.doesNotMatch(html, /Wedding Ring/);
+  assert.doesNotMatch(html, /Linen Shift Dress/);
 });
 
 test("HTML-only themes use detected sibling cards and category chips without a JS catalog", async () => {

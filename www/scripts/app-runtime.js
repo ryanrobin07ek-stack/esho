@@ -1224,7 +1224,7 @@
               <input type="email" required class="form-input" id="checkout-email" placeholder="${CFG.checkoutEmailPlaceholder || 'you@example.com'}" />
             </div>
             <div class="form-group">
-              <label class="form-label">Phone Number (M-Pesa / Courier Contact) *</label>
+              <label class="form-label">Phone Number / Courier Contact *</label>
               <input type="tel" required class="form-input" id="checkout-phone" placeholder="+254 7XX XXX XXX" />
             </div>
           </div>
@@ -1256,7 +1256,7 @@
             <div style="display:flex; flex-direction:column; gap:8px;">
               <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; cursor:pointer;">
                 <input type="radio" name="payment_method" value="paystack" checked />
-                <span>Paystack (M-Pesa, Visa, Mastercard, Mobile Money)</span>
+                <span>Paystack (cards and mobile money)</span>
               </label>
               <p style="font-size:11px; color:var(--ff-muted); padding-left:22px;">
                 Demonstration Gateway. Encrypted 256-bit SSL.

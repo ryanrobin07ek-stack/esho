@@ -17,6 +17,8 @@ const TENANT_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9_.-]{2,31}$/;
 const RESERVED_TENANT_IDS = new Set(["www", "api", "admin", "assets", "main"]);
 const FILLED_THEME_IDS = new Set([
+  "litrus-mixer",
+  "elora-linen",
   "craft-main-storefront",
   "aviya-luxury",
   "stepz-footwear",

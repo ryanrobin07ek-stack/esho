@@ -103,6 +103,17 @@ body.app-shell #app {
   height: 100%;
   object-fit: contain;
   background: #000;
+  pointer-events: none;
+}
+
+#craft-video-splash video::-webkit-media-controls,
+#craft-video-splash video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+#craft-video-splash.is-video-unavailable {
+  background: #000 url("/craft-splash-poster.jpg") center / cover no-repeat;
 }
 
 #craft-video-splash.is-hiding {
@@ -6507,6 +6518,67 @@ body.app-background-emblem-active .app-background-emblem {
   display: block;
 }
 
+.app-screen-background {
+  display: none;
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.app-screen-background-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  filter: blur(2px) saturate(.85) contrast(1.08);
+  transform: scale(1.04);
+  transition: opacity 1.5s ease, transform 8.5s linear;
+}
+
+.app-screen-background-image.is-active {
+  opacity: .32;
+  transform: scale(1.1);
+}
+
+.app-screen-fade {
+  display: none;
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(3px) saturate(1.1);
+  backdrop-filter: blur(3px) saturate(1.1);
+  background: linear-gradient(
+    180deg,
+    rgb(245 245 245 / 45%) 0,
+    rgb(245 245 245 / 50%) clamp(150px, 22vh, 190px),
+    rgb(238 240 242 / 59%) clamp(330px, 46vh, 370px),
+    rgb(218 221 224 / 70%) clamp(390px, 54vh, 430px),
+    rgb(102 106 111 / 88%) clamp(470px, 64vh, 520px),
+    rgb(5 5 5 / 96%) clamp(540px, 74vh, 600px),
+    rgb(5 5 5 / 96%) 100%
+  );
+}
+
+body.app-screen-fade-active .app-screen-background {
+  display: block;
+}
+
+body.app-screen-fade-active .app-screen-fade {
+  display: block;
+}
+
+body.app-screen-fade-active #app {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+}
+
 body.app-background-emblem-active #app {
   position: relative;
   z-index: 1;
@@ -8566,7 +8638,7 @@ body.craft-app-ui #app .launchpad-link {
 </head>
 <body>
   <div id="craft-video-splash" hidden aria-hidden="true">
-    <video muted playsinline preload="none"></video>
+    <video muted playsinline preload="metadata" src="/craft-splash.mp4"></video>
   </div>
   <div class="app-background-emblem" aria-hidden="true">
     <div class="app-background-emblem-mark">
@@ -8583,6 +8655,11 @@ body.craft-app-ui #app .launchpad-link {
       <span class="app-background-emblem-center"></span>
     </div>
     <span class="app-background-emblem-glow"></span>
+  </div>
+  <div class="app-screen-background" aria-hidden="true">
+    <img class="app-screen-background-image" data-app-screen-background-current alt="">
+    <img class="app-screen-background-image" data-app-screen-background-next alt="">
+    <div class="app-screen-fade" aria-hidden="true"></div>
   </div>
   <div id="app"></div>
   <script type="module" src="/src/business-lens.js"></script>
@@ -14277,6 +14354,7 @@ const StudioRenderers = {
       return {
         products: Array.isArray(saved.products) ? saved.products : [],
         categories: Array.isArray(saved.categories) ? saved.categories : [],
+        shop_name: typeof saved.shop_name === "string" ? saved.shop_name : "",
         section_layout: saved.section_layout && typeof saved.section_layout === "object"
           ? saved.section_layout
           : { order: [], hidden: [], removed: [], added: [] },
@@ -14290,7 +14368,8 @@ const StudioRenderers = {
 
   websiteThemesForPicker() {
     return this.websiteThemes().filter(theme =>
-      theme.validation_status === "passed" && theme.editor_mode === "liquid-html");
+      theme.validation_status === "passed" &&
+      (theme.editor_mode === "liquid-html" || theme.editor_mode === "litrus"));
   },
 
   saveWebsiteBuilderDraft(draft) {
@@ -14353,7 +14432,7 @@ const StudioRenderers = {
             <button class="btn-primary" type="submit" ${categories.length ? "" : "disabled"}>Add product</button>
           </form>
         </section>
-        <a class="btn-primary" href="/account/web/themes/select" data-route="/account/web/themes/select">Continue to choose a theme &rarr;</a>
+        <a class="btn-primary" href="/account/web/site?new=1&edit=1&theme=litrus-mixer" data-route="/account/web/site?new=1&edit=1&theme=litrus-mixer">Continue to build your shop &rarr;</a>
       </main>
       ${embedded ? "" : StoreRenderers.renderFooter()}
     `;
@@ -14458,19 +14537,21 @@ const StudioRenderers = {
         ? newWebsiteDraft.selected_theme || ""
         : store.website_theme_id) || "elora-linen";
     const availableThemes = this.websiteThemesForPicker();
-    const selectedTheme = availableThemes.some(theme => theme.id === requestedTheme)
-      ? requestedTheme
-      : availableThemes[0]?.id || "elora-linen";
+    const selectedTheme = !isNewWebsite
+      ? "litrus-mixer"
+      : availableThemes.some(theme => theme.id === requestedTheme)
+        ? requestedTheme
+        : availableThemes[0]?.id || "litrus-mixer";
     if (draftEditor && newWebsiteDraft && editorParams.has("theme")) {
       newWebsiteDraft.selected_theme = selectedTheme;
       this.saveWebsiteBuilderDraft(newWebsiteDraft);
     }
     const editorReturnRoute = draftEditor
-      ? "/account/web/themes/select"
+      ? "/account/web/themes"
       : `/account/profile/webs/${encodeURIComponent(tenant.id)}`;
     AppUtils.updateSEO({
-      title: "Theme Studio — Craft",
-      description: "Convert storefront HTML into editable Liquid sections."
+      title: "Litrus Mixer — Craft",
+      description: "Build and preview your storefront with Litrus Mixer."
     });
     const activeEditorTheme = this.websiteThemes().find(theme => theme.id === selectedTheme);
     if (isNewWebsite && !draftEditor) {
@@ -14500,8 +14581,8 @@ const StudioRenderers = {
           <p style="margin:3px 0 0;color:var(--text-muted);font-size:.85rem;">Your design is saved on this device. Choose the name and address to create the website now.</p>
         </header>
         <form id="new-website-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-lg);">
-          <label class="form-field"><span class="form-label">Shop / website name</span><input class="form-input" name="name" required maxlength="120" placeholder="My Shop"></label>
-          <label class="form-field"><span class="form-label">Website address</span><span style="display:flex;align-items:center;gap:5px;"><input class="form-input" name="id" required maxlength="40" pattern="[A-Za-z0-9-]+" placeholder="my-store"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
+          <label class="form-field"><span class="form-label">Shop / website name</span><input class="form-input" name="name" required maxlength="120" placeholder="My Shop" value="${AppUtils.escapeHTML(newWebsiteDraft.shop_name || "")}"></label>
+          <label class="form-field"><span class="form-label">Website address</span><span style="display:flex;align-items:center;gap:5px;"><input class="form-input" name="id" required maxlength="40" pattern="[A-Za-z0-9-]+" placeholder="my-store" value="${AppUtils.escapeHTML(String(newWebsiteDraft.shop_name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40).replace(/-$/g, ""))}"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
           <p class="studio-panel-note" style="grid-column:1/-1;">Payment settings belong to your signed-in app account, not to each website. New websites use the account-wide Paystack default configured under Payments in the Craft app.</p>
           <p id="new-website-error" role="alert" hidden style="grid-column:1/-1;color:#b42318;margin:0;"></p>
           <button class="btn-primary" type="submit" style="min-height:42px;align-self:end;">Set up</button>
@@ -14515,6 +14596,17 @@ const StudioRenderers = {
       name: "Theme",
       preview_url: ""
     };
+    if (selectedTheme === "litrus-mixer") {
+      return `
+        <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:#101114;color:#f5f5f6;">
+          <header style="z-index:1;min-height:48px;padding:5px 12px;display:flex;align-items:center;gap:10px;background:#191a1e;border-bottom:1px solid #303136;">
+            <a class="builder-back-link" href="${AppUtils.escapeHTML(editorReturnRoute)}" data-route="${AppUtils.escapeHTML(editorReturnRoute)}" aria-label="Back to previous screen" style="font-size:1.2rem;padding:5px 8px;color:#fff;">&larr;</a>
+            <strong style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;">Litrus Mixer · Build your shop</strong>
+          </header>
+          <iframe id="builder-litrus-mixer" title="Litrus Mixer shop builder" src="/litrus-mixer/index.html?craft=1" allow="clipboard-read; clipboard-write" style="display:block;width:100%;min-width:0;height:100%;border:0;background:#fff;"></iframe>
+        </main>
+      `;
+    }
     const studioUrl = new URL("/liquid-themes/theme-studio.html", window.location.origin);
     if (studioTheme.preview_url) studioUrl.searchParams.set("loadUrl", studioTheme.preview_url);
     const continueRoute = `/account/web/site?new=1&finish=1&theme=${encodeURIComponent(selectedTheme)}`;
@@ -16146,6 +16238,80 @@ const AppController = {
     }
   },
 
+  setupAppScreenBackground() {
+    const background = document.querySelector(".app-screen-background");
+    const currentLayer = background?.querySelector("[data-app-screen-background-current]");
+    const nextLayer = background?.querySelector("[data-app-screen-background-next]");
+    if (!(currentLayer instanceof HTMLImageElement) || !(nextLayer instanceof HTMLImageElement)) return;
+    const images = [
+      "/app-backgrounds/abstract-blocks.webp",
+      "/app-backgrounds/watercolor-lantern.webp",
+      "/app-backgrounds/geometric-cubes.webp",
+      "/app-backgrounds/watercolor-dog.webp",
+      "/app-backgrounds/cubist-abstract.webp",
+      "/app-backgrounds/red-portrait.webp",
+      "/app-backgrounds/concept-car.webp"
+    ];
+    for (let index = images.length - 1; index > 0; index--) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [images[index], images[swapIndex]] = [images[swapIndex], images[index]];
+    }
+
+    const requestVersion = (this.appScreenBackgroundRequestVersion || 0) + 1;
+    this.appScreenBackgroundRequestVersion = requestVersion;
+    let activeIndex = 0;
+    let visibleLayer = currentLayer;
+    let hiddenLayer = nextLayer;
+    let imageRequestVersion = 0;
+    currentLayer.classList.remove("is-active");
+    nextLayer.classList.remove("is-active");
+
+    const initialImage = new Image();
+    initialImage.onload = () => {
+      if (!background.isConnected || requestVersion !== this.appScreenBackgroundRequestVersion) return;
+      currentLayer.src = images[0];
+      currentLayer.classList.add("is-active");
+    };
+    initialImage.onerror = () => console.error("Could not load a Craft app background image.", images[0]);
+    initialImage.src = images[0];
+
+    const showImage = index => {
+      const version = ++imageRequestVersion;
+      const source = images[index];
+      const preload = new Image();
+      preload.onload = () => {
+        if (!background.isConnected || requestVersion !== this.appScreenBackgroundRequestVersion ||
+            version !== imageRequestVersion) return;
+        const incomingLayer = hiddenLayer;
+        const outgoingLayer = visibleLayer;
+        incomingLayer.src = source;
+        requestAnimationFrame(() => {
+          if (!background.isConnected || requestVersion !== this.appScreenBackgroundRequestVersion ||
+              version !== imageRequestVersion) return;
+          incomingLayer.classList.add("is-active");
+          outgoingLayer.classList.remove("is-active");
+          visibleLayer = incomingLayer;
+          hiddenLayer = outgoingLayer;
+          activeIndex = index;
+          window.setTimeout(() => {
+            if (background.isConnected && requestVersion === this.appScreenBackgroundRequestVersion &&
+                !outgoingLayer.classList.contains("is-active")) {
+              outgoingLayer.removeAttribute("src");
+            }
+          }, 1600);
+        });
+      };
+      preload.onerror = () => console.error("Could not load a Craft app background image.", source);
+      preload.src = source;
+    };
+
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      this.appScreenBackgroundTimer = window.setInterval(() => {
+        showImage((activeIndex + 1) % images.length);
+      }, 8500);
+    }
+  },
+
   async loadHomeDashboard() {
     const dashboard = document.querySelector("[data-home-dashboard]");
     if (!dashboard) return;
@@ -16448,15 +16614,26 @@ const AppController = {
     themeTarget.style.setProperty("--radius-lg", largeRadius);
   },
 
-  setAppShellTheme(path) {
+  setAppShellTheme(path, params = new URLSearchParams()) {
     const isAppShell = path === "/" || path === "" || path === "/account" ||
       path.startsWith("/account/") || path === "/app-account" || path === "/pos" || path.startsWith("/pos/");
+    const isAppScreen = isAppShell || path === "/web" || path === "/categories" ||
+      path === "/store" || path.startsWith("/store/");
+    const isNewLitrusEditor = path === "/account/web/site" &&
+      params.get("new") === "1" && params.get("edit") === "1" &&
+      params.get("theme") === "litrus-mixer";
+    const isExistingLitrusEditor = path === "/account/web/site" &&
+      params.get("new") !== "1" &&
+      SQLiteEngine.getStore().website_theme_id === "litrus-mixer";
     const showBackgroundEmblem = (isAppShell || path.startsWith("/store/")) &&
       path !== "/" && path !== "/account/web/site";
     const isCraftAppUi = isAppShell && path !== "/account/web/site";
+    const showScreenFade = isAppScreen && path !== "/" &&
+      !isNewLitrusEditor && !isExistingLitrusEditor;
     document.body.classList.toggle("app-shell", isAppShell);
     document.body.classList.toggle("craft-app-ui", isCraftAppUi);
     document.body.classList.toggle("app-background-emblem-active", showBackgroundEmblem);
+    document.body.classList.toggle("app-screen-fade-active", showScreenFade);
     if (isAppShell) {
       this.applyThemeSettings();
       return;
@@ -16498,6 +16675,11 @@ const AppController = {
     const [path, queryString] = fullPath.split("?");
     document.body.classList.toggle("app-interior-theme", path !== "/");
     const params = new URLSearchParams(queryString || "");
+    if (path === "/account/web/themes/select" &&
+        StudioRenderers.websiteBuilderDraft().categories.length) {
+      this.navigate("/account/web/site?new=1&edit=1&theme=litrus-mixer", true);
+      return;
+    }
     if (path === "/mpesa" || path.startsWith("/mpesa/")) {
       this.navigate("/", true);
       return;
@@ -16537,7 +16719,7 @@ const AppController = {
     } else if (this.getActiveTenant().id === WEBSITE_BUILDER_DRAFT_TENANT_ID) {
       this.restoreWebsiteBuilderPreviousTenant();
     }
-    this.setAppShellTheme(path);
+    this.setAppShellTheme(path, params);
     const previousPath = this.lastRenderedPath;
 
     let html = "";
@@ -16881,9 +17063,16 @@ const AppController = {
       window.clearInterval(this.homeBackgroundTimer);
       this.homeBackgroundTimer = null;
     }
+    if (this.appScreenBackgroundTimer) {
+      window.clearInterval(this.appScreenBackgroundTimer);
+      this.appScreenBackgroundTimer = null;
+    }
+    this.appScreenBackgroundRequestVersion = (this.appScreenBackgroundRequestVersion || 0) + 1;
     if (path === "/") {
       this.setupHomeBackground();
       void this.loadHomeDashboard();
+    } else if (document.body.classList.contains("app-screen-fade-active")) {
+      this.setupAppScreenBackground();
     }
     if (path === "/account/web/site") {
       const frame = document.getElementById("builder-theme-studio");
@@ -16960,6 +17149,95 @@ const AppController = {
           }
         };
         window.addEventListener("message", this.themeStudioMessageHandler);
+      }
+    }
+    if (path === "/account/web/site") {
+      const litrusFrame = document.getElementById("builder-litrus-mixer");
+      if (litrusFrame) {
+        const isDraftEditor = params.get("new") === "1" && params.get("edit") === "1";
+        const sendCatalog = () => {
+          try {
+            const store = SQLiteEngine.getStore();
+            const categories = SQLiteEngine.getCategories();
+            const products = SQLiteEngine.select("products", product => product.status !== "archived")
+              .map(product => ({
+                id: product.id,
+                name: product.name,
+                price: product.price ?? product.selling_price ?? 0,
+                description: product.description || "",
+                image: (Array.isArray(product.images) ? product.images[0] : "") ||
+                  product.imageUri || product.image || "",
+                category_names: categories
+                  .filter(category => String(category.id) === String(product.category_id))
+                  .map(category => category.name)
+              }));
+            const draft = isDraftEditor ? StudioRenderers.websiteBuilderDraft() : null;
+            litrusFrame.contentWindow?.postMessage({
+              type: "craft-litrus-catalog",
+              catalog: {
+                shop: {
+                  name: draft?.shop_name || (isDraftEditor ? "" : store.name),
+                  currency: store.currency || "KES",
+                  tagline: store.tagline || "",
+                  description: store.description || "",
+                  email: store.email || "",
+                  phone: store.phone || "",
+                  whatsapp: store.whatsapp || store.whatsapp_number || "",
+                  address: store.location_address || store.address || "",
+                  delivery_fee: store.delivery_fee || "",
+                  free_delivery_over: store.free_delivery_over || "",
+                  about: store.about || ""
+                },
+                categories: categories.map(category => ({ id: category.id, name: category.name })),
+                products
+              }
+            }, window.location.origin);
+          } catch (error) {
+            console.error("Craft could not send the shop catalog to Litrus Mixer.", error);
+            AppUtils.showToast(error.message || "Could not load the shop catalog into Litrus Mixer.", "danger");
+          }
+        };
+        if (this.litrusMixerMessageHandler) {
+          window.removeEventListener("message", this.litrusMixerMessageHandler);
+        }
+        this.litrusMixerMessageHandler = async event => {
+          if (event.origin !== window.location.origin || event.source !== litrusFrame.contentWindow) return;
+          if (event.data?.type === "craft-litrus-ready") {
+            sendCatalog();
+            return;
+          }
+          if (event.data?.type === "craft-litrus-error") {
+            AppUtils.showToast(String(event.data.message || "Litrus Mixer could not load the shop catalog."), "danger");
+            return;
+          }
+          if (event.data?.type !== "craft-litrus-publish") return;
+          const html = event.data.html;
+          const marker = '<meta name="eshop-filled-theme" content="litrus-mixer">';
+          if (typeof html !== "string" || html.length > 3_000_000 ||
+              !/^<!doctype\s+html>/i.test(html) || !html.includes(marker)) {
+            AppUtils.showToast("Litrus Mixer returned an incomplete storefront.", "danger");
+            return;
+          }
+          try {
+            await this.saveLitrusMixerCatalog(event.data, isDraftEditor);
+            StudioRenderers.setWorkspaceSetting("liquid-html-theme-draft:litrus-mixer", html);
+            if (!window.ShopSQLite) throw new Error("The app database is not ready.");
+            await window.ShopSQLite.flush();
+            if (isDraftEditor) {
+              this.navigate("/account/web/site?new=1&finish=1&theme=litrus-mixer");
+            } else {
+              AppUtils.showToast("Litrus design saved. Review the catalog and publish when ready.");
+              this.openCloudflarePublishModal();
+            }
+          } catch (error) {
+            console.error("Litrus Mixer changes could not be saved in Craft.", error);
+            AppUtils.showToast(error.message || "Could not save the Litrus Mixer design.", "danger");
+          }
+        };
+        window.addEventListener("message", this.litrusMixerMessageHandler);
+      } else if (this.litrusMixerMessageHandler) {
+        window.removeEventListener("message", this.litrusMixerMessageHandler);
+        this.litrusMixerMessageHandler = null;
       }
     }
     if (path === "/account/web/themes" || path === "/account/web/themes/select" ||
@@ -17527,7 +17805,8 @@ const AppController = {
           if (!selectedTheme) throw new Error("The Craft storefront theme is unavailable.");
           const appEditableTheme = selectedThemeEntry.editor_mode === "app";
           const liquidHtmlTheme = selectedThemeEntry.editor_mode === "liquid-html";
-          if (!appEditableTheme && !liquidHtmlTheme) {
+          const litrusMixerTheme = selectedThemeEntry.editor_mode === "litrus";
+          if (!appEditableTheme && !liquidHtmlTheme && !litrusMixerTheme) {
             throw new Error(`${selectedThemeEntry.name} cannot be used for a new website yet.`);
           }
           const store = {
@@ -17539,9 +17818,13 @@ const AppController = {
             element_edits: []
           };
           const themeDesignKey = `liquid-html-theme-draft:${selectedTheme}`;
-          const savedThemeDesign = liquidHtmlTheme
+          let savedThemeDesign = liquidHtmlTheme || litrusMixerTheme
             ? StudioRenderers.getWorkspaceSetting(themeDesignKey, "")
             : "";
+          if (litrusMixerTheme) {
+            savedThemeDesign = this.renameLitrusMixerStorefront(savedThemeDesign, name);
+            StudioRenderers.setWorkspaceSetting(themeDesignKey, savedThemeDesign);
+          }
           const initialCatalog = {
             products: draftCatalog.products.map(product => ({
               id: product.id,
@@ -17598,7 +17881,13 @@ const AppController = {
             throw new Error("Cloudflare did not confirm the new website catalog.");
           }
           let filledHtml;
-          if (appEditableTheme) {
+          if (litrusMixerTheme) {
+            if (typeof savedThemeDesign !== "string" ||
+                !savedThemeDesign.includes('<meta name="eshop-filled-theme" content="litrus-mixer">')) {
+              throw new Error("Publish the Litrus Mixer design from Preview before creating this website.");
+            }
+            filledHtml = savedThemeDesign;
+          } else if (appEditableTheme) {
             const renderLiquidStorefront = window.EshopLiquidStorefront?.render;
             if (typeof renderLiquidStorefront !== "function") {
               throw new Error("My Own Theme's Liquid renderer is not ready.");
@@ -18948,6 +19237,152 @@ const AppController = {
     return publicUrl.href;
   },
 
+  renameLitrusMixerStorefront(html, shopName) {
+    if (typeof html !== "string" ||
+        !html.includes('<meta name="eshop-filled-theme" content="litrus-mixer">')) {
+      throw new Error("The saved Litrus storefront is incomplete.");
+    }
+    const snapshotMatch = html.match(/var SPD=(\{[^\r\n]*\});\r?\nfunction SPRT/);
+    if (!snapshotMatch) throw new Error("The saved Litrus storefront catalog could not be updated.");
+    let snapshot;
+    try {
+      snapshot = JSON.parse(snapshotMatch[1]);
+    } catch (error) {
+      throw new Error(`The saved Litrus storefront catalog is invalid: ${error.message}`);
+    }
+    if (!snapshot || typeof snapshot !== "object" || !snapshot.shop || typeof snapshot.shop !== "object") {
+      throw new Error("The saved Litrus storefront catalog is incomplete.");
+    }
+    snapshot.shop.name = shopName;
+    const escapedName = AppUtils.escapeHTML(shopName);
+    const updateBrand = markup => typeof markup === "string"
+      ? markup.replace(/(<a\b[^>]*class=["'][^"']*\bsp-logo\b[^"']*["'][^>]*>)[\s\S]*?(<\/a>)/i,
+        (_match, opening, closing) => `${opening}${escapedName}${closing}`)
+      : markup;
+    if (snapshot.shell && typeof snapshot.shell === "object") {
+      snapshot.shell.head = updateBrand(snapshot.shell.head);
+    }
+    if (snapshot.pages && typeof snapshot.pages === "object") {
+      Object.keys(snapshot.pages).forEach(route => {
+        snapshot.pages[route] = updateBrand(snapshot.pages[route]);
+      });
+    }
+    const serialized = JSON.stringify(snapshot)
+      .replace(/</g, "\\u003c")
+      .replace(/\u2028|\u2029/g, character => character === "\u2028" ? "\\u2028" : "\\u2029");
+    const updated = html.replace(snapshotMatch[0], `var SPD=${serialized};\nfunction SPRT`);
+    return updated.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapedName}</title>`);
+  },
+
+  async saveLitrusMixerCatalog(input, isDraftEditor) {
+    const data = input?.catalog;
+    if (!data || !Array.isArray(data.categories) || !Array.isArray(data.products) ||
+        data.categories.length > 1000 || data.products.length > 1000 ||
+        !data.shop || typeof data.shop !== "object") {
+      throw new Error("Litrus Mixer returned an invalid shop catalog.");
+    }
+    const tenant = this.getActiveTenant();
+    const current = this.tenantCatalogs().find(item => item.tenant_id === tenant.id);
+    if (!current) throw new Error("The current shop catalog is not available on this device.");
+    const names = data.categories.map(category => {
+      const name = String(category?.name || "").trim();
+      if (!name || name.length > 80) throw new Error("A Litrus category name is empty or too long.");
+      return name;
+    });
+    const categoryIds = new Map();
+    const categories = names.map((name, index) => {
+      const existing = current.categories.find(category =>
+        String(category.name || "").toLocaleLowerCase() === name.toLocaleLowerCase());
+      const id = existing?.id ?? Date.now() + index;
+      categoryIds.set(name.toLocaleLowerCase(), id);
+      return { ...(existing || {}), id, name };
+    });
+    const products = data.products.map((item, index) => {
+      const name = String(item?.name || "").trim();
+      const price = Number(item?.price);
+      if (!name || name.length > 120 || !Number.isFinite(price) || price < 0) {
+        throw new Error("A Litrus product has an invalid name or price.");
+      }
+      const original = current.products.find(product => String(product.id) === String(item.id));
+      const categoryName = Array.isArray(item.category_names)
+        ? String(item.category_names[0] || "")
+        : "";
+      const categoryId = categoryIds.get(categoryName.toLocaleLowerCase()) ?? null;
+      const image = typeof item.image === "string" ? item.image : "";
+      return {
+        ...(original || {}),
+        id: original?.id ?? Date.now() + categories.length + index,
+        name,
+        price,
+        description: String(item.description || "").slice(0, 2000),
+        images: image ? [image] : [],
+        category_id: categoryId,
+        category_name: categoryName,
+        stock: Math.max(0, Number(original?.stock) || 0),
+        status: original?.status || "active"
+      };
+    });
+    const shop = data.shop;
+    const store = {
+      ...(current.store || {}),
+      name: String(shop.name || current.store?.name || tenant.name).slice(0, 120),
+      title: String(shop.name || current.store?.title || tenant.name).slice(0, 120),
+      website_theme_id: "litrus-mixer",
+      currency: String(shop.currency || current.store?.currency || "KES").slice(0, 8),
+      tagline: String(shop.tagline || "").slice(0, 240),
+      description: String(shop.description || "").slice(0, 2000),
+      email: String(shop.email || "").slice(0, 160),
+      phone: String(shop.phone || "").slice(0, 60),
+      whatsapp: String(shop.whatsapp || "").slice(0, 40),
+      location_address: String(shop.address || "").slice(0, 200),
+      delivery_fee: Number(shop.delivery_fee) || 0,
+      free_delivery_over: Number(shop.free_delivery_over) || 0,
+      about: String(shop.about || "").slice(0, 4000)
+    };
+    this.setActiveTenantCatalog(tenant, {
+      ...current,
+      products,
+      categories,
+      store,
+      inventory: (current.inventory || []).filter(record =>
+        products.some(product => String(product.id) === String(record.product_id)))
+    });
+    if (isDraftEditor) {
+      const draft = StudioRenderers.websiteBuilderDraft();
+      draft.categories = categories.map(category => ({ id: category.id, name: category.name }));
+      draft.products = products.map(product => ({
+        id: product.id,
+        source_product_id: product.source_product_id,
+        name: product.name,
+        price: product.price,
+        stock: product.stock,
+        description: product.description,
+        images: product.images,
+        category_id: product.category_id,
+        category_name: product.category_name
+      }));
+      draft.shop_name = store.name;
+      draft.selected_theme = "litrus-mixer";
+      StudioRenderers.saveWebsiteBuilderDraft(draft);
+      const signature = JSON.stringify({
+        categories: categories.map(category => [String(category.id), category.name]),
+        products: products.map(product => [
+          String(product.id),
+          String(product.source_product_id || ""),
+          product.name,
+          Number(product.price) || 0,
+          Number(product.stock) || 0,
+          String(product.category_id)
+        ])
+      });
+      const cachedDraft = this.tenantCatalogs().find(item => item.tenant_id === tenant.id);
+      if (cachedDraft) cachedDraft.draft_signature = signature;
+      window.localStorage.setItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY, signature);
+    }
+    if (!window.ShopSQLite) throw new Error("The app database is not ready.");
+    await window.ShopSQLite.flush();
+  },
+
   openCloudflarePublishModal() {
     if (this.isWebsiteBuilderDraftTenant(this.getActiveTenant().id)) {
       AppUtils.showToast("A local website draft cannot be published. Finish setup to create its live shop.", "danger");
@@ -19040,13 +19475,14 @@ const AppController = {
       submitButton.disabled = true;
       submitButton.textContent = "Preparing images…";
       try {
-        const themeClient = await window.EshopThemeRuntime.loadThemeSkeleton();
-      const themeId = String(store.website_theme_id || "elora-linen");
+        const themeId = String(store.website_theme_id || "elora-linen");
+        const litrusMixerTheme = themeId === "litrus-mixer";
+        const themeClient = litrusMixerTheme ? null : await window.EshopThemeRuntime.loadThemeSkeleton();
         const selectedTheme = StudioRenderers.websiteThemes().find(theme => theme.id === themeId);
         const appEditableTheme = selectedTheme?.editor_mode === "app";
-      const liquidHtmlTheme = selectedTheme?.editor_mode === "liquid-html";
-      if (themeId !== "classic" && !appEditableTheme && !liquidHtmlTheme &&
-          !themeClient.isSupportedThemeId(themeId)) {
+        const liquidHtmlTheme = selectedTheme?.editor_mode === "liquid-html";
+        if (themeId !== "classic" && !appEditableTheme && !liquidHtmlTheme && !litrusMixerTheme &&
+            !themeClient?.isSupportedThemeId(themeId)) {
           throw new Error(`Theme "${themeId}" cannot be published yet because its shop-data mapping is not verified.`);
         }
         await window.ShopSQLite.flush();
@@ -19155,7 +19591,14 @@ const AppController = {
             pages: SQLiteEngine.getPages()
           };
           let filledHtml;
-          if (appEditableTheme) {
+          if (litrusMixerTheme) {
+            filledHtml = StudioRenderers.getWorkspaceSetting(
+              `liquid-html-theme-draft:${themeId}`, "");
+            if (typeof filledHtml !== "string" ||
+                !filledHtml.includes('<meta name="eshop-filled-theme" content="litrus-mixer">')) {
+              throw new Error("Publish the Litrus Mixer design from Preview before publishing this shop.");
+            }
+          } else if (appEditableTheme) {
             const renderLiquidStorefront = window.EshopLiquidStorefront?.render;
             if (typeof renderLiquidStorefront !== "function") {
               throw new Error("My Own Theme's Liquid renderer is not ready.");

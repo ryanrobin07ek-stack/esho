@@ -5,20 +5,19 @@ import { WEBSITE_THEME_CATALOG } from "../src/theme-catalog.js";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
 
-test("the current editable storefront themes are Aviya and Stepz only", async () => {
+test("Elora is the only selectable editable storefront theme", async () => {
   const app = await read("../index.html");
 
   assert.deepEqual(WEBSITE_THEME_CATALOG.map(theme => theme.id), [
-    "aviya-luxury",
-    "stepz-footwear"
+    "elora-linen"
   ]);
   assert.ok(WEBSITE_THEME_CATALOG.every(theme =>
     theme.validation_status === "passed" && theme.editor_mode === "liquid-html"));
   assert.match(app, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" && theme\.editor_mode === "liquid-html"\)/);
-  assert.doesNotMatch(WEBSITE_THEME_CATALOG.map(theme => theme.id).join(" "), /craft-main-storefront|my-own-theme/);
+  assert.doesNotMatch(WEBSITE_THEME_CATALOG.map(theme => theme.id).join(" "), /aviya-luxury|stepz-footwear|craft-main-storefront|my-own-theme/);
 });
 
-test("both current themes load their bundled HTML into the shared Studio", async () => {
+test("Elora loads its bundled HTML into the shared Studio", async () => {
   const app = await read("../index.html");
 
   for (const theme of WEBSITE_THEME_CATALOG) {

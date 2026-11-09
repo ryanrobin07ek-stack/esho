@@ -55,13 +55,15 @@ test("CHESSER styling is limited to Craft app routes and excludes Theme Studio",
   assert.doesNotMatch(craftStyles, /theme-packages|builder-theme-studio/);
 });
 
-test("theme choices open the shared Liquid Studio and auto-load each bundled HTML theme", async () => {
+test("Liquid theme choices open the shared Studio and Litrus opens its integrated builder", async () => {
   const studio = await read("../public/liquid-themes/theme-studio.html");
   const app = await read("../index.html");
+  const mixer = await read("../public/litrus-mixer/index.html");
   const editor = app.match(/renderWebsiteEditor\(isNewWebsite = false\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  renderWebsiteStoreEditor/)?.[1];
+  const liquidThemes = WEBSITE_THEME_CATALOG.filter(theme => theme.editor_mode === "liquid-html");
 
   assert.ok(editor);
-  for (const theme of WEBSITE_THEME_CATALOG) {
+  for (const theme of liquidThemes) {
     assert.equal(theme.studio_url, "/liquid-themes/theme-studio.html");
     if (theme.preview_url) {
       assert.match(theme.preview_url, /^\/theme-packages\/[a-z0-9-]+\/index\.html$/);
@@ -96,12 +98,24 @@ test("theme choices open the shared Liquid Studio and auto-load each bundled HTM
   assert.match(studio, /type: 'eshop-theme-studio-design'/);
   assert.match(studio, /preview\.documentElement\.outerHTML/);
   assert.doesNotMatch(studio, /aviya-luxury|stepz-footwear/);
-  assert.match(app, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" && theme\.editor_mode === "liquid-html"\)/);
+  assert.match(app, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" &&\s*\(theme\.editor_mode === "liquid-html" \|\| theme\.editor_mode === "litrus"\)\)/);
+  assert.match(app, /href="\/account\/web\/site\?new=1&edit=1&theme=litrus-mixer" data-route="\/account\/web\/site\?new=1&edit=1&theme=litrus-mixer"/);
+  assert.match(app, /id="builder-litrus-mixer"[\s\S]{0,180}litrus-mixer\/index\.html\?craft=1/);
+  assert.match(app, /event\.data\?\.type === "craft-litrus-ready"/);
+  assert.match(app, /await this\.saveLitrusMixerCatalog\(event\.data, isDraftEditor\)/);
+  assert.match(app, /new=1&finish=1&theme=litrus-mixer/);
+  assert.match(app, /renameLitrusMixerStorefront\(html, shopName\)/);
+  assert.match(app, /snapshot\.shop\.name = shopName/);
+  assert.match(app, /sp-logo/);
+  assert.match(mixer, /function getCategoryNames\(\)/);
+  assert.match(mixer, /craftIntegrated\?JSON\.stringify\(names\)/);
+  assert.match(mixer, /if\(craftIntegrated\)return;/);
+  assert.match(mixer, /type:'craft-litrus-publish'/);
   assert.equal(WEBSITE_THEME_CATALOG.some(theme => theme.id === "craft-main-storefront"), false);
-  assert.ok(WEBSITE_THEME_CATALOG.every(theme => theme.editor_mode === "liquid-html"));
+  assert.ok(liquidThemes.every(theme => theme.editor_mode === "liquid-html"));
   assert.deepEqual(
     WEBSITE_THEME_CATALOG.filter(theme => theme.validation_status === "passed").map(theme => theme.id),
-    ["elora-linen"]
+    ["litrus-mixer", "elora-linen"]
   );
 });
 

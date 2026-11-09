@@ -15,12 +15,21 @@ const nativeSplash = await readFile(
 
 test("native startup splash plays the supplied video until it ends and the app is ready", async () => {
   const video = await stat(new URL("../public/craft-splash.mp4", import.meta.url));
+  const poster = await stat(new URL("../public/craft-splash-poster.jpg", import.meta.url));
 
   assert.ok(video.size > 0);
+  assert.ok(poster.size > 0);
   assert.match(appHtml, /id="craft-video-splash" hidden/);
+  assert.match(appHtml, /<video muted playsinline preload="metadata" src="\/craft-splash\.mp4">/);
   assert.match(appHtml, /dispatchEvent\(new Event\("craft:app-ready"\)\)/);
   assert.match(bootstrap, /Capacitor\.isNativePlatform\(\)/);
-  assert.match(bootstrap, /video\.src = '\/craft-splash\.mp4'/);
+  assert.match(bootstrap, /video\.poster = '\/craft-splash-poster\.jpg'/);
+  assert.match(bootstrap, /video\.controls = false/);
+  assert.match(bootstrap, /video\.addEventListener\('loadedmetadata', startPlayback/);
+  assert.match(bootstrap, /video\.currentTime = Math\.min\(1\.25/);
+  assert.match(bootstrap, /video\.addEventListener\('error', failVideo/);
+  assert.match(bootstrap, /is-video-unavailable/);
+  assert.doesNotMatch(bootstrap, /video\.load\(\)/);
   assert.match(bootstrap, /addEventListener\('ended', finishVideo/);
   assert.match(bootstrap, /addEventListener\('craft:app-ready'/);
   assert.match(bootstrap, /16000/);

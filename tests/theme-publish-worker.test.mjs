@@ -142,8 +142,8 @@ test("Worker rejects unsupported, incomplete, stale, and unauthenticated theme p
   assert.equal(env.objects.size, 0);
 });
 
-test("Worker accepts both new Liquid HTML storefront themes", async () => {
-  for (const themeId of ["aviya-luxury", "stepz-footwear"]) {
+test("Worker accepts the Elora Liquid HTML storefront theme", async () => {
+  for (const themeId of ["elora-linen"]) {
     const env = createEnv(themeId);
     const html = `<!doctype html><html><head><meta name="eshop-filled-theme" content="${themeId}"><meta name="eshop-liquid-theme" content="standalone"></head><body><script type="application/json" id="eshop-liquid-theme-catalog">{}</script><script src="/theme-packages/liquid-catalog-runtime.js" defer></script></body></html>`;
     const response = await worker.fetch(publishRequest({
@@ -158,6 +158,22 @@ test("Worker accepts both new Liquid HTML storefront themes", async () => {
     assert.equal(pointer.themeId, themeId);
     assert.equal(env.objects.get(pointer.key).body, html);
   }
+});
+
+test("Worker accepts the Litrus Mixer storefront", async () => {
+  const env = createEnv("litrus-mixer");
+  const html = '<!doctype html><html><head><meta name="eshop-filled-theme" content="litrus-mixer"></head><body><h1>My Litrus shop</h1></body></html>';
+  const response = await worker.fetch(publishRequest({
+    theme_id: "litrus-mixer",
+    catalog_updated_at: catalogUpdatedAt,
+    html
+  }), env);
+
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).theme_id, "litrus-mixer");
+  const pointer = JSON.parse(env.values.get("published-theme:main"));
+  assert.equal(pointer.themeId, "litrus-mixer");
+  assert.equal(env.objects.get(pointer.key).body, html);
 });
 
 test("storefront fails closed instead of serving an unpublished template", async () => {

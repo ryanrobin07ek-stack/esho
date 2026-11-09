@@ -482,10 +482,26 @@ async function main() {
     console.log(usage());
     return;
   }
-  const { themeFiles } = await mapCatalogThemesToFiles();
-  const selected = options.theme
-    ? themeFiles.filter(item => item.theme.id === options.theme)
-    : themeFiles;
+
+  let selected = [];
+  if (options.theme) {
+    const targetPath = path.join(THEME_ROOT, options.theme, "index.html");
+    if (!existsSync(targetPath)) {
+      throw new Error(`Theme source not found at ${path.relative(PROJECT_ROOT, targetPath)}.`);
+    }
+    const html = await readFile(targetPath, "utf8");
+    const title = titleOf(html);
+    selected = [{
+      absolutePath: targetPath,
+      title,
+      words: new Set(normalizeWords(title)),
+      theme: { id: options.theme, name: options.theme }
+    }];
+  } else {
+    const result = await mapCatalogThemesToFiles();
+    selected = result.themeFiles;
+  }
+
   if (options.theme && !selected.length) {
     throw new Error(`Unknown theme id "${options.theme}". Check src/theme-catalog.js.`);
   }

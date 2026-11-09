@@ -166,7 +166,7 @@ function detectCollections(source) {
       if (tokens[index].value !== "[" && tokens[index].value !== "{") continue;
       const localStart = tokens[index].start;
       const prefix = body.slice(Math.max(0, localStart - 200), localStart);
-      if (!/(?:\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=|[A-Za-z_$][\w$]*\s*:)\s*$/.test(prefix)) continue;
+      if (!/(?:\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=|(?:["'][A-Za-z_$][\w$]*["']|[A-Za-z_$][\w$]*)\s*:)\s*$/.test(prefix)) continue;
       try {
         const parsed = parseLiteral(tokens, index);
         const score = scoreCollection(parsed.value);

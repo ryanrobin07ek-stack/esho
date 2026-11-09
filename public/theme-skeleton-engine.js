@@ -109,10 +109,27 @@ function mapGenericThemeData(schema, data) {
     }
     return mapped;
   });
+  const mappedCategories = categories.map(category => {
+    const categoryProduct = products.find(product =>
+      String(product.category_id ?? product.categoryId ?? "") === String(category.id)
+      || String(product.category_name ?? product.categoryName ?? "") === String(category.name));
+    const rawImage = category.image || category.image_url || category.imageUri || "";
+    const categoryImage = typeof rawImage === "string" ? rawImage : rawImage?.url || rawImage?.src || "";
+    const normalizedName = String(category.name || "").normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    return {
+      ...category,
+      id: String(category.id ?? ""),
+      name: String(category.name || ""),
+      slug: String(category.slug || normalizedName),
+      image: categoryImage || imageOf(categoryProduct)
+    };
+  });
   const collection = fieldMap.collectionKind === "object"
     ? Object.fromEntries(products.map(product => [String(product[fields.id]), product]))
     : products;
-  return { [fieldMap.collectionKey || "products"]: collection };
+  return { [fieldMap.collectionKey || "products"]: collection, categories: mappedCategories };
 }
 
 function setSlot(element, slot, value, { mode, product, data }) {

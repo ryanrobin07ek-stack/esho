@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/web-2gKVZw9G.js","assets/app-BLvuD7GM.js"])))=>i.map(i=>d[i]);
-import{r as o,_ as i}from"./app-BLvuD7GM.js";var n;(function(e){e.Latin="LATIN",e.Chinese="CHINESE",e.Devanagari="DEVANAGARI",e.Japanese="JAPANESE",e.Korean="KOREAN"})(n||(n={}));const a=o("TextRecognition",{web:()=>i(()=>import("./web-2gKVZw9G.js"),__vite__mapDeps([0,1])).then(e=>new e.TextRecognitionWeb)});export{n as Script,a as TextRecognition};
