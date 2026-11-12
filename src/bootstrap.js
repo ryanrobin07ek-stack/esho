@@ -1,8 +1,10 @@
 import { App } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
+import { Camera, MediaTypeSelection } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import { initializeSQLite } from './sqlite.js';
 import { createPosApp } from './pos.js';
+import { ProductCutout } from './product-cutout.js';
 import './app-visual-theme.css';
 import { WEBSITE_THEME_CATALOG } from './theme-catalog.js';
 import { renderLiquidStorefront } from './liquid-storefront-renderer.js';
@@ -13,6 +15,7 @@ window.EshopWebsiteThemeCatalog = WEBSITE_THEME_CATALOG;
 window.EshopLiquidStorefront = { render: renderLiquidStorefront };
 window.EshopLiquidHtmlThemeRenderer = window.EshopImportedThemeRenderer;
 window.EshopAuthBrowser = Browser;
+window.EshopNativeMedia = { Camera, MediaTypeSelection, ProductCutout, Capacitor };
 window.EshopWebsiteAppearance = { fonts: WEBSITE_FONTS, colors: WEBSITE_COLOR_THEMES, filters: WEBSITE_COLOR_FILTERS, designs: WEBSITE_DESIGN_THEMES, designPresets: WEBSITE_DESIGN_PRESETS, shapes: WEBSITE_CARD_SHAPES };
 const loadPublicThemeModule = path => import(/* @vite-ignore */ new URL(path, window.location.origin).href);
 window.EshopThemeRuntime = {

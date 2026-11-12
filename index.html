@@ -7859,6 +7859,74 @@ body.craft-app-ui.app-background-emblem-active #app {
   line-height: 1.25;
 }
 
+.web-product-media {
+  display: grid;
+  gap: 8px;
+}
+
+.web-product-file {
+  display: grid;
+  gap: 6px;
+}
+
+.web-product-media-modes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.web-product-media-modes button,
+.web-product-video-options button {
+  min-width: 0;
+  min-height: 40px;
+  padding: 7px 5px;
+  font-size: .78rem;
+}
+
+.web-product-media-modes button[aria-pressed="true"] {
+  border-color: #242424;
+  background: #242424;
+  color: #fff;
+}
+
+.web-product-video-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.web-product-spin-options {
+  display: grid;
+  gap: 6px;
+}
+
+.web-product-spin-options select {
+  width: 100%;
+}
+
+.web-product-media-preview {
+  display: flex;
+  gap: 8px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 2px 0;
+}
+
+.web-product-media-preview img,
+.web-product-media-preview video {
+  flex: 0 0 auto;
+  width: 112px;
+  height: 112px;
+  border-radius: 8px;
+  background: #f1f1f1;
+  object-fit: contain;
+}
+
+.web-product-media-preview [data-spin-preview] {
+  touch-action: pan-y;
+  cursor: ew-resize;
+}
+
 .studio-feature-panel,
 .studio-empty-intelligence {
   display: grid;
@@ -8120,10 +8188,42 @@ body.craft-app-ui.app-background-emblem-active #app {
   background: #fff;
 }
 
-.business-lens-shell .studio-workspace-title { align-items: center; gap: 6px; }
-.business-lens-shell .studio-workspace-kicker { font-size: .5rem; line-height: 1; letter-spacing: .1em; }
-.business-lens-shell .studio-workspace-title h1 { margin: 2px 0 0; font-size: 1rem; line-height: 1; }
-.business-lens-shell .studio-workspace-title p { margin-top: 2px; font-size: .62rem; }
+.business-lens-shell .studio-workspace-back {
+  display: grid;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #050505;
+}
+.business-lens-shell .studio-workspace-back > svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+.business-lens-shell .studio-workspace-heading .studio-workspace-tab-title {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: .92rem !important;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: .1em;
+  text-align: right;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+.business-lens-shell #store-workspace-content h2 {
+  font-size: .82rem !important;
+  line-height: 1.25;
+}
+
 .business-lens-shell .studio-preview-link { padding: 7px 9px; font-size: .65rem; }
 .business-lens-shell .bl-filter-toggle {
   width: 38px;
@@ -9409,6 +9509,24 @@ const SQLiteEngine = {
   }
 };
 
+const LOCAL_PRODUCT_MEDIA_PREFIX = "craft-local-media:";
+const INDEXEDDB_PRODUCT_MEDIA_PREFIX = "craft-indexeddb-media:";
+let localProductMediaDatabasePromise;
+const openLocalProductMediaDatabase = () => {
+  if (!localProductMediaDatabasePromise) {
+    localProductMediaDatabasePromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open("craft-product-media", 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains("files")) request.result.createObjectStore("files");
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(new Error("Local video storage could not be opened."));
+      request.onblocked = () => reject(new Error("Local video storage is busy. Close other Craft tabs and try again."));
+    });
+  }
+  return localProductMediaDatabasePromise;
+};
+
   // Router, SEO, and Core Utilities for Craft
 const AppUtils = {
   escapeHTML(str) {
@@ -9421,8 +9539,12 @@ const AppUtils = {
       .replace(/'/g, "&#039;");
   },
 
-  async compressImageFile(file, { maxDimension = 1800, maxBytes = 1_500_000 } = {}) {
-    if (!(file instanceof Blob) || !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+  async compressImageFile(file, {
+    maxDimension = 1800,
+    maxBytes = 1_500_000,
+    maxInputBytes = 5 * 1024 * 1024
+  } = {}) {
+    if (!(file instanceof Blob) || !file.type.startsWith("image/") || file.size > maxInputBytes) {
       throw new Error("Choose an image smaller than 5 MB.");
     }
     let bitmap;
@@ -9483,6 +9605,46 @@ const AppUtils = {
     } finally {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     }
+  },
+
+  async storeLocalProductVideo(blob) {
+    if (!(blob instanceof Blob) || !blob.size || blob.size > 50_000_000) {
+      throw new Error("Videos must be between 1 byte and 50 MB.");
+    }
+    const database = await openLocalProductMediaDatabase();
+    const key = crypto.randomUUID();
+    await new Promise((resolve, reject) => {
+      const transaction = database.transaction("files", "readwrite");
+      transaction.objectStore("files").put(blob, key);
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(new Error("The video could not be saved to local storage."));
+      transaction.onabort = () => reject(new Error("The video could not be saved to local storage."));
+    });
+    return `${INDEXEDDB_PRODUCT_MEDIA_PREFIX}${key}`;
+  },
+
+  async readLocalProductMedia(reference) {
+    if (typeof reference !== "string") throw new Error("The saved product media reference is invalid.");
+    if (reference.startsWith(LOCAL_PRODUCT_MEDIA_PREFIX)) {
+      const path = reference.slice(LOCAL_PRODUCT_MEDIA_PREFIX.length);
+      const nativeMedia = window.EshopNativeMedia;
+      if (!path || !nativeMedia?.Capacitor) throw new Error("This media file is only available in the Craft Android app.");
+      const response = await fetch(nativeMedia.Capacitor.convertFileSrc(path));
+      if (!response.ok) throw new Error("The saved product media file could not be opened.");
+      return response.blob();
+    }
+    if (reference.startsWith(INDEXEDDB_PRODUCT_MEDIA_PREFIX)) {
+      const key = reference.slice(INDEXEDDB_PRODUCT_MEDIA_PREFIX.length);
+      const database = await openLocalProductMediaDatabase();
+      const blob = await new Promise((resolve, reject) => {
+        const request = database.transaction("files", "readonly").objectStore("files").get(key);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(new Error("The saved product video could not be read."));
+      });
+      if (!(blob instanceof Blob)) throw new Error("The saved product video is missing from local storage.");
+      return blob;
+    }
+    throw new Error("The saved product media reference is not a local file.");
   },
 
   formatMoney(num) {
@@ -9676,7 +9838,7 @@ const StoreRenderers = {
               <a href="/account" class="mobile-nav-link" data-route="/account" style="font-weight: 600;">Account & Store Studio</a>
             </li>`}
             ${options.builderPreview ? "" : `<li>
-              <a href="/account/tenants" class="mobile-nav-link" data-route="/account/tenants">Shops &amp; Tenants</a>
+              <a href="/account/tenants" class="mobile-nav-link" data-route="/account/tenants">My shops</a>
             </li>`}
           </ul>
         </div>
@@ -11271,7 +11433,7 @@ const StudioRenderers = {
       { title: "Build Your Web", description: "Edit store details and pages, then open the customer-facing storefront.", route: "/account/web" },
       { title: "Live Web", description: "Preview the customer-facing Craft website.", route: "/web", className: "studio-card-live-web" },
       { title: "Store Settings", description: "Adjust your storefront appearance and preferences.", route: "/account/settings" },
-      { title: "Shops & Tenants", description: "Open free shop sign-up and separate per-shop editing access.", route: "/account/tenants" },
+      { title: "My shops", description: "Manage the websites linked to your account.", route: "/account/tenants" },
       { title: "Plans & Tiering", description: "View available plans and features.", route: "/account/plans" },
     ];
 
@@ -11412,15 +11574,14 @@ const StudioRenderers = {
       ? this.renderMainShopContent(path, cachedSnapshot)
       : this.renderWorkspaceLoading("business records");
     AppUtils.updateSEO({
-      title: `${page.title} — Your Business — Craft`,
+      title: `${page.title} — Craft`,
       description: "Business overview, sales, product, customer, finance and store intelligence."
     });
     return `
       <main class="container account-dashboard-main store-workspace-shell studio-workspace business-lens-shell" style="padding:12px 0 92px;">
         <header class="studio-workspace-heading">
-          <div class="studio-workspace-title">
-            <div><span class="studio-workspace-kicker">YOUR BUSINESS</span><h1>${page.title}</h1></div>
-          </div>
+          <a class="studio-workspace-back" href="/" data-route="/" data-home-screen aria-label="Back to Craft home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg></a>
+          <h1 class="studio-workspace-tab-title">${AppUtils.escapeHTML(page.title)}</h1>
           <div class="studio-workspace-header-actions">
             <button type="button" class="studio-preview-link bl-filter-toggle" data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"/></svg>
@@ -11473,7 +11634,8 @@ const StudioRenderers = {
           { title: "Products", route: "/account/web/studio/store/products", contentPath: "/store/products" },
           { title: "Categories", route: "/account/web/studio/store/categories", contentPath: "/store/categories" },
           { title: "Inventory", route: "/account/web/studio/store/inventory", contentPath: "/store/inventory" },
-          { title: "Orders and bookings", route: "/account/web/studio/store/orders-bookings", contentPath: "/account/web/studio/store/orders-bookings" }
+          { title: "Orders", route: "/account/web/studio/store/orders", contentPath: "/account/web/studio/store/orders" },
+          { title: "Bookings", route: "/account/web/studio/store/bookings", contentPath: "/account/web/studio/store/bookings" }
         ]
       },
       {
@@ -11510,8 +11672,11 @@ const StudioRenderers = {
     const initialPath = path === "/account/web"
       ? "/account/web/studio/dashboard/overview"
       : path;
+    const route = initialPath === "/account/web/studio/store/orders-bookings"
+      ? "/account/web/studio/store/orders"
+      : initialPath;
     for (const section of sections) {
-      const tab = section.tabs.find(item => item.route === initialPath);
+      const tab = section.tabs.find(item => item.route === route);
       if (tab) return { ...tab, section };
     }
     return { ...sections[0].tabs[0], section: sections[0] };
@@ -11663,9 +11828,12 @@ const StudioRenderers = {
     const sales = [];
     SQLiteEngine.select("orders").forEach(order => {
       const status = String(order.status || "pending").toLowerCase();
+      const paymentStatus = String(order.payment_status || "").toLowerCase();
       const total = Number(order.total) || 0;
-      const reversed = ["refunded", "voided", "cancelled", "canceled", "failed"].includes(status);
-      const collected = reversed ? 0 : ["paid", "completed"].includes(status)
+      const reversedStatuses = ["refunded", "voided", "cancelled", "canceled", "failed"];
+      const reversed = reversedStatuses.includes(status) || reversedStatuses.includes(paymentStatus);
+      const paid = !reversed && (paymentStatus === "paid" || ["paid", "completed"].includes(status));
+      const collected = reversed ? 0 : paid
         ? total
         : Math.max(0, Number(order.amount_paid) || 0);
       const items = (Array.isArray(order.items) ? order.items : []).map(item => ({
@@ -11683,7 +11851,7 @@ const StudioRenderers = {
         reference: order.order_number || `WEB-${order.id}`,
         date: order.created_at || "",
         currency: String(order.currency || "KES").toUpperCase(),
-        status,
+        status: reversed ? status : paid ? "paid" : paymentStatus || status,
         total,
         collected,
         subtotal: Number(order.subtotal) || total,
@@ -11770,14 +11938,12 @@ const StudioRenderers = {
 
   getWorkspaceCustomers(sales) {
     const customerMap = new Map();
-    sales.filter(sale => sale.channel === "Website").forEach(sale => {
-      const order = SQLiteEngine.select("orders", row => (row.order_number || `WEB-${row.id}`) === sale.reference)[0];
-      if (!order) return;
-      const email = String(order.customer_email || "").trim().toLocaleLowerCase();
-      const phone = String(order.customer_phone || "").trim();
-      const key = email || phone || `order-${order.id}`;
+    sales.forEach(sale => {
+      const email = String(sale.customerEmail || "").trim().toLocaleLowerCase();
+      const phone = String(sale.customerPhone || "").trim();
+      const key = email || phone || `${sale.channel === "Website" ? "order" : "sale"}-${sale.id || sale.reference}`;
       const customer = customerMap.get(key) || {
-        key, name: String(order.customer_name || "Web customer"),
+        key, name: String(sale.customerName || "Customer"),
         email, phone, orders: 0, spent: 0, lastOrder: "", points: 0
       };
       customer.orders += 1;
@@ -12014,9 +12180,18 @@ const StudioRenderers = {
     ).join("");
     const webProducts = SQLiteEngine.select("products", product => product.status !== "archived");
     const webVisits = [
-      ...SQLiteEngine.select("web_visits", visit => visit.tenant_id === activeTenant.id, (a, b) => String(b.created_at).localeCompare(String(a.created_at))),
-      ...(snapshot.remoteVisits || [])
+      ...SQLiteEngine.select("web_visits", visit => visit.tenant_id === activeTenant.id && AppController.isStorefrontVisitPath(visit.path),
+        (a, b) => String(b.created_at).localeCompare(String(a.created_at))),
+      ...(snapshot.remoteVisits || []).filter(visit => AppController.isStorefrontVisitPath(visit.path))
     ];
+    const cloudflareRecentVisits = snapshot.remoteAnalytics?.recent_visits || [];
+    const storefrontVisitCount = snapshot.remoteAnalytics ? Number(snapshot.remoteAnalytics.visits) || 0 : webVisits.length;
+    const storefrontUniqueCount = snapshot.remoteAnalytics
+      ? Number(snapshot.remoteAnalytics.unique_visitors) || 0
+      : new Set(webVisits.map(visit => visit.visitor_id)).size;
+    const recentVisitRows = snapshot.remoteAnalytics
+      ? cloudflareRecentVisits.slice(0, 5).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")} · Published storefront</span></div><span>${AppUtils.escapeHTML(visit.created_at || "")}</span></article>`).join("")
+      : webVisits.slice(0, 5).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")} · Local storefront preview</span></div><span>${AppUtils.escapeHTML(visit.created_at || "")}</span></article>`).join("");
     const webEvents = [
       ...SQLiteEngine.select("web_events", event => event.tenant_id === activeTenant.id, (a, b) => String(a.created_at).localeCompare(String(b.created_at))),
       ...(snapshot.remoteEvents || [])
@@ -12056,12 +12231,18 @@ const StudioRenderers = {
         <label>Status <select data-online-order-status="${AppUtils.escapeHTML(order.order_number)}">${["pending", "confirmed", "processing", "ready", "fulfilled", "cancelled"].map(status => `<option value="${status}" ${order.status === status ? "selected" : ""}>${status}</option>`).join("")}</select></label>
         <button type="button" class="btn-secondary" data-online-order-update="${AppUtils.escapeHTML(order.order_number)}">Save status</button></div>
       </article>`).join("") || `<p class="store-workspace-empty">No server-backed orders loaded.</p>`;
+    const businessOrderRows = [...sales].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(sale =>
+      `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.customerName || "Customer not recorded")} · ${AppUtils.escapeHTML(sale.date || "Date unavailable")}</span><small>${AppUtils.escapeHTML(sale.channel)} · ${sale.itemCount} item${sale.itemCount === 1 ? "" : "s"}</small></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.total, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status)}</span></div></article>`
+    ).join("") || `<p class="store-workspace-empty">No business orders or POS receipts recorded yet.</p>`;
+    const paymentActivityRows = [...sales].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(sale =>
+      `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.channel)} · ${AppUtils.escapeHTML(sale.paymentMethod || "Method not recorded")} · ${AppUtils.escapeHTML(sale.date || "")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.collected, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status || "Awaiting payment")}</span></div></article>`
+    ).join("");
       const remoteHolds = snapshot.remoteHolds || [];
       const remoteHoldRows = remoteHolds.map(hold => {
         const expired = hold.status === "approved" && new Date(hold.expires_at).getTime() <= Date.now();
         const status = expired ? "Expired" : String(hold.status || "pending");
         const actions = hold.status === "pending"
-          ? `<button type="button" class="btn-secondary" data-product-hold-action="approve" data-hold-id="${AppUtils.escapeHTML(hold.id)}">Approve for 24 hours</button><button type="button" class="btn-secondary" data-product-hold-action="reject" data-hold-id="${AppUtils.escapeHTML(hold.id)}">Reject</button>`
+          ? `<button type="button" class="btn-secondary" data-product-hold-action="approve" data-hold-id="${AppUtils.escapeHTML(hold.id)}">Approve with configured duration</button><button type="button" class="btn-secondary" data-product-hold-action="reject" data-hold-id="${AppUtils.escapeHTML(hold.id)}">Reject</button>`
           : hold.status === "approved" && !expired
             ? `<button type="button" class="btn-secondary" data-product-hold-action="release" data-hold-id="${AppUtils.escapeHTML(hold.id)}">Release hold</button>`
             : "";
@@ -12069,33 +12250,66 @@ const StudioRenderers = {
       }).join("") || `<p class="store-workspace-empty">${snapshot.remoteHolds ? "No storefront hold requests yet." : "Load customer requests from the live storefront."}</p>`;
       const remoteProductAnalytics = snapshot.remoteProductAnalytics;
       const productInterestById = new Map((remoteProductAnalytics?.product_interest || []).map(item => [String(item.product_id), item]));
+      const productEventsById = new Map((remoteProductAnalytics?.product_activity || [])
+        .map(item => [String(item.product_id), item]));
+      const productViewsById = new Map((remoteProductAnalytics?.product_views || [])
+        .filter(item => item.product_id != null)
+        .map(item => [String(item.product_id), Number(item.views) || 0]));
       const productViewsBySlug = new Map((remoteProductAnalytics?.product_views || []).map(item => [
         String(item.path || "").split("/").filter(Boolean).pop() || "",
         Number(item.views) || 0
       ]));
-      const productActivityRows = remoteProductAnalytics
+      const productActivityItems = remoteProductAnalytics
         ? SQLiteEngine.select("products", product => product.status !== "archived").map(product => {
           const interest = productInterestById.get(String(product.id)) || {};
+          const events = productEventsById.get(String(product.id)) || {};
           return {
             name: product.name,
-            views: productViewsBySlug.get(String(product.slug || "")) ||
+            views: Number(events.views) || productViewsById.get(String(product.id)) ||
+              productViewsBySlug.get(String(product.slug || "")) ||
               productViewsBySlug.get(String(product.id)) || 0,
-            cartQuantity: Number(interest.cart_quantity) || 0,
-            wishlistCount: Number(interest.wishlist_count) || 0
+            cartAdds: Number(events.cart_adds) || Number(interest.cart_quantity) || 0,
+            wishlistAdds: Number(events.wishlist_adds) || Number(interest.wishlist_count) || 0,
+            bookings: Number(events.bookings) || 0
           };
-        }).filter(item => item.views || item.cartQuantity || item.wishlistCount)
-          .sort((a, b) => b.views - a.views || b.cartQuantity - a.cartQuantity || b.wishlistCount - a.wishlistCount)
-          .map(item => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(item.name)}</strong><span>${item.views} views · ${item.cartQuantity} in carts · ${item.wishlistCount} wishlists</span></article>`).join("")
-        : "";
+        })
+        : [];
+      const rankedProductRows = (metricName, unitLabel, emptyLabel) => productActivityItems
+        .filter(item => item[metricName] > 0)
+        .sort((a, b) => b[metricName] - a[metricName] || a.name.localeCompare(b.name))
+        .slice(0, 10)
+        .map(item => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(item.name)}</strong><span>${item[metricName]} ${unitLabel}</span></article>`)
+        .join("") || `<p class="store-workspace-empty">${emptyLabel}</p>`;
+      const mostViewedProductRows = rankedProductRows("views", "views", "No product views recorded yet.");
+      const mostCartedProductRows = rankedProductRows("cartAdds", "cart additions", "No cart additions recorded yet.");
+      const mostWishlistedProductRows = rankedProductRows("wishlistAdds", "wishlist saves", "No wishlist saves recorded yet.");
+      const mostBookedProductRows = rankedProductRows("bookings", "bookings", "No bookings recorded yet.");
     const customerRows = customers.map(customer => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(customer.name)}</strong><span>${AppUtils.escapeHTML(customer.email || customer.phone || "No contact saved")} · ${customer.orders} order${customer.orders === 1 ? "" : "s"}</span></div><div class="studio-row-end"><strong>${customer.points} pts</strong><span>${this.formatMainShopMoney(customer.spent, currency)} collected</span></div></article>`).join("");
     if (path === "/account/web" || path.startsWith("/account/web/studio/")) {
       const page = this.webStudioPage(path);
-      if (page.route === "/account/web/studio/store/orders-bookings") {
+      if (page.route === "/account/web/studio/store/orders") {
         const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
         return `<section class="studio-workspace-section">
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders</h2><button type="button" class="btn-secondary" data-business-online-orders-load>Load online orders</button></div>
             <p class="studio-panel-note" data-online-orders-status>Orders and Paystack payment status are stored privately for this shop.</p>
             ${orderRows(orders)}${remoteOrderRows}</article>
+        </section>`;
+      }
+      if (page.route === "/account/web/studio/store/bookings") {
+        const holdHours = Number(this.getWorkspaceSetting("max_hold_hours", 24));
+        const activeProductCount = SQLiteEngine.select("products", product => product.status !== "archived").length;
+        return `<section class="studio-workspace-section">
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold settings</h2></div>
+            <p class="studio-panel-note">Set the hold duration and manage product eligibility. Publish the storefront after changes.</p>
+            <form class="store-workspace-form" data-studio-form="booking-settings"><label>Maximum hold duration (hours)<input name="maxHoldHours" type="number" min="1" max="720" step="1" value="${holdHours}" required></label><button type="submit" class="btn-primary">Save hold settings</button><p role="status"></p></form>
+          </article>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Apply holds to all products</h2></div>
+            <p class="studio-panel-note">Enable or disable customer holds for all ${activeProductCount} active website products at once. You can still change individual products afterward; this does not change stock.</p>
+            <div class="studio-inline-actions">
+              <button type="button" class="btn-primary" data-store-holds-all="enable" ${activeProductCount ? "" : "disabled"}>Enable holds for all products</button>
+              <button type="button" class="btn-secondary" data-store-holds-all="disable" ${activeProductCount ? "" : "disabled"}>Disable holds for all products</button>
+            </div>
+          </article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Bookings and holds</h2></div>
             ${bookings.map(booking => {
               const expired = new Date(booking.expires_at).getTime() <= Date.now();
@@ -12103,12 +12317,8 @@ const StudioRenderers = {
             }).join("") || `<p class="store-workspace-empty">No bookings or holds recorded yet.</p>`}
           </article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold requests</h2><button type="button" class="btn-secondary" data-online-holds-load>Load requests</button></div>
-            <p class="studio-panel-note" data-online-holds-status>${snapshot.remoteHoldsError ? AppUtils.escapeHTML(snapshot.remoteHoldsError) : snapshot.remoteHolds ? `${remoteHolds.length} live request${remoteHolds.length === 1 ? "" : "s"} loaded.` : "Customer requests are private to this shop; approval reserves available stock for 24 hours."}</p>
+            <p class="studio-panel-note" data-online-holds-status>${snapshot.remoteHoldsError ? AppUtils.escapeHTML(snapshot.remoteHoldsError) : snapshot.remoteHolds ? `${remoteHolds.length} live hold${remoteHolds.length === 1 ? "" : "s"} loaded.` : "Customer holds reserve available website stock immediately until released or expired."}</p>
             ${remoteHoldRows}
-          </article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Product activity · last 30 days</h2><button type="button" class="btn-secondary" data-business-product-analytics>Load activity</button></div>
-            <p class="studio-panel-note">${remoteProductAnalytics ? "Anonymous product views, current cart quantities, and wishlist counts. Shopper identities are not collected." : "Load anonymous product views, cart interest, and wishlists from the live storefront."}</p>
-            ${productActivityRows || (remoteProductAnalytics ? `<p class="store-workspace-empty">No product activity recorded yet.</p>` : "")}
           </article>
         </section>`;
       }
@@ -12131,8 +12341,8 @@ const StudioRenderers = {
         ["/store/products", "/account/web/studio/store/products"],
         ["/store/categories", "/account/web/studio/store/categories"],
         ["/store/inventory", "/account/web/studio/store/inventory"],
-        ["/store/orders", "/account/web/studio/store/orders-bookings"],
-        ["/store/bookings", "/account/web/studio/store/orders-bookings"],
+        ["/store/orders", "/account/web/studio/store/orders"],
+        ["/store/bookings", "/account/web/studio/store/bookings"],
         ["/account/customers/loyalty", "/account/web/studio/crm/repeat-customers"],
         ["/account/customers/newsletter", "/account/web/studio/crm/newsletter"],
         ["/account/payments", "/account/web/studio/payments"]
@@ -12149,7 +12359,7 @@ const StudioRenderers = {
       "/account/main-shop/help", "/store/revenue", "/store/channels", "/store/sales",
       "/store/products", "/store/inventory", "/store/categories", "/account/customers",
     ].includes(businessPath)) {
-      return window.BusinessLens.render(snapshot, businessPath, {
+      const dashboard = window.BusinessLens.render(snapshot, businessPath, {
         visits: webVisits,
         events: webEvents,
         newsletter: newsletterSubscribers,
@@ -12163,6 +12373,10 @@ const StudioRenderers = {
         instances: snapshot.instances,
         activeTenant
       });
+      const cloudWarning = snapshot.remoteOrdersError
+        ? `<p class="bl-caption" role="status">Cloud storefront orders could not be loaded: ${AppUtils.escapeHTML(snapshot.remoteOrdersError)}. Showing available offline records.</p>`
+        : "";
+      return `${cloudWarning}${dashboard}`;
     }
     const visitPages = new Map();
     const visitDevices = new Map();
@@ -12170,8 +12384,12 @@ const StudioRenderers = {
       visitPages.set(visit.path, (visitPages.get(visit.path) || 0) + 1);
       visitDevices.set(visit.device, (visitDevices.get(visit.device) || 0) + 1);
     });
-    const pageRows = [...visitPages.entries()].sort((a, b) => b[1] - a[1]).map(([pagePath, count]) => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(pagePath || "/")}</strong><span>Storefront page views recorded on this browser</span></div><strong>${count}</strong></article>`).join("");
-    const deviceRows = [...visitDevices.entries()].map(([device, count]) => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(device || "Unknown")}</strong><strong>${count}</strong></article>`).join("");
+    const pageRows = snapshot.remoteAnalytics
+      ? (snapshot.remoteAnalytics.pages || []).map(page => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(page.path || "/")}</strong><span>Published storefront · last ${Number(snapshot.remoteAnalytics.days) || 30} days</span></div><strong>${Number(page.visits) || 0}</strong></article>`).join("")
+      : [...visitPages.entries()].sort((a, b) => b[1] - a[1]).map(([pagePath, count]) => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(pagePath || "/")}</strong><span>Local storefront preview page views</span></div><strong>${count}</strong></article>`).join("");
+    const deviceRows = snapshot.remoteAnalytics
+      ? (snapshot.remoteAnalytics.devices || []).map(item => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(item.device || "Unknown")}</strong><strong>${Number(item.visits) || 0}</strong></article>`).join("")
+      : [...visitDevices.entries()].map(([device, count]) => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(device || "Unknown")}</strong><strong>${count}</strong></article>`).join("");
     const openCheckouts = new Map();
     const productActivity = new Map();
     webEvents.forEach(event => {
@@ -12200,12 +12418,20 @@ const StudioRenderers = {
       paidSales.forEach(sale => sale.lineItems.forEach(item => movingProducts.set(item.name, (movingProducts.get(item.name) || 0) + item.quantity)));
       const moving = [...movingProducts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
       const awaiting = SQLiteEngine.select("orders", order => !["paid", "completed", "refunded", "cancelled", "canceled", "failed"].includes(String(order.status || "").toLowerCase()));
+      const recentVisitEmpty = snapshot.remoteAnalytics
+        ? `<p class="store-workspace-empty">No published storefront visits in the last ${Number(snapshot.remoteAnalytics.days) || 30} days.</p>`
+        : `<p class="store-workspace-empty">No local storefront preview visits recorded yet.</p>`;
       return `
         <section class="studio-workspace-section">
-          <div class="studio-metric-grid">${metric("Gross web revenue", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency), "From website orders")}${metric("Customer visits", webVisits.length, `${uniqueIn(0)} unique browsers recorded locally`)}${metric("Awaiting payments", awaiting.length, "Orders not marked paid")}</div>
+          <div class="studio-metric-grid">${metric("Gross web revenue", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency), "From website orders")}${metric("Customer visits", storefrontVisitCount, snapshot.remoteAnalytics ? `${storefrontUniqueCount} anonymous browsers · last ${Number(snapshot.remoteAnalytics.days) || 30} days` : `${storefrontUniqueCount} unique browsers recorded locally`)}${metric("Awaiting payments", awaiting.length, "Orders not marked paid")}</div>
           <div class="studio-dashboard-grid">
-            <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">RECENT ACTIVITY</span><h2>Visit history</h2></div><a href="/account/main-shop/visits" data-route="/account/main-shop/visits">View all</a></div>
-              ${webVisits.slice(0, 5).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")} · ${AppUtils.escapeHTML(visit.timezone || "Location unavailable")}</span></div><span>${AppUtils.escapeHTML(visit.created_at)}</span></article>`).join("") || `<p class="store-workspace-empty">Visits will appear here as people browse the storefront. Analytics are currently recorded in this browser.</p>`}
+            <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">RECENT ACTIVITY</span><h2>Storefront visit history</h2></div><div><button type="button" class="btn-secondary" data-business-cloud-analytics>Refresh</button><a href="/account/main-shop/visits" data-route="/account/main-shop/visits">View all</a></div></div>
+              <p class="studio-panel-note" data-business-cloud-analytics-status role="status">${snapshot.remoteAnalyticsError
+                ? `Live storefront visits could not be loaded: ${AppUtils.escapeHTML(snapshot.remoteAnalyticsError)}. Showing local preview records.`
+                : snapshot.remoteAnalytics
+                  ? "Showing recent published-site visits from Cloudflare."
+                  : "Published-site visits load from Cloudflare; local preview history is shown until analytics are loaded."}</p>
+              ${recentVisitRows || recentVisitEmpty}
             </article>
             <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">WEB SHOP</span><h2>What’s moving</h2></div><a href="/account/main-shop/performance" data-route="/account/main-shop/performance">Performance</a></div>
               ${moving.map(([name, quantity]) => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(name)}</strong><span>${quantity} sold</span></article>`).join("") || `<p class="store-workspace-empty">No paid product sales yet. Completed sales will show the products gaining momentum.</p>`}
@@ -12214,26 +12440,33 @@ const StudioRenderers = {
         </section>`;
     }
     if (path === "/account/main-shop/visits") {
+      const visitFrequency = snapshot.remoteAnalytics
+        ? (storefrontVisitCount / Math.max(1, storefrontUniqueCount)).toFixed(1)
+        : webVisits.length ? (webVisits.length / Math.max(1, new Set(webVisits.map(visit => visit.session_id)).size)).toFixed(1) : "—";
       return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid">${metric("All recorded visits", webVisits.length, "This browser only")}${metric("Unique visitors", new Set(webVisits.map(visit => visit.visitor_id)).size, "Browser identifiers; not cross-device")}${metric("Pages per visit", webVisits.length ? (webVisits.length / Math.max(1, new Set(webVisits.map(visit => visit.session_id)).size)).toFixed(1) : "—", "Observed navigation")}</div>
+        <div class="studio-metric-grid">${metric(snapshot.remoteAnalytics ? "Published-site visits" : "Local visits", storefrontVisitCount, snapshot.remoteAnalytics ? `Last ${Number(snapshot.remoteAnalytics.days) || 30} days` : "This browser only")}${metric("Unique visitors", storefrontUniqueCount, snapshot.remoteAnalytics ? "Anonymous browser IDs" : "Browser identifiers; not cross-device")}${metric(snapshot.remoteAnalytics ? "Visits per browser" : "Pages per visit", visitFrequency, snapshot.remoteAnalytics ? "Aggregate Cloudflare count" : "Observed navigation")}</div>
         <article class="studio-panel"><div class="studio-panel-heading"><div><h2>Cloudflare shared analytics</h2><p class="studio-panel-note">${snapshot.remoteAnalytics
           ? `${Number(snapshot.remoteAnalytics.visits || 0)} visits · ${Number(snapshot.remoteAnalytics.unique_visitors || 0)} anonymous browsers · last 30 days`
           : "Load tenant-wide visit and geography summaries from Cloudflare D1."}</p></div><button type="button" class="btn-secondary" data-business-cloud-analytics>Load shared analytics</button></div>
+          ${snapshot.remoteAnalyticsError ? `<p class="studio-panel-note" role="status">Analytics could not be loaded: ${AppUtils.escapeHTML(snapshot.remoteAnalyticsError)}</p>` : ""}
           ${snapshot.remoteAnalytics ? `<p class="studio-panel-note">${AppUtils.escapeHTML(snapshot.remoteAnalytics.location_note || "Cloudflare region metadata; visitor IP addresses are not stored.")}</p>
             <div class="studio-dashboard-grid"><div><h3>Countries</h3>${(snapshot.remoteAnalytics.countries || []).map(item => `<p>${AppUtils.escapeHTML(item.country)} · ${Number(item.visits)} visits</p>`).join("") || "<p>No location data yet.</p>"}</div>
             <div><h3>Regions</h3>${(snapshot.remoteAnalytics.regions || []).map(item => `<p>${AppUtils.escapeHTML(item.region)} ${AppUtils.escapeHTML(item.country)} · ${Number(item.visits)} visits</p>`).join("") || "<p>No region data yet.</p>"}</div></div>` : ""}</article>
-        <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">VISIT HISTORY</span><h2>Recent storefront visits</h2></div></div>
-          <p class="studio-panel-note">Precise visitor location is not collected. Time zone is an approximate browser setting. These records are local to this browser until a shared analytics service is connected.</p>
-          ${webVisits.slice(0, 100).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")} · ${AppUtils.escapeHTML(visit.timezone || "Time zone unavailable")}</span></div><span>${AppUtils.escapeHTML(visit.created_at)}</span></article>`).join("") || `<p class="store-workspace-empty">No visits recorded yet.</p>`}
+        <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">VISIT HISTORY</span><h2>${snapshot.remoteAnalytics ? "Recent published-site visits" : "Local storefront preview history"}</h2></div></div>
+          <p class="studio-panel-note">${snapshot.remoteAnalytics ? "Recent published-site page views from Cloudflare. Visitor IDs and IP addresses are not shown." : "These preview records are stored in this browser; published-site traffic loads from Cloudflare analytics."}</p>
+          ${snapshot.remoteAnalytics ? recentVisitRows || `<p class="store-workspace-empty">No published storefront visits in the last ${Number(snapshot.remoteAnalytics.days) || 30} days.</p>` : webVisits.slice(0, 100).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")} · ${AppUtils.escapeHTML(visit.timezone || "Time zone unavailable")}</span></div><span>${AppUtils.escapeHTML(visit.created_at)}</span></article>`).join("") || `<p class="store-workspace-empty">No local storefront preview visits recorded yet.</p>`}
         </article></section>`;
     }
     if (path === "/account/main-shop/traffic") {
+      const productPageViews = snapshot.remoteAnalytics
+        ? (snapshot.remoteAnalytics.product_views || []).reduce((total, item) => total + (Number(item.views) || 0), 0)
+        : webVisits.filter(visit => visit.path.startsWith("/product/")).length;
       return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid">${metric("Total visits", webVisits.length)}${metric("Unique visitors", new Set(webVisits.map(visit => visit.visitor_id)).size)}${metric("Product page views", webVisits.filter(visit => visit.path.startsWith("/product/")).length)}</div>
+        <div class="studio-metric-grid">${metric("Total visits", storefrontVisitCount, snapshot.remoteAnalytics ? `Published site · last ${Number(snapshot.remoteAnalytics.days) || 30} days` : "Local browser records")}${metric("Unique visitors", storefrontUniqueCount)}${metric("Product page views", productPageViews)}</div>
         <article class="studio-panel"><div class="studio-panel-heading"><h2>Cloudflare shared geography</h2><button type="button" class="btn-secondary" data-business-cloud-analytics>Load shared analytics</button></div>
           ${snapshot.remoteAnalytics ? `<p>${Number(snapshot.remoteAnalytics.visits || 0)} visits · ${Number(snapshot.remoteAnalytics.unique_visitors || 0)} unique browsers · ${AppUtils.escapeHTML(snapshot.remoteAnalytics.location_note || "")}</p>
             ${(snapshot.remoteAnalytics.countries || []).map(item => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(item.country)}</strong><span>${Number(item.visits)} visits</span></article>`).join("") || "<p>No location data yet.</p>"}` : "<p>Load aggregated country and region data from Cloudflare. Visitor IP addresses are not stored.</p>"}</article>
-        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Most visited pages</h2></div>${pageRows || `<p class="store-workspace-empty">Page traffic appears after storefront visits are recorded.</p>`}</article>
+        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Most visited pages</h2></div>${pageRows || `<p class="store-workspace-empty">${snapshot.remoteAnalytics ? "No published storefront page visits in this period." : "Page traffic appears after storefront visits are recorded."}</p>`}</article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Devices used</h2></div>${deviceRows || `<p class="store-workspace-empty">Device breakdown is not available yet.</p>`}</article></div>
         <article class="studio-panel"><div class="studio-panel-heading"><h2>Traffic quality</h2></div><p class="studio-panel-note">Visits and device types are counted from this browser only. Global visitor totals and geographic locations need a shared analytics endpoint; no guessed or sample traffic is shown.</p></article>
       </section>`;
@@ -12253,7 +12486,21 @@ const StudioRenderers = {
       </section>`;
     }
     if (path === "/account/main-shop/product-intelligence") {
-      return `<section class="studio-workspace-section"><article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">PRODUCT INTELLIGENCE</span><h2>Product activity</h2></div><button type="button" class="btn-secondary" data-business-product-analytics>Load activity</button></div><p class="studio-panel-note">${remoteProductAnalytics ? "Anonymous activity from the last 30 days. Views are product page visits; cart and wishlist counts are aggregate only." : "Load live product views, cart quantities, and wishlist interest. No shopper identities are collected."}</p>${productActivityRows || (remoteProductAnalytics ? `<p class="store-workspace-empty">No product activity recorded yet.</p>` : "")}</article></section>`;
+      return `<section class="studio-workspace-section">
+        <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">PRODUCT INTELLIGENCE</span><h2>Product rankings</h2></div><button type="button" class="btn-secondary" data-business-product-analytics aria-label="Refresh product activity">Refresh</button></div>
+          <p class="studio-panel-note" data-product-analytics-status>${snapshot.remoteProductAnalyticsError
+            ? AppUtils.escapeHTML(snapshot.remoteProductAnalyticsError)
+            : remoteProductAnalytics
+              ? `Updated ${new Date(snapshot.remoteProductAnalyticsUpdatedAt || Date.now()).toLocaleTimeString()}. Batched anonymous activity from the last 30 days; bookings count submitted product holds.`
+              : "Activity has not loaded yet. Refresh to load batched product views, cart additions, wishlist saves and bookings from the live storefront."}</p>
+        </article>
+        ${remoteProductAnalytics ? `<div class="studio-dashboard-grid">
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most viewed products</h2></div><p class="studio-panel-note">Product page views · last 30 days</p>${mostViewedProductRows}</article>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most added to carts</h2></div><p class="studio-panel-note">Cart additions · last 30 days</p>${mostCartedProductRows}</article>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most wishlisted products</h2></div><p class="studio-panel-note">Anonymous wishlist saves · last 30 days</p>${mostWishlistedProductRows}</article>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most booked products</h2></div><p class="studio-panel-note">Submitted product holds · last 30 days</p>${mostBookedProductRows}</article>
+        </div>` : ""}
+      </section>`;
     }
     if (path === "/account/customers" || path === "/account/customers/") {
       return `<section class="studio-workspace-section"><div class="studio-metric-grid">${metric("Identified web customers", customers.length)}${metric("Repeat customers", customers.filter(customer => customer.orders > 1).length)}${metric("Newsletter subscribers", newsletterSubscribers.length)}</div>
@@ -12264,7 +12511,7 @@ const StudioRenderers = {
       const pointsPerVisit = Number(this.getWorkspaceSetting("points_per_visit", 1));
       const pointsPerCurrency = Number(this.getWorkspaceSetting("points_per_currency", 0));
       return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid">${metric("Points per visit", pointsPerVisit)}${metric("Points per ${AppUtils.escapeHTML(currency)} spent", pointsPerCurrency)}${metric("Customers with points", customers.filter(customer => customer.points > 0).length)}</div>
+        <div class="studio-metric-grid">${metric("Points per visit", pointsPerVisit)}${metric("Points per " + AppUtils.escapeHTML(currency) + " spent", pointsPerCurrency)}${metric("Customers with points", customers.filter(customer => customer.points > 0).length)}</div>
         <form class="store-workspace-form" data-studio-form="loyalty-settings"><h2>Points rules</h2><p>Set points per verified visit and per whole ${AppUtils.escapeHTML(currency)} spent. Staff award them below after confirming the visit or paid purchase.</p><div class="studio-form-grid"><label>Points per verified visit<input name="pointsPerVisit" type="number" min="0" step="1" value="${pointsPerVisit}" required></label><label>Points per ${AppUtils.escapeHTML(currency)} spent<input name="pointsPerCurrency" type="number" min="0" step="1" value="${pointsPerCurrency}" required></label></div><button type="submit" class="btn-primary">Save points rules</button><p role="status"></p></form>
         <form class="store-workspace-form" data-studio-form="points-adjust"><h2>Record verified activity or adjust points</h2><label>Customer<select name="customerKey" required><option value="">Choose a customer</option>${customers.map(customer => `<option value="${AppUtils.escapeHTML(customer.key)}">${AppUtils.escapeHTML(customer.name)} · ${customer.points} points</option>`).join("")}</select></label><div class="studio-form-grid"><label>Verified paid purchase amount (${AppUtils.escapeHTML(currency)})<input name="purchaseAmount" type="number" min="0" step="0.01" placeholder="Optional"></label><label>Manual adjustment (+/- points)<input name="delta" type="number" step="1" placeholder="Optional"></label></div><label class="studio-check-label"><input name="verifiedVisit" type="checkbox" value="yes"> Add points for one verified visit</label><label>Reason for manual adjustment<input name="reason" maxlength="140" placeholder="Required only for a manual adjustment"></label><button type="submit" class="btn-primary">Record points</button><p role="status"></p></form>
         <article class="studio-panel"><div class="studio-panel-heading"><h2>Points balances</h2></div>${customerRows || `<p class="store-workspace-empty">No identified customers yet.</p>`}</article>
@@ -12360,12 +12607,12 @@ const StudioRenderers = {
       const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
       const view = path === "/store/sales" ? "sales" : path === "/store/payments" ? "payments" : "orders";
       return `<section class="studio-workspace-section">
-        ${view === "orders" ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Web orders</h2><span>${orders.length} recorded on this device</span></div>${orderRows(orders)}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Cloudflare online orders</h2><button type="button" class="btn-secondary" data-business-online-orders-load>Load online orders</button></div>
+        ${view === "orders" ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Business orders and POS receipts</h2><span>${sales.length} recorded</span></div>${businessOrderRows}</article>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Online order management</h2><button type="button" class="btn-secondary" data-business-online-orders-load>Refresh online orders</button></div>
             <p class="studio-panel-note" data-online-orders-status>${snapshot.remoteOrdersError ? AppUtils.escapeHTML(snapshot.remoteOrdersError) : "Orders and Paystack payment status are stored privately for this shop."}</p>
             ${remoteOrderRows}</article>`
           : view === "sales" ? `<div class="studio-metric-grid">${metric("Order value", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency))}${metric("Paid orders", paidSales.length)}${metric("Unpaid orders", orders.filter(order => !["paid", "completed"].includes(String(order.status || "").toLowerCase())).length)}</div><article class="studio-panel"><div class="studio-panel-heading"><h2>Sales history</h2></div>${orderRows(orders)}</article>`
-            : `<article class="studio-panel"><div class="studio-panel-heading"><h2>Payment activity</h2></div>${orders.map(order => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(order.order_number || `WEB-${order.id}`)}</strong><span>${AppUtils.escapeHTML(order.payment_method || "Method not recorded")} · ${AppUtils.escapeHTML(order.created_at || "")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(order.amount_paid ?? (["paid", "completed"].includes(String(order.status).toLowerCase()) ? order.total : 0), order.currency || currency)}</strong><span>${AppUtils.escapeHTML(order.status || "Awaiting payment")}</span></div></article>`).join("") || `<p class="store-workspace-empty">No payment activity recorded yet.</p>`}</article>`}
+            : `<article class="studio-panel"><div class="studio-panel-heading"><h2>Payment activity · all channels</h2></div>${paymentActivityRows || `<p class="store-workspace-empty">No payment activity recorded yet.</p>`}</article>`}
         </section>`;
     }
     if (path === "/account/main-shop") {
@@ -12399,7 +12646,7 @@ const StudioRenderers = {
         </div>
         <p class="studio-panel-note">New products and categories are saved in this app first. Publish to make your updates visible at ${AppUtils.escapeHTML(activeTenant.hostname)}.</p>
         <div id="product-modal-container"></div>
-        ${webProducts.length ? `<div class="store-bulk-actions" data-bulk-removal="products"><label class="store-bulk-select-all"><input type="checkbox" data-bulk-select-all><span>Select all products</span></label><span class="store-bulk-selection-count" data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected products</button></div>` : ""}
+        ${webProducts.length ? `<div class="store-bulk-actions" data-bulk-removal="products"><label class="store-bulk-select-all"><input type="checkbox" data-bulk-select-all><span>Select all products</span></label><span class="store-bulk-selection-count" data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-product-holds="enable" disabled>Enable holds</button><button type="button" class="btn-secondary" data-bulk-product-holds="disable" disabled>Disable holds</button><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected products</button></div>` : ""}
         <form class="store-workspace-form store-existing-product-form" data-store-web-import hidden>
           <h2>Add from main Store</h2>
           <p class="studio-panel-note">Select one or more products. Existing Store images are copied when available.</p>
@@ -12421,7 +12668,7 @@ const StudioRenderers = {
           <button type="submit" class="btn-primary" disabled>Add selected from Store</button>
           <p role="status"></p>
         </form>
-        ${websiteCategories.length ? `<form class="store-workspace-form" data-studio-form="web-product" hidden><h2>Create web-only product</h2><label>Product name<input name="name" maxlength="160" required></label><label>Category<select name="categoryId" required>${websiteCategories.map(category => `<option value="${category.id}">${AppUtils.escapeHTML(category.name)}</option>`).join("")}</select></label><div class="studio-form-grid"><label>Price<input name="price" type="number" min="0" step="0.01" required></label><label>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label></div><label>Product image<input name="image" type="file" accept="image/*"></label><button type="submit" class="btn-primary">Save web product</button><p role="status"></p></form>` : `<p class="store-workspace-empty">Add a website category before creating a web product. <a href="/store/categories" data-route="/store/categories">Create a category</a></p>`}
+        ${websiteCategories.length ? `<form class="store-workspace-form" data-studio-form="web-product" hidden><h2>Create web-only product</h2><label>Product name<input name="name" maxlength="160" required></label><label>Category<select name="categoryId" required>${websiteCategories.map(category => `<option value="${category.id}">${AppUtils.escapeHTML(category.name)}</option>`).join("")}</select></label><div class="studio-form-grid"><label>Price<input name="price" type="number" min="0" step="0.01" required></label><label>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label></div><label class="studio-panel-note"><input type="checkbox" name="booking_enabled"> Allow customers to place temporary holds on this product</label><div class="web-product-media"><label class="web-product-file">Add file<input name="image" type="file" accept="image/*" data-web-product-image></label><div class="web-product-media-modes" role="group" aria-label="Product media type">${[["keep", "Keep"], ["3d", "3D"], ["video", "Video"], ["cutout", "Cutout images"]].map(([value, label], index) => `<button type="button" class="btn-secondary" data-web-product-media-mode="${value}" aria-pressed="${index === 0}">${label}</button>`).join("")}</div><div class="web-product-video-options" data-web-product-video-options hidden><button type="button" class="btn-secondary" data-web-product-video-record>Record video</button><button type="button" class="btn-secondary" data-web-product-video-pick>Pick video</button><input type="file" accept="video/*" capture="environment" data-web-product-record-file hidden><input type="file" accept="video/*" data-web-product-video-file hidden></div><div class="web-product-media-preview" data-web-product-media-preview hidden></div><p class="studio-panel-note" data-web-product-media-status role="status" aria-live="polite">Keep the selected image, or choose another media type.</p></div><button type="submit" class="btn-primary">Save web product</button><p role="status"></p></form>` : `<p class="store-workspace-empty">Add a website category before creating a web product. <a href="/store/categories" data-route="/store/categories">Create a category</a></p>`}
         <div class="store-workspace-list">
           ${webProducts.map(product => {
             const categoryName = SQLiteEngine.getCategories().find(category => Number(category.id) === Number(product.category_id))?.name || "Uncategorized";
@@ -12447,6 +12694,7 @@ const StudioRenderers = {
                   <div><strong>Brand</strong> <span>${AppUtils.escapeHTML(product.brand || "—")}</span></div>
                   <div><strong>Discount</strong> <span>${Number(product.discount || 0)}%</span></div>
                 </div>
+                <label class="studio-panel-note"><input type="checkbox" data-web-product-booking="${product.id}" ${product.booking_enabled ? "checked" : ""}> Allow customers to place temporary holds on this product</label>
                 <p>${AppUtils.escapeHTML(product.description || "No description.")}</p>
                 ${product.images?.[0] ? `<img class="store-product-detail-image" src="${AppUtils.escapeHTML(product.images[0])}" alt="${AppUtils.escapeHTML(product.name)}">` : ""}
                 ${existsInPos ? "" : `<button type="button" class="btn-secondary" data-store-pos-product="${product.id}" style="margin-top:12px;">Add to Store/POS</button>`}
@@ -12877,7 +13125,14 @@ const StudioRenderers = {
       if (status) status.textContent = "Loading recent orders from Cloudflare…";
       try {
         const result = await window.EshopInventoryBridge.listStorefrontOrders(tenantId);
-        const updatedSnapshot = { ...snapshot, remoteOrders: Array.isArray(result.orders) ? result.orders : [] };
+        const remoteOrders = Array.isArray(result.orders) ? result.orders : [];
+        const updatedSnapshot = {
+          ...snapshot,
+          remoteOrders,
+          sales: window.BusinessLens?.mergeStorefrontOrders
+            ? window.BusinessLens.mergeStorefrontOrders(snapshot.sales, remoteOrders)
+            : snapshot.sales
+        };
         container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
         const updatedStatus = container.querySelector("[data-online-orders-status]");
         if (updatedStatus) updatedStatus.textContent = `${updatedSnapshot.remoteOrders.length} server-backed order${updatedSnapshot.remoteOrders.length === 1 ? "" : "s"} loaded.`;
@@ -12900,6 +13155,12 @@ const StudioRenderers = {
             remoteOrders: (snapshot.remoteOrders || []).map(order =>
               order.order_number === orderNumber ? { ...order, status: statusSelect.value } : order)
           };
+          if (window.BusinessLens?.mergeStorefrontOrders) {
+            updatedSnapshot.sales = window.BusinessLens.mergeStorefrontOrders(
+              snapshot.sales,
+              updatedSnapshot.remoteOrders
+            );
+          }
           container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
           const updatedStatus = container.querySelector("[data-online-orders-status]");
           if (updatedStatus) updatedStatus.textContent = `${orderNumber} status saved.`;
@@ -12950,21 +13211,30 @@ const StudioRenderers = {
     container.querySelectorAll("[data-business-product-analytics]").forEach(button => {
       button.addEventListener("click", async () => {
         button.disabled = true;
+        button.textContent = "Refreshing...";
+        const status = container.querySelector("[data-product-analytics-status]");
+        if (status) status.textContent = "Refreshing live product activity…";
         try {
-          const analytics = await window.EshopInventoryBridge.fetchStorefrontAnalytics(tenantId, 30);
-          const updatedSnapshot = { ...snapshot, remoteProductAnalytics: analytics };
+          const analytics = await window.EshopInventoryBridge.fetchStorefrontEventAnalytics(tenantId, 30);
+          const updatedSnapshot = {
+            ...snapshot,
+            remoteProductAnalytics: analytics,
+            remoteProductAnalyticsUpdatedAt: new Date().toISOString()
+          };
+          delete updatedSnapshot.remoteProductAnalyticsError;
           container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
           this.bindBusinessCloudActions(container, path, updatedSnapshot, tenantId);
         } catch (error) {
-          const note = container.querySelector(".studio-panel-note");
+          const note = container.querySelector("[data-product-analytics-status]");
           if (note) note.textContent = error instanceof Error ? error.message : "Could not load product activity.";
+          button.textContent = "Refresh";
           button.disabled = false;
         }
       });
     });
     container.querySelectorAll("[data-business-cloud-analytics]").forEach(button => {
       button.addEventListener("click", async () => {
-        const status = button.closest(".studio-panel")?.querySelector(".studio-panel-note");
+        const status = button.closest(".studio-panel")?.querySelector("[data-business-cloud-analytics-status], .studio-panel-note");
         button.disabled = true;
         if (status) status.textContent = "Loading tenant-wide analytics from Cloudflare…";
         try {
@@ -13012,7 +13282,7 @@ const StudioRenderers = {
                   category: product.categoryName || product.category,
                   price: product.price, costPrice: product.costPrice, stock: product.stock
                 })),
-                visits: SQLiteEngine.select("web_visits", item => item.tenant_id === tenantId),
+                visits: SQLiteEngine.select("web_visits", item => item.tenant_id === tenantId && AppController.isStorefrontVisitPath(item.path)),
                 events: SQLiteEngine.select("web_events", item => item.tenant_id === tenantId),
                 newsletter: SQLiteEngine.select("newsletter_subscribers", item => item.tenant_id === tenantId),
                 points: SQLiteEngine.select("customer_points", item => item.tenant_id === tenantId),
@@ -13157,11 +13427,35 @@ const StudioRenderers = {
         console.warn("Could not read the cached business branch snapshot.", error);
       }
       const remoteLoads = [];
-      if (/\/(?:store\/orders|orders-bookings)(?:\/|$)/.test(path)) {
+      const combinedSalesPaths = new Set([
+        "/account/main-shop", "/account/main-shop/insights", "/account/main-shop/marketing",
+        "/account/main-shop/finance", "/account/main-shop/stores", "/account/main-shop/settings",
+        "/account/main-shop/help", "/store/revenue", "/store/channels", "/store/sales",
+        "/store/products", "/store/inventory", "/store/categories", "/store/orders",
+        "/store/payments", "/account/customers", "/account/customers/loyalty"
+      ]);
+      const ordersPage = /\/(?:store\/orders|orders-bookings)(?:\/|$)/.test(path);
+      const bookingsPage = /\/(?:store\/bookings|orders-bookings)(?:\/|$)/.test(path);
+      if (combinedSalesPaths.has(path) || ordersPage) {
         remoteLoads.push({
           key: "remoteOrders",
           load: () => window.EshopInventoryBridge.listStorefrontOrders(activeTenant.id)
         });
+      }
+      const storefrontAnalyticsPaths = new Set([
+        "/account/web", "/account/dashboard",
+        "/account/web/studio/dashboard/overview",
+        "/account/web/studio/dashboard/visits",
+        "/account/web/studio/dashboard/traffic",
+        "/account/main-shop/visits", "/account/main-shop/traffic"
+      ]);
+      if (storefrontAnalyticsPaths.has(path)) {
+        remoteLoads.push({
+          key: "remoteAnalytics",
+          load: () => window.EshopInventoryBridge.fetchStorefrontAnalytics(activeTenant.id, 30)
+        });
+      }
+      if (bookingsPage) {
         remoteLoads.push({
           key: "remoteHolds",
           load: () => window.EshopInventoryBridge.listStorefrontHolds(activeTenant.id)
@@ -13170,7 +13464,7 @@ const StudioRenderers = {
       if (/\/product-intelligence(?:\/|$)/.test(path)) {
         remoteLoads.push({
           key: "remoteProductAnalytics",
-          load: () => window.EshopInventoryBridge.fetchStorefrontAnalytics(activeTenant.id, 30)
+          load: () => window.EshopInventoryBridge.fetchStorefrontEventAnalytics(activeTenant.id, 30)
         });
       }
       if (/\/newsletter(?:\/|$)/.test(path)) {
@@ -13198,6 +13492,9 @@ const StudioRenderers = {
             : key === "remoteAllocations"
               ? (Array.isArray(result.value.allocations) ? result.value.allocations : [])
               : result.value;
+          if (key === "remoteProductAnalytics") {
+            renderSnapshot.remoteProductAnalyticsUpdatedAt = new Date().toISOString();
+          }
           delete renderSnapshot[`${key}Error`];
         } else {
           renderSnapshot[`${key}Error`] = result.reason instanceof Error
@@ -13206,6 +13503,12 @@ const StudioRenderers = {
           console.error(`Could not load live ${key} for the active shop.`, result.reason);
         }
       });
+      if (Array.isArray(renderSnapshot.remoteOrders) && window.BusinessLens?.mergeStorefrontOrders) {
+        renderSnapshot.sales = window.BusinessLens.mergeStorefrontOrders(
+          renderSnapshot.sales,
+          renderSnapshot.remoteOrders
+        );
+      }
       this.mainShopSnapshotCache = {
         tenantId: activeTenant.id,
         snapshot: renderSnapshot
@@ -13302,12 +13605,14 @@ const StudioRenderers = {
         const selectAll = control.querySelector("[data-bulk-select-all]");
         const count = control.querySelector("[data-bulk-selection-count]");
         const removeButton = control.querySelector("[data-bulk-remove]");
+        const holdButtons = [...control.querySelectorAll("[data-bulk-product-holds]")];
         const items = [...currentContent.querySelectorAll("[data-bulk-item]")];
         if (!selectAll || !count || !removeButton || !items.length) return;
         const updateSelection = () => {
           const selectedCount = items.filter(item => item.checked).length;
           count.textContent = `${selectedCount} selected`;
           removeButton.disabled = selectedCount === 0;
+          holdButtons.forEach(button => { button.disabled = selectedCount === 0; });
           selectAll.checked = selectedCount === items.length;
           selectAll.indeterminate = selectedCount > 0 && selectedCount < items.length;
         };
@@ -13316,6 +13621,25 @@ const StudioRenderers = {
           updateSelection();
         };
         items.forEach(item => { item.onchange = updateSelection; });
+        holdButtons.forEach(button => {
+          button.onclick = async () => {
+            const selectedIds = items.filter(item => item.checked).map(item => Number(item.dataset.bulkItem));
+            if (!selectedIds.length) return;
+            const enabled = button.dataset.bulkProductHolds === "enable";
+            holdButtons.forEach(action => { action.disabled = true; });
+            try {
+              const updatedCount = AppController.setWebsiteProductHoldState(selectedIds, enabled);
+              if (!updatedCount) throw new Error("No selected active website products could be updated.");
+              await window.ShopSQLite.flush();
+              await this.loadMainShopWorkspace(path);
+              AppUtils.showToast(`${updatedCount} selected product${updatedCount === 1 ? "" : "s"} ${enabled ? "enabled" : "disabled"} for holds. Publish to update the live site.`);
+            } catch (error) {
+              console.error("Selected website product hold settings could not be updated.", error);
+              AppUtils.showToast(error instanceof Error ? error.message : "Selected product hold settings could not be updated.", "danger");
+              updateSelection();
+            }
+          };
+        });
         removeButton.onclick = async () => {
           const selectedIds = items.filter(item => item.checked).map(item => Number(item.dataset.bulkItem));
           if (!selectedIds.length) return;
@@ -13351,6 +13675,27 @@ const StudioRenderers = {
           }
         };
         updateSelection();
+      });
+      currentContent.querySelectorAll("[data-store-holds-all]").forEach(button => {
+        button.addEventListener("click", async () => {
+          const products = SQLiteEngine.select("products", product => product.status !== "archived");
+          const productIds = products.map(product => Number(product.id));
+          if (!productIds.length) return;
+          const enabled = button.dataset.storeHoldsAll === "enable";
+          const actionButtons = [...currentContent.querySelectorAll("[data-store-holds-all]")];
+          actionButtons.forEach(action => { action.disabled = true; });
+          try {
+            const updatedCount = AppController.setWebsiteProductHoldState(productIds, enabled);
+            if (!updatedCount) throw new Error("No active website products could be updated.");
+            await window.ShopSQLite.flush();
+            await this.loadMainShopWorkspace(path);
+            AppUtils.showToast(`Customer holds ${enabled ? "enabled" : "disabled"} for all ${updatedCount} active website products. Publish to update the live site.`);
+          } catch (error) {
+            console.error("All website product hold settings could not be updated.", error);
+            AppUtils.showToast(error instanceof Error ? error.message : "All product hold settings could not be updated.", "danger");
+            actionButtons.forEach(action => { action.disabled = false; });
+          }
+        });
       });
       document.querySelectorAll(".business-filter").forEach(control => control.addEventListener("change", () => {
         const filters = { ...window.BusinessLens.readFilters(), [control.dataset.filter]: control.value };
@@ -13411,6 +13756,369 @@ const StudioRenderers = {
           }
         }));
       };
+      const webProductMediaState = new WeakMap();
+      const setWebProductMediaStatus = (form, text) => {
+        const element = form.querySelector("[data-web-product-media-status]");
+        if (element) element.textContent = text;
+      };
+      const webProductForm = currentContent.querySelector('[data-studio-form="web-product"]');
+      if (webProductForm) {
+        const mediaStatus = webProductForm.querySelector("[data-web-product-media-status]");
+        const imageInput = webProductForm.querySelector("[data-web-product-image]");
+        const videoOptions = webProductForm.querySelector("[data-web-product-video-options]");
+        const videoRecordInput = webProductForm.querySelector("[data-web-product-record-file]");
+        const videoPickInput = webProductForm.querySelector("[data-web-product-video-file]");
+        const mediaPreview = webProductForm.querySelector("[data-web-product-media-preview]");
+        const spinOptions = document.createElement("div");
+        spinOptions.className = "web-product-spin-options";
+        spinOptions.hidden = true;
+        const spinProfileLabel = document.createElement("label");
+        spinProfileLabel.textContent = "360 speed and detail";
+        const spinProfileSelect = document.createElement("select");
+        spinProfileSelect.name = "spinProfile";
+        [
+          ["high", "High detail — 36 frames, 720 px"],
+          ["balanced", "Balanced — 24 frames, 720 px"],
+          ["fast", "Faster — 18 frames, 480 px"]
+        ].forEach(([value, label]) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = label;
+          spinProfileSelect.append(option);
+        });
+        spinProfileLabel.append(spinProfileSelect);
+        const spinProfileNote = document.createElement("p");
+        spinProfileNote.className = "studio-panel-note";
+        spinProfileNote.textContent = "More frames and higher resolution take longer to process.";
+        spinOptions.append(spinProfileLabel, spinProfileNote);
+        videoOptions.insertAdjacentElement("afterend", spinOptions);
+        const nativeMedia = window.EshopNativeMedia;
+        const isAndroidApp = nativeMedia?.Capacitor?.getPlatform?.() === "android";
+        const media = {
+          mode: "keep",
+          cutoutPaths: [],
+          spinFrames: [],
+          videoBlob: null,
+          videoPath: "",
+          videoPoster: null,
+          videoPreviewUrl: ""
+        };
+        const setMediaStatus = text => {
+          if (mediaStatus) mediaStatus.textContent = text;
+        };
+        const showMediaProgress = (progress, activity) => {
+          if (progress.phase === "model") {
+            if (progress.state === "paused") {
+              setMediaStatus("Google Play services paused the background-removal model download. Waiting for it to resume…");
+            } else if (progress.state === "installing") {
+              setMediaStatus("Installing the background-removal model…");
+            } else if (progress.state === "downloading" && progress.total > 0) {
+              setMediaStatus(`Downloading background-removal model… ${progress.done}%`);
+            } else {
+              setMediaStatus("Preparing the background-removal model through Google Play services…");
+            }
+            return;
+          }
+          setMediaStatus(`${activity} ${progress.done} of ${progress.total}…`);
+        };
+        const clearMediaPreview = () => {
+          if (media.videoPreviewUrl.startsWith("blob:")) URL.revokeObjectURL(media.videoPreviewUrl);
+          media.videoPreviewUrl = "";
+          if (mediaPreview) {
+            mediaPreview.replaceChildren();
+            mediaPreview.hidden = true;
+          }
+        };
+        const showImagePreviews = (urls, spin = false) => {
+          clearMediaPreview();
+          if (!mediaPreview || !urls.length) return;
+          const images = spin ? urls.slice(0, 1) : urls;
+          images.forEach((url, imageIndex) => {
+            const image = document.createElement("img");
+            image.src = url;
+            image.alt = spin ? "Drag to rotate the 3D product preview" : `Processed product image ${imageIndex + 1}`;
+            if (spin) {
+              image.dataset.spinPreview = "";
+              let frame = 0;
+              let pointerId = -1;
+              let lastX = 0;
+              image.addEventListener("pointerdown", event => {
+                pointerId = event.pointerId;
+                lastX = event.clientX;
+                image.setPointerCapture(pointerId);
+              });
+              image.addEventListener("pointermove", event => {
+                if (event.pointerId !== pointerId) return;
+                const step = Math.trunc((event.clientX - lastX) / 6);
+                if (!step) return;
+                frame = ((frame - step % urls.length) % urls.length + urls.length) % urls.length;
+                lastX = event.clientX;
+                image.src = urls[frame];
+              });
+              image.addEventListener("pointerup", () => { pointerId = -1; });
+              image.addEventListener("pointercancel", () => { pointerId = -1; });
+              image.title = "Drag left or right to rotate";
+            }
+            mediaPreview.append(image);
+          });
+          mediaPreview.hidden = false;
+        };
+        const showVideoPreview = file => {
+          clearMediaPreview();
+          if (!mediaPreview) return;
+          media.videoPreviewUrl = URL.createObjectURL(file);
+          const video = document.createElement("video");
+          video.src = media.videoPreviewUrl;
+          video.controls = true;
+          video.playsInline = true;
+          video.setAttribute("aria-label", "Selected product video");
+          mediaPreview.append(video);
+          mediaPreview.hidden = false;
+        };
+        const setMediaError = error => {
+          setMediaStatus(error instanceof Error ? error.message : "Product media could not be processed.");
+        };
+        const nativeFileUrl = path => nativeMedia.Capacitor.convertFileSrc(path);
+        const makeVideoPoster = async file => {
+          const sourceUrl = URL.createObjectURL(file);
+          const video = document.createElement("video");
+          video.muted = true;
+          video.playsInline = true;
+          video.preload = "auto";
+          video.src = sourceUrl;
+          try {
+            await new Promise((resolve, reject) => {
+              if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                resolve();
+                return;
+              }
+              video.addEventListener("loadeddata", resolve, { once: true });
+              video.addEventListener("error", () => reject(new Error("The video preview could not be decoded.")), { once: true });
+            });
+            const canvas = document.createElement("canvas");
+            const scale = Math.min(1, 800 / Math.max(video.videoWidth, video.videoHeight));
+            canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+            canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+            const context = canvas.getContext("2d");
+            if (!context) throw new Error("A video thumbnail could not be created.");
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const blob = await new Promise((resolve, reject) => canvas.toBlob(
+              value => value ? resolve(value) : reject(new Error("A video thumbnail could not be created.")),
+              "image/webp",
+              0.82
+            ));
+            return new File([blob], "product-video-poster.webp", { type: blob.type });
+          } finally {
+            video.pause();
+            video.removeAttribute("src");
+            URL.revokeObjectURL(sourceUrl);
+          }
+        };
+        const processCutoutImages = async paths => {
+          if (!paths.length) return;
+          setMediaStatus("Preparing Google Play services background removal…");
+          const listener = await nativeMedia.ProductCutout.addListener("progress", progress => {
+            showMediaProgress(progress, "Removing backgrounds");
+          });
+          try {
+            const result = await nativeMedia.ProductCutout.cutoutImages({ paths, width: 1200 });
+            media.cutoutPaths = result.images;
+            showImagePreviews(result.images.map(nativeFileUrl));
+            setMediaStatus(`${result.images.length} cutout image${result.images.length === 1 ? "" : "s"} ready to save.`);
+          } finally {
+            await listener.remove();
+          }
+        };
+        const chooseCutoutImages = async () => {
+          try {
+            setMediaStatus("Choose up to 8 product photos.");
+            const result = await nativeMedia.Camera.chooseFromGallery({
+              mediaType: nativeMedia.MediaTypeSelection.Photo,
+              allowMultipleSelection: true,
+              limit: 8,
+              quality: 100
+            });
+            const paths = (result.results || []).map(item => item.uri).filter(Boolean).slice(0, 8);
+            if (!paths.length) {
+              setMediaStatus("No product photos were selected.");
+              return;
+            }
+            await processCutoutImages(paths);
+          } catch (error) {
+            setMediaError(error);
+          }
+        };
+        const selectedVideoBlob = async item => {
+          if (item instanceof Blob) return item;
+          const path = item.webPath || nativeMedia.Capacitor.convertFileSrc(item.uri || "");
+          const response = await fetch(path);
+          if (!response.ok) throw new Error("The selected video could not be opened.");
+          const blob = await response.blob();
+          const uri = String(item.uri || item.webPath || "");
+          const extension = uri.split(/[?#]/)[0].split(".").pop()?.toLowerCase() || "";
+          const format = String(item.metadata?.format || extension).toLowerCase();
+          const formats = {
+            mp4: { type: "video/mp4", extension: "mp4" },
+            m4v: { type: "video/mp4", extension: "mp4" },
+            webm: { type: "video/webm", extension: "webm" },
+            mov: { type: "video/quicktime", extension: "mov" },
+            quicktime: { type: "video/quicktime", extension: "mov" }
+          };
+          const match = formats[format];
+          const contentType = blob.type.startsWith("video/") ? blob.type : match?.type;
+          if (!contentType || !["video/mp4", "video/webm", "video/quicktime"].includes(contentType)) {
+            throw new Error("This video format is not supported. Choose an MP4, WebM, or QuickTime video.");
+          }
+          const fileExtension = contentType === "video/webm" ? "webm" : contentType === "video/quicktime" ? "mov" : "mp4";
+          return new File([blob], `product-video.${match?.extension || fileExtension}`, { type: contentType });
+        };
+        const chooseVideo = async record => {
+          try {
+            if (!isAndroidApp) {
+              (record ? videoRecordInput : videoPickInput).click();
+              return;
+            }
+            setMediaStatus(record ? "Opening video camera…" : "Opening video gallery…");
+            const selected = record
+              ? await nativeMedia.Camera.recordVideo({ isPersistent: true, includeMetadata: true })
+              : (await nativeMedia.Camera.chooseFromGallery({
+                mediaType: nativeMedia.MediaTypeSelection.Video,
+                includeMetadata: true
+              })).results?.[0];
+            if (!selected?.uri) {
+              setMediaStatus("No video was selected.");
+              return;
+            }
+            if (media.mode === "3d") {
+              const spinProfiles = {
+                high: { count: 36, width: 720 },
+                balanced: { count: 24, width: 720 },
+                fast: { count: 18, width: 480 }
+              };
+              const spinProfile = spinProfiles[spinProfileSelect.value] || spinProfiles.high;
+              setMediaStatus(`Preparing the model and generating ${spinProfile.count} 360 frames…`);
+              const listener = await nativeMedia.ProductCutout.addListener("progress", progress => {
+                showMediaProgress(progress, "Processing 360 frames");
+              });
+              try {
+                const result = await nativeMedia.ProductCutout.processVideo({
+                  path: selected.uri,
+                  ...spinProfile
+                });
+                media.spinFrames = result.frames;
+                showImagePreviews(result.frames.map(nativeFileUrl), true);
+                setMediaStatus(`${result.frames.length} 360 frames ready. Drag the preview to check it.`);
+              } finally {
+                await listener.remove();
+              }
+              return;
+            }
+            media.videoBlob = await selectedVideoBlob(selected);
+            const extension = media.videoBlob.name.split(".").pop()?.toLowerCase();
+            if (!["mp4", "webm", "mov"].includes(extension)) {
+              throw new Error("This video format is not supported. Choose an MP4, WebM, or QuickTime video.");
+            }
+            const persistentVideo = await nativeMedia.ProductCutout.persistVideo({
+              path: selected.uri,
+              extension
+            });
+            media.videoPath = `${LOCAL_PRODUCT_MEDIA_PREFIX}${persistentVideo.path}`;
+            try {
+              media.videoPoster = await makeVideoPoster(media.videoBlob);
+            } catch (error) {
+              media.videoPoster = null;
+              setMediaStatus(`Video selected. A preview image could not be made: ${error.message}`);
+            }
+            showVideoPreview(media.videoBlob);
+            if (media.videoPoster) setMediaStatus(`${media.videoBlob.name} selected.`);
+          } catch (error) {
+            setMediaError(error);
+          }
+        };
+        const resetMediaSelection = () => {
+          media.cutoutPaths = [];
+          media.spinFrames = [];
+          media.videoBlob = null;
+          media.videoPath = "";
+          media.videoPoster = null;
+          clearMediaPreview();
+          if (imageInput) imageInput.value = "";
+          videoRecordInput.value = "";
+          videoPickInput.value = "";
+        };
+        const updateMediaMode = mode => {
+          media.mode = mode;
+          resetMediaSelection();
+          webProductForm.querySelectorAll("[data-web-product-media-mode]").forEach(button => {
+            button.setAttribute("aria-pressed", String(button.dataset.webProductMediaMode === mode));
+          });
+          const videoMode = mode === "3d" || mode === "video";
+          videoOptions.hidden = !videoMode;
+          spinOptions.hidden = mode !== "3d";
+          if (imageInput) imageInput.disabled = videoMode;
+          setMediaStatus(mode === "3d"
+            ? isAndroidApp
+              ? "Record or choose a video. Craft will create 36 transparent spin frames on this Android device."
+              : "3D processing requires the Android Craft app and Google Play services."
+            : mode === "video"
+              ? "Record or choose a product video. MP4, WebM, and QuickTime are supported."
+              : mode === "cutout"
+                ? isAndroidApp
+                  ? "Choose product photos for on-device ML Kit background removal."
+                  : "Cutout requires the Android Craft app and Google Play services."
+                : "Keep the selected image as-is.");
+        };
+        webProductForm.querySelectorAll("[data-web-product-media-mode]").forEach(button => {
+          button.addEventListener("click", () => updateMediaMode(button.dataset.webProductMediaMode));
+        });
+        imageInput?.addEventListener("click", event => {
+          if (media.mode === "cutout" && isAndroidApp) {
+            event.preventDefault();
+            void chooseCutoutImages();
+          }
+        });
+        webProductForm.querySelector("[data-web-product-video-record]")?.addEventListener("click", () => {
+          void chooseVideo(true);
+        });
+        webProductForm.querySelector("[data-web-product-video-pick]")?.addEventListener("click", () => {
+          void chooseVideo(false);
+        });
+        for (const input of [videoRecordInput, videoPickInput]) {
+          input?.addEventListener("change", async () => {
+            const file = input.files?.[0];
+            if (!file) return;
+            if (media.mode === "3d") {
+              setMediaStatus("3D frame processing is currently available in the Android Craft app.");
+              return;
+            }
+            try {
+              media.videoBlob = file;
+              try {
+                media.videoPoster = await makeVideoPoster(file);
+              } catch (error) {
+                media.videoPoster = null;
+                setMediaStatus(`Video selected. A preview image could not be made: ${error.message}`);
+              }
+              showVideoPreview(file);
+              if (media.videoPoster) setMediaStatus(`${file.name} selected.`);
+            } catch (error) {
+              setMediaError(error);
+            }
+          });
+        }
+        imageInput?.addEventListener("change", () => {
+          const file = imageInput.files?.[0];
+          if (!file) return;
+          if (media.mode === "cutout") {
+            setMediaStatus(isAndroidApp
+              ? "Use Add file to choose photos from the Android gallery for cutout."
+              : "Cutout requires the Android Craft app and Google Play services.");
+            return;
+          }
+          setMediaStatus(`${file.name} selected.`);
+        });
+        webProductMediaState.set(webProductForm, media);
+      }
       document.querySelectorAll("[data-studio-form]").forEach(form => {
         form.addEventListener("submit", async event => {
           event.preventDefault();
@@ -13431,6 +14139,8 @@ const StudioRenderers = {
               await window.ShopSQLite.flush();
               AppController.cacheActiveTenantCatalog();
             } else if (kind === "web-product") {
+              const mediaMode = form.querySelector('[data-web-product-media-mode][aria-pressed="true"]')?.dataset.webProductMediaMode || "keep";
+              const media = webProductMediaState.get(form);
               const name = String(data.get("name") || "").trim();
               const price = Number(data.get("price"));
               const stock = Number(data.get("stock"));
@@ -13438,14 +14148,49 @@ const StudioRenderers = {
               if (!name || !Number.isFinite(price) || price < 0 || !Number.isSafeInteger(stock) || stock < 0) {
                 throw new Error("Enter a product name, valid price, and whole-number stock quantity.");
               }
+              if (!media) throw new Error("Product media could not be initialized. Reopen the product form and try again.");
               const imageFile = data.get("image");
-              let image = "";
+              let images = [];
+              let spinFrames = [];
+              let videoPath = "";
               if (imageFile instanceof File && imageFile.size > 0) {
-                image = await AppUtils.compressImageFile(imageFile);
+                if (mediaMode === "keep") {
+                  setWebProductMediaStatus(form, "Compressing product image for local SQLite storage…");
+                  images = [await AppUtils.compressImageFile(imageFile)];
+                } else if (mediaMode === "cutout") {
+                  throw new Error("Choose photos from the Android gallery to create cutout images.");
+                }
+              }
+              if (mediaMode === "cutout") {
+                if (window.EshopNativeMedia?.Capacitor?.getPlatform?.() !== "android") {
+                  throw new Error("Cutout requires the Android Craft app and Google Play services.");
+                }
+                if (!media.cutoutPaths.length) throw new Error("Choose at least one product photo for cutout.");
+                images = media.cutoutPaths.map(path => `${LOCAL_PRODUCT_MEDIA_PREFIX}${path}`);
+              } else if (mediaMode === "3d") {
+                if (!media.spinFrames.length) throw new Error("Record or choose a video to generate the 360 spin frames.");
+                spinFrames = media.spinFrames.map(path => `${LOCAL_PRODUCT_MEDIA_PREFIX}${path}`);
+                images = spinFrames.length ? [spinFrames[0]] : [];
+              } else if (mediaMode === "video") {
+                if (!(media.videoBlob instanceof Blob) || !media.videoBlob.size) {
+                  throw new Error("Record or choose a product video before saving.");
+                }
+                setWebProductMediaStatus(form, "Saving product video to local storage…");
+                videoPath = media.videoPath || await AppUtils.storeLocalProductVideo(media.videoBlob);
+                if (media.videoPoster) {
+                  images = [await AppUtils.compressImageFile(media.videoPoster)];
+                }
               }
               SQLiteEngine.saveProduct({
                 name, category_id: categoryId, price, stock,
-                description: "", images: image ? [image] : [], status: "active"
+                booking_enabled: data.get("booking_enabled") === "on",
+                description: "",
+                images,
+                media_type: mediaMode === "keep" ? "image" : mediaMode === "3d" ? "spin" : mediaMode,
+                spin_frames: spinFrames,
+                video_url: "",
+                video_path: videoPath,
+                status: "active"
               });
               await window.ShopSQLite.flush();
               AppController.cacheActiveTenantCatalog();
@@ -13487,6 +14232,7 @@ const StudioRenderers = {
               if (!Number.isSafeInteger(hours) || hours < 1 || hours > 720) throw new Error("Hold duration must be between 1 and 720 hours.");
               this.setWorkspaceSetting("max_hold_hours", hours);
               await window.ShopSQLite.flush();
+              this.cacheActiveTenantCatalog();
             } else if (kind === "booking-create") {
               const product = SQLiteEngine.getProductById(Number(data.get("productId")));
               const quantity = Number(data.get("quantity"));
@@ -13547,6 +14293,30 @@ const StudioRenderers = {
             console.error("Studio workspace action failed.", error);
             if (status) status.textContent = error instanceof Error ? error.message : "The change could not be saved.";
             if (button) button.disabled = false;
+          }
+        });
+      });
+      currentContent.querySelectorAll("[data-web-product-booking]").forEach(input => {
+        input.addEventListener("change", async () => {
+          const productId = Number(input.dataset.webProductBooking);
+          const product = SQLiteEngine.getProductById(productId);
+          if (!product) {
+            AppUtils.showToast("Product not found. Refresh the Store workspace and try again.", "danger");
+            input.checked = false;
+            return;
+          }
+          input.disabled = true;
+          try {
+            if (!AppController.setWebsiteProductHoldState([productId], input.checked)) {
+              throw new Error("Product not found. Refresh the Store workspace and try again.");
+            }
+            await window.ShopSQLite.flush();
+            AppUtils.showToast(`Customer holds ${input.checked ? "enabled" : "disabled"} for ${product.name}. Publish the storefront to apply this change.`);
+          } catch (error) {
+            input.checked = !input.checked;
+            AppUtils.showToast(error instanceof Error ? error.message : "The product hold setting could not be saved.", "danger");
+          } finally {
+            input.disabled = false;
           }
         });
       });
@@ -14598,12 +15368,28 @@ const StudioRenderers = {
     };
     if (selectedTheme === "litrus-mixer") {
       return `
+        <style>
+          .builder-litrus-toolbar{z-index:1;min-height:42px;padding:3px 8px;display:flex;align-items:center;gap:6px;overflow-x:auto;background:#191a1e;border-bottom:1px solid #303136}
+          .builder-litrus-toolbar button,.builder-litrus-toolbar a{height:34px;min-height:34px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border:1px solid #45464c;border-radius:8px;background:#27282d;color:#f5f5f6;font:600 12px system-ui,sans-serif;text-decoration:none}
+          .builder-litrus-toolbar #builder-litrus-publish{background:#f5f5f6;color:#111;border-color:#f5f5f6}
+          .builder-litrus-device-controls{display:flex;align-items:center;gap:4px;margin-left:auto}
+          .builder-litrus-device-controls button[aria-pressed="true"]{background:#f5f5f6;color:#111;border-color:#f5f5f6}
+          @media(max-width:520px){.builder-litrus-toolbar{gap:4px;padding-inline:5px}.builder-litrus-toolbar button,.builder-litrus-toolbar a{padding-inline:7px;font-size:11px}.builder-litrus-device-controls{gap:2px}}
+          @media(max-width:400px){.builder-litrus-device-controls button{width:30px;padding:0;font-size:0}.builder-litrus-device-controls button:after{font-size:11px}.builder-litrus-device-controls [data-litrus-preview-device="fit"]:after{content:"F"}.builder-litrus-device-controls [data-litrus-preview-device="phone"]:after{content:"P"}.builder-litrus-device-controls [data-litrus-preview-device="tablet"]:after{content:"T"}.builder-litrus-device-controls [data-litrus-preview-device="laptop"]:after{content:"L"}}
+        </style>
         <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:#101114;color:#f5f5f6;">
-          <header style="z-index:1;min-height:48px;padding:5px 12px;display:flex;align-items:center;gap:10px;background:#191a1e;border-bottom:1px solid #303136;">
-            <a class="builder-back-link" href="${AppUtils.escapeHTML(editorReturnRoute)}" data-route="${AppUtils.escapeHTML(editorReturnRoute)}" aria-label="Back to previous screen" style="font-size:1.2rem;padding:5px 8px;color:#fff;">&larr;</a>
-            <strong style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;">Litrus Mixer · Build your shop</strong>
+          <header class="builder-litrus-toolbar" aria-label="Shop builder controls">
+            <a class="builder-back-link" href="${AppUtils.escapeHTML(editorReturnRoute)}" data-route="${AppUtils.escapeHTML(editorReturnRoute)}" aria-label="Back to previous screen">&larr;</a>
+            <button id="builder-litrus-build" type="button">Build</button>
+            <button id="builder-litrus-publish" type="button">Publish</button>
+            <div class="builder-litrus-device-controls" role="group" aria-label="Preview size">
+              <button type="button" data-litrus-preview-device="fit" aria-label="Fit preview" aria-pressed="true">Fit</button>
+              <button type="button" data-litrus-preview-device="phone" aria-label="Phone preview" aria-pressed="false">Phone</button>
+              <button type="button" data-litrus-preview-device="tablet" aria-label="Tablet preview" aria-pressed="false">Tablet</button>
+              <button type="button" data-litrus-preview-device="laptop" aria-label="Laptop preview" aria-pressed="false">Laptop</button>
+            </div>
           </header>
-          <iframe id="builder-litrus-mixer" title="Litrus Mixer shop builder" src="/litrus-mixer/index.html?craft=1" allow="clipboard-read; clipboard-write" style="display:block;width:100%;min-width:0;height:100%;border:0;background:#fff;"></iframe>
+          <iframe id="builder-litrus-mixer" title="Shop builder" src="/litrus-mixer/index.html?craft=1" allow="clipboard-read; clipboard-write" style="display:block;width:100%;min-width:0;height:100%;border:0;background:#fff;"></iframe>
         </main>
       `;
     }
@@ -14939,8 +15725,8 @@ const StudioRenderers = {
 
   renderTenantsManager() {
     AppUtils.updateSEO({
-      title: "Shops & Tenants — Craft Studio",
-      description: "Create shops, manage tenant catalogs, and publish to wildcard subdomains."
+      title: "My Shops — Craft Studio",
+      description: "Manage the online shops linked to your Craft account."
     });
     return `
       ${StoreRenderers.renderNavbar('/account/tenants')}
@@ -14948,32 +15734,13 @@ const StudioRenderers = {
         <div class="studio-page-header">
           <div>
             <a href="/account" class="studio-back-link" data-route="/account" aria-label="Return to Studio">&larr;</a>
-            <h1 class="section-heading" style="font-size:2rem;">Shops &amp; tenants</h1>
-            <p style="color:var(--text-muted); font-size:.875rem;">Anyone can create a shop. Each shop has its own products and categories at <code>shop-name.rrobin.co.ke</code>; the app automatically saves its private shop key on this device.</p>
+            <h1 class="section-heading" style="font-size:2rem;">My shops</h1>
+            <p style="color:var(--text-muted); font-size:.875rem;">Your main website is <code>rrobin.co.ke</code>. Other websites you create have separate products, categories, and addresses.</p>
           </div>
         </div>
-        <form id="tenant-connect-form" style="display:flex; flex-direction:column; gap:12px; margin:18px 0; padding:18px; border:1px solid var(--border); border-radius:var(--radius);">
-          <label class="form-field">
-            <span class="form-label">Cloudflare Worker URL</span>
-            <input class="form-input" name="endpoint" type="url" required value="${AppUtils.escapeHTML(window.localStorage.getItem("ESHOP_CLOUDFLARE_PUBLISH_URL_V1") || "https://eshop-storefront.ryanrobin07-ek.workers.dev")}" placeholder="https://your-worker.workers.dev">
-          </label>
-          <label class="form-field">
-            <span class="form-label">Cloudflare admin key (PUBLISH_TOKEN)</span>
-            <input class="form-input" name="token" type="password" autocomplete="off" placeholder="${window.localStorage.getItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1") ? "Saved on this device; leave blank to reuse" : "Only needed to link the main shop"}">
-            <small style="color:var(--text-muted);">Used once to create this app’s main shop access key. This is not your Paystack key.</small>
-          </label>
-          <label style="display:flex; align-items:center; gap:8px; font-size:.875rem;">
-            <input type="checkbox" name="rememberToken" ${window.localStorage.getItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1") ? "checked" : ""}>
-            <span>Remember token on this device</span>
-          </label>
-          <div style="display:flex; flex-wrap:wrap; gap:8px;">
-            <button class="btn-primary" type="submit" style="min-height:42px; flex:1;">Save Worker settings</button>
-            <button class="btn-secondary" type="button" id="btn-provision-main-owner" style="min-height:42px;">Set up main shop key</button>
-          </div>
-        </form>
         <section style="margin:20px 0; padding:18px; border:1px solid var(--border); border-radius:var(--radius);">
           <h2 style="font-size:1.05rem; margin:0 0 12px;">Create a shop</h2>
-          <p style="margin:0 0 12px; color:var(--text-muted); font-size:.85rem;">Create or sign in to an account first. Your shop key is generated by the service and never shown as a Cloudflare admin token.</p>
+          <p style="margin:0 0 12px; color:var(--text-muted); font-size:.85rem;">Sign in to your Craft account first. Each new shop gets its own website and catalog.</p>
           <a class="btn-secondary" href="/account/web/themes" data-route="/account/web/themes">Create a shop or website</a>
         </section>
         <div id="tenant-manager-status" role="status" style="color:var(--text-muted); margin:12px 0;"></div>
@@ -15414,14 +16181,25 @@ const WEBSITE_BUILDER_DRAFT_TENANT_ID = "__new_website_draft__";
 const WEBSITE_BUILDER_DRAFT_PREVIOUS_TENANT_KEY = "ESHOP_NEW_WEBSITE_PREVIOUS_TENANT_V1";
 const WEBSITE_BUILDER_DRAFT_SYNC_KEY = "ESHOP_NEW_WEBSITE_DRAFT_SYNC_V1";
 
+window.localStorage.removeItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1");
+
 const AppController = {
   carouselTimer: null,
   carouselIndex: 0,
-  cloudflareAdminToken: "",
   lastRenderedPath: null,
 
+  isStorefrontVisitPath(path) {
+    return typeof path === "string" && (
+      path === "/categories" ||
+      path.startsWith("/pages/") ||
+      path.startsWith("/category/") ||
+      path.startsWith("/product/") ||
+      ["/search", "/bag", "/checkout", "/checkout/confirmation", "/favorites"].includes(path)
+    );
+  },
+
   recordWebVisit(path) {
-    if (path === "/account" || path.startsWith("/account/") || path === "/app-account" || path === "/pos" || path.startsWith("/pos/")) return;
+    if (!this.isStorefrontVisitPath(path)) return;
     try {
       if (!Array.isArray(SQLiteEngine.db.tables.web_visits)) SQLiteEngine.db.tables.web_visits = [];
       const tenantId = this.getActiveTenant().id;
@@ -15667,7 +16445,10 @@ const AppController = {
       products: JSON.parse(JSON.stringify(SQLiteEngine.select("products"))),
       categories: JSON.parse(JSON.stringify(SQLiteEngine.getCategories())),
       inventory: JSON.parse(JSON.stringify(SQLiteEngine.select("inventory"))),
-      store: JSON.parse(JSON.stringify(SQLiteEngine.getStore())),
+      store: {
+        ...JSON.parse(JSON.stringify(SQLiteEngine.getStore())),
+        hold_duration_hours: Number(StudioRenderers.getWorkspaceSetting("max_hold_hours", 24))
+      },
       pages: JSON.parse(JSON.stringify(SQLiteEngine.getPages()))
     };
     const savedCatalogs = this.tenantCatalogs();
@@ -15675,6 +16456,17 @@ const AppController = {
     if (index < 0) savedCatalogs.push(catalog);
     else savedCatalogs[index] = catalog;
     SQLiteEngine.save();
+  },
+
+  setWebsiteProductHoldState(productIds, enabled) {
+    const ids = new Set(productIds.map(Number).filter(Number.isSafeInteger));
+    const updatedCount = SQLiteEngine.update(
+      "products",
+      product => product.status !== "archived" && ids.has(Number(product.id)),
+      product => ({ ...product, booking_enabled: Boolean(enabled) })
+    );
+    if (updatedCount) this.cacheActiveTenantCatalog();
+    return updatedCount;
   },
 
   setActiveTenantCatalog(tenant, catalog) {
@@ -15766,9 +16558,10 @@ const AppController = {
   cloudflareConnection(tenantId = this.getActiveTenant().id) {
     const tenant = this.tenantCatalogs().find(item => item.tenant_id === tenantId);
     const token = tenant?.owner_token ||
-      this.cloudflareAdminToken ||
-      window.localStorage.getItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1") ||
-      this.tenantCatalogs().find(item => item.tenant_id === "main")?.owner_token ||
+      window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") ||
+      (tenantId === "main"
+        ? this.tenantCatalogs().find(item => item.tenant_id === "main")?.owner_token
+        : "") ||
       "";
     const endpoint = window.localStorage.getItem("ESHOP_CLOUDFLARE_PUBLISH_URL_V1") ||
       "https://eshop-storefront.ryanrobin07-ek.workers.dev";
@@ -15832,6 +16625,13 @@ const AppController = {
           String(options.method || "GET").toUpperCase() === "PUT" ||
           pathUrl.pathname === "/api/theme-publish" &&
           String(options.method || "GET").toUpperCase() === "POST");
+      const draftLitrusImageRequest = route === "/account/web/site" &&
+        routeParams.get("new") === "1" &&
+        routeParams.get("edit") === "1" &&
+        routeParams.get("theme") === "litrus-mixer" &&
+        tenantId === "main" &&
+        pathUrl.pathname === "/api/pixabay/images" &&
+        String(options.method || "GET").toUpperCase() === "POST";
       const rollbackCreatedTenant = finalTenantSetup && !!credentialOverride &&
         tenantId !== WEBSITE_BUILDER_DRAFT_TENANT_ID &&
         path === `/api/tenants/${encodeURIComponent(tenantId)}` &&
@@ -15839,7 +16639,7 @@ const AppController = {
       const creatingTenant = path === "/api/tenants" &&
         String(options.method || "GET").toUpperCase() === "PUT" &&
         finalTenantSetup;
-      if (!creatingTenant && !bootstrapRequest && !rollbackCreatedTenant) {
+      if (!creatingTenant && !bootstrapRequest && !rollbackCreatedTenant && !draftLitrusImageRequest) {
         throw new Error("Cloudflare requests are disabled for the local website draft until final setup.");
       }
     }
@@ -15847,8 +16647,8 @@ const AppController = {
     const token = credentialOverride || connection.token;
     const { origin } = connection;
     if (!token && !anonymous) throw new Error(tenantId === "main"
-      ? "Main shop access is not linked on this device. Open Account → Shops & Tenants and set it up with your Cloudflare admin key (PUBLISH_TOKEN), not your Paystack key."
-      : "This shop's private key is not on this device. Use its original Studio device to manage it.");
+      ? "Sign in to the Craft account that owns the main website."
+      : "Sign in to the Craft account that owns this shop.");
     let response;
     try {
       response = await fetch(new URL(path, origin), {
@@ -15902,12 +16702,31 @@ const AppController = {
 
   async refreshTenantList(container) {
     const status = document.getElementById("tenant-manager-status");
-    if (status) status.textContent = "Loading shops saved in this app…";
-    const tenants = [
-      { id: "main", name: "Main shop", hostname: "rrobin.co.ke" },
-      ...this.tenantCatalogs().filter(item =>
-        item.tenant_id !== "main" && !this.isWebsiteBuilderDraftTenant(item.tenant_id))
-    ];
+    if (status) status.textContent = "Loading your shops…";
+    const sessionToken = window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") || "";
+    const localTenants = this.tenantCatalogs().filter(item =>
+      item.tenant_id !== "__new_website_draft__");
+    let remoteTenants = [];
+    if (sessionToken) {
+      const result = await this.cloudflareRequest("/api/tenants", {}, "main", false, sessionToken);
+      remoteTenants = Array.isArray(result.tenants) ? result.tenants : [];
+    }
+    const tenantsById = new Map();
+    for (const tenant of [...localTenants, ...remoteTenants]) {
+      if (!tenant?.id && !tenant?.tenant_id) continue;
+      const id = tenant.id || tenant.tenant_id;
+      if (this.isWebsiteBuilderDraftTenant(id)) continue;
+      const saved = localTenants.find(item => item.tenant_id === id);
+      tenantsById.set(id, {
+        ...saved,
+        ...tenant,
+        id,
+        name: tenant.name || saved?.name || id,
+        hostname: tenant.hostname || saved?.hostname || (id === "main" ? "rrobin.co.ke" : `${id}.rrobin.co.ke`)
+      });
+    }
+    const tenants = [...tenantsById.values()].sort((a, b) =>
+      a.id === "main" ? -1 : b.id === "main" ? 1 : a.name.localeCompare(b.name));
     container.innerHTML = tenants.map(tenant => {
       const active = this.getActiveTenant().id === tenant.id;
       return `
@@ -15917,12 +16736,12 @@ const AppController = {
             <small style="display:block; color:var(--text-muted);">${AppUtils.escapeHTML(tenant.hostname)}</small>
           </div>
           <a class="option-chip" href="https://${encodeURIComponent(tenant.hostname)}" target="_blank" rel="noopener">Open</a>
-          ${tenant.id !== "main" && !tenant.owner_token
-            ? `<button type="button" class="btn-secondary" data-claim-tenant="${AppUtils.escapeHTML(tenant.id)}">Set up shop key</button>`
-            : `<button type="button" class="btn-secondary" data-load-tenant="${AppUtils.escapeHTML(tenant.id)}" ${active ? "disabled" : ""}>${active ? "Editing" : "Edit shop"}</button>`}
+          <button type="button" class="btn-secondary" data-load-tenant="${AppUtils.escapeHTML(tenant.id)}" ${active ? "disabled" : ""}>${active ? "Editing" : "Edit shop"}</button>
         </article>`;
     }).join("");
-    if (status) status.textContent = `${tenants.length} shop${tenants.length === 1 ? "" : "s"} saved on this device. Shop keys never leave the app.`;
+    if (status) status.textContent = sessionToken
+      ? `${tenants.length} shop${tenants.length === 1 ? "" : "s"} linked to your account.`
+      : `${tenants.length} shop${tenants.length === 1 ? "" : "s"} available on this device. Sign in to see shops linked to your account.`;
     container.querySelectorAll("[data-load-tenant]").forEach(button => {
       button.onclick = async () => {
         button.disabled = true;
@@ -15940,157 +16759,15 @@ const AppController = {
         }
       };
     });
-    container.querySelectorAll("[data-claim-tenant]").forEach(button => {
-      button.onclick = () => {
-        const tenant = tenants.find(item => item.id === button.dataset.claimTenant);
-        if (!tenant) return;
-        const formId = `claim-tenant-form-${tenant.id}`;
-        const previous = document.getElementById(formId);
-        if (previous) {
-          previous.remove();
-          return;
-        }
-        const form = document.createElement("form");
-        form.id = formId;
-        form.style.cssText = "display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--border);border-radius:var(--radius);margin:8px 12px;";
-        form.innerHTML = `
-          <p style="margin:0;color:var(--text-muted);font-size:.875rem;">This shop was created before its private key was saved on this device. Enter the Cloudflare admin key once to issue a shop-only key. The master key will not be saved.</p>
-          <input class="form-input" type="password" name="adminToken" autocomplete="off" required placeholder="Cloudflare admin key">
-          <button class="btn-primary" type="submit" style="min-height:40px;">Recover access to ${AppUtils.escapeHTML(tenant.name)}</button>
-        `;
-        button.closest("article").after(form);
-        form.querySelector('input[name="adminToken"]').focus();
-        form.onsubmit = async event => {
-          event.preventDefault();
-          const submit = form.querySelector('button[type="submit"]');
-          const adminToken = String(new FormData(form).get("adminToken") || "").trim();
-          if (!adminToken) return;
-          submit.disabled = true;
-          submit.textContent = "Securing shop…";
-          try {
-            this.cloudflareAdminToken = adminToken;
-            const result = await this.cloudflareRequest(
-              `/api/tenants/${encodeURIComponent(tenant.id)}/owner-key`,
-              { method: "PUT", body: "{}" },
-              "main",
-              false,
-              adminToken
-            );
-            if (!result.ok || !result.owner_token) throw new Error("Cloudflare did not issue a private shop key.");
-            const savedCatalog = this.tenantCatalogs().find(item => item.tenant_id === tenant.id);
-            if (savedCatalog) {
-              savedCatalog.owner_token = result.owner_token;
-              SQLiteEngine.save();
-            } else {
-              this.cloudflareAdminToken = result.owner_token;
-              const remoteCatalog = await this.cloudflareRequest(
-                `/api/catalog?tenant=${encodeURIComponent(tenant.id)}&private=1`,
-                {},
-                tenant.id
-              );
-              this.setActiveTenantCatalog({ ...tenant, ...result.tenant, owner_token: result.owner_token }, {
-                ...remoteCatalog,
-                owner_token: result.owner_token
-              });
-            }
-            await window.ShopSQLite.flush();
-            this.cloudflareAdminToken = "";
-            form.remove();
-            await this.refreshTenantList(container);
-            AppUtils.showToast(`Private access saved for ${tenant.name} on this device.`);
-          } catch (error) {
-            this.cloudflareAdminToken = "";
-            AppUtils.showToast(error.message || "Could not recover shop access.", "danger");
-            submit.disabled = false;
-            submit.textContent = `Recover access to ${tenant.name}`;
-          }
-        };
-      };
-    });
   },
 
   initTenantManager() {
-    const connectForm = document.getElementById("tenant-connect-form");
     const tenantList = document.getElementById("tenant-manager-list");
-    if (!connectForm || !tenantList) return;
-    const endpointInput = connectForm.elements.namedItem("endpoint");
-    const tokenInput = connectForm.elements.namedItem("token");
-    const provisionMainOwnerButton = document.getElementById("btn-provision-main-owner");
-    if (provisionMainOwnerButton) provisionMainOwnerButton.onclick = async () => {
-      const adminToken = String(tokenInput.value || "").trim() ||
-        window.localStorage.getItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1") ||
-        this.cloudflareAdminToken;
-      if (!adminToken) {
-        AppUtils.showToast("Enter your Cloudflare admin key (PUBLISH_TOKEN) once to link the main shop. Do not use your Paystack key.", "danger");
-        tokenInput.focus();
-        return;
-      }
-      provisionMainOwnerButton.disabled = true;
-      provisionMainOwnerButton.textContent = "Setting up…";
-      try {
-        const endpoint = new URL(endpointInput.value);
-        if (endpoint.protocol !== "https:") throw new Error("Use the HTTPS Cloudflare Worker URL.");
-        window.localStorage.setItem("ESHOP_CLOUDFLARE_PUBLISH_URL_V1", endpoint.origin);
-        this.cloudflareAdminToken = adminToken;
-        const result = await this.cloudflareRequest("/api/tenants/main/owner-key", {
-          method: "PUT",
-          body: "{}"
-        }, "main", false, adminToken);
-        if (!result.ok || !result.owner_token) throw new Error("Cloudflare did not create the main shop key.");
-        const mainTenant = { id: "main", name: "Main shop", hostname: "rrobin.co.ke", owner_token: result.owner_token };
-        const mainCatalog = this.tenantCatalogs().find(item => item.tenant_id === "main") || {};
-        this.setActiveTenantCatalog(mainTenant, {
-          ...mainCatalog,
-          products: SQLiteEngine.select("products"),
-          categories: SQLiteEngine.getCategories(),
-          inventory: SQLiteEngine.select("inventory"),
-          store: SQLiteEngine.getStore()
-        });
-        await window.ShopSQLite.flush();
-        window.localStorage.removeItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1");
-        this.cloudflareAdminToken = "";
-        tokenInput.value = "";
-        await this.refreshTenantList(tenantList);
-        AppUtils.showToast("Main shop key saved in this app. You will not need to enter the master key again.");
-      } catch (error) {
-        AppUtils.showToast(error.message || "Could not set up the main shop key.", "danger");
-      } finally {
-        provisionMainOwnerButton.disabled = false;
-        provisionMainOwnerButton.textContent = "Set up main shop key";
-      }
-    };
+    if (!tenantList) return;
     void this.refreshTenantList(tenantList).catch(error => {
       const status = document.getElementById("tenant-manager-status");
       if (status) status.textContent = error.message || "Could not load shops saved on this device.";
     });
-    connectForm.onsubmit = async event => {
-      event.preventDefault();
-      const endpoint = String(endpointInput.value || "").trim();
-      const token = String(tokenInput.value || "").trim() ||
-        window.localStorage.getItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1") || "";
-      if (!token) {
-        AppUtils.showToast("Enter your Cloudflare tenant token.", "danger");
-        return;
-      }
-      try {
-        const url = new URL(endpoint);
-        if (url.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(url.hostname)) {
-          throw new Error("Use an HTTPS Cloudflare Worker URL.");
-        }
-        window.localStorage.setItem("ESHOP_CLOUDFLARE_PUBLISH_URL_V1", url.origin);
-        if (token && connectForm.elements.namedItem("rememberToken").checked) {
-          window.localStorage.setItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1", token);
-        } else if (!token) {
-          window.localStorage.removeItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1");
-        }
-        this.cloudflareAdminToken = token || window.localStorage.getItem("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1") || "";
-        await this.refreshTenantList(tenantList);
-        if (token) tokenInput.value = "";
-      } catch (error) {
-        AppUtils.showToast(error.message || "Could not connect to Cloudflare.", "danger");
-      }
-    };
-
   },
 
   renderLaunchpad() {
@@ -16233,7 +16910,8 @@ const AppController = {
     this.homeBackgroundResizeHandler = handleViewportChange;
     window.addEventListener("resize", handleViewportChange);
 
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+        !document.body.classList.contains("native-app-shell")) {
       this.homeBackgroundTimer = window.setInterval(rotateBackground, 8500);
     }
   },
@@ -16305,7 +16983,8 @@ const AppController = {
       preload.src = source;
     };
 
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+        !document.body.classList.contains("native-app-shell")) {
       this.appScreenBackgroundTimer = window.setInterval(() => {
         showImage((activeIndex + 1) % images.length);
       }, 8500);
@@ -17155,22 +17834,46 @@ const AppController = {
       const litrusFrame = document.getElementById("builder-litrus-mixer");
       if (litrusFrame) {
         const isDraftEditor = params.get("new") === "1" && params.get("edit") === "1";
+        let litrusSaveQueue = Promise.resolve();
+        const validLitrusHtml = html => typeof html === "string" && html.length <= 3_000_000 &&
+          /^<!doctype\s+html>/i.test(html) &&
+          html.includes('<meta name="eshop-filled-theme" content="litrus-mixer">');
+        const saveLitrusDesign = payload => {
+          const save = litrusSaveQueue.then(async () => {
+            if (!window.ShopSQLite) throw new Error("The app database is not ready.");
+            await this.saveLitrusMixerCatalog(payload, isDraftEditor);
+            StudioRenderers.setWorkspaceSetting("liquid-html-theme-draft:litrus-mixer", payload.html);
+            await window.ShopSQLite.flush();
+          });
+          litrusSaveQueue = save.catch(() => {});
+          return save;
+        };
         const sendCatalog = () => {
           try {
             const store = SQLiteEngine.getStore();
             const categories = SQLiteEngine.getCategories();
             const products = SQLiteEngine.select("products", product => product.status !== "archived")
-              .map(product => ({
-                id: product.id,
-                name: product.name,
-                price: product.price ?? product.selling_price ?? 0,
-                description: product.description || "",
-                image: (Array.isArray(product.images) ? product.images[0] : "") ||
-                  product.imageUri || product.image || "",
-                category_names: categories
-                  .filter(category => String(category.id) === String(product.category_id))
-                  .map(category => category.name)
-              }));
+              .map(product => {
+                const productCategoryIds = Array.isArray(product.category_ids) &&
+                    String(product.category_ids[0] ?? "") === String(product.category_id ?? "")
+                  ? product.category_ids
+                  : product.category_id == null ? [] : [product.category_id];
+                return {
+                  id: product.id,
+                  name: product.name,
+                  price: product.price ?? product.selling_price ?? 0,
+                  description: product.description || "",
+                  images: Array.isArray(product.images) ? product.images : [],
+                  image: (Array.isArray(product.images) ? product.images[0] : "") ||
+                    product.imageUri || product.image || "",
+                  media_type: product.media_type || "image",
+                  spin_frames: Array.isArray(product.spin_frames) ? product.spin_frames : [],
+                  video_url: product.video_url || "",
+                  category_names: categories
+                    .filter(category => productCategoryIds.some(id => String(category.id) === String(id)))
+                    .map(category => category.name)
+                };
+              });
             const draft = isDraftEditor ? StudioRenderers.websiteBuilderDraft() : null;
             litrusFrame.contentWindow?.postMessage({
               type: "craft-litrus-catalog",
@@ -17210,19 +17913,59 @@ const AppController = {
             AppUtils.showToast(String(event.data.message || "Litrus Mixer could not load the shop catalog."), "danger");
             return;
           }
+          if (event.data?.type === "craft-litrus-image-request") {
+            const requestId = String(event.data.requestId || "");
+            const reply = (data) => litrusFrame.contentWindow?.postMessage({
+              type: "craft-litrus-image-response",
+              requestId,
+              ...data
+            }, window.location.origin);
+            if (!/^[a-zA-Z0-9_-]{1,80}$/.test(requestId) ||
+                !Array.isArray(event.data.images) || event.data.images.length > 20) {
+              reply({ error: "Invalid Craft image request." });
+              return;
+            }
+            try {
+              const tenantId = isDraftEditor ? "main" : this.getActiveTenant().id;
+              const result = await this.cloudflareRequest(
+                `/api/pixabay/images?tenant=${encodeURIComponent(tenantId)}`,
+                { method: "POST", body: JSON.stringify({ images: event.data.images }) },
+                tenantId
+              );
+              reply({ images: result.images || [], errors: result.errors || [] });
+            } catch (error) {
+              reply({ error: error.message || "Could not load Craft images." });
+            }
+            return;
+          }
+          if (event.data?.type === "craft-litrus-draft") {
+            const requestId = String(event.data.requestId || "");
+            const reply = error => litrusFrame.contentWindow?.postMessage({
+              type: "craft-litrus-draft-saved",
+              requestId,
+              error: error ? String(error.message || error) : ""
+            }, window.location.origin);
+            if (!/^\d+-\d+$/.test(requestId) || !validLitrusHtml(event.data.html)) {
+              reply(new Error("Litrus Mixer returned an incomplete shop draft."));
+              return;
+            }
+            try {
+              await saveLitrusDesign(event.data);
+              reply(null);
+            } catch (error) {
+              console.error("Litrus Mixer draft could not be saved in Craft.", error);
+              reply(error);
+            }
+            return;
+          }
           if (event.data?.type !== "craft-litrus-publish") return;
           const html = event.data.html;
-          const marker = '<meta name="eshop-filled-theme" content="litrus-mixer">';
-          if (typeof html !== "string" || html.length > 3_000_000 ||
-              !/^<!doctype\s+html>/i.test(html) || !html.includes(marker)) {
+          if (!validLitrusHtml(html)) {
             AppUtils.showToast("Litrus Mixer returned an incomplete storefront.", "danger");
             return;
           }
           try {
-            await this.saveLitrusMixerCatalog(event.data, isDraftEditor);
-            StudioRenderers.setWorkspaceSetting("liquid-html-theme-draft:litrus-mixer", html);
-            if (!window.ShopSQLite) throw new Error("The app database is not ready.");
-            await window.ShopSQLite.flush();
+            await saveLitrusDesign(event.data);
             if (isDraftEditor) {
               this.navigate("/account/web/site?new=1&finish=1&theme=litrus-mixer");
             } else {
@@ -17235,6 +17978,27 @@ const AppController = {
           }
         };
         window.addEventListener("message", this.litrusMixerMessageHandler);
+        const buildButton = document.getElementById("builder-litrus-build");
+        const publishButton = document.getElementById("builder-litrus-publish");
+        buildButton?.addEventListener("click", () => {
+          litrusFrame.contentDocument?.getElementById("previewBack")?.click();
+        });
+        publishButton?.addEventListener("click", () => {
+          litrusFrame.contentDocument?.getElementById("craftPublish")?.click();
+        });
+        document.querySelectorAll("[data-litrus-preview-device]").forEach(button => {
+          button.addEventListener("click", () => {
+            const device = button.dataset.litrusPreviewDevice;
+            const previewButton = litrusFrame.contentDocument?.querySelector(
+              `[data-preview-device="${device}"]`
+            );
+            if (!previewButton) return;
+            previewButton.click();
+            document.querySelectorAll("[data-litrus-preview-device]").forEach(control => {
+              control.setAttribute("aria-pressed", control === button ? "true" : "false");
+            });
+          });
+        });
       } else if (this.litrusMixerMessageHandler) {
         window.removeEventListener("message", this.litrusMixerMessageHandler);
         this.litrusMixerMessageHandler = null;
@@ -18997,12 +19761,32 @@ const AppController = {
         };
 
         const idempotencyKey = crypto.randomUUID();
+        let holdIds = [];
+        try {
+          const storedHolds = JSON.parse(window.localStorage.getItem(`eshop-holds:${location.host}`) || "[]");
+          const cartProductIds = new Set(cart.map(item => String(item.product_id)));
+          const orderName = orderData.customer_name.replace(/\s+/g, " ").toLocaleLowerCase();
+          const orderEmail = String(orderData.customer_email || "").trim().toLocaleLowerCase();
+          const orderPhone = String(orderData.customer_phone || "").replace(/\D/g, "");
+          if (Array.isArray(storedHolds)) {
+            holdIds = storedHolds.filter(hold => hold && typeof hold.id === "string"
+              && cartProductIds.has(String(hold.product_id))
+              && Date.parse(hold.expires_at) > Date.now()
+              && String(hold.customer_name || "").trim().replace(/\s+/g, " ").toLocaleLowerCase() === orderName
+              && (String(hold.contact || "").includes("@")
+                ? String(hold.contact).trim().toLocaleLowerCase() === orderEmail
+                : String(hold.contact || "").replace(/\D/g, "") === orderPhone)).map(hold => hold.id);
+          }
+        } catch (error) {
+          console.warn("Product holds could not be attached to the storefront order.", error);
+        }
         const orderPayload = {
           idempotency_key: idempotencyKey,
           customer_name: orderData.customer_name,
           customer_email: orderData.customer_email,
           customer_phone: orderData.customer_phone,
           discount_cents: Math.round(Number(orderData.discount || 0) * 100),
+          hold_ids: holdIds,
           items: cart.map(item => ({ product_id: item.product_id, quantity: Number(item.quantity || 1) }))
         };
         let serverOrder = null;
@@ -19148,7 +19932,7 @@ const AppController = {
     }
   },
 
-  async uploadCatalogImage(image, apiUrl, tenant, token) {
+  async uploadCatalogImage(image, apiUrl, tenant, token, onStored) {
     if (typeof image !== "string" || !image) return image || "";
     const isDataImage = /^data:image\//i.test(image);
     let imageSource = image;
@@ -19183,6 +19967,7 @@ const AppController = {
       try {
         const cachedPublicUrl = new URL(cachedUrl);
         if (cachedPublicUrl.protocol === "https:" && cachedPublicUrl.pathname.startsWith(`/media/${tenant.id}/`)) {
+          if (onStored) onStored({ reused: true });
           return cachedPublicUrl.href;
         }
       } catch (error) {
@@ -19228,6 +20013,7 @@ const AppController = {
     if (publicUrl.protocol !== "https:" || !publicUrl.pathname.startsWith(`/media/${tenant.id}/`)) {
       throw new Error("Cloudflare returned an invalid public image URL.");
     }
+    if (onStored) onStored({ reused: result.reused === true });
     uploadedMedia[fingerprint] = publicUrl.href;
     try {
       window.localStorage.setItem(cacheKey, JSON.stringify(uploadedMedia));
@@ -19237,12 +20023,46 @@ const AppController = {
     return publicUrl.href;
   },
 
+  async uploadCatalogVideo(blob, apiUrl, tenant, token) {
+    if (!(blob instanceof Blob) || !blob.size) throw new Error("Choose a video to upload.");
+    if (blob.size > 50_000_000) throw new Error("Videos must be smaller than 50 MB.");
+    const contentType = String(blob.type || "").split(";")[0].toLowerCase();
+    if (!["video/mp4", "video/webm", "video/quicktime"].includes(contentType)) {
+      throw new Error("Choose an MP4, WebM, or QuickTime video.");
+    }
+    const endpoint = new URL("/api/media", apiUrl.origin);
+    endpoint.searchParams.set("tenant", tenant.id);
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": contentType
+      },
+      body: blob
+    });
+    const responseText = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      throw new Error(responseText || `Cloudflare video upload returned HTTP ${response.status}.`);
+    }
+    if (!response.ok || result.ok !== true || typeof result.url !== "string") {
+      throw new Error(result.error || `Cloudflare video upload returned HTTP ${response.status}.`);
+    }
+    const publicUrl = new URL(result.url);
+    if (publicUrl.protocol !== "https:" || !publicUrl.pathname.startsWith(`/media/${tenant.id}/`)) {
+      throw new Error("Cloudflare returned an invalid public video URL.");
+    }
+    return publicUrl.href;
+  },
+
   renameLitrusMixerStorefront(html, shopName) {
     if (typeof html !== "string" ||
         !html.includes('<meta name="eshop-filled-theme" content="litrus-mixer">')) {
       throw new Error("The saved Litrus storefront is incomplete.");
     }
-    const snapshotMatch = html.match(/var SPD=(\{[^\r\n]*\});\r?\nfunction SPRT/);
+    const snapshotMatch = html.match(/var SPD=(\{[^\r\n]*\});\r?\n([ \t]*)function SPRT/);
     if (!snapshotMatch) throw new Error("The saved Litrus storefront catalog could not be updated.");
     let snapshot;
     try {
@@ -19270,7 +20090,7 @@ const AppController = {
     const serialized = JSON.stringify(snapshot)
       .replace(/</g, "\\u003c")
       .replace(/\u2028|\u2029/g, character => character === "\u2028" ? "\\u2028" : "\\u2029");
-    const updated = html.replace(snapshotMatch[0], `var SPD=${serialized};\nfunction SPRT`);
+    const updated = html.replace(snapshotMatch[0], `var SPD=${serialized};\n${snapshotMatch[2]}function SPRT`);
     return updated.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapedName}</title>`);
   },
 
@@ -19304,20 +20124,37 @@ const AppController = {
         throw new Error("A Litrus product has an invalid name or price.");
       }
       const original = current.products.find(product => String(product.id) === String(item.id));
-      const categoryName = Array.isArray(item.category_names)
-        ? String(item.category_names[0] || "")
-        : "";
-      const categoryId = categoryIds.get(categoryName.toLocaleLowerCase()) ?? null;
+      const categoryNames = Array.isArray(item.category_names)
+        ? [...new Set(item.category_names.map(value => String(value || "").trim()).filter(Boolean))]
+        : typeof item.category_name === "string" && item.category_name.trim()
+          ? [item.category_name.trim()]
+          : [];
+      const productCategoryIds = [...new Set(categoryNames
+        .map(name => categoryIds.get(name.toLocaleLowerCase()))
+        .filter(id => id != null))];
       const image = typeof item.image === "string" ? item.image : "";
+      const images = Array.isArray(item.images)
+        ? item.images.filter(value => typeof value === "string").slice(0, 8)
+        : image ? [image] : [];
+      if (image && images[0] !== image) images.unshift(image);
+      const mediaType = ["image", "cutout", "spin", "video"].includes(item.media_type)
+        ? item.media_type
+        : original?.media_type || "image";
       return {
         ...(original || {}),
         id: original?.id ?? Date.now() + categories.length + index,
         name,
         price,
         description: String(item.description || "").slice(0, 2000),
-        images: image ? [image] : [],
-        category_id: categoryId,
-        category_name: categoryName,
+        images: images.slice(0, 8),
+        media_type: mediaType,
+        spin_frames: Array.isArray(item.spin_frames)
+          ? item.spin_frames.filter(value => typeof value === "string").slice(0, 36)
+          : original?.spin_frames || [],
+        video_url: typeof item.video_url === "string" ? item.video_url : original?.video_url || "",
+        category_id: productCategoryIds[0] ?? null,
+        category_ids: productCategoryIds,
+        category_names: categoryNames.filter(name => categoryIds.has(name.toLocaleLowerCase())),
         stock: Math.max(0, Number(original?.stock) || 0),
         status: original?.status || "active"
       };
@@ -19380,7 +20217,6 @@ const AppController = {
       window.localStorage.setItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY, signature);
     }
     if (!window.ShopSQLite) throw new Error("The app database is not ready.");
-    await window.ShopSQLite.flush();
   },
 
   openCloudflarePublishModal() {
@@ -19392,37 +20228,17 @@ const AppController = {
       document.getElementById("category-modal-container");
     if (!modalContainer) return;
 
-    const endpointKey = "ESHOP_CLOUDFLARE_PUBLISH_URL_V1";
-    const tokenKey = "ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1";
-    const savedEndpoint = window.localStorage.getItem(endpointKey) || "https://eshop-storefront.ryanrobin07-ek.workers.dev";
-    const hasSavedToken = !!window.localStorage.getItem(tokenKey);
     const tenant = this.getActiveTenant();
-    const tenantRecord = this.tenantCatalogs().find(item => item.tenant_id === tenant.id);
-    const ownerToken = tenantRecord?.owner_token || "";
-    const tokenRequired = !ownerToken && !hasSavedToken && !this.cloudflareAdminToken;
+    const connection = this.cloudflareConnection(tenant.id);
+    const token = connection.token;
+    const apiUrl = new URL("/api/catalog", connection.origin);
     modalContainer.innerHTML = `
       <div class="modal-overlay active" id="cloudflare-publish-modal-overlay">
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="cloudflare-publish-title">
           <button class="modal-close-btn" id="cloudflare-publish-close" aria-label="Close">&times;</button>
           <h2 class="product-editor-title" id="cloudflare-publish-title">Deploy storefront</h2>
-          <p style="color:var(--text-muted); margin:0 0 16px;">Publish <strong>${AppUtils.escapeHTML(tenant.name)}</strong>'s Products and Categories to <strong>${AppUtils.escapeHTML(tenant.hostname)}</strong>. The shop key is used automatically from this app.</p>
+          <p style="color:var(--text-muted); margin:0 0 16px;">Publish <strong>${AppUtils.escapeHTML(tenant.name)}</strong>'s Products and Categories to <strong>${AppUtils.escapeHTML(tenant.hostname)}</strong>.</p>
           <form id="cloudflare-publish-form" style="display:flex; flex-direction:column; gap:14px;">
-            <div class="form-field">
-              <label class="form-label" for="cloudflare-publish-url">Cloudflare Worker URL</label>
-              <input id="cloudflare-publish-url" type="url" name="endpoint" class="form-input" required value="${AppUtils.escapeHTML(savedEndpoint)}" placeholder="https://your-worker.workers.dev">
-            </div>
-            <div class="form-field">
-              ${tenant.id === "main" && !ownerToken ? `
-                <label class="form-field">
-                  <span class="form-label" for="cloudflare-publish-token">Main shop owner key</span>
-                  <input id="cloudflare-publish-token" type="password" name="token" class="form-input" autocomplete="off" ${tokenRequired ? "required" : ""} placeholder="${hasSavedToken ? "Saved on this device; leave blank to reuse" : "Only required for the main shop"}">
-                </label>
-              ` : `<input type="hidden" name="token" value="">`}
-            </div>
-            ${tenant.id === "main" && !ownerToken ? `<label style="display:flex; align-items:center; gap:8px; font-size:0.875rem;">
-              <input type="checkbox" name="rememberToken" ${hasSavedToken ? "checked" : ""}>
-              <span>Remember token on this device</span>
-            </label>` : ""}
             <p style="color:var(--text-muted); font-size:0.8rem; margin:0;">Uploaded photos are compressed on this device, saved locally, then uploaded to R2 when you publish. Their R2 links are included in the live website catalog.</p>
             <div style="display:flex; gap:10px; margin-top:6px;">
               <button type="submit" class="btn-primary" id="cloudflare-publish-submit" style="flex:1;">Publish catalog</button>
@@ -19443,28 +20259,10 @@ const AppController = {
     const form = document.getElementById("cloudflare-publish-form");
     form.onsubmit = async event => {
       event.preventDefault();
-      const formData = new FormData(form);
-      const baseUrl = String(formData.get("endpoint") || "").trim();
-      const suppliedToken = String(formData.get("token") || "").trim();
-      const accountSession = tenant.id === "main" ? "" : window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") || "";
-      const token = ownerToken || suppliedToken || window.localStorage.getItem(tokenKey) || this.cloudflareAdminToken || accountSession;
-      let apiUrl;
-      try {
-        apiUrl = new URL(baseUrl);
-        if (apiUrl.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(apiUrl.hostname)) {
-          throw new Error("Use an HTTPS Cloudflare website URL.");
-        }
-      } catch (error) {
-        AppUtils.showToast(error.message || "Enter a valid Cloudflare website URL.", "danger");
-        return;
-      }
       if (!token) {
-        AppUtils.showToast(tenant.id === "main"
-          ? "Link the main shop owner key in Account → Shops & Tenants before publishing."
-          : "Sign in to the app account that owns this website before publishing.", "danger");
+        AppUtils.showToast("Sign in to the Craft account that owns this website before publishing.", "danger");
         return;
       }
-      apiUrl.pathname = "/api/catalog";
       apiUrl.search = `?tenant=${encodeURIComponent(tenant.id)}`;
       apiUrl.hash = "";
 
@@ -19474,6 +20272,7 @@ const AppController = {
       const submitButton = document.getElementById("cloudflare-publish-submit");
       submitButton.disabled = true;
       submitButton.textContent = "Preparing images…";
+      await new Promise(resolve => requestAnimationFrame(() => resolve()));
       try {
         const themeId = String(store.website_theme_id || "elora-linen");
         const litrusMixerTheme = themeId === "litrus-mixer";
@@ -19486,28 +20285,64 @@ const AppController = {
           throw new Error(`Theme "${themeId}" cannot be published yet because its shop-data mapping is not verified.`);
         }
         await window.ShopSQLite.flush();
-        const rememberToken = formData.get("rememberToken") === "on";
-        window.localStorage.setItem(endpointKey, apiUrl.origin);
-        if (tenant.id === "main" && rememberToken) window.localStorage.setItem(tokenKey, token);
-        else if (tenant.id === "main") window.localStorage.removeItem(tokenKey);
-
+        const mapWithConcurrency = async (items, limit, worker) => {
+          const results = new Array(items.length);
+          let nextIndex = 0;
+          let failed = false;
+          let failure;
+          const workerCount = Math.min(items.length, Math.max(1, limit));
+          await Promise.all(Array.from({ length: workerCount }, async () => {
+            while (!failed) {
+              const index = nextIndex++;
+              if (index >= items.length) return;
+              try {
+                results[index] = await worker(items[index], index);
+              } catch (error) {
+                failed = true;
+                failure = error;
+              }
+            }
+          }));
+          if (failed) throw failure;
+          return results;
+        };
         const uploadedImages = new Map();
         const uploadedProductImages = new Map();
         let imageCount = 0;
-        let uploadedProductImageCount = 0;
+        let uploadedR2ImageCount = 0;
+        let reusedR2ImageCount = 0;
         let fallbackProductImageCount = 0;
+        const recordImageStorage = result => {
+          if (result.reused) reusedR2ImageCount += 1;
+          else uploadedR2ImageCount += 1;
+        };
         const publishImage = async image => {
           if (typeof image !== "string" || !/^data:image\//i.test(image)) return image || "";
           if (!uploadedImages.has(image)) {
             imageCount += 1;
             submitButton.textContent = `Uploading image ${imageCount}…`;
-            uploadedImages.set(image, await this.uploadCatalogImage(image, apiUrl, tenant, token));
+            const upload = this.uploadCatalogImage(image, apiUrl, tenant, token, recordImageStorage).catch(error => {
+              uploadedImages.delete(image);
+              throw error;
+            });
+            uploadedImages.set(image, upload);
           }
           return uploadedImages.get(image);
         };
         const publishProductImage = async image => {
           if (typeof image !== "string" || !image || /^data:image\//i.test(image)) {
             return publishImage(image);
+          }
+          if (image.startsWith(LOCAL_PRODUCT_MEDIA_PREFIX) ||
+              image.startsWith(INDEXEDDB_PRODUCT_MEDIA_PREFIX)) {
+            const blob = await AppUtils.readLocalProductMedia(image);
+            const file = new File([blob], "product-media", { type: blob.type || "image/png" });
+            const compressedImage = await AppUtils.compressImageFile(file, {
+              maxDimension: 1800,
+              maxBytes: 2_500_000,
+              maxInputBytes: 40 * 1024 * 1024
+            });
+            return publishImage(compressedImage);
           }
           let imageUrl;
           try {
@@ -19525,8 +20360,9 @@ const AppController = {
             submitButton.textContent = `Uploading image ${imageCount}…`;
             uploadedProductImages.set(image, (async () => {
               try {
-                const uploadedUrl = await this.uploadCatalogImage(image, apiUrl, tenant, token);
-                if (uploadedUrl !== image) uploadedProductImageCount += 1;
+                const uploadedUrl = await this.uploadCatalogImage(
+                  image, apiUrl, tenant, token, recordImageStorage
+                );
                 return uploadedUrl;
               } catch (error) {
                 fallbackProductImageCount += 1;
@@ -19537,25 +20373,50 @@ const AppController = {
           }
           return uploadedProductImages.get(image);
         };
-        const publishProducts = [];
-        for (const product of products) {
-          publishProducts.push({
-            ...product,
-            images: await Promise.all((Array.isArray(product.images) ? product.images : []).map(publishProductImage))
-          });
-        }
-        const publishCategories = await Promise.all(categories.map(async category => ({
+        const publishProducts = await mapWithConcurrency(products, 2, async product => {
+          const { video_path: videoPath, ...publishableProduct } = product;
+          let videoUrl = product.video_url || "";
+          if (videoPath) {
+            submitButton.textContent = "Uploading product video…";
+            videoUrl = await this.uploadCatalogVideo(
+              await AppUtils.readLocalProductMedia(videoPath),
+              apiUrl,
+              tenant,
+              token
+            );
+          }
+          return {
+            ...publishableProduct,
+            images: await mapWithConcurrency(
+              Array.isArray(product.images) ? product.images : [],
+              1,
+              publishProductImage
+            ),
+            spin_frames: await mapWithConcurrency(
+              Array.isArray(product.spin_frames) ? product.spin_frames : [],
+              1,
+              publishProductImage
+            ),
+            video_url: videoUrl
+          };
+        });
+        const publishCategories = await mapWithConcurrency(categories, 2, async category => ({
           ...category,
           image: await publishImage(category.image || "")
-        })));
+        }));
         const publishStore = {
           ...store,
+          hold_duration_hours: Number(StudioRenderers.getWorkspaceSetting("max_hold_hours", 24)),
           website_theme_id: themeId,
-          element_edits: await Promise.all((Array.isArray(store.element_edits) ? store.element_edits : []).map(async edit => ({
-            ...edit,
-            src: edit.kind === "image" ? await publishImage(edit.src || "") : edit.src,
-            originalSrc: edit.kind === "image" ? await publishImage(edit.originalSrc || "") : edit.originalSrc
-          })))
+          element_edits: await mapWithConcurrency(
+            Array.isArray(store.element_edits) ? store.element_edits : [],
+            2,
+            async edit => ({
+              ...edit,
+              src: edit.kind === "image" ? await publishImage(edit.src || "") : edit.src,
+              originalSrc: edit.kind === "image" ? await publishImage(edit.originalSrc || "") : edit.originalSrc
+            })
+          )
         };
         submitButton.textContent = "Publishing catalog…";
         const response = await fetch(apiUrl.href, {
@@ -19679,9 +20540,11 @@ const AppController = {
         }
 
         close();
-        const uploadedImageCount = uploadedImages.size + uploadedProductImageCount;
         AppUtils.showToast(
-          `Published ${result.product_count} products and ${result.category_count} categories with ${uploadedImageCount} R2 image${uploadedImageCount === 1 ? "" : "s"}.` +
+          `Published ${result.product_count} products and ${result.category_count} categories; ` +
+          `${uploadedR2ImageCount} new image${uploadedR2ImageCount === 1 ? "" : "s"} saved to R2` +
+          (reusedR2ImageCount ? `, ${reusedR2ImageCount} reused` : "") +
+          "." +
           (fallbackProductImageCount
             ? ` ${fallbackProductImageCount} external product image${fallbackProductImageCount === 1 ? "" : "s"} kept its original URL after upload failed.`
             : "")
@@ -20831,6 +21694,12 @@ window.EshopInventoryBridge = {
   async fetchStorefrontAnalytics(tenantId, days = 30) {
     return AppController.cloudflareRequest(
       `/api/analytics/visit?tenant=${encodeURIComponent(tenantId)}&days=${encodeURIComponent(days)}`,
+      { cache: "no-store" }, tenantId
+    );
+  },
+  async fetchStorefrontEventAnalytics(tenantId, days = 30) {
+    return AppController.cloudflareRequest(
+      `/api/analytics/events?tenant=${encodeURIComponent(tenantId)}&days=${encodeURIComponent(days)}`,
       {}, tenantId
     );
   },

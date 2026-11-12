@@ -3,6 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { Script } from 'node:vm';
 import test from 'node:test';
+import { JSDOM } from 'jsdom';
 import initSqlJs from 'sql.js';
 import { WEBSITE_THEME_CATALOG } from '../src/theme-catalog.js';
 import {
@@ -28,6 +29,54 @@ test('POS sales load all line items in one batch instead of querying once per sa
   assert.ok(listSales);
   assert.match(listSales, /FROM pos_sale_items WHERE sale_id IN \(SELECT id FROM pos_sales\)/);
   assert.doesNotMatch(listSales, /for \(const sale of sales\) \{[\s\S]*?await rows\(/);
+});
+
+test('POS sync IDs stay stable when Web Crypto is unavailable', async () => {
+  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const start = source.indexOf('  function sha256Fallback(bytes) {');
+  const end = source.indexOf('  async function queueProduct(', start);
+  assert.ok(start >= 0 && end > start, 'The POS sync ID helpers should have a bounded implementation.');
+  const helperSource = source.slice(start, end);
+  const input = 'SKU-123';
+  const fallbackId = await new Script(`(async () => { ${helperSource}; return stableRecordId('PRODUCT', ${JSON.stringify(input)}); })()`)
+    .runInNewContext({ crypto: undefined, TextEncoder });
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  const expectedId = `PRODUCT-${Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+  assert.equal(fallbackId, expectedId);
+});
+
+test('POS checkout clears a saved sale and reports a post-save sync failure', async () => {
+  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const start = source.indexOf('  async function saveCheckout(data, method, paid) {');
+  const end = source.indexOf('  async function queueCloudRecord(', start);
+  assert.ok(start >= 0 && end > start, 'The POS checkout save flow should have a bounded implementation.');
+  const state = { cart: [{ productId: 1 }], activeTicketId: '', paymentMethod: 'Cash', discount: 0 };
+  let saveCount = 0;
+  let refreshCount = 0;
+  let toastResult;
+  const context = {
+    state,
+    saveSale: async () => {
+      saveCount += 1;
+      return { id: 1, receiptNumber: 'SALE-1' };
+    },
+    listSales: async () => [{ id: 1, receipt_number: 'SALE-1' }],
+    queueCloudRecord: async () => {},
+    listProducts: async () => [{ id: 1 }],
+    queueProduct: async () => { throw new Error('Web Crypto unavailable'); },
+    syncInventorySales: async () => 0,
+    refresh: async () => { refreshCount += 1; },
+    toast: (message, isError) => { toastResult = { message, isError }; },
+    Error
+  };
+  const saveCheckout = new Script(`(() => { ${source.slice(start, end)}; return saveCheckout; })()`)
+    .runInNewContext(context);
+  await saveCheckout({}, 'Cash', true);
+  assert.equal(saveCount, 1, 'A saved receipt must not be retried after sync fails.');
+  assert.equal(state.cart.length, 0, 'A saved receipt must be removed from the checkout cart.');
+  assert.equal(refreshCount, 1);
+  assert.equal(toastResult.isError, true);
+  assert.match(toastResult.message, /Receipt SALE-1 saved, but sync failed: Web Crypto unavailable/);
 });
 
 test('POS product and inventory rows expose pencil and trash actions', async () => {
@@ -124,7 +173,14 @@ test('workspace screen navigation uses side drawers and loading placeholders use
   assert.match(pageSource, /\.workspace-sidebar-logout\s*\{[\s\S]*?color:\s*#ffc1c1/);
   const mainShopSnapshot = pageSource.match(/async getMainShopSnapshot\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  formatMainShopMoney/)?.[1];
   assert.ok(mainShopSnapshot);
-  assert.doesNotMatch(mainShopSnapshot, /listBusinessRecords/);
+  assert.match(mainShopSnapshot, /window\.ShopPOS\.listSales\(\)/);
+  assert.match(mainShopSnapshot, /posSales\.forEach\(sale[\s\S]*?channel: "POS"/);
+  assert.doesNotMatch(mainShopSnapshot, /syncCloudNow|listBusinessRecords/,
+    "Offline Main Store sales come directly from the local POS database.");
+  const mainShopLoader = pageSource.match(/async loadMainShopWorkspace\(path\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  [a-zA-Z]/)?.[1];
+  assert.match(mainShopLoader || "", /combinedSalesPaths[\s\S]*?listStorefrontOrders[\s\S]*?mergeStorefrontOrders/);
+  assert.match(pageSource, /Business orders and POS receipts[\s\S]*?businessOrderRows/);
+  assert.match(pageSource, /Payment activity · all channels[\s\S]*?paymentActivityRows/);
   assert.match(pageSource, /const \[suppliers, purchaseOrders, tickets\] = await Promise\.all\([\s\S]*?listBusinessRecords\("supplier", tenantId\)[\s\S]*?listBusinessRecords\("purchase", tenantId\)[\s\S]*?listBusinessRecords\("ticket", tenantId\)/);
   assert.match(pageSource, /home-dashboard-skeleton[\s\S]*?home-data-card[\s\S]*?home-data-label home-skeleton-line[\s\S]*?home-data-value home-skeleton-line[\s\S]*?home-data-note home-skeleton-line[\s\S]*?home-attention-row[\s\S]*?home-recent-row/);
   assert.match(pageSource, /renderWorkspaceLoading\(label\)[\s\S]*?studio-metric-grid[\s\S]*?studio-data-card[\s\S]*?studio-panel workspace-skeleton-panel/);
@@ -310,28 +366,116 @@ test('Android POS exposes same-shop Bluetooth phone-to-phone snapshot sync', asy
   assert.match(manifest, /android\.permission\.BLUETOOTH_ADVERTISE/);
 });
 
-test('published Craft storefront runtime syncs customer activity without running in previews', async () => {
-  const theme = await readFile(new URL('../public/theme-packages/craft-main-storefront/index.html', import.meta.url), 'utf8');
+test('published Craft storefront batches anonymous events without per-action product-interest writes', async () => {
   const runtime = await readFile(new URL('../public/craft-storefront-cloudflare.js', import.meta.url), 'utf8');
   const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(theme, /src="\/craft-storefront-cloudflare\.js"[^>]*data-craft-cloudflare-runtime/);
   assert.match(runtime, /window\.__ESHOP_CLOUDFLARE_STOREFRONT__ !== true/);
-  assert.match(runtime, /\/api\/product-interest/);
-  assert.match(runtime, /location\.hash\.slice\(1\)/);
+  assert.doesNotMatch(runtime, /\/api\/product-interest/);
+  assert.match(runtime, /__ESHOP_TRACK_STOREFRONT_EVENT__/);
+  assert.doesNotMatch(runtime, /api\/analytics\/visit|reportVisit/);
+  assert.match(app, /fetchStorefrontEventAnalytics\(activeTenant\.id, 30\)/);
   assert.match(app, /productViewsBySlug\.get\(String\(product\.slug \|\| ""\)\)[\s\S]*?productViewsBySlug\.get\(String\(product\.id\)\)/);
   assert.match(runtime, /\/api\/orders/);
   assert.match(runtime, /\/api\/payments\/paystack\/initialize/);
   assert.match(runtime, /requestProductHold\(form\)/);
   assert.match(runtime, /\/api\/product-holds/);
   assert.match(runtime, /\/api\/newsletter\/subscribe/);
-  assert.match(theme, /id="product-hold-form" data-product-id=/);
-  assert.match(theme, /Request a hold/);
-  assert.match(theme, /not reserved until the shop approves your request/);
-  assert.match(app, /const themeId = "craft-main-storefront";[\s\S]*?const publishStore = \{[\s\S]*?website_theme_id: themeId/);
-  assert.match(app, /store\.website_theme_id\) \|\| "craft-main-storefront"/);
-  assert.match(app, /key: "remoteHolds",[\s\S]*?listStorefrontHolds\(activeTenant\.id\)/);
-  assert.match(app, /key === "remoteHolds"[\s\S]*?result\.value\.holds/);
+  assert.match(app, /Most booked products/);
   assert.doesNotThrow(() => new Script(runtime), 'The injected customer activity runtime should parse as JavaScript.');
+});
+
+test('storefront event analytics stays local until a batch flush', async () => {
+  const runtime = await readFile(new URL('../public/storefront-analytics.js', import.meta.url), 'utf8');
+  const dom = new JSDOM('', { url: 'https://shop.example/#/home', runScripts: 'outside-only' });
+  const requests = [];
+  let visibility = 'visible';
+  Object.defineProperty(dom.window.document, 'visibilityState', { get: () => visibility });
+  Object.defineProperty(dom.window.navigator, 'sendBeacon', {
+    value(url, body) {
+      requests.push({ url, body });
+      return true;
+    }
+  });
+  dom.window.localStorage.setItem('sp:litrus-shop:cart', JSON.stringify([{ id: 'item-1', q: 2 }]));
+
+  try {
+    dom.window.eval(runtime);
+    dom.window.__ESHOP_TRACK_STOREFRONT_EVENT__('item-1', 'cart_add', 2);
+    assert.equal(requests.length, 0, 'Tracking an action must only update the local queue.');
+    const savedQueue = JSON.parse(dom.window.localStorage.getItem('eshop:storefront-events:v1:shop.example'));
+    assert.deepEqual(savedQueue, [{ product_id: 'item-1', type: 'cart_add', n: 2 }]);
+    visibility = 'hidden';
+    dom.window.document.dispatchEvent(new dom.window.Event('visibilitychange'));
+    await new Promise(resolve => setTimeout(resolve, 10));
+    assert.equal(requests.length, 1);
+    assert.equal(new URL(requests[0].url).pathname, '/api/analytics/events');
+    assert.ok(requests[0].body.size > 0);
+    assert.deepEqual(JSON.parse(dom.window.localStorage.getItem('eshop:storefront-events:v1:shop.example')), []);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('Litrus checkout creates a server order from the live cart', async () => {
+  const runtime = await readFile(new URL('../public/litrus-mixer/live-catalog.js', import.meta.url), 'utf8');
+  const dom = new JSDOM('<div id="store"></div>', { url: 'https://shop.example/#/home', runScripts: 'outside-only' });
+  const requests = [];
+  const root = dom.window.document.getElementById('store');
+  root.innerHTML = '<form id="spco"><input name="name" value="Sam Shop"><input name="phone" value="+254700000001"><input name="email" value="sam@example.test"><input name="town" value="Nairobi"><textarea name="addr">12 Market Street</textarea><div class="sp-radios"><label><input type="radio" name="pay" value="Cash on delivery or pickup" checked></label></div><input type="radio" name="dm" value="delivery" checked><input name="via" value="none"><p class="sp-err"></p><button type="submit">Place order</button></form>';
+  dom.window.SPD = {
+    shop: { key: 'main', name: 'Main shop', products: [] },
+    pages: {},
+    shell: {},
+    templates: {}
+  };
+  dom.window.__ESHOP_THEME_CATALOG__ = {
+    store: { name: 'Main shop', currency: 'KES', delivery_fee: 150 },
+    products: [{ id: 7, name: 'Canvas Tote', price: 12.5, images: [], stock: 5 }],
+    categories: []
+  };
+  Object.defineProperty(dom.window.crypto, 'randomUUID', { value: () => '71a2b153-4af0-4c64-8b58-0e7d45005b14' });
+  dom.window.localStorage.setItem('sp:main:cart', JSON.stringify([{ id: 7, q: 2 }]));
+  dom.window.fetch = async (url, options) => {
+    requests.push({ url, body: JSON.parse(options.body) });
+    return {
+      ok: true,
+      async json() {
+        return {
+          order: {
+            order_number: 'ORD-0123456789ABCDEF',
+            currency: 'KES',
+            subtotal: 25,
+            shipping: 150,
+            total: 175,
+            items: [{ product_id: 7, name: 'Canvas Tote', quantity: 2, unit_price: 12.5 }]
+          }
+        };
+      }
+    };
+  };
+  dom.window.SPRT = options => {
+    options.after(root, 'checkout');
+    return {};
+  };
+
+  try {
+    dom.window.eval(runtime);
+    dom.window.litrusStartLiveStore(dom.window.SPD);
+    const paystack = root.querySelector('input[name="pay"][value="paystack"]');
+    assert.ok(paystack?.checked, 'Paystack should be the default payment option.');
+    root.querySelector('input[name="pay"][value="Cash on delivery or pickup"]').checked = true;
+    root.querySelector('#spco').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].url, '/api/orders');
+    assert.deepEqual(requests[0].body.items, [{ product_id: '7', quantity: 2 }]);
+    assert.equal(requests[0].body.customer_email, 'sam@example.test');
+    assert.equal(requests[0].body.delivery_method, 'delivery');
+    assert.equal(dom.window.localStorage.getItem('sp:main:cart'), '[]');
+    assert.match(root.textContent, /ORD-0123456789ABCDEF/);
+  } finally {
+    dom.window.close();
+  }
 });
 
 test('nearby Wi-Fi pairing needs one phone scan and asks the PC operator before transfer', async () => {
@@ -746,21 +890,34 @@ test('existing website editor routes stay pinned to the selected tenant', async 
   assert.match(editHandler, /this\.navigate\(`\/account\/web\/site\?tenant=\$\{encodeURIComponent\(website\.tenant_id\)\}`\)/);
 });
 
-test('uploaded catalog photos are compressed before saving and uploaded before deployment', async () => {
+test('product media saves locally before publishing and handles native gallery results', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
-  const compression = pageSource.match(/async compressImageFile\(file, \{([\s\S]*?)\n  \},\n\n  formatMoney/)?.[0];
-  const imageUpload = pageSource.match(/async uploadCatalogImage\(image, apiUrl, tenant, token\) \{([\s\S]*?)\n  \},\n\n  openCloudflarePublishModal/)?.[1];
-  const publishModal = pageSource.match(/openCloudflarePublishModal\(\) \{([\s\S]*?)\n  \},\n\n  initStudioModals/)?.[1];
-  assert.ok(compression, 'Image uploads should use the shared on-device compressor.');
+  const mediaSave = pageSource.match(/} else if \(kind === "web-product"\) \{([\s\S]*?)\n            \} else if \(kind === "loyalty-settings"\)/)?.[1];
+  const compression = pageSource.match(/async compressImageFile\(file, \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  formatMoney/)?.[0];
+  const imageUpload = pageSource.match(/async uploadCatalogImage\(image, apiUrl, tenant, token\) \{([\s\S]*?)\r?\n  \},/)?.[1];
+  const publishModal = pageSource.match(/openCloudflarePublishModal\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  initStudioModals/)?.[1];
+  assert.ok(mediaSave, 'Web product media should have a dedicated save handler.');
+  assert.ok(compression, 'Images should use the shared on-device compressor.');
   assert.ok(imageUpload, 'Publishing should upload compressed images to the Worker.');
   assert.ok(publishModal, 'Catalog publishing should include the uploaded image URLs.');
   assert.match(compression, /new Image\(\)[\s\S]*?URL\.createObjectURL\(file\)[\s\S]*?toBlob[\s\S]*?image\/webp[\s\S]*?maxBytes/);
+  assert.match(mediaSave, /SQLiteEngine\.saveProduct\([\s\S]*?video_path: videoPath[\s\S]*?\);\s*await window\.ShopSQLite\.flush\(\)/);
+  assert.doesNotMatch(mediaSave, /uploadCatalogImage|uploadCatalogVideo/);
+  assert.match(pageSource, /result\.results \|\| \[\]/);
+  assert.match(pageSource, /\}\)\)\.results\?\.\[0\]/);
+  assert.doesNotMatch(pageSource, /result\.medias|\}\)\)\.medias/);
+  assert.match(pageSource, /await nativeMedia\.ProductCutout\.persistVideo\(\{[\s\S]*?path: selected\.uri/);
+  assert.match(publishModal, /LOCAL_PRODUCT_MEDIA_PREFIX[\s\S]*?readLocalProductMedia[\s\S]*?uploadCatalogVideo/);
+  assert.match(pageSource, /High detail — 36 frames, 720 px[\s\S]*?Balanced — 24 frames, 720 px[\s\S]*?Faster — 18 frames, 480 px/);
+  assert.match(pageSource, /spinProfiles = \{[\s\S]*?high: \{ count: 36, width: 720 \}[\s\S]*?balanced: \{ count: 24, width: 720 \}[\s\S]*?fast: \{ count: 18, width: 480 \}[\s\S]*?\.\.\.spinProfile/);
   assert.match(imageUpload, /new URL\(image\)[\s\S]*?isRrobinDomain[\s\S]*?mode: "cors"[\s\S]*?maxDimension: 800, maxBytes: 2_800_000/);
   assert.match(imageUpload, /crypto\.subtle\.digest\("SHA-256"[\s\S]*?ESHOP_CATALOG_MEDIA_UPLOADS_V1:\$\{tenant\.id\}[\s\S]*?cachedPublicUrl\.pathname\.startsWith\(`\/media\/\$\{tenant\.id\}\/`\)[\s\S]*?return cachedPublicUrl\.href/);
   assert.match(imageUpload, /compressImageFile[\s\S]*?\/api\/media[\s\S]*?method: "POST"[\s\S]*?publicUrl\.pathname\.startsWith\(`\/media\/\$\{tenant\.id\}\/`\)[\s\S]*?localStorage\.setItem\(cacheKey, JSON\.stringify\(uploadedMedia\)\)/);
   assert.match(publishModal, /async image => \{[\s\S]*?fallbackProductImageCount \+= 1[\s\S]*?keeping its original URL[\s\S]*?return image/);
-  assert.match(publishModal, /await Promise\.all\(\(Array\.isArray\(product\.images\)[\s\S]*?publishProductImage\)[\s\S]*?products: publishProducts/);
+  assert.match(publishModal, /mapWithConcurrency\(products,\s*2,[\s\S]*?mapWithConcurrency\([\s\S]*?publishProductImage[\s\S]*?products: publishProducts/);
+  assert.match(publishModal, /images:\s*await mapWithConcurrency\([\s\S]*?,\s*1,\s*publishProductImage/);
+  assert.match(publishModal, /spin_frames:\s*await mapWithConcurrency\([\s\S]*?,\s*1,\s*publishProductImage/);
   assert.doesNotMatch(publishModal, /will not be published until R2|uploaded photos await R2/);
   assert.match(posSource, /window\.AppUtils\.compressImageFile\(file, \{ maxDimension: 1800, maxBytes: 900_000 \}\)/);
 
@@ -837,6 +994,25 @@ test('uploaded catalog photos are compressed before saving and uploaded before d
     uploadedUrl,
     'Images already hosted on the shop domain should not be uploaded again.'
   );
+});
+
+test('catalog publishing bounds concurrent media work and preserves item order', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const publishModal = pageSource.match(/openCloudflarePublishModal\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  initStudioModals/)?.[1];
+  const concurrencyHelper = publishModal?.match(/const mapWithConcurrency = async \(items, limit, worker\) => \{[\s\S]*?\r?\n        \};/)?.[0];
+  assert.ok(concurrencyHelper, 'Catalog publishing should define a bounded media worker.');
+  const mapWithConcurrency = new Function(`${concurrencyHelper}; return mapWithConcurrency;`)();
+  let active = 0;
+  let peak = 0;
+  const results = await mapWithConcurrency([1, 2, 3, 4, 5], 2, async value => {
+    active += 1;
+    peak = Math.max(peak, active);
+    await new Promise(resolve => setTimeout(resolve, 2));
+    active -= 1;
+    return value * 10;
+  });
+  assert.deepEqual(results, [10, 20, 30, 40, 50]);
+  assert.equal(peak, 2);
 });
 
 test('Web Studio website products and categories can be removed without deleting Store/POS records', async () => {
@@ -1276,11 +1452,11 @@ test('app shell keeps readable text on white surfaces while preserving accent bu
   assert.match(themeSettings, /setProperty\("--text-dim", "#8A8A90"\)/);
 });
 
-test('home navigation drawer links directly to Shops & Tenants outside builder preview', async () => {
+test('home navigation drawer links directly to My Shops outside builder preview', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   const mobileDrawer = pageSource.match(/<!-- Mobile Navigation Drawer -->([\s\S]*?)<\/div>\s*`/);
   assert.ok(mobileDrawer, 'Home navigation should include a mobile drawer.');
-  assert.match(mobileDrawer[1], /href="\/account\/tenants" class="mobile-nav-link" data-route="\/account\/tenants">Shops &amp; Tenants<\/a>/);
+  assert.match(mobileDrawer[1], /href="\/account\/tenants" class="mobile-nav-link" data-route="\/account\/tenants">My shops<\/a>/);
   assert.match(mobileDrawer[1], /\$\{options\.builderPreview \? "" : `[\s\S]*?href="\/account\/tenants"/);
 });
 
@@ -1323,21 +1499,81 @@ test('published storefront checkout creates server orders and sends customers to
   assert.match(paymentReturn, /fetch\(`\/api\/payments\/paystack\/verify\?/);
 });
 
-test('published storefront reports anonymous product interest and submits owner-approved hold requests', async () => {
+test('published storefront queues activity locally and reserves customer-enabled holds', async () => {
   const storefront = await readFile(new URL('../public/builder-storefront.html', import.meta.url), 'utf8');
   const ownerUi = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   const inlineScript = storefront.match(/<script>([\s\S]*?)<\/script>/)?.[1];
   assert.ok(inlineScript, 'Published storefront should include its application script.');
   new Script(inlineScript);
-  assert.match(storefront, /Request a hold[\s\S]*?not reserved unless the owner approves it[\s\S]*?data-product-hold-form/);
-  assert.match(storefront, /recordStorefrontVisit\(path \|\| "\/"\)/);
+  assert.match(storefront, /product\.booking_enabled === true[\s\S]*?data-product-hold-form/);
+  assert.match(storefront, /Reserve the selected quantity immediately/);
+  assert.doesNotMatch(storefront, /recordStorefrontVisit|api\/analytics\/visit/);
   assert.match(storefront, /recordProductInterest\(productId, action, value\)/);
-  assert.match(storefront, /fetch\("\/api\/product-interest"/);
+  assert.match(storefront, /__ESHOP_TRACK_STOREFRONT_EVENT__/);
+  assert.doesNotMatch(storefront, /\/api\/product-interest/);
   assert.match(storefront, /fetch\("\/api\/product-holds"/);
   assert.match(ownerUi, /Storefront hold requests[\s\S]*?data-online-holds-load/);
-  assert.match(ownerUi, /Approve for 24 hours/);
-  assert.match(ownerUi, /Product activity · last 30 days[\s\S]*?data-business-product-analytics/);
+  assert.match(ownerUi, /Approve with configured duration/);
+  assert.match(ownerUi, /data-web-product-booking/);
+  assert.match(ownerUi, /name="booking_enabled"/);
   assert.match(ownerUi, /listStorefrontHolds\(tenantId\)[\s\S]*?updateStorefrontHold\(tenantId, id, action\)/);
+});
+
+test('app catalog caching and publishing read hold duration from the workspace settings renderer', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const catalogCache = pageSource.match(/cacheActiveTenantCatalog\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  setActiveTenantCatalog/)?.[1];
+  const publishStore = pageSource.match(/const publishStore = \{([\s\S]*?)\r?\n        \};/)?.[1];
+  assert.ok(catalogCache, 'The active tenant catalog cache should have a bounded method.');
+  assert.ok(publishStore, 'Published store settings should have a bounded object.');
+  assert.match(catalogCache, /StudioRenderers\.getWorkspaceSetting\("max_hold_hours", 24\)/);
+  assert.doesNotMatch(catalogCache, /this\.getWorkspaceSetting/);
+  assert.match(publishStore, /StudioRenderers\.getWorkspaceSetting\("max_hold_hours", 24\)/);
+  assert.doesNotMatch(publishStore, /this\.getWorkspaceSetting/);
+});
+
+test('storefront hold eligibility can be updated for all or selected products at once', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const helper = pageSource.match(/setWebsiteProductHoldState\(productIds, enabled\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  setActiveTenantCatalog/)?.[1];
+  assert.ok(helper, 'The shared product hold updater should have a bounded method.');
+  assert.match(pageSource, /data-store-holds-all="enable"/);
+  assert.match(pageSource, /data-store-holds-all="disable"/);
+  assert.match(pageSource, /data-bulk-product-holds="enable"/);
+  assert.match(pageSource, /data-bulk-product-holds="disable"/);
+  assert.match(pageSource, /AppController\.setWebsiteProductHoldState\(selectedIds, enabled\)/);
+  assert.match(pageSource, /AppController\.setWebsiteProductHoldState\(productIds, enabled\)/);
+
+  const products = [
+    { id: 1, status: 'active', stock: 12, booking_enabled: false },
+    { id: 2, status: 'active', stock: 4, booking_enabled: false },
+    { id: 3, status: 'archived', stock: 0, booking_enabled: false }
+  ];
+  const SQLiteEngine = {
+    update(tableName, predicate, update) {
+      assert.equal(tableName, 'products');
+      let updated = 0;
+      products.forEach((product, index) => {
+        if (predicate(product)) {
+          products[index] = update(product);
+          updated += 1;
+        }
+      });
+      return updated;
+    }
+  };
+  const controller = new Function(
+    'SQLiteEngine',
+    `return ({setWebsiteProductHoldState(productIds, enabled) {${helper}}, cacheActiveTenantCatalog() { this.cacheCalls = (this.cacheCalls || 0) + 1; }})`
+  )(SQLiteEngine);
+
+  assert.equal(controller.setWebsiteProductHoldState([1, 2, 3], true), 2);
+  assert.equal(products[0].booking_enabled, true);
+  assert.equal(products[1].booking_enabled, true);
+  assert.equal(products[2].booking_enabled, false);
+  assert.equal(products[0].stock, 12);
+  assert.equal(controller.setWebsiteProductHoldState([2], false), 1);
+  assert.equal(products[0].booking_enabled, true);
+  assert.equal(products[1].booking_enabled, false);
+  assert.equal(controller.cacheCalls, 2);
 });
 
 test('POS persists products, manual payments, invoices and business instances in SQLite', async () => {
@@ -1358,6 +1594,7 @@ test('POS persists products, manual payments, invoices and business instances in
   const oldFormData = globalThis.FormData;
   const oldConfirm = globalThis.confirm;
   const oldPrompt = globalThis.prompt;
+  const oldCrypto = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
   let promptValue = null;
   const runSql = (statement, values = []) => {
     db.run(statement, values);
@@ -1684,7 +1921,7 @@ test('POS persists products, manual payments, invoices and business instances in
       "Build Your Web",
       "Live Web",
       "Store Settings",
-      "Shops & Tenants",
+      "My shops",
       "Plans & Tiering"
     ]);
     assert.match(pageSource, /title: "Live Web", description: "Preview the customer-facing Craft website\.", route: "\/web"/);
@@ -1726,7 +1963,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /renderWeb\(\)\s*\{\s*return StudioRenderers\.renderMainShopWorkspace\("\/account\/web"\);/);
     assert.match(pageSource, /webStudioNavigation\(\)[\s\S]*?title: "Dashboard"[\s\S]*?title: "Store"[\s\S]*?title: "CRM"[\s\S]*?title: "Websites"[\s\S]*?title: "Payments"/);
     assert.match(pageSource, /title: "Overview"[\s\S]*?title: "Visits"[\s\S]*?title: "Traffic"[\s\S]*?title: "Performance"[\s\S]*?title: "Product intelligence"/);
-    assert.match(pageSource, /title: "Products"[\s\S]*?title: "Categories"[\s\S]*?title: "Inventory"[\s\S]*?title: "Orders and bookings"/);
+    assert.match(pageSource, /title: "Products"[\s\S]*?title: "Categories"[\s\S]*?title: "Inventory"[\s\S]*?title: "Orders"[\s\S]*?title: "Bookings"/);
     assert.match(pageSource, /title: "Repeat customers and point sets"[\s\S]*?title: "Newsletter"[\s\S]*?title: "Notifications"/);
     assert.match(pageSource, /title: "Web editor"[\s\S]*?title: "Webmaker"[\s\S]*?title: "Page editor"/);
     assert.match(pageSource, /aria-label="Web Studio sections"[\s\S]*?sections\.map\(section =>/);
@@ -2123,12 +2360,27 @@ test('POS persists products, manual payments, invoices and business instances in
         selector === '[data-pos-quantity]' ? { value: '2', dataset: { posQuantity: '1' } } : null }
     });
     await app.refresh();
-    await submit('checkout', { paymentMethod: 'Other', customerName: 'Sample Customer', customerPhone: '0700 000 001', dueDate: '', discount: '2' });
+    const syncedProductId = (await app.listBusinessRecords('product', 'local'))
+      .find((product) => product.name === 'Canvas Tote')?.id;
+    const runtimeCrypto = globalThis.crypto;
+    Object.defineProperty(globalThis, 'crypto', {
+      configurable: true,
+      writable: true,
+      value: { subtle: undefined, randomUUID: () => runtimeCrypto.randomUUID() }
+    });
+    try {
+      await submit('checkout', {
+        paymentMethod: 'Other', customerName: 'Sample Customer', customerPhone: '0700 000 001', dueDate: '', discount: '2'
+      });
+    } finally {
+      Object.defineProperty(globalThis, 'crypto', oldCrypto);
+    }
     const paidSale = queryRows('SELECT paid,total_cents,discount_cents FROM pos_sales')[0];
     assert.equal(paidSale.paid, 1);
     assert.equal(queryRows('SELECT payment_method FROM pos_sales')[0].payment_method, 'Other');
     assert.equal(paidSale.total_cents, 3500);
     assert.equal(paidSale.discount_cents, 200);
+    assert.match(toast.textContent, /^Receipt .* saved/);
     assert.match(app.render('/pos/sales', new URLSearchParams('open=1')), /Subtotal \/ discount \/ tax/);
     const customerMarkup = app.render('/pos/customers');
     assert.match(customerMarkup, /Sample Customer/);
@@ -2137,7 +2389,10 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.equal(window.location.hash, '#/pos');
     assert.match(root.innerHTML, /Your sale is empty/);
     assert.doesNotMatch(window.location.hash, /\/sales/);
-    assert.equal((await app.listBusinessRecords('product', 'local')).find(product => product.name === 'Canvas Tote').stock, 2);
+    const syncedProductAfterSale = (await app.listBusinessRecords('product', 'local'))
+      .find((product) => product.name === 'Canvas Tote');
+    assert.equal(syncedProductAfterSale.stock, 2);
+    assert.equal(syncedProductAfterSale.id, syncedProductId, 'The mobile hash fallback should preserve existing product sync IDs.');
     await click('add-cart', { id: '1' });
     await submit('checkout', { paymentMethod: 'Card', customerName: 'Sample Customer', customerPhone: '0700 000 001', dueDate: '' });
     assert.equal((await app.listBusinessRecords('product', 'local')).find(product => product.name === 'Canvas Tote').stock, 1);
@@ -2396,5 +2651,7 @@ test('POS persists products, manual payments, invoices and business instances in
     globalThis.FormData = oldFormData;
     globalThis.confirm = oldConfirm;
     globalThis.prompt = oldPrompt;
+    if (oldCrypto) Object.defineProperty(globalThis, 'crypto', oldCrypto);
+    else delete globalThis.crypto;
   }
 });

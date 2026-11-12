@@ -1071,6 +1071,18 @@ button {
   transition: transform 0.3s ease;
 }
 
+.gallery-main-view[data-spin-view="true"] {
+  cursor: ew-resize;
+  touch-action: pan-y;
+}
+
+.gallery-main-video {
+  width: 100%;
+  height: 100%;
+  background: #111;
+  object-fit: contain;
+}
+
 .gallery-thumbnails-rail {
   display: flex;
   gap: 12px;
@@ -5414,6 +5426,9 @@ const PageRenderers = {
     const isFav = SQLiteEngine.isFavorite(product.id);
     const hasDiscount = product.discount && product.discount > 0;
     const images = product.images && product.images.length ? product.images : ["https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=1000&q=80"];
+    const spinFrames = Array.isArray(product.spin_frames) ? product.spin_frames.filter(Boolean).slice(0, 36) : [];
+    const hasSpin = product.media_type === "spin" && spinFrames.length > 1;
+    const hasVideo = product.media_type === "video" && typeof product.video_url === "string" && product.video_url;
 
     AppUtils.updateSEO({
       title: `${product.name} — ${product.brand}`,
@@ -5462,12 +5477,14 @@ const PageRenderers = {
             <!-- Left: Switchable Image Gallery -->
             <div class="product-gallery">
               <div class="gallery-main-view">
-                <img id="main-product-img" src="${images[0]}" alt="${AppUtils.escapeHTML(product.name)}" class="gallery-main-img" width="600" height="800">
+                <img id="main-product-img" src="${images[0]}" alt="${AppUtils.escapeHTML(product.name)}" class="gallery-main-img" width="600" height="800" ${hasSpin ? `data-spin-frames="${AppUtils.escapeHTML(JSON.stringify(spinFrames))}"` : ""} ${hasVideo ? "hidden" : ""}>
+                ${hasVideo ? `<video id="main-product-video" class="gallery-main-video" src="${AppUtils.escapeHTML(product.video_url)}" controls playsinline preload="metadata" poster="${AppUtils.escapeHTML(images[0])}" aria-label="${AppUtils.escapeHTML(product.name)} product video"></video>` : ""}
                 ${product.is_flagship ? `<span class="product-badge badge-flagship" style="position: absolute; top: 16px; left: 16px;">Flagship Curation</span>` : ""}
               </div>
               <div class="gallery-thumbnails-rail">
+                ${hasVideo ? `<button class="gallery-thumb-btn active" data-action="switch-video" aria-label="Show product video"><span aria-hidden="true">▶</span></button>` : ""}
                 ${images.map((img, i) => `
-                  <button class="gallery-thumb-btn ${i === 0 ? 'active' : ''}" data-action="switch-thumb" data-src="${img}" aria-label="View photo ${i+1}">
+                  <button class="gallery-thumb-btn ${i === 0 && !hasVideo ? 'active' : ''}" data-action="switch-thumb" data-src="${img}" aria-label="View photo ${i+1}">
                     <img src="${img}" alt="Thumbnail ${i+1}" class="gallery-thumb-img">
                   </button>
                 `).join("")}
@@ -5548,15 +5565,15 @@ const PageRenderers = {
                 </div>
               </div>
 
-              ${product.stock > 0 ? `
+              ${product.booking_enabled === true && product.stock > 0 ? `
                 <details style="margin-top: 18px; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
                   <summary style="cursor: pointer; font-weight: 600;">Request a hold</summary>
-                  <p style="color: var(--text-muted); margin: 10px 0 14px;">Send a request to the shop. The item is not reserved unless the owner approves it; approved holds expire after 24 hours.</p>
+                  <p style="color: var(--text-muted); margin: 10px 0 14px;">Reserve the selected quantity immediately for up to ${Number(SQLiteEngine.getStore().hold_duration_hours) || 24} hours. The hold can be released by the shop.</p>
                   <form data-product-hold-form data-product-id="${AppUtils.escapeHTML(product.id)}" style="display: grid; gap: 12px;">
                     <label class="form-field"><span class="form-label">Your name</span><input class="form-input" name="customerName" autocomplete="name" maxlength="160" required></label>
                     <label class="form-field"><span class="form-label">Email or phone</span><input class="form-input" name="contact" autocomplete="email" maxlength="240" required></label>
                     <label class="form-field"><span class="form-label">Quantity</span><input class="form-input" name="quantity" type="number" min="1" max="${Math.min(99, Math.max(1, Number(product.stock) || 1))}" value="1" required></label>
-                    <button type="submit" class="btn-secondary">Send hold request</button>
+                    <button type="submit" class="btn-secondary">Reserve this product</button>
                     <p data-hold-status role="status" aria-live="polite" style="color:var(--text-muted);margin:0;"></p>
                   </form>
                 </details>
@@ -6942,51 +6959,20 @@ const AppController = {
   carouselTimer: null,
   carouselIndex: 0,
 
-  storefrontVisitorId() {
-    if (!window.__ESHOP_CLOUDFLARE_STOREFRONT__ || builderPreviewMode) return "";
-    try {
-      const key = "ESHOP_STOREFRONT_VISITOR_V1";
-      let id = window.localStorage.getItem(key);
-      if (!id) {
-        id = globalThis.crypto?.randomUUID?.() || "";
-        if (id) window.localStorage.setItem(key, id);
-      }
-      return id;
-    } catch (error) {
-      console.error("Anonymous storefront activity could not be initialized.", error);
-      return "";
-    }
-  },
-
-  recordStorefrontVisit(path) {
-    const visitorId = this.storefrontVisitorId();
-    if (!visitorId || path === "/account" || path.startsWith("/account/") || path === "/pos" || path.startsWith("/pos/")) return;
-    void fetch("/api/analytics/visit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visitor_id: visitorId, path: path.split(/[?#]/, 1)[0] || "/" })
-    }).then(response => {
-      if (!response.ok) throw new Error(`Visit analytics request failed (${response.status}).`);
-    }).catch(error => console.error("Storefront visit could not be reported.", error));
-  },
-
   recordProductInterest(productId, action, value) {
-    const visitorId = this.storefrontVisitorId();
-    if (!visitorId) return;
-    const detail = action === "cart" ? { quantity: value } : { saved: value };
-    void fetch("/api/product-interest", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ visitor_id: visitorId, product_id: productId, action, ...detail })
-    }).then(response => {
-      if (!response.ok) throw new Error(`Product interest request failed (${response.status}).`);
-    }).catch(error => console.error("Product interest could not be reported.", error));
+    if (!window.__ESHOP_CLOUDFLARE_STOREFRONT__ || builderPreviewMode) return;
+    const type = action === "cart" ? "cart_add" : action === "wishlist" ? "wishlist_add"
+      : action === "view" ? "view" : "";
+    if (!type) return;
+    if (action === "wishlist" && value !== true) return;
+    window.__ESHOP_TRACK_STOREFRONT_EVENT__?.(
+      String(productId),
+      type,
+      action === "cart" ? Math.max(1, Number(value) || 1) : 1
+    );
   },
 
-  recordCartInterest(productId) {
-    const quantity = SQLiteEngine.getCart()
-      .filter(item => Number(item.product_id) === Number(productId))
-      .reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+  recordCartInterest(productId, quantity = 1) {
     this.recordProductInterest(productId, "cart", quantity);
   },
 
@@ -7003,7 +6989,7 @@ const AppController = {
       return;
     }
     if (submit) submit.disabled = true;
-    if (status) status.textContent = "Sending your request…";
+    if (status) status.textContent = "Reserving the requested quantity…";
     try {
       const idempotencyKey = form.dataset.idempotencyKey || globalThis.crypto.randomUUID();
       form.dataset.idempotencyKey = idempotencyKey;
@@ -7022,9 +7008,24 @@ const AppController = {
       if (!response.ok || !result.hold?.id) {
         throw new Error(result.error || `The shop could not accept this request (${response.status}).`);
       }
+      try {
+        const savedHolds = JSON.parse(window.localStorage.getItem(`eshop-holds:${location.host}`) || "[]");
+        const holds = Array.isArray(savedHolds) ? savedHolds : [];
+        holds.push({
+          id: result.hold.id,
+          product_id: String(result.hold.product_id),
+          quantity: Number(result.hold.quantity),
+          expires_at: result.hold.expires_at,
+          customer_name: customerName,
+          contact
+        });
+        window.localStorage.setItem(`eshop-holds:${location.host}`, JSON.stringify(holds.slice(-100)));
+      } catch (error) {
+        console.warn("The hold was created but could not be saved on this device.", error);
+      }
       delete form.dataset.idempotencyKey;
       form.reset();
-      if (status) status.textContent = "Request sent. The product is not reserved unless the shop owner approves it.";
+      if (status) status.textContent = `Held until ${new Date(result.hold.expires_at).toLocaleString()}.`;
     } catch (error) {
       console.error("Product hold request could not be sent.", error);
       if (status) status.textContent = error instanceof Error ? error.message : "Your request could not be sent. Please retry.";
@@ -7246,7 +7247,6 @@ const AppController = {
 
     const [path, queryString] = fullPath.split("?");
     const params = new URLSearchParams(queryString || "");
-    this.recordStorefrontVisit(path || "/");
 
     let html = "";
 
@@ -7277,6 +7277,8 @@ const AppController = {
       ` : StoreRenderers.renderHome();
     } else if (path.startsWith("/product/")) {
       const slug = path.replace("/product/", "").replace(/\/$/, "");
+      const product = SQLiteEngine.getProductBySlug(slug);
+      if (product) this.recordProductInterest(product.id, "view", 1);
       html = PageRenderers.renderProduct(slug);
     } else if (path === "/search") {
       html = PageRenderers.renderSearch(params.get("q") || "", params.get("sort") || "featured");
@@ -7476,19 +7478,65 @@ const AppController = {
   },
 
   initProductDetail() {
-    // Gallery Thumbnails
     const thumbs = document.querySelectorAll("[data-action='switch-thumb']");
     const mainImg = document.getElementById("main-product-img");
+    const mainVideo = document.getElementById("main-product-video");
+    const mainView = document.querySelector(".gallery-main-view");
     thumbs.forEach(btn => {
       btn.onclick = () => {
         thumbs.forEach(t => t.classList.remove("active"));
         btn.classList.add("active");
         const src = btn.getAttribute("data-src");
-        if (mainImg && src) mainImg.src = src;
+        if (mainImg && src) {
+          mainImg.src = src;
+          mainImg.hidden = false;
+        }
+        if (mainVideo) {
+          mainVideo.pause();
+          mainVideo.hidden = true;
+        }
       };
     });
+    const videoButton = document.querySelector("[data-action='switch-video']");
+    if (videoButton && mainVideo) {
+      videoButton.onclick = () => {
+        thumbs.forEach(t => t.classList.remove("active"));
+        videoButton.classList.add("active");
+        if (mainImg) mainImg.hidden = true;
+        mainVideo.hidden = false;
+      };
+    }
+    if (mainImg && mainView) {
+      let frames = [];
+      try {
+        frames = JSON.parse(mainImg.dataset.spinFrames || "[]");
+      } catch {
+        frames = [];
+      }
+      if (frames.length > 1) {
+        let frame = 0;
+        let pointerId = -1;
+        let lastX = 0;
+        mainView.dataset.spinView = "true";
+        mainImg.addEventListener("pointerdown", event => {
+          pointerId = event.pointerId;
+          lastX = event.clientX;
+          mainImg.setPointerCapture(pointerId);
+        });
+        mainImg.addEventListener("pointermove", event => {
+          if (event.pointerId !== pointerId) return;
+          const step = Math.trunc((event.clientX - lastX) / 6);
+          if (!step) return;
+          frame = ((frame - step % frames.length) % frames.length + frames.length) % frames.length;
+          lastX = event.clientX;
+          mainImg.src = frames[frame];
+        });
+        const stopSpin = () => { pointerId = -1; };
+        mainImg.addEventListener("pointerup", stopSpin);
+        mainImg.addEventListener("pointercancel", stopSpin);
+      }
+    }
 
-    // Option Chips
     document.querySelectorAll(".options-chips .option-chip").forEach(chip => {
       chip.onclick = () => {
         const parent = chip.parentElement;
@@ -7517,7 +7565,7 @@ const AppController = {
         const activeSize = document.querySelector("#product-size-chips .option-chip.active");
         const activeColor = document.querySelector("#product-color-chips .option-chip.active");
         SQLiteEngine.addToCart(prodId, qty, activeSize ? activeSize.getAttribute("data-val") : null, activeColor ? activeColor.getAttribute("data-val") : null);
-        this.recordCartInterest(prodId);
+        this.recordCartInterest(prodId, qty);
         AppUtils.showToast("Artifact added to your shopping bag");
         this.updateNavBadges();
       };
@@ -7532,7 +7580,7 @@ const AppController = {
         const activeSize = document.querySelector("#product-size-chips .option-chip.active");
         const activeColor = document.querySelector("#product-color-chips .option-chip.active");
         SQLiteEngine.addToCart(prodId, qty, activeSize ? activeSize.getAttribute("data-val") : null, activeColor ? activeColor.getAttribute("data-val") : null);
-        this.recordCartInterest(prodId);
+        this.recordCartInterest(prodId, qty);
         this.navigate("/checkout");
       };
     }
@@ -7603,7 +7651,6 @@ const AppController = {
             }, cart);
             SQLiteEngine.insert("orders", order);
             SQLiteEngine.clearCart();
-            for (const productId of new Set(cart.map(item => item.product_id))) this.recordProductInterest(productId, "cart", 0);
             this.navigate(`/checkout/confirmation?orderId=${encodeURIComponent(order.order_number)}`);
             return;
           } else {
@@ -7662,7 +7709,6 @@ const AppController = {
               created_at: order.created_at
             });
             SQLiteEngine.clearCart();
-            for (const productId of new Set(cart.map(item => item.product_id))) this.recordProductInterest(productId, "cart", 0);
           }
         } catch (error) {
           console.error("Could not save the checkout order.", error);
@@ -8033,7 +8079,7 @@ const AppController = {
         const delta = Number(cartQtyBtn.getAttribute("data-delta"));
         const productId = SQLiteEngine.getCart().find(item => Number(item.id) === cartId)?.product_id;
         SQLiteEngine.updateCartQty(cartId, delta);
-        if (productId != null) this.recordCartInterest(productId);
+        if (productId != null && delta > 0) this.recordCartInterest(productId, delta);
         this.handleRoute("/bag", false);
         return;
       }
@@ -8044,7 +8090,6 @@ const AppController = {
         const cartId = Number(cartRemoveBtn.getAttribute("data-id"));
         const productId = SQLiteEngine.getCart().find(item => Number(item.id) === cartId)?.product_id;
         SQLiteEngine.removeCartItem(cartId);
-        if (productId != null) this.recordCartInterest(productId);
         this.handleRoute("/bag", false);
         return;
       }

@@ -5,9 +5,9 @@
       window.__CRAFT_CLOUDFLARE_RUNTIME__) return;
   window.__CRAFT_CLOUDFLARE_RUNTIME__ = true;
 
-  const visitorStorageKey = "ESHOP_STOREFRONT_VISITOR_V1";
   const cartStorageKey = "storefront.cart";
   const wishlistStorageKey = "storefront.wishlist";
+  const holdStorageKey = `eshop-holds:${location.host}`;
 
   function readStorage(key, fallback) {
     try {
@@ -16,20 +16,6 @@
     } catch (error) {
       console.warn("Craft storefront activity could not read local preferences.", error);
       return fallback;
-    }
-  }
-
-  function visitorId() {
-    try {
-      let id = localStorage.getItem(visitorStorageKey);
-      if (!id) {
-        id = crypto.randomUUID();
-        localStorage.setItem(visitorStorageKey, id);
-      }
-      return id;
-    } catch (error) {
-      console.warn("Craft storefront activity could not initialize a visitor ID.", error);
-      return "";
     }
   }
 
@@ -45,51 +31,6 @@
       throw new Error(result.error || `Storefront request failed (${response.status}).`);
     }
     return response.json();
-  }
-
-  function reportInterest(productId, action, value) {
-    const id = visitorId();
-    if (!id || !productId) return;
-    const data = action === "cart"
-      ? { quantity: value }
-      : { saved: value };
-    void sendJson("/api/product-interest", {
-      visitor_id: id,
-      product_id: String(productId),
-      action,
-      ...data
-    }).catch(error => console.warn("Craft product activity was not synced.", error));
-  }
-
-  function reportVisit() {
-    if (/^\/(?:account|pos)(?:\/|$)/.test(location.pathname)) return;
-    const id = visitorId();
-    if (!id) return;
-    const hashRoute = location.hash.startsWith("#/")
-      ? location.hash.slice(1).split("?", 1)[0]
-      : "";
-    void sendJson("/api/analytics/visit", {
-      visitor_id: id,
-      path: hashRoute || location.pathname.split(/[?#]/, 1)[0] || "/"
-    }).catch(error => console.warn("Craft storefront visit was not synced.", error));
-  }
-
-  function reportAllInterests() {
-    const cart = readStorage(cartStorageKey, []);
-    const wishlist = readStorage(wishlistStorageKey, []);
-    const quantities = new Map();
-    if (Array.isArray(cart)) {
-      for (const item of cart.slice(0, 100)) {
-        if (!item || item.productId == null) continue;
-        quantities.set(String(item.productId), Math.min(99, Math.max(0, Number(item.qty) || 0)));
-      }
-    }
-    const savedIds = new Set(Array.isArray(wishlist) ? wishlist.slice(0, 100).map(String) : []);
-    const productIds = new Set([...quantities.keys(), ...savedIds]);
-    for (const productId of productIds) {
-      reportInterest(productId, "cart", quantities.get(productId) || 0);
-      reportInterest(productId, "wishlist", savedIds.has(productId));
-    }
   }
 
   function installNewsletterConsent(form) {
@@ -120,10 +61,14 @@
 
   function installProductHoldForm() {
     const app = document.getElementById("app");
+    if (window.__ESHOP_THEME_CATALOG_LOADING__) return;
     if (!app || app.querySelector("#product-hold-form")) return;
     const addButton = app.querySelector('[data-action="add-to-cart"][data-id]');
     const actions = addButton?.closest(".form-actions");
     if (!actions) return;
+    const catalogProducts = window.__ESHOP_THEME_CATALOG__?.products;
+    if (Array.isArray(catalogProducts) &&
+        !catalogProducts.some(product => String(product.id) === String(addButton.dataset.id) && product.booking_enabled === true)) return;
     const form = document.createElement("form");
     form.id = "product-hold-form";
     form.className = "form-grid";
@@ -131,10 +76,11 @@
     form.style.cssText = "margin-top:18px;max-width:420px";
     const heading = document.createElement("h2");
     heading.className = "section-title";
-    heading.textContent = "Request a hold";
+    heading.textContent = "Reserve this product";
     const note = document.createElement("p");
     note.className = "slot-note";
-    note.textContent = "Ask the shop to hold this item. It is not reserved until the shop approves your request.";
+    const holdHours = Number(window.__ESHOP_THEME_CATALOG__?.store?.hold_duration_hours) || 24;
+    note.textContent = `Reserve the selected quantity immediately for up to ${holdHours} hours.`;
     form.append(heading, note);
     for (const [name, title, type, autocomplete] of [
       ["customer_name", "Your name", "text", "name"],
@@ -164,7 +110,7 @@
     const button = document.createElement("button");
     button.className = "btn btn--outline";
     button.type = "submit";
-    button.textContent = "Request a hold";
+    button.textContent = "Reserve this product";
     const status = document.createElement("p");
     status.id = "product-hold-msg";
     status.className = "form-msg";
@@ -214,16 +160,31 @@
     }
     if (!form.dataset.idempotencyKey) form.dataset.idempotencyKey = crypto.randomUUID();
     if (button) button.disabled = true;
-    status.textContent = "Sending your request to the shop…";
+    status.textContent = "Reserving the requested quantity…";
     try {
-      await sendJson("/api/product-holds", {
+      const result = await sendJson("/api/product-holds", {
         idempotency_key: form.dataset.idempotencyKey,
         product_id: productId,
         quantity,
         customer_name: String(data.get("customer_name") || "").trim(),
         contact: String(data.get("contact") || "").trim()
       });
-      status.textContent = "Request sent. The shop must approve it before the item is reserved.";
+      try {
+        const holds = readStorage(holdStorageKey, []);
+        const savedHolds = Array.isArray(holds) ? holds : [];
+        savedHolds.push({
+          id: result.hold.id,
+          product_id: String(result.hold.product_id),
+          quantity: Number(result.hold.quantity),
+          expires_at: result.hold.expires_at,
+          customer_name: String(data.get("customer_name") || "").trim(),
+          contact: String(data.get("contact") || "").trim()
+        });
+        localStorage.setItem(holdStorageKey, JSON.stringify(savedHolds.slice(-100)));
+      } catch (error) {
+        console.warn("The hold was created but could not be saved on this device.", error);
+      }
+      status.textContent = `Held until ${new Date(result.hold.expires_at).toLocaleString()}.`;
       form.reset();
       delete form.dataset.idempotencyKey;
     } catch (error) {
@@ -252,7 +213,18 @@
       status.textContent = "Your cart has no valid items.";
       return;
     }
-    const signature = JSON.stringify(items);
+    const cartProductIds = new Set(items.map(item => item.product_id));
+    const holds = readStorage(holdStorageKey, []);
+    const holdIds = Array.isArray(holds) ? holds.filter(hold =>
+      hold && typeof hold.id === "string" && cartProductIds.has(String(hold.product_id))
+      && Date.parse(hold.expires_at) > Date.now()
+      && String(hold.customer_name || "").trim().replace(/\s+/g, " ").toLocaleLowerCase()
+        === String(form.querySelector("#co-name").value || "").trim().replace(/\s+/g, " ").toLocaleLowerCase()
+      && (String(hold.contact || "").includes("@")
+        ? String(hold.contact).trim().toLocaleLowerCase() === String(form.querySelector("#co-email").value || "").trim().toLocaleLowerCase()
+        : String(hold.contact || "").replace(/\D/g, "") === String(form.querySelector("#co-phone").value || "").replace(/\D/g, "")))
+      .map(hold => hold.id) : [];
+    const signature = JSON.stringify({ items, holdIds });
     if (form.dataset.cartSignature !== signature || !form.dataset.idempotencyKey) {
       form.dataset.cartSignature = signature;
       form.dataset.idempotencyKey = crypto.randomUUID();
@@ -272,6 +244,7 @@
       const created = await sendJson("/api/orders", {
         idempotency_key: form.dataset.idempotencyKey,
         ...customer,
+        hold_ids: holdIds,
         items
       });
       if (!created.order?.order_number) throw new Error("The shop did not confirm the order.");
@@ -310,10 +283,13 @@
       if (result.payment_status === "paid") {
         const cart = readStorage(cartStorageKey, []);
         localStorage.setItem(cartStorageKey, "[]");
-        if (Array.isArray(cart)) {
-          for (const item of cart.slice(0, 100)) {
-            if (item?.productId != null) reportInterest(item.productId, "cart", 0);
-          }
+        const purchasedProductIds = new Set(Array.isArray(cart)
+          ? cart.map(item => String(item?.productId ?? "")).filter(Boolean)
+          : []);
+        const holds = readStorage(holdStorageKey, []);
+        if (Array.isArray(holds)) {
+          localStorage.setItem(holdStorageKey, JSON.stringify(holds.filter(hold =>
+            !purchasedProductIds.has(String(hold?.product_id)))));
         }
         app.innerHTML = `<div class="container"><section class="card-panel"><h1 class="panel-title">Order confirmed</h1><p class="panel-note">Your payment was verified securely.</p><p><strong>Order ${String(result.order_number || orderNumber).replace(/[&<>"']/g, "")}</strong></p><a class="btn" href="/#/">Continue shopping</a></section></div>`;
       } else {
@@ -342,30 +318,40 @@
   }, true);
 
   document.addEventListener("click", event => {
-    const action = event.target.closest("[data-action]");
-    if (!action) return;
-    const type = action.dataset.action;
-    const productId = action.dataset.id;
-    if (!productId || !["toggle-wishlist", "add-to-cart", "qty-inc", "qty-dec", "remove-item"].includes(type)) return;
-    setTimeout(() => {
-      const cart = readStorage(cartStorageKey, []);
-      const item = Array.isArray(cart) ? cart.find(row => String(row?.productId) === String(productId)) : null;
-      reportInterest(productId, "cart", item ? Math.min(99, Math.max(0, Number(item.qty) || 0)) : 0);
-      if (type === "toggle-wishlist") {
+    const target = event.target instanceof Element ? event.target : null;
+    const action = target?.closest("[data-action][data-id]");
+    const productId = action?.dataset.id;
+    if (!productId) return;
+    if (action.dataset.action === "add-to-cart" || action.dataset.action === "qty-inc") {
+      window.__ESHOP_TRACK_STOREFRONT_EVENT__?.(productId, "cart_add");
+    } else if (action.dataset.action === "toggle-wishlist") {
+      setTimeout(() => {
         const wishlist = readStorage(wishlistStorageKey, []);
-        reportInterest(productId, "wishlist", Array.isArray(wishlist) && wishlist.map(String).includes(String(productId)));
-      }
-    }, 0);
+        if (Array.isArray(wishlist) && wishlist.map(String).includes(String(productId))) {
+          window.__ESHOP_TRACK_STOREFRONT_EVENT__?.(productId, "wishlist_add");
+        }
+      }, 0);
+    }
   }, true);
 
-  const pushState = history.pushState;
-  history.pushState = function (...args) {
-    const result = pushState.apply(this, args);
-    reportVisit();
-    return result;
-  };
-  window.addEventListener("popstate", reportVisit);
-  window.addEventListener("hashchange", reportVisit);
+  function trackCurrentProductView() {
+    const rawPath = location.hash
+      ? location.hash.replace(/^#\/?/, "").split("?")[0]
+      : location.pathname.replace(/^\/+|\/+$/g, "");
+    const [route, encodedId] = rawPath.split("/");
+    if (!["product", "products", "p"].includes(route) || !encodedId) return;
+    let productId = encodedId;
+    try {
+      productId = decodeURIComponent(encodedId);
+    } catch {
+      productId = encodedId;
+    }
+    const catalogProducts = window.__ESHOP_THEME_CATALOG__?.products;
+    const product = Array.isArray(catalogProducts) && catalogProducts.find(item =>
+      String(item.id) === productId || String(item.slug || "") === productId);
+    const canonicalId = product ? String(product.id) : productId;
+    window.__ESHOP_TRACK_STOREFRONT_EVENT__?.(canonicalId, "view");
+  }
 
   for (const form of document.querySelectorAll(".newsletter-form")) installNewsletterConsent(form);
   installProductHoldForm();
@@ -374,7 +360,8 @@
     new MutationObserver(installProductHoldForm).observe(storefrontApp, { childList: true, subtree: true });
   }
   window.addEventListener("hashchange", installProductHoldForm);
-  reportVisit();
-  reportAllInterests();
+  window.addEventListener("hashchange", trackCurrentProductView);
+  window.addEventListener("eshop:catalog-ready", installProductHoldForm);
+  trackCurrentProductView();
   void verifyPaymentReturn();
 })();

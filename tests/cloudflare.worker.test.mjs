@@ -23,6 +23,9 @@ function createDatabase() {
               }
               if (query.includes("FROM accounts")) return accounts.get(values[0]) || null;
               if (query.includes("FROM account_tenants")) {
+                if (query.includes("WHERE tenant_id = ?")) {
+                  return accountTenants.find(row => row.tenant_id === values[0]) || null;
+                }
                 return accountTenants.find(row => row.username === values[0] && row.tenant_id === values[1])
                   ? { owned: 1 }
                   : null;
@@ -106,21 +109,28 @@ function createStorefrontOrderDatabase() {
   const orders = new Map();
   const holds = new Map();
   const interests = new Map();
+  const dailyEvents = new Map();
   const paystackSubaccounts = new Map();
   const paystackOwnerDefaults = new Map();
   const catalogUpdatedAt = '2026-01-02T03:04:05.000Z';
   const catalog = {
-    store: { currency: 'KES' },
-    products: [{ id: 7, name: 'Canvas Tote', sku: 'TOTE-7', price: 12.5, stock: 8 }]
+    store: { currency: 'KES', hold_duration_hours: 36 },
+    products: [{ id: 7, name: 'Canvas Tote', sku: 'TOTE-7', price: 12.5, stock: 8, booking_enabled: true }]
   };
   return {
     orders,
     holds,
     interests,
+    dailyEvents,
     catalog,
     catalogUpdatedAt,
     paystackSubaccounts,
     paystackOwnerDefaults,
+    async batch(statements) {
+      const results = [];
+      for (const statement of statements) results.push(await statement.run());
+      return results;
+    },
     prepare(query) {
       return {
         bind(...values) {
@@ -185,6 +195,19 @@ function createStorefrontOrderDatabase() {
               throw new Error(`Unsupported order list query: ${query}`);
             },
             async run() {
+              if (query.includes('INSERT INTO storefront_event_daily')) {
+                const [tenant_id, day, product_id, requestedTenant, holdId] = values;
+                const hold = holds.get(holdId);
+                if (hold?.tenant_id === requestedTenant && tenant_id === requestedTenant) {
+                  const key = `${tenant_id}:${day}:${product_id}:booking`;
+                  const row = dailyEvents.get(key) || {
+                    tenant_id, day, product_id, event_type: 'booking', n: 0
+                  };
+                  row.n += 1;
+                  dailyEvents.set(key, row);
+                }
+                return { meta: { changes: hold ? 1 : 0 } };
+              }
               if (query.includes('INSERT INTO storefront_product_interest')) {
                 const key = `${values[0]}:${values[1]}:${values[2]}`;
                 const row = interests.get(key) || {
@@ -206,14 +229,26 @@ function createStorefrontOrderDatabase() {
               }
               if (query.includes('INSERT OR IGNORE INTO storefront_hold_requests')) {
                 const [id, tenant_id, idempotency_key, product_id, product_name, quantity, customer_name,
-                  contact, created_at, updated_at] = values;
+                  contact, created_at, updated_at, approved_at, expires_at, requestedQuantity,
+                  reservedTenant, reservedProduct, now, stock] = values;
                 if ([...holds.values()].some(row => row.tenant_id === tenant_id && row.idempotency_key === idempotency_key)) {
                   return { meta: { changes: 0 } };
                 }
+                const reserved = [...holds.values()].filter(row => row.tenant_id === reservedTenant
+                  && row.product_id === reservedProduct && row.status === 'approved' && row.expires_at > now)
+                  .reduce((sum, row) => sum + row.quantity, 0);
+                if (requestedQuantity + reserved > stock) return { meta: { changes: 0 } };
                 holds.set(id, {
                   id, tenant_id, idempotency_key, product_id, product_name, quantity, customer_name, contact,
-                  status: 'pending', created_at, updated_at, approved_at: '', expires_at: '', released_at: ''
+                  status: 'approved', created_at, updated_at, approved_at, expires_at, released_at: ''
                 });
+                return { meta: { changes: 1 } };
+              }
+              if (query.includes("UPDATE storefront_hold_requests SET status='released'")) {
+                const [released_at, updated_at, tenant_id, id] = values;
+                const hold = holds.get(id);
+                if (!hold || hold.tenant_id !== tenant_id || hold.status !== 'approved') return { meta: { changes: 0 } };
+                Object.assign(hold, { status: 'released', released_at, updated_at });
                 return { meta: { changes: 1 } };
               }
               if (query.includes("UPDATE storefront_hold_requests SET status='approved'")) {
@@ -488,17 +523,32 @@ function createLiveBusinessDatabase() {
   const changes = [];
   const visits = [];
   const interests = new Map();
+  const dailyEvents = new Map();
   const accountTenants = [];
   return {
     changes,
     visits,
     interests,
+    dailyEvents,
     accountTenants,
+    async batch(statements) {
+      const results = [];
+      for (const statement of statements) results.push(await statement.run());
+      return results;
+    },
     prepare(query) {
       return {
         bind(...values) {
           return {
             async run() {
+              if (query.includes('INSERT INTO storefront_event_daily')) {
+                const [tenant_id, day, product_id, event_type, n] = values;
+                const key = `${tenant_id}:${day}:${product_id}:${event_type}`;
+                const row = dailyEvents.get(key) || { tenant_id, day, product_id, event_type, n: 0 };
+                row.n += n;
+                dailyEvents.set(key, row);
+                return { meta: { changes: 1 } };
+              }
               if (query.includes('INSERT INTO storefront_product_interest')) {
                 const key = `${values[0]}:${values[1]}:${values[2]}`;
                 const row = interests.get(key) || {
@@ -536,7 +586,10 @@ function createLiveBusinessDatabase() {
             },
             async first() {
               if (query.includes('FROM catalog_snapshots')) {
-                return { payload: JSON.stringify({ products: [{ id: 7, slug: 'tote', name: 'Canvas Tote', stock: 8 }] }) };
+                return {
+                  payload: JSON.stringify({ products: [{ id: 7, slug: 'tote', name: 'Canvas Tote', price: 25, stock: 8 }] }),
+                  updated_at: '2025-01-02T03:04:05.000Z'
+                };
               }
               if (query.includes('FROM account_tenants')) {
                 return accountTenants.some(row => row.username === values[0] && row.tenant_id === values[1])
@@ -553,6 +606,30 @@ function createLiveBusinessDatabase() {
               throw new Error(`Unsupported live business first query: ${query}`);
             },
             async all() {
+              if (query.includes('FROM storefront_event_daily')) {
+                const grouped = new Map();
+                for (const item of dailyEvents.values()) {
+                  if (item.tenant_id !== values[0] || item.day < values[1]) continue;
+                  const row = grouped.get(item.product_id) || {
+                    product_id: item.product_id, views: 0, wishlist_adds: 0, cart_adds: 0, bookings: 0
+                  };
+                  if (item.event_type === 'view') row.views += item.n;
+                  if (item.event_type === 'wishlist_add') row.wishlist_adds += item.n;
+                  if (item.event_type === 'cart_add') row.cart_adds += item.n;
+                  if (item.event_type === 'booking') row.bookings += item.n;
+                  grouped.set(item.product_id, row);
+                }
+                return { results: [...grouped.values()] };
+              }
+              if (query.includes('SELECT path, device, created_at FROM storefront_visits')) {
+                return {
+                  results: visits
+                    .filter(item => item.tenant_id === values[0] && item.created_at >= values[1])
+                    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
+                    .slice(0, 50)
+                    .map(({ path, device, created_at }) => ({ path, device, created_at }))
+                };
+              }
               if (query.includes('FROM storefront_product_interest')) {
                 const since = values[0];
                 const tenantId = values[2];
@@ -751,7 +828,9 @@ test('Cloudflare Worker serves the official Craft homepage on the main domain', 
   assert.equal(response.status, 200);
   assert.equal(assetPath, '/official-site/index.html');
   assert.equal(response.headers.get('Cache-Control'), 'public, max-age=0, must-revalidate');
-  assert.match(await response.text(), /Craft official home/);
+  const html = await response.text();
+  assert.match(html, /Craft official home/);
+  assert.doesNotMatch(html, /storefront-analytics\.js/);
 });
 
 test('Cloudflare Worker retires old main storefront URLs without changing shop subdomains', async () => {
@@ -832,6 +911,7 @@ test('Cloudflare Worker serves only the filled published theme at the shop root'
     },
     DB,
     BUSINESS_ARCHIVE: {
+      async put() {},
       async get(key) {
         assetPath = key;
         return {
@@ -853,10 +933,16 @@ test('Cloudflare Worker serves only the filled published theme at the shop root'
   assert.equal(assetPath, key);
   const html = await response.text();
   assert.match(html, /Filled shop theme/);
+  assert.match(html, /window\.__ESHOP_CLOUDFLARE_STOREFRONT__=true/);
+  assert.match(html, /storefront-analytics\.js\?v=events-1/);
   assert.match(html, /#7C3AED/);
   assert.match(html, /Updated \\u003cscript>alert\(1\)\\u003c\/script> heading/);
   assert.match(html, /d\.querySelector\(edit\.selector\)/);
-  assert.doesNotMatch(html, /window\.__ESHOP_THEME_CATALOG__=|theme-catalog-adapter\.js/);
+  assert.match(html, /window\.__ESHOP_THEME_CATALOG__=/);
+  assert.doesNotMatch(html, /fetch\("\/api\/catalog/);
+  assert.match(html, /script\.src="\/theme-catalog-adapter\.js\?v=commerce-3"/);
+  assert.match(html, /storefront-analytics\.js\?v=events-1/);
+  assert.doesNotMatch(html, /name":"<\/script><script>alert\(1\)<\/script>/);
   assert.match(html, /"accent2Color":"#F06445"/);
   assert.match(html, /"accent3Color":"#8FD14F"/);
   assert.match(html, /--eshop-accent-gradient:linear-gradient\(110deg,/);
@@ -869,6 +955,54 @@ test('Cloudflare Worker serves only the filled published theme at the shop root'
     const page = await worker.fetch(new Request(`https://shop.example${path}`), env);
     assert.equal(page.status, 200, `The published storefront should load directly at ${path}.`);
   }
+});
+
+test('Cloudflare Worker upgrades existing Litrus exports to refresh their live catalog', async () => {
+  const updatedAt = '2026-11-11T09:00:00.000Z';
+  const themeId = 'litrus-mixer';
+  const key = `published-sites/main/${themeId}/current.html`;
+  const catalog = {
+    store: { name: 'Main shop', website_theme_id: themeId },
+    products: [{ id: 8, name: 'Canvas bag', price: 2500, images: ['https://cdn.test/bag.webp'] }],
+    categories: [{ id: 4, name: 'Bags' }]
+  };
+  const legacyHtml = '<!doctype html><html><head><title>Old Litrus</title></head><body><div id="store"></div><script>var SPD={"shop":{"key":"main","products":[]},"pages":{},"shell":{}};function SPRT(){};(function(){var R=document.getElementById("store");SPRT({root:R,hash:true,shop:function(){return SPD.shop},page:function(r){return SPD.pages[r]==null?null:SPD.pages[r]},shell:function(){return SPD.shell},scrollTop:function(){scrollTo(0,0)}})})();</script></body></html>';
+  const DB = {
+    prepare(query) {
+      assert.match(query, /SELECT payload, updated_at FROM catalog_snapshots/);
+      return { bind() { return { async first() { return { payload: JSON.stringify(catalog), updated_at: updatedAt }; } }; } };
+    }
+  };
+  const TENANTS = createTenantStore();
+  await TENANTS.put('tenant:main', JSON.stringify({
+    id: 'main', name: 'Main shop', catalog_updated_at: updatedAt
+  }));
+  await TENANTS.put(`published-theme:main`, JSON.stringify({
+    key, themeId, catalogUpdatedAt: updatedAt
+  }));
+  const env = {
+    DB,
+    TENANTS,
+    BUSINESS_ARCHIVE: {
+      async put() {},
+      async get(requestedKey) {
+        assert.equal(requestedKey, key);
+        return {
+          body: legacyHtml,
+          httpMetadata: { contentType: 'text/html; charset=utf-8' },
+          customMetadata: { themeId, catalogUpdatedAt: updatedAt }
+        };
+      }
+    },
+    ASSETS: { async fetch() { throw new Error('A published Litrus store must be served from R2.'); } }
+  };
+
+  const response = await worker.fetch(new Request('https://shop.example/'), env);
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.match(html, /src="\/litrus-mixer\/live-catalog\.js"/);
+  assert.match(html, /litrusStartLiveStore\(SPD\);/);
+  assert.doesNotMatch(html, /SPRT\(\{root:R/);
 });
 
 test('published storefront HTML is cached by host and catalog version without repeat D1 or R2 reads', async () => {
@@ -934,6 +1068,7 @@ test('published storefront HTML is cached by host and catalog version without re
       }
     },
     BUSINESS_ARCHIVE: {
+      async put() {},
       async get(key) {
         themeReads += 1;
         assert.equal(key, `published-sites/rayoo/${themeId}/${catalogUpdatedAt.replace(/[^a-zA-Z0-9-]/g, '')}.html`);
@@ -1271,10 +1406,26 @@ test('live POS changes sync through tenant-authorized D1 and visit analytics ret
   const DB = createLiveBusinessDatabase();
   const TENANTS = createTenantStore();
   const ownerToken = 'live-sync-owner-key';
+  const catalogUpdatedAt = '2025-01-02T03:04:05.000Z';
   await TENANTS.put('tenant:main', JSON.stringify({
     id: 'main', owner_token_hash: await sha256HexForTest(ownerToken)
   }));
-  const env = { DB, TENANTS };
+  await TENANTS.put('published-theme:main', JSON.stringify({
+    key: 'published-sites/main/litrus-main/current.html',
+    themeId: 'litrus-main',
+    catalogUpdatedAt
+  }));
+  const env = {
+    DB,
+    TENANTS,
+    BUSINESS_ARCHIVE: {
+      async get() {
+        return {
+          body: '<script>var SPD = {"shop":{"key":"litrus-main","products":[{"id":"tote-1","name":"Canvas Tote","price":25}]}};</script>'
+        };
+      }
+    }
+  };
   const url = 'https://eshop-storefront.workers.dev/api/business/records?tenant=main';
   const changes = [{
     change_id: 'change-0001', device_id: 'device-0001', entity: 'supplier',
@@ -1325,13 +1476,13 @@ test('live POS changes sync through tenant-authorized D1 and visit analytics ret
 
   const visitRequest = new Request('https://eshop-storefront.workers.dev/api/analytics/visit?tenant=main', {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'User-Agent': 'Android Mobile' },
-    body: JSON.stringify({ visitor_id: 'anonymous-browser-123', path: '/product/tote?email=private@example.test', referrer: 'https://search.example/results?query=secret' })
+    body: JSON.stringify({ visitor_id: 'anonymous-browser-123', path: '/p/tote-1?email=private@example.test', referrer: 'https://search.example/results?query=secret' })
   });
   Object.defineProperty(visitRequest, 'cf', { value: { country: 'KE', regionCode: '30' } });
   const visitResponse = await worker.fetch(visitRequest, env);
   assert.equal(visitResponse.status, 202);
   assert.equal(DB.visits.length, 1);
-  assert.equal(DB.visits[0].path, '/product/tote');
+  assert.equal(DB.visits[0].path, '/p/tote-1');
   assert.equal(DB.visits[0].country, 'KE');
   assert.equal(DB.visits[0].region, '30');
   assert.equal(DB.visits[0].device, 'mobile');
@@ -1341,7 +1492,7 @@ test('live POS changes sync through tenant-authorized D1 and visit analytics ret
   const cartActivity = await worker.fetch(new Request(productInterestBase, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ visitor_id: 'anonymous-browser-123', product_id: 7, action: 'cart', quantity: 2 })
+    body: JSON.stringify({ visitor_id: 'anonymous-browser-123', product_id: 'tote-1', action: 'cart', quantity: 2 })
   }), env);
   assert.equal(cartActivity.status, 202);
   const wishlistActivity = await worker.fetch(new Request(productInterestBase, {
@@ -1352,6 +1503,50 @@ test('live POS changes sync through tenant-authorized D1 and visit analytics ret
   assert.equal(wishlistActivity.status, 202);
   assert.equal(DB.interests.size, 1);
   assert.equal([...DB.interests.values()][0].visitor_hash.includes('anonymous-browser-123'), false);
+  const eventAnalyticsUrl = 'https://eshop-storefront.workers.dev/api/analytics/events?tenant=main';
+  const eventBatch = await worker.fetch(new Request(eventAnalyticsUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items: [
+      { product_id: 'tote-1', type: 'view', n: 2 },
+      { product_id: 'tote-1', type: 'view', n: 1 },
+      { product_id: 7, type: 'cart_add', n: 3 },
+      { product_id: 7, type: 'wishlist_add', n: 2 }
+    ] })
+  }), env);
+  assert.equal(eventBatch.status, 202);
+  assert.equal((await eventBatch.json()).accepted, 3);
+  const otherTenantBatch = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/analytics/events?tenant=another-shop',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: [{ product_id: 7, type: 'view', n: 9 }] })
+    }
+  ), env);
+  assert.equal(otherTenantBatch.status, 202);
+  const invalidEventBatch = await worker.fetch(new Request(eventAnalyticsUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items: [{ product_id: 7, type: 'booking', n: 1 }] })
+  }), env);
+  assert.equal(invalidEventBatch.status, 400);
+  const unauthenticatedEventAnalytics = await worker.fetch(new Request(eventAnalyticsUrl), env);
+  assert.equal(unauthenticatedEventAnalytics.status, 401);
+  const crossTenantAnalytics = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/analytics/events?tenant=another-shop',
+    { headers: authorization }
+  ), env);
+  assert.equal(crossTenantAnalytics.status, 401);
+  const eventAnalytics = await worker.fetch(new Request(eventAnalyticsUrl, {
+    headers: authorization
+  }), env);
+  assert.equal(eventAnalytics.status, 200);
+  const eventReport = await eventAnalytics.json();
+  assert.deepEqual(eventReport.product_activity, [
+    { product_id: 'tote-1', views: 3, wishlist_adds: 0, cart_adds: 0, bookings: 0 },
+    { product_id: '7', views: 0, wishlist_adds: 2, cart_adds: 3, bookings: 0 }
+  ]);
   const unauthenticatedAnalytics = await worker.fetch(new Request(
     'https://eshop-storefront.workers.dev/api/analytics/visit?tenant=main&days=30'
   ), env);
@@ -1365,7 +1560,13 @@ test('live POS changes sync through tenant-authorized D1 and visit analytics ret
   assert.equal(report.visits, 1);
   assert.equal(report.unique_visitors, 1);
   assert.equal(report.countries[0].country, 'KE');
-  assert.deepEqual(report.product_views, [{ path: '/product/tote', views: 1 }]);
+  assert.deepEqual(report.product_views, [{ product_id: '7', views: 1 }]);
+  assert.deepEqual(report.recent_visits, [{
+    path: '/p/tote-1',
+    device: 'mobile',
+    created_at: DB.visits[0].created_at
+  }]);
+  assert.equal('visitor_hash' in report.recent_visits[0], false);
   assert.deepEqual(report.product_interest, [{ product_id: '7', cart_quantity: 2, wishlist_count: 1 }]);
   assert.match(report.location_note, /IP addresses are not stored/);
 });
@@ -1425,6 +1626,39 @@ test('storefront orders are idempotent, priced from the published catalogue, and
   }), env);
   assert.equal(updated.status, 200);
   assert.equal((await updated.json()).order.status, 'processing');
+  DB.catalog.store.delivery_fee = 4.5;
+  DB.catalog.store.free_delivery_over = 30;
+  const deliveryOrder = await worker.fetch(new Request(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...order,
+      idempotency_key: '91a2b153-4af0-4c64-8b58-0e7d45005b14',
+      delivery_method: 'delivery'
+    })
+  }), env);
+  assert.equal((await deliveryOrder.json()).order.shipping, 4.5);
+  const pickupOrder = await worker.fetch(new Request(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...order,
+      idempotency_key: 'a1a2b153-4af0-4c64-8b58-0e7d45005b14',
+      delivery_method: 'pickup'
+    })
+  }), env);
+  assert.equal((await pickupOrder.json()).order.shipping, 0);
+  const freeDeliveryOrder = await worker.fetch(new Request(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...order,
+      idempotency_key: 'b1a2b153-4af0-4c64-8b58-0e7d45005b14',
+      delivery_method: 'delivery',
+      items: [{ product_id: 7, quantity: 3 }]
+    })
+  }), env);
+  assert.equal((await freeDeliveryOrder.json()).order.shipping, 0);
   const oversold = await worker.fetch(new Request(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1434,7 +1668,7 @@ test('storefront orders are idempotent, priced from the published catalogue, and
   assert.equal(oversold.status, 409);
 });
 
-test('storefront hold requests are tenant-private, owner-approved for 24 hours, and stock-limited', async () => {
+test('storefront holds require product opt-in, reserve configured stock, and are honored by checkout', async () => {
   const DB = createStorefrontOrderDatabase();
   const TENANTS = createTenantStore();
   const ownerToken = 'storefront-hold-owner-key';
@@ -1450,6 +1684,16 @@ test('storefront hold requests are tenant-private, owner-approved for 24 hours, 
     customer_name: 'Jamie Customer',
     contact: 'jamie@example.test'
   };
+  DB.catalog.products[0].booking_enabled = false;
+  const disabled = await worker.fetch(new Request(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request)
+  }), env);
+  assert.equal(disabled.status, 409);
+  assert.equal(DB.holds.size, 0);
+  DB.catalog.products[0].booking_enabled = true;
+
   const invalid = await worker.fetch(new Request(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1464,10 +1708,10 @@ test('storefront hold requests are tenant-private, owner-approved for 24 hours, 
   }), env);
   assert.equal(created.status, 201);
   const hold = (await created.json()).hold;
-  assert.equal(hold.status, 'pending');
+  assert.equal(hold.status, 'approved');
   assert.equal(hold.product_name, 'Canvas Tote');
   assert.equal(hold.customer_name, 'Jamie Customer');
-  assert.equal(hold.expires_at, '');
+  assert.ok(Math.abs(Date.parse(hold.expires_at) - Date.now() - 36 * 60 * 60 * 1000) < 5000);
   const duplicate = await worker.fetch(new Request(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1476,6 +1720,7 @@ test('storefront hold requests are tenant-private, owner-approved for 24 hours, 
   assert.equal(duplicate.status, 200);
   assert.equal((await duplicate.json()).duplicate, true);
   assert.equal(DB.holds.size, 1);
+  assert.equal([...DB.dailyEvents.values()].reduce((total, event) => total + event.n, 0), 1);
 
   const denied = await worker.fetch(new Request(url), env);
   assert.equal(denied.status, 401);
@@ -1483,15 +1728,6 @@ test('storefront hold requests are tenant-private, owner-approved for 24 hours, 
   const listed = await worker.fetch(new Request(url, { headers: authorization }), env);
   assert.equal(listed.status, 200);
   assert.equal((await listed.json()).holds.length, 1);
-  const approved = await worker.fetch(new Request(url, {
-    method: 'PATCH',
-    headers: { ...authorization, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: hold.id, action: 'approve' })
-  }), env);
-  assert.equal(approved.status, 200);
-  const approvedHold = (await approved.json()).hold;
-  assert.equal(approvedHold.status, 'approved');
-  assert.ok(Math.abs(Date.parse(approvedHold.expires_at) - Date.now() - 24 * 60 * 60 * 1000) < 5000);
   const orderWhileHeld = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=main', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1503,6 +1739,20 @@ test('storefront hold requests are tenant-private, owner-approved for 24 hours, 
     })
   }), env);
   assert.equal(orderWhileHeld.status, 409);
+  const orderUsingHold = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=main', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      idempotency_key: '74203ec3-7d63-465f-b411-0611b46ba04c',
+      customer_name: 'Jamie Customer',
+      customer_email: 'jamie@example.test',
+      hold_ids: [hold.id],
+      items: [{ product_id: 7, quantity: 4 }]
+    })
+  }), env);
+  assert.equal(orderUsingHold.status, 201);
+  const heldOrder = (await orderUsingHold.json()).order;
+  assert.equal(heldOrder.items[0].hold_ids, undefined);
 
   const secondRequest = {
     ...request,
@@ -1514,19 +1764,25 @@ test('storefront hold requests are tenant-private, owner-approved for 24 hours, 
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(secondRequest)
   }), env);
-  assert.equal(second.status, 201);
-  const secondHold = (await second.json()).hold;
-  const oversubscribed = await worker.fetch(new Request(url, {
+  assert.equal(second.status, 409);
+  const cancelled = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=main', {
     method: 'PATCH',
     headers: { ...authorization, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: secondHold.id, action: 'approve' })
+    body: JSON.stringify({ order_number: heldOrder.order_number, status: 'cancelled' })
   }), env);
-  assert.equal(oversubscribed.status, 409);
-
+  assert.equal(cancelled.status, 200);
+  assert.equal(DB.holds.get(hold.id).status, 'released');
+  const availableAgain = await worker.fetch(new Request(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(secondRequest)
+  }), env);
+  assert.equal(availableAgain.status, 201);
+  const secondHold = (await availableAgain.json()).hold;
   const released = await worker.fetch(new Request(url, {
     method: 'PATCH',
     headers: { ...authorization, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: approvedHold.id, action: 'release' })
+    body: JSON.stringify({ id: secondHold.id, action: 'release' })
   }), env);
   assert.equal(released.status, 200);
   assert.equal((await released.json()).hold.status, 'released');
@@ -1873,6 +2129,22 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
   DB.paystackSubaccounts.set('main', {
     tenant_id: 'main', subaccount_code: 'ACCT_test123', status: 'connected'
   });
+  const holdResponse = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/product-holds?tenant=main',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        idempotency_key: '81a2b153-4af0-4c64-8b58-0e7d45005b15',
+        product_id: 7,
+        quantity: 2,
+        customer_name: 'Sam Shop',
+        contact: 'sam@example.test'
+      })
+    }
+  ), env);
+  assert.equal(holdResponse.status, 201);
+  const hold = (await holdResponse.json()).hold;
   const orderUrl = 'https://eshop-storefront.workers.dev/api/orders?tenant=main';
   const created = await worker.fetch(new Request(orderUrl, {
     method: 'POST',
@@ -1880,6 +2152,7 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
     body: JSON.stringify({
       idempotency_key: '81a2b153-4af0-4c64-8b58-0e7d45005b14',
       customer_name: 'Sam Shop', customer_email: 'sam@example.test',
+      hold_ids: [hold.id],
       items: [{ product_id: 7, quantity: 2 }]
     })
   }), env);
@@ -1941,6 +2214,7 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
     ), env);
     assert.equal(verified.status, 200);
     assert.equal((await verified.json()).payment_status, 'paid');
+    assert.equal(DB.holds.get(hold.id).status, 'released');
 
     const sendWebhook = async (amount) => {
       const body = JSON.stringify({
@@ -1986,6 +2260,7 @@ test('storefront commerce migrations enforce tenant isolation and valid activity
     db.exec(await readFile(new URL('../cloudflare/migrations/0008_storefront_orders.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0010_storefront_order_payments.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0018_storefront_interest_holds.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0022_storefront_event_daily.sql', import.meta.url), 'utf8'));
     assert.equal(db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='storefront_orders'")[0].values.length, 1);
     assert.equal(db.exec('PRAGMA table_info(storefront_orders)')[0].values.length, 23);
     db.run("INSERT INTO storefront_orders (tenant_id,order_number,idempotency_key,status,customer_name,customer_email,customer_phone,shipping_address,city,postal_code,country,currency,subtotal_cents,discount_cents,shipping_cents,total_cents,items_json,created_at,updated_at) VALUES ('shop-a','ORD-TEST-00000001','key-a','pending','Sam','sam@example.test','0700000000','12 Market','Nairobi','','KE','KES',100,0,0,100,'[]','now','now')");
@@ -2000,6 +2275,28 @@ test('storefront commerce migrations enforce tenant isolation and valid activity
     assert.throws(() => db.run("INSERT INTO storefront_hold_requests (id,tenant_id,idempotency_key,product_id,product_name,quantity,customer_name,contact,status,created_at,updated_at) VALUES ('hold-c','shop-a','key-c','7','Canvas Tote',1,'Sam','sam@example.test','reserved','now','now')"), /CHECK constraint failed/);
     db.run("INSERT INTO storefront_hold_requests (id,tenant_id,idempotency_key,product_id,product_name,quantity,customer_name,contact,status,created_at,updated_at) VALUES ('hold-d','shop-b','key-a','7','Canvas Tote',1,'Sam','sam@example.test','pending','now','now')");
     assert.equal(db.exec('SELECT COUNT(*) FROM storefront_hold_requests')[0].values[0][0], 2);
+    db.run(
+      `INSERT INTO storefront_event_daily (tenant_id,day,product_id,event_type,n)
+       VALUES (?,?,?,?,?)
+       ON CONFLICT(tenant_id,day,product_id,event_type) DO UPDATE SET n=n+excluded.n`,
+      ['shop-a', '2026-01-01', '7', 'view', 3]
+    );
+    db.run(
+      `INSERT INTO storefront_event_daily (tenant_id,day,product_id,event_type,n)
+       VALUES (?,?,?,?,?)
+       ON CONFLICT(tenant_id,day,product_id,event_type) DO UPDATE SET n=n+excluded.n`,
+      ['shop-a', '2026-01-01', '7', 'view', 2]
+    );
+    db.run(
+      `INSERT INTO storefront_event_daily (tenant_id,day,product_id,event_type,n)
+       SELECT ?,?,?, 'booking',1
+       WHERE EXISTS (SELECT 1 FROM storefront_hold_requests WHERE tenant_id=? AND id=?)
+       ON CONFLICT(tenant_id,day,product_id,event_type) DO UPDATE SET n=n+excluded.n`,
+      ['shop-a', '2026-01-01', '7', 'shop-a', 'hold-a']
+    );
+    assert.deepEqual(db.exec(
+      "SELECT event_type,n FROM storefront_event_daily WHERE tenant_id='shop-a' AND product_id='7' ORDER BY event_type"
+    )[0].values, [['booking', 1], ['view', 5]]);
   } finally {
     db.close();
   }
@@ -2206,8 +2503,24 @@ test('catalog publishing is authenticated and stores only public fields and link
       category_id: 4,
       price: 25,
       stock: 3,
+      booking_enabled: true,
       cost_price: 2,
-      images: ['https://images.example/runner.jpg', 'data:image/png;base64,private']
+      images: ['https://images.example/runner.jpg', 'data:image/png;base64,private'],
+      media_type: 'spin',
+      spin_frames: [
+        'https://shop.example/media/main/frame.webp',
+        'https://shop.example/media/main/frame-2.webp',
+        'data:image/webp;base64,private'
+      ]
+    }, {
+      id: 10,
+      name: 'Product film',
+      slug: 'product-film',
+      category_id: 4,
+      price: 35,
+      stock: 2,
+      media_type: 'video',
+      video_url: 'https://shop.example/media/main/product.mp4'
     }],
     store: {
       name: 'Example Store',
@@ -2216,6 +2529,7 @@ test('catalog publishing is authenticated and stores only public fields and link
       background_color: '#FAFAF8',
       text_color: '#141413',
       website_theme_id: 'woodora-luxury-furniture',
+      hold_duration_hours: 48,
       font_family: 'humanist',
       element_edits: [
         {
@@ -2280,7 +2594,7 @@ test('catalog publishing is authenticated and stores only public fields and link
   assert.equal(published.status, 200);
   const publishResult = await published.json();
   assert.equal(publishResult.ok, true);
-  assert.equal(publishResult.product_count, 1);
+  assert.equal(publishResult.product_count, 2);
   assert.equal(publishResult.category_count, 1);
   assert.match(publishResult.updated_at, /^\d{4}-\d\d-\d\dT/);
   const mainTenant = await env.TENANTS.get('tenant:main', 'json');
@@ -2290,11 +2604,21 @@ test('catalog publishing is authenticated and stores only public fields and link
   const loaded = await worker.fetch(new Request('https://rrobin.co.ke/api/catalog'), env);
   const result = await loaded.json();
   assert.deepEqual(result.products[0].images, ['https://images.example/runner.jpg']);
+  assert.equal(result.products[0].media_type, 'spin');
+  assert.equal(result.products[0].booking_enabled, true);
+  assert.equal(result.products[1].booking_enabled, false);
+  assert.deepEqual(result.products[0].spin_frames, [
+    'https://shop.example/media/main/frame.webp',
+    'https://shop.example/media/main/frame-2.webp'
+  ]);
+  assert.equal(result.products[1].media_type, 'video');
+  assert.equal(result.products[1].video_url, 'https://shop.example/media/main/product.mp4');
   assert.equal('cost_price' in result.products[0], false);
   assert.equal(result.categories[0].image, '');
   assert.equal(result.store.email, 'hello@example.com');
   assert.equal(result.store.primary_color, '#7C3AED');
   assert.equal(result.store.website_theme_id, 'woodora-luxury-furniture');
+  assert.equal(result.store.hold_duration_hours, 48);
   assert.equal(result.store.font_family, 'humanist');
   assert.equal(result.store.element_edits[0].text, 'Edited heading');
   assert.equal(result.store.element_edits[0].identity, 'text:abc:def:80');
@@ -2345,7 +2669,7 @@ test('catalog publishing is authenticated and stores only public fields and link
   assert.equal(afterPartial.store.accent2_color, '#F06445');
   assert.equal(afterPartial.store.accent3_color, '#8FD14F');
   assert.equal(afterPartial.store.design_theme, 'quiet-lounge');
-  assert.equal(afterPartial.products.length, 1);
+  assert.equal(afterPartial.products.length, 2);
   assert.equal(afterPartial.categories.length, 1);
   assert.match(result.updated_at, /^\d{4}-\d\d-\d\dT/);
 
@@ -2392,6 +2716,10 @@ test('R2 media uploads require shop ownership and are publicly served from an is
     TENANTS,
     BUSINESS_ARCHIVE: {
       async put(key, value, options) { objects.set(key, { value, options }); },
+      async head(key) {
+        const object = objects.get(key);
+        return object ? { customMetadata: object.options.customMetadata } : null;
+      },
       async get(key) {
         const object = objects.get(key);
         if (!object) return null;
@@ -2420,13 +2748,40 @@ test('R2 media uploads require shop ownership and are publicly served from an is
   assert.equal(uploaded.status, 200);
   const asset = await uploaded.json();
   assert.equal(asset.ok, true);
-  assert.match(asset.url, /^https:\/\/rrobin\.co\.ke\/media\/main\/[a-f0-9-]{36}\.webp$/);
+  assert.equal(asset.reused, false);
+  assert.match(asset.url, /^https:\/\/rrobin\.co\.ke\/media\/main\/[a-f0-9]{64}\.webp$/);
+  const duplicateUpload = await worker.fetch(new Request('https://rrobin.co.ke/api/media?tenant=main', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${ownerToken}`,
+      'Content-Type': 'image/webp'
+    },
+    body: new Uint8Array([1, 2, 3])
+  }), env);
+  assert.equal(duplicateUpload.status, 200);
+  assert.deepEqual(await duplicateUpload.json(), { ok: true, url: asset.url, reused: true });
   const mediaKey = new URL(asset.url).pathname;
   const publicImage = await worker.fetch(new Request(asset.url), env);
   assert.equal(publicImage.status, 200);
   assert.equal(publicImage.headers.get('Content-Type'), 'image/webp');
   assert.equal(publicImage.headers.get('Cache-Control'), 'public, max-age=31536000, immutable');
   assert.deepEqual([...new Uint8Array(await publicImage.arrayBuffer())], [1, 2, 3]);
+
+  const uploadedVideo = await worker.fetch(new Request('https://rrobin.co.ke/api/media?tenant=main', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${ownerToken}`,
+      'Content-Type': 'video/mp4'
+    },
+    body: new Uint8Array([4, 5, 6])
+  }), env);
+  assert.equal(uploadedVideo.status, 200);
+  const videoAsset = await uploadedVideo.json();
+  assert.match(videoAsset.url, /^https:\/\/rrobin\.co\.ke\/media\/main\/[a-f0-9]{64}\.mp4$/);
+  const publicVideo = await worker.fetch(new Request(videoAsset.url), env);
+  assert.equal(publicVideo.status, 200);
+  assert.equal(publicVideo.headers.get('Content-Type'), 'video/mp4');
+  assert.deepEqual([...new Uint8Array(await publicVideo.arrayBuffer())], [4, 5, 6]);
 
   const privateArchivePath = await worker.fetch(new Request('https://rrobin.co.ke/media/main/not-a-media-key.jpg'), env);
   assert.equal(privateArchivePath.status, 404);
@@ -2449,6 +2804,106 @@ test('R2 media uploads require shop ownership and are publicly served from an is
   }), env);
   assert.equal(oversized.status, 413);
   assert.match(mediaKey, /^\/media\/main\//);
+});
+
+test('Craft image requests store Pixabay images in tenant R2 and cache provider searches', async () => {
+  const TENANTS = createTenantStore();
+  const ownerToken = 'test-main-owner';
+  await TENANTS.put('tenant:main', JSON.stringify({
+    id: 'main',
+    owner_token_hash: await sha256HexForTest(ownerToken)
+  }));
+  const objects = new Map();
+  const env = {
+    TENANTS,
+    PIXABAY_API_KEY: 'test-pixabay-key',
+    BUSINESS_ARCHIVE: {
+      async put(key, value, options) { objects.set(key, { value, options }); },
+      async get(key) {
+        const object = objects.get(key);
+        return object ? { body: object.value, httpMetadata: object.options.httpMetadata } : null;
+      }
+    }
+  };
+  const request = images => new Request('https://rrobin.co.ke/api/pixabay/images?tenant=main', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${ownerToken}`,
+      'Content-Type': 'application/json',
+      'CF-Connecting-IP': '192.0.2.10'
+    },
+    body: JSON.stringify({ images })
+  });
+  const unauthorized = await worker.fetch(new Request('https://rrobin.co.ke/api/pixabay/images?tenant=main', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ images: [{ slot: 'hero-1', query: 'running shoes' }] })
+  }), env);
+  assert.equal(unauthorized.status, 401);
+  const noKey = await worker.fetch(request([{ slot: 'hero-1', query: 'running shoes' }]), {
+    ...env,
+    PIXABAY_API_KEY: ''
+  });
+  assert.equal(noKey.status, 503);
+  const tooMany = await worker.fetch(request(Array.from({ length: 21 }, (_, index) => ({
+    slot: `image-${index}`,
+    query: 'running shoes'
+  }))), env);
+  assert.equal(tooMany.status, 400);
+
+  const originalFetch = globalThis.fetch;
+  let searchCalls = 0;
+  globalThis.fetch = async input => {
+    const url = new URL(String(input));
+    if (url.hostname === 'pixabay.com') {
+      searchCalls++;
+      assert.equal(url.searchParams.get('key'), 'test-pixabay-key');
+      if (url.searchParams.get('q') === 'unsafe source') {
+        return Response.json({
+          hits: [{
+            webformatURL: 'https://attacker.example/image.jpg',
+            pageURL: 'https://pixabay.com/photos/test-123/',
+            user: 'Untrusted'
+          }]
+        });
+      }
+      assert.equal(url.searchParams.get('q'), 'running shoes');
+      return Response.json({
+        hits: [{
+          webformatURL: 'https://cdn.pixabay.com/photo/test.jpg',
+          pageURL: 'https://pixabay.com/photos/test-123/',
+          user: 'Test Photographer'
+        }]
+      });
+    }
+    assert.equal(url.hostname, 'cdn.pixabay.com');
+    return new Response(new Uint8Array([1, 2, 3]), {
+      headers: { 'Content-Type': 'image/jpeg' }
+    });
+  };
+  try {
+    const first = await worker.fetch(request([{ slot: 'hero-1', query: 'running shoes' }]), env);
+    assert.equal(first.status, 200, await first.clone().text());
+    const firstImage = (await first.json()).images[0];
+    assert.match(firstImage.url, /^https:\/\/rrobin\.co\.ke\/media\/main\/[a-f0-9-]{36}\.jpg$/);
+    assert.deepEqual(firstImage.credit, {
+      user: 'Test Photographer',
+      url: 'https://pixabay.com/photos/test-123/'
+    });
+    const second = await worker.fetch(request([{ slot: 'product-2', query: 'running shoes' }]), env);
+    assert.equal(second.status, 200, await second.clone().text());
+    assert.equal(searchCalls, 1);
+    const unsafe = await worker.fetch(request([{ slot: 'hero-2', query: 'unsafe source' }]), env);
+    assert.equal(unsafe.status, 502);
+    assert.equal(objects.size, 2);
+    const stored = [...objects.values()][0];
+    assert.equal(stored.options.customMetadata.source, 'pixabay');
+    assert.equal(stored.options.customMetadata.pixabayUser, 'Test Photographer');
+    assert.equal(stored.options.httpMetadata.contentType, 'image/jpeg');
+    assert.deepEqual([...stored.value], [1, 2, 3]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test('raw theme HTML is private while theme media remains publicly served', async () => {
@@ -2564,9 +3019,9 @@ test('tenant records and product catalogs are isolated by wildcard subdomain', a
   assert.deepEqual(await rootCatalog.json(), { products: [], categories: [], store: {}, updated_at: null });
 
   const list = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants', {
-    headers: { Authorization: 'Bearer test-token' }
+    headers: { Authorization: `Bearer ${account.session_token}` }
   }), env);
-  assert.deepEqual((await list.json()).tenants.map(tenant => tenant.id), ['main', 'new-shop']);
+  assert.deepEqual((await list.json()).tenants.map(tenant => tenant.id), ['new-shop']);
 
   const duplicate = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants', {
     method: 'PUT',
@@ -2877,7 +3332,9 @@ test('main shop can exchange the master key for an app-local owner key', async (
   const env = {
     DB: createDatabase(),
     TENANTS: createTenantStore(),
-    PUBLISH_TOKEN: 'test-token'
+    PUBLISH_TOKEN: 'test-token',
+    TURNSTILE_SITE_KEY: 'test-site-key',
+    TURNSTILE_SECRET_KEY: 'test-turnstile-secret'
   };
   const provisioned = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants/main/owner-key', {
     method: 'PUT',
@@ -2900,6 +3357,76 @@ test('main shop can exchange the master key for an app-local owner key', async (
     body: '{}'
   }), env);
   assert.equal(repeatedProvision.status, 409);
+});
+
+test('main shop access can be privately linked to one signed-in Craft account', async () => {
+  const env = {
+    DB: createDatabase(),
+    TENANTS: createTenantStore(),
+    PUBLISH_TOKEN: 'test-token',
+    TURNSTILE_SITE_KEY: 'test-site-key',
+    TURNSTILE_SECRET_KEY: 'test-turnstile-secret'
+  };
+  const owner = await registerTestAccount(env, 'main-owner');
+  const other = await registerTestAccount(env, 'other-owner');
+  const endpoint = 'https://eshop-storefront.workers.dev/api/admin/main-shop-owner';
+  const linkRequest = (username, token = 'test-token') => worker.fetch(new Request(endpoint, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ username })
+  }), env);
+
+  const unauthorized = await worker.fetch(new Request(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'main-owner' })
+  }), env);
+  assert.equal(unauthorized.status, 401);
+  assert.equal((await linkRequest('missing-account')).status, 404);
+
+  const linked = await linkRequest('main-owner');
+  assert.equal(linked.status, 200);
+  const response = await linked.json();
+  assert.deepEqual(response, {
+    ok: true,
+    username: 'main-owner',
+    tenant: { id: 'main', name: 'Main shop' }
+  });
+  assert.equal((await linkRequest('main-owner')).status, 200);
+  assert.equal((await linkRequest('other-owner')).status, 409);
+
+  const publish = (sessionToken, name) => worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/catalog?tenant=main',
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${sessionToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ products: [], categories: [], store: { name } })
+    }
+  ), env);
+  assert.equal((await publish(owner.session_token, 'Main owner')).status, 200);
+  assert.equal((await publish(other.session_token, 'Unauthorized')).status, 401);
+
+  const ownerShops = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/tenants',
+    { headers: { Authorization: `Bearer ${owner.session_token}` } }
+  ), env);
+  assert.deepEqual((await ownerShops.json()).tenants.map(tenant => tenant.id), ['main']);
+  const masterTokenList = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/tenants',
+    { headers: { Authorization: 'Bearer test-token' } }
+  ), env);
+  assert.equal(masterTokenList.status, 401);
+  const otherShops = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/tenants',
+    { headers: { Authorization: `Bearer ${other.session_token}` } }
+  ), env);
+  assert.deepEqual((await otherShops.json()).tenants, []);
 });
 
 test('an admin can recover one shop key after a legacy signup without exposing the master key', async () => {

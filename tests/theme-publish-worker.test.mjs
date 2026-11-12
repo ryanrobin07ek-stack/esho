@@ -10,6 +10,7 @@ const publishedHtml = `<!doctype html><html><head><meta name="eshop-filled-theme
 function createEnv(selectedThemeId = themeId) {
   const values = new Map();
   const objects = new Map();
+  let catalogReads = 0;
   const catalog = {
     store: { website_theme_id: selectedThemeId },
     products: [{ id: 1, name: "Owner Product One" }],
@@ -19,6 +20,7 @@ function createEnv(selectedThemeId = themeId) {
   return {
     values,
     objects,
+    get catalogReads() { return catalogReads; },
     PUBLISH_TOKEN: "worker-test-token",
     TENANTS: {
       async get(key, type) {
@@ -33,6 +35,7 @@ function createEnv(selectedThemeId = themeId) {
       prepare(query) {
         assert.match(query, /SELECT payload, updated_at FROM catalog_snapshots/);
         return { bind() { return { async first() {
+          catalogReads += 1;
           return { payload: JSON.stringify(catalog), updated_at: catalogUpdatedAt };
         } }; } };
       }
@@ -100,14 +103,21 @@ test("Worker persists only a complete supported fill and serves that same publis
   assert.equal(pointer.themeId, themeId);
   assert.equal(pointer.catalogUpdatedAt, catalogUpdatedAt);
   assert.match(pointer.key, /^published-sites\/main\/cira-atelier-event-architecture-management\//);
-  assert.equal(env.objects.get(pointer.key).body, publishedHtml);
+  const savedHtml = env.objects.get(pointer.key).body;
+  assert.match(savedHtml, /id="eshop-published-catalog"/);
+  assert.match(savedHtml, /window\.__ESHOP_THEME_CATALOG__/);
+  assert.match(savedHtml, /Owner Product One/);
+  assert.equal(env.catalogReads, 1);
 
   const storefront = await worker.fetch(new Request("https://eshop-storefront.workers.dev/"), env);
   assert.equal(storefront.status, 200);
   const html = await storefront.text();
+  assert.equal(env.catalogReads, 1, "Serving an embedded catalog must not query D1.");
   assert.match(html, /Owner Product One/);
   assert.match(html, /eshop-filled-theme/);
-  assert.doesNotMatch(html, /__ESHOP_THEME_CATALOG__|theme-catalog-adapter\.js/);
+  assert.match(html, /id="eshop-published-catalog"/);
+  assert.match(html, /theme-catalog-adapter\.js\?v=commerce-3/);
+  assert.match(html, /storefront-analytics\.js\?v=events-1/);
 });
 
 test("Worker rejects unsupported, incomplete, stale, and unauthenticated theme publishes", async () => {
@@ -156,7 +166,7 @@ test("Worker accepts the Elora Liquid HTML storefront theme", async () => {
     assert.equal((await response.json()).theme_id, themeId);
     const pointer = JSON.parse(env.values.get("published-theme:main"));
     assert.equal(pointer.themeId, themeId);
-    assert.equal(env.objects.get(pointer.key).body, html);
+    assert.match(env.objects.get(pointer.key).body, /id="eshop-published-catalog"/);
   }
 });
 
@@ -173,7 +183,8 @@ test("Worker accepts the Litrus Mixer storefront", async () => {
   assert.equal((await response.json()).theme_id, "litrus-mixer");
   const pointer = JSON.parse(env.values.get("published-theme:main"));
   assert.equal(pointer.themeId, "litrus-mixer");
-  assert.equal(env.objects.get(pointer.key).body, html);
+  assert.match(env.objects.get(pointer.key).body, /id="eshop-published-catalog"/);
+  assert.match(env.objects.get(pointer.key).body, /My Litrus shop/);
 });
 
 test("storefront fails closed instead of serving an unpublished template", async () => {

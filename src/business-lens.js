@@ -14,7 +14,7 @@ const money = (value, currency = "KES") => {
     return `${code} ${(Number(value) || 0).toFixed(2)}`;
   }
 };
-const filterStorageKey = "ESHOP_BUSINESS_LENS_FILTERS_V1";
+const filterStorageKey = "ESHOP_BUSINESS_LENS_FILTERS_V2";
 const shortMoney = (value, currency) => {
   const amount = Number(value) || 0;
   return amount >= 1000000 ? `${money(amount / 1000000, currency)}m`
@@ -106,11 +106,62 @@ function normalizeSnapshot(snapshot, context) {
   return { ...snapshot, sales, visits, expenses };
 }
 
+function mergeStorefrontOrders(sales, orders) {
+  const remoteSales = orders.map((order, index) => {
+    const total = Number(order.total) || 0;
+    const orderStatus = String(order.status || "").toLowerCase();
+    const paymentStatus = String(order.payment_status || "").toLowerCase();
+    const reversedStatuses = ["refunded", "voided", "cancelled", "canceled", "failed"];
+    const reversed = reversedStatuses.includes(orderStatus) || reversedStatuses.includes(paymentStatus);
+    const paid = !reversed && (paymentStatus === "paid" || ["paid", "completed"].includes(orderStatus));
+    const reference = String(order.order_number || order.id || `WEB-${index}`);
+    const items = Array.isArray(order.items) ? order.items : [];
+    return {
+      channel: "Website",
+      id: reference,
+      reference,
+      date: String(order.created_at || ""),
+      currency: String(order.currency || "KES").toUpperCase(),
+      status: reversed ? orderStatus || paymentStatus : paid ? "paid" : paymentStatus || orderStatus || "pending",
+      total,
+      collected: reversed ? 0 : paid ? total : Math.max(0, Number(order.amount_paid) || 0),
+      subtotal: Number(order.subtotal) || total,
+      discount: Number(order.discount) || 0,
+      tax: Number(order.tax) || 0,
+      customerName: String(order.customer_name || ""),
+      customerEmail: String(order.customer_email || ""),
+      customerPhone: String(order.customer_phone || ""),
+      city: String(order.city || ""),
+      country: String(order.country || ""),
+      paymentMethod: String(order.payment_method || (paid ? "Paystack" : "other")),
+      lineItems: items.map(item => ({
+        productId: String(item.product_id || item.productId || item.sku || item.name || ""),
+        name: String(item.name || "Item"),
+        quantity: Number(item.quantity) || 1,
+        unitPrice: Number(item.unit_price ?? item.price ?? item.unitPrice) || 0,
+        costPrice: item.costPrice == null && item.unitCost == null
+          ? null
+          : Number(item.costPrice ?? item.unitCost) || 0
+      })),
+      itemCount: items.length
+    };
+  });
+  const remoteReferences = new Set(remoteSales.map(sale => sale.reference));
+  return [
+    ...sales.filter(sale => sale.channel !== "Website" || !remoteReferences.has(String(sale.reference))),
+    ...remoteSales
+  ];
+}
+
 function analyse(data, filters) {
   const now = new Date();
   const ranges = { today: 0, "7d": 6, "30d": 29, "90d": 89 };
+  const firstSaleDate = data.sales.reduce((first, sale) => {
+    const date = localDate(sale.createdAt);
+    return date && (!first || date < first) ? date : first;
+  }, null) || now;
   const start = filters.range === "custom" && filters.from ? dayStart(new Date(`${filters.from}T00:00:00`))
-    : filters.range === "all" ? new Date(0)
+    : filters.range === "all" ? dayStart(firstSaleDate)
       : filters.range === "ytd" ? new Date(now.getFullYear(), 0, 1)
         : filters.range === "month" ? new Date(now.getFullYear(), now.getMonth(), 1)
           : dayStart(new Date(now.getFullYear(), now.getMonth(), now.getDate() - (ranges[filters.range] ?? 29)));
@@ -124,7 +175,7 @@ function analyse(data, filters) {
   const currentPaid = scoped.filter(paid);
   const revenue = sum(currentPaid, sale => sale.total);
   const previousStart = new Date(start.getTime() - Math.max(1, end.getTime() - start.getTime()));
-  const previous = data.sales.filter(sale => {
+  const previous = filters.range === "all" ? [] : data.sales.filter(sale => {
     const time = localDate(sale.createdAt)?.getTime() ?? NaN;
     return Number.isFinite(time) && time >= previousStart.getTime() && time < start.getTime() && (filters.channel === "all" || sale.channel === filters.channel);
   }).filter(paid);
@@ -257,7 +308,7 @@ function analyse(data, filters) {
   const pairs=[...pairCounts.entries()].map(([pair,count])=>({pair,count,lift:count*baskets.length/Math.max(1,(singles.get(pair.split(" + ")[0])||0)*(singles.get(pair.split(" + ")[1])||0))})).sort((x,y)=>y.lift-x.lift||y.count-x.count);
   const paidCustomerIds = new Set(currentPaid.map(sale=>sale.customerId).filter(Boolean));
   const kpis = {
-    revenue, previousRevenue, delta: previousRevenue ? (revenue-previousRevenue)/Math.abs(previousRevenue)*100 : revenue ? 100 : 0,
+    revenue, previousRevenue, delta: filters.range === "all" ? 0 : previousRevenue ? (revenue-previousRevenue)/Math.abs(previousRevenue)*100 : revenue ? 100 : 0,
     orders:currentPaid.length, units:sum(currentPaid,sale=>sum(sale.items,item=>item.quantity)), customers:paidCustomerIds.size,
     web:channelRevenue.web,pos:channelRevenue.pos, webOrders:currentPaid.filter(sale=>sale.channel==="web").length,posOrders:currentPaid.filter(sale=>sale.channel==="pos").length,
     aov:currentPaid.length?revenue/currentPaid.length:0,profit:grossProfit,margin:safePercent(grossProfit,revenue),expenses,netProfit,
@@ -333,7 +384,10 @@ function analyse(data, filters) {
 
 function renderOverview(a) {
   const {kpis,currency,series,insights,productStats,categoryStats,payments,scoped}=a;
-  return `<div class="bl-kpis">${metric("Revenue",shortMoney(kpis.revenue,currency),`${kpis.delta>=0?"+":""}${kpis.delta.toFixed(1)}% vs previous equal period`)}${metric("Paid orders",kpis.orders,`${kpis.units} units`)}${metric("Gross profit",shortMoney(kpis.profit,currency),`${kpis.margin.toFixed(1)}% estimated margin`)}${metric("Customers",kpis.customers,`${a.customers.filter(customer=>customer.orders.length>1).length} repeat`)}${metric("Average order",money(kpis.aov,currency))}${metric("Net after recorded expenses",shortMoney(kpis.netProfit,currency))}${metric("Web visitors",a.webVisitors,`${a.visitors.length} page views`)}${metric("Stock value at cost",shortMoney(kpis.stockValue,currency))}</div>
+  const revenueNote = a.filters.range === "all"
+    ? "All recorded time"
+    : `${kpis.delta>=0?"+":""}${kpis.delta.toFixed(1)}% vs previous equal period`;
+  return `<div class="bl-kpis">${metric("Revenue",shortMoney(kpis.revenue,currency),revenueNote)}${metric("Paid orders",kpis.orders,`${kpis.units} units`)}${metric("Gross profit",shortMoney(kpis.profit,currency),`${kpis.margin.toFixed(1)}% estimated margin`)}${metric("Customers",kpis.customers,`${a.customers.filter(customer=>customer.orders.length>1).length} repeat`)}${metric("Average order",money(kpis.aov,currency))}${metric("Net after recorded expenses",shortMoney(kpis.netProfit,currency))}${metric("Web visitors",a.webVisitors,`${a.visitors.length} page views`)}${metric("Stock value at cost",shortMoney(kpis.stockValue,currency))}</div>
     ${card("Business performance","<div class='bl-chart-tabs'><span>Revenue · Web · Counter</span></div>"+lineChart(series,["web","pos"],currency))}
     <div class="bl-two">${card("Priority insights",listRows(insights.slice(0,4).map(item=>`<div class="bl-insight ${item.tone}"><strong>${$(item.title)}</strong><p>${$(item.detail)}</p><small>Next: ${$(item.action)}</small></div>`)))}${card("Break-even position",`<div class="bl-big-number">${money(kpis.netProfit,currency)}</div><p>Gross profit less recorded expenses for the selected period.</p><div class="bl-rule">${row("Gross revenue",money(kpis.revenue,currency))}${row("Cost of goods (available cost data)",money(a.cogs,currency))}${row("Recorded operating expenses",money(kpis.expenses,currency))}</div>`)}</div>
     <div class="bl-two">${card("Top products",barRows(productStats.slice(0,7),item=>item.name,item=>item.revenue,(value)=>shortMoney(value,currency)))}${card("Revenue by category",barRows([...categoryStats.entries()].sort((x,y)=>y[1]-x[1]).slice(0,7),item=>item[0],item=>item[1],value=>shortMoney(value,currency)))}</div>
@@ -372,6 +426,7 @@ function forecastSeries(series) {
 }
 
 function renderRevenue(a) {
+  const periodLabel = a.filters.range === "all" ? "All recorded time" : `${a.days} days`;
   const anomalies=a.series.length>7?a.series.map((item,index)=>{
     const recent=a.series.slice(Math.max(0,index-14),index).map(point=>point.revenue);
     const mean=sum(recent,value=>value)/Math.max(1,recent.length);
@@ -388,7 +443,7 @@ function renderRevenue(a) {
     return row(item.label,money(item.revenue,a.currency),`Recent baseline: ${money(item.mean ?? baseline,a.currency)} · ${item.z.toFixed(1)}σ`);
   });
   const periodRows = a.series.map(point=>`<tr><td>${$(point.label)}</td><td>${money(point.revenue,a.currency)}</td><td>${money(point.web,a.currency)}</td><td>${money(point.pos,a.currency)}</td><td>${point.orders}</td><td>${money(point.profit,a.currency)}</td></tr>`);
-  return `<div class="bl-kpis">${metric("Revenue this period",money(a.kpis.revenue,a.currency),`${a.days} days`)}${metric("Daily average",money(a.kpis.revenue/a.days,a.currency))}${metric("Forecast next 7 periods",forecast.length?money(sum(forecast,item=>item.revenue),a.currency):"Not enough history",forecast.length?"Simple recent-average projection":"Needs four periods")} ${metric("Unusual periods",anomalies.length,"Review period table")}</div>
+  return `<div class="bl-kpis">${metric("Revenue this period",money(a.kpis.revenue,a.currency),periodLabel)}${metric("Daily average",money(a.kpis.revenue/a.days,a.currency))}${metric("Forecast next 7 periods",forecast.length?money(sum(forecast,item=>item.revenue),a.currency):"Not enough history",forecast.length?"Simple recent-average projection":"Needs four periods")} ${metric("Unusual periods",anomalies.length,"Review period table")}</div>
     ${card("This period · channel split",lineChart(a.series,["web","pos"],a.currency))}
     <div class="bl-two">${card("Forecast · estimate and range",forecast.length?`${lineChart(forecast,["revenue"],a.currency)}<p class="bl-caption">Projection uncertainty is shown as lower/upper estimates in the table; this is not a guarantee.</p>${table(["Period","Projection","Lower estimate","Upper estimate"],forecast.map(item=>`<tr><td>${item.label}</td><td>${money(item.revenue,a.currency)}</td><td>${money(item.lower,a.currency)}</td><td>${money(item.upper,a.currency)}</td></tr>`))}`:`<p class="bl-empty">At least four historical periods are needed to project. This view does not invent a forecast.</p>`)}${card("Profit vs running costs",lineChart(a.series.map(point=>({...point,expenses:point.expenses,net:point.profit-point.expenses})),["profit","expenses","net"],a.currency))}</div>
     ${card("Trading rhythm",`<p class="bl-caption">Paid sales by local device time · weekday bars show revenue for each day; hourly bars include all 24 hours.</p><div class="bl-heat">${weekdays.map(day=>`<div><span>${day.label}</span><i style="height:${Math.max(3,day.revenue/Math.max(1,...weekdays.map(item=>item.revenue))*38)}px"></i><small>${shortMoney(day.revenue,a.currency)}</small></div>`).join("")}</div><div class="bl-hour-bars">${hours.map(item=>`<div title="${item.hour}:00 · ${money(item.revenue,a.currency)}"><i style="height:${Math.max(2,item.revenue/max*50)}px"></i><span>${item.hour}</span></div>`).join("")}</div><div class="bl-two bl-trading-compare">${metric("Average weekday revenue",money(a.tradingComparison.weekday,a.currency),"Per weekday with recorded sales")}${metric("Average weekend-day revenue",money(a.tradingComparison.weekend,a.currency),"Per weekend day with recorded sales")}</div><p class="bl-caption">Last 28 calendar days · each square is a local date; darker means more revenue.</p><div class="bl-trading-calendar">${a.trading.map(day=>`<div title="${dateLabel(day.date)} · ${money(day.revenue,a.currency)} · ${day.orders} orders" style="--activity:${day.revenue?Math.min(.9,.18+day.revenue/Math.max(1,...a.trading.map(item=>item.revenue))*.72):.06}"><span>${day.date.getDate()}</span></div>`).join("")}</div>`) }
@@ -593,9 +648,10 @@ function render(a, path, snapshot, context) {
 }
 
 window.BusinessLens = {
+  mergeStorefrontOrders,
   render(snapshot, path, context = {}) {
     const raw = normalizeSnapshot(snapshot, context);
-    let filters = { range:"30d", channel:"all", category:"all", granularity:"day" };
+    let filters = { range:"all", channel:"all", category:"all", granularity:"day" };
     try { filters = { ...filters, ...JSON.parse(localStorage.getItem(filterStorageKey) || "{}") }; } catch {}
     const analysis = analyse(raw, filters);
     return render(analysis, path, snapshot, { ...context, filters });

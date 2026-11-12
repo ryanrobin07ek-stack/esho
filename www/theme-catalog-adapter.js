@@ -1,6 +1,17 @@
 (() => {
+  const initialScript = document.currentScript;
   const catalog = window.__ESHOP_THEME_CATALOG__;
-  if (!catalog || !Array.isArray(catalog.products) || !Array.isArray(catalog.categories)) return;
+  if (!catalog || !Array.isArray(catalog.products) || !Array.isArray(catalog.categories)) {
+    window.addEventListener("eshop:catalog-ready", () => {
+      if (window.__ESHOP_THEME_CATALOG_RESTARTED__) return;
+      window.__ESHOP_THEME_CATALOG_RESTARTED__ = true;
+      if (initialScript?.src) {
+        const retryScript = initialScript.cloneNode(false);
+        document.head.append(retryScript);
+      }
+    }, { once: true });
+    return;
+  }
 
   const products = catalog.products.filter(product => product && product.status !== "archived");
   const categories = catalog.categories;
@@ -21,6 +32,8 @@
   const priceOf = product => Number(product.price ?? product.selling_price ?? product.sellingPrice) || 0;
   const currency = catalog.store?.currency || "KES";
   const store = catalog.store || {};
+  const wishlistStorageKey = "storefront.wishlist";
+  const holdStorageKey = `eshop-holds:${location.host}`;
   const socialLinks = [
     ["Facebook", store.facebook_url],
     ["Instagram", store.instagram_url],
@@ -124,6 +137,8 @@
   };
   const cartStorageKey = `eshop-cart:${location.host}`;
   let cart = [];
+  let wishlist = [];
+  let customerHolds = [];
   let categoryBar = null;
   let searchInput = null;
   let activeCategoryId = "";
@@ -140,6 +155,22 @@
   } catch (error) {
     console.warn("Saved storefront bag could not be read.", error);
   }
+  try {
+    const savedWishlist = JSON.parse(localStorage.getItem(wishlistStorageKey) || "[]");
+    if (Array.isArray(savedWishlist)) {
+      wishlist = [...new Set(savedWishlist.map(String))]
+        .filter(id => products.some(product => String(product.id) === id))
+        .slice(0, 100);
+    }
+    const savedHolds = JSON.parse(localStorage.getItem(holdStorageKey) || "[]");
+    if (Array.isArray(savedHolds)) {
+      customerHolds = savedHolds.filter(hold => hold && typeof hold.id === "string"
+        && products.some(product => String(product.id) === String(hold.product_id))
+        && Date.parse(hold.expires_at) > Date.now());
+    }
+  } catch (error) {
+    console.warn("Saved storefront preferences could not be read.", error);
+  }
   const saveCart = () => {
     try {
       localStorage.setItem(cartStorageKey, JSON.stringify(cart));
@@ -153,6 +184,87 @@
     if (status) status.textContent = message;
   };
   const findProduct = id => products.find(product => String(product.id) === String(id));
+  const trackEvent = (productId, type, count = 1) => {
+    if (typeof window.__ESHOP_TRACK_STOREFRONT_EVENT__ === "function") {
+      window.__ESHOP_TRACK_STOREFRONT_EVENT__(String(productId), type, count);
+    }
+  };
+  const saveWishlist = () => {
+    try {
+      localStorage.setItem(wishlistStorageKey, JSON.stringify(wishlist));
+    } catch (error) {
+      console.warn("Wishlist could not be saved on this device.", error);
+    }
+  };
+  const saveCustomerHolds = () => {
+    try {
+      localStorage.setItem(holdStorageKey, JSON.stringify(customerHolds));
+    } catch (error) {
+      console.warn("Product hold could not be saved on this device.", error);
+    }
+  };
+  const toggleWishlist = product => {
+    if (!product) return;
+    const id = String(product.id);
+    const saved = !wishlist.includes(id);
+    wishlist = saved ? [...wishlist, id].slice(-100) : wishlist.filter(item => item !== id);
+    saveWishlist();
+    if (saved) trackEvent(id, "wishlist_add");
+    updateWishlistCount();
+    updateWishlistButtons();
+    setCommerceStatus(saved ? `${product.name} saved to your wishlist.` : `${product.name} removed from your wishlist.`);
+  };
+  const updateWishlistCount = () => {
+    document.querySelectorAll("[data-eshop-wishlist-count]").forEach(node => {
+      if (node.textContent !== String(wishlist.length)) node.textContent = String(wishlist.length);
+    });
+  };
+  const updateWishlistButtons = () => {
+    document.querySelectorAll("[data-eshop-wishlist-toggle]").forEach(button => {
+      const saved = wishlist.includes(String(button.dataset.productId));
+      button.textContent = saved ? "♥ Saved to wishlist" : "♡ Save to wishlist";
+      button.setAttribute("aria-pressed", String(saved));
+    });
+  };
+  const requestProductHold = async (form, product) => {
+    const fields = new FormData(form);
+    const quantity = Number(commerceDialog?.querySelector("[data-eshop-product-quantity]")?.value) || 1;
+    const submit = form.querySelector("button[type='submit']");
+    if (submit) submit.disabled = true;
+    setCommerceStatus("Reserving the requested quantity…");
+    try {
+      const response = await fetch("/api/product-holds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idempotency_key: crypto.randomUUID(),
+          product_id: String(product.id),
+          quantity,
+          customer_name: fields.get("customer_name"),
+          contact: fields.get("contact")
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not hold this product.");
+      const hold = result.hold;
+      customerHolds = [...customerHolds.filter(item => item.id !== hold.id), {
+        id: hold.id,
+        product_id: String(hold.product_id),
+        quantity: Number(hold.quantity),
+        expires_at: hold.expires_at,
+        customer_name: String(fields.get("customer_name") || "").trim(),
+        contact: String(fields.get("contact") || "").trim()
+      }];
+      saveCustomerHolds();
+      setCommerceStatus(`Held ${quantity} ${product.name} until ${new Date(hold.expires_at).toLocaleString()}.`);
+      form.reset();
+    } catch (error) {
+      console.error("Product hold request failed.", error);
+      setCommerceStatus(error.message || "Could not hold this product. Please try again.");
+    } finally {
+      if (submit) submit.disabled = false;
+    }
+  };
   const addToBag = (product, quantity = 1) => {
     if (!product || Number(product.stock) <= 0) {
       setCommerceStatus("This item is currently out of stock.");
@@ -167,6 +279,7 @@
     if (item) item.quantity = nextQuantity;
     else cart.push({ product_id: String(product.id), quantity });
     saveCart();
+    trackEvent(product.id, "cart_add", quantity);
     setCommerceStatus(`${product.name} added to your bag.`);
     updateBagCount();
   };
@@ -203,6 +316,7 @@
   };
   const openProduct = product => {
     if (!product) return;
+    trackEvent(product.id, "view");
     const dialog = openCommerceDialog();
     dialog.innerHTML = "";
     const panel = document.createElement("article");
@@ -241,6 +355,7 @@
     quantity.min = "1";
     quantity.max = String(Math.max(1, Number(product.stock) || 1));
     quantity.value = "1";
+    quantity.dataset.eshopProductQuantity = "";
     quantity.setAttribute("aria-label", "Quantity");
     quantity.style.cssText = "width:100px;min-height:44px;padding:8px;border:1px solid currentColor;border-radius:8px;background:var(--surface,#fff);color:inherit";
     panel.append(quantity);
@@ -248,6 +363,47 @@
     add.dataset.productId = String(product.id);
     add.disabled = Number(product.stock) <= 0;
     panel.append(add);
+    const wish = createButton(wishlist.includes(String(product.id)) ? "♥ Saved to wishlist" : "♡ Save to wishlist", "toggle-wishlist");
+    wish.dataset.productId = String(product.id);
+    wish.dataset.eshopWishlistToggle = "";
+    panel.append(wish);
+    if (product.booking_enabled === true && Number(product.stock) > 0) {
+      const holdForm = document.createElement("form");
+      holdForm.dataset.eshopProductHoldForm = "";
+      holdForm.style.cssText = "display:grid;gap:10px;padding:14px;border:1px solid #8885;border-radius:12px";
+      const holdNote = document.createElement("p");
+      const holdHours = Number(store.hold_duration_hours) || 24;
+      holdNote.textContent = `Request a hold for up to ${holdHours} hour${holdHours === 1 ? "" : "s"}. The selected quantity is reserved immediately.`;
+      holdNote.style.margin = "0";
+      holdForm.append(holdNote);
+      [["customer_name", "Full name", "text"], ["contact", "Email address or phone", "text"]].forEach(([name, label, type]) => {
+        const input = document.createElement("input");
+        input.name = name;
+        input.type = type;
+        input.placeholder = label;
+        input.autocomplete = name === "customer_name" ? "name" : "email tel";
+        input.required = true;
+        input.setAttribute("aria-label", label);
+        input.style.cssText = "min-height:44px;padding:10px;border:1px solid #8888;border-radius:8px;background:var(--surface,#fff);color:inherit;font:inherit";
+        holdForm.append(input);
+      });
+      const holdSubmit = document.createElement("button");
+      holdSubmit.type = "submit";
+      holdSubmit.textContent = "Reserve this product";
+      holdSubmit.style.cssText = "min-height:44px;border:1px solid currentColor;border-radius:999px;background:transparent;color:inherit;font:inherit;font-weight:700";
+      holdForm.append(holdSubmit);
+      holdForm.addEventListener("submit", event => {
+        event.preventDefault();
+        void requestProductHold(holdForm, product);
+      });
+      panel.append(holdForm);
+    }
+    const status = document.createElement("p");
+    status.dataset.eshopCommerceStatus = "";
+    status.setAttribute("role", "status");
+    status.textContent = commerceStatus;
+    status.style.minHeight = "1.4em";
+    panel.append(status);
     dialog.append(panel);
     if (commerceStatus) setCommerceStatus(commerceStatus);
   };
@@ -316,6 +472,16 @@
         submit.disabled = true;
         const fields = new FormData(form);
         const idempotencyKey = crypto.randomUUID();
+        const cartProductIds = new Set(items.map(row => String(row.item.product_id)));
+        const orderName = String(fields.get("customer_name") || "").trim().replace(/\s+/g, " ").toLocaleLowerCase();
+        const orderEmail = String(fields.get("customer_email") || "").trim().toLocaleLowerCase();
+        const orderPhone = String(fields.get("customer_phone") || "").replace(/\D/g, "");
+        const holdIds = customerHolds.filter(hold => cartProductIds.has(String(hold.product_id))
+          && Date.parse(hold.expires_at) > Date.now()
+          && String(hold.customer_name || "").trim().replace(/\s+/g, " ").toLocaleLowerCase() === orderName
+          && (String(hold.contact || "").includes("@")
+            ? String(hold.contact).trim().toLocaleLowerCase() === orderEmail
+            : String(hold.contact || "").replace(/\D/g, "") === orderPhone)).map(hold => hold.id);
         setCommerceStatus("Creating your order securely…");
         try {
           const orderResponse = await fetch("/api/orders", {
@@ -326,6 +492,7 @@
               customer_name: fields.get("customer_name"),
               customer_email: fields.get("customer_email"),
               customer_phone: fields.get("customer_phone"),
+              hold_ids: holdIds,
               items: items.map(row => ({ product_id: row.item.product_id, quantity: row.item.quantity }))
             })
           });
@@ -372,6 +539,41 @@
     status.textContent = commerceStatus;
     status.style.cssText = "min-height:1.4em";
     panel.append(status);
+    dialog.append(panel);
+  };
+  const openWishlist = () => {
+    const dialog = openCommerceDialog();
+    dialog.innerHTML = "";
+    const panel = document.createElement("section");
+    panel.style.cssText = "display:grid;gap:14px;padding:20px";
+    const header = document.createElement("header");
+    header.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:12px";
+    const title = document.createElement("h2");
+    title.textContent = "Your wishlist";
+    title.style.margin = "0";
+    header.append(title, createButton("Close", "close"));
+    panel.append(header);
+    const savedProducts = wishlist.map(findProduct).filter(Boolean);
+    if (!savedProducts.length) {
+      const empty = document.createElement("p");
+      empty.textContent = "Your wishlist is empty. Save products to find them here.";
+      panel.append(empty);
+    }
+    savedProducts.forEach(product => {
+      const row = document.createElement("article");
+      row.style.cssText = "display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:12px;border:1px solid #8885;border-radius:12px";
+      const name = document.createElement("strong");
+      name.textContent = `${product.name} · ${formatPrice(priceOf(product))}`;
+      const actions = document.createElement("div");
+      actions.style.cssText = "display:flex;gap:6px;flex-wrap:wrap";
+      const view = createButton("View", "open-product");
+      view.dataset.productId = String(product.id);
+      const remove = createButton("Remove", "remove-wishlist");
+      remove.dataset.productId = String(product.id);
+      actions.append(view, remove);
+      row.append(name, actions);
+      panel.append(row);
+    });
     dialog.append(panel);
   };
   const cardSelector = element => {
@@ -469,6 +671,18 @@
     addButton.dataset.productId = id;
     addButton.textContent = Number(product.stock) > 0 ? "Add to bag" : "Sold out";
     addButton.disabled = Number(product.stock) <= 0;
+    let wishButton = card.querySelector("[data-eshop-wishlist-toggle]");
+    if (!wishButton) {
+      wishButton = document.createElement("button");
+      wishButton.type = "button";
+      wishButton.dataset.eshopWishlistToggle = "";
+      wishButton.dataset.eshopCommerceAction = "toggle-wishlist";
+      wishButton.style.cssText = "display:block;width:100%;min-height:38px;margin-top:8px;padding:7px 12px;border:1px solid currentColor;border-radius:999px;background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer";
+      card.append(wishButton);
+    }
+    wishButton.dataset.productId = id;
+    wishButton.textContent = wishlist.includes(id) ? "♥ Saved to wishlist" : "♡ Save to wishlist";
+    wishButton.setAttribute("aria-pressed", String(wishlist.includes(id)));
   }
 
   function productsForGrid(label) {
@@ -659,7 +873,11 @@
       bag.dataset.eshopBagCount = "";
       bag.style.minWidth = "92px";
       bag.addEventListener("click", openBag);
-      searchRow.append(searchInput, bag);
+      const wish = createButton("Saved", "open-wishlist");
+      wish.dataset.eshopWishlistCount = "";
+      wish.style.minWidth = "92px";
+      wish.addEventListener("click", openWishlist);
+      searchRow.append(searchInput, wish, bag);
       categoryBar.append(heading, controls, searchRow);
       const target = firstProduct?.closest("[data-eshop-product-grid]") || firstProduct?.parentElement
         || document.querySelector("main") || document.querySelector("[role='main']") || document.body;
@@ -667,6 +885,7 @@
       else document.body.prepend(categoryBar);
     }
     updateBagCount();
+    updateWishlistCount();
   }
 
   function bindCommerceActions() {
@@ -690,6 +909,13 @@
         event.stopImmediatePropagation();
         if (action.dataset.eshopCommerceAction === "close") commerceDialog?.close();
         if (action.dataset.eshopCommerceAction === "open-bag") openBag();
+        if (action.dataset.eshopCommerceAction === "open-wishlist") openWishlist();
+        if (action.dataset.eshopCommerceAction === "toggle-wishlist") toggleWishlist(findProduct(action.dataset.productId));
+        if (action.dataset.eshopCommerceAction === "remove-wishlist") {
+          const product = findProduct(action.dataset.productId);
+          if (product && wishlist.includes(String(product.id))) toggleWishlist(product);
+          openWishlist();
+        }
         if (action.dataset.eshopCommerceAction === "filter-category") {
           activeCategoryId = action.dataset.categoryId || "";
           categoryBar?.querySelectorAll("[data-eshop-commerce-action='filter-category']").forEach(button => {

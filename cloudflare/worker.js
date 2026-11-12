@@ -12,6 +12,9 @@ import { renderLiquidStorefront } from "../src/liquid-storefront-renderer.js";
 const MAX_CATALOG_BYTES = 900_000;
 const MAX_PUBLISHED_THEME_BYTES = 4_000_000;
 const MAX_MEDIA_BYTES = 3_000_000;
+const MAX_VIDEO_BYTES = 50_000_000;
+const MAX_PIXABAY_IMAGE_REQUESTS = 20;
+const PIXABAY_SEARCH_CACHE_SECONDS = 24 * 60 * 60;
 const MAX_RECORDS = 1000;
 const TENANT_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9_.-]{2,31}$/;
@@ -346,7 +349,7 @@ async function requireTenant(request, env, tenantId) {
 
 function storefrontCacheKey(request, catalogUpdatedAt, verificationVersion = "none") {
   const url = new URL(request.url);
-  url.pathname = `/__worker-cache/storefront/filled-v11/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
+  url.pathname = `/__worker-cache/storefront/filled-v15/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
   url.search = "";
   url.hash = "";
   return new Request(url, { method: "GET" });
@@ -519,6 +522,14 @@ function cleanCatalog(input) {
       images: Array.isArray(product.images)
         ? product.images.map(cleanImageUrl).filter(Boolean).slice(0, 8)
         : [],
+      booking_enabled: product.booking_enabled === true || product.booking_enabled === 1,
+      media_type: ["image", "cutout", "spin", "video"].includes(product.media_type)
+        ? product.media_type
+        : "image",
+      video_url: cleanImageUrl(product.video_url),
+      spin_frames: Array.isArray(product.spin_frames)
+        ? product.spin_frames.map(cleanImageUrl).filter(Boolean).slice(0, 36)
+        : [],
       sizes: Array.isArray(product.sizes) ? product.sizes.map(value => cleanText(value, 80)).slice(0, 50) : [],
       colors: Array.isArray(product.colors) ? product.colors.map(value => cleanText(value, 80)).slice(0, 50) : [],
       tags: Array.isArray(product.tags) ? product.tags.map(value => cleanText(value, 80)).slice(0, 50) : [],
@@ -527,6 +538,13 @@ function cleanCatalog(input) {
   if (products.some(product => !Number.isSafeInteger(product.id) || product.id < 1 ||
       !product.name || !Number.isFinite(product.price) || product.price < 0)) {
     throw new TypeError("Every product needs a positive ID, a name, and a valid price.");
+  }
+  if (products.some(product =>
+    (product.media_type === "cutout" && product.images.length === 0) ||
+    (product.media_type === "spin" && product.spin_frames.length < 2) ||
+    (product.media_type === "video" && !product.video_url)
+  )) {
+    throw new TypeError("Cutout, spin, and video products must include their processed media.");
   }
 
   const storeInput = input.store && typeof input.store === "object" ? input.store : {};
@@ -629,6 +647,10 @@ function cleanCatalog(input) {
     location_map_link: cleanSocialUrl(storeInput.location_map_link),
     currency: cleanText(storeInput.currency, 8),
     currency_symbol: cleanText(storeInput.currency_symbol, 8),
+    hold_duration_hours: Number.isSafeInteger(Number(storeInput.hold_duration_hours)) &&
+      Number(storeInput.hold_duration_hours) >= 1 && Number(storeInput.hold_duration_hours) <= 720
+      ? Number(storeInput.hold_duration_hours)
+      : 24,
     announcement: cleanText(storeInput.announcement, 500),
     announcement_active: storeInput.announcement_active ? 1 : 0,
     primary_color: /^#[0-9a-f]{6}$/i.test(storeInput.primary_color || "") ? storeInput.primary_color : "",
@@ -684,7 +706,8 @@ async function authorized(request, expectedToken) {
 }
 
 async function authorizeMainOwner(request, env) {
-  return authorizeTenantOwner(request, env, "main");
+  return await authorizeTenantOwner(request, env, "main") ||
+    await authorizeTenantAccount(request, env, "main");
 }
 
 async function sha256Hex(value) {
@@ -1721,7 +1744,9 @@ async function handleCatalog(request, env, tenantId) {
     await env.DB.prepare(
       `UPDATE catalog_snapshots SET payload = ?, admin_payload = ?, updated_at = ? WHERE tenant_id = ?`
     ).bind(payload, privatePayload, updatedAt, tenantId).run();
-    await advancePublishedThemeVersion(env, tenantId, currentThemeId, row.updated_at, updatedAt);
+    await advancePublishedThemeVersion(
+      env, tenantId, currentThemeId, row.updated_at, updatedAt, cleaned.publicCatalog
+    );
     await recordCatalogVersion(env, tenantId, tenant, updatedAt);
     return jsonResponse({
       ok: true,
@@ -1784,7 +1809,7 @@ async function handleMediaUpload(request, env, tenantId) {
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
   }
-  if (!env.BUSINESS_ARCHIVE) return jsonResponse({ error: "R2 image storage is not configured." }, 503);
+  if (!env.BUSINESS_ARCHIVE) return jsonResponse({ error: "R2 media storage is not configured." }, 503);
   if (tenantId !== "main" && (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId))) {
     return jsonResponse({ error: "Invalid shop address." }, 400);
   }
@@ -1796,25 +1821,233 @@ async function handleMediaUpload(request, env, tenantId) {
     return jsonResponse({ error: "Shop owner authorization required." }, 401);
   }
   const contentType = (request.headers.get("Content-Type") || "").split(";")[0].trim().toLowerCase();
-  const extensionByType = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
+  const extensionByType = {
+    "image/webp": "webp",
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/quicktime": "mov"
+  };
   const extension = extensionByType[contentType];
-  if (!extension) return jsonResponse({ error: "Upload a compressed WebP, JPEG, or PNG image." }, 415);
+  if (!extension) return jsonResponse({ error: "Upload a WebP, JPEG, PNG, MP4, WebM, or QuickTime media file." }, 415);
+  const isVideo = contentType.startsWith("video/");
+  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_MEDIA_BYTES;
   const contentLength = Number(request.headers.get("Content-Length") || 0);
-  if (contentLength > MAX_MEDIA_BYTES) return jsonResponse({ error: "Compressed images must be smaller than 3 MB." }, 413);
-  const body = await request.arrayBuffer();
-  if (!body.byteLength || body.byteLength > MAX_MEDIA_BYTES) {
-    return jsonResponse({ error: "Compressed images must be between 1 byte and 3 MB." }, body.byteLength ? 413 : 400);
+  if (contentLength > maxBytes) {
+    return jsonResponse({ error: isVideo ? "Videos must be smaller than 50 MB." : "Compressed images must be smaller than 3 MB." }, 413);
   }
-  const key = `media/${tenantId}/${crypto.randomUUID()}.${extension}`;
-  await env.BUSINESS_ARCHIVE.put(key, body, {
-    httpMetadata: { contentType, cacheControl: "public, max-age=31536000, immutable" },
-    customMetadata: { tenantId }
-  });
+  const body = await request.arrayBuffer();
+  if (!body.byteLength || body.byteLength > maxBytes) {
+    return jsonResponse({
+      error: isVideo ? "Videos must be between 1 byte and 50 MB." : "Compressed images must be between 1 byte and 3 MB."
+    }, body.byteLength ? 413 : 400);
+  }
+  const digest = await crypto.subtle.digest("SHA-256", body);
+  const fingerprint = [...new Uint8Array(digest)]
+    .map(byte => byte.toString(16).padStart(2, "0")).join("");
+  const key = `media/${tenantId}/${fingerprint}.${extension}`;
+  const existing = await env.BUSINESS_ARCHIVE.head(key);
+  if (existing && existing.customMetadata?.tenantId !== tenantId) {
+    return jsonResponse({ error: "The existing media object does not belong to this shop." }, 409);
+  }
+  if (!existing) {
+    await env.BUSINESS_ARCHIVE.put(key, body, {
+      httpMetadata: { contentType, cacheControl: "public, max-age=31536000, immutable" },
+      customMetadata: { tenantId }
+    });
+  }
   const hostname = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
   return jsonResponse({
     ok: true,
-    url: `https://${hostname}/${key}`
+    url: `https://${hostname}/${key}`,
+    reused: Boolean(existing)
   });
+}
+
+async function readBoundedImageResponse(response) {
+  const declaredLength = Number(response.headers.get("Content-Length") || 0);
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_MEDIA_BYTES) {
+    throw new Error("The selected Pixabay image is too large to store.");
+  }
+  if (!response.body) throw new Error("Pixabay returned an empty image.");
+  const reader = response.body.getReader();
+  const chunks = [];
+  let totalBytes = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > MAX_MEDIA_BYTES) {
+      await reader.cancel();
+      throw new Error("The selected Pixabay image is too large to store.");
+    }
+    chunks.push(value);
+  }
+  if (!totalBytes) throw new Error("Pixabay returned an empty image.");
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
+
+async function searchPixabayForImage(env, query) {
+  const cacheKey = `pixabay-search:v1:${await sha256Hex(query.toLocaleLowerCase())}`;
+  const cached = await env.TENANTS.get(cacheKey, "json");
+  if (Array.isArray(cached)) return cached;
+
+  const searchUrl = new URL("https://pixabay.com/api/");
+  searchUrl.search = new URLSearchParams({
+    key: env.PIXABAY_API_KEY,
+    q: query,
+    image_type: "photo",
+    orientation: "horizontal",
+    safesearch: "true",
+    order: "popular",
+    per_page: "3",
+    min_width: "640"
+  }).toString();
+  const response = await fetch(searchUrl, { signal: AbortSignal.timeout(15_000) });
+  if (!response.ok) {
+    throw new Error(`Pixabay image search failed (HTTP ${response.status}).`);
+  }
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error("Pixabay returned an invalid image search response.");
+  }
+  const hits = Array.isArray(payload?.hits)
+    ? payload.hits.filter(hit => {
+      try {
+        const imageUrl = new URL(hit?.webformatURL || "");
+        const pageUrl = new URL(hit?.pageURL || "");
+        return imageUrl.protocol === "https:" &&
+          imageUrl.hostname === "cdn.pixabay.com" &&
+          pageUrl.protocol === "https:" &&
+          pageUrl.hostname === "pixabay.com";
+      } catch {
+        return false;
+      }
+    }).slice(0, 3).map(hit => ({
+      imageUrl: hit.webformatURL,
+      pageUrl: hit.pageURL,
+      user: cleanText(hit.user, 120)
+    }))
+    : [];
+  await env.TENANTS.put(cacheKey, JSON.stringify(hits), {
+    expirationTtl: PIXABAY_SEARCH_CACHE_SECONDS
+  });
+  return hits;
+}
+
+async function handlePixabayImages(request, env, tenantId) {
+  if (request.method !== "POST") {
+    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+  }
+  if (!env.TENANTS || !env.BUSINESS_ARCHIVE) {
+    return jsonResponse({ error: "Pixabay image storage is not configured." }, 503);
+  }
+  if (tenantId !== "main" && (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId))) {
+    return jsonResponse({ error: "Invalid shop address." }, 400);
+  }
+  const isOwner = tenantId === "main"
+    ? await authorizeMainOwner(request, env)
+    : await authorizeTenantOwner(request, env, tenantId) ||
+      await authorizeTenantAccount(request, env, tenantId);
+  if (!isOwner && !await authorizeAdmin(request, env)) {
+    return jsonResponse({ error: "Shop owner authorization required." }, 401);
+  }
+  if (!env.PIXABAY_API_KEY) {
+    return jsonResponse({ error: "Craft image search is not configured on Cloudflare." }, 503);
+  }
+
+  const boundedBody = await readBoundedRequestText(request, 12_000);
+  if (boundedBody.tooLarge) return jsonResponse({ error: "Image request exceeds the 12 KB limit." }, 413);
+  let input;
+  try {
+    input = JSON.parse(boundedBody.text);
+  } catch {
+    return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+  }
+  if (!Array.isArray(input?.images) || input.images.length < 1 ||
+      input.images.length > MAX_PIXABAY_IMAGE_REQUESTS) {
+    return jsonResponse({
+      error: `Request between 1 and ${MAX_PIXABAY_IMAGE_REQUESTS} empty image slots at a time.`
+    }, 400);
+  }
+  const images = [];
+  const slots = new Set();
+  for (const item of input.images) {
+    const slot = cleanText(item?.slot, 80).trim();
+    const query = cleanText(item?.query, 100).trim();
+    if (!/^[a-z0-9][a-z0-9_-]{0,79}$/i.test(slot) || slots.has(slot) ||
+        query.length < 2 || /[\u0000-\u001f]/.test(query)) {
+      return jsonResponse({ error: "Every image slot needs a unique name and a search term of 2 to 100 characters." }, 400);
+    }
+    slots.add(slot);
+    images.push({ slot, query });
+  }
+  if (!await limitAuthRequests(request, env, `pixabay-images:${tenantId}`, 3, 60)) {
+    return jsonResponse({ error: "Craft image search is busy for this network. Try again shortly." }, 429);
+  }
+
+  const outcomes = await Promise.all(images.map(async ({ slot, query }) => {
+    try {
+      const [hit] = await searchPixabayForImage(env, query);
+      if (!hit) return { slot, error: "No matching Pixabay image was found." };
+      const sourceUrl = new URL(hit.imageUrl);
+      const upstream = await fetch(sourceUrl, {
+        redirect: "error",
+        signal: AbortSignal.timeout(20_000)
+      });
+      if (!upstream.ok) throw new Error(`Could not download the selected image (HTTP ${upstream.status}).`);
+      const finalUrl = upstream.url ? new URL(upstream.url) : sourceUrl;
+      if (finalUrl.protocol !== "https:" || finalUrl.hostname !== "cdn.pixabay.com") {
+        throw new Error("Pixabay returned an unsupported image location.");
+      }
+      const contentType = (upstream.headers.get("Content-Type") || "").split(";")[0].trim().toLowerCase();
+      const extensionByType = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
+      const extension = extensionByType[contentType];
+      if (!extension) throw new Error("Pixabay returned an unsupported image format.");
+      const bytes = await readBoundedImageResponse(upstream);
+      const assetId = `${crypto.randomUUID()}.${extension}`;
+      const key = `media/${tenantId}/${assetId}`;
+      await env.BUSINESS_ARCHIVE.put(key, bytes, {
+        httpMetadata: { contentType, cacheControl: "public, max-age=31536000, immutable" },
+        customMetadata: {
+          tenantId,
+          source: "pixabay",
+          pixabayUser: hit.user,
+          pixabayPageUrl: hit.pageUrl
+        }
+      });
+      const hostname = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
+      return {
+        slot,
+        url: `https://${hostname}/${key}`,
+        credit: { user: hit.user || "Pixabay contributor", url: hit.pageUrl }
+      };
+    } catch (error) {
+      return {
+        slot,
+        error: error instanceof Error ? error.message : "Could not load a Pixabay image."
+      };
+    }
+  }));
+  const stored = outcomes.filter(outcome => typeof outcome.url === "string");
+  const errors = outcomes.filter(outcome => typeof outcome.error === "string");
+  if (!stored.length) {
+    return jsonResponse({
+      error: errors[0]?.error || "No Pixabay images could be loaded.",
+      images: [],
+      errors
+    }, 502);
+  }
+  return jsonResponse({ ok: true, images: stored, errors }, 200, { "Cache-Control": "private, no-store" });
 }
 
 async function handlePublicMedia(request, env, tenantId, assetId) {
@@ -1823,16 +2056,23 @@ async function handlePublicMedia(request, env, tenantId, assetId) {
   }
   if (!env.BUSINESS_ARCHIVE) return jsonResponse({ error: "R2 image storage is not configured." }, 503);
   if (tenantId !== "main" && (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId))) {
-    return jsonResponse({ error: "Image not found." }, 404);
+    return jsonResponse({ error: "Media not found." }, 404);
   }
-  const match = assetId.match(/^([a-f0-9-]{36})\.(webp|jpg|png)$/i);
-  if (!match) return jsonResponse({ error: "Image not found." }, 404);
+  const match = assetId.match(/^(?:[a-f0-9-]{36}|[a-f0-9]{64})\.(webp|jpg|png|mp4|webm|mov)$/i);
+  if (!match) return jsonResponse({ error: "Media not found." }, 404);
   const object = await env.BUSINESS_ARCHIVE.get(`media/${tenantId}/${assetId}`);
-  if (!object) return jsonResponse({ error: "Image not found." }, 404);
+  if (!object) return jsonResponse({ error: "Media not found." }, 404);
   const headers = new Headers({
     "Access-Control-Allow-Origin": "*",
     "Cache-Control": "public, max-age=31536000, immutable",
-    "Content-Type": object.httpMetadata?.contentType || ({ webp: "image/webp", jpg: "image/jpeg", png: "image/png" }[match[2].toLowerCase()]),
+    "Content-Type": object.httpMetadata?.contentType || ({
+      webp: "image/webp",
+      jpg: "image/jpeg",
+      png: "image/png",
+      mp4: "video/mp4",
+      webm: "video/webm",
+      mov: "video/quicktime"
+    }[match[1].toLowerCase()]),
     "X-Content-Type-Options": "nosniff"
   });
   if (request.method === "HEAD") return new Response(null, { headers });
@@ -1986,9 +2226,15 @@ async function handleThemePublish(request, env, tenantId) {
     return jsonResponse({ error: "The selected theme no longer matches the published catalog." }, 409);
   }
 
+  const isLiquidTheme = themeId === "craft-main-storefront" &&
+    /<meta\s+name=["']eshop-liquid-theme["']\s+content=["']my-own-theme["']/i.test(input.html);
+  const html = addPublishedThemeCatalog(input.html, catalog, !isLiquidTheme);
+  if (new TextEncoder().encode(html).byteLength > MAX_PUBLISHED_THEME_BYTES) {
+    return jsonResponse({ error: "Filled storefront and public catalogue are too large to publish." }, 413);
+  }
   const version = input.catalog_updated_at.replace(/[^a-zA-Z0-9-]/g, "");
   const key = `published-sites/${tenantId}/${themeId}/${version}.html`;
-  await env.BUSINESS_ARCHIVE.put(key, input.html, {
+  await env.BUSINESS_ARCHIVE.put(key, html, {
     httpMetadata: { contentType: "text/html; charset=utf-8", cacheControl: "public, max-age=60" },
     customMetadata: { themeId, catalogUpdatedAt: input.catalog_updated_at }
   });
@@ -2000,7 +2246,7 @@ async function handleThemePublish(request, env, tenantId) {
   return jsonResponse({ ok: true, theme_id: themeId, catalog_updated_at: input.catalog_updated_at });
 }
 
-async function advancePublishedThemeVersion(env, tenantId, themeId, previousUpdatedAt, updatedAt) {
+async function advancePublishedThemeVersion(env, tenantId, themeId, previousUpdatedAt, updatedAt, catalog) {
   if (!FILLED_THEME_IDS.has(themeId) || !previousUpdatedAt ||
       !env.BUSINESS_ARCHIVE || !env.TENANTS) return;
   const pointer = await env.TENANTS.get(`published-theme:${tenantId}`, "json");
@@ -2011,7 +2257,10 @@ async function advancePublishedThemeVersion(env, tenantId, themeId, previousUpda
       previous.customMetadata?.catalogUpdatedAt !== previousUpdatedAt) return;
   const version = updatedAt.replace(/[^a-zA-Z0-9-]/g, "");
   const key = `published-sites/${tenantId}/${themeId}/${version}.html`;
-  const html = await new Response(previous.body).text();
+  const previousHtml = await new Response(previous.body).text();
+  const isLiquidTheme = themeId === "craft-main-storefront" &&
+    /<meta\s+name=["']eshop-liquid-theme["']\s+content=["']my-own-theme["']/i.test(previousHtml);
+  const html = addPublishedThemeCatalog(previousHtml, catalog, !isLiquidTheme);
   await env.BUSINESS_ARCHIVE.put(key, html, {
     httpMetadata: { contentType: "text/html; charset=utf-8", cacheControl: "public, max-age=60" },
     customMetadata: { themeId, catalogUpdatedAt: updatedAt }
@@ -2030,11 +2279,25 @@ async function advancePublishedThemeVersion(env, tenantId, themeId, previousUpda
   }
 }
 
+function upgradePublishedLitrusHtml(html) {
+  if (html.includes("window.LITRUS_LIVE_CATALOG_VERSION=1;")) return html;
+  const startup = /\(function\(\)\s*\{\s*var R=document\.getElementById\(["']store["']\);SPRT\(\{root:R,hash:true,shop:function\(\)\{return SPD\.shop\},page:function\(r\)\{return SPD\.pages\[r\]==null\?null:SPD\.pages\[r\]\},shell:function\(\)\{return SPD\.shell\},scrollTop:function\(\)\{scrollTo\(0,0\)\}\}\)\}\)\(\);/;
+  if (!startup.test(html)) return null;
+  let upgraded = html.replace(startup, "litrusStartLiveStore(SPD);");
+  if (!/<script\s+src=["']\/litrus-mixer\/live-catalog\.js["']><\/script>/i.test(upgraded)) {
+    if (!/<\/head>/i.test(upgraded)) return null;
+    upgraded = upgraded.replace(
+      /<\/head>/i,
+      '<script src="/litrus-mixer/live-catalog.js"></script></head>'
+    );
+  }
+  return upgraded;
+}
+
 function themeProductAliases(html, catalog) {
-  const declaration = html.indexOf("const DATA");
-  if (declaration < 0) return {};
-  const assignment = html.indexOf("=", declaration + "const DATA".length);
-  if (assignment < 0) return {};
+  const declaration = html.match(/\b(?:const|let|var)\s+(?:DATA|SPD)\s*=/);
+  if (!declaration || declaration.index == null) return {};
+  const assignment = declaration.index + declaration[0].lastIndexOf("=");
   const start = html.indexOf("{", assignment + 1);
   if (start < 0) return {};
   let depth = 0;
@@ -2058,11 +2321,12 @@ function themeProductAliases(html, catalog) {
   }
   if (end < 0) return {};
   const data = JSON.parse(html.slice(start, end));
-  if (!Array.isArray(data.products)) return {};
+  const themeProducts = Array.isArray(data.products) ? data.products : data.shop?.products;
+  if (!Array.isArray(themeProducts)) return {};
 
   const signature = product => {
     const name = cleanText(product?.name, 240).trim().toLocaleLowerCase();
-    const price = Number(product?.price);
+    const price = Number(String(product?.price ?? "").replace(/[^0-9.-]/g, ""));
     if (!name || !Number.isFinite(price) || price < 0) return "";
     return `${name}\u0000${Math.round(price * 100)}`;
   };
@@ -2076,16 +2340,16 @@ function themeProductAliases(html, catalog) {
   }
   const aliases = {};
   const ambiguousThemeIds = new Set();
-  const themeProducts = new Map();
-  for (const product of data.products) {
+  const productsByThemeId = new Map();
+  for (const product of themeProducts) {
     const id = typeof product?.id === "string" || typeof product?.id === "number"
       ? String(product.id) : "";
     const key = signature(product);
     if (!id || !key) continue;
-    if (themeProducts.has(id)) ambiguousThemeIds.add(id);
-    else themeProducts.set(id, key);
+    if (productsByThemeId.has(id)) ambiguousThemeIds.add(id);
+    else productsByThemeId.set(id, key);
   }
-  for (const [id, key] of themeProducts) {
+  for (const [id, key] of productsByThemeId) {
     if (ambiguousThemeIds.has(id) || ambiguousCanonical.has(key)) continue;
     const canonicalId = canonicalBySignature.get(key);
     if (canonicalId && canonicalId !== id) aliases[id] = canonicalId;
@@ -2140,7 +2404,7 @@ function storefrontOrderResponse(row) {
     shipping: Number(row.shipping_cents) / 100,
     total: Number(row.total_cents) / 100,
     payment_status: row.payment_status || "unpaid",
-    items: JSON.parse(row.items_json),
+    items: JSON.parse(row.items_json).map(({ hold_ids, ...item }) => item),
     created_at: row.created_at,
     updated_at: row.updated_at
   };
@@ -2184,6 +2448,14 @@ async function handleStorefrontOrders(request, env, tenantId) {
     const order = await env.DB.prepare(
       "SELECT * FROM storefront_orders WHERE tenant_id=? AND order_number=?"
     ).bind(tenantId, orderNumber).first();
+    if (status === "cancelled") {
+      const items = JSON.parse(order.items_json || "[]");
+      for (const holdId of items.flatMap(item => Array.isArray(item.hold_ids) ? item.hold_ids : [])) {
+        await env.DB.prepare(
+          "UPDATE storefront_hold_requests SET status='released',released_at=?,updated_at=? WHERE tenant_id=? AND id=? AND status='approved'"
+        ).bind(updatedAt, updatedAt, tenantId, holdId).run();
+      }
+    }
     return jsonResponse({ order: storefrontOrderResponse(order) });
   }
   if (request.method !== "POST") {
@@ -2207,15 +2479,50 @@ async function handleStorefrontOrders(request, env, tenantId) {
   const city = cleanText(input?.city, 120).trim();
   const postalCode = cleanText(input?.postal_code, 40).trim();
   const country = cleanText(input?.country, 80).trim();
+  const deliveryMethod = input?.delivery_method === undefined ? "delivery" : input.delivery_method;
   if (!/^[a-f0-9-]{36}$/i.test(idempotencyKey) || !customerName
     || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)
+    || !["delivery", "pickup"].includes(deliveryMethod)
     || !Array.isArray(input?.items) || !input.items.length || input.items.length > 50) {
-    return jsonResponse({ error: "Order needs an idempotency key, customer name, valid email and at least one item." }, 400);
+    return jsonResponse({ error: "Order needs an idempotency key, customer details, delivery method and at least one item." }, 400);
   }
   const existing = await env.DB.prepare(
     "SELECT * FROM storefront_orders WHERE tenant_id=? AND idempotency_key=?"
   ).bind(tenantId, idempotencyKey).first();
   if (existing) return jsonResponse({ order: storefrontOrderResponse(existing), duplicate: true }, 200);
+
+  const requestedHoldIds = input?.hold_ids === undefined ? [] : input.hold_ids;
+  if (!Array.isArray(requestedHoldIds) || requestedHoldIds.length > 50 ||
+      requestedHoldIds.some(id => typeof id !== "string" || !/^[a-f0-9-]{36}$/i.test(id)) ||
+      new Set(requestedHoldIds).size !== requestedHoldIds.length) {
+    return jsonResponse({ error: "Order holds must contain valid, unique hold IDs." }, 400);
+  }
+  const now = new Date().toISOString();
+  const claimedHolds = await Promise.all(requestedHoldIds.map(id => env.DB.prepare(
+    "SELECT * FROM storefront_hold_requests WHERE tenant_id=? AND id=?"
+  ).bind(tenantId, id).first()));
+  const normalizeName = value => String(value || "").trim().replace(/\s+/g, " ").toLocaleLowerCase();
+  const phoneDigits = value => String(value || "").replace(/\D/g, "");
+  for (const hold of claimedHolds) {
+    const contactMatches = hold && (
+      EMAIL_PATTERN.test(hold.contact || "")
+        ? String(hold.contact).trim().toLocaleLowerCase() === customerEmail
+        : phoneDigits(hold.contact).length >= 7 && phoneDigits(hold.contact) === phoneDigits(customerPhone)
+    );
+    if (!hold || hold.status !== "approved" || hold.expires_at <= now ||
+        normalizeName(hold.customer_name) !== normalizeName(customerName) || !contactMatches) {
+      return jsonResponse({ error: "One of these holds is expired or does not match your name and contact details." }, 409);
+    }
+  }
+  const holdIdsByProduct = new Map();
+  const holdQuantityByProduct = new Map();
+  for (const hold of claimedHolds) {
+    const productId = String(hold.product_id);
+    const ids = holdIdsByProduct.get(productId) || [];
+    ids.push(hold.id);
+    holdIdsByProduct.set(productId, ids);
+    holdQuantityByProduct.set(productId, (holdQuantityByProduct.get(productId) || 0) + Number(hold.quantity));
+  }
 
   const catalogRow = await env.DB.prepare(
     "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id=?"
@@ -2223,14 +2530,28 @@ async function handleStorefrontOrders(request, env, tenantId) {
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
   const catalog = JSON.parse(catalogRow.payload);
   const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
-  const normalizedItems = [];
-  let subtotalCents = 0;
+  const requestedProducts = new Map();
   for (const requested of input.items) {
     const product = await resolveProduct(requested?.product_id);
     const quantity = Number(requested?.quantity);
     if (!product || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) {
       return jsonResponse({ error: "An item is unavailable or has an invalid quantity." }, 409);
     }
+    const productId = String(product.id);
+    const current = requestedProducts.get(productId);
+    const combinedQuantity = (current?.quantity || 0) + quantity;
+    if (combinedQuantity > 99) {
+      return jsonResponse({ error: `${product.name} exceeds the per-product order quantity limit.` }, 409);
+    }
+    requestedProducts.set(productId, { product, quantity: combinedQuantity });
+  }
+  const orderProductIds = new Set(requestedProducts.keys());
+  if ([...holdIdsByProduct.keys()].some(productId => !orderProductIds.has(productId))) {
+    return jsonResponse({ error: "Every claimed hold must match a product in this order." }, 409);
+  }
+  const normalizedItems = [];
+  let subtotalCents = 0;
+  for (const { product, quantity } of requestedProducts.values()) {
     const allocation = product.sku ? await env.DB.prepare(
       "SELECT web_enabled, web_stock FROM main_store_inventory WHERE tenant_id=? AND sku=?"
     ).bind(tenantId, String(product.sku)).first() : null;
@@ -2241,8 +2562,9 @@ async function handleStorefrontOrders(request, env, tenantId) {
     const reserved = await env.DB.prepare(
       `SELECT COALESCE(SUM(quantity),0) AS quantity FROM storefront_hold_requests
        WHERE tenant_id=? AND product_id=? AND status='approved' AND expires_at>?`
-    ).bind(tenantId, String(product.id), new Date().toISOString()).first();
-    const availableStock = availableWebStock - Number(reserved?.quantity || 0);
+    ).bind(tenantId, String(product.id), now).first();
+    const claimedQuantity = holdQuantityByProduct.get(String(product.id)) || 0;
+    const availableStock = availableWebStock - Math.max(0, Number(reserved?.quantity || 0) - claimedQuantity);
     if (!Number.isSafeInteger(availableStock) || availableStock < quantity) {
       return jsonResponse({ error: `${product.name} does not have enough stock for this order.` }, 409);
     }
@@ -2253,11 +2575,19 @@ async function handleStorefrontOrders(request, env, tenantId) {
     subtotalCents += priceCents * quantity;
     normalizedItems.push({
       product_id: product.id, name: cleanText(product.name, 240),
-      sku: cleanText(product.sku, 120), quantity, unit_price: priceCents / 100
+      sku: cleanText(product.sku, 120), quantity, unit_price: priceCents / 100,
+      hold_ids: holdIdsByProduct.get(String(product.id)) || []
     });
   }
   const discountCents = 0;
-  const shippingCents = 0;
+  const deliveryFeeCents = Math.round(Number(catalog.store?.delivery_fee) * 100);
+  const freeDeliveryCents = Math.round(Number(catalog.store?.free_delivery_over) * 100);
+  const shippingCents = deliveryMethod === "delivery" &&
+    Number.isSafeInteger(deliveryFeeCents) && deliveryFeeCents > 0 &&
+    (!Number.isSafeInteger(freeDeliveryCents) || freeDeliveryCents <= 0 ||
+      subtotalCents < freeDeliveryCents)
+    ? deliveryFeeCents
+    : 0;
   const totalCents = subtotalCents - discountCents + shippingCents;
   const currency = /^[A-Z]{3}$/.test(catalog.store?.currency || "") ? catalog.store.currency : "KES";
   const createdAt = new Date().toISOString();
@@ -2304,13 +2634,13 @@ async function handleStorefrontProductInterest(request, env, tenantId) {
     return jsonResponse({ error: "Product interest needs an anonymous visitor, product, and valid action." }, 400);
   }
   const catalogRow = await env.DB.prepare(
-    "SELECT payload FROM catalog_snapshots WHERE tenant_id=?"
+    "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
   ).bind(tenantId).first();
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
   const catalog = JSON.parse(catalogRow.payload);
-  if (!(catalog.products || []).some(product => String(product.id) === productId)) {
-    return jsonResponse({ error: "Product not found in this shop's published catalogue." }, 404);
-  }
+  const product = await storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at)(productId);
+  if (!product) return jsonResponse({ error: "Product not found in this shop's published catalogue." }, 404);
+  const canonicalProductId = String(product.id);
   const visitorHash = await sha256Hex(`${tenantId}:${visitorId}`);
   const now = new Date().toISOString();
   if (action === "cart") {
@@ -2324,7 +2654,7 @@ async function handleStorefrontProductInterest(request, env, tenantId) {
        VALUES (?,?,?,?,?,0,'',?,?)
        ON CONFLICT(tenant_id,visitor_hash,product_id) DO UPDATE SET
          cart_quantity=excluded.cart_quantity,cart_updated_at=excluded.cart_updated_at,updated_at=excluded.updated_at`
-    ).bind(tenantId, visitorHash, productId, quantity, now, now, now).run();
+    ).bind(tenantId, visitorHash, canonicalProductId, quantity, now, now, now).run();
   } else {
     if (typeof input.saved !== "boolean") {
       return jsonResponse({ error: "Wishlist activity needs a saved state." }, 400);
@@ -2335,7 +2665,7 @@ async function handleStorefrontProductInterest(request, env, tenantId) {
        VALUES (?,?,?,0,'',?,?,?,?)
        ON CONFLICT(tenant_id,visitor_hash,product_id) DO UPDATE SET
          wishlist_active=excluded.wishlist_active,wishlist_updated_at=excluded.wishlist_updated_at,updated_at=excluded.updated_at`
-    ).bind(tenantId, visitorHash, productId, input.saved ? 1 : 0, now, now, now).run();
+    ).bind(tenantId, visitorHash, canonicalProductId, input.saved ? 1 : 0, now, now, now).run();
   }
   return jsonResponse({ ok: true }, 202);
 }
@@ -2656,6 +2986,9 @@ async function handleStorefrontHoldRequests(request, env, tenantId) {
       ).bind(tenantId).first();
       const catalog = catalogRow ? JSON.parse(catalogRow.payload) : null;
       const product = (catalog?.products || []).find(item => String(item.id) === String(hold.product_id));
+      if (!product || product.booking_enabled !== true) {
+        return jsonResponse({ error: "This product is no longer accepting holds." }, 409);
+      }
       const allocation = product?.sku ? await env.DB.prepare(
         "SELECT web_enabled, web_stock FROM main_store_inventory WHERE tenant_id=? AND sku=?"
       ).bind(tenantId, String(product.sku)).first() : null;
@@ -2666,7 +2999,11 @@ async function handleStorefrontHoldRequests(request, env, tenantId) {
       if (!product || !Number.isSafeInteger(stock) || stock < 0) {
         return jsonResponse({ error: "The product is unavailable in the published catalogue." }, 409);
       }
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      const holdHours = Number.isSafeInteger(Number(catalog?.store?.hold_duration_hours)) &&
+        Number(catalog.store.hold_duration_hours) >= 1 && Number(catalog.store.hold_duration_hours) <= 720
+        ? Number(catalog.store.hold_duration_hours)
+        : 24;
+      const expiresAt = new Date(Date.now() + holdHours * 60 * 60 * 1000).toISOString();
       result = await env.DB.prepare(
         `UPDATE storefront_hold_requests SET status='approved',approved_at=?,expires_at=?,updated_at=?
          WHERE tenant_id=? AND id=? AND status='pending'
@@ -2733,6 +3070,9 @@ async function handleStorefrontHoldRequests(request, env, tenantId) {
   const catalog = JSON.parse(catalogRow.payload);
   const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
   const product = await resolveProduct(productId);
+  if (!product || product.booking_enabled !== true) {
+    return jsonResponse({ error: "This product is not accepting holds right now." }, 409);
+  }
   const allocation = product?.sku ? await env.DB.prepare(
     "SELECT web_enabled, web_stock FROM main_store_inventory WHERE tenant_id=? AND sku=?"
   ).bind(tenantId, String(product.sku)).first() : null;
@@ -2740,20 +3080,41 @@ async function handleStorefrontHoldRequests(request, env, tenantId) {
     return jsonResponse({ error: "This product is not allocated to the website." }, 409);
   }
   const stock = allocation ? Number(allocation.web_stock) : Number(product?.stock);
-  if (!product || !Number.isSafeInteger(stock) || stock < quantity) {
+  if (!Number.isSafeInteger(stock) || stock < quantity) {
     return jsonResponse({ error: "The requested quantity is not available in this shop's published catalogue." }, 409);
   }
-  const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  await env.DB.prepare(
-    `INSERT OR IGNORE INTO storefront_hold_requests
-      (id,tenant_id,idempotency_key,product_id,product_name,quantity,customer_name,contact,status,created_at,updated_at)
-     VALUES (?,?,?,?,?,?,?,?,'pending',?,?)`
-  ).bind(id, tenantId, idempotencyKey, String(product.id), cleanText(product.name, 240), quantity,
-    customerName, contact, now, now).run();
+  const holdHours = Number.isSafeInteger(Number(catalog.store?.hold_duration_hours)) &&
+    Number(catalog.store.hold_duration_hours) >= 1 && Number(catalog.store.hold_duration_hours) <= 720
+    ? Number(catalog.store.hold_duration_hours)
+    : 24;
+  const expiresAt = new Date(Date.now() + holdHours * 60 * 60 * 1000).toISOString();
+  const id = crypto.randomUUID();
+  await env.DB.batch([
+    env.DB.prepare(
+      `INSERT OR IGNORE INTO storefront_hold_requests
+        (id,tenant_id,idempotency_key,product_id,product_name,quantity,customer_name,contact,status,
+         created_at,updated_at,approved_at,expires_at)
+       SELECT ?,?,?,?,?,?,?,?,'approved',?,?,?,?
+       WHERE (? + COALESCE((
+         SELECT SUM(active.quantity) FROM storefront_hold_requests active
+         WHERE active.tenant_id=? AND active.product_id=? AND active.status='approved' AND active.expires_at>?
+       ),0))<=?`
+    ).bind(id, tenantId, idempotencyKey, String(product.id), cleanText(product.name, 240), quantity,
+      customerName, contact, now, now, now, expiresAt, quantity, tenantId, String(product.id), now, stock),
+    env.DB.prepare(
+      `INSERT INTO storefront_event_daily (tenant_id,day,product_id,event_type,n)
+       SELECT ?,?,?, 'booking',1
+       WHERE EXISTS (SELECT 1 FROM storefront_hold_requests WHERE tenant_id=? AND id=?)
+       ON CONFLICT(tenant_id,day,product_id,event_type) DO UPDATE SET n=n+excluded.n`
+    ).bind(tenantId, now.slice(0, 10), String(product.id), tenantId, id)
+  ]);
   const saved = await env.DB.prepare(
     "SELECT * FROM storefront_hold_requests WHERE tenant_id=? AND idempotency_key=?"
   ).bind(tenantId, idempotencyKey).first();
+  if (!saved) {
+    return jsonResponse({ error: "There is not enough unreserved stock to hold this quantity." }, 409);
+  }
   return jsonResponse({ hold: saved }, saved?.id === id ? 201 : 200, { "Cache-Control": "private, no-store" });
 }
 
@@ -3064,6 +3425,7 @@ function paystackCallbackUrl(tenantId, orderNumber, reference) {
 }
 
 async function updateOrderPayment(env, order, paymentStatus, paidAt = null) {
+  const updatedAt = new Date().toISOString();
   if (paymentStatus === "paid") {
     let items;
     try {
@@ -3073,34 +3435,55 @@ async function updateOrderPayment(env, order, paymentStatus, paidAt = null) {
     }
     if (!Array.isArray(items)) throw new Error("The saved order items are invalid; inventory was not changed.");
     const quantitiesBySku = new Map();
+    const holdIds = new Set();
     for (const item of items) {
       const sku = cleanText(item?.sku, 120).trim();
       const productId = String(item?.product_id || "").slice(0, 80);
       const quantity = Number(item?.quantity);
+      if (Array.isArray(item?.hold_ids)) item.hold_ids.forEach(id => {
+        if (typeof id === "string" && /^[a-f0-9-]{36}$/i.test(id)) holdIds.add(id);
+      });
       if (!sku || !productId || !Number.isSafeInteger(quantity) || quantity < 1) continue;
       const current = quantitiesBySku.get(sku) || { productId, quantity: 0 };
       current.quantity += quantity;
       quantitiesBySku.set(sku, current);
     }
-    const deductions = [];
+    const statements = [];
+    for (const holdId of holdIds) {
+      statements.push(env.DB.prepare(
+        "UPDATE storefront_hold_requests SET status='released',released_at=?,updated_at=? WHERE tenant_id=? AND id=? AND status='approved'"
+      ).bind(updatedAt, updatedAt, order.tenant_id, holdId));
+    }
     for (const [sku, item] of quantitiesBySku) {
       const allocation = await env.DB.prepare(
         "SELECT web_enabled FROM main_store_inventory WHERE tenant_id=? AND sku=?"
       ).bind(order.tenant_id, sku).first();
       if (!allocation) continue;
-      deductions.push(env.DB.prepare(
+      statements.push(env.DB.prepare(
         `INSERT OR IGNORE INTO storefront_inventory_deductions
          (tenant_id,order_number,product_id,sku,quantity,created_at) VALUES (?,?,?,?,?,?)`
       ).bind(order.tenant_id, order.order_number, item.productId, sku, item.quantity, new Date().toISOString()));
     }
-    if (deductions.length) await env.DB.batch(deductions);
+    statements.push(env.DB.prepare(
+      `UPDATE storefront_orders
+       SET payment_status=?,paid_at=COALESCE(?,paid_at),updated_at=?
+       WHERE tenant_id=? AND order_number=? AND payment_reference=? AND payment_status!='paid'`
+    ).bind(paymentStatus, paidAt, updatedAt, order.tenant_id, order.order_number, order.payment_reference));
+    await env.DB.batch(statements);
+    return;
   }
-  const updatedAt = new Date().toISOString();
   await env.DB.prepare(
     `UPDATE storefront_orders
      SET payment_status=?,paid_at=COALESCE(?,paid_at),updated_at=?
      WHERE tenant_id=? AND order_number=? AND payment_reference=? AND payment_status!='paid'`
   ).bind(paymentStatus, paidAt, updatedAt, order.tenant_id, order.order_number, order.payment_reference).run();
+  if (paymentStatus === "paid") {
+    for (const holdId of items.flatMap(item => Array.isArray(item.hold_ids) ? item.hold_ids : [])) {
+      await env.DB.prepare(
+        "UPDATE storefront_hold_requests SET status='released',released_at=?,updated_at=? WHERE tenant_id=? AND id=? AND status='approved'"
+      ).bind(updatedAt, updatedAt, order.tenant_id, holdId).run();
+    }
+  }
 }
 
 function transactionMatchesOrder(transaction, order) {
@@ -3520,28 +3903,23 @@ async function handleMainStoreAllocations(request, env, tenantId) {
 }
 
 async function handleTenants(request, env) {
-  if (!env.TENANTS) return jsonResponse({ error: "Tenant storage is not configured." }, 503);
+  if (!env.TENANTS || !env.DB) return jsonResponse({ error: "Shop storage is not configured." }, 503);
   if (request.method === "GET") {
-    if (!await authorizeAdmin(request, env)) {
-      return jsonResponse({ error: "Tenant administrator authorization required." }, 401);
+    const account = await accountSession(request, env);
+    if (!account) return jsonResponse({ error: "Sign in to view your shops." }, 401);
+    const rows = await env.DB.prepare(
+      "SELECT tenant_id FROM account_tenants WHERE username = ? ORDER BY tenant_id"
+    ).bind(account.username).all();
+    const tenants = [];
+    for (const row of rows.results || []) {
+      const tenant = await env.TENANTS.get(`tenant:${row.tenant_id}`, "json");
+      if (!tenant) continue;
+      tenants.push({
+        id: tenant.id,
+        name: cleanText(tenant.name || tenant.id, 120),
+        hostname: tenant.id === "main" ? DOMAIN_ROOT : `${tenant.id}.${DOMAIN_ROOT}`
+      });
     }
-
-    const tenants = [{ id: "main", name: "E-Shop", hostname: DOMAIN_ROOT }];
-    let cursor;
-    do {
-      const page = await env.TENANTS.list({ prefix: "tenant:", limit: 1000, cursor });
-      for (const key of page.keys) {
-        const tenant = await env.TENANTS.get(key.name, "json");
-        if (tenant && TENANT_ID_PATTERN.test(tenant.id) && !RESERVED_TENANT_IDS.has(tenant.id)) {
-          tenants.push({
-            id: tenant.id,
-            name: cleanText(tenant.name, 120),
-            hostname: `${tenant.id}.${DOMAIN_ROOT}`
-          });
-        }
-      }
-      cursor = page.list_complete ? undefined : page.cursor;
-    } while (cursor);
     tenants.sort((a, b) => a.id === "main" ? -1 : b.id === "main" ? 1 : a.id.localeCompare(b.id));
     return jsonResponse({ tenants });
   }
@@ -3604,6 +3982,57 @@ async function handleTenants(request, env) {
     owner_token: ownerToken,
     warning: "Save this shop key in the Studio SQLite database. It cannot be recovered."
   }, 201);
+}
+
+async function linkMainShopOwner(request, env) {
+  if (request.method !== "POST") {
+    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+  }
+  if (!await authorizeAdmin(request, env)) {
+    return jsonResponse({ error: "Private administrator authorization required." }, 401);
+  }
+  if (!env.DB || !env.TENANTS) return jsonResponse({ error: "Shop storage is not configured." }, 503);
+
+  let input;
+  try {
+    input = await request.json();
+  } catch {
+    return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+  }
+  const username = normalizeUsername(input?.username);
+  if (!USERNAME_PATTERN.test(username)) return jsonResponse({ error: "Enter a valid Craft account username." }, 400);
+
+  const account = await env.DB.prepare(
+    "SELECT username FROM accounts WHERE username = ?"
+  ).bind(username).first();
+  if (!account) return jsonResponse({ error: "That Craft account does not exist. Create it or sign in first." }, 404);
+
+  const existing = await env.DB.prepare(
+    "SELECT username FROM account_tenants WHERE tenant_id = ?"
+  ).bind("main").first();
+  if (existing && existing.username !== username) {
+    return jsonResponse({ error: "The main shop is already linked to another account. Contact the administrator to change its owner." }, 409);
+  }
+
+  if (!await env.TENANTS.get("tenant:main", "json")) {
+    await env.TENANTS.put("tenant:main", JSON.stringify({
+      id: "main",
+      name: "Main shop",
+      created_at: new Date().toISOString()
+    }));
+  }
+  if (!existing) {
+    await env.DB.prepare(
+      "INSERT OR IGNORE INTO account_tenants (username, tenant_id) VALUES (?, ?)"
+    ).bind(username, "main").run();
+    const linked = await env.DB.prepare(
+      "SELECT username FROM account_tenants WHERE tenant_id = ?"
+    ).bind("main").first();
+    if (linked?.username !== username) {
+      return jsonResponse({ error: "The main shop could not be linked to that account." }, 409);
+    }
+  }
+  return jsonResponse({ ok: true, username, tenant: { id: "main", name: "Main shop" } });
 }
 
 async function handleBusinessSync(request, env, tenantId, action) {
@@ -3913,7 +4342,7 @@ async function handleAnalyticsVisit(request, env, tenantId) {
       return jsonResponse({ error: "Days must be from 1 to 365." }, 400);
     }
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-    const [totals, byCountry, byRegion, byDevice, topPages, productViews, productInterest] = await Promise.all([
+    const [totals, byCountry, byRegion, byDevice, topPages, productViews, productInterest, recentVisits] = await Promise.all([
       env.DB.prepare("SELECT COUNT(*) AS visits, COUNT(DISTINCT visitor_hash) AS unique_visitors FROM storefront_visits WHERE tenant_id = ? AND created_at >= ?")
         .bind(tenantId, since).first(),
       env.DB.prepare("SELECT country, COUNT(*) AS visits FROM storefront_visits WHERE tenant_id = ? AND created_at >= ? AND country != '' GROUP BY country ORDER BY visits DESC LIMIT 20")
@@ -3924,7 +4353,7 @@ async function handleAnalyticsVisit(request, env, tenantId) {
         .bind(tenantId, since).all(),
       env.DB.prepare("SELECT path, COUNT(*) AS visits FROM storefront_visits WHERE tenant_id = ? AND created_at >= ? GROUP BY path ORDER BY visits DESC LIMIT 20")
         .bind(tenantId, since).all(),
-      env.DB.prepare("SELECT path, COUNT(*) AS visits FROM storefront_visits WHERE tenant_id = ? AND created_at >= ? AND (path LIKE '/product/%' OR path LIKE '/products/%') GROUP BY path ORDER BY visits DESC LIMIT 50")
+      env.DB.prepare("SELECT path, COUNT(*) AS visits FROM storefront_visits WHERE tenant_id = ? AND created_at >= ? AND (path LIKE '/product/%' OR path LIKE '/products/%' OR path LIKE '/p/%') GROUP BY path ORDER BY visits DESC LIMIT 50")
         .bind(tenantId, since).all(),
       env.DB.prepare(
         `SELECT product_id,
@@ -3933,8 +4362,44 @@ async function handleAnalyticsVisit(request, env, tenantId) {
          FROM storefront_product_interest
          WHERE tenant_id=? AND (cart_updated_at>=? OR wishlist_updated_at>=?)
          GROUP BY product_id`
-      ).bind(since, since, tenantId, since, since).all()
+      ).bind(since, since, tenantId, since, since).all(),
+      env.DB.prepare(
+        "SELECT path, device, created_at FROM storefront_visits WHERE tenant_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 50"
+      ).bind(tenantId, since).all()
     ]);
+    const productViewsById = new Map();
+    const unresolvedProductViews = [];
+    if (productViews.results?.length) {
+      const catalogRow = await env.DB.prepare(
+        "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
+      ).bind(tenantId).first();
+      const catalog = catalogRow?.payload ? JSON.parse(catalogRow.payload) : { products: [] };
+      const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow?.updated_at || "");
+      for (const item of productViews.results) {
+        const path = String(item.path || "");
+        const productRoute = path.match(/^\/(?:product|products|p)\/([^/?#]+)/);
+        if (!productRoute) continue;
+        let routeProductId = productRoute[1];
+        try {
+          routeProductId = decodeURIComponent(routeProductId);
+        } catch {
+          // Keep the original route segment if it is not valid URI encoding.
+        }
+        const product = (catalog.products || []).find(candidate => String(candidate.slug || "") === routeProductId) ||
+          await resolveProduct(routeProductId);
+        const views = Number(item.visits || 0);
+        if (product) {
+          const productId = String(product.id);
+          productViewsById.set(productId, (productViewsById.get(productId) || 0) + views);
+        } else {
+          unresolvedProductViews.push({ path, product_id: null, views });
+        }
+      }
+    }
+    const productViewResults = [
+      ...[...productViewsById].map(([product_id, views]) => ({ product_id, views })),
+      ...unresolvedProductViews
+    ];
     return jsonResponse({
       days,
       visits: Number(totals?.visits || 0),
@@ -3943,7 +4408,12 @@ async function handleAnalyticsVisit(request, env, tenantId) {
       regions: byRegion.results || [],
       devices: byDevice.results || [],
       pages: topPages.results || [],
-      product_views: (productViews.results || []).map(item => ({ path: item.path, views: Number(item.visits || 0) })),
+      recent_visits: (recentVisits.results || []).map(visit => ({
+        path: visit.path,
+        device: visit.device,
+        created_at: visit.created_at
+      })),
+      product_views: productViewResults,
       product_interest: (productInterest.results || []).map(item => ({
         product_id: String(item.product_id),
         cart_quantity: Number(item.cart_quantity || 0),
@@ -3951,6 +4421,87 @@ async function handleAnalyticsVisit(request, env, tenantId) {
       })),
       location_note: "Country and region are derived from Cloudflare request metadata. Visitor IP addresses are not stored."
     }, 200, { "Cache-Control": "private, no-store" });
+  }
+  return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, OPTIONS" });
+}
+
+async function handleStorefrontEventAnalytics(request, env, tenantId) {
+  if (!env.DB) return jsonResponse({ error: "Storefront analytics storage is not configured." }, 503);
+  if (tenantId !== "main" && !await env.TENANTS.get(`tenant:${tenantId}`, "json")) {
+    return jsonResponse({ error: "Shop not found." }, 404);
+  }
+  if (request.method === "POST") {
+    const raw = await request.text();
+    if (new TextEncoder().encode(raw).byteLength > 16_384) {
+      return jsonResponse({ error: "Analytics payload is too large." }, 413);
+    }
+    let input;
+    try {
+      input = JSON.parse(raw);
+    } catch {
+      return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+    }
+    if (!Array.isArray(input?.items) || input.items.length < 1 || input.items.length > 50) {
+      return jsonResponse({ error: "Analytics batches must contain between 1 and 50 items." }, 400);
+    }
+    const allowedTypes = new Set(["view", "wishlist_add", "cart_add"]);
+    const coalesced = new Map();
+    for (const item of input.items) {
+      const productId = typeof item?.product_id === "string" || typeof item?.product_id === "number"
+        ? String(item.product_id).trim() : "";
+      const eventType = typeof item?.type === "string" ? item.type : "";
+      const count = Number(item?.n);
+      if (!productId || productId.length > 80 || /[\u0000-\u001f]/.test(productId) ||
+          !allowedTypes.has(eventType) || !Number.isSafeInteger(count) || count < 1 || count > 500) {
+        return jsonResponse({ error: "Analytics items need a valid product, event type and count." }, 400);
+      }
+      const key = `${productId}\u0000${eventType}`;
+      const total = (coalesced.get(key)?.n || 0) + count;
+      if (total > 500) return jsonResponse({ error: "An analytics item exceeds the count limit." }, 400);
+      coalesced.set(key, { productId, eventType, n: total });
+    }
+    const day = new Date().toISOString().slice(0, 10);
+    const statements = [...coalesced.values()].map(item => env.DB.prepare(
+      `INSERT INTO storefront_event_daily (tenant_id,day,product_id,event_type,n)
+       VALUES (?,?,?,?,?)
+       ON CONFLICT(tenant_id,day,product_id,event_type) DO UPDATE SET n=n+excluded.n`
+    ).bind(tenantId, day, item.productId, item.eventType, item.n));
+    await env.DB.batch(statements);
+    return jsonResponse({ ok: true, accepted: statements.length }, 202, { "Cache-Control": "no-store" });
+  }
+  if (request.method === "GET") {
+    const isOwner = tenantId === "main"
+      ? await authorizeMainOwner(request, env)
+      : await authorizeTenantOwner(request, env, tenantId);
+    if (!isOwner && !await authorizeAdmin(request, env)) {
+      return jsonResponse({ error: "Shop owner authorization required." }, 401);
+    }
+    const days = Number(new URL(request.url).searchParams.get("days") || 30);
+    if (!Number.isSafeInteger(days) || days < 1 || days > 365) {
+      return jsonResponse({ error: "Days must be from 1 to 365." }, 400);
+    }
+    const sinceDay = new Date(Date.now() - (days - 1) * 24 * 60 * 60 * 1000)
+      .toISOString().slice(0, 10);
+    const result = await env.DB.prepare(
+      `SELECT product_id,
+        SUM(CASE WHEN event_type='view' THEN n ELSE 0 END) AS views,
+        SUM(CASE WHEN event_type='wishlist_add' THEN n ELSE 0 END) AS wishlist_adds,
+        SUM(CASE WHEN event_type='cart_add' THEN n ELSE 0 END) AS cart_adds,
+        SUM(CASE WHEN event_type='booking' THEN n ELSE 0 END) AS bookings
+       FROM storefront_event_daily
+       WHERE tenant_id=? AND day>=?
+       GROUP BY product_id`
+    ).bind(tenantId, sinceDay).all();
+    return jsonResponse({
+      days,
+      product_activity: (result.results || []).map(item => ({
+        product_id: String(item.product_id),
+        views: Number(item.views || 0),
+        wishlist_adds: Number(item.wishlist_adds || 0),
+        cart_adds: Number(item.cart_adds || 0),
+        bookings: Number(item.bookings || 0)
+      }))
+    }, 200, { "Cache-Control": "private, max-age=60" });
   }
   return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, OPTIONS" });
 }
@@ -4707,36 +5258,91 @@ async function handleSeoFile(env, tenantId, pathname, origin) {
   });
 }
 
-function addCloudflareMode(html) {
-  return html.replace(
+function addCloudflareMode(html, includeVisitRuntime = false) {
+  let upgraded = html.replace(
     '<div id="app"></div>',
     '<div id="app"></div><script>window.__ESHOP_CLOUDFLARE_STOREFRONT__ = true;</script>'
   );
+  if (!includeVisitRuntime) return upgraded;
+
+  if (!/window\.__ESHOP_CLOUDFLARE_STOREFRONT__\s*=\s*true/i.test(upgraded)) {
+    const storefrontFlag = '<script>window.__ESHOP_CLOUDFLARE_STOREFRONT__=true;</script>';
+    if (/<head\b[^>]*>/i.test(upgraded)) {
+      upgraded = upgraded.replace(/<head\b[^>]*>/i, match => `${match}${storefrontFlag}`);
+    } else if (/<html\b[^>]*>/i.test(upgraded)) {
+      upgraded = upgraded.replace(/<html\b[^>]*>/i, match => `${match}${storefrontFlag}`);
+    } else if (/<!doctype\b[^>]*>/i.test(upgraded)) {
+      upgraded = upgraded.replace(/<!doctype\b[^>]*>/i, match => `${match}${storefrontFlag}`);
+    } else {
+      upgraded = `${storefrontFlag}${upgraded}`;
+    }
+  }
+
+  if (!/data-eshop-storefront-events/i.test(upgraded)) {
+    const runtimeTag = '<script src="/storefront-analytics.js?v=events-1" data-eshop-storefront-events defer></script>';
+    upgraded = /<\/body>/i.test(upgraded)
+      ? upgraded.replace(/<\/body>/i, `${runtimeTag}</body>`)
+      : `${upgraded}${runtimeTag}`;
+  }
+  return upgraded;
+}
+
+function publishedThemeCatalog(html) {
+  const match = html.match(
+    /<script\b(?=[^>]*\bid=["']eshop-published-catalog["'])[^>]*>([\s\S]*?)<\/script>/i
+  );
+  if (!match) return null;
+  try {
+    const catalog = JSON.parse(match[1]);
+    return catalog && Array.isArray(catalog.products) && Array.isArray(catalog.categories)
+      ? catalog
+      : null;
+  } catch (error) {
+    console.error("Published storefront catalogue JSON is invalid.", error);
+    return null;
+  }
+}
+
+function addPublishedThemeCatalog(html, catalog, includeAdapter) {
+  const publicCatalog = { ...catalog, store: { ...(catalog.store || {}) } };
+  delete publicCatalog.store.mobile_card_layout;
+  const catalogJson = JSON.stringify(publicCatalog)
+    .replace(/</g, "\\u003c")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+  const data = `<script type="application/json" id="eshop-published-catalog">${catalogJson}</script>` +
+    `<script data-eshop-theme-catalog-loader>(()=>{try{window.__ESHOP_THEME_CATALOG__=JSON.parse(document.getElementById("eshop-published-catalog").textContent);window.__ESHOP_THEME_CATALOG_LOADING__=false;window.dispatchEvent(new Event("eshop:catalog-ready"));window.__ESHOP_PENDING_STOREFRONT_EVENTS__=window.__ESHOP_PENDING_STOREFRONT_EVENTS__||[];window.__ESHOP_TRACK_STOREFRONT_EVENT__=window.__ESHOP_TRACK_STOREFRONT_EVENT__||function(productId,type,n){window.__ESHOP_PENDING_STOREFRONT_EVENTS__.push([productId,type,n||1])};const addCommerce=()=>{${includeAdapter
+      ? 'if(!document.querySelector("[data-eshop-theme-commerce]")){const script=document.createElement("script");script.src="/theme-catalog-adapter.js?v=commerce-3";script.dataset.eshopThemeCommerce="";document.head.append(script)}'
+      : ""}};if(!document.querySelector("[data-eshop-storefront-events]")){const events=document.createElement("script");events.src="/storefront-analytics.js?v=events-1";events.dataset.eshopStorefrontEvents="";events.onload=addCommerce;events.onerror=addCommerce;document.head.append(events)}else addCommerce()}catch(error){window.__ESHOP_THEME_CATALOG_LOADING__=false;console.error("Published storefront catalogue data is invalid.",error)}})();</script>`;
+  let upgraded = html
+    .replace(/<script\b(?=[^>]*\bdata-eshop-theme-catalog-loader\b)[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<script\b(?=[^>]*\bid=["']eshop-published-catalog["'])[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<script\b(?=[^>]*\bdata-eshop-theme-commerce\b)[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<script\b(?=[^>]*\bdata-eshop-storefront-events\b)[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<script\b(?=[^>]*\bdata-craft-storefront-analytics\b)[^>]*>[\s\S]*?<\/script>/gi, "");
+  if (/<head\b[^>]*>/i.test(upgraded)) {
+    upgraded = upgraded.replace(/<head\b[^>]*>/i, match => `${match}${data}`);
+  } else {
+    upgraded = `${data}${upgraded}`;
+  }
+  return upgraded;
 }
 
 async function hasPublishedCraftStorefront(env, tenantId) {
-  if (!env.DB || !env.TENANTS || !env.BUSINESS_ARCHIVE) return false;
-  const snapshot = await env.DB.prepare(
-    "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
-  ).bind(tenantId).first();
-  if (!snapshot?.payload || !snapshot.updated_at) return false;
-  let catalog;
-  try {
-    catalog = JSON.parse(snapshot.payload);
-  } catch (error) {
-    console.error("Published Craft catalog is invalid.", error);
-    return false;
-  }
-  if (catalog.store?.website_theme_id !== "craft-main-storefront") return false;
-  const publishedTheme = await env.TENANTS.get(`published-theme:${tenantId}`, "json");
+  if (!env.TENANTS || !env.BUSINESS_ARCHIVE) return false;
+  const [tenant, publishedTheme] = await Promise.all([
+    env.TENANTS.get(`tenant:${tenantId}`, "json"),
+    env.TENANTS.get(`published-theme:${tenantId}`, "json")
+  ]);
   if (!publishedTheme ||
       publishedTheme.themeId !== "craft-main-storefront" ||
-      publishedTheme.catalogUpdatedAt !== snapshot.updated_at ||
+      (tenant?.catalog_updated_at &&
+        publishedTheme.catalogUpdatedAt !== tenant.catalog_updated_at) ||
       !publishedTheme.key?.startsWith(`published-sites/${tenantId}/craft-main-storefront/`)) return false;
-  const theme = await env.BUSINESS_ARCHIVE.get(publishedTheme.key);
+  const theme = await env.BUSINESS_ARCHIVE.head(publishedTheme.key);
   return Boolean(theme &&
     theme.customMetadata?.themeId === "craft-main-storefront" &&
-    theme.customMetadata?.catalogUpdatedAt === snapshot.updated_at);
+    theme.customMetadata?.catalogUpdatedAt === publishedTheme.catalogUpdatedAt);
 }
 
 export default {
@@ -4815,6 +5421,11 @@ export default {
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
           return await handleThemePublish(request, env, tenantId);
         }
+        if (url.pathname === "/api/pixabay/images") {
+          const tenantId = tenantIdFromRequest(request, env);
+          if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
+          return await handlePixabayImages(request, env, tenantId);
+        }
         if (url.pathname === "/api/media") {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
@@ -4883,6 +5494,11 @@ export default {
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
           return await handleAnalyticsVisit(request, env, tenantId);
         }
+        if (url.pathname === "/api/analytics/events") {
+          const tenantId = tenantIdFromRequest(request, env);
+          if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
+          return await handleStorefrontEventAnalytics(request, env, tenantId);
+        }
         if (url.pathname === "/api/ai/assistant") {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return aiPrivateResponse({ error: "Invalid shop hostname." }, 400);
@@ -4899,6 +5515,9 @@ export default {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
           return await handleInventory(request, env, tenantId, inventoryMatch[1]);
+        }
+        if (url.pathname === "/api/admin/main-shop-owner") {
+          return await linkMainShopOwner(request, env);
         }
         if (url.pathname === "/api/tenants") {
           if (request.method === "PUT" || request.method === "GET") return await handleTenants(request, env);
@@ -4976,7 +5595,12 @@ export default {
       const verification = await env.TENANTS?.get(searchConsoleVerificationKey(hostTenantId), "json");
       seoVerificationToken = verification?.content || "";
       const verificationVersion = verification?.version || "none";
+      let publishedThemePointer = null;
       let catalogUpdatedAt = hostTenant?.catalog_updated_at || "";
+      if (!catalogUpdatedAt) {
+        publishedThemePointer = await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
+        catalogUpdatedAt = publishedThemePointer?.catalogUpdatedAt || "";
+      }
       let cacheKey = catalogUpdatedAt
         ? storefrontCacheKey(request, catalogUpdatedAt, verificationVersion)
         : null;
@@ -4984,9 +5608,36 @@ export default {
         const cachedPage = await storefrontCache.match(cacheKey);
         if (cachedPage) return cachedStorefrontResponse(cachedPage);
       }
-      const snapshot = await env.DB.prepare(
-        "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
-      ).bind(hostTenantId).first();
+      let snapshot = null;
+      let publishedObjectForRequest = null;
+      let publishedHtmlForRequest = "";
+      if (!publishedThemePointer) {
+        publishedThemePointer = await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
+      }
+      if (publishedThemePointer &&
+          publishedThemePointer.catalogUpdatedAt === catalogUpdatedAt &&
+          typeof publishedThemePointer.key === "string" &&
+          publishedThemePointer.key.startsWith(`published-sites/${hostTenantId}/`)) {
+        const publishedObject = await env.BUSINESS_ARCHIVE.get(publishedThemePointer.key);
+        if (publishedObject &&
+            publishedObject.customMetadata?.catalogUpdatedAt === publishedThemePointer.catalogUpdatedAt) {
+          const publishedHtml = await new Response(publishedObject.body).text();
+          publishedObjectForRequest = publishedObject;
+          publishedHtmlForRequest = publishedHtml;
+          const embeddedCatalog = publishedThemeCatalog(publishedHtml);
+          if (embeddedCatalog) {
+            snapshot = {
+              payload: JSON.stringify(embeddedCatalog),
+              updated_at: publishedThemePointer.catalogUpdatedAt
+            };
+          }
+        }
+      }
+      if (!snapshot) {
+        snapshot = await env.DB.prepare(
+          "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
+        ).bind(hostTenantId).first();
+      }
       if (snapshot?.payload) {
         const snapshotUpdatedAt = snapshot.updated_at || catalogUpdatedAt;
         if (snapshotUpdatedAt && snapshotUpdatedAt !== catalogUpdatedAt) {
@@ -5009,7 +5660,8 @@ export default {
               headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
             });
           }
-          const publishedTheme = await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
+          const publishedTheme = publishedThemePointer ||
+            await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
           if (!publishedTheme ||
               publishedTheme.themeId !== themeId ||
               publishedTheme.catalogUpdatedAt !== snapshot.updated_at ||
@@ -5019,7 +5671,8 @@ export default {
               headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
             });
           }
-          const theme = await env.BUSINESS_ARCHIVE.get(publishedTheme.key);
+          const theme = publishedObjectForRequest ||
+            await env.BUSINESS_ARCHIVE.get(publishedTheme.key);
           if (!theme || theme.customMetadata?.themeId !== themeId ||
               theme.customMetadata?.catalogUpdatedAt !== snapshot.updated_at) {
             return new Response("The filled storefront is unavailable.", {
@@ -5027,7 +5680,17 @@ export default {
               headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
             });
           }
-          let html = await new Response(theme.body).text();
+          let html = publishedHtmlForRequest || await new Response(theme.body).text();
+          if (themeId === "litrus-mixer") {
+            const upgraded = upgradePublishedLitrusHtml(html);
+            if (!upgraded) {
+              return new Response("This Litrus storefront needs to be republished from Craft to enable live catalog updates.", {
+                status: 503,
+                headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
+              });
+            }
+            html = upgraded;
+          }
           let isLiquidTheme = themeId === "craft-main-storefront" &&
             /<meta\s+name=["']eshop-liquid-theme["']\s+content=["']my-own-theme["']/i.test(html);
           if (themeId === "craft-main-storefront" && !isLiquidTheme) {
@@ -5111,9 +5774,23 @@ export default {
               : `${cardTheme}${html}`;
           }
           }
+          const hasEmbeddedCatalog = Boolean(publishedThemeCatalog(html));
+          html = addPublishedThemeCatalog(html, catalog, !isLiquidTheme);
+          if (!hasEmbeddedCatalog) {
+            await env.BUSINESS_ARCHIVE.put(publishedTheme.key, html, {
+              httpMetadata: {
+                contentType: "text/html; charset=utf-8",
+                cacheControl: "public, max-age=60"
+              },
+              customMetadata: {
+                themeId,
+                catalogUpdatedAt: snapshot.updated_at
+              }
+            });
+          }
           const seo = buildSeo({ catalog, pathname: url.pathname, origin: seoOrigin, themeId });
           const response = new Response(
-            injectSeo(addCloudflareMode(html), {
+            injectSeo(addCloudflareMode(html, true), {
               seo,
               catalog,
               origin: seoOrigin,
@@ -5177,7 +5854,7 @@ export default {
       headers.delete("Content-Length");
       headers.delete("ETag");
       return new Response(
-        injectSeo(addCloudflareMode(html), {
+        injectSeo(addCloudflareMode(html, hostTenantId !== "main"), {
           seo,
           catalog: seoCatalog,
           origin: seoOrigin,
@@ -5191,7 +5868,7 @@ export default {
         { status: seo.status, headers }
       );
     }
-    return new Response(addCloudflareMode(html), {
+    return new Response(addCloudflareMode(html, hostTenantId !== "main"), {
       status: response.status,
       statusText: response.statusText,
       headers: response.headers
