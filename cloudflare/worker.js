@@ -13,8 +13,8 @@ const MAX_CATALOG_BYTES = 900_000;
 const MAX_PUBLISHED_THEME_BYTES = 4_000_000;
 const MAX_MEDIA_BYTES = 3_000_000;
 const MAX_VIDEO_BYTES = 50_000_000;
-const MAX_PIXABAY_IMAGE_REQUESTS = 20;
-const PIXABAY_SEARCH_CACHE_SECONDS = 24 * 60 * 60;
+const MAX_CRAFT_IMAGE_REQUESTS = 20;
+const IMAGE_SEARCH_CACHE_SECONDS = 24 * 60 * 60;
 const MAX_RECORDS = 1000;
 const TENANT_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9_.-]{2,31}$/;
@@ -349,7 +349,7 @@ async function requireTenant(request, env, tenantId) {
 
 function storefrontCacheKey(request, catalogUpdatedAt, verificationVersion = "none") {
   const url = new URL(request.url);
-  url.pathname = `/__worker-cache/storefront/filled-v15/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
+  url.pathname = `/__worker-cache/storefront/filled-v17/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
   url.search = "";
   url.hash = "";
   return new Request(url, { method: "GET" });
@@ -530,11 +530,60 @@ function cleanCatalog(input) {
       spin_frames: Array.isArray(product.spin_frames)
         ? product.spin_frames.map(cleanImageUrl).filter(Boolean).slice(0, 36)
         : [],
-      sizes: Array.isArray(product.sizes) ? product.sizes.map(value => cleanText(value, 80)).slice(0, 50) : [],
-      colors: Array.isArray(product.colors) ? product.colors.map(value => cleanText(value, 80)).slice(0, 50) : [],
+      taxonomy_category_id: Number.isSafeInteger(Number(product.taxonomy_category_id)) &&
+        Number(product.taxonomy_category_id) > 0 ? Number(product.taxonomy_category_id) : null,
+      taxonomy_category_name: cleanText(product.taxonomy_category_name, 240),
+      taxonomy_custom_category: cleanText(product.taxonomy_custom_category, 160),
+      taxonomy_attributes: Array.isArray(product.taxonomy_attributes)
+        ? product.taxonomy_attributes.slice(0, 30).map(attribute => ({
+          attributeId: cleanText(attribute?.attributeId, 80),
+          attributeName: cleanText(attribute?.attributeName, 120),
+          valueId: cleanText(attribute?.valueId, 80),
+          value: cleanText(attribute?.value, 160)
+        })).filter(attribute => attribute.attributeName && attribute.value)
+        : [],
+      variants: Array.isArray(product.variants)
+        ? (() => {
+          if (product.variants.length > 100) throw new TypeError("A product can have up to 100 size/color variants.");
+          return product.variants.map(variant => {
+          if (!variant || typeof variant !== "object") throw new TypeError("Every product variant must be an object.");
+          const size = cleanText(variant.size, 80);
+          const color = cleanText(variant.color, 80);
+          const price = variant.price == null || variant.price === "" ? null : Number(variant.price);
+          const stock = Number(variant.stock);
+          if ((!size && !color) || (price !== null && (!Number.isFinite(price) || price < 0)) ||
+              !Number.isSafeInteger(stock) || stock < 0) {
+            throw new TypeError("Every product variant needs a size or color, a valid optional price, and whole-number stock.");
+          }
+          return {
+            id: cleanText(variant.id, 180) || JSON.stringify([size, color]),
+            size,
+            color,
+            price,
+            stock
+          };
+          });
+        })()
+        : [],
+      sizes: Array.isArray(product.sizes) ? product.sizes.map(value => cleanText(value, 80)).filter(Boolean).slice(0, 20) : [],
+      colors: Array.isArray(product.colors) ? product.colors.map(value => cleanText(value, 80)).filter(Boolean).slice(0, 20) : [],
       tags: Array.isArray(product.tags) ? product.tags.map(value => cleanText(value, 80)).slice(0, 50) : [],
       status: "active"
     }));
+  products.forEach(product => {
+    if (!product.variants.length) return;
+    const combinations = new Set();
+    product.variants.forEach(variant => {
+      const key = JSON.stringify([variant.size, variant.color]);
+      if (combinations.has(key)) throw new TypeError("Product variants must have unique size/color combinations.");
+      combinations.add(key);
+    });
+    const variantStock = product.variants.reduce((total, variant) => total + variant.stock, 0);
+    if (!Number.isSafeInteger(variantStock)) throw new TypeError("Total product variant stock is too large.");
+    product.stock = variantStock;
+    if (!product.sizes.length) product.sizes = [...new Set(product.variants.map(variant => variant.size).filter(Boolean))];
+    if (!product.colors.length) product.colors = [...new Set(product.variants.map(variant => variant.color).filter(Boolean))];
+  });
   if (products.some(product => !Number.isSafeInteger(product.id) || product.id < 1 ||
       !product.name || !Number.isFinite(product.price) || product.price < 0)) {
     throw new TypeError("Every product needs a positive ID, a name, and a valid price.");
@@ -1868,9 +1917,9 @@ async function handleMediaUpload(request, env, tenantId) {
 async function readBoundedImageResponse(response) {
   const declaredLength = Number(response.headers.get("Content-Length") || 0);
   if (Number.isFinite(declaredLength) && declaredLength > MAX_MEDIA_BYTES) {
-    throw new Error("The selected Pixabay image is too large to store.");
+    throw new Error("The selected image is too large to store.");
   }
-  if (!response.body) throw new Error("Pixabay returned an empty image.");
+  if (!response.body) throw new Error("The image provider returned an empty image.");
   const reader = response.body.getReader();
   const chunks = [];
   let totalBytes = 0;
@@ -1880,11 +1929,11 @@ async function readBoundedImageResponse(response) {
     totalBytes += value.byteLength;
     if (totalBytes > MAX_MEDIA_BYTES) {
       await reader.cancel();
-      throw new Error("The selected Pixabay image is too large to store.");
+      throw new Error("The selected image is too large to store.");
     }
     chunks.push(value);
   }
-  if (!totalBytes) throw new Error("Pixabay returned an empty image.");
+  if (!totalBytes) throw new Error("The image provider returned an empty image.");
   const bytes = new Uint8Array(totalBytes);
   let offset = 0;
   for (const chunk of chunks) {
@@ -1894,62 +1943,155 @@ async function readBoundedImageResponse(response) {
   return bytes;
 }
 
-async function searchPixabayForImage(env, query) {
-  const cacheKey = `pixabay-search:v1:${await sha256Hex(query.toLocaleLowerCase())}`;
+const IMAGE_PROVIDER_ORDER = ["unsplash", "pixabay", "pexels"];
+
+function providerKey(env, provider) {
+  if (provider === "unsplash") return env.UNSPLASH_ACCESS_KEY || "";
+  if (provider === "pixabay") return env.PIXABAY_API_KEY || "";
+  if (provider === "pexels") return env.PEXELS_API_KEY || "";
+  return "";
+}
+
+function normalizeProviderHits(provider, payload) {
+  const hits = provider === "unsplash"
+    ? payload?.results?.map(hit => ({
+      imageUrl: hit?.urls?.regular || hit?.urls?.small,
+      pageUrl: hit?.links?.html,
+      user: hit?.user?.name || hit?.user?.username,
+      downloadUrl: hit?.links?.download_location
+    }))
+    : provider === "pexels"
+      ? payload?.photos?.map(hit => ({
+        imageUrl: hit?.src?.large || hit?.src?.medium,
+        pageUrl: hit?.url,
+        user: hit?.photographer
+      }))
+      : payload?.hits?.map(hit => ({
+        imageUrl: hit?.webformatURL,
+        pageUrl: hit?.pageURL,
+        user: hit?.user
+      }));
+  if (!Array.isArray(hits)) return [];
+  const imageHosts = {
+    unsplash: "images.unsplash.com",
+    pixabay: "cdn.pixabay.com",
+    pexels: "images.pexels.com"
+  };
+  const pageHosts = {
+    unsplash: new Set(["unsplash.com", "www.unsplash.com"]),
+    pixabay: new Set(["pixabay.com", "www.pixabay.com"]),
+    pexels: new Set(["pexels.com", "www.pexels.com"])
+  };
+  return hits.filter(hit => {
+    try {
+      const imageUrl = new URL(hit.imageUrl || "");
+      const pageUrl = new URL(hit.pageUrl || "");
+      return imageUrl.protocol === "https:" &&
+        imageUrl.hostname === imageHosts[provider] &&
+        pageUrl.protocol === "https:" &&
+        pageHosts[provider].has(pageUrl.hostname);
+    } catch {
+      return false;
+    }
+  }).slice(0, 3).map(hit => {
+    let pageUrl = hit.pageUrl;
+    if (provider === "unsplash") {
+      const attributionUrl = new URL(pageUrl);
+      attributionUrl.searchParams.set("utm_source", "litrus");
+      attributionUrl.searchParams.set("utm_medium", "referral");
+      pageUrl = attributionUrl.toString();
+    }
+    return {
+      imageUrl: hit.imageUrl,
+      pageUrl,
+      user: cleanText(hit.user, 120) || "Contributor",
+      ...(provider === "unsplash" ? { downloadUrl: hit.downloadUrl } : {})
+    };
+  });
+}
+
+async function searchProviderForImage(env, provider, query) {
+  const key = providerKey(env, provider);
+  if (!key) return [];
+  const cacheKey = `${provider}-search:v1:${await sha256Hex(query.toLocaleLowerCase())}`;
   const cached = await env.TENANTS.get(cacheKey, "json");
   if (Array.isArray(cached)) return cached;
 
-  const searchUrl = new URL("https://pixabay.com/api/");
-  searchUrl.search = new URLSearchParams({
-    key: env.PIXABAY_API_KEY,
-    q: query,
-    image_type: "photo",
-    orientation: "horizontal",
-    safesearch: "true",
-    order: "popular",
-    per_page: "3",
-    min_width: "640"
-  }).toString();
-  const response = await fetch(searchUrl, { signal: AbortSignal.timeout(15_000) });
-  if (!response.ok) {
-    throw new Error(`Pixabay image search failed (HTTP ${response.status}).`);
+  let searchUrl;
+  const headers = {};
+  if (provider === "unsplash") {
+    searchUrl = new URL("https://api.unsplash.com/search/photos");
+    searchUrl.search = new URLSearchParams({
+      query,
+      per_page: "3",
+      content_filter: "high",
+      orientation: "landscape"
+    }).toString();
+    headers.Authorization = `Client-ID ${key}`;
+  } else if (provider === "pexels") {
+    searchUrl = new URL("https://api.pexels.com/v1/search");
+    searchUrl.search = new URLSearchParams({
+      query,
+      per_page: "3",
+      orientation: "landscape"
+    }).toString();
+    headers.Authorization = key;
+  } else {
+    searchUrl = new URL("https://pixabay.com/api/");
+    searchUrl.search = new URLSearchParams({
+      key,
+      q: query,
+      image_type: "photo",
+      orientation: "horizontal",
+      safesearch: "true",
+      order: "popular",
+      per_page: "3",
+      min_width: "640"
+    }).toString();
   }
+  const response = await fetch(searchUrl, {
+    headers,
+    signal: AbortSignal.timeout(15_000)
+  });
+  if (!response.ok) throw new Error(`${provider} image search failed (HTTP ${response.status}).`);
   let payload;
   try {
     payload = await response.json();
   } catch {
-    throw new Error("Pixabay returned an invalid image search response.");
+    throw new Error(`${provider} returned an invalid image search response.`);
   }
-  const hits = Array.isArray(payload?.hits)
-    ? payload.hits.filter(hit => {
-      try {
-        const imageUrl = new URL(hit?.webformatURL || "");
-        const pageUrl = new URL(hit?.pageURL || "");
-        return imageUrl.protocol === "https:" &&
-          imageUrl.hostname === "cdn.pixabay.com" &&
-          pageUrl.protocol === "https:" &&
-          pageUrl.hostname === "pixabay.com";
-      } catch {
-        return false;
-      }
-    }).slice(0, 3).map(hit => ({
-      imageUrl: hit.webformatURL,
-      pageUrl: hit.pageURL,
-      user: cleanText(hit.user, 120)
-    }))
-    : [];
+  const hits = normalizeProviderHits(provider, payload);
   await env.TENANTS.put(cacheKey, JSON.stringify(hits), {
-    expirationTtl: PIXABAY_SEARCH_CACHE_SECONDS
+    expirationTtl: IMAGE_SEARCH_CACHE_SECONDS
   });
   return hits;
 }
 
-async function handlePixabayImages(request, env, tenantId) {
+async function findImageForSlot(env, query) {
+  const errors = [];
+  const attemptedProviders = [];
+  for (const provider of IMAGE_PROVIDER_ORDER) {
+    if (!providerKey(env, provider)) continue;
+    attemptedProviders.push(provider);
+    try {
+      const [hit] = await searchProviderForImage(env, provider, query);
+      if (hit) return { ...hit, source: provider, attemptedProviders };
+      errors.push(`${provider} found no matching image.`);
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : `${provider} image search failed.`);
+    }
+  }
+  const error = new Error(errors.join(" ") || "No image provider is configured on Cloudflare.");
+  error.attemptedProviders = attemptedProviders;
+  throw error;
+}
+
+async function handleCraftImages(request, env, tenantId) {
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
   }
   if (!env.TENANTS || !env.BUSINESS_ARCHIVE) {
-    return jsonResponse({ error: "Pixabay image storage is not configured." }, 503);
+    return jsonResponse({ error: "Craft image storage is not configured." }, 503);
   }
   if (tenantId !== "main" && (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId))) {
     return jsonResponse({ error: "Invalid shop address." }, 400);
@@ -1961,7 +2103,7 @@ async function handlePixabayImages(request, env, tenantId) {
   if (!isOwner && !await authorizeAdmin(request, env)) {
     return jsonResponse({ error: "Shop owner authorization required." }, 401);
   }
-  if (!env.PIXABAY_API_KEY) {
+  if (!IMAGE_PROVIDER_ORDER.some(provider => providerKey(env, provider))) {
     return jsonResponse({ error: "Craft image search is not configured on Cloudflare." }, 503);
   }
 
@@ -1974,9 +2116,9 @@ async function handlePixabayImages(request, env, tenantId) {
     return jsonResponse({ error: "Request body must be valid JSON." }, 400);
   }
   if (!Array.isArray(input?.images) || input.images.length < 1 ||
-      input.images.length > MAX_PIXABAY_IMAGE_REQUESTS) {
+      input.images.length > MAX_CRAFT_IMAGE_REQUESTS) {
     return jsonResponse({
-      error: `Request between 1 and ${MAX_PIXABAY_IMAGE_REQUESTS} empty image slots at a time.`
+      error: `Request between 1 and ${MAX_CRAFT_IMAGE_REQUESTS} empty image slots at a time.`
     }, 400);
   }
   const images = [];
@@ -1991,28 +2133,50 @@ async function handlePixabayImages(request, env, tenantId) {
     slots.add(slot);
     images.push({ slot, query });
   }
-  if (!await limitAuthRequests(request, env, `pixabay-images:${tenantId}`, 3, 60)) {
+  if (!await limitAuthRequests(request, env, `craft-images:${tenantId}`, 3, 60)) {
     return jsonResponse({ error: "Craft image search is busy for this network. Try again shortly." }, 429);
   }
 
   const outcomes = await Promise.all(images.map(async ({ slot, query }) => {
     try {
-      const [hit] = await searchPixabayForImage(env, query);
-      if (!hit) return { slot, error: "No matching Pixabay image was found." };
+      const hit = await findImageForSlot(env, query);
       const sourceUrl = new URL(hit.imageUrl);
+      if (hit.source === "unsplash" && hit.downloadUrl) {
+        const downloadUrl = new URL(hit.downloadUrl);
+        if (downloadUrl.protocol === "https:" && downloadUrl.hostname === "api.unsplash.com") {
+          try {
+            const trackingResponse = await fetch(downloadUrl, {
+              headers: { Authorization: `Client-ID ${providerKey(env, "unsplash")}` },
+              signal: AbortSignal.timeout(10_000)
+            });
+            if (trackingResponse.body) await trackingResponse.body.cancel();
+          } catch (error) {
+            console.warn("Unsplash image download tracking failed.", error);
+          }
+        }
+      }
       const upstream = await fetch(sourceUrl, {
-        redirect: "error",
+        redirect: "manual",
         signal: AbortSignal.timeout(20_000)
       });
+      if (upstream.status >= 300 && upstream.status < 400) {
+        if (upstream.body) await upstream.body.cancel();
+        throw new Error(`${hit.source} returned an unexpected redirect (HTTP ${upstream.status}).`);
+      }
       if (!upstream.ok) throw new Error(`Could not download the selected image (HTTP ${upstream.status}).`);
       const finalUrl = upstream.url ? new URL(upstream.url) : sourceUrl;
-      if (finalUrl.protocol !== "https:" || finalUrl.hostname !== "cdn.pixabay.com") {
-        throw new Error("Pixabay returned an unsupported image location.");
+      const allowedImageHosts = {
+        unsplash: "images.unsplash.com",
+        pixabay: "cdn.pixabay.com",
+        pexels: "images.pexels.com"
+      };
+      if (finalUrl.protocol !== "https:" || finalUrl.hostname !== allowedImageHosts[hit.source]) {
+        throw new Error(`${hit.source} returned an unsupported image location.`);
       }
       const contentType = (upstream.headers.get("Content-Type") || "").split(";")[0].trim().toLowerCase();
       const extensionByType = { "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png" };
       const extension = extensionByType[contentType];
-      if (!extension) throw new Error("Pixabay returned an unsupported image format.");
+      if (!extension) throw new Error(`${hit.source} returned an unsupported image format.`);
       const bytes = await readBoundedImageResponse(upstream);
       const assetId = `${crypto.randomUUID()}.${extension}`;
       const key = `media/${tenantId}/${assetId}`;
@@ -2020,29 +2184,49 @@ async function handlePixabayImages(request, env, tenantId) {
         httpMetadata: { contentType, cacheControl: "public, max-age=31536000, immutable" },
         customMetadata: {
           tenantId,
-          source: "pixabay",
-          pixabayUser: hit.user,
-          pixabayPageUrl: hit.pageUrl
+          source: hit.source,
+          sourceUser: hit.user,
+          sourcePageUrl: hit.pageUrl,
+          ...(hit.source === "pixabay" ? {
+            pixabayUser: hit.user,
+            pixabayPageUrl: hit.pageUrl
+          } : {})
         }
       });
       const hostname = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
       return {
         slot,
         url: `https://${hostname}/${key}`,
-        credit: { user: hit.user || "Pixabay contributor", url: hit.pageUrl }
+        source: hit.source,
+        attemptedProviders: hit.attemptedProviders,
+        credit: { user: hit.user || "Image contributor", url: hit.pageUrl }
       };
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not load an image.";
       return {
         slot,
-        error: error instanceof Error ? error.message : "Could not load a Pixabay image."
+        error: message,
+        attemptedProviders: error instanceof Error && Array.isArray(error.attemptedProviders)
+          ? error.attemptedProviders
+          : []
       };
     }
   }));
   const stored = outcomes.filter(outcome => typeof outcome.url === "string");
   const errors = outcomes.filter(outcome => typeof outcome.error === "string");
+  console.info(JSON.stringify({
+    event: "craft_image_search",
+    tenantId,
+    requestedCount: images.length,
+    storedCount: stored.length,
+    failedCount: errors.length,
+    availableProviders: IMAGE_PROVIDER_ORDER.filter(provider => providerKey(env, provider)),
+    selectedProviders: stored.map(outcome => outcome.source),
+    attemptedProviders: [...new Set(outcomes.flatMap(outcome => outcome.attemptedProviders || []))]
+  }));
   if (!stored.length) {
     return jsonResponse({
-      error: errors[0]?.error || "No Pixabay images could be loaded.",
+      error: errors[0]?.error || "No images could be loaded.",
       images: [],
       errors
     }, 502);
@@ -5278,6 +5462,13 @@ function addCloudflareMode(html, includeVisitRuntime = false) {
     }
   }
 
+  if (!/data-craft-cloudflare-runtime/i.test(upgraded)) {
+    const runtimeTag = '<script src="/craft-storefront-cloudflare.js" data-craft-cloudflare-runtime defer></script>';
+    upgraded = /<\/body>/i.test(upgraded)
+      ? upgraded.replace(/<\/body>/i, `${runtimeTag}</body>`)
+      : `${upgraded}${runtimeTag}`;
+  }
+
   if (!/data-eshop-storefront-events/i.test(upgraded)) {
     const runtimeTag = '<script src="/storefront-analytics.js?v=events-1" data-eshop-storefront-events defer></script>';
     upgraded = /<\/body>/i.test(upgraded)
@@ -5421,10 +5612,10 @@ export default {
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
           return await handleThemePublish(request, env, tenantId);
         }
-        if (url.pathname === "/api/pixabay/images") {
+        if (url.pathname === "/api/images/search" || url.pathname === "/api/pixabay/images") {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
-          return await handlePixabayImages(request, env, tenantId);
+          return await handleCraftImages(request, env, tenantId);
         }
         if (url.pathname === "/api/media") {
           const tenantId = tenantIdFromRequest(request, env);

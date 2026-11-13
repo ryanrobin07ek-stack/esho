@@ -17,6 +17,33 @@ test("Main Store screens use the compact Craft header and back navigation", asyn
   assert.match(source, /\.business-lens-shell #store-workspace-content h2\s*\{[^}]*font-size:\s*\.82rem !important/);
 });
 
+test("Web dashboard and CRM KPI groups feature one full-width metric above two smaller metrics", async () => {
+  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  for (const label of [
+    'metric("Gross web revenue"',
+    'metric("Visits"',
+    'metric("Total visits"',
+    'metric("Today"',
+    'metric("Identified web customers"',
+    'metric("Points per visit"'
+  ]) {
+    const metricIndex = source.indexOf(label);
+    assert.ok(metricIndex >= 0, `Expected KPI group containing ${label}.`);
+    const gridStart = source.lastIndexOf('class="studio-', metricIndex);
+    const gridEnd = source.indexOf('">', gridStart);
+    assert.ok(gridStart >= 0 && gridEnd > gridStart, `${label} should be inside a KPI grid.`);
+    assert.match(source.slice(gridStart, gridEnd), /studio-metric-grid-featured/, `${label} should use the featured KPI layout.`);
+  }
+  assert.match(source, /\.studio-metric-grid-featured\s*\{\s*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/);
+  assert.match(source, /\.studio-metric-grid-featured > :first-child\s*\{\s*grid-column:\s*1 \/ -1;/);
+  assert.match(source, /\.studio-metric-grid-featured \.studio-data-card\s*\{\s*min-height:\s*58px;[^}]*padding:\s*8px 10px;/);
+  assert.match(source, /\.studio-metric-grid-featured > :first-child\s*\{\s*grid-column:\s*1 \/ -1;\s*min-height:\s*68px;/);
+  assert.match(source, /const metric = \(label, value, note = "", route = ""\) => route[\s\S]*?href="\$\{route\}" data-route="\$\{route\}"/);
+  assert.match(source, /metric\("Gross web revenue"[\s\S]*?"", "\/account\/web\/studio\/store\/orders"\)/);
+  assert.match(source, /metric\("Awaiting payments", awaiting\.length, "", "\/account\/web\/studio\/store\/orders"\)/);
+  assert.doesNotMatch(source, /"Orders not marked paid"|"From website orders"|"Anonymous browser IDs"|"Aggregate Cloudflare count"/);
+});
+
 test("Web Studio separates Orders and Bookings and ranks batched storefront events", async () => {
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
   assert.match(source, /title: "Orders", route: "\/account\/web\/studio\/store\/orders"/);
@@ -65,9 +92,47 @@ test("storefront visit history records customer pages, not Craft app screens", a
     assert.match(source, /storefrontAnalyticsPaths = new Set\([\s\S]*?"\/account\/web\/studio\/dashboard\/overview"[\s\S]*?"\/account\/web\/studio\/dashboard\/visits"[\s\S]*?"\/account\/web\/studio\/dashboard\/traffic"[\s\S]*?if \(storefrontAnalyticsPaths\.has\(path\)\)/);
     assert.match(source, /snapshot\.remoteAnalytics\?\.recent_visits/);
     assert.match(source, /snapshot\.remoteAnalytics\.pages/);
-    assert.match(source, /Recent published-site visits/);
+    assert.match(source, /<h2>Visit history<\/h2>/);
     assert.match(source, /data-business-cloud-analytics>Refresh<\/button>/);
   }
+});
+
+test("Visits and Traffic use a saved day filter and concise analytics panels", async () => {
+  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(source, /data-filter="analyticsDays" type="number" inputmode="numeric" min="1" max="365"/);
+  assert.match(source, /const analyticsCutoff = Date\.now\(\) - this\.analyticsDays\(\) \* 86400000;/);
+  assert.equal((source.match(/fetchStorefrontAnalytics\([^)]*this\.analyticsDays\(\)[^)]*\)/g) || []).length, 2);
+
+  const visitsStart = source.indexOf('if (path === "/account/main-shop/visits")');
+  const performanceStart = source.indexOf('if (path === "/account/main-shop/performance"', visitsStart);
+  assert.ok(visitsStart >= 0 && performanceStart > visitsStart, "Visits and Traffic render in a bounded section.");
+  const analyticsScreens = source.slice(visitsStart, performanceStart);
+  assert.match(source, /studio-analytics-load[^`]*<h2>Analytics<\/h2>[\s\S]*?>Load<\/button>/);
+  assert.match(analyticsScreens, /\$\{analyticsLoadCard\}/);
+  assert.match(source, /locationCard\("Countries"/);
+  assert.match(source, /locationCard\("Regions"/);
+  assert.doesNotMatch(analyticsScreens, /Cloudflare|Traffic quality|shared analytics|location_note|anonymous browsers|last 30 days/i);
+});
+
+test("Store Products, Webmaker, and Payments use shorter copy", async () => {
+  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /Website products are saved in app SQLite|separately from Store\/POS inventory/);
+
+  const makerStart = source.indexOf("renderWebsiteBuilderCatalog(embedded = false) {");
+  const makerEnd = source.indexOf("\n  renderWebsiteThemes()", makerStart);
+  assert.ok(makerStart >= 0 && makerEnd > makerStart, "Webmaker has a bounded catalog renderer.");
+  const maker = source.slice(makerStart, makerEnd);
+  assert.ok(maker.indexOf("Continue to build shop") < maker.indexOf("Choose products from Store"));
+  assert.match(maker, /Add Store products or create new ones for this website\./);
+  assert.doesNotMatch(maker, /Store products are never copied|Existing websites and your Store inventory are not changed/);
+
+  const paymentStart = source.indexOf('const nativeCurrencySettings =');
+  const paymentEnd = source.indexOf('if (path === "/store/orders"', paymentStart);
+  assert.ok(paymentStart >= 0 && paymentEnd > paymentStart, "Payment settings have a bounded renderer.");
+  const paymentMarkup = source.slice(paymentStart, paymentEnd);
+  assert.match(paymentMarkup, /<h2>Payment account<\/h2>/);
+  assert.match(paymentMarkup, /<h2>Add payment account<\/h2>/);
+  assert.doesNotMatch(paymentMarkup, /Paystack/);
 });
 
 test("Your Business renders all five sections from the local business snapshot", async () => {

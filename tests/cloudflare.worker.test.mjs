@@ -934,6 +934,7 @@ test('Cloudflare Worker serves only the filled published theme at the shop root'
   const html = await response.text();
   assert.match(html, /Filled shop theme/);
   assert.match(html, /window\.__ESHOP_CLOUDFLARE_STOREFRONT__=true/);
+  assert.match(html, /craft-storefront-cloudflare\.js/);
   assert.match(html, /storefront-analytics\.js\?v=events-1/);
   assert.match(html, /#7C3AED/);
   assert.match(html, /Updated \\u003cscript>alert\(1\)\\u003c\/script> heading/);
@@ -2503,6 +2504,13 @@ test('catalog publishing is authenticated and stores only public fields and link
       category_id: 4,
       price: 25,
       stock: 3,
+      taxonomy_category_id: 456,
+      taxonomy_category_name: 'Apparel & Accessories > Shoes > Sneakers',
+      taxonomy_attributes: [{ attributeId: 'color', attributeName: 'Color', valueId: 'black', value: 'Black' }],
+      variants: [
+        { id: '7-black', size: '7', color: 'Black', price: null, stock: 2 },
+        { id: '8-black', size: '8', color: 'Black', price: 30, stock: 1 }
+      ],
       booking_enabled: true,
       cost_price: 2,
       images: ['https://images.example/runner.jpg', 'data:image/png;base64,private'],
@@ -2605,6 +2613,17 @@ test('catalog publishing is authenticated and stores only public fields and link
   const result = await loaded.json();
   assert.deepEqual(result.products[0].images, ['https://images.example/runner.jpg']);
   assert.equal(result.products[0].media_type, 'spin');
+  assert.equal(result.products[0].stock, 3);
+  assert.equal(result.products[0].taxonomy_category_name, 'Apparel & Accessories > Shoes > Sneakers');
+  assert.deepEqual(result.products[0].taxonomy_attributes, [
+    { attributeId: 'color', attributeName: 'Color', valueId: 'black', value: 'Black' }
+  ]);
+  assert.deepEqual(result.products[0].variants, [
+    { id: '7-black', size: '7', color: 'Black', price: null, stock: 2 },
+    { id: '8-black', size: '8', color: 'Black', price: 30, stock: 1 }
+  ]);
+  assert.deepEqual(result.products[0].sizes, ['7', '8']);
+  assert.deepEqual(result.products[0].colors, ['Black']);
   assert.equal(result.products[0].booking_enabled, true);
   assert.equal(result.products[1].booking_enabled, false);
   assert.deepEqual(result.products[0].spin_frames, [
@@ -2806,7 +2825,7 @@ test('R2 media uploads require shop ownership and are publicly served from an is
   assert.match(mediaKey, /^\/media\/main\//);
 });
 
-test('Craft image requests store Pixabay images in tenant R2 and cache provider searches', async () => {
+test('Craft image search stores Pixabay results in tenant R2 and caches provider searches', async () => {
   const TENANTS = createTenantStore();
   const ownerToken = 'test-main-owner';
   await TENANTS.put('tenant:main', JSON.stringify({
@@ -2825,16 +2844,16 @@ test('Craft image requests store Pixabay images in tenant R2 and cache provider 
       }
     }
   };
-  const request = images => new Request('https://rrobin.co.ke/api/pixabay/images?tenant=main', {
+  const request = (images, ip = '192.0.2.10') => new Request('https://rrobin.co.ke/api/images/search?tenant=main', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${ownerToken}`,
       'Content-Type': 'application/json',
-      'CF-Connecting-IP': '192.0.2.10'
+      'CF-Connecting-IP': ip
     },
     body: JSON.stringify({ images })
   });
-  const unauthorized = await worker.fetch(new Request('https://rrobin.co.ke/api/pixabay/images?tenant=main', {
+  const unauthorized = await worker.fetch(new Request('https://rrobin.co.ke/api/images/search?tenant=main', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ images: [{ slot: 'hero-1', query: 'running shoes' }] })
@@ -2901,6 +2920,138 @@ test('Craft image requests store Pixabay images in tenant R2 and cache provider 
     assert.equal(stored.options.customMetadata.pixabayUser, 'Test Photographer');
     assert.equal(stored.options.httpMetadata.contentType, 'image/jpeg');
     assert.deepEqual([...stored.value], [1, 2, 3]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('Craft image search prefers Unsplash, falls back to Pixabay, and supports Pexels secrets', async () => {
+  const TENANTS = createTenantStore();
+  const ownerToken = 'test-main-owner';
+  await TENANTS.put('tenant:main', JSON.stringify({
+    id: 'main',
+    owner_token_hash: await sha256HexForTest(ownerToken)
+  }));
+  const objects = new Map();
+  const env = {
+    TENANTS,
+    UNSPLASH_ACCESS_KEY: 'test-unsplash-key',
+    PIXABAY_API_KEY: 'test-pixabay-key',
+    PEXELS_API_KEY: 'test-pexels-key',
+    BUSINESS_ARCHIVE: {
+      async put(key, value, options) { objects.set(key, { value, options }); }
+    }
+  };
+  const request = (query, ip) => new Request('https://rrobin.co.ke/api/images/search?tenant=main', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${ownerToken}`,
+      'Content-Type': 'application/json',
+      'CF-Connecting-IP': ip
+    },
+    body: JSON.stringify({ images: [{ slot: 'hero-image', query }] })
+  });
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (input, options = {}) => {
+    const url = new URL(String(input));
+    const headers = new Headers(options.headers || {});
+    if (url.hostname === 'api.unsplash.com' && url.pathname === '/search/photos') {
+      calls.push('unsplash-search');
+      assert.equal(headers.get('Authorization'), 'Client-ID test-unsplash-key');
+      if (url.searchParams.get('query') === 'fallback query') return Response.json({ results: [] });
+      return Response.json({
+        results: [{
+          urls: { regular: 'https://images.unsplash.com/photo-unsplash.jpg' },
+          links: {
+            html: 'https://unsplash.com/photos/photo-unsplash',
+            download_location: 'https://api.unsplash.com/photos/photo-unsplash/download'
+          },
+          user: { name: 'Unsplash Artist' }
+        }]
+      });
+    }
+    if (url.hostname === 'api.unsplash.com' && url.pathname.endsWith('/download')) {
+      calls.push('unsplash-download');
+      assert.equal(headers.get('Authorization'), 'Client-ID test-unsplash-key');
+      return Response.json({ url: 'https://images.unsplash.com/photo-unsplash.jpg' });
+    }
+    if (url.hostname === 'pixabay.com') {
+      calls.push('pixabay-search');
+      assert.equal(url.searchParams.get('key'), 'test-pixabay-key');
+      return Response.json({
+        hits: [{
+          webformatURL: 'https://cdn.pixabay.com/photo/fallback.jpg',
+          pageURL: 'https://pixabay.com/photos/fallback-123/',
+          user: 'Pixabay Artist'
+        }]
+      });
+    }
+    if (url.hostname === 'api.pexels.com') {
+      calls.push('pexels-search');
+      assert.equal(headers.get('Authorization'), 'test-pexels-key');
+      return Response.json({
+        photos: [{
+          src: { large: 'https://images.pexels.com/photos/pexels.jpg' },
+          url: 'https://www.pexels.com/photo/pexels-123/',
+          photographer: 'Pexels Artist'
+        }]
+      });
+    }
+    if (['images.unsplash.com', 'cdn.pixabay.com', 'images.pexels.com'].includes(url.hostname)) {
+      calls.push(`${url.hostname}-download`);
+      return new Response(new Uint8Array([1, 2, 3]), {
+        headers: { 'Content-Type': 'image/jpeg' }
+      });
+    }
+    throw new Error(`Unexpected image provider request: ${url.hostname}${url.pathname}`);
+  };
+  try {
+    const unsplashResponse = await worker.fetch(request('unsplash query', '192.0.2.11'), env);
+    assert.equal(unsplashResponse.status, 200, await unsplashResponse.clone().text());
+    const unsplash = (await unsplashResponse.json()).images[0];
+    assert.deepEqual(unsplash.credit, {
+      user: 'Unsplash Artist',
+      url: 'https://unsplash.com/photos/photo-unsplash?utm_source=litrus&utm_medium=referral'
+    });
+    assert.equal(unsplash.source, 'unsplash');
+    assert.deepEqual(unsplash.attemptedProviders, ['unsplash']);
+    assert.equal(calls[0], 'unsplash-search');
+    assert.equal(calls[1], 'unsplash-download');
+    const unsplashObject = [...objects.values()][0];
+    assert.equal(unsplashObject.options.customMetadata.source, 'unsplash');
+    assert.equal(unsplashObject.options.customMetadata.sourceUser, 'Unsplash Artist');
+    assert.doesNotMatch(JSON.stringify(unsplash), /test-unsplash-key|test-pixabay-key/);
+
+    const fallbackResponse = await worker.fetch(request('fallback query', '192.0.2.12'), env);
+    assert.equal(fallbackResponse.status, 200, await fallbackResponse.clone().text());
+    const fallbackImage = (await fallbackResponse.json()).images[0];
+    assert.deepEqual(fallbackImage.credit, {
+      user: 'Pixabay Artist',
+      url: 'https://pixabay.com/photos/fallback-123/'
+    });
+    assert.equal(fallbackImage.source, 'pixabay');
+    assert.deepEqual(fallbackImage.attemptedProviders, ['unsplash', 'pixabay']);
+    assert.equal(calls.includes('pixabay-search'), true);
+    assert.equal([...objects.values()][1].options.customMetadata.source, 'pixabay');
+
+    const pexelsOnlyEnv = {
+      ...env,
+      UNSPLASH_ACCESS_KEY: '',
+      PIXABAY_API_KEY: ''
+    };
+    const pexelsResponse = await worker.fetch(request('pexels query', '192.0.2.13'), pexelsOnlyEnv);
+    assert.equal(pexelsResponse.status, 200, await pexelsResponse.clone().text());
+    const pexelsImage = (await pexelsResponse.json()).images[0];
+    assert.deepEqual(pexelsImage.credit, {
+      user: 'Pexels Artist',
+      url: 'https://www.pexels.com/photo/pexels-123/'
+    });
+    assert.equal(pexelsImage.source, 'pexels');
+    assert.deepEqual(pexelsImage.attemptedProviders, ['pexels']);
+    assert.equal(calls.includes('pexels-search'), true);
+    assert.equal([...objects.values()][2].options.customMetadata.source, 'pexels');
+    assert.doesNotMatch(JSON.stringify(pexelsImage), /test-pexels-key/);
   } finally {
     globalThis.fetch = originalFetch;
   }

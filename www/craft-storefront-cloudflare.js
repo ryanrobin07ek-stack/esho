@@ -8,6 +8,13 @@
   const cartStorageKey = "storefront.cart";
   const wishlistStorageKey = "storefront.wishlist";
   const holdStorageKey = `eshop-holds:${location.host}`;
+  const newsletterFormSelector = ".newsletter-form, .sole-newsletter-form, #web-newsletter-signup";
+
+  function decodeBase64Url(value) {
+    const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+    const binary = atob(normalized + "=".repeat((4 - normalized.length % 4) % 4));
+    return Uint8Array.from(binary, character => character.charCodeAt(0));
+  }
 
   function readStorage(key, fallback) {
     try {
@@ -41,10 +48,118 @@
     checkbox.type = "checkbox";
     checkbox.name = "consent";
     checkbox.required = true;
+    checkbox.style.cssText = "flex:0 0 16px;width:16px;height:16px;margin:2px 0 0;padding:0";
     const text = document.createElement("span");
     text.textContent = "I agree to receive occasional shop updates by email. I can unsubscribe at any time.";
     label.append(checkbox, text);
     form.append(label);
+  }
+
+  async function requestPushJson(path, method = "GET", payload) {
+    const response = await fetch(path, {
+      method,
+      headers: payload ? { "Content-Type": "application/json" } : undefined,
+      body: payload ? JSON.stringify(payload) : undefined,
+      cache: "no-store"
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `Push request failed (${response.status}).`);
+    return result;
+  }
+
+  function installPushControls(form) {
+    if (form.querySelector("[data-enable-notifications], [data-storefront-push-controls]")) return;
+    const controls = document.createElement("div");
+    controls.dataset.storefrontPushControls = "true";
+    controls.style.cssText = "display:grid;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid #ddd";
+    const description = document.createElement("p");
+    description.textContent = "Get occasional shop updates on this device. You can turn notifications off anytime.";
+    description.style.cssText = "margin:0;font-size:13px;line-height:1.5";
+    const actions = document.createElement("div");
+    actions.style.cssText = "display:flex;flex-wrap:wrap;gap:8px";
+    const enable = document.createElement("button");
+    enable.type = "button";
+    enable.dataset.storefrontPushEnable = "true";
+    enable.textContent = "Enable notifications";
+    enable.style.cssText = "padding:10px 14px;border:0;border-radius:6px;background:#111;color:#fff;cursor:pointer";
+    const disable = document.createElement("button");
+    disable.type = "button";
+    disable.dataset.storefrontPushDisable = "true";
+    disable.textContent = "Turn off notifications";
+    disable.style.cssText = "padding:10px 14px;border:1px solid #888;border-radius:6px;background:transparent;color:inherit;cursor:pointer";
+    const status = document.createElement("p");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    status.style.cssText = "margin:0;font-size:12px;line-height:1.5";
+    actions.append(enable, disable);
+    controls.append(description, actions, status);
+    form.append(controls);
+
+    enable.addEventListener("click", async () => {
+      enable.disabled = true;
+      status.textContent = "Enabling notifications…";
+      try {
+        if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+          throw new Error("Push notifications are not supported by this browser.");
+        }
+        if (!window.isSecureContext) throw new Error("Push notifications require a secure HTTPS website.");
+        const permissionPromise = Notification.permission === "default"
+          ? Notification.requestPermission()
+          : Promise.resolve(Notification.permission);
+        const [config, permission] = await Promise.all([
+          requestPushJson("/api/push/config"),
+          permissionPromise
+        ]);
+        if (permission !== "granted") throw new Error("Notification permission was not granted.");
+        if (!await navigator.serviceWorker.getRegistration()) {
+          await navigator.serviceWorker.register("/sw.js");
+        }
+        const registration = await navigator.serviceWorker.ready;
+        const existing = await registration.pushManager.getSubscription();
+        const subscription = existing || await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: decodeBase64Url(config.public_key)
+        });
+        await requestPushJson("/api/push/subscriptions", "POST", subscription.toJSON());
+        status.textContent = "Notifications enabled on this device.";
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : "Could not enable notifications.";
+      } finally {
+        enable.disabled = false;
+      }
+    });
+
+    disable.addEventListener("click", async () => {
+      disable.disabled = true;
+      status.textContent = "Turning off notifications…";
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        const subscription = await registration?.pushManager.getSubscription();
+        if (!subscription) {
+          status.textContent = "Notifications are already off on this device.";
+          return;
+        }
+        const saved = subscription.toJSON();
+        await subscription.unsubscribe();
+        try {
+          await requestPushJson("/api/push/subscriptions", "DELETE", { endpoint: saved.endpoint });
+        } catch (error) {
+          throw new Error(`Notifications are off on this device, but cloud cleanup failed: ${error instanceof Error ? error.message : "service unavailable"}`);
+        }
+        status.textContent = "Notifications turned off on this device.";
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : "Could not turn off notifications.";
+      } finally {
+        disable.disabled = false;
+      }
+    });
+  }
+
+  function installStorefrontForms() {
+    for (const form of document.querySelectorAll(newsletterFormSelector)) {
+      installNewsletterConsent(form);
+      installPushControls(form);
+    }
   }
 
   function statusFor(form, id) {
@@ -310,7 +425,7 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       void requestProductHold(form);
-    } else if (form?.matches(".newsletter-form")) {
+    } else if (form?.matches(newsletterFormSelector)) {
       event.preventDefault();
       event.stopImmediatePropagation();
       void subscribe(form);
@@ -353,11 +468,14 @@
     window.__ESHOP_TRACK_STOREFRONT_EVENT__?.(canonicalId, "view");
   }
 
-  for (const form of document.querySelectorAll(".newsletter-form")) installNewsletterConsent(form);
+  installStorefrontForms();
   installProductHoldForm();
-  const storefrontApp = document.getElementById("app");
-  if (storefrontApp && typeof MutationObserver === "function") {
-    new MutationObserver(installProductHoldForm).observe(storefrontApp, { childList: true, subtree: true });
+  if (typeof MutationObserver === "function") {
+    const storefrontRoot = document.body || document.documentElement;
+    new MutationObserver(() => {
+      installStorefrontForms();
+      installProductHoldForm();
+    }).observe(storefrontRoot, { childList: true, subtree: true });
   }
   window.addEventListener("hashchange", installProductHoldForm);
   window.addEventListener("hashchange", trackCurrentProductView);

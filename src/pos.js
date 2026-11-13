@@ -1,4 +1,9 @@
 import { registerPlugin } from '@capacitor/core';
+import {
+  bindProductTaxonomyFields,
+  createProductTaxonomyFields,
+  readProductTaxonomyFields
+} from './product-taxonomy.js';
 
 const NearbyBluetooth = registerPlugin('NearbyBluetooth');
 
@@ -240,6 +245,9 @@ async function initializePosDatabase() {
       sku TEXT,
       image_uri TEXT,
       expiry_date TEXT,
+      taxonomy_category_id TEXT,
+      taxonomy_custom_category TEXT,
+      taxonomy_attributes_json TEXT NOT NULL DEFAULT '[]',
       image_embedding BLOB,
       low_stock_threshold INTEGER NOT NULL DEFAULT 3 CHECK (low_stock_threshold >= 0),
       active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
@@ -429,6 +437,15 @@ async function initializePosDatabase() {
   if (!productColumns.some((column) => column.name === 'expiry_date')) {
     await run('ALTER TABLE pos_products ADD COLUMN expiry_date TEXT');
   }
+  if (!productColumns.some((column) => column.name === 'taxonomy_category_id')) {
+    await run('ALTER TABLE pos_products ADD COLUMN taxonomy_category_id TEXT');
+  }
+  if (!productColumns.some((column) => column.name === 'taxonomy_custom_category')) {
+    await run('ALTER TABLE pos_products ADD COLUMN taxonomy_custom_category TEXT');
+  }
+  if (!productColumns.some((column) => column.name === 'taxonomy_attributes_json')) {
+    await run("ALTER TABLE pos_products ADD COLUMN taxonomy_attributes_json TEXT NOT NULL DEFAULT '[]'");
+  }
   if (!productColumns.some((column) => column.name === 'image_embedding')) {
     await run('ALTER TABLE pos_products ADD COLUMN image_embedding BLOB');
   }
@@ -539,6 +556,8 @@ async function saveSettings(taxRate, currency) {
 
 async function listProducts() {
   return rows(`SELECT p.id, p.name, p.sku, p.barcode, p.expiry_date AS expiryDate, p.category_id AS categoryId, c.name AS categoryName,
+    p.taxonomy_category_id AS taxonomyCategoryId, p.taxonomy_custom_category AS taxonomyCustomCategory,
+    p.taxonomy_attributes_json AS taxonomyAttributesJson,
     p.price_cents, p.buying_price_cents, p.stock_count AS stock, p.image_uri AS imageUri,
     hex(p.image_embedding) AS imageEmbeddingHex,
     p.low_stock_threshold AS lowStockThreshold, p.active
@@ -547,6 +566,9 @@ async function listProducts() {
       id: item.id, name: item.name, sku: item.sku || '', barcode: item.barcode || '',
       expiryDate: item.expiryDate || '',
       categoryId: item.categoryId, categoryName: item.categoryName || '',
+      taxonomyCategoryId: item.taxonomyCategoryId || '',
+      taxonomyCustomCategory: item.taxonomyCustomCategory || '',
+      taxonomyAttributes: JSON.parse(item.taxonomyAttributesJson || '[]'),
       price: fromCents(item.price_cents), buyingPrice: item.buying_price_cents == null ? null : fromCents(item.buying_price_cents),
       stock: item.stock, imageUri: item.imageUri, imageEmbedding: embeddingHexToInt8(item.imageEmbeddingHex || ''),
       lowStockThreshold: Number(item.lowStockThreshold) || 0,
@@ -581,6 +603,9 @@ async function saveProduct(data) {
   const stock = String(data.stock ?? '').trim() === '' ? null : Number(data.stock);
   const lowStockThreshold = Number(data.lowStockThreshold ?? 3);
   const active = data.active === false || data.active === '0' ? 0 : 1;
+  const hasTaxonomyCategory = Object.hasOwn(data, 'taxonomyCategoryId');
+  const hasTaxonomyCustomCategory = Object.hasOwn(data, 'taxonomyCustomCategory');
+  const hasTaxonomyAttributes = Object.hasOwn(data, 'taxonomyAttributes');
   if (expiryDate) assertDate(expiryDate, 'Expiry date');
   if (!name || sku.length > 120 || barcode.length > 120 || !Number.isSafeInteger(categoryId) || categoryId <= 0 || !Number.isSafeInteger(priceCents) || priceCents < 0
     || (buyingCents !== null && (!Number.isSafeInteger(buyingCents) || buyingCents < 0))
@@ -597,9 +622,22 @@ async function saveProduct(data) {
     [barcode, barcode, id]))[0]) {
     throw new Error('That barcode is already assigned to another product.');
   }
+  let existingTaxonomy = {};
+  if (id > 0 && (!hasTaxonomyCategory || !hasTaxonomyCustomCategory || !hasTaxonomyAttributes)) {
+    existingTaxonomy = (await rows('SELECT taxonomy_category_id,taxonomy_custom_category,taxonomy_attributes_json FROM pos_products WHERE id=?', [id]))[0] || {};
+  }
+  const taxonomyCategoryId = hasTaxonomyCategory
+    ? String(data.taxonomyCategoryId || '').trim() || null
+    : existingTaxonomy.taxonomy_category_id || null;
+  const taxonomyCustomCategory = hasTaxonomyCustomCategory
+    ? String(data.taxonomyCustomCategory || '').trim().slice(0, 160) || null
+    : existingTaxonomy.taxonomy_custom_category || null;
+  const taxonomyAttributesJson = hasTaxonomyAttributes
+    ? JSON.stringify(Array.isArray(data.taxonomyAttributes) ? data.taxonomyAttributes : [])
+    : existingTaxonomy.taxonomy_attributes_json || '[]';
   const values = [name, categoryId, priceCents, buyingCents, stock, sku || null, barcode || null, expiryDate || null,
     String(data.imageUri || '').trim() || null,
-    lowStockThreshold, active];
+    lowStockThreshold, active, taxonomyCategoryId, taxonomyCustomCategory, taxonomyAttributesJson];
   const hasEmbedding = Object.hasOwn(data, 'imageEmbeddingHex');
   const embeddingHex = hasEmbedding ? String(data.imageEmbeddingHex || '') : '';
   if (hasEmbedding && embeddingHex && (!/^(?:[\da-f]{2}){128,4096}$/i.test(embeddingHex))) {
@@ -607,14 +645,14 @@ async function saveProduct(data) {
   }
   if (id > 0) {
     const embeddingUpdate = hasEmbedding ? `,image_embedding=${embeddingHex ? `X'${embeddingHex}'` : 'NULL'}` : '';
-    const result = await run(`UPDATE pos_products SET name=?,category_id=?,price_cents=?,buying_price_cents=?,stock_count=?,sku=?,barcode=?,expiry_date=?,image_uri=?,low_stock_threshold=?,active=?${embeddingUpdate} WHERE id=?`, [...values, id]);
+    const result = await run(`UPDATE pos_products SET name=?,category_id=?,price_cents=?,buying_price_cents=?,stock_count=?,sku=?,barcode=?,expiry_date=?,image_uri=?,low_stock_threshold=?,active=?,taxonomy_category_id=?,taxonomy_custom_category=?,taxonomy_attributes_json=?${embeddingUpdate} WHERE id=?`, [...values, id]);
     if (!result.changes?.changes) throw new Error('This product could not be found. Refresh and try again.');
     await recordSharedStockUpdate(sku, stock);
     return id;
   }
   const embeddingColumn = hasEmbedding ? ',image_embedding' : '';
   const embeddingValue = hasEmbedding ? `,${embeddingHex ? `X'${embeddingHex}'` : 'NULL'}` : '';
-  const result = await run(`INSERT INTO pos_products (name,category_id,price_cents,buying_price_cents,stock_count,sku,barcode,expiry_date,image_uri,low_stock_threshold,active,created_at${embeddingColumn}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?${embeddingValue})`, [...values, nowIso()]);
+  const result = await run(`INSERT INTO pos_products (name,category_id,price_cents,buying_price_cents,stock_count,sku,barcode,expiry_date,image_uri,low_stock_threshold,active,taxonomy_category_id,taxonomy_custom_category,taxonomy_attributes_json,created_at${embeddingColumn}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?${embeddingValue})`, [...values, nowIso()]);
   await recordSharedStockUpdate(sku, stock);
   return result.changes?.lastId;
 }
@@ -1477,6 +1515,11 @@ export function createPosApp() {
           : 'No barcode captured yet.'}</p>
       <p class="pos-help" data-product-ocr-status role="status" aria-live="polite">OCR suggestions are optional; check them before saving.</p>
       ${select('Category', 'categoryId', categories.map((cat) => [cat.id, cat.name]), item?.categoryId || categories[0]?.id)}
+      ${createProductTaxonomyFields({
+        categoryId: item?.taxonomyCategoryId,
+        customCategory: item?.taxonomyCustomCategory,
+        attributes: item?.taxonomyAttributes
+      })}
       ${field('Selling price', 'price', item?.price ?? '', { type: 'number', min: '0', step: '0.01', required: true })}
       ${field('Expiry date · optional', 'expiryDate', item?.expiryDate || '', { type: 'date' })}
       ${field('Unit cost · optional', 'buyingPrice', item?.buyingPrice ?? '', { type: 'number', min: '0', step: '0.01' })}
@@ -2676,7 +2719,10 @@ export function createPosApp() {
     if (!path.startsWith('/pos')) return;
     const params = new URLSearchParams(hash.split('?')[1] || '');
     const app = document.getElementById('app');
-    if (app) app.innerHTML = render(path, params);
+    if (app) {
+      app.innerHTML = render(path, params);
+      bindProductTaxonomyFields(app);
+    }
   }
 
   async function loadState() {
@@ -4004,6 +4050,9 @@ export function createPosApp() {
           stock,
           sku: existing?.sku || sku,
           imageUri: existing?.imageUri || websiteProduct.images?.[0] || '',
+          taxonomyCategoryId: websiteProduct.taxonomy_category_id || existing?.taxonomyCategoryId || '',
+          taxonomyCustomCategory: websiteProduct.taxonomy_custom_category || existing?.taxonomyCustomCategory || '',
+          taxonomyAttributes: websiteProduct.taxonomy_attributes || existing?.taxonomyAttributes || [],
           lowStockThreshold: existing?.lowStockThreshold ?? 3,
           active: existing?.active ?? true
         });
@@ -4404,6 +4453,7 @@ export function createPosApp() {
           renderCurrent();
           return;
         case 'product': {
+          Object.assign(data, readProductTaxonomyFields(form));
           const requiredField = !String(data.name || '').trim()
             ? form.elements?.name
             : String(data.price ?? '').trim() === '' ? form.elements?.price : null;

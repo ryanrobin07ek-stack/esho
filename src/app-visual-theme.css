@@ -1,30 +1,94 @@
-body.app-shell.app-interior-theme,
+body.app-shell,
 body.app-screen-fade-active {
   --app-ink: #111111;
-  --app-silver: #bfc4ca;
-  --app-silver-surface: #e7e9ec;
-  --app-card-surface: linear-gradient(145deg, rgba(247, 248, 249, .88), rgba(185, 190, 196, .78));
+  --app-silver: #c7ccd2;
+  --app-silver-surface: #eceff2;
+  --app-card-surface: linear-gradient(145deg, rgba(247, 249, 251, .94), rgba(187, 193, 200, .88));
+  --app-shell-background: linear-gradient(180deg, #5B8DB8 0%, #B8CCE0 18%, #E5E9ED 32%, #D7DCE1 50%, #C5CBD1 68%, #959BA2 84%, #050505 100%);
   --app-white: #ffffff;
   --app-card-radius: 12px;
   --app-control-radius: 12px;
-  background: var(--app-silver-surface);
+  background: var(--app-shell-background) fixed;
   color: var(--app-ink);
   font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-body.app-shell.app-interior-theme #app,
+.product-taxonomy-picker {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--app-silver, #c7ccd2);
+  border-radius: 12px;
+  background: var(--app-card-surface, linear-gradient(145deg, rgba(247, 249, 251, .94), rgba(187, 193, 200, .88)));
+}
+
+.product-taxonomy-picker h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.product-taxonomy-picker h3 span {
+  font-size: .85em;
+  font-weight: 400;
+  opacity: .7;
+}
+
+.product-taxonomy-picker [data-taxonomy-results] {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.product-taxonomy-picker [data-taxonomy-results] button,
+.product-taxonomy-picker [data-taxonomy-custom-offer] button,
+.product-taxonomy-picker [data-taxonomy-selected] button {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--app-silver, #c7ccd2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .76);
+  color: inherit;
+  text-align: left;
+}
+
+.product-taxonomy-picker [data-taxonomy-selected] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.product-taxonomy-picker [data-taxonomy-selected] button {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.product-taxonomy-picker [data-taxonomy-attributes] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 8px;
+}
+
+.product-taxonomy-picker [data-taxonomy-attributes] label {
+  display: grid;
+  gap: 4px;
+  font-size: .9rem;
+}
+
+body.app-shell #app,
 body.app-screen-fade-active #app {
-  background-color: var(--app-silver-surface);
+  background: transparent !important;
   color: var(--app-ink);
   font-family: inherit;
 }
 
-body.app-shell.app-interior-theme #app :is(h1, h2, h3, h4, h5, h6, p, label, button, input, select, textarea),
+body.app-shell #app :is(h1, h2, h3, h4, h5, h6, p, label, button, input, select, textarea),
 body.app-screen-fade-active #app :is(h1, h2, h3, h4, h5, h6, p, label, button, input, select, textarea) {
   font-family: inherit;
 }
 
-body.app-shell.app-interior-theme #app :is(article, [class~="card"], [class*="-card"], [class*="_card"], [class*="panel"], [class*="tile"], [class*="metric"]):not([class*="sidebar"]):not([class*="drawer"]):not([class*="nav"]),
+body.app-shell #app :is(article, [class~="card"], [class*="-card"], [class*="_card"], [class*="panel"], [class*="tile"], [class*="metric"]):not([class*="sidebar"]):not([class*="drawer"]):not([class*="nav"]),
 body.app-screen-fade-active #app :is(article, [class~="card"], [class*="-card"], [class*="_card"], [class*="panel"], [class*="tile"], [class*="metric"]):not([class*="sidebar"]):not([class*="drawer"]):not([class*="nav"]) {
   background: var(--app-card-surface) !important;
   color: var(--app-ink);
@@ -35,7 +99,7 @@ body.app-screen-fade-active #app :is(article, [class~="card"], [class*="-card"],
   backdrop-filter: blur(14px) saturate(160%);
 }
 
-body.app-shell.app-interior-theme #app .business-lens-shell .business-lens-content :is(.bl-kpi, .bl-card, .bl-insight, .studio-data-card, .studio-panel),
+body.app-shell #app .business-lens-shell .business-lens-content :is(.bl-kpi, .bl-card, .bl-insight, .studio-data-card, .studio-panel),
 body.app-screen-fade-active #app .business-lens-shell .business-lens-content :is(.bl-kpi, .bl-card, .bl-insight, .studio-data-card, .studio-panel) {
   background: var(--app-card-surface) !important;
   color: var(--app-ink);
@@ -200,7 +264,6 @@ body.app-screen-fade-active #app :is(
   color: #111 !important;
 }
 
-body.native-app-shell .app-screen-fade,
 body.native-app-shell #main-navbar,
 body.native-app-shell #app :is(article, [class~="card"], [class*="-card"], [class*="_card"], [class*="panel"], [class*="tile"], [class*="metric"]):not([class*="sidebar"]):not([class*="drawer"]):not([class*="nav"]),
 body.native-app-shell #app :is(.pos-bottom-nav, .studio-workspace-bottom-nav, .store-bottom-nav) {
@@ -208,13 +271,38 @@ body.native-app-shell #app :is(.pos-bottom-nav, .studio-workspace-bottom-nav, .s
   backdrop-filter: none !important;
 }
 
-body.native-app-shell .app-background-emblem-mark {
-  animation: none !important;
+body.app-shell #app .home-screen {
+  background: transparent;
+  color: var(--app-ink);
 }
 
-body.native-app-shell .app-screen-background-image,
-body.native-app-shell .home-background-image {
-  filter: none !important;
-  transform: none !important;
-  transition: none !important;
+body.app-shell #app .home-screen :is(.home-launcher-group, .home-shortcut-link, .home-quick-link) {
+  border-color: var(--app-silver);
+  background: var(--app-card-surface);
+  color: var(--app-ink);
+  box-shadow: 0 12px 30px rgba(17, 20, 24, .1), inset 0 1px 0 rgba(255, 255, 255, .76);
+}
+
+body.app-shell #app .home-screen :is(
+  .home-screen-greeting,
+  .home-panel-kicker,
+  .home-panel-heading h2,
+  .home-empty,
+  .home-data-label,
+  .home-data-value,
+  .home-data-note,
+  .home-attention-row strong,
+  .home-attention-row small,
+  .home-recent-copy strong,
+  .home-recent-copy small,
+  .home-recent-total strong,
+  .home-recent-total small,
+  .home-panel-link,
+  .home-workspace-card,
+  .home-workspace-card small,
+  .home-pos-copy strong,
+  .home-pos-copy small,
+  .home-shortcut-link
+) {
+  color: var(--app-ink);
 }

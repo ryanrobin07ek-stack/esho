@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 import { JSDOM, VirtualConsole } from "jsdom";
 import { WEBSITE_THEME_CATALOG } from "../src/theme-catalog.js";
 
@@ -17,6 +18,26 @@ test("customer shop screens never collect or persist the Cloudflare master key",
   assert.doesNotMatch(publishModal, /PUBLISH_TOKEN|Cloudflare admin key|type="password"|rememberToken/);
   assert.doesNotMatch(app, /cloudflareAdminToken|localStorage\.setItem\("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1"/);
   assert.match(app, /localStorage\.removeItem\("ESHOP_CLOUDFLARE_PUBLISH_TOKEN_V1"\)/);
+});
+
+test("storefront newsletter and owner push broadcasts use Cloudflare", async () => {
+  const app = await read("../index.html");
+  const signupForm = app.match(/<form id="web-newsletter-signup">([\s\S]*?)<\/form>/)?.[1];
+  const notificationsPage = app.match(/if \(page\.route === "\/account\/web\/studio\/crm\/notifications"\) \{([\s\S]*?)\n      \}/)?.[1];
+
+  assert.ok(signupForm);
+  assert.match(signupForm, /name="consent" type="checkbox" required/);
+  assert.match(app, /\/api\/newsletter\/subscribe\?tenant=/);
+  assert.match(app, /JSON\.stringify\(\{ email, consent: true \}\)/);
+  assert.doesNotMatch(app, /Signup saved on this device/);
+  assert.ok(notificationsPage);
+  assert.match(notificationsPage, /form[^>]+data-business-broadcast/);
+  assert.match(notificationsPage, /name="title"/);
+  assert.match(notificationsPage, /name="body"/);
+  assert.match(notificationsPage, /name="url"/);
+  assert.match(app, /\/api\/push\/broadcast\?tenant=/);
+  assert.match(app, /window\.confirm\("Send this notification now/);
+  assert.match(app, /this\.bindBusinessCloudActions\(currentContent, path, renderSnapshot, activeTenant\.id\);/);
 });
 
 test("CHESSER styling is limited to Craft app routes and excludes Theme Studio", async () => {
@@ -118,6 +139,8 @@ test("Liquid theme choices open the shared Studio and Litrus opens its integrate
   assert.match(app, /id="builder-litrus-publish"/);
   assert.match(app, /data-litrus-preview-device="phone"/);
   assert.match(app, /craft-litrus-image-request/);
+  assert.match(app, /\/api\/images\/search\?tenant=/);
+  assert.match(app, /errors: result\.errors \|\| \[\], error: result\.error \|\| ""/);
   assert.match(app, /event\.data\?\.type === "craft-litrus-ready"/);
   assert.match(app, /event\.data\?\.type === "craft-litrus-draft"/);
   assert.match(app, /await saveLitrusDesign\(event\.data\)/);
@@ -137,6 +160,9 @@ test("Liquid theme choices open the shared Studio and Litrus opens its integrate
   assert.match(mixer, /id="wCraftImages"/);
   assert.match(mixer, /textContent='Loading images\.\.\.'/);
   assert.match(mixer, /type:'craft-litrus-image-request'/);
+  assert.match(mixer, /if\(typeof event\.data\.error==='string'&&event\.data\.error\)request\.reject/);
+  assert.match(mixer, /Cloudflare-backed image search is available through the Craft builder\./);
+  assert.doesNotMatch(mixer, /litrus\.(?:pixabay|unsplash|pexels)Key|Paste your (?:Pixabay|Pexels|Unsplash)/);
   assert.doesNotMatch(mixer, /wPixabayKey|LITRUS_PIXABAY_KEY|https:\/\/pixabay\.com\/api/);
   assert.equal(WEBSITE_THEME_CATALOG.some(theme => theme.id === "craft-main-storefront"), false);
   assert.ok(liquidThemes.every(theme => theme.editor_mode === "liquid-html"));
@@ -144,6 +170,38 @@ test("Liquid theme choices open the shared Studio and Litrus opens its integrate
     WEBSITE_THEME_CATALOG.filter(theme => theme.validation_status === "passed").map(theme => theme.id),
     ["litrus-mixer", "elora-linen"]
   );
+});
+
+test("Litrus Add photos fills section slots without reusing product photos", async () => {
+  const mixer = await read("../public/litrus-mixer/index.html");
+  const photoFiller = mixer.match(/async function fillEmptyShopImages\(\)\{([\s\S]*?)\r?\n\s*\}\r?\nwindow\.wizFill/)?.[1];
+
+  assert.ok(photoFiller);
+  assert.match(photoFiller, /root\.querySelectorAll\('img\[data-lpk-image-slot\]'\)/);
+  assert.match(photoFiller, /if\(img\.closest\('\.prods'\)\)return/);
+  assert.match(photoFiller, /SHOP\.autoImages\[request\.slot\]=image\.url/);
+  assert.doesNotMatch(photoFiller, /productSlots|slot:'product-|prods\.map/);
+  assert.match(mixer, /const isProductHeroImage=shopProds\(\)\.some\(function\(product\)\{return product&&product\[6\]===src\}\)/);
+  assert.match(mixer, /role!=='hero'&&shopProds\(\)\.some\(function\(p\)\{return p&&p\[6\]===src\}\)/);
+  assert.match(mixer, /photo\(null,0,true\)/);
+});
+
+test("Litrus image request IDs work in WebViews without crypto.randomUUID", async () => {
+  const mixer = await read("../public/litrus-mixer/index.html");
+  const helper = mixer.match(/let craftImageRequestSequence=0;\r?\nfunction createCraftImageRequestId\(\)\{[\s\S]*?\r?\n\}/)?.[0];
+
+  assert.ok(helper);
+  const cryptoId = runInNewContext(`${helper}; createCraftImageRequestId()`, {
+    window: { crypto: { getRandomValues(bytes) { bytes.fill(7); return bytes; } } },
+    Uint8Array
+  });
+  assert.equal(cryptoId, "07070707070707070707070707070707");
+
+  const fallbackIds = runInNewContext(`${helper}; [createCraftImageRequestId(), createCraftImageRequestId()]`, {
+    window: { crypto: {} },
+    Date: { now: () => 12345 }
+  });
+  assert.notEqual(fallbackIds[0], fallbackIds[1]);
 });
 
 test("Litrus mobile build and settings panels have bounded touch-scroll areas", async () => {

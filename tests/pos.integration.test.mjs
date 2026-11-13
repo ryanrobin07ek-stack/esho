@@ -384,6 +384,116 @@ test('published Craft storefront batches anonymous events without per-action pro
   assert.doesNotThrow(() => new Script(runtime), 'The injected customer activity runtime should parse as JavaScript.');
 });
 
+test('published Litrus newsletter forms require consent and reach the Cloudflare signup endpoint', async () => {
+  const runtime = await readFile(new URL('../public/craft-storefront-cloudflare.js', import.meta.url), 'utf8');
+  const dom = new JSDOM(
+    '<form class="sole-newsletter-form"><input type="email" required><button type="submit">Subscribe</button></form>',
+    { url: 'https://amani.rrobin.co.ke/', runScripts: 'outside-only' }
+  );
+  const requests = [];
+  dom.window.__ESHOP_CLOUDFLARE_STOREFRONT__ = true;
+  dom.window.fetch = async (path, options) => {
+    requests.push({ path, options });
+    return { ok: true, json: async () => ({ ok: true, confirmation_required: true }) };
+  };
+
+  try {
+    dom.window.eval(runtime);
+    const form = dom.window.document.querySelector('.sole-newsletter-form');
+    const email = form.querySelector('input[type="email"]');
+    const consent = form.querySelector('[name="consent"]');
+    assert.ok(consent, 'Litrus newsletter forms must show an explicit consent checkbox.');
+    email.value = 'subscriber@example.com';
+    consent.checked = true;
+    form.dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].path, '/api/newsletter/subscribe');
+    assert.deepEqual(JSON.parse(requests[0].options.body), {
+      email: 'subscriber@example.com',
+      consent: true
+    });
+    assert.match(form.querySelector('#newsletter-msg').textContent, /confirm your subscription/i);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('published storefront customers can opt in to Web Push on their device', async () => {
+  const runtime = await readFile(new URL('../public/craft-storefront-cloudflare.js', import.meta.url), 'utf8');
+  const dom = new JSDOM(
+    '<div id="store"></div>',
+    { url: 'https://amani.rrobin.co.ke/', runScripts: 'outside-only' }
+  );
+  const requests = [];
+  let permissionRequests = 0;
+  const subscription = {
+    toJSON: () => ({
+      endpoint: 'https://fcm.googleapis.com/fcm/send/device',
+      keys: { p256dh: 'A'.repeat(87), auth: 'A'.repeat(22) }
+    })
+  };
+  const registration = {
+    pushManager: {
+      getSubscription: async () => null,
+      subscribe: async () => subscription
+    }
+  };
+  dom.window.__ESHOP_CLOUDFLARE_STOREFRONT__ = true;
+  Object.defineProperty(dom.window, 'isSecureContext', { value: true });
+  Object.defineProperty(dom.window, 'PushManager', { value: function PushManager() {} });
+  Object.defineProperty(dom.window, 'Notification', {
+    value: {
+      permission: 'default',
+      requestPermission: async () => {
+        permissionRequests += 1;
+        return 'granted';
+      }
+    }
+  });
+  Object.defineProperty(dom.window.navigator, 'serviceWorker', {
+    value: {
+      getRegistration: async () => registration,
+      ready: Promise.resolve(registration)
+    }
+  });
+  dom.window.fetch = async (path, options = {}) => {
+    requests.push({ path, options });
+    return {
+      ok: true,
+      json: async () => path === '/api/push/config' ? { public_key: 'AQID' } : { ok: true }
+    };
+  };
+
+  try {
+    dom.window.eval(runtime);
+    const form = dom.window.document.createElement('form');
+    form.className = 'sole-newsletter-form';
+    form.innerHTML = '<input type="email" required><button type="submit">Subscribe</button>';
+    dom.window.document.getElementById('store').append(form);
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    const enable = form.querySelector('[data-storefront-push-enable]');
+    assert.ok(enable, 'Published storefronts should expose an explicit push opt-in control.');
+    assert.equal(permissionRequests, 0, 'Notification permission must not be requested on page load.');
+
+    enable.click();
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    assert.equal(permissionRequests, 1);
+    assert.deepEqual(requests.map(request => request.path), [
+      '/api/push/config',
+      '/api/push/subscriptions'
+    ], form.querySelector('[data-storefront-push-controls] [role="status"]').textContent);
+    assert.equal(requests[1].options.method, 'POST');
+    assert.deepEqual(JSON.parse(requests[1].options.body), subscription.toJSON());
+    assert.match(form.querySelector('[role="status"]').textContent, /notifications enabled/i);
+  } finally {
+    dom.window.close();
+  }
+});
+
 test('storefront event analytics stays local until a batch flush', async () => {
   const runtime = await readFile(new URL('../public/storefront-analytics.js', import.meta.url), 'utf8');
   const dom = new JSDOM('', { url: 'https://shop.example/#/home', runScripts: 'outside-only' });
@@ -1341,48 +1451,25 @@ test('main app inline script parses before packaging', async () => {
   }
 });
 
-test('home fade moves from light surroundings to dark dashboard surfaces', async () => {
+test('home and app screens use a slate-blue-to-black background with stronger silver cards', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const visualTheme = await readFile(new URL('../src/app-visual-theme.css', import.meta.url), 'utf8');
   const homeStyle = pageSource.match(/\.home-screen\s*\{([^}]*)\}/)?.[1];
-  const tintStyle = pageSource.match(/\.home-background-tint\s*\{([^}]*)\}/)?.[1];
   assert.ok(homeStyle, 'The home screen should define its own color treatment.');
-  assert.ok(tintStyle, 'The background images should be covered by the home fade.');
+  assert.match(homeStyle, /background:\s*transparent/);
   assert.match(homeStyle, /--home-light-foreground:\s*#111/);
-  assert.match(homeStyle, /--home-dark-foreground:\s*#fff/);
-  assert.match(tintStyle, /linear-gradient\(\s*180deg,[\s\S]*?rgb\(245 245 245 \/ 25%\)[\s\S]*?rgb\(245 245 245 \/ 34%\)[\s\S]*?rgb\(245 245 245 \/ 45%\)[\s\S]*?rgb\(5 5 5 \/ 97%\)/);
+  assert.match(homeStyle, /--home-dark-foreground:\s*#111/);
+  assert.match(visualTheme, /--app-shell-background:\s*linear-gradient\(180deg,\s*#5B8DB8[\s\S]*?#050505 100%\)/);
+  assert.match(visualTheme, /--app-card-surface:\s*linear-gradient/);
   assert.match(pageSource, /\.home-screen-greeting\s*\{[^}]*color:\s*var\(--home-light-foreground\)/);
   assert.match(pageSource, /\.home-data-card,\s*\.home-panel\s*\{[^}]*background:\s*var\(--home-dark-card\)[^}]*color:\s*var\(--home-dark-foreground\)/);
+  assert.match(visualTheme, /body\.app-shell #app :is\(article, \[class~="card"\], \[class\*="-card"\]/);
 });
 
-test('home backdrop cycles through cropped reference images', async () => {
+test('app screens do not load or rotate decorative background images', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(pageSource, /class="home-background" aria-hidden="true"[\s\S]*?data-home-background-current[\s\S]*?data-home-background-next[\s\S]*?home-background-tint/);
-  assert.match(pageSource, /desktop: `\/home-backgrounds\/home-\$\{number\}\.jpg`/);
-  assert.match(pageSource, /mobile: `\/home-backgrounds\/mobile-\$\{number\}\.jpg`/);
-  assert.match(pageSource, /window\.matchMedia\("\(max-width: 600px\)"\)/);
-  assert.match(pageSource, /window\.setInterval\(rotateBackground,\s*8500\)/);
-  assert.match(pageSource, /window\.matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches/);
-  assert.match(pageSource, /window\.clearInterval\(this\.homeBackgroundTimer\)/);
-  assert.match(pageSource, /window\.removeEventListener\("resize", this\.homeBackgroundResizeHandler\)/);
-  const images = await Promise.all(Array.from({ length: 18 }, (_, index) => {
-    const variant = index < 9 ? 'home' : 'mobile';
-    const number = String(index % 9 + 1).padStart(2, '0');
-    return readFile(new URL(`../public/home-backgrounds/${variant}-${number}.jpg`, import.meta.url));
-  }));
-  for (const image of images) assert.deepEqual([...image.subarray(0, 3)], [0xff, 0xd8, 0xff]);
-});
-
-test('PesaFlow-style background emblem rotates outside Home and Theme Studio', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const emblem = pageSource.match(/<div class="app-background-emblem" aria-hidden="true">([\s\S]*?)<\/div>\s*<div id="app">/)?.[1];
-  assert.ok(emblem, 'The decorative emblem should be a static, hidden-from-accessibility layer.');
-  assert.equal((emblem.match(/class="app-background-emblem-ring"/g) || []).length, 9);
-  assert.match(pageSource, /\.app-background-emblem-mark\s*\{[^}]*animation:\s*app-background-emblem-spin 34s linear infinite/);
-  assert.match(pageSource, /@keyframes app-background-emblem-spin\s*\{\s*to\s*\{\s*transform:\s*rotate\(360deg\)/);
-  assert.match(pageSource, /const showBackgroundEmblem = \(isAppShell \|\| path\.startsWith\("\/store\/"\)\)\s*&&\s*path !== "\/"\s*&&\s*path !== "\/account\/web\/site"/);
-  assert.match(pageSource, /classList\.toggle\("app-background-emblem-active", showBackgroundEmblem\)/);
-  assert.match(pageSource, /body\.app-background-emblem-active #app\s*\{[^}]*background:\s*transparent/);
-  assert.match(pageSource, /body\.craft-app-ui\.app-background-emblem-active #app\s*\{[^}]*background:\s*transparent/);
+  assert.doesNotMatch(pageSource, /data-home-background|data-app-screen-background|home-backgrounds\/|app-backgrounds\//);
+  assert.doesNotMatch(pageSource, /app-background-emblem|setupHomeBackground|setupAppScreenBackground/);
 });
 
 test('home summary metrics are compact full-width cards', async () => {
@@ -1675,13 +1762,34 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.equal(queryRows('SELECT expiry_date FROM pos_products WHERE id=1')[0].expiry_date, null);
     assert.equal(queryRows('SELECT hex(image_embedding) AS embedding FROM pos_products WHERE id=1')[0].embedding, '');
     const savedEmbedding = '7f00'.repeat(64);
+    const sneakerAttributes = [{
+      attributeId: 'gid://shopify/TaxonomyAttribute/3269',
+      attributeName: 'Sneaker style',
+      valueId: 'gid://shopify/TaxonomyValue/25020',
+      value: 'High-top'
+    }];
     const photoProductId = await app.saveProduct({
       name: 'Photo sample', categoryId: 1, price: 1.25, sku: 'PHOTO-1', barcode: '',
       expiryDate: '', stock: '', buyingPrice: '', lowStockThreshold: 3, active: true,
-      imageUri: 'data:image/jpeg;base64,AA==', imageEmbeddingHex: savedEmbedding
+      imageUri: 'data:image/jpeg;base64,AA==', imageEmbeddingHex: savedEmbedding,
+      taxonomyCategoryId: 'gid://shopify/TaxonomyCategory/aa-8-8',
+      taxonomyAttributes: sneakerAttributes
     });
     assert.equal(queryRows('SELECT hex(image_embedding) AS embedding FROM pos_products WHERE id=?', [photoProductId])[0].embedding, savedEmbedding.toUpperCase());
-    assert.equal((await app.listProducts()).find((product) => product.id === photoProductId).imageEmbedding[0], 127);
+    const savedProduct = (await app.listProducts()).find((product) => product.id === photoProductId);
+    assert.equal(savedProduct.imageEmbedding[0], 127);
+    assert.equal(savedProduct.taxonomyCategoryId, 'gid://shopify/TaxonomyCategory/aa-8-8');
+    assert.deepEqual(savedProduct.taxonomyAttributes, sneakerAttributes);
+    await app.saveProduct({
+      id: photoProductId, name: 'Photo sample', categoryId: 1, price: 1.25, sku: 'PHOTO-1',
+      barcode: '', expiryDate: '', stock: '', buyingPrice: '', lowStockThreshold: 3, active: true,
+      imageUri: 'data:image/jpeg;base64,AA==', taxonomyCategoryId: '',
+      taxonomyCustomCategory: 'Handmade footwear', taxonomyAttributes: []
+    });
+    const savedCustomProduct = (await app.listProducts()).find((product) => product.id === photoProductId);
+    assert.equal(savedCustomProduct.taxonomyCategoryId, '');
+    assert.equal(savedCustomProduct.taxonomyCustomCategory, 'Handmade footwear');
+    assert.deepEqual(savedCustomProduct.taxonomyAttributes, []);
     await runSql('DELETE FROM pos_products WHERE id=?', [photoProductId]);
     runSql('DELETE FROM pos_products WHERE id=1');
     runSql("DELETE FROM sqlite_sequence WHERE name='pos_products'");

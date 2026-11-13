@@ -6499,220 +6499,27 @@ a.launchpad-link:focus-visible {
   padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
 
-.app-background-emblem {
-  display: none;
-  position: fixed;
-  z-index: 0;
-  inset: 0;
-  overflow: hidden;
-  color: var(--text-main);
-  pointer-events: none;
-}
-
-body.app-background-emblem-active {
-  position: relative;
-  isolation: isolate;
-}
-
-body.app-background-emblem-active .app-background-emblem {
-  display: block;
-}
-
-.app-screen-background {
-  display: none;
-  position: fixed;
-  z-index: 0;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.app-screen-background-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  opacity: 0;
-  filter: blur(2px) saturate(.85) contrast(1.08);
-  transform: scale(1.04);
-  transition: opacity 1.5s ease, transform 8.5s linear;
-}
-
-.app-screen-background-image.is-active {
-  opacity: .32;
-  transform: scale(1.1);
-}
-
-.app-screen-fade {
-  display: none;
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  pointer-events: none;
-  -webkit-backdrop-filter: blur(3px) saturate(1.1);
-  backdrop-filter: blur(3px) saturate(1.1);
-  background: linear-gradient(
-    180deg,
-    rgb(245 245 245 / 45%) 0,
-    rgb(245 245 245 / 50%) clamp(150px, 22vh, 190px),
-    rgb(238 240 242 / 59%) clamp(330px, 46vh, 370px),
-    rgb(218 221 224 / 70%) clamp(390px, 54vh, 430px),
-    rgb(102 106 111 / 88%) clamp(470px, 64vh, 520px),
-    rgb(5 5 5 / 96%) clamp(540px, 74vh, 600px),
-    rgb(5 5 5 / 96%) 100%
-  );
-}
-
-body.app-screen-fade-active .app-screen-background {
-  display: block;
-}
-
-body.app-screen-fade-active .app-screen-fade {
-  display: block;
-}
-
-body.app-screen-fade-active #app {
-  position: relative;
-  z-index: 1;
-  background: transparent !important;
-}
-
-body.app-background-emblem-active #app {
-  position: relative;
-  z-index: 1;
-  background: transparent;
-}
-
-body.craft-app-ui.app-background-emblem-active #app {
-  background: transparent;
-}
-
-.app-background-emblem-mark {
-  position: absolute;
-  top: 115px;
-  right: -95px;
-  width: 330px;
-  height: 330px;
-  opacity: .12;
-  transform-origin: center;
-  transform-style: preserve-3d;
-  perspective: 800px;
-  animation: app-background-emblem-spin 34s linear infinite;
-}
-
-.app-background-emblem-ring {
-  position: absolute;
-  inset: 0;
-  border: 1.5px solid currentColor;
-  border-radius: 50%;
-  backface-visibility: hidden;
-}
-
-.app-background-emblem-core {
-  position: absolute;
-  inset: 70px;
-  border-radius: 100px;
-  background: currentColor;
-  opacity: .12;
-}
-
-.app-background-emblem-center {
-  position: absolute;
-  inset: 108px;
-  border: 2px solid currentColor;
-  border-radius: 100px;
-  opacity: .45;
-}
-
-.app-background-emblem-glow {
-  position: absolute;
-  top: 400px;
-  left: -130px;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: .055;
-}
-
-@keyframes app-background-emblem-spin {
-  to { transform: rotate(360deg); }
-}
-
 .home-screen {
   min-height: 100svh;
   --home-horizontal-gutter: clamp(18px, 5vw, 56px);
   --home-light-surface: #f5f5f5;
   --home-light-foreground: #111;
   --home-dark-surface: #050505;
-  --home-dark-card: #111;
-  --home-dark-foreground: #fff;
-  --home-dark-muted: #a7aab1;
+  --home-dark-card: linear-gradient(145deg, #f7f8f9, #c4c9cf);
+  --home-dark-foreground: #111;
+  --home-dark-muted: #4b5057;
   position: relative;
   isolation: isolate;
   padding: max(18px, env(safe-area-inset-top)) var(--home-horizontal-gutter) max(20px, env(safe-area-inset-bottom));
-  background: var(--home-dark-surface);
-  color: var(--home-dark-foreground);
+  background: transparent;
+  color: var(--home-light-foreground);
   display: flex;
   flex-direction: column;
 }
 
-.home-background {
-  position: absolute;
-  z-index: 0;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: clamp(540px, 74vh, 600px);
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.home-background-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  opacity: 0;
-  filter: blur(1px) saturate(.9) contrast(1.2);
-  transform: scale(1.04);
-  transition: opacity 1.5s ease, transform 8.5s linear;
-}
-
-.home-background-image.is-active {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-.home-background-tint {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgb(245 245 245 / 25%) 0,
-    rgb(245 245 245 / 34%) clamp(150px, 22vh, 190px),
-    rgb(245 245 245 / 45%) clamp(330px, 46vh, 370px),
-    rgb(209 209 209 / 62%) clamp(390px, 54vh, 430px),
-    rgb(102 102 102 / 92%) clamp(470px, 64vh, 520px),
-    rgb(5 5 5 / 97%) clamp(540px, 74vh, 600px),
-    rgb(5 5 5 / 97%) 100%
-  );
-}
-
-.home-screen > :not(.home-background) {
+.home-screen > * {
   position: relative;
   z-index: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-background-image {
-    transition: none;
-    transform: none;
-  }
 }
 
 .home-screen-header {
@@ -6767,12 +6574,10 @@ body.craft-app-ui.app-background-emblem-active #app {
   justify-content: flex-start;
   margin-bottom: 16px;
   padding: 12px;
-  border: 1px solid rgba(235, 250, 255, .56);
+  border: 1px solid #bfc4ca;
   border-radius: 12px;
-  background: rgba(225, 243, 248, .035);
+  background: linear-gradient(145deg, #f7f8f9, #c4c9cf);
   box-shadow: 0 14px 36px rgba(0, 0, 0, .06), inset 0 1px 0 rgba(255, 255, 255, .52);
-  -webkit-backdrop-filter: blur(4px) saturate(155%);
-  backdrop-filter: blur(4px) saturate(155%);
 }
 
 .home-pos-card {
@@ -6843,16 +6648,14 @@ body.craft-app-ui.app-background-emblem-active #app {
   justify-content: center;
   gap: 4px;
   padding: 0 4px;
-  border: 1px solid rgba(255, 255, 255, .48);
+  border: 1px solid #bfc4ca;
   border-radius: 9px;
-  background: rgba(15, 20, 22, .34);
-  color: #fff;
+  background: linear-gradient(145deg, #f7f8f9, #c4c9cf);
+  color: #111;
   font-size: .58rem;
   font-weight: 650;
   text-decoration: none;
   white-space: nowrap;
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
 }
 
 .home-shortcut-link svg {
@@ -6899,8 +6702,8 @@ body.craft-app-ui.app-background-emblem-active #app {
 }
 
 .home-workspace-card-main {
-  background: radial-gradient(circle at top left, #2a2a2a 0%, #000 75%);
-  color: #fff;
+  background: linear-gradient(145deg, #f7f8f9, #c4c9cf);
+  color: #111;
 }
 
 .home-workspace-card-craft {
@@ -6920,7 +6723,7 @@ body.craft-app-ui.app-background-emblem-active #app {
 .home-workspace-card small {
   position: relative;
   z-index: 1;
-  color: #b7b7b7;
+  color: #45484e;
   font-size: .74rem;
 }
 
@@ -6938,7 +6741,7 @@ body.craft-app-ui.app-background-emblem-active #app {
 .home-dashboard-error {
   margin: 0;
   padding: 16px;
-  border: 1px solid #ffffff1a;
+  border: 1px solid #bfc4ca;
   border-radius: 12px;
   background: var(--home-dark-card);
   color: var(--home-dark-foreground);
@@ -6967,10 +6770,8 @@ body.craft-app-ui.app-background-emblem-active #app {
 
 .home-dashboard-skeleton .home-data-card,
 .home-dashboard-skeleton .home-panel {
-  border-color: rgba(255, 255, 255, .16);
-  background: rgba(255, 255, 255, .12);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  backdrop-filter: blur(18px) saturate(140%);
+  border-color: #bfc4ca;
+  background: linear-gradient(145deg, #f7f8f9, #c4c9cf);
 }
 
 .home-skeleton-line,
@@ -7051,7 +6852,7 @@ body.craft-app-ui.app-background-emblem-active #app {
 .home-panel {
   min-width: 0;
   padding: 14px;
-  border: 1px solid #ffffff1a;
+  border: 1px solid #bfc4ca;
   border-radius: 12px;
   background: var(--home-dark-card);
   color: var(--home-dark-foreground);
@@ -7148,7 +6949,7 @@ body.craft-app-ui.app-background-emblem-active #app {
   justify-content: space-between;
   gap: 10px;
   padding: 10px 0;
-  border-top: 1px solid #ffffff1a;
+  border-top: 1px solid #aeb3b9;
 }
 
 .home-attention-row:first-of-type,
@@ -7222,10 +7023,10 @@ body.craft-app-ui.app-background-emblem-active #app {
   min-height: 32px;
   align-items: center;
   padding: 0 10px;
-  border: 1px solid #ffffff30;
+  border: 1px solid #bfc4ca;
   border-radius: 999px;
-  background: #111;
-  color: #fff;
+  background: var(--home-dark-card);
+  color: #111;
   font-size: .77rem;
   text-decoration: none;
 }
@@ -7253,8 +7054,8 @@ body.craft-app-ui.app-background-emblem-active #app {
     margin-left: calc(0px - var(--home-horizontal-gutter));
     margin-bottom: -46px;
     padding-bottom: clamp(24px, 3.5vh, 30px);
-    border-right: 1px solid rgba(235, 250, 255, .56);
-    border-left: 1px solid rgba(235, 250, 255, .56);
+    border-right: 1px solid #bfc4ca;
+    border-left: 1px solid #bfc4ca;
     border-radius: 12px;
   }
 }
@@ -7659,6 +7460,11 @@ body.craft-app-ui.app-background-emblem-active #app {
   gap: 12px;
 }
 
+.studio-metric-grid-featured {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
 .studio-data-card,
 .studio-panel,
 .studio-workspace .store-workspace-form {
@@ -7691,6 +7497,36 @@ body.craft-app-ui.app-background-emblem-active #app {
   letter-spacing: -.04em;
 }
 
+.studio-metric-grid-featured .studio-data-card {
+  min-height: 58px;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 13px;
+}
+
+.studio-metric-grid-featured > :first-child {
+  grid-column: 1 / -1;
+  min-height: 68px;
+}
+
+.studio-metric-grid-featured > :first-child strong {
+  font-size: clamp(1.05rem, 3vw, 1.35rem);
+}
+
+.studio-data-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.studio-data-card-link:hover {
+  border-color: #b9b9be;
+}
+
+.studio-data-card-link:focus-visible {
+  outline: 2px solid #18181b;
+  outline-offset: 2px;
+}
+
 .studio-data-card > small,
 .studio-panel-note {
   color: #737378;
@@ -7716,6 +7552,89 @@ body.craft-app-ui.app-background-emblem-active #app {
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 12px;
+}
+
+.studio-workspace-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.studio-analytics-filter-toggle {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dedee1;
+  border-radius: 12px;
+  background: #fff;
+  color: #242428;
+}
+
+.studio-analytics-filter-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.studio-analytics-load {
+  padding: 10px 12px;
+}
+
+.studio-analytics-load .studio-panel-heading {
+  margin: 0;
+}
+
+.studio-analytics-load h2 {
+  font-size: .9rem;
+}
+
+.studio-analytics-load button {
+  min-height: 32px;
+  padding: 5px 12px;
+}
+
+.studio-location-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.studio-location-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #e5e5e7;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.studio-location-card h3 {
+  margin: 0 0 6px;
+  color: #202023;
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+.studio-location-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 0;
+  border-top: 1px solid #eee;
+  font-size: .82rem;
+}
+
+.studio-location-row strong {
+  overflow-wrap: anywhere;
+  color: #202023;
+  font-size: .82rem;
+  font-weight: 650;
+}
+
+.studio-location-row span {
+  flex: 0 0 auto;
+  color: #55555b;
+  font-size: .8rem;
+  font-weight: 650;
 }
 
 .studio-panel-heading a {
@@ -8000,6 +7919,7 @@ body.craft-app-ui.app-background-emblem-active #app {
 
 .store-newsletter-signup form {
   display: flex;
+  flex-wrap: wrap;
   width: min(100%, 440px);
   gap: 8px;
   margin: 8px 0 0;
@@ -8013,6 +7933,25 @@ body.craft-app-ui.app-background-emblem-active #app {
   border: 1px solid #d8d8db;
   border-radius: 14px;
   background: rgba(255, 255, 255, .94);
+}
+
+.store-newsletter-signup .store-newsletter-consent {
+  display: flex;
+  flex: 1 0 100%;
+  align-items: flex-start;
+  gap: 8px;
+  color: #5f5f63;
+  font-size: .78rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.store-newsletter-signup .store-newsletter-consent input[type="checkbox"] {
+  flex: 0 0 18px;
+  width: 18px;
+  min-height: 18px;
+  margin: 2px 0 0;
+  padding: 0;
 }
 
 .store-newsletter-signup button {
@@ -8066,6 +8005,10 @@ body.craft-app-ui.app-background-emblem-active #app {
   }
 
   .studio-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .studio-location-grid {
     grid-template-columns: 1fr;
   }
 
@@ -8735,33 +8678,12 @@ body.craft-app-ui #app .launchpad-link {
   </style>
   <meta name="theme-color" content="#F5FAFF">
   <link rel="manifest" href="/manifest.webmanifest">
-  <script type="module" crossorigin src="/assets/app-B29JxGZs.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/app-BjwioCSw.css">
+  <script type="module" crossorigin src="/assets/app-78SCmTMM.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/app-BdPRDpn5.css">
 </head>
 <body>
   <div id="craft-video-splash" hidden aria-hidden="true">
     <video muted playsinline preload="metadata" src="/craft-splash.mp4"></video>
-  </div>
-  <div class="app-background-emblem" aria-hidden="true">
-    <div class="app-background-emblem-mark">
-      <span class="app-background-emblem-ring" style="transform:rotateY(0deg)"></span>
-      <span class="app-background-emblem-ring" style="transform:rotateY(20deg)"></span>
-      <span class="app-background-emblem-ring" style="transform:rotateY(40deg)"></span>
-      <span class="app-background-emblem-ring" style="transform:rotateY(60deg)"></span>
-      <span class="app-background-emblem-ring" style="transform:rotateY(80deg)"></span>
-      <span class="app-background-emblem-ring" style="transform:rotateY(100deg)"></span>
-      <span class="app-background-emblem-ring" style="transform:rotateY(120deg)"></span>
-      <span class="app-background-emblem-ring" style="transform:rotateY(140deg)"></span>
-      <span class="app-background-emblem-ring" style="transform:rotateY(160deg)"></span>
-      <span class="app-background-emblem-core"></span>
-      <span class="app-background-emblem-center"></span>
-    </div>
-    <span class="app-background-emblem-glow"></span>
-  </div>
-  <div class="app-screen-background" aria-hidden="true">
-    <img class="app-screen-background-image" data-app-screen-background-current alt="">
-    <img class="app-screen-background-image" data-app-screen-background-next alt="">
-    <div class="app-screen-fade" aria-hidden="true"></div>
   </div>
   <div id="app"></div>
   <script>
@@ -10257,12 +10179,13 @@ const StoreRenderers = {
           <form id="web-newsletter-signup">
             <label class="sr-only" for="web-newsletter-email">Email address</label>
             <input id="web-newsletter-email" name="email" type="email" autocomplete="email" placeholder="Your email address" required>
+            <label class="store-newsletter-consent"><input name="consent" type="checkbox" required> I agree to receive occasional email updates. I can unsubscribe at any time.</label>
             <button type="submit">Subscribe</button>
             <button type="button" data-enable-notifications>Enable product notifications</button>
             <button type="button" data-disable-notifications>Turn off notifications</button>
             <span role="status" aria-live="polite"></span>
           </form>
-          <small>Preview mode: signups are stored on this device and do not sync to the shop owner yet.</small>
+          <small>We’ll email you a confirmation link. Your subscription starts only after you confirm.</small>
         </section>
       </main>
       ${this.renderFooter()}
@@ -11498,6 +11421,13 @@ const StudioRenderers = {
     </details>`;
   },
 
+  analyticsDays() {
+    const stored = window.BusinessLens?.readFilters?.()?.analyticsDays;
+    if (stored == null || String(stored).trim() === "") return 30;
+    const days = Number(stored);
+    return Number.isFinite(days) ? Math.min(365, Math.max(1, Math.trunc(days))) : 30;
+  },
+
   renderWorkspaceLoading(label) {
     const accessibleLabel = AppUtils.escapeHTML(`Loading ${label}`);
     return `<div class="workspace-loading-skeleton" role="status" aria-label="${accessibleLabel}" aria-busy="true">
@@ -11726,6 +11656,10 @@ const StudioRenderers = {
   renderWebStudioWorkspace(path) {
     const sections = this.webStudioNavigation();
     const page = this.webStudioPage(path);
+    const showAnalyticsFilter = [
+      "/account/web/studio/dashboard/visits",
+      "/account/web/studio/dashboard/traffic"
+    ].includes(path);
     const cachedSnapshot = this.getCachedMainShopSnapshot();
     const initialContent = cachedSnapshot
       ? this.renderMainShopContent(path, cachedSnapshot)
@@ -11736,8 +11670,12 @@ const StudioRenderers = {
         <header class="studio-workspace-heading">
           <a class="studio-workspace-back" href="/" data-route="/" data-home-screen aria-label="Back to Craft home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg></a>
           <h1 class="studio-workspace-tab-title">${AppUtils.escapeHTML(page.title)}</h1>
-          ${this.renderWorkspaceSidebar(`${page.section.title} screens`, page.section.tabs, page.route)}
+          <div class="studio-workspace-header-actions">
+            ${showAnalyticsFilter ? `<button type="button" class="studio-analytics-filter-toggle" data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"/></svg></button>` : ""}
+            ${this.renderWorkspaceSidebar(`${page.section.title} screens`, page.section.tabs, page.route)}
+          </div>
         </header>
+        ${showAnalyticsFilter ? `<nav id="business-date-filters" class="bl-date-filter" aria-label="Analytics filters" hidden><label><span>Days</span><input class="business-filter" data-filter="analyticsDays" type="number" inputmode="numeric" min="1" max="365" value="${this.analyticsDays()}"></label></nav>` : ""}
         <section id="store-workspace-content" class="store-workspace-content studio-workspace-section" aria-live="polite" style="min-height:180px;padding-top:10px;">
           ${initialContent}
         </section>
@@ -12185,14 +12123,22 @@ const StudioRenderers = {
         (a, b) => String(b.created_at).localeCompare(String(a.created_at))),
       ...(snapshot.remoteVisits || []).filter(visit => AppController.isStorefrontVisitPath(visit.path))
     ];
+    const visitAnalyticsPage = ["/account/main-shop/visits", "/account/main-shop/traffic"].includes(path);
+    const analyticsCutoff = Date.now() - this.analyticsDays() * 86400000;
+    const analyticsVisits = visitAnalyticsPage
+      ? webVisits.filter(visit => {
+        const time = new Date(visit.created_at).getTime();
+        return Number.isFinite(time) && time >= analyticsCutoff;
+      })
+      : webVisits;
     const cloudflareRecentVisits = snapshot.remoteAnalytics?.recent_visits || [];
-    const storefrontVisitCount = snapshot.remoteAnalytics ? Number(snapshot.remoteAnalytics.visits) || 0 : webVisits.length;
+    const storefrontVisitCount = snapshot.remoteAnalytics ? Number(snapshot.remoteAnalytics.visits) || 0 : analyticsVisits.length;
     const storefrontUniqueCount = snapshot.remoteAnalytics
       ? Number(snapshot.remoteAnalytics.unique_visitors) || 0
-      : new Set(webVisits.map(visit => visit.visitor_id)).size;
+      : new Set(analyticsVisits.map(visit => visit.visitor_id)).size;
     const recentVisitRows = snapshot.remoteAnalytics
-      ? cloudflareRecentVisits.slice(0, 5).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")} · Published storefront</span></div><span>${AppUtils.escapeHTML(visit.created_at || "")}</span></article>`).join("")
-      : webVisits.slice(0, 5).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")} · Local storefront preview</span></div><span>${AppUtils.escapeHTML(visit.created_at || "")}</span></article>`).join("");
+      ? cloudflareRecentVisits.slice(0, 5).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")}</span></div><span>${AppUtils.escapeHTML(visit.created_at || "")}</span></article>`).join("")
+      : webVisits.slice(0, 5).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")}</span></div><span>${AppUtils.escapeHTML(visit.created_at || "")}</span></article>`).join("");
     const webEvents = [
       ...SQLiteEngine.select("web_events", event => event.tenant_id === activeTenant.id, (a, b) => String(a.created_at).localeCompare(String(b.created_at))),
       ...(snapshot.remoteEvents || [])
@@ -12218,7 +12164,9 @@ const StudioRenderers = {
     const revenueIn = (from) => salesIn(from).reduce((sum, sale) => sum + sale.total, 0);
     const visitsIn = (from) => webVisits.filter(visit => new Date(visit.created_at).getTime() >= from);
     const uniqueIn = (from) => new Set(visitsIn(from).map(visit => visit.visitor_id)).size;
-    const metric = (label, value, note = "") => `<article class="studio-data-card"><span>${label}</span><strong>${value}</strong>${note ? `<small>${note}</small>` : ""}</article>`;
+    const metric = (label, value, note = "", route = "") => route
+      ? `<a class="studio-data-card studio-data-card-link" href="${route}" data-route="${route}"><span>${label}</span><strong>${value}</strong>${note ? `<small>${note}</small>` : ""}</a>`
+      : `<article class="studio-data-card"><span>${label}</span><strong>${value}</strong>${note ? `<small>${note}</small>` : ""}</article>`;
     const orderRows = orders => orders.map(order => {
       const amount = Number(order.total) || 0;
       const status = String(order.status || "awaiting payment").replaceAll("_", " ");
@@ -12292,7 +12240,7 @@ const StudioRenderers = {
         const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
         return `<section class="studio-workspace-section">
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders</h2><button type="button" class="btn-secondary" data-business-online-orders-load>Load online orders</button></div>
-            <p class="studio-panel-note" data-online-orders-status>Orders and Paystack payment status are stored privately for this shop.</p>
+            <p class="studio-panel-note" data-online-orders-status>Orders and payment status are stored privately for this shop.</p>
             ${orderRows(orders)}${remoteOrderRows}</article>
         </section>`;
       }
@@ -12327,9 +12275,18 @@ const StudioRenderers = {
       if (page.route === "/account/web/studio/crm/notifications") {
         return `<section class="studio-workspace-section"><article class="studio-panel">
           <span class="studio-workspace-kicker">CUSTOMER NOTIFICATIONS</span><h2>Website notifications</h2>
-          <p class="studio-panel-note">Customers choose whether to receive browser notifications. Push delivery requires an active notification service and customer opt-in.</p>
+          <p class="studio-panel-note">Customers choose whether to receive browser notifications. Push delivery requires an active notification service and customer opt-in. Broadcasts are sent immediately to every opted-in device.</p>
           <div class="studio-dashboard-grid"><button type="button" class="btn-primary" data-enable-notifications>Enable notifications on this device</button><button type="button" class="btn-secondary" data-disable-notifications>Turn off notifications on this device</button></div>
           <p class="bl-push-status" role="status" aria-live="polite">Notification availability depends on browser support and customer permission.</p>
+          <form class="store-workspace-form" data-business-broadcast>
+            <h2>Send a push notification</h2>
+            <label>Title<input name="title" maxlength="80" required></label>
+            <label>Message<textarea name="body" rows="3" maxlength="240" required></textarea></label>
+            <label>Open this page when tapped<input name="url" value="/web" maxlength="300" required></label>
+            <p class="studio-panel-note">This sends now to all browsers that opted in to this shop’s notifications.</p>
+            <button type="submit" class="btn-primary">Send notification</button>
+            <p role="status" aria-live="polite"></p>
+          </form>
         </article></section>`;
       }
       let content = this.renderMainShopContent(page.contentPath, snapshot, true);
@@ -12381,16 +12338,23 @@ const StudioRenderers = {
     }
     const visitPages = new Map();
     const visitDevices = new Map();
-    webVisits.forEach(visit => {
+    analyticsVisits.forEach(visit => {
       visitPages.set(visit.path, (visitPages.get(visit.path) || 0) + 1);
       visitDevices.set(visit.device, (visitDevices.get(visit.device) || 0) + 1);
     });
     const pageRows = snapshot.remoteAnalytics
-      ? (snapshot.remoteAnalytics.pages || []).map(page => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(page.path || "/")}</strong><span>Published storefront · last ${Number(snapshot.remoteAnalytics.days) || 30} days</span></div><strong>${Number(page.visits) || 0}</strong></article>`).join("")
-      : [...visitPages.entries()].sort((a, b) => b[1] - a[1]).map(([pagePath, count]) => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(pagePath || "/")}</strong><span>Local storefront preview page views</span></div><strong>${count}</strong></article>`).join("");
+      ? (snapshot.remoteAnalytics.pages || []).map(page => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(page.path || "/")}</strong><strong>${Number(page.visits) || 0}</strong></article>`).join("")
+      : [...visitPages.entries()].sort((a, b) => b[1] - a[1]).map(([pagePath, count]) => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(pagePath || "/")}</strong><strong>${count}</strong></article>`).join("");
     const deviceRows = snapshot.remoteAnalytics
       ? (snapshot.remoteAnalytics.devices || []).map(item => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(item.device || "Unknown")}</strong><strong>${Number(item.visits) || 0}</strong></article>`).join("")
       : [...visitDevices.entries()].map(([device, count]) => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(device || "Unknown")}</strong><strong>${count}</strong></article>`).join("");
+    const locationCard = (title, items, label) => `<article class="studio-location-card"><h3>${title}</h3>${items.length
+      ? items.map(item => `<div class="studio-location-row"><strong>${AppUtils.escapeHTML(label(item) || "Unknown")}</strong><span>${Number(item.visits) || 0}</span></div>`).join("")
+      : `<p class="store-workspace-empty">No data</p>`}</article>`;
+    const locationGrid = snapshot.remoteAnalytics
+      ? `<div class="studio-location-grid">${locationCard("Countries", snapshot.remoteAnalytics.countries || [], item => item.country)}${locationCard("Regions", snapshot.remoteAnalytics.regions || [], item => [item.region, item.country].filter(Boolean).join(", "))}</div>`
+      : "";
+    const analyticsLoadCard = `<article class="studio-panel studio-analytics-load"><div class="studio-panel-heading"><h2>Analytics</h2><button type="button" class="btn-secondary" data-business-cloud-analytics>Load</button></div><p class="studio-panel-note" data-analytics-status role="status" ${snapshot.remoteAnalyticsError ? "" : "hidden"}>${snapshot.remoteAnalyticsError ? "Could not load analytics." : ""}</p></article>`;
     const openCheckouts = new Map();
     const productActivity = new Map();
     webEvents.forEach(event => {
@@ -12419,19 +12383,17 @@ const StudioRenderers = {
       paidSales.forEach(sale => sale.lineItems.forEach(item => movingProducts.set(item.name, (movingProducts.get(item.name) || 0) + item.quantity)));
       const moving = [...movingProducts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
       const awaiting = SQLiteEngine.select("orders", order => !["paid", "completed", "refunded", "cancelled", "canceled", "failed"].includes(String(order.status || "").toLowerCase()));
-      const recentVisitEmpty = snapshot.remoteAnalytics
-        ? `<p class="store-workspace-empty">No published storefront visits in the last ${Number(snapshot.remoteAnalytics.days) || 30} days.</p>`
-        : `<p class="store-workspace-empty">No local storefront preview visits recorded yet.</p>`;
+      const recentVisitEmpty = `<p class="store-workspace-empty">No visits yet.</p>`;
       return `
         <section class="studio-workspace-section">
-          <div class="studio-metric-grid">${metric("Gross web revenue", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency), "From website orders")}${metric("Customer visits", storefrontVisitCount, snapshot.remoteAnalytics ? `${storefrontUniqueCount} anonymous browsers · last ${Number(snapshot.remoteAnalytics.days) || 30} days` : `${storefrontUniqueCount} unique browsers recorded locally`)}${metric("Awaiting payments", awaiting.length, "Orders not marked paid")}</div>
+          <div class="studio-metric-grid studio-metric-grid-featured">${metric("Gross web revenue", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency), "", "/account/web/studio/store/orders")}${metric("Customer visits", storefrontVisitCount, "", "/account/web/studio/dashboard/visits")}${metric("Awaiting payments", awaiting.length, "", "/account/web/studio/store/orders")}</div>
           <div class="studio-dashboard-grid">
             <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">RECENT ACTIVITY</span><h2>Storefront visit history</h2></div><div><button type="button" class="btn-secondary" data-business-cloud-analytics>Refresh</button><a href="/account/main-shop/visits" data-route="/account/main-shop/visits">View all</a></div></div>
               <p class="studio-panel-note" data-business-cloud-analytics-status role="status">${snapshot.remoteAnalyticsError
-                ? `Live storefront visits could not be loaded: ${AppUtils.escapeHTML(snapshot.remoteAnalyticsError)}. Showing local preview records.`
+                ? "Could not load visits."
                 : snapshot.remoteAnalytics
-                  ? "Showing recent published-site visits from Cloudflare."
-                  : "Published-site visits load from Cloudflare; local preview history is shown until analytics are loaded."}</p>
+                  ? "Recent visits."
+                  : "Analytics not loaded."}</p>
               ${recentVisitRows || recentVisitEmpty}
             </article>
             <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">WEB SHOP</span><h2>What’s moving</h2></div><a href="/account/main-shop/performance" data-route="/account/main-shop/performance">Performance</a></div>
@@ -12443,33 +12405,25 @@ const StudioRenderers = {
     if (path === "/account/main-shop/visits") {
       const visitFrequency = snapshot.remoteAnalytics
         ? (storefrontVisitCount / Math.max(1, storefrontUniqueCount)).toFixed(1)
-        : webVisits.length ? (webVisits.length / Math.max(1, new Set(webVisits.map(visit => visit.session_id)).size)).toFixed(1) : "—";
+        : analyticsVisits.length ? (analyticsVisits.length / Math.max(1, new Set(analyticsVisits.map(visit => visit.session_id)).size)).toFixed(1) : "—";
       return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid">${metric(snapshot.remoteAnalytics ? "Published-site visits" : "Local visits", storefrontVisitCount, snapshot.remoteAnalytics ? `Last ${Number(snapshot.remoteAnalytics.days) || 30} days` : "This browser only")}${metric("Unique visitors", storefrontUniqueCount, snapshot.remoteAnalytics ? "Anonymous browser IDs" : "Browser identifiers; not cross-device")}${metric(snapshot.remoteAnalytics ? "Visits per browser" : "Pages per visit", visitFrequency, snapshot.remoteAnalytics ? "Aggregate Cloudflare count" : "Observed navigation")}</div>
-        <article class="studio-panel"><div class="studio-panel-heading"><div><h2>Cloudflare shared analytics</h2><p class="studio-panel-note">${snapshot.remoteAnalytics
-          ? `${Number(snapshot.remoteAnalytics.visits || 0)} visits · ${Number(snapshot.remoteAnalytics.unique_visitors || 0)} anonymous browsers · last 30 days`
-          : "Load tenant-wide visit and geography summaries from Cloudflare D1."}</p></div><button type="button" class="btn-secondary" data-business-cloud-analytics>Load shared analytics</button></div>
-          ${snapshot.remoteAnalyticsError ? `<p class="studio-panel-note" role="status">Analytics could not be loaded: ${AppUtils.escapeHTML(snapshot.remoteAnalyticsError)}</p>` : ""}
-          ${snapshot.remoteAnalytics ? `<p class="studio-panel-note">${AppUtils.escapeHTML(snapshot.remoteAnalytics.location_note || "Cloudflare region metadata; visitor IP addresses are not stored.")}</p>
-            <div class="studio-dashboard-grid"><div><h3>Countries</h3>${(snapshot.remoteAnalytics.countries || []).map(item => `<p>${AppUtils.escapeHTML(item.country)} · ${Number(item.visits)} visits</p>`).join("") || "<p>No location data yet.</p>"}</div>
-            <div><h3>Regions</h3>${(snapshot.remoteAnalytics.regions || []).map(item => `<p>${AppUtils.escapeHTML(item.region)} ${AppUtils.escapeHTML(item.country)} · ${Number(item.visits)} visits</p>`).join("") || "<p>No region data yet.</p>"}</div></div>` : ""}</article>
-        <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">VISIT HISTORY</span><h2>${snapshot.remoteAnalytics ? "Recent published-site visits" : "Local storefront preview history"}</h2></div></div>
-          <p class="studio-panel-note">${snapshot.remoteAnalytics ? "Recent published-site page views from Cloudflare. Visitor IDs and IP addresses are not shown." : "These preview records are stored in this browser; published-site traffic loads from Cloudflare analytics."}</p>
-          ${snapshot.remoteAnalytics ? recentVisitRows || `<p class="store-workspace-empty">No published storefront visits in the last ${Number(snapshot.remoteAnalytics.days) || 30} days.</p>` : webVisits.slice(0, 100).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")} · ${AppUtils.escapeHTML(visit.timezone || "Time zone unavailable")}</span></div><span>${AppUtils.escapeHTML(visit.created_at)}</span></article>`).join("") || `<p class="store-workspace-empty">No local storefront preview visits recorded yet.</p>`}
+        <div class="studio-metric-grid studio-metric-grid-featured">${metric("Visits", storefrontVisitCount, "", "/account/web/studio/dashboard/traffic")}${metric("Unique visitors", storefrontUniqueCount, "", "/account/web/studio/dashboard/traffic")}${metric(snapshot.remoteAnalytics ? "Visits per visitor" : "Pages per visit", visitFrequency, "", "/account/web/studio/dashboard/traffic")}</div>
+        ${analyticsLoadCard}
+        ${locationGrid}
+        <article class="studio-panel"><div class="studio-panel-heading"><h2>Visit history</h2></div>
+          ${snapshot.remoteAnalytics ? recentVisitRows || `<p class="store-workspace-empty">No visits yet.</p>` : analyticsVisits.slice(0, 100).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")}</span></div><span>${AppUtils.escapeHTML(visit.created_at)}</span></article>`).join("") || `<p class="store-workspace-empty">No visits yet.</p>`}
         </article></section>`;
     }
     if (path === "/account/main-shop/traffic") {
       const productPageViews = snapshot.remoteAnalytics
         ? (snapshot.remoteAnalytics.product_views || []).reduce((total, item) => total + (Number(item.views) || 0), 0)
-        : webVisits.filter(visit => visit.path.startsWith("/product/")).length;
+        : analyticsVisits.filter(visit => visit.path.startsWith("/product/")).length;
       return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid">${metric("Total visits", storefrontVisitCount, snapshot.remoteAnalytics ? `Published site · last ${Number(snapshot.remoteAnalytics.days) || 30} days` : "Local browser records")}${metric("Unique visitors", storefrontUniqueCount)}${metric("Product page views", productPageViews)}</div>
-        <article class="studio-panel"><div class="studio-panel-heading"><h2>Cloudflare shared geography</h2><button type="button" class="btn-secondary" data-business-cloud-analytics>Load shared analytics</button></div>
-          ${snapshot.remoteAnalytics ? `<p>${Number(snapshot.remoteAnalytics.visits || 0)} visits · ${Number(snapshot.remoteAnalytics.unique_visitors || 0)} unique browsers · ${AppUtils.escapeHTML(snapshot.remoteAnalytics.location_note || "")}</p>
-            ${(snapshot.remoteAnalytics.countries || []).map(item => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(item.country)}</strong><span>${Number(item.visits)} visits</span></article>`).join("") || "<p>No location data yet.</p>"}` : "<p>Load aggregated country and region data from Cloudflare. Visitor IP addresses are not stored.</p>"}</article>
-        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Most visited pages</h2></div>${pageRows || `<p class="store-workspace-empty">${snapshot.remoteAnalytics ? "No published storefront page visits in this period." : "Page traffic appears after storefront visits are recorded."}</p>`}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Devices used</h2></div>${deviceRows || `<p class="store-workspace-empty">Device breakdown is not available yet.</p>`}</article></div>
-        <article class="studio-panel"><div class="studio-panel-heading"><h2>Traffic quality</h2></div><p class="studio-panel-note">Visits and device types are counted from this browser only. Global visitor totals and geographic locations need a shared analytics endpoint; no guessed or sample traffic is shown.</p></article>
+        <div class="studio-metric-grid studio-metric-grid-featured">${metric("Total visits", storefrontVisitCount, "", "/account/web/studio/dashboard/visits")}${metric("Unique visitors", storefrontUniqueCount, "", "/account/web/studio/dashboard/visits")}${metric("Product page views", productPageViews, "", "/account/web/studio/dashboard/product-intelligence")}</div>
+        ${analyticsLoadCard}
+        ${locationGrid}
+        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Most visited pages</h2></div>${pageRows || `<p class="store-workspace-empty">No pages yet.</p>`}</article>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Devices</h2></div>${deviceRows || `<p class="store-workspace-empty">No devices yet.</p>`}</article></div>
       </section>`;
     }
     if (path === "/account/main-shop/performance" || path === "/store/revenue") {
@@ -12478,7 +12432,7 @@ const StudioRenderers = {
       const pendingOrders = SQLiteEngine.select("orders", order => !["paid", "completed", "refunded", "cancelled", "canceled", "failed"].includes(String(order.status || "").toLowerCase()));
       const cart = SQLiteEngine.getCart();
       return `<section class="studio-workspace-section">
-        <div class="studio-period-grid">${metric("Today", `${uniqueIn(dayStart)} visits · ${salesIn(dayStart).length} orders · ${this.formatMainShopMoney(revenueIn(dayStart), currency)}`)}${metric("This week", `${uniqueIn(weekStart)} visits · ${weekSales.length} orders · ${this.formatMainShopMoney(revenueIn(weekStart), currency)}`)}${metric("This month", `${uniqueIn(monthStart)} visits · ${monthSales.length} orders · ${this.formatMainShopMoney(revenueIn(monthStart), currency)}`)}</div>
+        <div class="studio-period-grid studio-metric-grid-featured">${metric("Today", `${uniqueIn(dayStart)} visits · ${salesIn(dayStart).length} orders · ${this.formatMainShopMoney(revenueIn(dayStart), currency)}`, "", "/account/web/studio/store/orders")}${metric("This week", `${uniqueIn(weekStart)} visits · ${weekSales.length} orders · ${this.formatMainShopMoney(revenueIn(weekStart), currency)}`, "", "/account/web/studio/store/orders")}${metric("This month", `${uniqueIn(monthStart)} visits · ${monthSales.length} orders · ${this.formatMainShopMoney(revenueIn(monthStart), currency)}`, "", "/account/web/studio/store/orders")}</div>
         <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Paid conversion</h2></div>${metric("Paid web orders", paidSales.length)}${metric("Web order value", this.formatMainShopMoney(paidSales.reduce((sum, sale) => sum + sale.total, 0), currency))}<p class="studio-panel-note">Conversion rate is not calculated until visits and paid orders can be joined using shared visitor attribution.</p></article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders awaiting payment</h2><a href="/store/orders" data-route="/store/orders">Open orders</a></div>${orderRows(pendingOrders)}</article></div>
         <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Checkouts without an order</h2></div><p class="studio-panel-note">Browser-local sessions that entered checkout and have no later order record.</p>${abandonedRows || `<p class="store-workspace-empty">No unfinished checkout sessions recorded.</p>`}</article>
@@ -12504,7 +12458,7 @@ const StudioRenderers = {
       </section>`;
     }
     if (path === "/account/customers" || path === "/account/customers/") {
-      return `<section class="studio-workspace-section"><div class="studio-metric-grid">${metric("Identified web customers", customers.length)}${metric("Repeat customers", customers.filter(customer => customer.orders > 1).length)}${metric("Newsletter subscribers", newsletterSubscribers.length)}</div>
+      return `<section class="studio-workspace-section"><div class="studio-metric-grid studio-metric-grid-featured">${metric("Identified web customers", customers.length, "", "/account/web/studio/crm/repeat-customers")}${metric("Repeat customers", customers.filter(customer => customer.orders > 1).length, "", "/account/web/studio/crm/repeat-customers")}${metric("Newsletter subscribers", newsletterSubscribers.length, "", "/account/web/studio/crm/newsletter")}</div>
         <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">CUSTOMER RELATIONSHIPS</span><h2>Returning customers</h2></div><a href="/account/customers/loyalty" data-route="/account/customers/loyalty">Manage points</a></div>
         ${customerRows || `<p class="store-workspace-empty">Customers will appear after they place an order with an email address or phone number.</p>`}</article></section>`;
     }
@@ -12512,7 +12466,7 @@ const StudioRenderers = {
       const pointsPerVisit = Number(this.getWorkspaceSetting("points_per_visit", 1));
       const pointsPerCurrency = Number(this.getWorkspaceSetting("points_per_currency", 0));
       return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid">${metric("Points per visit", pointsPerVisit)}${metric("Points per " + AppUtils.escapeHTML(currency) + " spent", pointsPerCurrency)}${metric("Customers with points", customers.filter(customer => customer.points > 0).length)}</div>
+        <div class="studio-metric-grid studio-metric-grid-featured">${metric("Points per visit", pointsPerVisit)}${metric("Points per " + AppUtils.escapeHTML(currency) + " spent", pointsPerCurrency)}${metric("Customers with points", customers.filter(customer => customer.points > 0).length)}</div>
         <form class="store-workspace-form" data-studio-form="loyalty-settings"><h2>Points rules</h2><p>Set points per verified visit and per whole ${AppUtils.escapeHTML(currency)} spent. Staff award them below after confirming the visit or paid purchase.</p><div class="studio-form-grid"><label>Points per verified visit<input name="pointsPerVisit" type="number" min="0" step="1" value="${pointsPerVisit}" required></label><label>Points per ${AppUtils.escapeHTML(currency)} spent<input name="pointsPerCurrency" type="number" min="0" step="1" value="${pointsPerCurrency}" required></label></div><button type="submit" class="btn-primary">Save points rules</button><p role="status"></p></form>
         <form class="store-workspace-form" data-studio-form="points-adjust"><h2>Record verified activity or adjust points</h2><label>Customer<select name="customerKey" required><option value="">Choose a customer</option>${customers.map(customer => `<option value="${AppUtils.escapeHTML(customer.key)}">${AppUtils.escapeHTML(customer.name)} · ${customer.points} points</option>`).join("")}</select></label><div class="studio-form-grid"><label>Verified paid purchase amount (${AppUtils.escapeHTML(currency)})<input name="purchaseAmount" type="number" min="0" step="0.01" placeholder="Optional"></label><label>Manual adjustment (+/- points)<input name="delta" type="number" step="1" placeholder="Optional"></label></div><label class="studio-check-label"><input name="verifiedVisit" type="checkbox" value="yes"> Add points for one verified visit</label><label>Reason for manual adjustment<input name="reason" maxlength="140" placeholder="Required only for a manual adjustment"></label><button type="submit" class="btn-primary">Record points</button><p role="status"></p></form>
         <article class="studio-panel"><div class="studio-panel-heading"><h2>Points balances</h2></div>${customerRows || `<p class="store-workspace-empty">No identified customers yet.</p>`}</article>
@@ -12562,19 +12516,19 @@ const StudioRenderers = {
       const storeCurrency = String(SQLiteEngine.getStore().currency || "KES").toUpperCase();
       const nativeCurrencySettings = window.Capacitor?.isNativePlatform?.() === true
         ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Website currency</h2><span>${AppUtils.escapeHTML(activeTenant.name || activeTenant.hostname)}</span></div>
-          <p class="studio-panel-note">Choose the currency used throughout this website, including product listings, cart, and checkout. This changes the currency label only; it does not convert product prices. Paystack checkout currently accepts KES only. After changing currency, review product prices and publish the catalog from Web Studio.</p>
+          <p class="studio-panel-note">Choose the currency for this website. Changing it does not convert prices. Online payments require KES.</p>
           <form class="store-workspace-form" data-app-website-currency><label>Website currency<select name="currency" required>
             ${[
-              ["KES", "Kenyan shilling (KES) · Paystack checkout"],
-              ["USD", "US dollar (USD) · Paystack checkout unavailable"],
-              ["EUR", "Euro (EUR) · Paystack checkout unavailable"],
-              ["GBP", "British pound (GBP) · Paystack checkout unavailable"],
-              ["TZS", "Tanzanian shilling (TZS) · Paystack checkout unavailable"],
-              ["UGX", "Ugandan shilling (UGX) · Paystack checkout unavailable"],
-              ["RWF", "Rwandan franc (RWF) · Paystack checkout unavailable"],
-              ["NGN", "Nigerian naira (NGN) · Paystack checkout unavailable"],
-              ["GHS", "Ghanaian cedi (GHS) · Paystack checkout unavailable"],
-              ["ZAR", "South African rand (ZAR) · Paystack checkout unavailable"]
+              ["KES", "Kenyan shilling (KES)"],
+              ["USD", "US dollar (USD)"],
+              ["EUR", "Euro (EUR)"],
+              ["GBP", "British pound (GBP)"],
+              ["TZS", "Tanzanian shilling (TZS)"],
+              ["UGX", "Ugandan shilling (UGX)"],
+              ["RWF", "Rwandan franc (RWF)"],
+              ["NGN", "Nigerian naira (NGN)"],
+              ["GHS", "Ghanaian cedi (GHS)"],
+              ["ZAR", "South African rand (ZAR)"]
             ].map(([code, label]) => `<option value="${code}" ${storeCurrency === code ? "selected" : ""}>${label}</option>`).join("")}
             ${!["KES", "USD", "EUR", "GBP", "TZS", "UGX", "RWF", "NGN", "GHS", "ZAR"].includes(storeCurrency)
               ? `<option value="${AppUtils.escapeHTML(storeCurrency)}" selected>${AppUtils.escapeHTML(storeCurrency)}</option>`
@@ -12582,27 +12536,27 @@ const StudioRenderers = {
           </select></label><button type="submit" class="btn-primary">Save website currency</button><p role="status" aria-live="polite"></p></form>
         </article>`
         : "";
-      return `<section class="studio-workspace-section"><article class="studio-panel"><div class="studio-panel-heading"><h2>App-account Paystack payments</h2><span data-paystack-status>Checking account connection…</span></div>
-        <p class="studio-panel-note">Your app account owns your websites. Connect or change Paystack here once; the saved default applies to checkout across all websites registered to this account. Each website keeps its own catalog, settings, orders, and analytics.</p>
+      return `<section class="studio-workspace-section"><article class="studio-panel"><div class="studio-panel-heading"><h2>Payment account</h2><span data-paystack-status>Checking account…</span></div>
+        <p class="studio-panel-note">Connect or change the account used for payments across your websites.</p>
         ${nativeCurrencySettings}
-        <p class="studio-panel-note">Connect the shop’s settlement bank account through Paystack. Your business and bank details are securely forwarded to Paystack for verification and are not retained by Craft. Craft stores only the Paystack subaccount reference and masked account display details.</p>
+        <p class="studio-panel-note">Your bank details are securely processed for verification. This app saves only a reference and masked account details.</p>
         <form class="store-workspace-form" data-paystack-setup autocomplete="off"><div class="studio-form-grid">
           <label>Business name<input name="business_name" maxlength="120" autocomplete="organization" required></label>
-          <label>Bank<select name="settlement_bank" required><option value="">Loading supported banks…</option></select></label><button type="button" class="btn-secondary" data-paystack-retry hidden>Retry connection</button>
+          <label>Bank<select name="settlement_bank" required><option value="">Loading banks…</option></select></label><button type="button" class="btn-secondary" data-paystack-retry hidden>Retry</button>
           <label>Bank account number<input name="account_number" inputmode="numeric" autocomplete="off" minlength="5" maxlength="20" pattern="[0-9]{5,20}" required></label>
           <label>Account contact name<input name="primary_contact_name" maxlength="120" autocomplete="name" required></label>
           <label>Contact email<input name="primary_contact_email" type="email" maxlength="240" autocomplete="email" required></label>
           <label>Contact phone<input name="primary_contact_phone" type="tel" maxlength="40" autocomplete="tel" required></label>
         </div><button type="submit" class="btn-primary" data-paystack-submit>Connect bank account</button><p role="status" data-paystack-form-status></p></form>
-        <form class="store-workspace-form" data-paystack-reuse hidden style="display:none;"><h3>App-wide Paystack account</h3>
-          <p class="studio-panel-note">Choose the account-wide default. Every website registered to your app account will use this account at checkout. Changing it here switches all those websites; it does not merge their catalogs or order data.</p>
-          <label>Connected shop account<select name="source_tenant_id" required><option value="">Loading your connected shops…</option></select></label>
-          <label style="display:flex;align-items:flex-start;gap:8px;"><input type="checkbox" name="confirm_reuse" required><span>I choose this connected Paystack settlement account as the default for my websites. Payments will settle to this account.</span></label>
-          <button type="submit" class="btn-secondary" data-paystack-reuse-submit>Use for my websites</button><p role="status" data-paystack-reuse-status></p>
+        <form class="store-workspace-form" data-paystack-reuse hidden style="display:none;"><h3>Use an existing account</h3>
+          <p class="studio-panel-note">Choose an account already connected to one of your websites.</p>
+          <label>Connected account<select name="source_tenant_id" required><option value="">Loading accounts…</option></select></label>
+          <label style="display:flex;align-items:flex-start;gap:8px;"><input type="checkbox" name="confirm_reuse" required><span>Use this as the default payment account for my websites.</span></label>
+          <button type="submit" class="btn-secondary" data-paystack-reuse-submit>Use this account</button><p role="status" data-paystack-reuse-status></p>
         </form>
-        </article><p class="studio-panel-note">Manage any separate manual payment instructions below. Never enter a PIN, CVV, or full card number.</p>
-        <form class="store-workspace-form" data-studio-form="payment-add"><h2>Add payment method</h2><div class="studio-form-grid"><label>Type<select name="type" required><option value="card">Card instructions</option><option value="paybill">Paybill</option><option value="till">Till number</option><option value="pochi">Pochi la Biashara</option><option value="crypto">Crypto wallet</option></select></label><label>Display name<input name="label" maxlength="100" required></label><label>Account / till / paybill number<input name="account" maxlength="120"></label><label>Card brand / last four only<input name="cardHint" maxlength="40" placeholder="Visa · 1234"></label><label class="studio-payment-address">Wallet address<input name="address" maxlength="240"></label><label class="studio-payment-image">Wallet QR image<input name="image" type="file" accept="image/*"></label></div><button type="submit" class="btn-primary">Save payment method</button><p role="status"></p></form>
-        <article class="studio-panel"><div class="studio-panel-heading"><h2>Saved payment methods</h2></div>${paymentMethods.map(method => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(method.label)}</strong><span>${AppUtils.escapeHTML(method.type)} · ${AppUtils.escapeHTML(method.account || method.cardHint || method.address || "Details saved")}</span>${method.image ? `<img class="studio-payment-qr" src="${AppUtils.escapeHTML(method.image)}" alt="QR for ${AppUtils.escapeHTML(method.label)}">` : ""}</div><button type="button" class="btn-secondary" data-remove-payment="${method.id}">Remove</button></article>`).join("") || `<p class="store-workspace-empty">No payment methods saved yet.</p>`}</article></section>`;
+        </article><p class="studio-panel-note">Add a manual payment option if needed. Never enter a PIN, CVV, or full card number.</p>
+        <form class="store-workspace-form" data-studio-form="payment-add"><h2>Add payment account</h2><div class="studio-form-grid"><label>Type<select name="type" required><option value="card">Card instructions</option><option value="paybill">Paybill</option><option value="till">Till number</option><option value="pochi">Pochi la Biashara</option><option value="crypto">Crypto wallet</option></select></label><label>Display name<input name="label" maxlength="100" required></label><label>Account / till / paybill number<input name="account" maxlength="120"></label><label>Card brand / last four only<input name="cardHint" maxlength="40" placeholder="Visa · 1234"></label><label class="studio-payment-address">Wallet address<input name="address" maxlength="240"></label><label class="studio-payment-image">Wallet QR image<input name="image" type="file" accept="image/*"></label></div><button type="submit" class="btn-primary">Save account</button><p role="status"></p></form>
+        <article class="studio-panel"><div class="studio-panel-heading"><h2>Saved accounts</h2></div>${paymentMethods.map(method => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(method.label)}</strong><span>${AppUtils.escapeHTML(method.type)} · ${AppUtils.escapeHTML(method.account || method.cardHint || method.address || "Details saved")}</span>${method.image ? `<img class="studio-payment-qr" src="${AppUtils.escapeHTML(method.image)}" alt="QR for ${AppUtils.escapeHTML(method.label)}">` : ""}</div><button type="button" class="btn-secondary" data-remove-payment="${method.id}">Remove</button></article>`).join("") || `<p class="store-workspace-empty">No accounts saved.</p>`}</article></section>`;
     }
     if (path === "/store/orders" || path === "/store/sales" || path === "/store/payments") {
       const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
@@ -12610,7 +12564,7 @@ const StudioRenderers = {
       return `<section class="studio-workspace-section">
         ${view === "orders" ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Business orders and POS receipts</h2><span>${sales.length} recorded</span></div>${businessOrderRows}</article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Online order management</h2><button type="button" class="btn-secondary" data-business-online-orders-load>Refresh online orders</button></div>
-            <p class="studio-panel-note" data-online-orders-status>${snapshot.remoteOrdersError ? AppUtils.escapeHTML(snapshot.remoteOrdersError) : "Orders and Paystack payment status are stored privately for this shop."}</p>
+            <p class="studio-panel-note" data-online-orders-status>${snapshot.remoteOrdersError ? AppUtils.escapeHTML(snapshot.remoteOrdersError) : "Orders and payment status are stored privately for this shop."}</p>
             ${remoteOrderRows}</article>`
           : view === "sales" ? `<div class="studio-metric-grid">${metric("Order value", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency))}${metric("Paid orders", paidSales.length)}${metric("Unpaid orders", orders.filter(order => !["paid", "completed"].includes(String(order.status || "").toLowerCase())).length)}</div><article class="studio-panel"><div class="studio-panel-heading"><h2>Sales history</h2></div>${orderRows(orders)}</article>`
             : `<article class="studio-panel"><div class="studio-panel-heading"><h2>Payment activity · all channels</h2></div>${paymentActivityRows || `<p class="store-workspace-empty">No payment activity recorded yet.</p>`}</article>`}
@@ -12638,14 +12592,13 @@ const StudioRenderers = {
           : !posSku && !webSku && String(web.name || "").trim().toLowerCase() === String(pos.name || "").trim().toLowerCase();
       }));
       return `
-        <p class="studio-panel-note">Website products are saved in app SQLite, separately from Store/POS inventory. Expand a product and choose <strong>Add to Store/POS</strong> to create its inventory record, or remove it from this website without deleting a separate Store/POS record. Publish to update the live site.</p>
         <div class="studio-inline-actions web-product-actions">
           <button type="button" class="btn-secondary web-product-action-card" id="store-add-product-trigger">Add from Store</button>
           <button type="button" class="btn-primary web-product-action-card" id="store-create-web-product">Add web product</button>
           <a class="btn-secondary web-product-action-card" href="/account/products" data-route="/account/products">Advanced web catalog</a>
           <button type="button" class="btn-secondary web-product-action-card" id="btn-publish-cloudflare">Publish to ${AppUtils.escapeHTML(activeTenant.hostname)}</button>
         </div>
-        <p class="studio-panel-note">New products and categories are saved in this app first. Publish to make your updates visible at ${AppUtils.escapeHTML(activeTenant.hostname)}.</p>
+        <p class="studio-panel-note">Add products, then publish to update your website.</p>
         <div id="product-modal-container"></div>
         ${webProducts.length ? `<div class="store-bulk-actions" data-bulk-removal="products"><label class="store-bulk-select-all"><input type="checkbox" data-bulk-select-all><span>Select all products</span></label><span class="store-bulk-selection-count" data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-product-holds="enable" disabled>Enable holds</button><button type="button" class="btn-secondary" data-bulk-product-holds="disable" disabled>Disable holds</button><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected products</button></div>` : ""}
         <form class="store-workspace-form store-existing-product-form" data-store-web-import hidden>
@@ -12829,7 +12782,7 @@ const StudioRenderers = {
     if (submit) submit.disabled = true;
     const loadSetup = async () => {
       if (retry) retry.disabled = true;
-      if (bankSelect) bankSelect.innerHTML = `<option value="">Loading supported banks…</option>`;
+      if (bankSelect) bankSelect.innerHTML = `<option value="">Loading banks…</option>`;
       const [setupResult, banksResult, defaultResult] = await Promise.allSettled([
         window.EshopInventoryBridge.getPaystackAccount(tenantId),
         window.EshopInventoryBridge.getPaystackBanks(tenantId),
@@ -12844,8 +12797,8 @@ const StudioRenderers = {
         : account.connected
           ? `Connected · ${account.bank_name} ·••${account.account_last4}`
           : defaultAccount
-            ? `App-wide account · ${defaultAccount.bank_name} ·••${defaultAccount.account_last4}`
-          : account.status ? `Paystack account status: ${account.status}` : "Not connected";
+            ? `Default · ${defaultAccount.bank_name} ·••${defaultAccount.account_last4}`
+          : account.status ? `Account status: ${account.status}` : "Not connected";
       if (banks?.length) {
         bankSelect.innerHTML = `<option value="">Choose a bank</option>${banks.map(bank =>
           `<option value="${AppUtils.escapeHTML(bank.code)}">${AppUtils.escapeHTML(bank.name)}</option>`).join("")}`;
@@ -12853,20 +12806,23 @@ const StudioRenderers = {
         bankSelect.innerHTML = `<option value="">Bank list unavailable</option>`;
       }
       if (submit) {
-        submit.textContent = account.configured ? "Update bank account" : "Connect bank account";
+        submit.textContent = account.configured ? "Update account" : "Connect account";
         submit.disabled = setupResult.status !== "fulfilled" || !banks?.length;
       }
       const errors = [
         ...(setupResult.status === "rejected" ? [setupResult.reason] : []),
         ...(banksResult.status === "rejected" ? [banksResult.reason] : []),
         ...(defaultResult.status === "rejected" ? [defaultResult.reason] : []),
-        ...(banksResult.status === "fulfilled" && !banks?.length ? [new Error("Paystack returned no supported banks.")] : [])
+        ...(banksResult.status === "fulfilled" && !banks?.length ? [new Error("No supported banks were returned.")] : [])
       ];
-      if (formStatus) formStatus.textContent = errors.length
-        ? errors.map(error => error instanceof Error ? error.message : "Could not load Paystack setup.").join(" ")
-        : account.connected
-          ? "Bank account connected. Craft retains only the masked account details shown above."
-          : "";
+      if (formStatus) {
+        formStatus.textContent = errors.length
+          ? "Could not load payment setup. Check your connection and retry."
+          : account.connected
+            ? "Account connected."
+            : "";
+        if (errors.length) console.error("Payment account setup could not be loaded.", errors);
+      }
       const loaded = setupResult.status === "fulfilled" && !!banks?.length;
       if (retry) {
         retry.hidden = loaded;
@@ -12880,7 +12836,7 @@ const StudioRenderers = {
     form.addEventListener("submit", async event => {
       event.preventDefault();
       submit.disabled = true;
-      if (formStatus) formStatus.textContent = "Sending your details securely to Paystack…";
+      if (formStatus) formStatus.textContent = "Sending details securely…";
       const values = Object.fromEntries(new FormData(form).entries());
       try {
         const result = await window.EshopInventoryBridge.savePaystackAccount(tenantId, values);
@@ -12897,15 +12853,16 @@ const StudioRenderers = {
             );
             defaultSaved = true;
           } catch (error) {
-            console.error("Paystack was connected, but the app-wide default could not be saved.", error);
+            console.error("Payment account was connected, but the default could not be saved.", error);
           }
         }
         if (formStatus) formStatus.textContent = defaultSaved
-          ? "Paystack connected and saved as your app-wide default. Websites on this app account will use it unless you choose another default."
-          : "Paystack connected for this shop. Choose it below to make it the app-wide default for your websites.";
-        if (submit) submit.textContent = "Update bank account";
+          ? "Account connected and set as the default for your websites."
+          : "Account connected. Choose it below to use it for your websites.";
+        if (submit) submit.textContent = "Update account";
       } catch (error) {
-        if (formStatus) formStatus.textContent = error instanceof Error ? error.message : "Paystack setup failed.";
+        console.error("Payment account setup failed.", error);
+        if (formStatus) formStatus.textContent = "Could not connect account. Check details and retry.";
       } finally {
         submit.disabled = false;
       }
@@ -12920,10 +12877,10 @@ const StudioRenderers = {
     const submit = form.querySelector("[data-paystack-reuse-submit]");
     const candidates = AppController.tenantCatalogs().filter(tenant => tenant.owner_token);
     if (!candidates.length) {
-      if (status) status.textContent = "No saved shop accounts are available to use as the app default on this device.";
+      if (status) status.textContent = "No saved shop accounts are available.";
       return;
     }
-    select.innerHTML = `<option value="">Checking your connected shop accounts…</option>`;
+    select.innerHTML = `<option value="">Checking accounts…</option>`;
     const results = await Promise.allSettled(candidates.map(async tenant => {
       const result = await window.EshopInventoryBridge.getPaystackAccount(tenant.tenant_id);
       return result.account?.connected ? { tenant, account: result.account } : null;
@@ -12933,25 +12890,25 @@ const StudioRenderers = {
       .map(result => result.value);
     const errors = results.filter(result => result.status === "rejected");
     if (!accounts.length) {
-      select.innerHTML = `<option value="">No connected Paystack accounts found</option>`;
+      select.innerHTML = `<option value="">No connected accounts found</option>`;
       if (status) status.textContent = errors.length
-        ? "Could not check one or more saved shops. Check the connection and reload Payments."
-        : "Connect Paystack once under any owned shop's Payments settings, then select it here.";
+        ? "Could not check saved shops. Check your connection and reload."
+        : "Connect an account in a shop's Payments settings, then choose it here.";
       return;
     }
-    select.innerHTML = `<option value="">Choose a default Paystack account</option>${accounts.map(({ tenant, account }) =>
+    select.innerHTML = `<option value="">Choose an account</option>${accounts.map(({ tenant, account }) =>
       `<option value="${AppUtils.escapeHTML(tenant.tenant_id)}">${AppUtils.escapeHTML(tenant.name || tenant.tenant_id)} · ${AppUtils.escapeHTML(account.bank_name)} ·••${AppUtils.escapeHTML(account.account_last4)}</option>`
     ).join("")}`;
     try {
       const currentDefault = await window.EshopInventoryBridge.getPaystackDefault(tenantId);
       if (currentDefault.default_account) {
         select.value = currentDefault.default_account.tenant_id;
-        if (status) status.textContent = `Current app default: ${currentDefault.default_account.bank_name} ·••${currentDefault.default_account.account_last4}`;
+        if (status) status.textContent = `Default: ${currentDefault.default_account.bank_name} ·••${currentDefault.default_account.account_last4}`;
       }
     } catch (error) {
       if (status) status.textContent = error instanceof Error
         ? error.message
-        : "Could not load the app-wide Paystack account.";
+        : "Could not load the default account.";
     }
     form.hidden = false;
     form.style.display = "grid";
@@ -12962,7 +12919,7 @@ const StudioRenderers = {
       event.preventDefault();
       if (!form.reportValidity()) return;
       submit.disabled = true;
-      if (status) status.textContent = "Saving the default Paystack account for your websites…";
+      if (status) status.textContent = "Saving default account…";
       try {
         const sessionToken = window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") || "";
         const sourceTenantId = String(select.value || "");
@@ -12977,12 +12934,11 @@ const StudioRenderers = {
         if (accountStatus && source) {
           accountStatus.textContent = `Connected · ${source.account.bank_name} ·••${source.account.account_last4}`;
         }
-        if (status) status.textContent = `App default saved. Your websites without a separate Paystack account will use ${source?.tenant.name || sourceTenantId}'s account at checkout.`;
+        if (status) status.textContent = `Default account saved for websites without a separate account.`;
         return result;
       } catch (error) {
-        if (status) status.textContent = error instanceof Error
-          ? error.message
-          : "Could not link the Paystack account.";
+        console.error("Default payment account could not be saved.", error);
+        if (status) status.textContent = "Could not save this account. Check access and retry.";
       } finally {
         submit.disabled = false;
       }
@@ -13235,16 +13191,20 @@ const StudioRenderers = {
     });
     container.querySelectorAll("[data-business-cloud-analytics]").forEach(button => {
       button.addEventListener("click", async () => {
-        const status = button.closest(".studio-panel")?.querySelector("[data-business-cloud-analytics-status], .studio-panel-note");
+        const status = button.closest(".studio-panel")?.querySelector("[data-business-cloud-analytics-status], [data-analytics-status]");
         button.disabled = true;
-        if (status) status.textContent = "Loading tenant-wide analytics from Cloudflare…";
+        if (status) {
+          status.hidden = false;
+          status.textContent = "Loading…";
+        }
         try {
-          const analytics = await window.EshopInventoryBridge.fetchStorefrontAnalytics(tenantId, 30);
+          const analytics = await window.EshopInventoryBridge.fetchStorefrontAnalytics(tenantId, this.analyticsDays());
           const updatedSnapshot = { ...snapshot, remoteAnalytics: analytics };
           container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
           this.bindBusinessCloudActions(container, path, updatedSnapshot, tenantId);
         } catch (error) {
-          if (status) status.textContent = error instanceof Error ? error.message : "Cloudflare analytics could not be loaded.";
+          console.error("Storefront analytics could not be loaded.", error);
+          if (status) status.textContent = "Could not load analytics.";
           button.disabled = false;
         }
       });
@@ -13341,19 +13301,23 @@ const StudioRenderers = {
     container.querySelector("[data-business-broadcast]")?.addEventListener("submit", async event => {
       event.preventDefault();
       const form = event.currentTarget;
+      const fields = Object.fromEntries(new FormData(form).entries());
+      if (!fields.title || !fields.body) return;
+      if (!window.confirm("Send this notification now to all devices subscribed to this shop?")) return;
       const submit = form.querySelector('button[type="submit"]');
       const status = form.querySelector('[role="status"]');
       if (submit) submit.disabled = true;
       if (status) status.textContent = "Sending to opted-in devices…";
       try {
-        const fields = Object.fromEntries(new FormData(form).entries());
         const result = await AppController.cloudflareRequest(
           `/api/push/broadcast?tenant=${encodeURIComponent(tenantId)}`,
           { method: "POST", body: JSON.stringify(fields) },
           tenantId
         );
-        if (status) status.textContent =
-          `Push service accepted ${result.accepted} request${result.accepted === 1 ? "" : "s"} · ${result.failed} failed, ${result.expired} expired.`;
+        if (status) status.textContent = result.attempted === 0
+          ? "No devices have opted in to notifications yet."
+          : `Push service accepted ${result.accepted} request${result.accepted === 1 ? "" : "s"} · ${result.failed} failed, ${result.expired} expired.`;
+        form.reset();
       } catch (error) {
         if (status) status.textContent = error instanceof Error ? error.message : "Push broadcast failed.";
       } finally {
@@ -13453,7 +13417,7 @@ const StudioRenderers = {
       if (storefrontAnalyticsPaths.has(path)) {
         remoteLoads.push({
           key: "remoteAnalytics",
-          load: () => window.EshopInventoryBridge.fetchStorefrontAnalytics(activeTenant.id, 30)
+          load: () => window.EshopInventoryBridge.fetchStorefrontAnalytics(activeTenant.id, this.analyticsDays())
         });
       }
       if (bookingsPage) {
@@ -13723,7 +13687,7 @@ const StudioRenderers = {
         window.BusinessLens.saveFilters(filters);
         void this.loadMainShopWorkspace(path);
       });
-      this.bindBusinessCloudActions(currentContent, path, snapshot, activeTenant.id);
+      this.bindBusinessCloudActions(currentContent, path, renderSnapshot, activeTenant.id);
       const exportButton = currentContent.querySelector('[data-business-export="transactions"]');
       if (exportButton) exportButton.addEventListener("click", () => {
         const headers = ["receipt", "channel", "date", "status", "currency", "total", "collected", "items"];
@@ -13764,12 +13728,31 @@ const StudioRenderers = {
       };
       const webProductForm = currentContent.querySelector('[data-studio-form="web-product"]');
       if (webProductForm) {
+        const taxonomyMarkup = document.createElement("div");
+        taxonomyMarkup.innerHTML = window.EshopProductTaxonomy.createProductTaxonomyFields();
+        const taxonomyFields = taxonomyMarkup.firstElementChild;
+        webProductForm.querySelector('[name="categoryId"]').closest("label").insertAdjacentElement("afterend", taxonomyFields);
+        window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyFields);
+        const variantsMarkup = document.createElement("div");
+        variantsMarkup.innerHTML = window.EshopProductVariants.createProductVariantFields();
+        const variantFields = variantsMarkup.firstElementChild;
+        taxonomyFields.insertAdjacentElement("afterend", variantFields);
+        window.EshopProductVariants.bindProductVariantFields(variantFields);
         const mediaStatus = webProductForm.querySelector("[data-web-product-media-status]");
         const imageInput = webProductForm.querySelector("[data-web-product-image]");
+        const spinModeButton = webProductForm.querySelector('[data-web-product-media-mode="3d"]');
+        if (spinModeButton) spinModeButton.textContent = "360° spin";
         const videoOptions = webProductForm.querySelector("[data-web-product-video-options]");
         const videoRecordInput = webProductForm.querySelector("[data-web-product-record-file]");
         const videoPickInput = webProductForm.querySelector("[data-web-product-video-file]");
         const mediaPreview = webProductForm.querySelector("[data-web-product-media-preview]");
+        if (imageInput) {
+          imageInput.multiple = true;
+          const imageLabel = imageInput.closest(".web-product-file");
+          if (imageLabel?.firstChild?.nodeType === Node.TEXT_NODE) {
+            imageLabel.firstChild.textContent = "Add photos (up to 8) ";
+          }
+        }
         const spinOptions = document.createElement("div");
         spinOptions.className = "web-product-spin-options";
         spinOptions.hidden = true;
@@ -13802,7 +13785,8 @@ const StudioRenderers = {
           videoBlob: null,
           videoPath: "",
           videoPoster: null,
-          videoPreviewUrl: ""
+          videoPreviewUrl: "",
+          imagePreviewUrls: []
         };
         const setMediaStatus = text => {
           if (mediaStatus) mediaStatus.textContent = text;
@@ -13825,6 +13809,8 @@ const StudioRenderers = {
         const clearMediaPreview = () => {
           if (media.videoPreviewUrl.startsWith("blob:")) URL.revokeObjectURL(media.videoPreviewUrl);
           media.videoPreviewUrl = "";
+          media.imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+          media.imagePreviewUrls = [];
           if (mediaPreview) {
             mediaPreview.replaceChildren();
             mediaPreview.hidden = true;
@@ -13833,6 +13819,7 @@ const StudioRenderers = {
         const showImagePreviews = (urls, spin = false) => {
           clearMediaPreview();
           if (!mediaPreview || !urls.length) return;
+          media.imagePreviewUrls = urls.filter(url => url.startsWith("blob:"));
           const images = spin ? urls.slice(0, 1) : urls;
           images.forEach((url, imageIndex) => {
             const image = document.createElement("img");
@@ -14108,15 +14095,22 @@ const StudioRenderers = {
           });
         }
         imageInput?.addEventListener("change", () => {
-          const file = imageInput.files?.[0];
-          if (!file) return;
+          const files = Array.from(imageInput.files || []);
+          if (!files.length) return;
+          if (files.length > 8) {
+            imageInput.value = "";
+            clearMediaPreview();
+            setMediaStatus("Choose up to 8 product photos.");
+            return;
+          }
           if (media.mode === "cutout") {
             setMediaStatus(isAndroidApp
               ? "Use Add file to choose photos from the Android gallery for cutout."
               : "Cutout requires the Android Craft app and Google Play services.");
             return;
           }
-          setMediaStatus(`${file.name} selected.`);
+          showImagePreviews(files.map(file => URL.createObjectURL(file)));
+          setMediaStatus(`${files.length} product photo${files.length === 1 ? "" : "s"} selected.`);
         });
         webProductMediaState.set(webProductForm, media);
       }
@@ -14146,18 +14140,23 @@ const StudioRenderers = {
               const price = Number(data.get("price"));
               const stock = Number(data.get("stock"));
               const categoryId = Number(data.get("categoryId"));
+              const taxonomy = window.EshopProductTaxonomy.readProductTaxonomyFields(form);
               if (!name || !Number.isFinite(price) || price < 0 || !Number.isSafeInteger(stock) || stock < 0) {
                 throw new Error("Enter a product name, valid price, and whole-number stock quantity.");
               }
               if (!media) throw new Error("Product media could not be initialized. Reopen the product form and try again.");
-              const imageFile = data.get("image");
+              const productVariants = window.EshopProductVariants.readProductVariantFields(form);
+              const imageFiles = data.getAll("image").filter(file => file instanceof File && file.size > 0);
+              if (imageFiles.length > 8) throw new Error("Choose up to 8 product photos.");
               let images = [];
               let spinFrames = [];
               let videoPath = "";
-              if (imageFile instanceof File && imageFile.size > 0) {
+              if (imageFiles.length) {
                 if (mediaMode === "keep") {
                   setWebProductMediaStatus(form, "Compressing product image for local SQLite storage…");
-                  images = [await AppUtils.compressImageFile(imageFile)];
+                  for (const imageFile of imageFiles) {
+                    images.push(await AppUtils.compressImageFile(imageFile));
+                  }
                 } else if (mediaMode === "cutout") {
                   throw new Error("Choose photos from the Android gallery to create cutout images.");
                 }
@@ -14183,7 +14182,12 @@ const StudioRenderers = {
                 }
               }
               SQLiteEngine.saveProduct({
-                name, category_id: categoryId, price, stock,
+                name, category_id: categoryId, price, stock: productVariants.stock ?? stock,
+                taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
+                taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
+                taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
+                taxonomy_attributes: taxonomy.taxonomyAttributes,
+                ...productVariants,
                 booking_enabled: data.get("booking_enabled") === "on",
                 description: "",
                 images,
@@ -14754,7 +14758,10 @@ const StudioRenderers = {
       price: Number(product.price) || 0,
       cost_price: product.buyingPrice == null ? 0 : Number(product.buyingPrice),
       stock: product.stock == null ? 0 : Number(product.stock),
-      images: product.imageUri ? [product.imageUri] : webProduct?.images || []
+      images: product.imageUri ? [product.imageUri] : webProduct?.images || [],
+      taxonomy_category_id: product.taxonomyCategoryId || webProduct?.taxonomy_category_id || null,
+      taxonomy_custom_category: product.taxonomyCustomCategory || webProduct?.taxonomy_custom_category || null,
+      taxonomy_attributes: product.taxonomyAttributes || webProduct?.taxonomy_attributes || []
     });
     AppController.cacheActiveTenantCatalog();
     await window.ShopSQLite.flush();
@@ -14781,7 +14788,10 @@ const StudioRenderers = {
       buyingPrice: websiteProduct.cost_price ?? "",
       stock: websiteProduct.stock ?? 0,
       sku: websiteProduct.sku || "",
-      imageUri: websiteProduct.images?.[0] || ""
+      imageUri: websiteProduct.images?.[0] || "",
+      taxonomyCategoryId: websiteProduct.taxonomy_category_id || "",
+      taxonomyCustomCategory: websiteProduct.taxonomy_custom_category || "",
+      taxonomyAttributes: websiteProduct.taxonomy_attributes || []
     });
     const posProduct = (await window.ShopPOS.listProducts()).find(item => Number(item.id) === Number(posId));
     if (!posProduct) throw new Error("The POS product saved, but could not be reloaded to link its SKU.");
@@ -15164,14 +15174,15 @@ const StudioRenderers = {
     AppUtils.updateSEO({ title: "Webmaker — Craft", description: "Prepare the new website catalog before choosing a theme." });
     return `
       ${embedded ? "" : StoreRenderers.renderNavbar("/account")}
-      <main class="container" style="padding:18px 0 48px;max-width:900px;">
+      <main class="container" style="padding:6px 0 36px;max-width:900px;">
         <a href="/account" class="studio-back-link" data-route="/account" aria-label="Back to your websites">&larr;</a>
-        <header style="margin:12px 0 18px;">
+        <header style="margin:3px 0 8px;">
           <span class="studio-workspace-kicker">NEW WEBSITE · STEP 1 OF 3</span>
-          <h1 class="section-heading" style="font-size:1.65rem;margin:4px 0;">Add products and categories</h1>
-          <p style="margin:4px 0 0;color:var(--text-muted);font-size:.9rem;">Add only the products you want on this website. Store products are never copied unless you choose them. Existing websites and your Store inventory are not changed.</p>
+          <h1 class="section-heading" style="font-size:1.25rem;margin:2px 0;">Products &amp; categories</h1>
+          <p style="margin:2px 0 0;color:var(--text-muted);font-size:.8rem;">Add Store products or create new ones for this website.</p>
         </header>
-        <button class="btn-primary" id="website-wizard-load-store" type="button" style="width:100%;min-height:48px;margin-bottom:14px;">Choose products from Store</button>
+        <a class="btn-primary" href="/account/web/site?new=1&edit=1&theme=litrus-mixer" data-route="/account/web/site?new=1&edit=1&theme=litrus-mixer" style="display:inline-flex;align-items:center;min-height:40px;margin-bottom:8px;">Continue to build shop &rarr;</a>
+        <button class="btn-secondary" id="website-wizard-load-store" type="button" style="width:100%;min-height:40px;margin-bottom:10px;">Choose products from Store</button>
         <section id="website-wizard-store-picker" hidden role="dialog" aria-modal="true" aria-labelledby="website-wizard-store-title" style="position:fixed;inset:0;z-index:1200;background:var(--bg);overflow:auto;padding:env(safe-area-inset-top,0px) 14px env(safe-area-inset-bottom,0px);">
           <div style="max-width:900px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;">
             <header style="position:sticky;top:0;z-index:1;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--border);">
@@ -15193,7 +15204,7 @@ const StudioRenderers = {
         </section>
         <section class="studio-panel" style="margin-bottom:14px;">
           <div class="studio-panel-heading" style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><h2>Products (${products.length})</h2>${products.length ? `<button class="btn-secondary" id="website-wizard-clear-products" type="button">Remove all</button>` : ""}</div>
-          <div id="website-wizard-product-list">${products.map(product => `<article class="studio-list-row" style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><strong>${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(product.category_name || "Uncategorized")}</span></div><strong>${AppUtils.escapeHTML(String(product.price ?? ""))}</strong><button class="btn-secondary" type="button" data-remove-wizard-product="${AppUtils.escapeHTML(String(product.id))}" aria-label="Remove ${AppUtils.escapeHTML(product.name)} from this website">Remove</button></article>`).join("") || `<p class="studio-panel-note">No products added to this new website yet. Choose Store products or add your own below.</p>`}</div>
+          <div id="website-wizard-product-list">${products.map(product => `<article class="studio-list-row" style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><strong>${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(product.category_name || "Uncategorized")}</span></div><strong>${AppUtils.escapeHTML(String(product.price ?? ""))}</strong><button class="btn-secondary" type="button" data-remove-wizard-product="${AppUtils.escapeHTML(String(product.id))}" aria-label="Remove ${AppUtils.escapeHTML(product.name)} from this website">Remove</button></article>`).join("") || `<p class="studio-panel-note">No products yet. Add from Store or create one below.</p>`}</div>
           <form id="website-wizard-product-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:8px;margin-top:12px;">
             <input class="form-input" name="name" required maxlength="120" placeholder="Product name">
             <input class="form-input" name="price" type="number" min="0" step="0.01" required placeholder="Price">
@@ -15203,7 +15214,6 @@ const StudioRenderers = {
             <button class="btn-primary" type="submit" ${categories.length ? "" : "disabled"}>Add product</button>
           </form>
         </section>
-        <a class="btn-primary" href="/account/web/site?new=1&edit=1&theme=litrus-mixer" data-route="/account/web/site?new=1&edit=1&theme=litrus-mixer">Continue to build your shop &rarr;</a>
       </main>
       ${embedded ? "" : StoreRenderers.renderFooter()}
     `;
@@ -15354,7 +15364,7 @@ const StudioRenderers = {
         <form id="new-website-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-lg);">
           <label class="form-field"><span class="form-label">Shop / website name</span><input class="form-input" name="name" required maxlength="120" placeholder="My Shop" value="${AppUtils.escapeHTML(newWebsiteDraft.shop_name || "")}"></label>
           <label class="form-field"><span class="form-label">Website address</span><span style="display:flex;align-items:center;gap:5px;"><input class="form-input" name="id" required maxlength="40" pattern="[A-Za-z0-9-]+" placeholder="my-store" value="${AppUtils.escapeHTML(String(newWebsiteDraft.shop_name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40).replace(/-$/g, ""))}"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
-          <p class="studio-panel-note" style="grid-column:1/-1;">Payment settings belong to your signed-in app account, not to each website. New websites use the account-wide Paystack default configured under Payments in the Craft app.</p>
+          <p class="studio-panel-note" style="grid-column:1/-1;">Payment settings apply across your websites.</p>
           <p id="new-website-error" role="alert" hidden style="grid-column:1/-1;color:#b42318;margin:0;"></p>
           <button class="btn-primary" type="submit" style="min-height:42px;align-self:end;">Set up</button>
         </form>
@@ -16631,7 +16641,7 @@ const AppController = {
         routeParams.get("edit") === "1" &&
         routeParams.get("theme") === "litrus-mixer" &&
         tenantId === "main" &&
-        pathUrl.pathname === "/api/pixabay/images" &&
+        pathUrl.pathname === "/api/images/search" &&
         String(options.method || "GET").toUpperCase() === "POST";
       const rollbackCreatedTenant = finalTenantSetup && !!credentialOverride &&
         tenantId !== WEBSITE_BUILDER_DRAFT_TENANT_ID &&
@@ -16779,11 +16789,6 @@ const AppController = {
       : "there";
     return `
       <main class="home-screen" aria-label="Craft home">
-        <div class="home-background" aria-hidden="true">
-          <img class="home-background-image is-active" data-home-background-current alt="">
-          <img class="home-background-image" data-home-background-next alt="">
-          <div class="home-background-tint"></div>
-        </div>
         <header class="home-screen-header">
           <p class="home-screen-greeting">Hi, ${AppUtils.escapeHTML(username)} <span aria-hidden="true">👋</span></p>
           <a class="home-screen-profile" href="/app-account" data-route="/app-account" aria-label="Account" title="Account">
@@ -16850,146 +16855,6 @@ const AppController = {
         </section>
       </main>
     `;
-  },
-
-  setupHomeBackground() {
-    const home = document.querySelector(".home-screen");
-    const currentLayer = home?.querySelector("[data-home-background-current]");
-    const nextLayer = home?.querySelector("[data-home-background-next]");
-    if (!(currentLayer instanceof HTMLImageElement) || !(nextLayer instanceof HTMLImageElement)) return;
-    const images = Array.from({ length: 9 }, (_, index) => {
-      const number = String(index + 1).padStart(2, "0");
-      return {
-        desktop: `/home-backgrounds/home-${number}.jpg`,
-        mobile: `/home-backgrounds/mobile-${number}.jpg`
-      };
-    });
-    const mobileViewport = window.matchMedia("(max-width: 600px)");
-    let useMobileImages = mobileViewport.matches;
-    const imageSource = index => useMobileImages ? images[index].mobile : images[index].desktop;
-    let activeIndex = 0;
-    let requestVersion = 0;
-    let visibleLayer = currentLayer;
-    let hiddenLayer = nextLayer;
-    visibleLayer.src = imageSource(activeIndex);
-    visibleLayer.classList.add("is-active");
-
-    const showImage = index => {
-      const version = ++requestVersion;
-      const source = imageSource(index);
-      const preload = new Image();
-      preload.onload = () => {
-        if (!home.isConnected || version !== requestVersion) return;
-        const incomingLayer = hiddenLayer;
-        const outgoingLayer = visibleLayer;
-        incomingLayer.src = source;
-        requestAnimationFrame(() => {
-          if (!home.isConnected || version !== requestVersion) return;
-          incomingLayer.classList.add("is-active");
-          outgoingLayer.classList.remove("is-active");
-          visibleLayer = incomingLayer;
-          hiddenLayer = outgoingLayer;
-          activeIndex = index;
-          window.setTimeout(() => {
-            if (home.isConnected && !outgoingLayer.classList.contains("is-active")) {
-              outgoingLayer.removeAttribute("src");
-            }
-          }, 1600);
-        });
-      };
-      preload.onerror = () => console.error("Could not load a Craft home background image.", source);
-      preload.src = source;
-    };
-
-    const rotateBackground = () => showImage((activeIndex + 1) % images.length);
-    const handleViewportChange = () => {
-      const nextUseMobileImages = mobileViewport.matches;
-      if (nextUseMobileImages === useMobileImages) return;
-      useMobileImages = nextUseMobileImages;
-      showImage(activeIndex);
-    };
-    this.homeBackgroundResizeHandler = handleViewportChange;
-    window.addEventListener("resize", handleViewportChange);
-
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
-        !document.body.classList.contains("native-app-shell")) {
-      this.homeBackgroundTimer = window.setInterval(rotateBackground, 8500);
-    }
-  },
-
-  setupAppScreenBackground() {
-    const background = document.querySelector(".app-screen-background");
-    const currentLayer = background?.querySelector("[data-app-screen-background-current]");
-    const nextLayer = background?.querySelector("[data-app-screen-background-next]");
-    if (!(currentLayer instanceof HTMLImageElement) || !(nextLayer instanceof HTMLImageElement)) return;
-    const images = [
-      "/app-backgrounds/abstract-blocks.webp",
-      "/app-backgrounds/watercolor-lantern.webp",
-      "/app-backgrounds/geometric-cubes.webp",
-      "/app-backgrounds/watercolor-dog.webp",
-      "/app-backgrounds/cubist-abstract.webp",
-      "/app-backgrounds/red-portrait.webp",
-      "/app-backgrounds/concept-car.webp"
-    ];
-    for (let index = images.length - 1; index > 0; index--) {
-      const swapIndex = Math.floor(Math.random() * (index + 1));
-      [images[index], images[swapIndex]] = [images[swapIndex], images[index]];
-    }
-
-    const requestVersion = (this.appScreenBackgroundRequestVersion || 0) + 1;
-    this.appScreenBackgroundRequestVersion = requestVersion;
-    let activeIndex = 0;
-    let visibleLayer = currentLayer;
-    let hiddenLayer = nextLayer;
-    let imageRequestVersion = 0;
-    currentLayer.classList.remove("is-active");
-    nextLayer.classList.remove("is-active");
-
-    const initialImage = new Image();
-    initialImage.onload = () => {
-      if (!background.isConnected || requestVersion !== this.appScreenBackgroundRequestVersion) return;
-      currentLayer.src = images[0];
-      currentLayer.classList.add("is-active");
-    };
-    initialImage.onerror = () => console.error("Could not load a Craft app background image.", images[0]);
-    initialImage.src = images[0];
-
-    const showImage = index => {
-      const version = ++imageRequestVersion;
-      const source = images[index];
-      const preload = new Image();
-      preload.onload = () => {
-        if (!background.isConnected || requestVersion !== this.appScreenBackgroundRequestVersion ||
-            version !== imageRequestVersion) return;
-        const incomingLayer = hiddenLayer;
-        const outgoingLayer = visibleLayer;
-        incomingLayer.src = source;
-        requestAnimationFrame(() => {
-          if (!background.isConnected || requestVersion !== this.appScreenBackgroundRequestVersion ||
-              version !== imageRequestVersion) return;
-          incomingLayer.classList.add("is-active");
-          outgoingLayer.classList.remove("is-active");
-          visibleLayer = incomingLayer;
-          hiddenLayer = outgoingLayer;
-          activeIndex = index;
-          window.setTimeout(() => {
-            if (background.isConnected && requestVersion === this.appScreenBackgroundRequestVersion &&
-                !outgoingLayer.classList.contains("is-active")) {
-              outgoingLayer.removeAttribute("src");
-            }
-          }, 1600);
-        });
-      };
-      preload.onerror = () => console.error("Could not load a Craft app background image.", source);
-      preload.src = source;
-    };
-
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
-        !document.body.classList.contains("native-app-shell")) {
-      this.appScreenBackgroundTimer = window.setInterval(() => {
-        showImage((activeIndex + 1) % images.length);
-      }, 8500);
-    }
   },
 
   async loadHomeDashboard() {
@@ -17305,14 +17170,11 @@ const AppController = {
     const isExistingLitrusEditor = path === "/account/web/site" &&
       params.get("new") !== "1" &&
       SQLiteEngine.getStore().website_theme_id === "litrus-mixer";
-    const showBackgroundEmblem = (isAppShell || path.startsWith("/store/")) &&
-      path !== "/" && path !== "/account/web/site";
     const isCraftAppUi = isAppShell && path !== "/account/web/site";
     const showScreenFade = isAppScreen && path !== "/" &&
       !isNewLitrusEditor && !isExistingLitrusEditor;
     document.body.classList.toggle("app-shell", isAppShell);
     document.body.classList.toggle("craft-app-ui", isCraftAppUi);
-    document.body.classList.toggle("app-background-emblem-active", showBackgroundEmblem);
     document.body.classList.toggle("app-screen-fade-active", showScreenFade);
     if (isAppShell) {
       this.applyThemeSettings();
@@ -17735,24 +17597,8 @@ const AppController = {
 
   postRenderSetup(path, params) {
     const draftEditor = params.get("new") === "1" && params.get("edit") === "1";
-    if (this.homeBackgroundResizeHandler) {
-      window.removeEventListener("resize", this.homeBackgroundResizeHandler);
-      this.homeBackgroundResizeHandler = null;
-    }
-    if (this.homeBackgroundTimer) {
-      window.clearInterval(this.homeBackgroundTimer);
-      this.homeBackgroundTimer = null;
-    }
-    if (this.appScreenBackgroundTimer) {
-      window.clearInterval(this.appScreenBackgroundTimer);
-      this.appScreenBackgroundTimer = null;
-    }
-    this.appScreenBackgroundRequestVersion = (this.appScreenBackgroundRequestVersion || 0) + 1;
     if (path === "/") {
-      this.setupHomeBackground();
       void this.loadHomeDashboard();
-    } else if (document.body.classList.contains("app-screen-fade-active")) {
-      this.setupAppScreenBackground();
     }
     if (path === "/account/web/site") {
       const frame = document.getElementById("builder-theme-studio");
@@ -17929,11 +17775,11 @@ const AppController = {
             try {
               const tenantId = isDraftEditor ? "main" : this.getActiveTenant().id;
               const result = await this.cloudflareRequest(
-                `/api/pixabay/images?tenant=${encodeURIComponent(tenantId)}`,
+                `/api/images/search?tenant=${encodeURIComponent(tenantId)}`,
                 { method: "POST", body: JSON.stringify({ images: event.data.images }) },
                 tenantId
               );
-              reply({ images: result.images || [], errors: result.errors || [] });
+              reply({ images: result.images || [], errors: result.errors || [], error: result.error || "" });
             } catch (error) {
               reply({ error: error.message || "Could not load Craft images." });
             }
@@ -18726,7 +18572,7 @@ const AppController = {
           window.localStorage.removeItem("ESHOP_NEW_WEBSITE_DRAFT_V1");
           window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
           window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_PREVIOUS_TENANT_KEY);
-          AppUtils.showToast(`Website created at ${result.tenant.hostname}. It uses your app account's Paystack default.`);
+          AppUtils.showToast(`Website created at ${result.tenant.hostname}. It uses your default payment account.`);
           this.navigate(`/account/web/site?tenant=${encodeURIComponent(result.tenant.id)}`);
         } catch (error) {
           console.error("Website setup failed.", error);
@@ -19490,16 +19336,19 @@ const AppController = {
         if (status) status.textContent = "";
         try {
           const tenantId = this.getActiveTenant().id;
-          if (SQLiteEngine.select("newsletter_subscribers", row => row.tenant_id === tenantId && row.email.toLocaleLowerCase() === email).length) {
-            throw new Error("This email is already subscribed.");
-          }
-          SQLiteEngine.insert("newsletter_subscribers", { tenant_id: tenantId, name: "", email, created_at: new Date().toISOString(), consent_source: "storefront-form" });
-          await window.ShopSQLite.flush();
+          const result = await this.cloudflareRequest(
+            `/api/newsletter/subscribe?tenant=${encodeURIComponent(tenantId)}`,
+            { method: "POST", body: JSON.stringify({ email, consent: true }) },
+            tenantId,
+            true
+          );
           newsletterForm.reset();
-          if (status) status.textContent = "Signup saved on this device. Push delivery is a separate opt-in.";
+          if (status) status.textContent = result.subscribed
+            ? "This email is already subscribed."
+            : "Check your email for a confirmation link to finish subscribing.";
         } catch (error) {
-          console.error("Newsletter subscription could not be saved.", error);
-          if (status) status.textContent = error instanceof Error ? error.message : "Subscription could not be saved.";
+          console.error("Newsletter subscription could not be sent.", error);
+          if (status) status.textContent = error instanceof Error ? error.message : "Could not send the subscription request.";
         } finally {
           if (button) button.disabled = false;
         }
@@ -20156,6 +20005,15 @@ const AppController = {
         category_id: productCategoryIds[0] ?? null,
         category_ids: productCategoryIds,
         category_names: categoryNames.filter(name => categoryIds.has(name.toLocaleLowerCase())),
+        sizes: Array.isArray(item.sizes) ? item.sizes : original?.sizes || [],
+        colors: Array.isArray(item.colors) ? item.colors : original?.colors || [],
+        variants: Array.isArray(item.variants) ? item.variants.slice(0, 100) : original?.variants || [],
+        taxonomy_category_id: item.taxonomy_category_id ?? original?.taxonomy_category_id ?? null,
+        taxonomy_category_name: item.taxonomy_category_name || original?.taxonomy_category_name || "",
+        taxonomy_custom_category: item.taxonomy_custom_category || original?.taxonomy_custom_category || "",
+        taxonomy_attributes: Array.isArray(item.taxonomy_attributes)
+          ? item.taxonomy_attributes
+          : original?.taxonomy_attributes || [],
         stock: Math.max(0, Number(original?.stock) || 0),
         status: original?.status || "active"
       };
@@ -20871,11 +20729,12 @@ const AppController = {
             </div>
 
             <div class="form-field">
-              <label class="form-label">Product photo</label>
+              <label class="form-label">Product photos (up to 8)</label>
               <input type="url" name="image" class="form-input" value="${AppUtils.escapeHTML(currentImage)}" placeholder="Optional image URL" />
-              <input type="file" name="imageFile" class="form-input" accept="image/*" aria-label="Upload a product photo" />
-              <small style="color: var(--text-muted);">Choose an image to save it in this device's SQLite catalog. An uploaded image replaces the URL.</small>
+              <input type="file" name="imageFile" class="form-input" accept="image/*" multiple aria-label="Upload up to 8 product photos" />
+              <small style="color: var(--text-muted);">Choose up to 8 photos to save in this device's SQLite catalog. Selected photos replace existing photos and the URL.</small>
               <img id="product-image-preview" src="${AppUtils.escapeHTML(currentImage)}" alt="Product photo preview" ${currentImage ? "" : "hidden"} style="width: 88px; height: 88px; object-fit: cover; border-radius: 8px;" />
+              <small data-product-image-selection role="status" aria-live="polite"></small>
             </div>
 
             <div class="form-field">
@@ -20910,41 +20769,69 @@ const AppController = {
     const modalForm = document.getElementById("modal-product-form");
     const imageInput = modalForm.elements.namedItem("imageFile");
     const imagePreview = document.getElementById("product-image-preview");
+    const imageSelectionStatus = modalForm.querySelector("[data-product-image-selection]");
+    const taxonomyMarkup = document.createElement("div");
+    taxonomyMarkup.innerHTML = window.EshopProductTaxonomy.createProductTaxonomyFields({
+      categoryId: product?.taxonomy_category_id || "",
+      categoryName: product?.taxonomy_category_name || "",
+      customCategory: product?.taxonomy_custom_category || "",
+      attributes: product?.taxonomy_attributes || []
+    });
+    const taxonomyFields = taxonomyMarkup.firstElementChild;
+    modalForm.elements.namedItem("categoryId").closest(".form-grid").insertAdjacentElement("afterend", taxonomyFields);
+    window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyFields);
+    const variantsMarkup = document.createElement("div");
+    variantsMarkup.innerHTML = window.EshopProductVariants.createProductVariantFields({
+      sizes: product?.variants?.length ? product.sizes || [] : [],
+      colors: product?.variants?.length ? product.colors || [] : [],
+      variants: product?.variants || []
+    });
+    const variantFields = variantsMarkup.firstElementChild;
+    taxonomyFields.insertAdjacentElement("afterend", variantFields);
+    window.EshopProductVariants.bindProductVariantFields(variantFields);
     let previewObjectUrl = "";
     imageInput.addEventListener("change", () => {
-      const file = imageInput.files && imageInput.files[0];
+      const files = Array.from(imageInput.files || []);
       if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
       previewObjectUrl = "";
-      if (!file) {
+      if (!files.length) {
         imagePreview.src = currentImage;
         imagePreview.hidden = !currentImage;
+        if (imageSelectionStatus) imageSelectionStatus.textContent = "";
         return;
       }
-      if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
-        AppUtils.showToast("Choose an image smaller than 5 MB.", "danger");
+      if (files.length > 8 || files.some(file => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
+        AppUtils.showToast("Choose up to 8 images, each smaller than 5 MB.", "danger");
         imageInput.value = "";
         imagePreview.src = currentImage;
         imagePreview.hidden = !currentImage;
+        if (imageSelectionStatus) imageSelectionStatus.textContent = "";
         return;
       }
-      previewObjectUrl = URL.createObjectURL(file);
+      previewObjectUrl = URL.createObjectURL(files[0]);
       imagePreview.src = previewObjectUrl;
       imagePreview.hidden = false;
+      if (imageSelectionStatus) imageSelectionStatus.textContent = `${files.length} photo${files.length === 1 ? "" : "s"} selected.`;
     });
     modalForm.onsubmit = async (e) => {
       e.preventDefault();
       const fd = new FormData(modalForm);
       const prodId = fd.get("id");
-      const selectedImage = imageInput.files && imageInput.files[0];
-      if (selectedImage && (!selectedImage.type.startsWith("image/") || selectedImage.size > 5 * 1024 * 1024)) {
-        AppUtils.showToast("Choose an image smaller than 5 MB.", "danger");
+      const selectedImages = Array.from(imageInput.files || []);
+      if (selectedImages.length > 8 || selectedImages.some(file => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
+        AppUtils.showToast("Choose up to 8 images, each smaller than 5 MB.", "danger");
         return;
       }
       let saved;
       try {
-        const image = selectedImage
-          ? await this.readProductImage(selectedImage)
-          : String(fd.get("image") || "").trim();
+        const imageUrl = String(fd.get("image") || "").trim();
+        const images = selectedImages.length
+          ? await Promise.all(selectedImages.map(file => this.readProductImage(file)))
+          : imageUrl !== currentImage
+            ? imageUrl ? [imageUrl] : []
+            : Array.isArray(product?.images) ? product.images.slice(0, 8) : currentImage ? [currentImage] : [];
+        const taxonomy = window.EshopProductTaxonomy.readProductTaxonomyFields(modalForm);
+        const productVariants = window.EshopProductVariants.readProductVariantFields(modalForm);
         saved = SQLiteEngine.saveProduct({
           id: prodId ? Number(prodId) : undefined,
           name: fd.get("name"),
@@ -20955,11 +20842,16 @@ const AppController = {
           cost_price: Number(fd.get("costPrice")),
           original_price: Number(fd.get("price")),
           discount: Number(fd.get("discount") || 0),
-          stock: Number(fd.get("stock")),
+          stock: productVariants.stock ?? Number(fd.get("stock")),
           description: fd.get("description"),
           is_flagship: fd.get("isFlagship") ? 1 : 0,
           is_featured: fd.get("isFeatured") ? 1 : 0,
-          images: image ? [image] : []
+          taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
+          taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
+          taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
+          taxonomy_attributes: taxonomy.taxonomyAttributes,
+          ...productVariants,
+          images
         });
         if (saved.sku && Number.isSafeInteger(Number(saved.stock))) {
           await window.EshopInventoryBridge?.setLocalStock(

@@ -34,6 +34,9 @@
   const store = catalog.store || {};
   const wishlistStorageKey = "storefront.wishlist";
   const holdStorageKey = `eshop-holds:${location.host}`;
+  const isLitrusStorefront = () => window.LITRUS_LIVE_CATALOG_VERSION === 1
+    || Boolean(document.querySelector('meta[name="eshop-filled-theme"][content="litrus-mixer"]'))
+    || Boolean(document.querySelector('script[src*="/litrus-mixer/live-catalog.js"]'));
   const socialLinks = [
     ["Facebook", store.facebook_url],
     ["Instagram", store.instagram_url],
@@ -224,6 +227,13 @@
       const saved = wishlist.includes(String(button.dataset.productId));
       button.textContent = saved ? "♥ Saved to wishlist" : "♡ Save to wishlist";
       button.setAttribute("aria-pressed", String(saved));
+    });
+    document.querySelectorAll(".sole-favorite").forEach(button => {
+      const productId = button.closest("[data-pid]")?.dataset.pid;
+      const saved = wishlist.includes(String(productId || ""));
+      button.classList.toggle("is-saved", saved);
+      button.setAttribute("aria-pressed", String(saved));
+      button.setAttribute("aria-label", saved ? "Remove from wishlist" : "Save to wishlist");
     });
   };
   const requestProductHold = async (form, product) => {
@@ -709,6 +719,7 @@
   }
 
   function adaptProductGrids() {
+    if (isLitrusStorefront()) return;
     const groups = new Map();
     for (const card of document.querySelectorAll(cardQuery)) {
       if (!isProductCard(card) || !card.parentElement) continue;
@@ -832,6 +843,7 @@
   }
 
   function ensureCategoryBrowser() {
+    if (isLitrusStorefront()) return;
     if (!products.length && !categories.length) return;
     if (categoryBar && !categoryBar.isConnected) {
       categoryBar = null;
@@ -894,6 +906,15 @@
     document.addEventListener("click", event => {
       const target = event.target instanceof Element ? event.target : null;
       if (!target) return;
+      const favorite = isLitrusStorefront() ? target.closest(".sole-favorite") : null;
+      if (favorite) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        const productId = favorite.closest("[data-pid]")?.dataset.pid;
+        toggleWishlist(findProduct(productId));
+        return;
+      }
       const add = target.closest("[data-eshop-add-to-bag]");
       if (add) {
         event.preventDefault();

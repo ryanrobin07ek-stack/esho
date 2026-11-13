@@ -4,10 +4,16 @@
   "main": "worker.js",
   "compatibility_date": "2026-10-04",
   "workers_dev": true,
+  "preview_urls": true,
   "observability": {
     "enabled": true,
     "head_sampling_rate": 0.05,
     "redact_query_string": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true
+    },
     "traces": {
       "enabled": true,
       "head_sampling_rate": 0.01
@@ -22,8 +28,8 @@
     "CUSTOM_HOSTNAME_TARGET": "customers.rrobin.co.ke"
   },
   "routes": [
-    { "pattern": "rrobin.co.ke/*", "zone_name": "rrobin.co.ke" },
-    { "pattern": "*.rrobin.co.ke/*", "zone_name": "rrobin.co.ke" }
+    { "pattern": "*.rrobin.co.ke/*", "zone_name": "rrobin.co.ke" },
+    { "pattern": "rrobin.co.ke/*", "zone_name": "rrobin.co.ke" }
   ],
   "assets": {
     "directory": "../www",
