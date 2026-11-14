@@ -44,7 +44,7 @@ function appendMessage(container, role, text) {
 function isEligibleScreen(path) {
   return (path.startsWith("/account/") || path === "/account" ||
     path === "/pos" || path.startsWith("/pos/") || path.startsWith("/store/")) &&
-    !path.startsWith("/account/profile");
+    path !== "/account/web/site" && !path.startsWith("/account/profile");
 }
 
 function localDate(value) {
@@ -370,6 +370,10 @@ function escapeText(value) {
 
 window.CraftAI = {
   mount(context) {
+    if (currentContext &&
+        (currentContext.path !== context.path || currentContext.tenantId !== context.tenantId)) {
+      isOpen = false;
+    }
     currentContext = context;
     if (!isEligibleScreen(context.path) || context.tenantId === "__new_website_draft__") {
       isOpen = false;

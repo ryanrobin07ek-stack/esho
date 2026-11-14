@@ -5,22 +5,23 @@ import { WEBSITE_THEME_CATALOG } from "../src/theme-catalog.js";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
 
-test("Elora is the only selectable editable storefront theme", async () => {
+test("Litrus and Elora are the selectable storefront builders", async () => {
   const app = await read("../index.html");
 
   assert.deepEqual(WEBSITE_THEME_CATALOG.map(theme => theme.id), [
+    "litrus-mixer",
     "elora-linen"
   ]);
-  assert.ok(WEBSITE_THEME_CATALOG.every(theme =>
-    theme.validation_status === "passed" && theme.editor_mode === "liquid-html"));
-  assert.match(app, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" && theme\.editor_mode === "liquid-html"\)/);
+  assert.ok(WEBSITE_THEME_CATALOG.every(theme => theme.validation_status === "passed"));
+  assert.equal(WEBSITE_THEME_CATALOG.find(theme => theme.id === "litrus-mixer")?.editor_mode, "litrus");
+  assert.match(app, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" &&\s*\(theme\.editor_mode === "liquid-html" \|\| theme\.editor_mode === "litrus"\)\)/);
   assert.doesNotMatch(WEBSITE_THEME_CATALOG.map(theme => theme.id).join(" "), /aviya-luxury|stepz-footwear|craft-main-storefront|my-own-theme/);
 });
 
 test("Elora loads its bundled HTML into the shared Studio", async () => {
   const app = await read("../index.html");
 
-  for (const theme of WEBSITE_THEME_CATALOG) {
+  for (const theme of WEBSITE_THEME_CATALOG.filter(item => item.editor_mode === "liquid-html")) {
     const source = await read(`../public${theme.preview_url}`);
     assert.match(source, /<html\b/i);
     assert.match(theme.studio_url, /^\/liquid-themes\/theme-studio\.html$/);

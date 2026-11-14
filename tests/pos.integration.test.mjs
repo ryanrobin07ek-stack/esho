@@ -494,6 +494,55 @@ test('published storefront customers can opt in to Web Push on their device', as
   }
 });
 
+test('storefront app installation is owner-controlled and opens only after a shopper taps', async () => {
+  const runtime = await readFile(new URL('../public/craft-storefront-cloudflare.js', import.meta.url), 'utf8');
+  const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(app, /name="installPromptEnabled"[\s\S]*?Enable the app install invitation for shoppers/);
+  assert.match(app, /install_prompt_enabled: data\.get\("installPromptEnabled"\) \? 1 : 0/);
+
+  const dom = new JSDOM('', { url: 'https://amani.rrobin.co.ke/', runScripts: 'outside-only' });
+  let promptCalls = 0;
+  dom.window.__ESHOP_CLOUDFLARE_STOREFRONT__ = true;
+  dom.window.__ESHOP_THEME_CATALOG__ = {
+    store: { name: 'Amani Shop', install_prompt_enabled: 1 }
+  };
+
+  try {
+    dom.window.eval(runtime);
+    const installEvent = new dom.window.Event('beforeinstallprompt', { cancelable: true });
+    installEvent.prompt = async () => { promptCalls += 1; };
+    installEvent.userChoice = Promise.resolve({ outcome: 'accepted' });
+    dom.window.dispatchEvent(installEvent);
+
+    const banner = dom.window.document.querySelector('[aria-label="Install this store"]');
+    assert.ok(banner, 'Enabled storefronts should show a brief install invitation.');
+    assert.equal(installEvent.defaultPrevented, true);
+    assert.match(banner.textContent, /Install Amani Shop/);
+    banner.querySelector('button:not([aria-label])').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.equal(promptCalls, 1, 'The browser prompt should open only after the shopper taps Install.');
+    assert.match(banner.querySelector('[role="status"]').textContent, /was installed/i);
+  } finally {
+    dom.window.close();
+  }
+
+  const disabledDom = new JSDOM('', { url: 'https://amani.rrobin.co.ke/', runScripts: 'outside-only' });
+  disabledDom.window.__ESHOP_CLOUDFLARE_STOREFRONT__ = true;
+  disabledDom.window.__ESHOP_THEME_CATALOG__ = {
+    store: { install_prompt_enabled: 0 }
+  };
+  try {
+    disabledDom.window.eval(runtime);
+    const installEvent = new disabledDom.window.Event('beforeinstallprompt', { cancelable: true });
+    disabledDom.window.dispatchEvent(installEvent);
+    assert.equal(installEvent.defaultPrevented, false);
+    assert.equal(disabledDom.window.document.querySelector('[aria-label="Install this store"]'), null);
+  } finally {
+    disabledDom.window.close();
+  }
+});
+
 test('storefront event analytics stays local until a batch flush', async () => {
   const runtime = await readFile(new URL('../public/storefront-analytics.js', import.meta.url), 'utf8');
   const dom = new JSDOM('', { url: 'https://shop.example/#/home', runScripts: 'outside-only' });

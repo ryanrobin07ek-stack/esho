@@ -349,7 +349,7 @@ async function requireTenant(request, env, tenantId) {
 
 function storefrontCacheKey(request, catalogUpdatedAt, verificationVersion = "none") {
   const url = new URL(request.url);
-  url.pathname = `/__worker-cache/storefront/filled-v17/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
+  url.pathname = `/__worker-cache/storefront/filled-v18/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
   url.search = "";
   url.hash = "";
   return new Request(url, { method: "GET" });
@@ -360,9 +360,52 @@ function isStorefrontDocumentPath(pathname) {
     /^\/(?:products(?:\/[^/]+)?|categories\/[^/]+|pages\/[^/]+|category\/[^/]+|product\/[^/]+|page\/[^/]+|search|wishlist|cart|checkout|account|home)$/.test(pathname);
 }
 
+async function handleStorefrontManifest(request, env, tenantId) {
+  const assetUrl = new URL("/manifest.webmanifest", request.url);
+  if (!env.DB) return env.ASSETS.fetch(new Request(assetUrl, { method: "GET" }));
+  const snapshot = await env.DB.prepare(
+    "SELECT payload FROM catalog_snapshots WHERE tenant_id = ?"
+  ).bind(tenantId).first();
+  if (!snapshot?.payload) return env.ASSETS.fetch(new Request(assetUrl, { method: "GET" }));
+
+  const catalog = JSON.parse(snapshot.payload);
+  const store = catalog.store || {};
+  const name = String(store.name || catalog.name || "Store").trim().slice(0, 120) || "Store";
+  const shortName = Array.from(name).slice(0, 12).join("");
+  const color = (value, fallback) => /^#[0-9a-f]{6}$/i.test(value || "") ? value : fallback;
+  const manifest = {
+    name,
+    short_name: shortName,
+    start_url: "/",
+    scope: "/",
+    display: "standalone",
+    background_color: color(store.background_color, "#ffffff"),
+    theme_color: color(store.primary_color, "#18181b"),
+    icons: [
+      { src: "/favicon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/favicon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+    ]
+  };
+  return new Response(JSON.stringify(manifest), {
+    headers: {
+      "Cache-Control": "public, max-age=300",
+      "Content-Type": "application/manifest+json; charset=utf-8",
+      "X-Content-Type-Options": "nosniff"
+    }
+  });
+}
+
+function addStorefrontManifestLink(html) {
+  if (/<link\b[^>]*rel=["']manifest["']/i.test(html)) return html;
+  const link = '<link rel="manifest" href="/manifest.webmanifest">';
+  return /<\/head>/i.test(html)
+    ? html.replace(/<\/head>/i, `${link}</head>`)
+    : `${link}${html}`;
+}
+
 function upgradePublishedCraftRoutes(html) {
   const routePattern = /function getRoute\(\) \{[\s\S]*?(?=\n\s*function publicPath\()/;
-  let upgraded = html
+  let upgraded = addStorefrontManifestLink(html)
     .replace(/<script>\s*if\s*\(location\.hash\s*!==\s*["']#\/home["']\)\s*location\.hash\s*=\s*["']#\/home["'];?\s*<\/script>/gi, "")
     .replace(/function getProduct\(id\) \{[\s\S]*?\n {0,2}\}(?=\r?\n|$)/, `function getProduct(id) {
     return DATA.products.find(function (p) {
@@ -396,7 +439,7 @@ function upgradePublishedCraftRoutes(html) {
       `${match}<script>window.__ESHOP_CLOUDFLARE_STOREFRONT__=true;</script>`);
   }
   if (!/data-craft-cloudflare-runtime/i.test(upgraded)) {
-    const runtimeTag = '<script src="/craft-storefront-cloudflare.js" data-craft-cloudflare-runtime defer></script>';
+    const runtimeTag = '<script src="/craft-storefront-cloudflare.js?v=app-install-1" data-craft-cloudflare-runtime defer></script>';
     upgraded = /<\/body>/i.test(upgraded)
       ? upgraded.replace(/<\/body>/i, `${runtimeTag}</body>`)
       : `${upgraded}${runtimeTag}`;
@@ -512,6 +555,11 @@ function cleanCatalog(input) {
       original_price: Number(product.original_price ?? product.price),
       discount: Number(product.discount || 0),
       stock: Math.max(0, Number(product.stock || 0)),
+      duration_minutes: Number.isSafeInteger(Number(product.duration_minutes)) &&
+        Number(product.duration_minutes) >= 15 && Number(product.duration_minutes) <= 240 &&
+        Number(product.duration_minutes) % 15 === 0
+        ? Number(product.duration_minutes)
+        : null,
       rating: Number(product.rating || 0),
       review_count: Math.max(0, Number(product.review_count || 0)),
       description: cleanText(product.description),
@@ -675,6 +723,7 @@ function cleanCatalog(input) {
   };
   const store = {
     name: cleanText(storeInput.name, 200),
+    offer_type: ["products", "services"].includes(storeInput.offer_type) ? storeInput.offer_type : "products",
     title: cleanText(storeInput.title, 240),
     tagline: cleanText(storeInput.tagline, 500),
     description: cleanText(storeInput.description),
@@ -700,6 +749,25 @@ function cleanCatalog(input) {
       Number(storeInput.hold_duration_hours) >= 1 && Number(storeInput.hold_duration_hours) <= 720
       ? Number(storeInput.hold_duration_hours)
       : 24,
+    service_days: Array.isArray(storeInput.service_days)
+      ? [...new Set(storeInput.service_days.map(Number).filter(day => Number.isSafeInteger(day) && day >= 0 && day <= 6))]
+      : [1, 2, 3, 4, 5, 6],
+    service_open_time: /^([01]\d|2[0-3]):[0-5]\d$/.test(storeInput.service_open_time || "")
+      ? storeInput.service_open_time
+      : "09:00",
+    service_close_time: /^([01]\d|2[0-3]):[0-5]\d$/.test(storeInput.service_close_time || "")
+      ? storeInput.service_close_time
+      : "17:00",
+    service_timezone: cleanText(storeInput.service_timezone, 80) || "Africa/Nairobi",
+    service_buffer_minutes: Number.isSafeInteger(Number(storeInput.service_buffer_minutes)) &&
+      Number(storeInput.service_buffer_minutes) >= 0 && Number(storeInput.service_buffer_minutes) <= 60 &&
+      Number(storeInput.service_buffer_minutes) % 15 === 0
+      ? Number(storeInput.service_buffer_minutes)
+      : 0,
+    service_deposit_percent: Number.isSafeInteger(Number(storeInput.service_deposit_percent)) &&
+      Number(storeInput.service_deposit_percent) >= 0 && Number(storeInput.service_deposit_percent) <= 100
+      ? Number(storeInput.service_deposit_percent)
+      : 0,
     announcement: cleanText(storeInput.announcement, 500),
     announcement_active: storeInput.announcement_active ? 1 : 0,
     primary_color: /^#[0-9a-f]{6}$/i.test(storeInput.primary_color || "") ? storeInput.primary_color : "",
@@ -725,6 +793,25 @@ function cleanCatalog(input) {
     element_edits: elementEdits,
     section_layout: sectionLayout
   };
+  if (store.service_close_time <= store.service_open_time) {
+    throw new TypeError("Service closing time must be later than opening time.");
+  }
+  if (store.offer_type === "services" && store.service_days.length === 0) {
+    throw new TypeError("Select at least one open day for service appointments.");
+  }
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: store.service_timezone });
+  } catch {
+    throw new TypeError("Service timezone must be a valid IANA timezone.");
+  }
+  if (store.offer_type === "services" &&
+      products.some(product => !Number.isSafeInteger(product.duration_minutes))) {
+    throw new TypeError("Every service needs a duration between 15 and 240 minutes in 15-minute increments.");
+  }
+  if (store.offer_type === "services" && store.service_deposit_percent > 0 &&
+      (store.currency !== "KES" || products.some(product => product.price <= 0))) {
+    throw new TypeError("Service deposits require positive KES prices for every service.");
+  }
 
   const privateProducts = products.map((product, index) => ({
     ...product,
@@ -3302,6 +3389,476 @@ async function handleStorefrontHoldRequests(request, env, tenantId) {
   return jsonResponse({ hold: saved }, saved?.id === id ? 201 : 200, { "Cache-Control": "private, no-store" });
 }
 
+function validServiceDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day;
+}
+
+function zonedDateParts(date, timeZone) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(date);
+  return Object.fromEntries(parts.filter(part => part.type !== "literal").map(part => [part.type, Number(part.value)]));
+}
+
+function localDateTimeToUtc(date, time, timeZone) {
+  if (!validServiceDate(date) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time || "")) return null;
+  const [year, month, day] = date.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  const target = Date.UTC(year, month - 1, day, hour, minute);
+  let timestamp = target;
+  try {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const observed = zonedDateParts(new Date(timestamp), timeZone);
+      const represented = Date.UTC(observed.year, observed.month - 1, observed.day, observed.hour, observed.minute);
+      const difference = target - represented;
+      if (!difference) break;
+      timestamp += difference;
+    }
+    const result = new Date(timestamp);
+    const observed = zonedDateParts(result, timeZone);
+    if (observed.year !== year || observed.month !== month || observed.day !== day ||
+        observed.hour !== hour || observed.minute !== minute) return null;
+    return result;
+  } catch {
+    return null;
+  }
+}
+
+function serviceSchedule(catalog) {
+  const store = catalog?.store || {};
+  const timeZone = typeof store.service_timezone === "string" && store.service_timezone
+    ? store.service_timezone
+    : "Africa/Nairobi";
+  try {
+    new Intl.DateTimeFormat("en", { timeZone });
+  } catch {
+    return null;
+  }
+  const open = /^([01]\d|2[0-3]):[0-5]\d$/.test(store.service_open_time || "")
+    ? store.service_open_time : "09:00";
+  const close = /^([01]\d|2[0-3]):[0-5]\d$/.test(store.service_close_time || "")
+    ? store.service_close_time : "17:00";
+  if (close <= open) return null;
+  const days = Array.isArray(store.service_days)
+    ? [...new Set(store.service_days.map(Number).filter(day => Number.isSafeInteger(day) && day >= 0 && day <= 6))]
+    : [1, 2, 3, 4, 5, 6];
+  const buffer = Number.isSafeInteger(Number(store.service_buffer_minutes)) &&
+    Number(store.service_buffer_minutes) >= 0 && Number(store.service_buffer_minutes) <= 60 &&
+    Number(store.service_buffer_minutes) % 15 === 0
+    ? Number(store.service_buffer_minutes) : 0;
+  const depositPercent = Number.isSafeInteger(Number(store.service_deposit_percent)) &&
+    Number(store.service_deposit_percent) >= 0 && Number(store.service_deposit_percent) <= 100
+    ? Number(store.service_deposit_percent) : 0;
+  return { timeZone, open, close, days, buffer, depositPercent };
+}
+
+function serviceDateWeekday(date) {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+}
+
+function serviceAppointmentPublic(row) {
+  return {
+    id: row.id,
+    service_name: row.service_name,
+    starts_at: row.starts_at,
+    status: row.status,
+    payment_status: row.payment_status
+  };
+}
+
+function serviceAppointmentPaymentMatches(transaction, appointment) {
+  return transaction?.reference === appointment.payment_reference
+    && Number(transaction.amount) === Number(appointment.deposit_cents)
+    && transaction.currency === appointment.currency;
+}
+
+async function serviceCatalogProduct(env, tenantId, serviceId) {
+  const row = await env.DB.prepare(
+    "SELECT payload FROM catalog_snapshots WHERE tenant_id=?"
+  ).bind(tenantId).first();
+  if (!row) return { error: jsonResponse({ error: "This shop has not published a catalogue yet." }, 409) };
+  let catalog;
+  try {
+    catalog = JSON.parse(row.payload);
+  } catch {
+    throw new Error("The published shop catalogue is invalid.");
+  }
+  if (catalog?.store?.offer_type !== "services") {
+    return { error: jsonResponse({ error: "This shop is not accepting service appointments." }, 409) };
+  }
+  const product = (catalog.products || []).find(item => String(item.id) === String(serviceId));
+  if (!product || !Number.isSafeInteger(Number(product.duration_minutes)) ||
+      Number(product.duration_minutes) < 15 || Number(product.duration_minutes) > 240 ||
+      Number(product.duration_minutes) % 15 !== 0) {
+    return { error: jsonResponse({ error: "This service is unavailable." }, 404) };
+  }
+  const schedule = serviceSchedule(catalog);
+  if (!schedule) return { error: jsonResponse({ error: "The service schedule is not configured correctly." }, 409) };
+  return { catalog, product, schedule };
+}
+
+async function limitServiceAppointmentRequests(request, env, tenantId) {
+  if (!env.TENANTS) return true;
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const key = `service-appointment-limit:${tenantId}:${await sha256Hex(ip)}`;
+  const current = Number(await env.TENANTS.get(key) || 0);
+  if (current >= 10) return false;
+  await env.TENANTS.put(key, String(current + 1), { expirationTtl: 3600 });
+  return true;
+}
+
+async function handleServiceAvailability(request, env, tenantId) {
+  if (request.method !== "GET") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, OPTIONS" });
+  if (!env.DB) return jsonResponse({ error: "Appointment storage is not configured." }, 503);
+  const url = new URL(request.url);
+  const date = url.searchParams.get("date") || "";
+  const serviceId = url.searchParams.get("service_id") || "";
+  if (!validServiceDate(date) || !serviceId || serviceId.length > 80) {
+    return jsonResponse({ error: "Choose a valid service and date." }, 400);
+  }
+  const loaded = await serviceCatalogProduct(env, tenantId, serviceId);
+  if (loaded.error) return loaded.error;
+  const { product, schedule } = loaded;
+  if (!schedule.days.includes(serviceDateWeekday(date))) {
+    return jsonResponse({ date, timezone: schedule.timeZone, slots: [] }, 200, { "Cache-Control": "private, no-store" });
+  }
+  const duration = Number(product.duration_minutes);
+  const openMinutes = Number(schedule.open.slice(0, 2)) * 60 + Number(schedule.open.slice(3));
+  const closeMinutes = Number(schedule.close.slice(0, 2)) * 60 + Number(schedule.close.slice(3));
+  const midnight = localDateTimeToUtc(date, "00:00", schedule.timeZone);
+  const [year, month, day] = date.split("-").map(Number);
+  const nextDate = new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10);
+  const nextMidnight = localDateTimeToUtc(nextDate, "00:00", schedule.timeZone);
+  if (!midnight || !nextMidnight) return jsonResponse({ error: "Could not resolve this date in the shop timezone." }, 400);
+  const from = new Date(midnight.getTime() - 4 * 60 * 60 * 1000).toISOString();
+  const to = new Date(nextMidnight.getTime() + 4 * 60 * 60 * 1000).toISOString();
+  const now = new Date().toISOString();
+  const occupiedRows = await env.DB.prepare(
+    `SELECT slot_start FROM storefront_appointment_slots
+     WHERE tenant_id=? AND slot_start>=? AND slot_start<? AND expires_at>?`
+  ).bind(tenantId, from, to, now).all();
+  const occupied = new Set((occupiedRows.results || []).map(row => String(row.slot_start)));
+  const slots = [];
+  for (let minutes = openMinutes; minutes + duration + schedule.buffer <= closeMinutes; minutes += 15) {
+    const localTime = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+    const start = localDateTimeToUtc(date, localTime, schedule.timeZone);
+    if (!start || start.getTime() < Date.now() + 15 * 60 * 1000) continue;
+    const reservedUntil = start.getTime() + (duration + schedule.buffer) * 60 * 1000;
+    let available = true;
+    for (let slot = start.getTime(); slot < reservedUntil; slot += 15 * 60 * 1000) {
+      if (occupied.has(new Date(slot).toISOString())) {
+        available = false;
+        break;
+      }
+    }
+    if (!available) continue;
+    const label = new Intl.DateTimeFormat("en", {
+      timeZone: schedule.timeZone,
+      hour: "numeric",
+      minute: "2-digit"
+    }).format(start);
+    slots.push({ starts_at: start.toISOString(), label });
+  }
+  return jsonResponse({ date, timezone: schedule.timeZone, slots }, 200, { "Cache-Control": "private, no-store" });
+}
+
+async function verifyServiceAppointmentPayment(env, tenantId, reference) {
+  if (!/^ESHOP_[A-F0-9]{32}$/.test(reference)) {
+    return jsonResponse({ error: "A valid payment reference is required." }, 400);
+  }
+  if (!env.PAYSTACK_SECRET_KEY) return jsonResponse({ error: "Paystack is not configured on this server." }, 503);
+  const appointment = await env.DB.prepare(
+    "SELECT * FROM storefront_service_appointments WHERE tenant_id=? AND payment_reference=?"
+  ).bind(tenantId, reference).first();
+  if (!appointment) return jsonResponse({ error: "Payment reference not found." }, 404);
+  if (appointment.payment_status === "paid") {
+    return jsonResponse({
+      appointment: { id: appointment.id, status: appointment.status, payment_status: "paid" }
+    });
+  }
+  let response;
+  try {
+    response = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
+      headers: paystackAuthorization(env.PAYSTACK_SECRET_KEY)
+    });
+  } catch {
+    return jsonResponse({ error: "Could not reach Paystack to verify this payment." }, 502);
+  }
+  if (!response.ok) return jsonResponse({ error: "Paystack could not verify this payment." }, 502);
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    return jsonResponse({ error: "Paystack returned an unreadable verification response." }, 502);
+  }
+  const transaction = result?.data;
+  if (!serviceAppointmentPaymentMatches(transaction, appointment)) {
+    return jsonResponse({ error: "Payment details do not match this appointment." }, 409);
+  }
+  const paymentStatus = transaction.status === "success" ? "paid"
+    : ["failed", "abandoned"].includes(transaction.status) ? "failed" : "pending";
+  await env.DB.prepare(
+    `UPDATE storefront_service_appointments SET payment_status=?,updated_at=?
+     WHERE tenant_id=? AND id=? AND payment_reference=? AND payment_status!='paid'`
+  ).bind(paymentStatus, new Date().toISOString(), tenantId, appointment.id, reference).run();
+  return jsonResponse({
+    appointment: { id: appointment.id, status: appointment.status, payment_status: paymentStatus }
+  });
+}
+
+async function handleServiceAppointments(request, env, tenantId, action = "appointments") {
+  if (!env.DB) return jsonResponse({ error: "Appointment storage is not configured." }, 503);
+  if (action === "availability") return await handleServiceAvailability(request, env, tenantId);
+  if (action === "payment") {
+    if (request.method !== "GET") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, OPTIONS" });
+    const reference = new URL(request.url).searchParams.get("reference") || "";
+    return await verifyServiceAppointmentPayment(env, tenantId, reference);
+  }
+  if (request.method === "GET" || request.method === "PATCH") {
+    const isOwner = tenantId === "main"
+      ? await authorizeMainOwner(request, env)
+      : await authorizeTenantOwner(request, env, tenantId) || await authorizeTenantAccount(request, env, tenantId);
+    if (!isOwner && !await authorizeAdmin(request, env)) {
+      return jsonResponse({ error: "Shop owner authorization required." }, 401);
+    }
+  }
+  if (request.method === "GET") {
+    const listed = await env.DB.prepare(
+      "SELECT * FROM storefront_service_appointments WHERE tenant_id=? ORDER BY starts_at DESC LIMIT 200"
+    ).bind(tenantId).all();
+    return jsonResponse({ appointments: listed.results || [] }, 200, { "Cache-Control": "private, no-store" });
+  }
+  if (request.method === "PATCH") {
+    const raw = await request.text();
+    if (new TextEncoder().encode(raw).byteLength > 4096) return jsonResponse({ error: "Appointment update is too large." }, 413);
+    let input;
+    try { input = JSON.parse(raw); } catch { return jsonResponse({ error: "Request body must be valid JSON." }, 400); }
+    const id = typeof input?.id === "string" ? input.id.trim() : "";
+    const operation = typeof input?.action === "string" ? input.action : "";
+    if (!/^[a-f0-9-]{36}$/i.test(id) || !["confirm", "reject"].includes(operation)) {
+      return jsonResponse({ error: "Choose a valid appointment and action." }, 400);
+    }
+    const appointment = await env.DB.prepare(
+      "SELECT * FROM storefront_service_appointments WHERE tenant_id=? AND id=?"
+    ).bind(tenantId, id).first();
+    if (!appointment) return jsonResponse({ error: "Appointment not found." }, 404);
+    const now = new Date().toISOString();
+    if (appointment.status !== "pending" || appointment.request_expires_at <= now || appointment.starts_at <= now) {
+      return jsonResponse({ error: "Only active pending appointment requests can be updated." }, 409);
+    }
+    if (operation === "reject") {
+      const result = await env.DB.batch([
+        env.DB.prepare(
+          "UPDATE storefront_service_appointments SET status='rejected',updated_at=? WHERE tenant_id=? AND id=? AND status='pending'"
+        ).bind(now, tenantId, id),
+        env.DB.prepare(
+          `DELETE FROM storefront_appointment_slots
+           WHERE tenant_id=? AND appointment_id=? AND EXISTS (
+             SELECT 1 FROM storefront_service_appointments
+             WHERE tenant_id=? AND id=? AND status='rejected'
+           )`
+        ).bind(tenantId, id, tenantId, id)
+      ]);
+      if (!Number(result[0]?.meta?.changes || 0)) return jsonResponse({ error: "Appointment changed; reload and try again." }, 409);
+    } else if (Number(appointment.deposit_percent) > 0) {
+      if (!env.PAYSTACK_SECRET_KEY) return jsonResponse({ error: "Connect Paystack before confirming appointments that require a deposit." }, 409);
+      if (appointment.currency !== "KES" || Number(appointment.deposit_cents) < 1) {
+        return jsonResponse({ error: "This appointment does not have a payable KES deposit configured." }, 409);
+      }
+      const subaccount = await getEffectivePaystackSubaccount(env, tenantId);
+      if (!subaccount?.subaccount_code || subaccount.status !== "connected") {
+        return jsonResponse({ error: "Select an active Paystack account in Craft before confirming this appointment." }, 409);
+      }
+      const reference = paystackReference();
+      const reserved = await env.DB.prepare(
+        `UPDATE storefront_service_appointments
+         SET status='confirming',payment_status='initializing',payment_reference=?,payment_authorization_url=NULL,updated_at=?
+         WHERE tenant_id=? AND id=? AND status='pending' AND request_expires_at>? AND starts_at>?`
+      ).bind(reference, now, tenantId, id, now, now).run();
+      if (!Number(reserved.meta?.changes || 0)) {
+        return jsonResponse({ error: "Appointment changed; reload and try again." }, 409);
+      }
+      let response;
+      try {
+        response = await fetch("https://api.paystack.co/transaction/initialize", {
+          method: "POST",
+          headers: paystackAuthorization(env.PAYSTACK_SECRET_KEY),
+          body: JSON.stringify({
+            email: appointment.customer_email,
+            amount: Number(appointment.deposit_cents),
+            currency: appointment.currency,
+            subaccount: subaccount.subaccount_code,
+            transaction_charge: 0,
+            bearer: "subaccount",
+            reference,
+            callback_url: paystackAppointmentCallbackUrl(tenantId, reference),
+            metadata: { tenant_id: tenantId, appointment_id: id }
+          })
+        });
+      } catch {
+        response = null;
+      }
+      const failInitialization = async () => {
+        await env.DB.prepare(
+          `UPDATE storefront_service_appointments
+           SET status='pending',payment_status='failed',payment_reference=NULL,payment_authorization_url=NULL,updated_at=?
+           WHERE tenant_id=? AND id=? AND payment_reference=? AND status='confirming'`
+        ).bind(new Date().toISOString(), tenantId, id, reference).run();
+      };
+      if (!response?.ok) {
+        await failInitialization();
+        return jsonResponse({ error: "Paystack could not start the appointment deposit checkout." }, 502);
+      }
+      let result;
+      try { result = await response.json(); } catch { result = null; }
+      let authorizationUrl;
+      try { authorizationUrl = new URL(result?.data?.authorization_url); } catch { authorizationUrl = null; }
+      if (!authorizationUrl || authorizationUrl.protocol !== "https:" ||
+          authorizationUrl.hostname !== "checkout.paystack.com" || result?.data?.reference !== reference) {
+        await failInitialization();
+        return jsonResponse({ error: "Paystack returned an invalid appointment deposit link." }, 502);
+      }
+      if (appointment.starts_at <= new Date().toISOString()) {
+        await failInitialization();
+        return jsonResponse({ error: "The appointment time has passed; decline the request and ask the customer to choose a new slot." }, 409);
+      }
+      const updatedAt = new Date().toISOString();
+      const confirmed = await env.DB.batch([
+        env.DB.prepare(
+          `UPDATE storefront_service_appointments
+           SET status='confirmed',payment_status='pending',payment_authorization_url=?,updated_at=?
+           WHERE tenant_id=? AND id=? AND payment_reference=? AND status='confirming' AND starts_at>?`
+        ).bind(authorizationUrl.toString(), updatedAt, tenantId, id, reference, updatedAt),
+        env.DB.prepare(
+          `UPDATE storefront_appointment_slots SET expires_at=? WHERE tenant_id=? AND appointment_id=?
+           AND EXISTS (SELECT 1 FROM storefront_service_appointments
+             WHERE tenant_id=? AND id=? AND status='confirmed')`
+        ).bind(appointment.slot_reserved_until, tenantId, id, tenantId, id)
+      ]);
+      if (!Number(confirmed[0]?.meta?.changes || 0)) {
+        await failInitialization();
+        return jsonResponse({ error: "Appointment confirmation did not complete; reload the booking." }, 409);
+      }
+    } else {
+      const confirmed = await env.DB.batch([
+        env.DB.prepare(
+          `UPDATE storefront_service_appointments SET status='confirmed',updated_at=?
+           WHERE tenant_id=? AND id=? AND status='pending' AND request_expires_at>? AND starts_at>?`
+        ).bind(now, tenantId, id, now, now),
+        env.DB.prepare(
+          `UPDATE storefront_appointment_slots SET expires_at=? WHERE tenant_id=? AND appointment_id=?
+           AND EXISTS (SELECT 1 FROM storefront_service_appointments
+             WHERE tenant_id=? AND id=? AND status='confirmed')`
+        ).bind(appointment.slot_reserved_until, tenantId, id, tenantId, id)
+      ]);
+      if (!Number(confirmed[0]?.meta?.changes || 0)) return jsonResponse({ error: "Appointment changed; reload and try again." }, 409);
+    }
+    const updated = await env.DB.prepare(
+      "SELECT * FROM storefront_service_appointments WHERE tenant_id=? AND id=?"
+    ).bind(tenantId, id).first();
+    return jsonResponse({ appointment: updated }, 200, { "Cache-Control": "private, no-store" });
+  }
+  if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, PATCH, OPTIONS" });
+  if (!await limitServiceAppointmentRequests(request, env, tenantId)) {
+    return jsonResponse({ error: "Too many appointment requests from this connection. Try again later." }, 429);
+  }
+  const raw = await request.text();
+  if (new TextEncoder().encode(raw).byteLength > 8192) return jsonResponse({ error: "Appointment request exceeds the 8 KB limit." }, 413);
+  let input;
+  try { input = JSON.parse(raw); } catch { return jsonResponse({ error: "Request body must be valid JSON." }, 400); }
+  const idempotencyKey = typeof input?.idempotency_key === "string" ? input.idempotency_key.trim() : "";
+  const serviceId = typeof input?.service_id === "string" || typeof input?.service_id === "number"
+    ? String(input.service_id).trim().slice(0, 80) : "";
+  const startsAtValue = typeof input?.starts_at === "string" ? input.starts_at : "";
+  const customerName = cleanText(input?.customer_name, 160).trim();
+  const customerEmail = cleanText(input?.customer_email, 240).trim().toLowerCase();
+  const customerPhone = cleanText(input?.customer_phone, 40).trim();
+  const start = new Date(startsAtValue);
+  if (!/^[a-f0-9-]{36}$/i.test(idempotencyKey) || !serviceId ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(startsAtValue) ||
+      !Number.isFinite(start.getTime()) || start.toISOString() !== startsAtValue ||
+      !customerName || !EMAIL_PATTERN.test(customerEmail) ||
+      !/^\+?[0-9][0-9 ()-]{6,22}$/.test(customerPhone)) {
+    return jsonResponse({ error: "An appointment needs a valid request key, service, time, name, email, and phone number." }, 400);
+  }
+  const existing = await env.DB.prepare(
+    "SELECT * FROM storefront_service_appointments WHERE tenant_id=? AND idempotency_key=?"
+  ).bind(tenantId, idempotencyKey).first();
+  if (existing) return jsonResponse({ appointment: serviceAppointmentPublic(existing), duplicate: true }, 200, { "Cache-Control": "private, no-store" });
+  const loaded = await serviceCatalogProduct(env, tenantId, serviceId);
+  if (loaded.error) return loaded.error;
+  const { catalog, product, schedule } = loaded;
+  const local = zonedDateParts(start, schedule.timeZone);
+  const localDate = `${String(local.year).padStart(4, "0")}-${String(local.month).padStart(2, "0")}-${String(local.day).padStart(2, "0")}`;
+  const localMinutes = local.hour * 60 + local.minute;
+  const duration = Number(product.duration_minutes);
+  const openMinutes = Number(schedule.open.slice(0, 2)) * 60 + Number(schedule.open.slice(3));
+  const closeMinutes = Number(schedule.close.slice(0, 2)) * 60 + Number(schedule.close.slice(3));
+  if (start.getUTCSeconds() !== 0 || local.second !== 0 || local.minute % 15 !== 0 ||
+      !schedule.days.includes(serviceDateWeekday(localDate)) ||
+      localMinutes < openMinutes || localMinutes + duration + schedule.buffer > closeMinutes ||
+      start.getTime() < Date.now() + 15 * 60 * 1000) {
+    return jsonResponse({ error: "That appointment time is no longer available. Choose another slot." }, 409);
+  }
+  const currency = cleanText(catalog.store?.currency, 8) || "KES";
+  const priceCents = Math.round(Number(product.price) * 100);
+  if (!Number.isSafeInteger(priceCents) || priceCents < 0 ||
+      (schedule.depositPercent > 0 && (currency !== "KES" || priceCents < 1))) {
+    return jsonResponse({ error: "The service price or deposit settings are invalid." }, 409);
+  }
+  const depositCents = schedule.depositPercent > 0 ? Math.ceil(priceCents * schedule.depositPercent / 100) : 0;
+  const now = new Date().toISOString();
+  const requestExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const endsAt = new Date(start.getTime() + duration * 60 * 1000).toISOString();
+  const slotReservedUntil = new Date(start.getTime() + (duration + schedule.buffer) * 60 * 1000).toISOString();
+  const appointmentId = crypto.randomUUID();
+  const slotStatements = [];
+  for (let slot = start.getTime(); slot < Date.parse(slotReservedUntil); slot += 15 * 60 * 1000) {
+    const slotStart = new Date(slot).toISOString();
+    slotStatements.push(env.DB.prepare(
+      "INSERT INTO storefront_appointment_slots (tenant_id,slot_start,appointment_id,expires_at) VALUES (?,?,?,?)"
+    ).bind(tenantId, slotStart, appointmentId, requestExpiresAt));
+  }
+  try {
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM storefront_appointment_slots WHERE tenant_id=? AND expires_at<=?").bind(tenantId, now),
+      env.DB.prepare(
+        `INSERT INTO storefront_service_appointments
+         (id,tenant_id,idempotency_key,service_id,service_name,service_price_cents,currency,duration_minutes,
+          starts_at,ends_at,slot_reserved_until,timezone,customer_name,customer_email,customer_phone,status,
+          request_expires_at,deposit_percent,deposit_cents,payment_status,created_at,updated_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?, ?,?,'pending',?,?,?,'not_required',?,?)`
+      ).bind(appointmentId, tenantId, idempotencyKey, String(product.id), cleanText(product.name, 240),
+        priceCents, currency, duration, start.toISOString(), endsAt, slotReservedUntil, schedule.timeZone,
+        customerName, customerEmail, customerPhone, requestExpiresAt, schedule.depositPercent, depositCents, now, now),
+      ...slotStatements
+    ]);
+  } catch (error) {
+    const duplicate = await env.DB.prepare(
+      "SELECT * FROM storefront_service_appointments WHERE tenant_id=? AND idempotency_key=?"
+    ).bind(tenantId, idempotencyKey).first();
+    if (duplicate) return jsonResponse({ appointment: serviceAppointmentPublic(duplicate), duplicate: true }, 200, { "Cache-Control": "private, no-store" });
+    if (/UNIQUE constraint failed: storefront_appointment_slots\.tenant_id, storefront_appointment_slots\.slot_start/i.test(String(error?.message))) {
+      return jsonResponse({ error: "That time was just booked. Choose another available slot." }, 409);
+    }
+    throw error;
+  }
+  return jsonResponse({
+    appointment: { id: appointmentId, service_name: cleanText(product.name, 240), starts_at: start.toISOString(), status: "pending" }
+  }, 201, { "Cache-Control": "private, no-store" });
+}
+
 function paystackAuthorization(secret) {
   return { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" };
 }
@@ -3608,6 +4165,13 @@ function paystackCallbackUrl(tenantId, orderNumber, reference) {
   return callback.toString();
 }
 
+function paystackAppointmentCallbackUrl(tenantId, reference) {
+  const host = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
+  const callback = new URL(`https://${host}/`);
+  callback.hash = `/service-payment?${new URLSearchParams({ reference })}`;
+  return callback.toString();
+}
+
 async function updateOrderPayment(env, order, paymentStatus, paidAt = null) {
   const updatedAt = new Date().toISOString();
   if (paymentStatus === "paid") {
@@ -3864,7 +4428,20 @@ async function handlePaystackWebhook(request, env) {
   const order = await env.DB.prepare(
     "SELECT * FROM storefront_orders WHERE payment_reference=?"
   ).bind(reference).first();
-  if (!order) return jsonResponse({ error: "Payment reference not found." }, 404);
+  if (!order) {
+    const appointment = await env.DB.prepare(
+      "SELECT * FROM storefront_service_appointments WHERE payment_reference=?"
+    ).bind(reference).first();
+    if (!appointment) return jsonResponse({ error: "Payment reference not found." }, 404);
+    if (!serviceAppointmentPaymentMatches(event.data, appointment) || event.data.status !== "success") {
+      return jsonResponse({ error: "Payment does not match the expected appointment deposit and currency." }, 409);
+    }
+    await env.DB.prepare(
+      `UPDATE storefront_service_appointments SET payment_status='paid',updated_at=?
+       WHERE tenant_id=? AND id=? AND payment_reference=? AND payment_status!='paid'`
+    ).bind(new Date().toISOString(), appointment.tenant_id, appointment.id, reference).run();
+    return jsonResponse({ ok: true, payment_status: "paid", appointment_id: appointment.id });
+  }
   if (!transactionMatchesOrder(event.data, order) || event.data.status !== "success") {
     return jsonResponse({ error: "Payment does not match the expected order amount and currency." }, 409);
   }
@@ -5443,7 +6020,7 @@ async function handleSeoFile(env, tenantId, pathname, origin) {
 }
 
 function addCloudflareMode(html, includeVisitRuntime = false) {
-  let upgraded = html.replace(
+  let upgraded = addStorefrontManifestLink(html).replace(
     '<div id="app"></div>',
     '<div id="app"></div><script>window.__ESHOP_CLOUDFLARE_STOREFRONT__ = true;</script>'
   );
@@ -5463,7 +6040,7 @@ function addCloudflareMode(html, includeVisitRuntime = false) {
   }
 
   if (!/data-craft-cloudflare-runtime/i.test(upgraded)) {
-    const runtimeTag = '<script src="/craft-storefront-cloudflare.js" data-craft-cloudflare-runtime defer></script>';
+    const runtimeTag = '<script src="/craft-storefront-cloudflare.js?v=app-install-1" data-craft-cloudflare-runtime defer></script>';
     upgraded = /<\/body>/i.test(upgraded)
       ? upgraded.replace(/<\/body>/i, `${runtimeTag}</body>`)
       : `${upgraded}${runtimeTag}`;
@@ -5643,6 +6220,12 @@ export default {
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
           return await handleStorefrontHoldRequests(request, env, tenantId);
         }
+        const serviceAppointmentsMatch = url.pathname.match(/^\/api\/service-appointments(?:\/(availability|payment))?$/);
+        if (serviceAppointmentsMatch) {
+          const tenantId = tenantIdFromRequest(request, env);
+          if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
+          return await handleServiceAppointments(request, env, tenantId, serviceAppointmentsMatch[1] || "appointments");
+        }
         if (url.pathname === "/api/inventory/allocations") {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
@@ -5763,6 +6346,9 @@ export default {
     const hostTenant = await requireTenant(request, env, hostTenantId);
     if (hostTenantId !== "main" && !hostTenant) {
       return new Response("Shop not found.", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+    }
+    if (request.method === "GET" && url.pathname === "/manifest.webmanifest") {
+      return await handleStorefrontManifest(request, env, hostTenantId);
     }
     const seoOrigin = canonicalOrigin(url, hostTenantId, DOMAIN_ROOT);
     let seoCatalog = null;

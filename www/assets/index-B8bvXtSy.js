@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/web-BtYVyky0.js","assets/app-BRRTa1H9.js","assets/app-BdPRDpn5.css"])))=>i.map(i=>d[i]);
+import{r as o,_ as i}from"./app-BRRTa1H9.js";var n;(function(e){e.Latin="LATIN",e.Chinese="CHINESE",e.Devanagari="DEVANAGARI",e.Japanese="JAPANESE",e.Korean="KOREAN"})(n||(n={}));const a=o("TextRecognition",{web:()=>i(()=>import("./web-BtYVyky0.js"),__vite__mapDeps([0,1,2])).then(e=>new e.TextRecognitionWeb)});export{n as Script,a as TextRecognition};

@@ -69,7 +69,15 @@ test("Litrus editor preview supports product details, add to bag, and wishlist h
   }
 });
 
-test("published Litrus catalog preserves holds, renders product reservations, and uses compact categories", () => {
+test("existing website editors preserve the saved theme instead of forcing Litrus", async () => {
+  const app = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const start = app.indexOf("renderWebsiteEditor(isNewWebsite = false) {");
+  const end = app.indexOf("\n  renderWebsiteStoreEditor(", start);
+  assert.ok(start >= 0 && end > start);
+  assert.match(app.slice(start, end), /const selectedTheme = !isNewWebsite\s*\?\s*requestedTheme\s*:/);
+});
+
+test("published Litrus catalog renders service booking forms and uses compact categories", () => {
   const dom = new JSDOM("", { url: "https://shop.example/", runScripts: "outside-only" });
   const data = {
     shop: { key: "example", products: [] },
@@ -78,7 +86,12 @@ test("published Litrus catalog preserves holds, renders product reservations, an
       shop: '<main class="sp-main"><div class="sp-top"><h1></h1><p></p></div><section class="prods"></section></main>',
       "p/template": '<main class="sp-main"><div class="sp-top"><h1></h1></div><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p><div class="sp-buy"><button data-act="addqty">Add to cart</button></div></div></div></main>'
     },
-    templates: { productCard: '<article data-pid=""><h2 class="p-title"></h2><button data-add="">Add to bag</button></article>' }
+    shell: {
+      head: '<header><nav class="sp-nav"><a href="#">All products</a></nav><button class="sp-cartbtn">Cart</button><input type="search" placeholder="Search products"></header>',
+      foot: '<a href="#">Delivery &amp; returns</a>',
+      tail: '<a class="sp-float" data-go="cart">Cart</a>'
+    },
+    templates: { productCard: '<article data-pid=""><h2 class="p-title"></h2><button class="p-btn" data-act="addqty">Add to bag</button></article>' }
   };
   const catalog = {
     categories: [{ id: 8, name: "Shoes" }, { id: 9, name: "Bags", image: "/category.jpg" }],
@@ -94,35 +107,96 @@ test("published Litrus catalog preserves holds, renders product reservations, an
       ],
       taxonomy_category_name: "Apparel & Accessories > Shoes > Sneakers",
       taxonomy_attributes: [{ attributeName: "Sneaker style", value: "Athletic" }],
-      stock: 3, booking_enabled: true
+      stock: 3, booking_enabled: true, duration_minutes: 45
     }],
-    store: { name: "Example", currency: "KES" }
+    store: { name: "Example", currency: "KES", offer_type: "services", service_deposit_percent: 25, service_timezone: "Africa/Nairobi" }
   };
 
   try {
     dom.window.eval(runtime);
     dom.window.litrusRefreshPublishedCatalog(data, catalog);
+    assert.equal(data.shop.offerType, "services");
+    assert.equal(data.shop.serviceDepositPercent, 25);
+    assert.equal(data.shop.serviceTimezone, "Africa/Nairobi");
     assert.equal(data.shop.products[0].booking_enabled, true);
+    assert.equal(data.shop.products[0].duration_minutes, 45);
     assert.equal(data.shop.products[0].stock, 3);
     const categoryNav = new dom.window.DOMParser().parseFromString(data.pages.home, "text/html").querySelector(".cats");
     assert.equal(categoryNav.querySelectorAll(".sole-category-chip").length, 2);
     assert.equal(categoryNav.querySelectorAll("img").length, 0);
+    const home = new dom.window.DOMParser().parseFromString(data.pages.home, "text/html");
+    const serviceCard = home.querySelector('[data-pid="42"]');
+    assert.equal(serviceCard.querySelector("button").textContent, "Book now");
+    assert.equal(serviceCard.querySelector("button").dataset.go, "p/42");
+    assert.equal(serviceCard.querySelector("button").hasAttribute("data-add"), false);
     const detail = new dom.window.DOMParser().parseFromString(data.pages["p/42"], "text/html");
-    assert.equal(detail.querySelector(".sp-buy button")?.textContent, "Add to bag");
+    assert.equal(detail.querySelector(".sp-buy"), null);
+    assert.equal(detail.querySelector("[data-act='buynow']"), null);
     assert.equal(detail.querySelectorAll(".sp-gallery-thumbs button").length, 2);
-    assert.equal(detail.querySelectorAll("[data-variant-option]").length, 2);
-    assert.ok(detail.querySelector("[data-litrus-product-hold-form]"));
-    assert.equal(detail.querySelector("[data-litrus-product-hold-form] input[name='quantity']")?.max, "3");
+    assert.equal(detail.querySelectorAll("[data-variant-option]").length, 0);
+    assert.ok(detail.querySelector("[data-litrus-service-booking-form]"));
+    assert.equal(detail.querySelector("[data-litrus-service-booking-form] h2").textContent, "Book this service");
+    assert.equal(detail.querySelector("[data-litrus-service-booking-form] button[type='submit']").textContent, "Request booking");
+    assert.equal(detail.querySelector("[data-litrus-product-hold-form]"), null);
+    assert.match(editor, /duration_minutes:Number\(product\.duration_minutes\)\|\|60/);
+    assert.match(editor, /service_deposit_percent:SHOP\.serviceDepositPercent/);
     assert.match(editor, /booking_enabled:product\.booking_enabled===true\|\|product\.booking_enabled===1/);
     assert.match(editor, /booking_enabled:pr\[11\]===true/);
     const shop = new dom.window.DOMParser().parseFromString(data.pages.shop, "text/html");
-    assert.ok(shop.querySelector('[data-catalog-filter="min-price"]'));
-    assert.ok(shop.querySelector('[data-catalog-filter="size"]'));
-    assert.ok(shop.querySelector('[data-catalog-filter="color"]'));
-    assert.ok(shop.querySelector('[data-catalog-filter="product-type"]'));
-    assert.ok(shop.querySelector('[data-catalog-filter="attribute:Sneaker style"]'));
+    assert.equal(shop.querySelector(".sp-top h1").textContent, "All services");
+    assert.equal(shop.querySelector(".sp-top p").textContent, "1 service");
+    assert.equal(shop.querySelector("[data-catalog-filters]"), null);
+    const header = new dom.window.DOMParser().parseFromString(data.shell.head, "text/html");
+    assert.equal(header.querySelector(".sp-nav").textContent.trim(), "ShoesBagsAll services");
+    assert.equal(header.querySelector(".sp-cartbtn").textContent, "Book now");
+    assert.equal(header.querySelector(".sp-cartbtn").dataset.go, "shop");
+    assert.equal(header.querySelector('input[type="search"]').placeholder, "Search services");
+    assert.match(data.shell.foot, /Booking &amp; cancellations/);
+    assert.equal(new dom.window.DOMParser().parseFromString(data.shell.tail, "text/html").querySelector(".sp-float"), null);
   } finally {
     dom.window.close();
+  }
+});
+
+test("published service cards route to booking details instead of adding to cart", () => {
+  const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/", runScripts: "outside-only" });
+  const { window } = dom;
+  const data = {
+    shop: { key: "service-shop", products: [] },
+    pages: {
+      home: '<main class="sp-main"><section class="prods"><article data-pid="old"><button class="p-btn" data-add="old">Add to bag</button></article></section></main>',
+      shop: '<main class="sp-main"><div class="sp-top"><h1></h1><p></p></div><section class="prods"></section></main>',
+      "p/template": '<main class="sp-main"><div class="sp-top"><h1></h1></div><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p><div class="sp-buy"><button class="p-btn" data-act="addqty">Add to bag</button></div></div></div></main>'
+    },
+    templates: { productCard: '<article data-pid=""><button class="p-btn" data-act="addqty">Add to bag</button></article>' }
+  };
+  const catalog = {
+    categories: [],
+    products: [{ id: 42, name: "Consultation", price: 2500, images: [], stock: 5 }],
+    store: { name: "Example", currency: "KES", offer_type: "services" }
+  };
+  const routes = [];
+  const trackedEvents = [];
+  window.__ESHOP_THEME_CATALOG__ = catalog;
+  window.__ESHOP_TRACK_STOREFRONT_EVENT__ = (id, type) => trackedEvents.push({ id, type });
+  window.SPRT = options => {
+    window.document.getElementById("store").innerHTML = options.page("shop");
+    return {
+      go(route) {
+        routes.push(route);
+        window.document.getElementById("store").innerHTML = options.page(route);
+      }
+    };
+  };
+
+  try {
+    window.eval(runtime);
+    window.litrusStartLiveStore(data);
+    window.document.querySelector(".p-btn").click();
+    assert.deepEqual(routes, ["p/42"]);
+    assert.deepEqual(trackedEvents, []);
+  } finally {
+    window.close();
   }
 });
 
@@ -324,5 +398,178 @@ test("Litrus product hearts save to wishlist without duplicate adapter controls"
     assert.equal(heart.getAttribute("aria-pressed"), "true");
   } finally {
     window.close();
+  }
+});
+
+test("Litrus requires a product-or-service choice and switches shop types", () => {
+  const offerSelect = editor.match(/<select id="wOfferType" required>([\s\S]*?)<\/select>/)?.[1] || "";
+  const optionsStart = editor.indexOf("const OFFER_TYPE_OPTIONS=");
+  const optionsEnd = editor.indexOf("\nconst DEFAULT_SERVICE_CATEGORIES", optionsStart);
+  const helperStart = editor.indexOf("function applyOfferTypeUI(value){");
+  const helperEnd = editor.indexOf("\nfunction read(){", helperStart);
+  assert.match(offerSelect, /value="products"/);
+  assert.match(offerSelect, /value="services"/);
+  assert.ok(optionsStart >= 0 && optionsEnd > optionsStart);
+  assert.ok(helperStart >= 0 && helperEnd > helperStart);
+
+  const dom = new JSDOM(`
+    <select id="wType"><option value="">Choose products or services first</option></select>
+    <span id="wTypeQuestion"></span><span id="wWhatQuestion"></span><input id="wWhat">
+    <p id="wServiceModeNote" hidden></p><fieldset id="wServiceSettings" hidden></fieldset>
+    <label id="editProdDurationWrap" hidden></label><ol id="wzSteps"><li data-s="2"></li></ol>
+    <h2 id="wCatalogHeading"></h2><button id="wProductsTabBtn"></button>
+    <span id="wProductsHeading"></span><button id="wAdd"></button><p id="wProductsHint"></p>
+    <h3 id="productEditorTitle"></h3><span id="editProdNameLabelText"></span>
+    <button id="editProdSave"></button><p id="wCategoriesHint"></p>
+  `, { runScripts: "outside-only" });
+
+  try {
+    dom.window.eval(`
+      var SHOP = {};
+      var g = id => document.getElementById(id);
+      ${editor.slice(optionsStart, optionsEnd)}
+      ${editor.slice(helperStart, helperEnd)}
+      window.applyOfferTypeUI = applyOfferTypeUI;
+    `);
+
+    dom.window.applyOfferTypeUI("services");
+    const typeSelect = dom.window.document.getElementById("wType");
+    assert.equal(dom.window.SHOP.offerType, "services");
+    assert.deepEqual([...typeSelect.options].map(option => option.value), [
+      "", "salon", "barber", "repair", "wellness", "other-service"
+    ]);
+    assert.equal(dom.window.document.getElementById("wServiceModeNote").hidden, false);
+    assert.equal(dom.window.document.getElementById("wServiceSettings").hidden, false);
+    assert.equal(dom.window.document.getElementById("editProdDurationWrap").hidden, false);
+    assert.equal(dom.window.document.getElementById("wProductsHeading").textContent, "Your services");
+
+    dom.window.applyOfferTypeUI("products");
+    assert.equal(dom.window.SHOP.offerType, "products");
+    assert.deepEqual([...typeSelect.options].map(option => option.value), [
+      "", "shoes", "clothing", "food", "beauty", "electronics"
+    ]);
+    assert.equal(dom.window.document.getElementById("wServiceModeNote").hidden, true);
+    assert.equal(dom.window.document.getElementById("wServiceSettings").hidden, true);
+    assert.equal(dom.window.document.getElementById("editProdDurationWrap").hidden, true);
+    assert.match(editor, /offer_type:SHOP\.offerType/);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("Litrus word shuffle uses the selected product or service language bank", () => {
+  const types = ["food", "beauty", "electronics", "salon", "barber", "repair", "wellness", "other-service"];
+  const optionsStart = editor.indexOf("const OFFER_TYPE_OPTIONS=");
+  const optionsEnd = editor.indexOf("\nconst DEFAULT_SERVICE_CATEGORIES", optionsStart);
+  const bankStart = editor.indexOf("const COPY_RULES=");
+  const bankEnd = editor.indexOf("const craftIntegrated=", bankStart);
+  const shuffleStart = editor.indexOf("function shuffleShopWords(){");
+  const shuffleEnd = editor.indexOf("\ng('wShufWords').onclick", shuffleStart);
+  const optionCode = editor.slice(optionsStart, optionsEnd);
+  assert.ok(bankStart >= 0 && bankEnd > bankStart);
+  assert.ok(shuffleStart >= 0 && shuffleEnd > shuffleStart);
+  for (const type of types) assert.match(optionCode, new RegExp(`\\['${type}',`));
+
+  const dom = new JSDOM(`<select id="wType">${types.map(type =>
+    `<option value="${type}">${type}</option>`).join("")}</select>
+    ${["wWhat", "wTag", "wHead", "wSub", "wCta", "wAbout"].map(id =>
+    `<input id="${id}">`).join("")}<small id="wWordsHint"></small>`, { runScripts: "outside-only" });
+  const { window } = dom;
+
+  try {
+    window.eval(`${editor.slice(bankStart, bankEnd)}\nwindow.shopCopyBanks = SHOP_COPY;`);
+    window.eval(`
+      var SHOP = { type: "", promo: "", reviewLines: [] };
+      var SHOP_COPY = window.shopCopyBanks;
+      var g = id => document.getElementById(id);
+      var read = function() {};
+      var render = function() {};
+      var sync = function() {};
+      var autosave = function() {};
+      ${editor.slice(shuffleStart, shuffleEnd)}
+      window.shuffleShopWords = shuffleShopWords;
+    `);
+
+    for (const type of types) {
+      window.document.getElementById("wType").value = type;
+      for (const id of ["wWhat", "wTag", "wHead", "wSub", "wCta", "wAbout"]) {
+        window.document.getElementById(id).value = "";
+      }
+      window.SHOP = { type, promo: "", reviewLines: [] };
+      window.shuffleShopWords();
+      const bank = window.shopCopyBanks[type];
+
+      assert.equal(window.document.getElementById("wWhat").value, bank.what);
+      assert.ok(bank.slogan.includes(window.document.getElementById("wTag").value));
+      assert.ok(bank.heroTitle.includes(window.document.getElementById("wHead").value));
+      assert.ok(bank.heroSub.includes(window.document.getElementById("wSub").value));
+      assert.ok(bank.cta.includes(window.document.getElementById("wCta").value));
+      assert.ok(bank.aboutText.includes(window.document.getElementById("wAbout").value));
+      assert.equal(bank.reviewLine.length, 0, "the bank must not invent customer testimonials");
+      assert.match(window.document.getElementById("wWordsHint").textContent, /New words picked for/);
+    }
+  } finally {
+    window.close();
+  }
+});
+
+test("Litrus mood choices autosave, while the initial default does not overwrite saved designs", () => {
+  const start = editor.indexOf("function apply(md,randomizeDetails=md.n!=='Good Form',persist=true){");
+  const end = editor.indexOf("\nfunction banRev()", start);
+  assert.ok(start >= 0 && end > start);
+  const dom = new JSDOM(`
+    <select id="selHero"><option></option><option></option></select>
+    <select id="selCard"><option></option><option></option></select>
+    <select id="selPal"><option></option><option></option></select>
+    <select id="selFont"><option></option><option></option></select>
+    <select id="selLay"><option></option><option></option></select>
+    <select id="selCat"><option></option><option></option></select>
+    <select id="selFoot"><option></option><option></option></select>
+    <select id="selAnim"><option></option><option></option></select>
+    <select id="selScroll"><option></option><option></option></select>
+    <input id="cRad">
+    <input id="cSp">
+    <input id="cHeart">
+    <input id="cRate">
+    <input id="cSale">
+    <input id="cBag">
+    <input id="fixC" type="checkbox">
+  `, { runScripts: "outside-only" });
+
+  try {
+    dom.window.eval(`
+      const $ = id => document.getElementById(id);
+      const hs = $('selHero'), ps = $('selCard'), pl = $('selPal'), fnt = $('selFont');
+      const lay = $('selLay'), cs = $('selCat'), fs = $('selFoot'), ani = $('selAnim');
+      const selScroll = $('selScroll'), fixC = $('fixC');
+      const cRad = $('cRad'), cSp = $('cSp'), cHeart = $('cHeart');
+      const cRate = $('cRate'), cSale = $('cSale'), cBag = $('cBag');
+      const R = values => values[0];
+      let autosaveCalls = 0;
+      const autosave = () => { autosaveCalls += 1; };
+      const setSel = (select, value) => { select.selectedIndex = value; };
+      const clearPaletteOverrides = () => {};
+      const banRev = () => {};
+      const fillShopWords = () => {};
+      const read = () => {};
+      const drawProds = () => {};
+      const render = () => {};
+      const sync = () => {};
+      const randomizeSecondaryControls = () => {};
+      ${editor.slice(start, end)}
+      window.applyMood = apply;
+      window.getAutosaveCalls = () => autosaveCalls;
+    `);
+
+    const mood = {
+      n: "Test", hero: [1], card: [1], pal: [1], font: [1],
+      lay: [1], cat: [1], foot: [1], anim: [1], scroll: [1]
+    };
+    dom.window.applyMood(mood, false);
+    assert.equal(dom.window.getAutosaveCalls(), 1);
+    dom.window.applyMood(mood, false, false);
+    assert.equal(dom.window.getAutosaveCalls(), 1);
+  } finally {
+    dom.window.close();
   }
 });

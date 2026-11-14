@@ -2642,6 +2642,7 @@ html.craft-integrated #wPhotoCredits{display:none}
  .nl-letter-mark{justify-content:start;border-right:0;border-bottom:1px solid rgba(80,75,68,.3);padding:0 0 12px;font-size:16px}
 }
 .wz-words{display:flex;align-items:center;gap:10px;margin:2px 0 10px;flex-wrap:wrap}.wz-words button{padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.35);background:transparent;color:inherit;cursor:pointer;font:inherit}.wz-words small{opacity:.75;flex:1 1 180px}
+#wServiceSettings{margin:8px 0;padding:14px;border:1px solid rgba(127,127,127,.4);border-radius:8px}#wServiceSettings legend{padding:0 6px;font-weight:700}.service-days,.service-settings-grid{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0}.service-days>span{width:100%;font-weight:600}.service-days label{display:flex;align-items:center;gap:5px}.service-settings-grid label{flex:1 1 140px}
 </style>
 </head><body>
 <div id="app"><aside id="wz" aria-label="Shop builder">
@@ -2649,8 +2650,17 @@ html.craft-integrated #wPhotoCredits{display:none}
 <ol class="wz-steps" id="wzSteps" role="tablist" aria-label="Shop setup"><li role="tab" tabindex="0" aria-selected="true" data-s="1">Your shop</li><li role="tab" tabindex="-1" aria-selected="false" data-s="2">Products</li><li role="tab" tabindex="-1" aria-selected="false" data-s="3">Style</li><li role="tab" tabindex="-1" aria-selected="false" data-s="4">Finish</li><li role="tab" tabindex="-1" aria-selected="false" data-s="5">Shop settings</li></ol></div>
 <section class="wz-sec" data-step="1"><h2>Tell us about your shop</h2>
 <label>Shop name<input id="wName" placeholder="e.g. Amani Candles" autocomplete="off"></label>
-<label>Type of shop<select id="wType"><option value="">Choose Shoes or Clothing</option><option value="shoes">Shoes</option><option value="clothing">Clothing</option></select></label>
-<label>What do you sell?<input id="wWhat" placeholder="e.g. handmade candles and soaps" autocomplete="off"></label>
+<label>What do you offer?<select id="wOfferType" required><option value="">Choose products or services</option><option value="products">Products</option><option value="services">Services</option></select></label>
+<p id="wOfferTypeError" class="hint" role="status"></p>
+<p id="wServiceModeNote" class="hint" hidden>Customers can request an available appointment time. You confirm or decline each request in Craft.</p>
+<fieldset id="wServiceSettings" hidden><legend>Appointment schedule &amp; deposits</legend>
+ <p class="hint">Set the hours customers can request. Pending appointments reserve the chosen time while you review them.</p>
+ <div class="service-days"><span>Open days</span><label><input type="checkbox" data-service-day="1" checked> Mon</label><label><input type="checkbox" data-service-day="2" checked> Tue</label><label><input type="checkbox" data-service-day="3" checked> Wed</label><label><input type="checkbox" data-service-day="4" checked> Thu</label><label><input type="checkbox" data-service-day="5" checked> Fri</label><label><input type="checkbox" data-service-day="6" checked> Sat</label><label><input type="checkbox" data-service-day="0"> Sun</label></div>
+ <div class="service-settings-grid"><label>Opening time<input id="wServiceOpen" type="time" value="09:00" required></label><label>Closing time<input id="wServiceClose" type="time" value="17:00" required></label><label>Timezone<input id="wServiceTimezone" value="Africa/Nairobi" placeholder="Africa/Nairobi" required></label><label>Buffer between appointments<select id="wServiceBuffer"><option value="0">No buffer</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label><label>Deposit after approval (%)<input id="wServiceDeposit" type="number" min="0" max="100" step="1" value="0"></label></div>
+ <p class="hint">A deposit is optional. Deposits require KES prices, a connected Paystack account in Craft, and the customer’s email.</p>
+</fieldset>
+<label><span id="wTypeQuestion">Type of shop</span><select id="wType"><option value="">Choose products or services first</option></select></label>
+<label><span id="wWhatQuestion">What do you sell?</span><input id="wWhat" placeholder="e.g. handmade candles and soaps" autocomplete="off"></label>
 <label>One-line slogan<input id="wTag" placeholder="e.g. Light up your home" autocomplete="off"></label>
 <div class="wz-words"><button type="button" id="wShufWords" class="ghost">Shuffle words</button><small id="wWordsHint">Picks a new headline, slogan and button words for your type of shop.</small></div>
 <label>Currency<select id="wCur"><option>KES</option><option>USD</option><option>EUR</option><option>GBP</option><option>NGN</option><option>ZAR</option><option>UGX</option><option>TZS</option><option>GHS</option><option>INR</option><option value="">No currency</option></select></label>
@@ -2666,11 +2676,11 @@ html.craft-integrated #wPhotoCredits{display:none}
 <label>Free delivery over <small>(optional amount)</small><input id="wFree" inputmode="decimal" placeholder="5000" autocomplete="off"></label>
 <label>Your address or area<input id="wAddr" placeholder="e.g. Westlands, Nairobi" autocomplete="off"></label>
 <label>About your shop <small>(shown on the About page, optional)</small><textarea id="wAbout" rows="4" placeholder="Tell your story in a few lines"></textarea></label></details></section>
-<section class="wz-sec" data-step="2" hidden><h2>Products &amp; categories</h2><p class="hint">Set up what you sell. Your changes appear in the storefront preview.</p>
+<section class="wz-sec" data-step="2" hidden><h2 id="wCatalogHeading">Products &amp; categories</h2><p class="hint">Set up what you sell. Your changes appear in the storefront preview.</p>
 <div class="catalog-tabs" role="tablist" aria-label="Catalog screens"><button type="button" id="wProductsTabBtn" role="tab" aria-controls="wProductsPane" aria-selected="true">Products</button><button type="button" id="wCategoriesTabBtn" role="tab" aria-controls="wCategoriesPane" aria-selected="false">Categories</button><button type="button" id="wContentTabBtn" role="tab" aria-controls="wContentPane" aria-selected="false">Promos &amp; FAQs</button></div>
-<div class="catalog-pane" id="wProductsPane" role="tabpanel" aria-labelledby="wProductsTabBtn"><div class="catalog-head"><h3>Your products <span id="wProdsCount" class="catalog-count"></span></h3><button type="button" class="ghost" id="wAdd">+ Add a product</button></div><p class="hint">Add products, photos, and the categories each one belongs to.</p>
-<div class="product-editor" id="productEditor" role="dialog" aria-modal="true" aria-labelledby="productEditorTitle" hidden><h3 id="productEditorTitle">Add product</h3><label>Product name<input id="editProdName" placeholder="e.g. Everyday sneakers" autocomplete="off"></label><label>Price<input id="editProdPrice" inputmode="decimal" placeholder="e.g. 4,500"></label><label>Short description<textarea id="editProdDesc" rows="3" placeholder="What should customers know?"></textarea></label><label>Photo link (optional)<input id="editProdImageUrl" placeholder="Paste an image link"></label><div class="ph"><img id="editProdThumb" class="thumb" alt="" hidden><button type="button" class="ghost" id="editProdUpload">Upload photo</button><button type="button" class="ghost" id="editProdRemove" hidden>Remove photo</button><input type="file" id="editProdFile" accept="image/*" hidden><span id="editProdPhotoMsg" class="phmsg hint" role="status"></span></div><div><b>Categories</b><div id="editProdGroups" class="pc"></div></div><p id="editProdMsg" class="hint" role="status"></p><div class="row"><button type="button" id="editProdSave">Save product</button><button type="button" class="ghost" id="editProdCancel">Cancel</button></div></div><div id="wProds"></div></div>
-<div class="catalog-pane" id="wCategoriesPane" role="tabpanel" aria-labelledby="wCategoriesTabBtn" hidden><h3>Your categories <span id="wCatCount" class="catalog-count"></span></h3><p class="hint">Use clear groups such as Sneakers, Sandals, or New arrivals. Products can belong to more than one category.</p><div class="catadd"><input id="wCatNew" placeholder="Category name" autocomplete="off" aria-label="New category name"><button type="button" id="wCatAdd">Add category</button></div><div id="wCatChips" class="catchips"></div></div>
+<div class="catalog-pane" id="wProductsPane" role="tabpanel" aria-labelledby="wProductsTabBtn"><div class="catalog-head"><h3><span id="wProductsHeading">Your products</span> <span id="wProdsCount" class="catalog-count"></span></h3><button type="button" class="ghost" id="wAdd">+ Add a product</button></div><p class="hint" id="wProductsHint">Add products, photos, and the categories each one belongs to.</p>
+<div class="product-editor" id="productEditor" role="dialog" aria-modal="true" aria-labelledby="productEditorTitle" hidden><h3 id="productEditorTitle">Add product</h3><label id="editProdNameLabel"><span id="editProdNameLabelText">Product name</span><input id="editProdName" placeholder="e.g. Everyday sneakers" autocomplete="off"></label><label>Price<input id="editProdPrice" inputmode="decimal" placeholder="e.g. 4,500"></label><label id="editProdDurationWrap" hidden>Appointment duration (minutes)<input id="editProdDuration" type="number" min="15" max="240" step="15" value="60"></label><label>Short description<textarea id="editProdDesc" rows="3" placeholder="What should customers know?"></textarea></label><label>Photo link (optional)<input id="editProdImageUrl" placeholder="Paste an image link"></label><div class="ph"><img id="editProdThumb" class="thumb" alt="" hidden><button type="button" class="ghost" id="editProdUpload">Upload photo</button><button type="button" class="ghost" id="editProdRemove" hidden>Remove photo</button><input type="file" id="editProdFile" accept="image/*" hidden><span id="editProdPhotoMsg" class="phmsg hint" role="status"></span></div><div><b>Categories</b><div id="editProdGroups" class="pc"></div></div><p id="editProdMsg" class="hint" role="status"></p><div class="row"><button type="button" id="editProdSave">Save product</button><button type="button" class="ghost" id="editProdCancel">Cancel</button></div></div><div id="wProds"></div></div>
+<div class="catalog-pane" id="wCategoriesPane" role="tabpanel" aria-labelledby="wCategoriesTabBtn" hidden><h3>Your categories <span id="wCatCount" class="catalog-count"></span></h3><p class="hint" id="wCategoriesHint">Use clear groups such as Sneakers, Sandals, or New arrivals. Products can belong to more than one category.</p><div class="catadd"><input id="wCatNew" placeholder="Category name" autocomplete="off" aria-label="New category name"><button type="button" id="wCatAdd">Add category</button></div><div id="wCatChips" class="catchips"></div></div>
 <div class="catalog-pane" id="wContentPane" role="tabpanel" aria-labelledby="wContentTabBtn" hidden><h3>Homepage content</h3><p class="hint">Add promo banners or image-and-text stories between shorter product groups. If this list is empty, starter content is shown automatically.</p>
 <label>Promo banner style<select id="wPromoStyle"><option value="split">Editorial split</option><option value="cinematic">Cinematic image</option><option value="glass">Glass card</option><option value="magazine">Magazine</option><option value="brutalist">Bold blocks</option><option value="gradient">Colour gradient</option><option value="ticket">Ticket offer</option><option value="neon">Neon edge</option><option value="organic">Soft organic</option><option value="collage">Image collage</option></select></label>
 <label>Image-and-text story style<select id="wStoryStyle"><option value="collage">Editorial collage</option><option value="dark">Dark luxury</option><option value="minimal">Minimal</option><option value="fashion">Fashion editorial</option><option value="sunset">Warm sunset</option><option value="organic">Organic</option><option value="tech">Modern grid</option><option value="romance">Soft romantic</option><option value="mono">Monochrome</option><option value="retro">Retro print</option></select></label>
@@ -4227,7 +4237,7 @@ function layout(sec,nodes){
 cards.forEach((c,i)=>ps.add(new Option(pretty(c.id),i)));
 [['tiles','Tiles'],['circles','Circles'],['list','Text list']].forEach(([v,t])=>cs.add(new Option(t,v)));
 [['cols','Columns'],['big','Giant name'],['mini','Slim bar'],['news','Newsletter'],['stack','Centered stack'],['split','Split'],['band','Colour band']].forEach(([v,t])=>fs.add(new Option(t,v)));
-const SHOP={custom:false,name:'Kiko & Co',what:'shoes and bags',tagline:'Made for everyday',cur:'KES',nav:['Shoes','Bags','New','Sale'],cats:['Sneakers','Sandals','Boots','Totes','Backpacks','Wallets'],products:null,headline:'',sub:'',cta:'',email:'',phone:'',wa:'',about:'',addr:'',fee:'',free:'',bgfx:'',cc:null,settingsColors:null,bodyFont:'',productsPerRow:4,homeSections:{categories:true,products:true,promo:true,reviews:true},type:'',promo:'',contentBlocks:[],faqs:[],promoStyle:'split',storyStyle:'collage',faqStyle:'minimal',reviewLines:[],autoImages:{},userImages:{},photoCredits:[]};
+const SHOP={custom:false,name:'Kiko & Co',what:'shoes and bags',tagline:'Made for everyday',cur:'KES',nav:['Shoes','Bags','New','Sale'],cats:['Sneakers','Sandals','Boots','Totes','Backpacks','Wallets'],products:null,headline:'',sub:'',cta:'',email:'',phone:'',wa:'',about:'',addr:'',fee:'',free:'',bgfx:'',cc:null,settingsColors:null,bodyFont:'',productsPerRow:4,homeSections:{categories:true,products:true,promo:true,reviews:true},offerType:'',type:'',promo:'',serviceDays:[1,2,3,4,5,6],serviceOpenTime:'09:00',serviceCloseTime:'17:00',serviceTimezone:'Africa/Nairobi',serviceBufferMinutes:0,serviceDepositPercent:0,contentBlocks:[],faqs:[],promoStyle:'split',storyStyle:'collage',faqStyle:'minimal',reviewLines:[],autoImages:{},userImages:{},photoCredits:[]};
 const TONES=['#e9d8c4','#cfe0d6','#d6d9ee','#eecfd3','#e8e0c8','#d0e0e8'];
 function shopCopy(){const w=SHOP.what||'great products';return [SHOP.headline||SHOP.tagline||('Welcome to '+SHOP.name),SHOP.sub||('Discover our '+w+', picked with care and ready to ship.'),SHOP.cta||'Shop now']}
 /* ===== IndexedDB: uploaded photos + autosaved shop ===== */
@@ -6301,6 +6311,11 @@ let mood=null,step=1;
 const DEF_CATS=['New in','Best sellers','Popular','Gifts','Sale','All products'];
 const g=id=>$(id);
 const COPY_RULES={heroTitle:[2,5],heroSub:[8,16],cta:[2,3],slogan:[2,5],promo:[4,9],aboutText:[15,35],reviewLine:[5,12],category:[1,3]};
+const OFFER_TYPE_OPTIONS={
+ products:[['shoes','Shoes'],['clothing','Clothing'],['food','Food & drinks'],['beauty','Beauty & personal care'],['electronics','Electronics']],
+ services:[['salon','Salon & beauty services'],['barber','Barber services'],['repair','Repair services'],['wellness','Wellness services'],['other-service','Other services']]
+};
+const DEFAULT_SERVICE_CATEGORIES=['Consultations','Appointments','Packages','Other services'];
 const COPY_BUCKETS={short:[2,5],medium:[6,10],long:[11,35]};
 const SHOP_COPY={
  shoes:{
@@ -6322,10 +6337,117 @@ const SHOP_COPY={
   promo:['Explore clothing for your everyday style','Find a fresh look for your next outfit'],
   aboutText:['Explore clothing for everyday plans and different occasions. Browse at your own pace and find pieces that suit the way you like to dress.'],
   reviewLine:['I found a look that feels like me.','These pieces fit easily into my everyday outfits.','A fresh outfit for the looks I enjoy.']
+  },
+  food:{
+   what:'food and drinks',categories:['Mains','Sides','Drinks','Desserts'],
+   heroTitle:['Good Food For Your Day','Find Something For The Table','Explore The Menu'],
+   heroSub:['Browse dishes and drinks for your next meal.','Explore the menu and choose what suits you.'],
+   cta:['View The Menu','Browse Food','Explore Food'],
+   slogan:['Good Food, Your Way','At The Table','Food For Every Day'],
+   promo:['See what is on the menu','Explore food and drink options'],
+   aboutText:['Browse the menu at your own pace and choose dishes or drinks that suit your plans.'],
+   reviewLine:[]
+  },
+  beauty:{
+   what:'beauty and personal-care products',categories:['Skincare','Makeup','Haircare','Fragrance'],
+   heroTitle:['Beauty For Your Routine','Explore Beauty Your Way','Find Your Beauty Edit'],
+   heroSub:['Browse skincare, makeup, haircare, fragrance and other essentials.','Explore product details and choose what suits your routine.'],
+   cta:['Browse Beauty','Explore Products','Shop Beauty'],
+   slogan:['Your Beauty Edit','Beauty For Everyday','Find Your Routine'],
+   promo:['Explore products for your routine','Browse beauty and personal care'],
+   aboutText:['Explore beauty and personal-care products by category, review the available product details, and choose what suits your routine.'],
+   reviewLine:[]
+  },
+  electronics:{
+   what:'electronics and accessories',categories:['Phones','Computing','Audio','Accessories'],
+   heroTitle:['Explore Electronics','Find Your Next Upgrade','Tech For Everyday Use'],
+   heroSub:['Browse devices, accessories, and product details before choosing.','Explore available models, product details and compatible accessories.'],
+   cta:['Browse Electronics','Explore Devices','View Products'],
+   slogan:['Everyday Electronics','Tech For Your Setup','Find What Fits Your Setup'],
+   promo:['Explore devices and accessories','Browse models and accessories'],
+   aboutText:['Explore devices and accessories, review the product information, and contact the shop if you need help choosing.'],
+   reviewLine:[]
+ },
+ salon:{
+   what:'salon and beauty services',categories:['Haircuts','Styling','Nails','Skin care'],
+   heroTitle:['Salon Services For Your Routine','Find Your Next Salon Visit','Explore Salon Services'],
+   heroSub:['Explore salon services and choose the care that suits your routine.','Browse hair, nail, and skin-care services, then contact the salon to arrange a visit.'],
+   cta:['View Salon Services','Explore Services','Contact The Salon'],
+   slogan:['Care For Your Routine','Your Salon, Your Style','Feel Good, Your Way'],
+   promo:['Explore salon services','Find care that suits your routine'],
+   aboutText:['Explore salon services, review the details listed for each one, and contact the salon to arrange a visit.'],
+   reviewLine:[]
+ },
+ barber:{
+   what:'barber and grooming services',categories:['Haircuts','Beard care','Hair and beard','Packages'],
+   heroTitle:['Barber Services, Your Way','Find Your Next Fresh Cut','Explore Grooming Services'],
+   heroSub:['Browse haircuts and grooming services for your next visit.','Explore available barber services and contact the shop to arrange a time.'],
+   cta:['View Services','Explore Grooming','Contact The Barber'],
+   slogan:['A Fresh Cut, Your Way','Your Grooming Routine','Look Sharp, Feel Good'],
+   promo:['Explore barber services','Find a style for your next visit'],
+   aboutText:['Browse barber and grooming services, review the details listed for each one, and contact the shop to arrange a visit.'],
+   reviewLine:[]
+ },
+ repair:{
+   what:'repair and maintenance services',categories:['Phone repairs','Computer repairs','Diagnostics','Maintenance'],
+   heroTitle:['Repair Services You Can Rely On','Get Help With Your Repair','Explore Repair Services'],
+   heroSub:['Browse repair and maintenance services, then contact us about your device.','Review the listed services and ask about availability, parts, and timing.'],
+   cta:['View Repair Services','Explore Services','Contact The Shop'],
+   slogan:['Repairs Made Clear','Help For Your Devices','Get Things Working Again'],
+   promo:['Explore repair services','Ask us about your repair'],
+   aboutText:['Review the repair and maintenance services listed here, then contact the shop to discuss your device and arrange a visit.'],
+   reviewLine:[]
+ },
+ wellness:{
+   what:'wellness and fitness services',categories:['Wellness sessions','Fitness','Massage','Packages'],
+   heroTitle:['Make Time For Your Wellbeing','Explore Wellness Services','Find A Routine That Fits'],
+   heroSub:['Browse wellness and fitness services and choose what suits your routine.','Explore the listed sessions and contact the provider to arrange a visit.'],
+   cta:['View Services','Explore Wellness','Contact The Studio'],
+   slogan:['Wellbeing, Your Way','Make Time For You','Find Your Balance'],
+   promo:['Explore wellness services','Find a session for your routine'],
+   aboutText:['Explore the wellness and fitness services listed here, review their details, and contact the provider to arrange a visit.'],
+   reviewLine:[]
+ },
+ 'other-service':{
+   what:'professional services',categories:['Consultations','Appointments','Packages','Other services'],
+   heroTitle:['Services For What You Need','Explore Our Services','Find The Right Service'],
+   heroSub:['Browse the services offered and contact the provider to arrange a visit.','Review service details and ask about availability before booking.'],
+   cta:['View Services','Explore Services','Contact Us'],
+   slogan:['Service, Your Way','Here To Help','Find The Right Support'],
+   promo:['Explore the services available','Contact us to discuss what you need'],
+   aboutText:['Browse the services listed here, review the details, and contact the provider to discuss your needs and arrange a visit.'],
+   reviewLine:[]
  }
 };
 const MORE_COPY={"shoes": {"heroTitle": ["Walk Your Own Way", "Fresh Pairs Every Day", "Shoes Made To Move", "Find Your Perfect Fit", "Step Out In Style", "Sneakers To Sandals", "Your Next Favourite Pair", "Comfort From Morning To Night"], "heroSub": ["Browse sneakers, sandals and boots picked for comfort, style and everyday wear.", "From the school run to the weekend, find a pair that keeps up with you.", "Easy to wear, simple to style and made to last through your busy days.", "Find shoes in the sizes and styles you love, ready to ship to your door.", "Comfortable pairs for work, play and everything in between, all in one place.", "New arrivals added often, so there is always a fresh pair waiting for you."], "cta": ["Shop The Shoes", "Find Your Pair", "Explore Footwear", "See New Pairs", "Shop Sneakers", "Browse Footwear"], "slogan": ["Step Into Style", "Everyday Footwear", "Walk Your Way", "Made For Moving", "Good Shoes, Good Days", "Comfort In Every Step", "Pairs You Will Love"], "promo": ["Explore shoes for your everyday style", "Find a fresh pair for your next outfit", "New pairs just landed, come and take a look", "Comfortable shoes for every plan this week", "Pick your pair and we will deliver it"], "aboutText": ["We bring you footwear for everyday plans and special days. Every pair is picked with comfort and style in mind, so you can walk through your day feeling good.", "Our shoes are chosen for people who are always on the move. Browse at your own pace, find your size and wear something that fits the way you live.", "From classic sneakers to easy sandals, we keep our range simple and well made. Find a pair that suits your style and stay comfortable all day long."], "reviewLine": ["These shoes fit easily into my everyday looks.", "So comfortable that I wore them all day.", "A fresh pair for the outfits I enjoy.", "Great quality and they arrived quickly.", "The fit is perfect and the style is even better.", "I keep getting compliments on my new pair."]}, "clothing": {"heroTitle": ["Dress Your Day Well", "Fresh Looks Every Week", "Clothes You Will Love", "Find Your Outfit", "Everyday Style Made Easy", "New Season, New Look", "Wear What Feels Right", "The Wardrobe Edit"], "heroSub": ["Browse tops, dresses and jackets picked for comfort, colour and everyday wear.", "From work days to weekends, find pieces that keep up with your plans.", "Easy to wear, simple to style and made to last through every season.", "Find clothes in the sizes and styles you love, ready to ship to your door.", "Pieces you can mix and match for the look you want, all in one place.", "New arrivals added often, so there is always something fresh to wear."], "cta": ["Shop The Clothing", "Find Your Outfit", "Explore Clothing", "See New Arrivals", "Shop The Edit", "Browse The Range"], "slogan": ["Dress Your Way", "Everyday Outfits", "Your Wardrobe Story", "Made To Be Worn", "Style That Feels Good", "Look Good Daily", "Clothes With Character"], "promo": ["Explore clothing for your everyday style", "Find a fresh look for your next outfit", "New pieces just landed, come and take a look", "Easy outfits for every plan this week", "Pick your look and we will deliver it"], "aboutText": ["We bring you clothing for everyday plans and special days. Every piece is picked with comfort and style in mind, so you can get dressed feeling good.", "Our clothes are chosen for people who like simple, easy looks. Browse at your own pace, find your size and wear something that fits the way you live.", "From classic tops to easy dresses, we keep our range simple and well made. Find pieces that suit your style and mix them your own way."], "reviewLine": ["These pieces fit easily into my everyday outfits.", "So comfortable that I wore it all day.", "A fresh outfit for the looks I enjoy.", "Great quality and it arrived quickly.", "The fit is perfect and the colour is even better.", "I keep getting compliments on my new top."]}, "generic": {"heroTitle": ["Made For Everyday Life", "Find Something You Love", "Fresh Finds Every Week", "Quality You Can Trust", "Shop Our New Arrivals"], "heroSub": ["Browse a range of products picked with care and ready to ship to your door.", "Simple to shop, well made and chosen for the way you live every day.", "New arrivals added often, so there is always something fresh to explore."], "cta": ["Shop Now", "Browse The Range", "See New Arrivals", "Explore The Shop"], "slogan": ["Made For You", "Everyday Quality", "Picked With Care", "Good Things, Good Prices"], "promo": ["New arrivals just landed, come and take a look", "Find something fresh for your week", "Pick what you love and we will deliver it"], "aboutText": ["We bring you products picked with care for everyday life. Browse at your own pace, find what suits you and have it delivered to your door."], "reviewLine": ["Great quality and it arrived quickly.", "Exactly what I was looking for.", "Simple to order and lovely to receive."]}};
 Object.keys(MORE_COPY).forEach(function(type){SHOP_COPY[type]=SHOP_COPY[type]||{what:type==='generic'?'products':type};Object.keys(MORE_COPY[type]).forEach(function(slot){const have=SHOP_COPY[type][slot]=SHOP_COPY[type][slot]||[];MORE_COPY[type][slot].forEach(function(t){if(have.indexOf(t)<0)have.push(t)})})});
+const INDUSTRY_MORE_COPY={
+ food:{
+  heroTitle:['Food For Your Table','Explore The Kitchen','Good Food, Good Company'],
+  heroSub:['Find dishes, snacks and drinks for a meal at home or on the go.','Explore menu choices, then check the details before you order.','Browse food and drinks, and choose options that fit your plans.'],
+  cta:['See The Menu','Choose A Dish','Order Food'],
+  slogan:['Gather Around The Table','A Menu For You','Food Worth Sharing'],
+  promo:['Take a look at the menu','Find a dish for today','Explore food for every day'],
+  aboutText:['Discover dishes and drinks, review their listed details, and contact the shop with questions before ordering.','Explore the menu at your own pace and choose food that suits your meal, gathering, or everyday plans.']
+ },
+ beauty:{
+  heroTitle:['Your Everyday Beauty Edit','Find Your Beauty Routine','Explore Beauty Essentials'],
+  heroSub:['Find skincare, makeup and haircare products for your everyday routine.','Explore product details and check the label for ingredients and directions.','Browse products by type, finish, shade or scent where those details are available.'],
+  cta:['Explore Skincare','Browse Beauty','Find Your Routine'],
+  slogan:['Beauty For Your Routine','Your Daily Beauty Edit','Find Your Own Style'],
+  promo:['Explore products for your routine','Browse beauty and personal care','Find products by category'],
+  aboutText:['Browse beauty and personal-care products, review the details supplied for each item, and choose what suits your routine.','Explore skincare, makeup, haircare, fragrance and more, with product information available on each listing.']
+ },
+ electronics:{
+  heroTitle:['Technology For Your Setup','Explore Your Next Device','Find Your Next Upgrade'],
+  heroSub:['Browse phones, computers, audio products and other available accessories.','Check each listing for specifications, included items, and available variants.','Explore devices and accessories, then contact the shop with product questions.'],
+  cta:['Explore Devices','Browse Electronics','View Product Details'],
+  slogan:['Technology For Everyday','Find What Fits Your Setup','Explore The Possibilities'],
+  promo:['Explore devices and accessories','Browse models and accessories','Find a practical upgrade'],
+  aboutText:['Browse devices and accessories, read the supplied specifications, and contact the shop with compatibility questions.','Explore the available electronics, check each listing for product details, and ask the shop if you need more information.']
+ }
+};
+Object.keys(INDUSTRY_MORE_COPY).forEach(function(type){Object.keys(INDUSTRY_MORE_COPY[type]).forEach(function(slot){const have=SHOP_COPY[type][slot]=SHOP_COPY[type][slot]||[];INDUSTRY_MORE_COPY[type][slot].forEach(function(text){if(have.indexOf(text)<0)have.push(text)})})});
 const wordCount=text=>String(text||'').trim().split(/\s+/).filter(Boolean).length;
 function pickShopCopy(type,slot,original){
  const pool=(SHOP_COPY[type]&&SHOP_COPY[type][slot])||[],rule=COPY_RULES[slot];
@@ -6376,10 +6498,44 @@ autosave=function(){
 }
 const go=()=>{clearTimeout(tm);tm=setTimeout(()=>{render();sync();autosave()},120)};
 const _autosave0=autosave;autosave=function(){_autosave0.apply(this,arguments);if(photoAuto&&!(craftIntegrated&&window.parent!==window)){clearTimeout(photoAutoTimer);photoAutoTimer=setTimeout(function(){if(!getPhotoKey(false)){photoAuto=false;return}photoAutoRun=true;fillEmptyShopImages()},600)}};
-document.addEventListener('change',e=>{if(e.target&&e.target.closest&&e.target.closest('.bar,#wz'))autosave()});
+document.addEventListener('change',e=>{if(e.target&&e.target.closest&&e.target.closest('.bar,#wz,#advSide'))autosave()});
+function applyOfferTypeUI(value){
+ const mode=value==='products'||value==='services'?value:'';
+ const typeSelect=g('wType'),currentType=typeSelect.value,options=OFFER_TYPE_OPTIONS[mode]||[];
+ const placeholder=document.createElement('option');
+ placeholder.value='';
+ placeholder.textContent=mode?(mode==='services'?'Choose a service type':'Choose a shop type'):'Choose products or services first';
+ typeSelect.replaceChildren(placeholder);
+ options.forEach(([optionValue,label])=>{const option=document.createElement('option');option.value=optionValue;option.textContent=label;typeSelect.append(option)});
+ typeSelect.value=options.some(([optionValue])=>optionValue===currentType)?currentType:'';
+ SHOP.offerType=mode;
+ const services=mode==='services',noun=services?'service':'product',plural=services?'services':'products';
+ g('wTypeQuestion').textContent=services?'Type of service business':'Type of shop';
+ g('wWhatQuestion').textContent=services?'What services do you offer?':'What do you sell?';
+ g('wWhat').placeholder=services?'e.g. haircuts, styling, and nail care':'e.g. handmade candles and soaps';
+ g('wServiceModeNote').hidden=!services;
+ g('wServiceSettings').hidden=!services;
+ g('editProdDurationWrap').hidden=!services;
+ g('wzSteps').querySelector('[data-s="2"]').textContent=services?'Services':'Products';
+ g('wCatalogHeading').textContent=services?'Services & categories':'Products & categories';
+ g('wProductsTabBtn').textContent=services?'Services':'Products';
+ g('wProductsHeading').textContent='Your '+plural;
+ g('wAdd').textContent='+ Add a '+noun;
+ g('wProductsHint').textContent=services
+  ?'Add services, prices, durations, photos, and categories. Customers request a time and you approve it in Craft.'
+  :'Add products, photos, and the categories each one belongs to.';
+ g('productEditorTitle').textContent='Add '+noun;
+ g('editProdNameLabelText').textContent=services?'Service name':'Product name';
+ g('editProdSave').textContent='Save '+noun;
+ g('wCategoriesHint').textContent=services
+  ?'Group services into clear categories, such as Haircuts, Styling, or Packages.'
+  :'Use clear groups such as Sneakers, Sandals, or New arrivals. Products can belong to more than one category.';
+}
+applyOfferTypeUI(SHOP.offerType);
 function read(){
  SHOP.custom=true;
  SHOP.name=g('wName').value.trim()||'Your Shop';ns.value=SHOP.name;
+ SHOP.offerType=g('wOfferType').value;
  SHOP.type=g('wType').value;
  SHOP.what=g('wWhat').value.trim();SHOP.tagline=g('wTag').value.trim()||('Welcome to '+SHOP.name);
  SHOP.cur=g('wCur').value;SHOP.headline=g('wHead').value.trim();SHOP.sub=g('wSub').value.trim();SHOP.cta=g('wCta').value.trim();
@@ -6388,7 +6544,11 @@ function read(){
  SHOP.cats=c.length?c:(craftIntegrated?[]:DEF_CATS.slice(0,4));
  SHOP.nav=['Shop',SHOP.cats[0],'About','Contact'];
  SHOP.wa=g('wWa').value.trim();SHOP.fee=g('wFee').value.trim();SHOP.free=g('wFree').value.trim();SHOP.addr=g('wAddr').value.trim();SHOP.about=g('wAbout').value.trim();
- const ok=prods.filter(p=>p.name.trim()); SHOP.products=ok.length?ok.map(p=>{const img=(p.img||'').trim();const images=Array.isArray(p.images)?p.images.filter(value=>value!==img):[];if(img)images.unshift(img);return {craftId:p.craftId||'',name:p.name.trim(),price:(p.price||'').trim(),desc:(p.desc||'').trim(),img,images:images.slice(0,8),media_type:p.media_type||'image',spin_frames:Array.isArray(p.spin_frames)?p.spin_frames.slice():[],video_url:p.video_url||'',booking_enabled:p.booking_enabled===true||p.booking_enabled===1,stock:Number(p.stock)||0,cats:(p.ci||[]).map(i=>SHOP.cats[i]).filter(Boolean)}}):(craftIntegrated?[]:null);
+ SHOP.serviceDays=[...document.querySelectorAll('[data-service-day]:checked')].map(input=>Number(input.dataset.serviceDay));
+ SHOP.serviceOpenTime=g('wServiceOpen').value||'09:00';SHOP.serviceCloseTime=g('wServiceClose').value||'17:00';
+ SHOP.serviceTimezone=g('wServiceTimezone').value.trim()||'Africa/Nairobi';SHOP.serviceBufferMinutes=Number(g('wServiceBuffer').value)||0;
+ SHOP.serviceDepositPercent=Number(g('wServiceDeposit').value)||0;
+ const ok=prods.filter(p=>p.name.trim()); SHOP.products=ok.length?ok.map(p=>{const img=(p.img||'').trim();const images=Array.isArray(p.images)?p.images.filter(value=>value!==img):[];if(img)images.unshift(img);return {craftId:p.craftId||'',name:p.name.trim(),price:(p.price||'').trim(),desc:(p.desc||'').trim(),img,images:images.slice(0,8),media_type:p.media_type||'image',spin_frames:Array.isArray(p.spin_frames)?p.spin_frames.slice():[],video_url:p.video_url||'',booking_enabled:p.booking_enabled===true||p.booking_enabled===1,duration_minutes:SHOP.offerType==='services'?(Number(p.duration_minutes)||60):undefined,stock:Number(p.stock)||0,cats:(p.ci||[]).map(i=>SHOP.cats[i]).filter(Boolean)}}):(craftIntegrated?[]:null);
 }
 function fillShopWords(){
  const type=SHOP.type||g('wType').value,bank=SHOP_COPY[type];if(!bank)return;
@@ -6415,7 +6575,7 @@ function shuffleShopWords(){
  const lines=(bank.reviewLine||[]).slice().sort(function(){return Math.random()-.5}).slice(0,3);
  if(lines.length)SHOP.reviewLines=lines;
  read();render();sync();autosave();
- const hint=g('wWordsHint');if(hint)hint.textContent='New words picked for '+(type==='shoes'?'a shoe shop':type==='clothing'?'a clothing shop':'your shop')+'. Press again for more.';
+ const hint=g('wWordsHint'),shopTypeLabel={shoes:'a shoe shop',clothing:'a clothing shop',food:'a food shop',beauty:'a beauty shop',electronics:'an electronics shop',salon:'a salon',barber:'a barber shop',repair:'a repair shop',wellness:'a wellness studio','other-service':'a service business'}[type]||'your shop';if(hint)hint.textContent='New words picked for '+shopTypeLabel+'. Press again for more.';
 }
 g('wShufWords').onclick=shuffleShopWords;
 $('copyBtn').onclick=()=>{if(SHOP.custom)shuffleShopWords();else{state.copy=(state.copy+1)%3;render();autosave()}};
@@ -6501,19 +6661,35 @@ async function fillEmptyShopImages(){
  }
 }
 window.wizFill=function(){
- g('wName').value=SHOP.name==='Your Shop'?'':SHOP.name;g('wType').value=SHOP.type||'';g('wWhat').value=SHOP.what||'';g('wTag').value=SHOP.tagline||'';g('wCur').value=SHOP.cur||'';
+ g('wName').value=SHOP.name==='Your Shop'?'':SHOP.name;
+ SHOP.offerType=SHOP.offerType==='services'?'services':SHOP.offerType==='products'?'products':'';
+ g('wOfferType').value=SHOP.offerType;applyOfferTypeUI(SHOP.offerType);g('wType').value=SHOP.type||'';g('wWhat').value=SHOP.what||'';g('wTag').value=SHOP.tagline||'';g('wCur').value=SHOP.cur||'';
  g('wHead').value=SHOP.headline||'';g('wSub').value=SHOP.sub||'';g('wCta').value=SHOP.cta||'';g('wEmail').value=SHOP.email||'';g('wPhone').value=SHOP.phone||'';g('wWa').value=SHOP.wa||'';g('wFee').value=SHOP.fee||'';g('wFree').value=SHOP.free||'';g('wAddr').value=SHOP.addr||'';g('wAbout').value=SHOP.about||'';
+ [...document.querySelectorAll('[data-service-day]')].forEach(input=>{input.checked=(SHOP.serviceDays||[1,2,3,4,5,6]).includes(Number(input.dataset.serviceDay))});
+ g('wServiceOpen').value=SHOP.serviceOpenTime||'09:00';g('wServiceClose').value=SHOP.serviceCloseTime||'17:00';g('wServiceTimezone').value=SHOP.serviceTimezone||'Africa/Nairobi';
+ g('wServiceBuffer').value=String(SHOP.serviceBufferMinutes||0);g('wServiceDeposit').value=String(SHOP.serviceDepositPercent||0);
  setCategoryNames(SHOP.cats||[]);if(Array.isArray(SHOP.products))prods=SHOP.products.map(p=>({...p,ci:(p.cats||[]).map(n=>SHOP.cats.indexOf(n)).filter(i=>i>=0)}));drawProds();drawContentEditors();
 };
-['wName','wWhat','wTag','wCur','wCats','wHead','wSub','wCta','wEmail','wPhone','wWa','wFee','wFree','wAddr','wAbout'].forEach(id=>g(id).addEventListener('input',()=>{read();go()}));
+['wName','wWhat','wTag','wCur','wCats','wHead','wSub','wCta','wEmail','wPhone','wWa','wFee','wFree','wAddr','wAbout','wServiceOpen','wServiceClose','wServiceTimezone','wServiceBuffer','wServiceDeposit'].forEach(id=>g(id).addEventListener('input',()=>{read();go()}));
+document.querySelectorAll('[data-service-day]').forEach(input=>input.addEventListener('change',()=>{read();go()}));
+g('wOfferType').addEventListener('change',()=>{
+ const previousType=g('wType').value||SHOP.type,previousDefault=SHOP_COPY[previousType]?.what;
+ applyOfferTypeUI(g('wOfferType').value);
+ SHOP.type=g('wType').value;
+ if(previousType&&!SHOP.type&&g('wWhat').value.trim()===previousDefault)g('wWhat').value='';
+ if(previousType&&!SHOP.type)SHOP.reviewLines=[];
+ g('wOfferTypeError').textContent='';
+ read();go();
+});
 g('wType').addEventListener('change',()=>{SHOP.type=g('wType').value;if(!g('wWhat').value.trim())g('wWhat').value=SHOP_COPY[SHOP.type]?SHOP_COPY[SHOP.type].what:'';read();go()});
 g('wCats').addEventListener('input',()=>drawProds());
 function drawCats(){
  const box=g('wCatChips');if(!box)return;box.replaceChildren();
  const list=getCategoryNames();
  const cats=[...new Set(list)].slice(0,MAX_CATEGORIES),count=g('wCatCount');if(count)count.textContent='('+cats.length+'/'+MAX_CATEGORIES+')';
- if(!cats.length){const empty=document.createElement('p');empty.className='catalog-empty';empty.textContent='No categories yet. Add one above to organize your products.';box.append(empty)}
- cats.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.title='Remove '+c;b.setAttribute('aria-label','Remove category '+c);const name=document.createElement('span');name.textContent=c;const countLabel=document.createElement('span');countLabel.className='category-count';const productCount=prods.filter(p=>(p.ci||[]).includes(SHOP.cats.indexOf(c))).length;countLabel.textContent=productCount+' product'+(productCount===1?'':'s');b.append(name,countLabel);
+ const itemName=SHOP.offerType==='services'?'service':'product';
+ if(!cats.length){const empty=document.createElement('p');empty.className='catalog-empty';empty.textContent='No categories yet. Add one above to organize your '+(SHOP.offerType==='services'?'services.':'products.');box.append(empty)}
+ cats.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.title='Remove '+c;b.setAttribute('aria-label','Remove category '+c);const name=document.createElement('span');name.textContent=c;const countLabel=document.createElement('span');countLabel.className='category-count';const productCount=prods.filter(p=>(p.ci||[]).includes(SHOP.cats.indexOf(c))).length;countLabel.textContent=productCount+' '+itemName+(productCount===1?'':'s');b.append(name,countLabel);
   b.onclick=()=>{const old=SHOP.cats.indexOf(c);const rest=[...new Set(list)].filter(x=>x!==c);setCategoryNames(rest);
    if(old>=0){prods.forEach(p=>{p.ci=(p.ci||[]).filter(k=>k!==old).map(k=>k>old?k-1:k)});editingCategories=editingCategories.filter(k=>k!==old).map(k=>k>old?k-1:k)}
    read();drawProds();go()};box.append(b)});
@@ -6599,7 +6775,8 @@ function drawProds(){
  const box=g('wProds');box.replaceChildren();
 g('wProdsCount').textContent='('+prods.length+'/'+MAX_PRODUCTS+')';
 if(!g('productEditor').hidden)renderEditorGroups();
-if(!prods.length){const empty=document.createElement('p');empty.className='catalog-empty';empty.textContent='No products yet. Add your first product to start building your shop.';box.append(empty)}
+const itemName=SHOP.offerType==='services'?'service':'product';
+if(!prods.length){const empty=document.createElement('p');empty.className='catalog-empty';empty.textContent='No '+(SHOP.offerType==='services'?'services':'products')+' yet. Add your first '+itemName+' to start building your shop.';box.append(empty)}
  prods.forEach((p,i)=>{
  p.ci=(p.ci||[]).filter(k=>k<SHOP.cats.length);
  const d=document.createElement('article');d.className='prow';
@@ -6607,13 +6784,13 @@ if(!prods.length){const empty=document.createElement('p');empty.className='catal
  if(src){const image=document.createElement('img');image.className='prod-thumb';image.src=src;image.alt='';d.append(image)}
  else{const image=document.createElement('div');image.className='prod-thumb';image.setAttribute('aria-hidden','true');d.append(image)}
  const meta=document.createElement('div');meta.className='prod-meta';
- const title=document.createElement('b');title.textContent=p.name.trim()||'Untitled product';meta.append(title);
+ const title=document.createElement('b');title.textContent=p.name.trim()||'Untitled '+itemName;meta.append(title);
  const summary=document.createElement('small');summary.textContent=(p.price?SHOP.cur+' '+p.price:'Price not set')+(p.ci.length?' · '+p.ci.map(k=>SHOP.cats[k]).filter(Boolean).join(', '):' · No category');meta.append(summary);
  if(p.desc){const description=document.createElement('small');description.textContent=p.desc;meta.append(description)}
  d.append(meta);
  const actions=document.createElement('div');actions.className='prod-actions';
- const edit=document.createElement('button');edit.type='button';edit.className='ghost';edit.textContent='Edit';edit.setAttribute('aria-label','Edit '+(p.name||'product'));edit.onclick=()=>showProductEditor(i);
- const remove=document.createElement('button');remove.type='button';remove.className='ghost';remove.textContent='Remove';remove.setAttribute('aria-label','Remove '+(p.name||'product'));remove.onclick=()=>{prods.splice(i,1);drawProds();read();go()};
+ const edit=document.createElement('button');edit.type='button';edit.className='ghost';edit.textContent='Edit';edit.setAttribute('aria-label','Edit '+(p.name||itemName));edit.onclick=()=>showProductEditor(i);
+ const remove=document.createElement('button');remove.type='button';remove.className='ghost';remove.textContent='Remove';remove.setAttribute('aria-label','Remove '+(p.name||itemName));remove.onclick=()=>{prods.splice(i,1);drawProds();read();go()};
  actions.append(edit,remove);d.append(actions);box.append(d)
 });
 g('wAdd').style.display=prods.length>=MAX_PRODUCTS?'none':'';
@@ -6625,10 +6802,12 @@ if(!SHOP.cats.length){const empty=document.createElement('p');empty.className='h
 }
 function showProductEditor(index){
 editingProductIndex=typeof index==='number'?index:null;const product=editingProductIndex===null?null:prods[editingProductIndex];
+const itemName=SHOP.offerType==='services'?'service':'product';
 if(stagedEditImageId){delete IMGS[stagedEditImageId];idbDel('imgs',stagedEditImageId);stagedEditImageId=''}
 editingCategories=product?(product.ci||[]).slice():(SHOP.cats.length?[0]:[]);
 editingImage=product?product.img||'':'';
-g('productEditorTitle').textContent=product?'Edit product':'Add product';g('editProdName').value=product?product.name:'';g('editProdPrice').value=product?product.price:'';g('editProdDesc').value=product?product.desc||'':'';
+g('productEditorTitle').textContent=(product?'Edit ':'Add ')+itemName;g('editProdNameLabelText').textContent=itemName==='service'?'Service name':'Product name';g('editProdSave').textContent='Save '+itemName;g('editProdName').value=product?product.name:'';g('editProdPrice').value=product?product.price:'';g('editProdDesc').value=product?product.desc||'':'';
+g('editProdDuration').value=String(product&&product.duration_minutes||60);
 g('editProdImageUrl').value=(imgRef(editingImage)||/^data:image/i.test(editingImage))?'':editingImage;
 g('editProdMsg').textContent='';g('editProdPhotoMsg').textContent='';
 g('editProdThumb').hidden=!imgSrc(editingImage);if(imgSrc(editingImage))g('editProdThumb').src=imgSrc(editingImage);
@@ -6642,7 +6821,7 @@ g('editProdFile').addEventListener('change',async()=>{const file=g('editProdFile
 g('editProdPhotoMsg').textContent='Loading photo...';try{const data=await shrinkImage(file,900,.82),id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);if(stagedEditImageId){delete IMGS[stagedEditImageId];await idbDel('imgs',stagedEditImageId)}stagedEditImageId=id;IMGS[id]=data;editingImage='idb:'+id;try{await idbPut('imgs',id,data);g('editProdPhotoMsg').textContent='Saved on this device.'}catch(e){g('editProdPhotoMsg').textContent='Photo is showing, but this browser would not save it for next time.'}g('editProdImageUrl').value='';g('editProdThumb').src=data;g('editProdThumb').hidden=false;g('editProdRemove').hidden=false;g('editProdUpload').textContent='Change photo'}catch(e){g('editProdPhotoMsg').textContent=(e&&e.message)||'Could not load that photo.'}});
 g('editProdRemove').onclick=()=>{if(stagedEditImageId){delete IMGS[stagedEditImageId];idbDel('imgs',stagedEditImageId);stagedEditImageId=''}editingImage='';g('editProdImageUrl').value='';g('editProdThumb').hidden=true;g('editProdRemove').hidden=true;g('editProdPhotoMsg').textContent='';g('editProdUpload').textContent='Upload photo'};
 g('editProdCancel').onclick=()=>{if(stagedEditImageId){delete IMGS[stagedEditImageId];idbDel('imgs',stagedEditImageId);stagedEditImageId=''}editingProductIndex=null;g('productEditor').hidden=true;g('editProdFile').value='';g('wAdd').style.display=prods.length>=MAX_PRODUCTS?'none':''};
-g('editProdSave').onclick=()=>{const name=g('editProdName').value.trim();if(!name){g('editProdMsg').textContent='Enter a product name first.';g('editProdName').focus();return}const product={...(editingProductIndex===null?{}:prods[editingProductIndex]),name,price:g('editProdPrice').value.trim(),desc:g('editProdDesc').value.trim(),img:editingImage,ci:editingCategories.slice()};if(editingProductIndex===null)prods.push(product);else prods[editingProductIndex]=product;stagedEditImageId='';editingProductIndex=null;g('productEditor').hidden=true;g('editProdFile').value='';drawProds();read();go()};
+g('editProdSave').onclick=()=>{const name=g('editProdName').value.trim();if(!name){g('editProdMsg').textContent='Enter a '+(SHOP.offerType==='services'?'service':'product')+' name first.';g('editProdName').focus();return}const duration=Number(g('editProdDuration').value);if(SHOP.offerType==='services'&&(!Number.isSafeInteger(duration)||duration<15||duration>240||duration%15!==0)){g('editProdMsg').textContent='Enter a duration from 15 to 240 minutes in 15-minute increments.';g('editProdDuration').focus();return}const product={...(editingProductIndex===null?{}:prods[editingProductIndex]),name,price:g('editProdPrice').value.trim(),desc:g('editProdDesc').value.trim(),img:editingImage,ci:editingCategories.slice(),...(SHOP.offerType==='services'?{duration_minutes:duration}:{})};if(editingProductIndex===null)prods.push(product);else prods[editingProductIndex]=product;stagedEditImageId='';editingProductIndex=null;g('productEditor').hidden=true;g('editProdFile').value='';drawProds();read();go()};
 window.litrusSetCraftCatalog=function(payload){
  if(!payload||!Array.isArray(payload.categories)||!Array.isArray(payload.products)||
     payload.categories.length>MAX_CATEGORIES||payload.products.length>MAX_PRODUCTS){
@@ -6652,6 +6831,11 @@ window.litrusSetCraftCatalog=function(payload){
  const categoryIndex=new Map(categories.map((name,index)=>[name.toLocaleLowerCase(),index]));
  const shop=payload.shop&&typeof payload.shop==='object'?payload.shop:{};
  SHOP.custom=true;SHOP.name=String(shop.name||'Your Shop').slice(0,120);SHOP.cur=String(shop.currency||'KES').slice(0,8);
+ SHOP.offerType=shop.offer_type==='services'?'services':'products';g('wOfferType').value=SHOP.offerType;applyOfferTypeUI(SHOP.offerType);
+ SHOP.serviceDays=Array.isArray(shop.service_days)?shop.service_days.map(Number):[1,2,3,4,5,6];
+ SHOP.serviceOpenTime=String(shop.service_open_time||'09:00');SHOP.serviceCloseTime=String(shop.service_close_time||'17:00');
+ SHOP.serviceTimezone=String(shop.service_timezone||'Africa/Nairobi');SHOP.serviceBufferMinutes=Number(shop.service_buffer_minutes)||0;
+ SHOP.serviceDepositPercent=Number(shop.service_deposit_percent)||0;
  SHOP.tagline=String(shop.tagline||'');SHOP.email=String(shop.email||'');SHOP.phone=String(shop.phone||'');
  SHOP.wa=String(shop.whatsapp||'');SHOP.addr=String(shop.address||'');SHOP.fee=String(shop.delivery_fee||'');SHOP.free=String(shop.free_delivery_over||'');
  SHOP.cats=categories;SHOP.products=[];
@@ -6659,6 +6843,9 @@ window.litrusSetCraftCatalog=function(payload){
  g('wTag').value=SHOP.tagline;g('wCur').value=SHOP.cur;setCategoryNames(categories);
  g('wEmail').value=SHOP.email;g('wPhone').value=SHOP.phone;g('wWa').value=SHOP.wa;
  g('wAddr').value=SHOP.addr;g('wFee').value=SHOP.fee;g('wFree').value=SHOP.free;g('wAbout').value=String(shop.about||'');
+ [...document.querySelectorAll('[data-service-day]')].forEach(input=>{input.checked=SHOP.serviceDays.includes(Number(input.dataset.serviceDay))});
+ g('wServiceOpen').value=SHOP.serviceOpenTime;g('wServiceClose').value=SHOP.serviceCloseTime;g('wServiceTimezone').value=SHOP.serviceTimezone;
+ g('wServiceBuffer').value=String(SHOP.serviceBufferMinutes);g('wServiceDeposit').value=String(SHOP.serviceDepositPercent);
  prods=payload.products.map(product=>{
   const names=Array.isArray(product.category_names)?product.category_names:[product.category_name||''];
   return {
@@ -6672,6 +6859,7 @@ window.litrusSetCraftCatalog=function(payload){
    spin_frames:Array.isArray(product.spin_frames)?product.spin_frames.slice(0,36):[],
    video_url:String(product.video_url||''),
    booking_enabled:product.booking_enabled===true||product.booking_enabled===1,
+   duration_minutes:Number(product.duration_minutes)||60,
    stock:Number(product.stock)||0,
    ci:names.map(name=>categoryIndex.get(String(name).toLocaleLowerCase())).filter(index=>Number.isInteger(index))
   };
@@ -6683,8 +6871,10 @@ window.litrusSetCraftCatalog=function(payload){
 window.litrusGetCraftPublishPayload=function(){
  read();render();sync();
  const catalog={
-  shop:{name:SHOP.name,currency:SHOP.cur,tagline:SHOP.tagline,description:SHOP.what,email:SHOP.email,
-   phone:SHOP.phone,whatsapp:SHOP.wa,address:SHOP.addr,delivery_fee:SHOP.fee,free_delivery_over:SHOP.free,about:SHOP.about},
+  shop:{name:SHOP.name,currency:SHOP.cur,offer_type:SHOP.offerType,tagline:SHOP.tagline,description:SHOP.what,email:SHOP.email,
+   phone:SHOP.phone,whatsapp:SHOP.wa,address:SHOP.addr,delivery_fee:SHOP.fee,free_delivery_over:SHOP.free,about:SHOP.about,
+   service_days:SHOP.serviceDays,service_open_time:SHOP.serviceOpenTime,service_close_time:SHOP.serviceCloseTime,
+   service_timezone:SHOP.serviceTimezone,service_buffer_minutes:SHOP.serviceBufferMinutes,service_deposit_percent:SHOP.serviceDepositPercent},
   categories:SHOP.cats.map(name=>({name})),
   products:prods.filter(product=>product.name.trim()).map(product=>({
    id:product.craftId||'',name:product.name.trim(),price:Number(String(product.price||'').replace(/,/g,''))||0,
@@ -6694,6 +6884,7 @@ window.litrusGetCraftPublishPayload=function(){
    spin_frames:(Array.isArray(product.spin_frames)?product.spin_frames:[]).map(imgSrc).filter(Boolean).slice(0,36),
    video_url:String(product.video_url||''),
    booking_enabled:product.booking_enabled===true||product.booking_enabled===1,
+   ...(SHOP.offerType==='services'?{duration_minutes:Number(product.duration_minutes)||60}:{}),
    stock:Number(product.stock)||0,
    category_names:(product.ci||[]).map(index=>SHOP.cats[index]).filter(Boolean)
   }))
@@ -6743,7 +6934,7 @@ MOODS.forEach((md,i)=>{
 const moreMoods=document.createElement('button');moreMoods.type='button';moreMoods.className='ghost mood-more';moreMoods.setAttribute('aria-controls','wMoods');moreMoods.setAttribute('aria-expanded','false');moreMoods.textContent='More feelings ('+(MOODS.length-8)+')';
 moreMoods.onclick=()=>{const show=moreMoods.getAttribute('aria-expanded')!=='true';[...mb.children].forEach((b,i)=>{if(i>=8)b.hidden=!show});moreMoods.setAttribute('aria-expanded',String(show));moreMoods.textContent=show?'Fewer feelings':'More feelings ('+(MOODS.length-8)+')'};
 mb.after(moreMoods);
-function apply(md,randomizeDetails=md.n!=='Good Form'){
+function apply(md,randomizeDetails=md.n!=='Good Form',persist=true){
  clearPaletteOverrides();
  setSel(hs,R(md.hero));setSel(ps,R(md.card));setSel(pl,R(md.pal));setSel(fnt,R(md.font));setSel(lay,R(md.lay));setSel(cs,R(md.cat));setSel(fs,R(md.foot));
  banRev();
@@ -6751,14 +6942,14 @@ function apply(md,randomizeDetails=md.n!=='Good Form'){
  else{cRad.value='0';cSp.value='';cHeart.value='on';cRate.value='off';cSale.value='off';cBag.value='on';selScroll.value='';fixC.checked=true}
  setSel(ani,R(md.anim));setSel(selScroll,R(md.scroll));window.wizMark&&window.wizMark();
  const fx=$('fixC');if(fx&&!fx.checked){fx.checked=true;fx.dispatchEvent(new Event('change'))}
- fillShopWords();read();drawProds();read();render();sync();
+ fillShopWords();read();drawProds();read();render();sync();if(persist)autosave();
 }
 function banRev(){setSel(bs,g('wBan').checked?Math.max(1,1+Math.floor(Math.random()*(bs.options.length-1))):0);setSel(rs,g('wRev').checked?Math.max(1,1+Math.floor(Math.random()*(rs.options.length-1))):0)}
 ['wBan','wRev'].forEach(id=>g(id).addEventListener('change',()=>{banRev();render();sync()}));
 const TW=[['Header',hs,'hero'],['Product cards',ps,'card'],['Colours',pl,'pal'],['Heading font',fnt,'font'],['Product layout',lay,'lay'],['Categories',cs,'cat'],['Footer',fs,'foot'],['Animation',ani,'anim'],['Scroll effect',selScroll,'scroll']];
 const tb=g('wTweaks');
 TW.forEach(([t,el,k])=>{const b=document.createElement('button');b.type='button';b.className='ghost';b.textContent='Change '+t.toLowerCase();
- b.onclick=()=>{const pool=(mood&&mood[k]&&mood[k].length>1?mood[k]:[...Array(el.options.length).keys()]).filter(i=>i!==cur(el));setSel(el,R(pool.length?pool:[0]));window.wizMark&&window.wizMark();render();sync()};tb.append(b)});
+ b.onclick=()=>{const pool=(mood&&mood[k]&&mood[k].length>1?mood[k]:[...Array(el.options.length).keys()]).filter(i=>i!==cur(el));setSel(el,R(pool.length?pool:[0]));window.wizMark&&window.wizMark();render();sync();autosave()};tb.append(b)});
 const sb=document.createElement('button');sb.type='button';sb.textContent='Surprise me';sb.onclick=()=>{mood=mood||R(MOODS);apply(mood)};tb.append(sb);
 
 // ---- colours + background picker ----
@@ -6799,11 +6990,18 @@ const sb=document.createElement('button');sb.type='button';sb.textContent='Surpr
 })();
 // steps
 function show(n){
+ if(n>1&&!['products','services'].includes(g('wOfferType').value)){
+  g('wOfferTypeError').textContent='Choose whether your shop offers products or services to continue.';
+  g('wOfferType').focus();
+  return;
+ }
+ g('wOfferTypeError').textContent='';
  step=n;W.querySelectorAll('.wz-sec').forEach(s=>s.hidden=+s.dataset.step!==n);
  W.querySelectorAll('#wzSteps li').forEach(li=>{const selected=+li.dataset.s===n;li.classList.toggle('on',selected);li.classList.toggle('done',+li.dataset.s<n);li.setAttribute('aria-selected',selected?'true':'false');li.tabIndex=selected?0:-1});
- if(n===2){if(SHOP.type)fillShopWords();if(!getCategoryNames().length)setCategoryNames(SHOP.cats||(craftIntegrated?[]:DEF_CATS.slice(0,4)));read();drawProds()}
+ if(n===2){if(SHOP.type)fillShopWords();if(!getCategoryNames().length)setCategoryNames(SHOP.cats||(craftIntegrated?[]:SHOP.offerType==='services'?DEFAULT_SERVICE_CATEGORIES:DEF_CATS.slice(0,4)));read();drawProds()}
  g('wBack').style.visibility=n===1?'hidden':'visible';g('wNext').textContent=n===4?'Done':'Next';g('wNext').style.visibility=n===4?'hidden':'visible';
- if(n===4){fillShopWords();read();drawProds();read();render();g('wOut').value=JSON.stringify(getRecipe(),null,2);g('wWarn').textContent=(waNum()||SHOP.email)?'':'Add a WhatsApp number or an email in step 1 (More details) so orders reach you.'}
+ if(n===4){fillShopWords();read();drawProds();read();render();g('wOut').value=JSON.stringify(getRecipe(),null,2);const contactWarning=(waNum()||SHOP.email)?'':'Add a WhatsApp number or an email in step 1 (More details) so customers can reach you.';g('wWarn').textContent=SHOP.offerType==='services'?'Customers can request appointment times; confirm or decline requests in Craft. Optional deposits are collected after approval when Paystack is connected. '+contactWarning:contactWarning.replace('customers','orders');
+ }
  W.scrollTop=0;const activeSection=W.querySelector('.wz-sec:not([hidden])');if(activeSection)activeSection.scrollTop=0;
 }
 g('wNext').onclick=()=>{if(step===3&&!mood){const md=R(MOODS);mood=md;[...mb.children][MOODS.indexOf(md)].classList.add('on');apply(md);g('wTweak').hidden=false}show(Math.min(4,step+1))};
@@ -6822,7 +7020,7 @@ g('wDlJson').onclick=()=>{read();downloadText(slugify(SHOP.name)+'-shop-data.jso
 g('wCopy').onclick=async()=>{const t=g('wOut').value;try{await navigator.clipboard.writeText(t);g('wMsg').textContent='Copied.'}catch(e){g('wOut').select();try{document.execCommand('copy');g('wMsg').textContent='Copied.'}catch(e2){g('wMsg').textContent='Select the text above and copy it.'}}};
 g('wSave').onclick=()=>{rName.value=SHOP.name;$('rSave').click();g('wMsg').textContent='Saved in this browser as "'+SHOP.name+'".'};
 g('wAdv').onclick=()=>{if(window.matchMedia('(max-width:820px)').matches){setBuilderMode('advanced');return}const on=document.body.classList.toggle('adv');g('wAdv').textContent=on?'Hide advanced controls':'Show advanced controls';if(on)scrollTo(0,0)};
-g('wReset').onclick=()=>{if(craftIntegrated||!confirm('Clear everything and start again?'))return;closeShopSettings();['wName','wType','wWhat','wTag','wHead','wSub','wCta','wEmail','wPhone','wCats','wWa','wFee','wFree','wAddr','wAbout'].forEach(id=>g(id).value='');SHOP.type='';SHOP.promo='';SHOP.contentBlocks=[];SHOP.faqs=[];SHOP.promoStyle='split';SHOP.storyStyle='collage';SHOP.faqStyle='minimal';SHOP.reviewLines=[];SHOP.autoImages={};SHOP.userImages={};SHOP.photoCredits=[];setPhotoStatus('');prods=[{name:'Product one',price:'1,500',desc:'',img:'',ci:[0]},{name:'Product two',price:'2,400',desc:'',img:'',ci:[1]},{name:'Product three',price:'3,200',desc:'',img:'',ci:[2]}];SHOP.settingsColors=null;SHOP.bodyFont='';SHOP.productsPerRow=4;SHOP.homeSections={categories:true,products:true,promo:true,reviews:true};SHOP.secEdit={order:[],hidden:[]};fillSettings();drawProds();drawContentEditors();mood=null;SHOP.bgfx='';SHOP.cc=null;try{idbClear('imgs');idbClear('state')}catch(e){}Object.keys(IMGS).forEach(k=>delete IMGS[k]);[...mb.children].forEach(x=>x.classList.remove('on'));g('wTweak').hidden=true;read();apply(MOODS[0]);show(1)};
+g('wReset').onclick=()=>{if(craftIntegrated||!confirm('Clear everything and start again?'))return;closeShopSettings();['wName','wOfferType','wType','wWhat','wTag','wHead','wSub','wCta','wEmail','wPhone','wCats','wWa','wFee','wFree','wAddr','wAbout'].forEach(id=>g(id).value='');SHOP.offerType='';SHOP.type='';applyOfferTypeUI('');SHOP.promo='';SHOP.contentBlocks=[];SHOP.faqs=[];SHOP.promoStyle='split';SHOP.storyStyle='collage';SHOP.faqStyle='minimal';SHOP.reviewLines=[];SHOP.autoImages={};SHOP.userImages={};SHOP.photoCredits=[];setPhotoStatus('');prods=[{name:'Product one',price:'1,500',desc:'',img:'',ci:[0]},{name:'Product two',price:'2,400',desc:'',img:'',ci:[1]},{name:'Product three',price:'3,200',desc:'',img:'',ci:[2]}];SHOP.settingsColors=null;SHOP.bodyFont='';SHOP.productsPerRow=4;SHOP.homeSections={categories:true,products:true,promo:true,reviews:true};SHOP.secEdit={order:[],hidden:[]};fillSettings();drawProds();drawContentEditors();mood=null;SHOP.bgfx='';SHOP.cc=null;try{idbClear('imgs');idbClear('state')}catch(e){}Object.keys(IMGS).forEach(k=>delete IMGS[k]);[...mb.children].forEach(x=>x.classList.remove('on'));g('wTweak').hidden=true;read();apply(MOODS[0]);show(1)};
 $('selPage').onchange=e=>{if(RT)RT.go(e.target.value)};
 function syncMobileAdvanced(){
  const host=g('mobileAdvancedScreen'),panel=g('advSide'),mobile=window.matchMedia('(max-width:820px)').matches;
@@ -6888,7 +7086,7 @@ if(window.ResizeObserver)new ResizeObserver(layoutPreview).observe(previewViewpo
 new MutationObserver(recs=>{if(recs.every(r=>{const t=r.target.nodeType===1?r.target:r.target.parentElement;return t&&t.closest&&t.closest('.f-clock .time')}))return;refreshPreview()}).observe(previewSource,{childList:true,subtree:true,characterData:true,attributes:true});
 layoutPreview();refreshPreview();
 // start
-read();drawProds();read();mood=GOOD_FORM||MOODS[0];[...mb.children][0].classList.add('on');g('wTweak').hidden=false;apply(mood,false);show(1);
+read();drawProds();read();mood=GOOD_FORM||MOODS[0];[...mb.children][0].classList.add('on');g('wTweak').hidden=false;apply(mood,false,false);show(1);
 (async()=>{
  try{
   if(craftIntegrated)return;
@@ -6898,6 +7096,155 @@ read();drawProds();read();mood=GOOD_FORM||MOODS[0];[...mb.children][0].classList
   drawProds();
   setSaved('Restored your last shop from this device.');
  }catch(e){setSaved('Auto-save is not available in this browser.')}
+})();
+/* ---- services mode ---- */
+(function(){
+if(window.__svcMode)return;window.__svcMode=1;
+var SV=function(){try{return SHOP.offerType==='services'}catch(e){return false}};
+var CAL='<svg class="svc-cal" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+var DEMO=[['Consultation','1,000',30,'A short chat to understand what you need.'],['Standard appointment','2,000',60,'Our most popular service, one hour with us.'],['Extended session','3,500',90,'More time for a deeper, unhurried visit.'],['Package of 3 visits','5,500',60,'Three appointments at a better price.'],['Express visit','800',15,'A quick visit when you are short on time.']];
+var DUR={},_sp=shopProds;
+function demoList(){
+ var cats=(SHOP.cats&&SHOP.cats.length)?SHOP.cats:['Services'];
+ return DEMO.map(function(d,i){var id=d[0].toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+(i+1);DUR[id]=d[2];
+  return [d[0],d[1],'box',(window.TONES||['#e9d8c4'])[i%6],d[3],[cats[i%cats.length]],'',id,'image',[],'',false,0]});
+}
+shopProds=function(){
+ if(SV()&&!(SHOP.custom&&Array.isArray(SHOP.products)&&SHOP.products.length))return demoList();
+ return _sp.apply(this,arguments);
+};
+function durOf(id,name){
+ if(DUR[id])return DUR[id];
+ var l=(SHOP.products||[]);
+ for(var i=0;i<l.length;i++){var x=l[i];var xid=String(x.craftId||(typeof slugify==='function'?slugify(x.name):'')+'-'+(i+1));
+  if(xid===String(id)||x.name===name)return Number(x.duration_minutes)||60}
+ return 60;
+}
+function fmtDur(m){m=+m||60;if(m<60)return m+' min';var h=Math.floor(m/60),r=m%60;return h+' hr'+(h>1?'s':'')+(r?' '+r+' min':'')}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function toMin(t){var p=String(t||'').split(':');return (+p[0]||0)*60+(+p[1]||0)}
+function lab(m){var h=Math.floor(m/60),mm=m%60,ap=h>=12?'pm':'am';h=h%12||12;return h+':'+(mm<10?'0':'')+mm+' '+ap}
+function pad(n){return n<10?'0'+n:''+n}
+function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function goTo(route){
+ var w=document.querySelector('#store');if(!w)return;
+ var a=document.createElement('a');a.href='#';a.setAttribute('data-go',route);a.style.display='none';
+ (w.firstElementChild||w).appendChild(a);a.click();a.remove();
+}
+function slotsFor(dateStr,dur){
+ var open=toMin(SHOP.serviceOpenTime||'09:00'),close=toMin(SHOP.serviceCloseTime||'17:00'),buf=+SHOP.serviceBufferMinutes||0,step=Math.max(15,dur+buf),out=[];
+ var now=new Date(),isToday=dateStr===ymd(now),nowM=now.getHours()*60+now.getMinutes();
+ for(var m=open;m+dur<=close;m+=step){if(isToday&&m<=nowM)continue;out.push(m)}
+ return out;
+}
+function buildForm(id,name,price,dur){
+ var f=document.createElement('form');f.className='svc-book';f.noValidate=true;
+ f.setAttribute('data-sid',id);f.setAttribute('data-sname',name);f.setAttribute('data-sprice',price);f.setAttribute('data-sdur',dur);
+ var today=new Date(),max=new Date();max.setDate(max.getDate()+90);
+ var dep=+SHOP.serviceDepositPercent||0;
+ f.innerHTML='<h2>Book this service</h2><div class="svc-row"><label>Date<input type="date" name="date" min="'+ymd(today)+'" max="'+ymd(max)+'" required></label><label>Time<select name="time" required disabled><option value="">Pick a date first</option></select></label></div><p class="svc-hint" role="status"></p><label>Your name<input name="name" autocomplete="name" required></label><label>Phone or email<input name="contact" autocomplete="email tel" required></label><label>Notes (optional)<textarea name="note" rows="2" placeholder="Anything we should know?"></textarea></label><button type="submit" class="sp-btn svc-submit">Request booking</button><p class="svc-fine">'+esc('Sent as a request. '+(SHOP.name||'We')+' will confirm your time.'+(dep>0?' A '+dep+'% deposit is due after approval.':''))+'</p>';
+ return f;
+}
+function wireForm(f){
+ if(!f||f.__svcWired)return;f.__svcWired=1;
+ var doc=f.ownerDocument,id=f.getAttribute('data-sid'),name=f.getAttribute('data-sname'),price=f.getAttribute('data-sprice'),dur=+f.getAttribute('data-sdur')||60;
+ var d=f.elements.date,t=f.elements.time,hint=f.querySelector('.svc-hint');
+ d.addEventListener('change',function(){
+  t.innerHTML='';hint.textContent='';
+  if(!d.value){t.disabled=true;t.innerHTML='<option value="">Pick a date first</option>';return}
+  var wd=new Date(d.value+'T00:00:00').getDay(),days=(SHOP.serviceDays&&SHOP.serviceDays.length)?SHOP.serviceDays:[1,2,3,4,5,6];
+  if(days.indexOf(wd)<0){t.disabled=true;t.innerHTML='<option value="">Closed that day</option>';hint.textContent='We are closed on that day. Please pick another date.';return}
+  var s=slotsFor(d.value,dur);
+  if(!s.length){t.disabled=true;t.innerHTML='<option value="">No times left</option>';hint.textContent='No times left that day. Try another date.';return}
+  t.disabled=false;t.innerHTML='<option value="">Choose a time</option>'+s.map(function(m){return '<option value="'+pad(Math.floor(m/60))+':'+pad(m%60)+'">'+lab(m)+'</option>'}).join('');
+  hint.textContent='Times in '+(SHOP.serviceTimezone||'local time')+'.';
+ });
+ f.addEventListener('submit',function(e){
+  e.preventDefault();e.stopPropagation();
+  var v={date:d.value,time:t.value,name:f.elements.name.value.trim(),contact:f.elements.contact.value.trim(),note:f.elements.note.value.trim()};
+  var ok=/@/.test(v.contact)||v.contact.replace(/\D/g,'').length>=7;
+  if(!v.date||!v.time){hint.textContent='Choose a date and a time.';return}
+  if(!v.name){hint.textContent='Enter your name.';f.elements.name.focus();return}
+  if(!ok){hint.textContent='Enter a phone number or an email we can reach you on.';f.elements.contact.focus();return}
+  var detail={service_id:id,service_name:name,duration_minutes:dur,price:price,currency:SHOP.cur||'',date:v.date,time:v.time,timezone:SHOP.serviceTimezone||'',customer_name:v.name,contact:v.contact,note:v.note};
+  try{document.dispatchEvent(new CustomEvent('litrus:appointment-request',{detail:detail}))}catch(x){}
+  var box=doc.createElement('div');box.className='svc-done';box.setAttribute('role','status');
+  var wa=(typeof waNum==='function')?waNum():'',msg='Hi, I would like to book '+name+' on '+v.date+' at '+v.time+'. Name: '+v.name+'.';
+  box.innerHTML='<strong>\u2713 Request sent</strong><span>'+esc(name)+' on '+esc(v.date)+' at '+esc(lab(toMin(v.time)))+'. '+esc(SHOP.name||'We')+' will confirm your time shortly.</span>'+(wa?'<a class="sp-btn ghost svc-wa" href="https://wa.me/'+wa+'?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">Message us on WhatsApp</a>':'');
+  f.replaceWith(box);
+ });
+}
+function convertPDP(root){
+ var info=root.querySelector('.sp-pdp .sp-info');
+ if(!info||info.querySelector('.svc-book,.svc-done'))return;
+ var pidEl=info.querySelector('[data-pid]'),id=pidEl?pidEl.getAttribute('data-pid'):'';
+ var h=root.querySelector('.sp-top h1'),name=h?h.textContent.trim():'',priceEl=info.querySelector('.sp-price');
+ var price=priceEl?priceEl.textContent.replace(/^[A-Za-z]{2,4}\s/,'').trim():'',dur=durOf(id,name);
+ ['.sp-buy','[data-act="buynow"]','.sp-hold-form','ul.sp-points'].forEach(function(s){info.querySelectorAll(s).forEach(function(n){n.remove()})});
+ if(priceEl&&!priceEl.querySelector('.svc-dur'))priceEl.insertAdjacentHTML('beforeend',' <span class="svc-dur">\u00B7 '+fmtDur(dur)+'</span>');
+ var anchor=info.querySelector('.sp-desc')||priceEl||info.lastElementChild,f=buildForm(id,name,price,dur);
+ if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(f,anchor.nextSibling);else info.appendChild(f);
+ wireForm(f);
+}
+var busy=false,lastSvc=false,mo=null;
+function apply(){
+ var root=document.getElementById('store');if(!root)return;
+ if(!SV()){if(lastSvc){lastSvc=false;try{render()}catch(e){}}return}
+ lastSvc=true;busy=true;if(mo)mo.disconnect();
+ try{
+  root.querySelectorAll('.sole-cart-button:not([data-svc])').forEach(function(a){a.setAttribute('data-svc','1');a.setAttribute('data-go','shop');a.setAttribute('aria-label','Book a service');a.innerHTML=CAL+'<span>Book</span>'});
+  root.querySelectorAll('.sp-cartbtn:not([data-svc])').forEach(function(a){a.setAttribute('data-svc','1');a.setAttribute('data-go','shop');a.textContent='Book now'});
+  root.querySelectorAll('.sp-float').forEach(function(a){a.style.display='none'});
+  root.querySelectorAll('.sole-searchbar input').forEach(function(i){i.placeholder='Search services';i.setAttribute('aria-label','Search services')});
+  root.querySelectorAll('.sole-product-add:not([data-svc]),.sole-product .p-btn:not([data-svc]),.p-card .p-btn:not([data-svc]),.sp-card .p-btn:not([data-svc])').forEach(function(b){
+   if(b.closest('.svc-book'))return;b.setAttribute('data-svc','1');
+   var card=b.closest('[data-pid]'),t=card&&card.querySelector('.p-title');
+   b.setAttribute('aria-label','Book '+(t?t.textContent:'this service'));
+   if(b.classList.contains('sole-product-add')){b.innerHTML=CAL+'<span>Book</span>'}else{b.textContent='Book now'}
+  });
+  root.querySelectorAll('[data-pid]').forEach(function(card){
+   var p=card.querySelector('.p-price');if(!p||card.querySelector('.svc-dur')||card.closest('.sp-info'))return;
+   var t=card.querySelector('.p-title');p.insertAdjacentHTML('afterend','<span class="svc-dur">\u00B7 '+fmtDur(durOf(card.getAttribute('data-pid'),t?t.textContent:''))+'</span>');
+  });
+  var map=[['Add to bag','Book now'],['Buy now','Book now'],['See all products','See all services'],['All products','All services'],['All shoes','All services'],['Delivery & returns','Booking & cancellations'],['Delivery and returns','Booking & cancellations'],['Search products','Search services']];
+  var tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),n;
+  while((n=tw.nextNode())){var s=n.nodeValue;if(!s||!s.trim())continue;if(n.parentNode&&/^(SCRIPT|STYLE|TEXTAREA)$/.test(n.parentNode.tagName))continue;
+   for(var i=0;i<map.length;i++){if(s.indexOf(map[i][0])>=0)s=s.split(map[i][0]).join(map[i][1])}
+   if(s!==n.nodeValue)n.nodeValue=s}
+  convertPDP(root);
+ }catch(e){console.warn('svc',e)}
+ busy=false;start();
+}
+function start(){var root=document.getElementById('store');if(!root)return;if(!mo)mo=new MutationObserver(function(){if(busy)return;if(window.__svcRaf)cancelAnimationFrame(window.__svcRaf);window.__svcRaf=requestAnimationFrame(apply)});mo.observe(root,{childList:true,subtree:true})}
+document.addEventListener('click',function(e){
+ if(!SV())return;
+ var t=e.target.closest&&e.target.closest('#store .sole-product-add,#store .p-btn,#store [data-add],#store [data-act="addqty"],#store [data-act="buynow"]');
+ if(!t||t.closest('.svc-book'))return;
+ var id=t.getAttribute('data-add')||t.getAttribute('data-pid');
+ if(!id){var c=t.closest('[data-pid]');id=c&&c.getAttribute('data-pid')}
+ e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+ if(id)goTo('p/'+id);
+},true);
+function relabelMixer(){
+ var s=document.getElementById('cBag');if(!s)return;var l=s.closest('label');if(!l)return;
+ var n=l.firstChild;if(n&&n.nodeType===3)n.nodeValue=SV()?'Book button':'Add to bag';
+}
+var P_NAMES=['Product one','Product two','Product three'],S_NAMES=['Consultation','Standard appointment','Extended session'],S_DUR=[30,60,90];
+function swapStarters(){
+ try{
+  var from=SV()?P_NAMES:S_NAMES,to=SV()?S_NAMES:P_NAMES;
+  if(!Array.isArray(prods)||prods.length!==3||!prods.every(function(p,i){return p.name===from[i]}))return;
+  prods.forEach(function(p,i){p.name=to[i];if(SV())p.duration_minutes=S_DUR[i];else delete p.duration_minutes});
+  drawProds();
+ }catch(e){console.warn('starters',e)}
+}
+function onOffer(){setTimeout(function(){try{swapStarters();read();render()}catch(e){console.warn('offer',e)}relabelMixer();apply()},0)}
+function init(){
+ var sel=document.getElementById('wOfferType');if(sel)sel.addEventListener('change',onOffer);
+ start();apply();relabelMixer();
+ try{previewFrame.addEventListener('load',function(){var dc=previewFrame.contentDocument;if(dc)dc.querySelectorAll('form.svc-book').forEach(wireForm)})}catch(e){console.warn('svc frame',e)}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 })();
 });
@@ -11213,4 +11560,21 @@ document.addEventListener('DOMContentLoaded',function(){
   if (document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
 })();
 </script>
+<style id="svc-style">
+.svc-book{margin:22px 0 6px;padding:18px;border:1px solid rgba(127,127,127,.35);border-radius:12px;display:grid;gap:12px;text-align:left}
+.svc-book h2{margin:0;font-size:1.15rem}
+.svc-book label{display:grid;gap:5px;font-size:.82rem;font-weight:600}
+.svc-book input,.svc-book select,.svc-book textarea{font:inherit;width:100%;padding:10px 12px;border:1px solid rgba(127,127,127,.45);border-radius:8px;background:transparent;color:inherit;box-sizing:border-box}
+.svc-book select option{color:#111}
+.svc-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.svc-hint{margin:0;font-size:.8rem;opacity:.8;min-height:1em}
+.svc-fine{margin:0;font-size:.75rem;opacity:.7}
+.svc-dur{font-size:.78em;font-weight:500;opacity:.75;white-space:nowrap}
+.svc-meta{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px;font-size:.85rem;opacity:.85}
+.svc-done{padding:18px;border:1px solid rgba(127,127,127,.35);border-radius:12px;display:grid;gap:8px}
+.svc-done strong{font-size:1.05rem}
+.svc-wa{display:inline-block;margin-top:4px}
+.sole-cart-button svg.svc-cal{margin-right:6px}
+@media(max-width:520px){.svc-row{grid-template-columns:1fr}}
+</style>
 </body></html>

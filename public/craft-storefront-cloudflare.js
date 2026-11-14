@@ -162,6 +162,116 @@
     }
   }
 
+  let deferredInstallPrompt = null;
+  let installBanner = null;
+  let installBannerTimer = 0;
+  let installBannerDismissed = false;
+
+  function storefrontInstallEnabled() {
+    const setting = window.__ESHOP_THEME_CATALOG__?.store?.install_prompt_enabled;
+    return setting !== 0 && setting !== "0" && setting !== false;
+  }
+
+  function storefrontIsInstalled() {
+    return Boolean(window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true);
+  }
+
+  function hideStorefrontInstallBanner() {
+    window.clearTimeout(installBannerTimer);
+    installBanner?.remove();
+    installBanner = null;
+  }
+
+  function showStorefrontInstallBanner() {
+    if (!storefrontInstallEnabled() || storefrontIsInstalled() || installBanner || installBannerDismissed) return;
+    const storeName = String(window.__ESHOP_THEME_CATALOG__?.store?.name || "this store").trim();
+    const banner = document.createElement("aside");
+    banner.setAttribute("role", "region");
+    banner.setAttribute("aria-label", "Install this store");
+    banner.style.cssText = "position:fixed;z-index:2147483000;left:50%;bottom:calc(16px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);width:min(440px,calc(100vw - 24px));box-sizing:border-box;padding:14px 16px;border:1px solid #d5d5d5;border-radius:14px;background:#fff;color:#161616;box-shadow:0 12px 40px #0003;font:14px/1.45 system-ui,sans-serif";
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:flex-start;gap:12px";
+    const copy = document.createElement("div");
+    copy.style.cssText = "flex:1;min-width:0";
+    const heading = document.createElement("strong");
+    heading.textContent = `Install ${storeName}`;
+    const description = document.createElement("p");
+    description.textContent = "Add this store to your home screen for quicker access.";
+    description.style.cssText = "margin:3px 0 0;color:#555";
+    const dismiss = document.createElement("button");
+    dismiss.type = "button";
+    dismiss.textContent = "×";
+    dismiss.setAttribute("aria-label", "Dismiss install invitation");
+    dismiss.style.cssText = "flex:0 0 auto;border:0;background:transparent;color:inherit;font-size:22px;line-height:1;cursor:pointer";
+    const actions = document.createElement("div");
+    actions.style.cssText = "display:flex;align-items:center;gap:10px;margin-top:12px";
+    const install = document.createElement("button");
+    install.type = "button";
+    install.textContent = "Install";
+    install.style.cssText = "padding:9px 14px;border:0;border-radius:8px;background:#171717;color:#fff;font:600 14px system-ui,sans-serif;cursor:pointer";
+    const status = document.createElement("span");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    status.style.cssText = "color:#555;font-size:12px";
+    copy.append(heading, description);
+    actions.append(install, status);
+    row.append(copy, dismiss);
+    banner.append(row, actions);
+    (document.body || document.documentElement).append(banner);
+    installBanner = banner;
+    installBannerTimer = window.setTimeout(hideStorefrontInstallBanner, 5000);
+
+    dismiss.addEventListener("click", () => {
+      installBannerDismissed = true;
+      hideStorefrontInstallBanner();
+    });
+    install.addEventListener("click", async () => {
+      window.clearTimeout(installBannerTimer);
+      if (!deferredInstallPrompt) {
+        const isAppleMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        status.textContent = isAppleMobile
+          ? "Tap Share, then choose Add to Home Screen."
+          : "Open your browser menu and choose Install app or Add to Home screen.";
+        return;
+      }
+      const prompt = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      install.disabled = true;
+      status.textContent = "Opening the browser install prompt…";
+      try {
+        await prompt.prompt();
+        const choice = await prompt.userChoice;
+        status.textContent = choice?.outcome === "accepted"
+          ? `${storeName} was installed.`
+          : "Installation was canceled.";
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : "The install prompt could not be opened.";
+      } finally {
+        install.disabled = false;
+      }
+    });
+  }
+
+  function installStorefrontAppPrompt() {
+    if (!storefrontInstallEnabled() || storefrontIsInstalled()) return;
+    if (typeof navigator.serviceWorker?.register === "function" && window.isSecureContext) {
+      void navigator.serviceWorker.register("/sw.js").catch(error => {
+        console.warn("The storefront service worker could not be registered for app installation.", error);
+      });
+    }
+    window.addEventListener("beforeinstallprompt", event => {
+      if (!storefrontInstallEnabled() || storefrontIsInstalled()) return;
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      showStorefrontInstallBanner();
+    });
+    window.addEventListener("appinstalled", () => {
+      deferredInstallPrompt = null;
+      hideStorefrontInstallBanner();
+    });
+    window.setTimeout(showStorefrontInstallBanner, 800);
+  }
+
   function statusFor(form, id) {
     let status = document.getElementById(id);
     if (!status) {
@@ -469,6 +579,7 @@
   }
 
   installStorefrontForms();
+  installStorefrontAppPrompt();
   installProductHoldForm();
   if (typeof MutationObserver === "function") {
     const storefrontRoot = document.body || document.documentElement;

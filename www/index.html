@@ -8678,7 +8678,7 @@ body.craft-app-ui #app .launchpad-link {
   </style>
   <meta name="theme-color" content="#F5FAFF">
   <link rel="manifest" href="/manifest.webmanifest">
-  <script type="module" crossorigin src="/assets/app-78SCmTMM.js"></script>
+  <script type="module" crossorigin src="/assets/app-BRRTa1H9.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/app-BdPRDpn5.css">
 </head>
 <body>
@@ -8881,16 +8881,6 @@ const SQLiteEngine = {
             announcement: "",
             announcement_active: 0
           });
-          const anonymousVisitorId = getOrCreateId(window.localStorage, visitorKey);
-          void this.cloudflareRequest(
-            `/api/analytics/visit?tenant=${encodeURIComponent(tenantId)}`,
-            {
-              method: "POST",
-              body: JSON.stringify({ visitor_id: anonymousVisitorId, path: path || "/", referrer: document.referrer || "" })
-            },
-            tenantId,
-            true
-          ).catch(error => console.warn("Cloudflare visit analytics could not be recorded.", error));
         }
       }
       window.localStorage.setItem(this.storeBrandKey, "1");
@@ -10909,7 +10899,7 @@ const StoreRenderers = {
                 </div>
               ` : ""}
               <div class="summary-row total">
-                <span>${order.payment_status === "paid" || order.status === "paid" ? "Total Paid" : "Total Due"}</span>
+                <span>Total Due</span>
                 <span>${AppUtils.formatMoney(total)}</span>
               </div>
             </div>
@@ -12187,6 +12177,27 @@ const StudioRenderers = {
       `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.channel)} · ${AppUtils.escapeHTML(sale.paymentMethod || "Method not recorded")} · ${AppUtils.escapeHTML(sale.date || "")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.collected, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status || "Awaiting payment")}</span></div></article>`
     ).join("");
       const remoteHolds = snapshot.remoteHolds || [];
+      const remoteAppointments = snapshot.remoteAppointments || [];
+      const remoteAppointmentRows = remoteAppointments.map(appointment => {
+        const expired = appointment.status === "pending" &&
+          (new Date(appointment.request_expires_at).getTime() <= Date.now() || new Date(appointment.starts_at).getTime() <= Date.now());
+        const status = expired ? "Expired" : String(appointment.status || "pending");
+        const depositLink = appointment.payment_status !== "paid" && typeof appointment.payment_authorization_url === "string" &&
+          /^https:\/\/checkout\.paystack\.com\//.test(appointment.payment_authorization_url)
+          ? appointment.payment_authorization_url : "";
+        const phone = String(appointment.customer_phone || "").replace(/\D/g, "");
+        const shareText = `Hi ${appointment.customer_name}, your ${appointment.service_name} appointment is confirmed. Please pay your deposit here: ${depositLink}`;
+        const whatsappLink = depositLink && phone
+          ? `https://wa.me/${phone}?text=${encodeURIComponent(shareText)}`
+          : "";
+        const actions = status === "pending"
+          ? `<button type="button" class="btn-primary" data-service-appointment-action="confirm" data-appointment-id="${AppUtils.escapeHTML(appointment.id)}">${Number(appointment.deposit_percent) > 0 ? "Confirm & create deposit link" : "Confirm appointment"}</button><button type="button" class="btn-secondary" data-service-appointment-action="reject" data-appointment-id="${AppUtils.escapeHTML(appointment.id)}">Decline</button>`
+          : "";
+        const appointmentTime = new Date(appointment.starts_at).toLocaleString(undefined, {
+          timeZone: appointment.timezone || undefined
+        });
+        return `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(appointment.service_name)} · ${AppUtils.escapeHTML(appointmentTime)}</strong><span>${AppUtils.escapeHTML(appointment.customer_name)} · ${AppUtils.escapeHTML(appointment.customer_email)} · ${AppUtils.escapeHTML(appointment.customer_phone)}</span><small>${AppUtils.escapeHTML(appointment.duration_minutes)} min · ${Number(appointment.deposit_percent) ? `${Number(appointment.deposit_percent)}% deposit (${this.formatMainShopMoney(Number(appointment.deposit_cents) / 100, appointment.currency)})` : "No deposit"} · Payment: ${AppUtils.escapeHTML(appointment.payment_status)}</small>${depositLink ? `<a href="${AppUtils.escapeHTML(depositLink)}" target="_blank" rel="noopener noreferrer">Open deposit link</a>${whatsappLink ? ` <a href="${AppUtils.escapeHTML(whatsappLink)}" target="_blank" rel="noopener noreferrer">Share by WhatsApp</a>` : ""}` : ""}</div><div class="studio-row-end"><span>${AppUtils.escapeHTML(status)}</span>${actions}</div></article>`;
+      }).join("") || `<p class="store-workspace-empty">${snapshot.remoteAppointments ? "No service appointment requests yet." : "Load requests from the live storefront."}</p>`;
       const remoteHoldRows = remoteHolds.map(hold => {
         const expired = hold.status === "approved" && new Date(hold.expires_at).getTime() <= Date.now();
         const status = expired ? "Expired" : String(hold.status || "pending");
@@ -12264,6 +12275,10 @@ const StudioRenderers = {
               const expired = new Date(booking.expires_at).getTime() <= Date.now();
               return `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(booking.product_name)} · ${booking.quantity}</strong><span>${AppUtils.escapeHTML(booking.customer_name)} · ${AppUtils.escapeHTML(booking.contact)} · Expires ${AppUtils.escapeHTML(booking.expires_at)}</span></div><div class="studio-row-end"><span>${expired ? "Expired" : AppUtils.escapeHTML(booking.status || "On hold")}</span>${!expired && booking.status !== "released" ? `<button type="button" class="btn-secondary" data-release-hold="${booking.id}">Release</button>` : ""}</div></article>`;
             }).join("") || `<p class="store-workspace-empty">No bookings or holds recorded yet.</p>`}
+          </article>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Service appointment requests</h2><button type="button" class="btn-secondary" data-online-appointments-load>Load appointments</button></div>
+            <p class="studio-panel-note" data-online-appointments-status>${snapshot.remoteAppointmentsError ? AppUtils.escapeHTML(snapshot.remoteAppointmentsError) : snapshot.remoteAppointments ? `${remoteAppointments.length} service appointment${remoteAppointments.length === 1 ? "" : "s"} loaded.` : "Customers choose an available time; confirm or decline requests here. Deposit links are created after approval when enabled."}</p>
+            ${remoteAppointmentRows}
           </article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold requests</h2><button type="button" class="btn-secondary" data-online-holds-load>Load requests</button></div>
             <p class="studio-panel-note" data-online-holds-status>${snapshot.remoteHoldsError ? AppUtils.escapeHTML(snapshot.remoteHoldsError) : snapshot.remoteHolds ? `${remoteHolds.length} live hold${remoteHolds.length === 1 ? "" : "s"} loaded.` : "Customer holds reserve available website stock immediately until released or expired."}</p>
@@ -12761,6 +12776,7 @@ const StudioRenderers = {
             <a class="studio-card" href="/web" data-route="/web"><h3 class="studio-card-title">Preview live website</h3><p class="studio-card-desc">Open the customer-facing shop.</p></a>
           </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
+            <a class="btn-secondary" href="/account/web/store" data-route="/account/web/store">Edit store details</a>
             <button type="button" class="btn-primary" id="btn-publish-cloudflare">Deploy storefront to web</button>
             <a class="btn-secondary" href="/account/products" data-route="/account/products">Manage website listings</a>
           </div>
@@ -13128,6 +13144,49 @@ const StudioRenderers = {
         }
       });
     });
+    container.querySelector("[data-online-appointments-load]")?.addEventListener("click", async event => {
+      const button = event.currentTarget;
+      const status = container.querySelector("[data-online-appointments-status]");
+      button.disabled = true;
+      if (status) status.textContent = "Loading service appointment requests…";
+      try {
+        const result = await window.EshopInventoryBridge.listServiceAppointments(tenantId);
+        const updatedSnapshot = { ...snapshot, remoteAppointments: Array.isArray(result.appointments) ? result.appointments : [] };
+        delete updatedSnapshot.remoteAppointmentsError;
+        container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
+        this.bindBusinessCloudActions(container, path, updatedSnapshot, tenantId);
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : "Could not load service appointments.";
+        button.disabled = false;
+      }
+    });
+    container.querySelectorAll("[data-service-appointment-action]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const id = button.dataset.appointmentId;
+        const action = button.dataset.serviceAppointmentAction;
+        const status = container.querySelector("[data-online-appointments-status]");
+        button.disabled = true;
+        try {
+          const result = await window.EshopInventoryBridge.updateServiceAppointment(tenantId, id, action);
+          const updatedSnapshot = {
+            ...snapshot,
+            remoteAppointments: (snapshot.remoteAppointments || []).map(appointment =>
+              appointment.id === id ? result.appointment : appointment)
+          };
+          container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
+          const updatedStatus = container.querySelector("[data-online-appointments-status]");
+          if (updatedStatus) updatedStatus.textContent = action === "confirm"
+            ? Number(result.appointment?.deposit_percent) > 0
+              ? "Appointment confirmed. Share the generated deposit link with the customer."
+              : "Appointment confirmed."
+            : "Appointment declined.";
+          this.bindBusinessCloudActions(container, path, updatedSnapshot, tenantId);
+        } catch (error) {
+          if (status) status.textContent = error instanceof Error ? error.message : "Could not update this appointment.";
+          button.disabled = false;
+        }
+      });
+    });
     container.querySelector("[data-online-holds-load]")?.addEventListener("click", async event => {
       const button = event.currentTarget;
       const status = container.querySelector("[data-online-holds-status]");
@@ -13425,6 +13484,10 @@ const StudioRenderers = {
           key: "remoteHolds",
           load: () => window.EshopInventoryBridge.listStorefrontHolds(activeTenant.id)
         });
+        remoteLoads.push({
+          key: "remoteAppointments",
+          load: () => window.EshopInventoryBridge.listServiceAppointments(activeTenant.id)
+        });
       }
       if (/\/product-intelligence(?:\/|$)/.test(path)) {
         remoteLoads.push({
@@ -13452,6 +13515,8 @@ const StudioRenderers = {
             ? (Array.isArray(result.value.orders) ? result.value.orders : [])
             : key === "remoteHolds"
               ? (Array.isArray(result.value.holds) ? result.value.holds : [])
+            : key === "remoteAppointments"
+              ? (Array.isArray(result.value.appointments) ? result.value.appointments : [])
             : key === "remoteNewsletter"
               ? (Array.isArray(result.value.subscribers) ? result.value.subscribers : [])
             : key === "remoteAllocations"
@@ -14227,7 +14292,7 @@ const StudioRenderers = {
               if (!customer) throw new Error("Customer not found. Refresh and try again.");
               if (customer.points + delta < 0) throw new Error("Points balance cannot be negative.");
               const reasons = [];
-              if (purchasePoints) reasons.push(`Verified paid purchase (${purchaseAmount} ${currency})`);
+              if (purchasePoints) reasons.push(`Verified paid purchase (${purchaseAmount} ${snapshot.currency || "KES"})`);
               if (visitPoints) reasons.push("Verified visit");
               if (manualDelta) reasons.push(reason);
               SQLiteEngine.insert("customer_points", { tenant_id: activeTenant.id, customer_key: customerKey, customer_name: customer.name, delta, reason: reasons.join(" · "), created_at: new Date().toISOString() });
@@ -15319,7 +15384,7 @@ const StudioRenderers = {
         : store.website_theme_id) || "elora-linen";
     const availableThemes = this.websiteThemesForPicker();
     const selectedTheme = !isNewWebsite
-      ? "litrus-mixer"
+      ? requestedTheme
       : availableThemes.some(theme => theme.id === requestedTheme)
         ? requestedTheme
         : availableThemes[0]?.id || "litrus-mixer";
@@ -15391,6 +15456,7 @@ const StudioRenderers = {
         <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:#101114;color:#f5f5f6;">
           <header class="builder-litrus-toolbar" aria-label="Shop builder controls">
             <a class="builder-back-link" href="${AppUtils.escapeHTML(editorReturnRoute)}" data-route="${AppUtils.escapeHTML(editorReturnRoute)}" aria-label="Back to previous screen">&larr;</a>
+            <a id="builder-litrus-store-details" href="/account/web/store" data-route="/account/web/store">Store details</a>
             <button id="builder-litrus-build" type="button">Build</button>
             <button id="builder-litrus-publish" type="button">Publish</button>
             <div class="builder-litrus-device-controls" role="group" aria-label="Preview size">
@@ -15411,6 +15477,7 @@ const StudioRenderers = {
       <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:#101114;color:#f5f5f6;">
         <header style="z-index:1;min-height:48px;padding:5px 12px;display:flex;align-items:center;gap:10px;background:#191a1e;border-bottom:1px solid #303136;">
           <a class="builder-back-link" href="${AppUtils.escapeHTML(editorReturnRoute)}" data-route="${AppUtils.escapeHTML(editorReturnRoute)}" aria-label="Back to previous screen" style="font-size:1.2rem;padding:5px 8px;color:#fff;">&larr;</a>
+          <a href="/account/web/store" data-route="/account/web/store" style="min-height:36px;padding:0 10px;display:inline-flex;align-items:center;white-space:nowrap;color:#fff;">Store details</a>
           <strong style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;">${AppUtils.escapeHTML(studioTheme.name)} · Theme Studio</strong>
           <button class="btn-secondary" id="builder-theme-studio-save" type="button" style="min-height:36px;padding:0 10px;white-space:nowrap;">Save design</button>
           ${draftEditor ? `<a class="btn-primary" href="${AppUtils.escapeHTML(continueRoute)}" data-route="${AppUtils.escapeHTML(continueRoute)}" style="min-height:36px;padding:0 12px;display:inline-flex;align-items:center;white-space:nowrap;">Continue setup</a>` : ""}
@@ -15441,6 +15508,8 @@ const StudioRenderers = {
         <label class="form-field"><span class="form-label">Contact phone</span><input class="form-input" name="phone" type="tel" maxlength="60" value="${AppUtils.escapeHTML(store.phone || "")}"></label>
         <label class="form-field"><span class="form-label">Announcement bar text</span><input class="form-input" name="announcement" maxlength="240" value="${AppUtils.escapeHTML(store.announcement || "")}"></label>
         <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;"><input type="checkbox" name="announcementActive" ${store.announcement_active ? "checked" : ""}> Show announcement bar</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:.88rem;"><input type="checkbox" name="installPromptEnabled" ${store.install_prompt_enabled === 0 || store.install_prompt_enabled === "0" || store.install_prompt_enabled === false ? "" : "checked"}> Enable the app install invitation for shoppers</label>
+        <p style="margin:-8px 0 0;color:var(--text-muted);font-size:.82rem;">Show a brief invitation for five seconds when shoppers visit. They tap Install before their browser opens its install prompt.</p>
         <button type="submit" class="btn-primary" style="min-height:44px;">Save store details</button>
       </form>
     </main>
@@ -17274,7 +17343,7 @@ const AppController = {
     } else if (path === "/pos" || path.startsWith("/pos/")) {
       html = window.ShopPOS.render(path, params);
     } else if (path === "/categories") {
-      html = PageRenderers.renderCategoriesList();
+      html = StoreRenderers.renderCategoriesList();
     } else if (path.startsWith("/pages/")) {
       const slug = decodeURIComponent(path.slice("/pages/".length).replace(/\/$/, ""));
       html = StoreRenderers.renderCustomPage(slug) || `
@@ -17288,7 +17357,7 @@ const AppController = {
       `;
     } else if (path.startsWith("/category/")) {
       const slug = path.replace("/category/", "").replace(/\/$/, "");
-      html = PageRenderers.renderCategory(
+      html = StoreRenderers.renderCategory(
         slug,
         params.get("sort") || "featured",
         params.get("minPrice"),
@@ -17298,17 +17367,17 @@ const AppController = {
       );
     } else if (path.startsWith("/product/")) {
       const slug = path.replace("/product/", "").replace(/\/$/, "");
-      html = PageRenderers.renderProduct(slug);
+      html = StoreRenderers.renderProduct(slug);
     } else if (path === "/search") {
-      html = PageRenderers.renderSearch(params.get("q") || "", params.get("sort") || "featured");
+      html = StoreRenderers.renderSearch(params.get("q") || "", params.get("sort") || "featured");
     } else if (path === "/bag") {
-      html = PageRenderers.renderBag();
+      html = StoreRenderers.renderBag();
     } else if (path === "/checkout") {
-      html = PageRenderers.renderCheckout();
+      html = StoreRenderers.renderCheckout();
     } else if (path === "/checkout/confirmation") {
-      html = PageRenderers.renderOrderConfirmation(params.get("orderId"), params.get("reference"));
+      html = StoreRenderers.renderOrderConfirmation(params.get("orderId"), params.get("reference"));
     } else if (path === "/favorites") {
-      html = PageRenderers.renderFavorites();
+      html = StoreRenderers.renderFavorites();
     } else if (path === "/app-account") {
       html = StudioRenderers.renderAppAccount();
     } else if (path === "/account" || path === "/account/main-shop" || path.startsWith("/account/main-shop/") || path === "/account/dashboard" || path.startsWith("/account/customers") || path.startsWith("/account/website") || path === "/account/payments") {
@@ -18824,35 +18893,6 @@ const AppController = {
           await this.restoreAccountWebsites(accountResult.tenants, origin);
           submitButton.textContent = "Creating website…";
           throw new Error("Website creation is available only from the final setup form.");
-          if (!result.tenant || !result.owner_token) {
-            throw new Error("Cloudflare did not return the new website's private key.");
-          }
-          const store = {
-            ...SQLiteEngine.getStore(),
-            id: result.tenant.id,
-            name,
-            title: name,
-            tagline: "",
-            description: "",
-            location: "",
-            email: "",
-            phone: "",
-            primary_color: "#18181B",
-            background_color: "#FAFAF8",
-            text_color: "#18181B",
-            website_theme_id: params.get("theme") || websiteDraft.selected_theme
-          };
-          this.setActiveTenantCatalog(result.tenant, {
-            owner_token: result.owner_token,
-            products: [],
-            categories: [],
-            inventory: [],
-            store
-          });
-          await this.applyWebsiteBuilderDraft(websiteDraft, params.get("theme"));
-          window.localStorage.removeItem("ESHOP_NEW_WEBSITE_DRAFT_V1");
-          AppUtils.showToast(`Website created at ${result.tenant.hostname}`);
-          this.navigate("/account/web/site");
         } catch (error) {
           console.error("Account or website creation failed.", error);
           if (!existingAccountSession && registering && error.status === 409) {
@@ -20507,7 +20547,8 @@ const AppController = {
           email: String(data.get("email") || "").trim(),
           phone: String(data.get("phone") || "").trim(),
           announcement: String(data.get("announcement") || "").trim(),
-          announcement_active: data.get("announcementActive") ? 1 : 0
+          announcement_active: data.get("announcementActive") ? 1 : 0,
+          install_prompt_enabled: data.get("installPromptEnabled") ? 1 : 0
         });
         this.cacheActiveTenantCatalog();
         try {
@@ -21581,6 +21622,17 @@ window.EshopInventoryBridge = {
   updateStorefrontHold(tenantId, id, action) {
     return AppController.cloudflareRequest(
       `/api/product-holds?tenant=${encodeURIComponent(tenantId)}`,
+      { method: "PATCH", body: JSON.stringify({ id, action }) }, tenantId
+    );
+  },
+  listServiceAppointments(tenantId) {
+    return AppController.cloudflareRequest(
+      `/api/service-appointments?tenant=${encodeURIComponent(tenantId)}`, {}, tenantId
+    );
+  },
+  updateServiceAppointment(tenantId, id, action) {
+    return AppController.cloudflareRequest(
+      `/api/service-appointments?tenant=${encodeURIComponent(tenantId)}`,
       { method: "PATCH", body: JSON.stringify({ id, action }) }, tenantId
     );
   },

@@ -137,6 +137,8 @@ test("Liquid theme choices open the shared Studio and Litrus opens its integrate
   assert.match(app, /id="builder-litrus-mixer"[\s\S]{0,180}litrus-mixer\/index\.html\?craft=1/);
   assert.match(app, /id="builder-litrus-build"/);
   assert.match(app, /id="builder-litrus-publish"/);
+  assert.match(app, /id="builder-litrus-store-details" href="\/account\/web\/store" data-route="\/account\/web\/store">Store details/);
+  assert.match(app, /href="\/account\/web\/store" data-route="\/account\/web\/store">Edit store details/);
   assert.match(app, /data-litrus-preview-device="phone"/);
   assert.match(app, /craft-litrus-image-request/);
   assert.match(app, /\/api\/images\/search\?tenant=/);

@@ -42,6 +42,7 @@
         spin_frames: frames,
         video_url: typeof product.video_url === "string" ? product.video_url : "",
         booking_enabled: product.booking_enabled === true || product.booking_enabled === 1,
+        duration_minutes: Number(product.duration_minutes) || 60,
         stock: Number(product.stock) || 0,
         variants: Array.isArray(product.variants) ? product.variants.slice(0, 100) : [],
         sizes: Array.isArray(product.sizes) ? product.sizes.slice(0, 20) : [],
@@ -57,6 +58,10 @@
       ...data.shop,
       name: String(store.name || data.shop.name),
       cur: String(store.currency || data.shop.cur || "KES"),
+      offerType: store.offer_type === "services" ? "services" :
+        store.offer_type === "products" ? "products" : String(data.shop.offerType || ""),
+      serviceTimezone: String(store.service_timezone || "Africa/Nairobi"),
+      serviceDepositPercent: Number(store.service_deposit_percent) || 0,
       wa: String(store.whatsapp || store.whatsapp_number || data.shop.wa || ""),
       email: String(store.email || ""),
       phone: String(store.phone || ""),
@@ -86,7 +91,25 @@
       card.dataset.taxonomyAttributes = JSON.stringify(product.taxonomy_attributes);
       card.dataset.categoryId = String(product.category_id || "");
       card.dataset.productType = product.taxonomy_category_name;
-      card.querySelectorAll("[data-add]").forEach(button => button.setAttribute("data-add", product.id));
+      const addButtons = data.shop.offerType === "services"
+        ? card.querySelectorAll("[data-add], .sole-product-add, .p-btn, [data-act='addqty']")
+        : card.querySelectorAll("[data-add]");
+      addButtons.forEach(button => {
+        if (data.shop.offerType === "services") {
+          button.removeAttribute("data-add");
+          button.removeAttribute("data-act");
+          button.dataset.go = `p/${product.id}`;
+          button.textContent = "Book now";
+          button.hidden = false;
+          button.style.display = "";
+          button.setAttribute("aria-label", `Book ${product.name}`);
+        } else {
+          button.setAttribute("data-add", product.id);
+          button.removeAttribute("data-go");
+          button.hidden = false;
+          button.style.display = "";
+        }
+      });
       const image = card.querySelector(".p-img-wrapper img,.p-image img,img");
       if (image) {
         image.alt = product.name;
@@ -167,7 +190,13 @@
       const info = page.querySelector(".sp-info");
       if (info) {
         info.querySelectorAll("[data-litrus-product-hold-form]").forEach(form => form.remove());
-        if (product.booking_enabled && product.stock > 0) {
+        info.querySelectorAll("[data-litrus-service-booking-form]").forEach(form => form.remove());
+        const buyArea = page.querySelector(".sp-buy");
+        if (buyArea) {
+          buyArea.hidden = data.shop.offerType === "services";
+          buyArea.style.display = data.shop.offerType === "services" ? "none" : "";
+        }
+        if (data.shop.offerType !== "services" && product.booking_enabled && product.stock > 0) {
           const form = document.createElement("form");
           form.className = "sp-hold-form";
           form.dataset.litrusProductHoldForm = "";
@@ -208,6 +237,73 @@
           status.className = "sp-hold-status";
           status.setAttribute("role", "status");
           form.append(heading, note, quantityLabel, nameLabel, contactLabel, submit, status);
+          info.append(form);
+        }
+        if (data.shop.offerType === "services") {
+          page.querySelectorAll(".sp-info .sp-buy, .sp-info [data-act='buynow'], .sp-info ul.sp-points")
+            .forEach(element => element.remove());
+          const form = document.createElement("form");
+          form.className = "sp-hold-form sp-service-booking-form";
+          form.dataset.litrusServiceBookingForm = "";
+          form.dataset.serviceId = product.id;
+          const heading = document.createElement("h2");
+          heading.textContent = "Book this service";
+          const note = document.createElement("p");
+          note.textContent = `${product.duration_minutes} minutes · Times use ${data.shop.serviceTimezone}. ${data.shop.serviceDepositPercent ? `${data.shop.serviceDepositPercent}% deposit after approval` : "No deposit required"}. The shop will confirm your request.`;
+          const dateLabel = document.createElement("label");
+          dateLabel.textContent = "Choose a date";
+          const date = document.createElement("input");
+          date.name = "date";
+          date.type = "date";
+          date.required = true;
+          dateLabel.append(date);
+          const slotLabel = document.createElement("label");
+          slotLabel.textContent = "Available time";
+          const slots = document.createElement("select");
+          slots.name = "starts_at";
+          slots.required = true;
+          slots.disabled = true;
+          const initialSlot = document.createElement("option");
+          initialSlot.value = "";
+          initialSlot.textContent = "Choose a date and show times";
+          slots.append(initialSlot);
+          slotLabel.append(slots);
+          const loadSlots = document.createElement("button");
+          loadSlots.type = "button";
+          loadSlots.className = "sp-btn";
+          loadSlots.dataset.serviceLoadSlots = "";
+          loadSlots.textContent = "Show available times";
+          const nameLabel = document.createElement("label");
+          nameLabel.textContent = "Your name";
+          const name = document.createElement("input");
+          name.name = "customer_name";
+          name.autocomplete = "name";
+          name.required = true;
+          nameLabel.append(name);
+          const emailLabel = document.createElement("label");
+          emailLabel.textContent = "Email";
+          const email = document.createElement("input");
+          email.name = "customer_email";
+          email.type = "email";
+          email.autocomplete = "email";
+          email.required = true;
+          emailLabel.append(email);
+          const phoneLabel = document.createElement("label");
+          phoneLabel.textContent = "Phone";
+          const phone = document.createElement("input");
+          phone.name = "customer_phone";
+          phone.type = "tel";
+          phone.autocomplete = "tel";
+          phone.required = true;
+          phoneLabel.append(phone);
+          const submit = document.createElement("button");
+          submit.type = "submit";
+          submit.className = "sp-btn";
+          submit.textContent = "Request booking";
+          const status = document.createElement("p");
+          status.className = "sp-service-booking-status";
+          status.setAttribute("role", "status");
+          form.append(heading, note, dateLabel, loadSlots, slotLabel, nameLabel, emailLabel, phoneLabel, submit, status);
           info.append(form);
         }
       }
@@ -301,21 +397,24 @@
       return page.innerHTML;
     };
     const listHtml = (source, title, list) => {
+      const serviceMode = data.shop.offerType === "services";
       const page = parse(source);
       page.querySelectorAll("[data-catalog-filters]").forEach(filters => filters.remove());
       const main = page.querySelector(".sp-main");
       const heading = page.querySelector(".sp-top h1");
-      if (main) main.dataset.route = title === "All products" ? "shop" : `c/${slug(title)}`;
+      if (main) main.dataset.route = title === "All products" || title === "All services" ? "shop" : `c/${slug(title)}`;
       if (heading) heading.textContent = title;
       const subtitle = page.querySelector(".sp-top p");
-      if (subtitle) subtitle.textContent = list.length + (list.length === 1 ? " item" : " items");
+      if (subtitle) subtitle.textContent = list.length + (serviceMode
+        ? list.length === 1 ? " service" : " services"
+        : list.length === 1 ? " item" : " items");
       let section = page.querySelector(".sp-main .prods");
       if (!section) {
         section = document.createElement("section");
         section.className = "prods";
         if (main) main.append(section);
       }
-      if (main) {
+      if (main && !serviceMode) {
         const sizes = [...new Set(list.flatMap(product => product.sizes))].sort();
         const colors = [...new Set(list.flatMap(product => product.colors))].sort();
         const productTypes = [...new Set(list.map(product => product.taxonomy_category_name).filter(Boolean))].sort();
@@ -402,7 +501,11 @@
       }));
     }
     if (homeSection || categoryTiles) pages.home = home.innerHTML;
-    pages.shop = listHtml(pages.shop || pages.home, "All products", products);
+    pages.shop = listHtml(
+      pages.shop || pages.home,
+      data.shop.offerType === "services" ? "All services" : "All products",
+      products
+    );
     Object.keys(pages).filter(key => key.indexOf("c/") === 0 || key.indexOf("p/") === 0)
       .forEach(key => delete pages[key]);
     categories.forEach(category => {
@@ -436,9 +539,59 @@
         const all = document.createElement("a");
         all.href = "#";
         all.dataset.go = "shop";
-        all.textContent = "All products";
+        all.textContent = data.shop.offerType === "services" ? "All services" : "All products";
         nav.replaceChildren(...links, all);
-        data.shell.head = shell.innerHTML;
+      }
+      if (data.shop.offerType === "services") {
+        const bookingLink = shell.querySelector(".sole-cart-button, .sp-cartbtn");
+        if (bookingLink) {
+          bookingLink.dataset.go = "shop";
+          bookingLink.setAttribute("aria-label", "Book a service");
+          bookingLink.textContent = bookingLink.classList.contains("sp-cartbtn") ? "Book now" : "Book";
+        }
+        const search = shell.querySelector(".sole-searchbar input, input[type='search']");
+        if (search) {
+          search.placeholder = "Search services";
+          search.setAttribute("aria-label", "Search services");
+        }
+      }
+      data.shell.head = shell.innerHTML;
+    }
+    if (data.shop.offerType === "services") {
+      const replacements = [
+        ["Add to bag", "Book now"],
+        ["Buy now", "Book now"],
+        ["See all products", "See all services"],
+        ["All products", "All services"],
+        ["All shoes", "All services"],
+        ["Delivery & returns", "Booking & cancellations"],
+        ["Delivery and returns", "Booking & cancellations"],
+        ["Search products", "Search services"]
+      ];
+      const relabel = html => {
+        const page = parse(html);
+        const walker = document.createTreeWalker(page, NodeFilter.SHOW_TEXT);
+        let node;
+        while ((node = walker.nextNode())) {
+          if (node.parentElement && /^(SCRIPT|STYLE|TEXTAREA)$/.test(node.parentElement.tagName)) continue;
+          let text = node.nodeValue;
+          for (const [from, to] of replacements) text = text.split(from).join(to);
+          if (text !== node.nodeValue) node.nodeValue = text;
+        }
+        return page.innerHTML;
+      };
+      Object.keys(pages).forEach(route => {
+        pages[route] = relabel(pages[route]);
+      });
+      if (data.shell) {
+        ["head", "foot"].forEach(key => {
+          if (typeof data.shell[key] === "string") data.shell[key] = relabel(data.shell[key]);
+        });
+        if (typeof data.shell.tail === "string") {
+          const tail = parse(data.shell.tail);
+          tail.querySelectorAll(".sp-float").forEach(element => element.remove());
+          data.shell.tail = tail.innerHTML;
+        }
       }
     }
   }
@@ -514,6 +667,92 @@
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || `Checkout failed (${response.status}).`);
     return result;
+  }
+
+  async function getStorefrontJson(path) {
+    const response = await fetch(path);
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || `Request failed (${response.status}).`);
+    return result;
+  }
+
+  async function loadServiceAvailability(form) {
+    const date = form.elements.namedItem("date");
+    const slots = form.elements.namedItem("starts_at");
+    const status = form.querySelector(".sp-service-booking-status");
+    const button = form.querySelector("[data-service-load-slots]");
+    if (!date?.value || !slots || !button) {
+      if (status) status.textContent = "Choose a date first.";
+      return;
+    }
+    const requestedDate = date.value;
+    button.disabled = true;
+    slots.disabled = true;
+    slots.replaceChildren();
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Loading available times…";
+    slots.append(placeholder);
+    if (status) status.textContent = "";
+    try {
+      const query = new URLSearchParams({ service_id: form.dataset.serviceId, date: date.value });
+      const result = await getStorefrontJson(`/api/service-appointments/availability?${query}`);
+      if (date.value !== requestedDate) return;
+      slots.replaceChildren();
+      const empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = result.slots?.length ? "Choose a time" : "No available times for this date";
+      slots.append(empty);
+      (Array.isArray(result.slots) ? result.slots : []).forEach(slot => {
+        const option = document.createElement("option");
+        option.value = slot.starts_at;
+        option.textContent = slot.label;
+        slots.append(option);
+      });
+      slots.disabled = !result.slots?.length;
+      if (status && !result.slots?.length) status.textContent = "Try another date or contact the shop.";
+    } catch (error) {
+      slots.replaceChildren();
+      const empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = "Could not load times";
+      slots.append(empty);
+      if (status) status.textContent = error instanceof Error ? error.message : "Could not load available times.";
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function requestServiceAppointment(form, data) {
+    const submit = form.querySelector('button[type="submit"]');
+    const status = form.querySelector(".sp-service-booking-status");
+    if (submit) submit.disabled = true;
+    if (status) status.textContent = "Sending appointment request…";
+    try {
+      const result = await postStorefrontJson("/api/service-appointments", {
+        idempotency_key: global.crypto?.randomUUID?.() || `litrus-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        service_id: form.dataset.serviceId,
+        starts_at: form.elements.namedItem("starts_at")?.value || "",
+        customer_name: form.elements.namedItem("customer_name")?.value.trim() || "",
+        customer_email: form.elements.namedItem("customer_email")?.value.trim() || "",
+        customer_phone: form.elements.namedItem("customer_phone")?.value.trim() || ""
+      });
+      form.reset();
+      const slots = form.elements.namedItem("starts_at");
+      if (slots) {
+        slots.disabled = true;
+        slots.replaceChildren();
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = "Choose a date and show times";
+        slots.append(empty);
+      }
+      if (status) status.textContent = `Your request was sent to ${data.shop.name}. It is pending shop approval; we will contact you by email or phone.`;
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : "Could not send this appointment request.";
+    } finally {
+      if (submit) submit.disabled = false;
+    }
   }
 
   function showManualOrder(root, order, customer, delivery, payment, via, data) {
@@ -751,6 +990,35 @@
     }
   }
 
+  async function verifyServiceDepositReturn(root) {
+    const section = document.createElement("main");
+    section.className = "sp sp-main";
+    const content = document.createElement("div");
+    content.className = "sp-wrap sp-done";
+    const heading = document.createElement("h1");
+    heading.textContent = "Appointment deposit";
+    const status = document.createElement("p");
+    status.setAttribute("role", "status");
+    status.textContent = "Verifying your payment…";
+    content.append(heading, status);
+    section.append(content);
+    root.replaceChildren(section);
+    const reference = new URLSearchParams(location.hash.split("?")[1] || "").get("reference") || "";
+    if (!reference) {
+      status.textContent = "The payment reference is missing. Contact the shop to confirm your appointment.";
+      return;
+    }
+    try {
+      const query = new URLSearchParams({ reference });
+      const result = await getStorefrontJson(`/api/service-appointments/payment?${query}`);
+      status.textContent = result.appointment?.payment_status === "paid"
+        ? "Payment received. Your appointment is confirmed."
+        : "Payment is not confirmed yet. Refresh this page or contact the shop.";
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : "Could not verify the payment. Contact the shop.";
+    }
+  }
+
   function litrusStartLiveStore(data) {
     const catalog = global.__ESHOP_THEME_CATALOG__;
     if (!catalog || !Array.isArray(catalog.products) || !Array.isArray(catalog.categories)) {
@@ -764,6 +1032,10 @@
       void verifyStorefrontPaymentReturn(root, data);
       return;
     }
+    if (/^#\/service-payment(?:\?|$)/.test(location.hash)) {
+      void verifyServiceDepositReturn(root);
+      return;
+    }
     const trackEvent = (productId, type, count = 1) => {
       if (typeof global.__ESHOP_TRACK_STOREFRONT_EVENT__ === "function") {
         global.__ESHOP_TRACK_STOREFRONT_EVENT__(String(productId), type, count);
@@ -771,6 +1043,13 @@
     };
     root.addEventListener("click", event => {
       const target = event.target instanceof Element ? event.target : null;
+      const availabilityButton = target?.closest("[data-service-load-slots]");
+      if (availabilityButton) {
+        event.preventDefault();
+        const form = availabilityButton.closest("[data-litrus-service-booking-form]");
+        if (form) void loadServiceAvailability(form);
+        return;
+      }
       const action = target?.closest("[data-act]");
       if (action) {
         const type = action.dataset.act;
@@ -785,7 +1064,49 @@
       const productId = add?.dataset.add;
       if (productId) trackEvent(productId, "cart_add");
     }, true);
+    if (data.shop.offerType === "services") {
+      root.addEventListener("click", event => {
+        const target = event.target instanceof Element ? event.target : null;
+        const button = target?.closest(".sole-product-add, .p-btn, [data-add], [data-act='addqty'], [data-act='buynow']");
+        if (!button || button.closest(".sp-service-booking-form")) return;
+        const card = button.closest("[data-pid]");
+        const serviceId = button.dataset.pid || button.dataset.add || card?.dataset.pid;
+        if (!serviceId) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const route = `p/${serviceId}`;
+        if (typeof global.LITRUS_RUNTIME?.go === "function") global.LITRUS_RUNTIME.go(route);
+        else location.hash = `#/${route}`;
+      }, true);
+    }
+    root.addEventListener("change", event => {
+      const date = event.target instanceof HTMLInputElement && event.target.matches('input[name="date"]')
+        ? event.target
+        : null;
+      const form = date?.closest("[data-litrus-service-booking-form]");
+      if (!date || !form) return;
+      const slots = form.elements.namedItem("starts_at");
+      if (slots) {
+        slots.disabled = true;
+        slots.replaceChildren();
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = "Choose a date and show times";
+        slots.append(empty);
+      }
+      const status = form.querySelector(".sp-service-booking-status");
+      if (status) status.textContent = "";
+    });
     root.addEventListener("submit", event => {
+      const appointmentForm = event.target instanceof HTMLFormElement && event.target.matches("[data-litrus-service-booking-form]")
+        ? event.target
+        : null;
+      if (appointmentForm) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        void requestServiceAppointment(appointmentForm, data);
+        return;
+      }
       const form = event.target instanceof HTMLFormElement && event.target.matches("[data-litrus-product-hold-form]")
         ? event.target
         : null;

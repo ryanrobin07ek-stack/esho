@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { JSDOM } from 'jsdom';
 import worker from '../cloudflare/worker.js';
 
 async function sha256Hex(value) {
@@ -295,4 +296,40 @@ test('Craft AI UI mounts on management screens and discloses provider processing
   assert.match(assistant, /input\.blur\(\)/);
   assert.doesNotMatch(assistant, /suggestedQuestions/);
   assert.doesNotMatch(assistant, /input\.focus\(\);\s*\}\s*$/);
+});
+
+test('Craft AI closes its floating panel when navigating to another screen', async () => {
+  const assistant = await readFile(new URL('../src/craft-ai.js', import.meta.url), 'utf8');
+  const dom = new JSDOM('<!doctype html><html><body></body></html>', {
+    runScripts: 'outside-only',
+    url: 'https://app.example.test/'
+  });
+
+  try {
+    dom.window.eval(assistant);
+    dom.window.CraftAI.mount({ path: '/account/products', tenantId: 'shop-1', tenantName: 'Shop' });
+    dom.window.document.querySelector('.craft-ai-launcher').click();
+    assert.equal(dom.window.document.getElementById('craft-ai-panel').hidden, false);
+
+    dom.window.CraftAI.mount({ path: '/account/dashboard', tenantId: 'shop-1', tenantName: 'Shop' });
+    assert.equal(dom.window.document.getElementById('craft-ai-panel').hidden, true);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('Craft AI is not mounted in the website builder', async () => {
+  const assistant = await readFile(new URL('../src/craft-ai.js', import.meta.url), 'utf8');
+  const dom = new JSDOM('<!doctype html><html><body></body></html>', {
+    runScripts: 'outside-only',
+    url: 'https://app.example.test/'
+  });
+
+  try {
+    dom.window.eval(assistant);
+    dom.window.CraftAI.mount({ path: '/account/web/site', tenantId: 'shop-1', tenantName: 'Shop' });
+    assert.equal(dom.window.document.getElementById('craft-ai-root'), null);
+  } finally {
+    dom.window.close();
+  }
 });

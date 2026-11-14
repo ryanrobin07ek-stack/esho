@@ -105,6 +105,143 @@ function createDatabase() {
   };
 }
 
+function createServiceAppointmentDatabase(catalog) {
+  const appointments = new Map();
+  const slots = new Map();
+  function statement(query, values) {
+    return {
+      query,
+      values,
+      async first() {
+        if (query.includes("FROM catalog_snapshots")) return { payload: JSON.stringify(catalog) };
+        if (query.includes("FROM storefront_service_appointments") && query.includes("idempotency_key=?")) {
+          return [...appointments.values()].find(row => row.tenant_id === values[0] && row.idempotency_key === values[1]) || null;
+        }
+        if (query.includes("FROM storefront_service_appointments") && query.includes("AND id=?")) {
+          return appointments.get(values[1])?.tenant_id === values[0] ? appointments.get(values[1]) : null;
+        }
+        if (query.includes("FROM storefront_service_appointments") && query.includes("payment_reference=?")) {
+          return [...appointments.values()].find(row => row.tenant_id === values[0] && row.payment_reference === values[1]) || null;
+        }
+        if (query.includes("FROM paystack_owner_defaults")) return null;
+        if (query.includes("FROM paystack_subaccounts")) {
+          return { subaccount_code: "ACCT_test_service", status: "connected" };
+        }
+        throw new Error(`Unsupported service appointment first query: ${query}`);
+      },
+      async all() {
+        if (query.includes("FROM storefront_appointment_slots")) {
+          return { results: [...slots.values()].filter(row => row.tenant_id === values[0] &&
+            row.slot_start >= values[1] && row.slot_start < values[2] && row.expires_at > values[3]) };
+        }
+        throw new Error(`Unsupported service appointment all query: ${query}`);
+      },
+      async run() {
+        if (query.includes("DELETE FROM storefront_appointment_slots")) {
+          let changes = 0;
+          for (const [key, row] of slots) {
+            if (row.tenant_id === values[0] && row.expires_at <= values[1]) {
+              slots.delete(key);
+              changes++;
+            }
+          }
+          return { success: true, meta: { changes } };
+        }
+        if (query.includes("INSERT INTO storefront_service_appointments")) {
+          const row = {
+            id: values[0], tenant_id: values[1], idempotency_key: values[2], service_id: values[3],
+            service_name: values[4], service_price_cents: values[5], currency: values[6],
+            duration_minutes: values[7], starts_at: values[8], ends_at: values[9],
+            slot_reserved_until: values[10], timezone: values[11], customer_name: values[12],
+            customer_email: values[13], customer_phone: values[14], status: "pending",
+            request_expires_at: values[15], deposit_percent: values[16], deposit_cents: values[17],
+            payment_status: "not_required", created_at: values[18], updated_at: values[19]
+          };
+          if ([...appointments.values()].some(item =>
+            item.tenant_id === row.tenant_id && item.idempotency_key === row.idempotency_key)) {
+            throw new Error("UNIQUE constraint failed: storefront_service_appointments.tenant_id, storefront_service_appointments.idempotency_key");
+          }
+          appointments.set(row.id, row);
+          return { success: true, meta: { changes: 1 } };
+        }
+        if (query.includes("INSERT INTO storefront_appointment_slots")) {
+          const row = { tenant_id: values[0], slot_start: values[1], appointment_id: values[2], expires_at: values[3] };
+          const key = `${row.tenant_id}:${row.slot_start}`;
+          if (slots.has(key)) throw new Error("UNIQUE constraint failed: storefront_appointment_slots.tenant_id, storefront_appointment_slots.slot_start");
+          slots.set(key, row);
+          return { success: true, meta: { changes: 1 } };
+        }
+        if (query.includes("UPDATE storefront_service_appointments")) {
+          const reserving = query.includes("SET status='confirming'");
+          const row = appointments.get(values[3]);
+          if (!row || row.tenant_id !== values[2]) {
+            return { success: true, meta: { changes: 0 } };
+          }
+          if (reserving) {
+            if (row.status !== "pending" || row.request_expires_at <= values[4] || row.starts_at <= values[5]) {
+              return { success: true, meta: { changes: 0 } };
+            }
+            row.status = "confirming";
+            row.payment_status = "initializing";
+            row.payment_reference = values[0];
+            row.payment_authorization_url = null;
+            row.updated_at = values[1];
+            return { success: true, meta: { changes: 1 } };
+          }
+          if (query.includes("SET status='confirmed'")) {
+            if (row.status !== "confirming" || row.payment_reference !== values[4]) return { success: true, meta: { changes: 0 } };
+            row.status = "confirmed";
+            row.payment_status = "pending";
+            row.payment_authorization_url = values[0];
+            row.updated_at = values[1];
+            return { success: true, meta: { changes: 1 } };
+          }
+          if (query.includes("SET payment_status=?")) {
+            if (row.payment_reference !== values[4] || row.payment_status === "paid") return { success: true, meta: { changes: 0 } };
+            row.payment_status = values[0];
+            row.updated_at = values[1];
+            return { success: true, meta: { changes: 1 } };
+          }
+        }
+        if (query.includes("UPDATE storefront_appointment_slots")) {
+          let changes = 0;
+          for (const row of slots.values()) {
+            if (row.tenant_id === values[1] && row.appointment_id === values[2] &&
+                appointments.get(row.appointment_id)?.status === "confirmed") {
+              row.expires_at = values[0];
+              changes++;
+            }
+          }
+          return { success: true, meta: { changes } };
+        }
+        throw new Error(`Unsupported service appointment run query: ${query}`);
+      }
+    };
+  }
+  return {
+    appointments,
+    slots,
+    prepare(query) {
+      return { bind(...values) { return statement(query, values); } };
+    },
+    async batch(statements) {
+      const previousAppointments = new Map([...appointments].map(([key, row]) => [key, { ...row }]));
+      const previousSlots = new Map([...slots].map(([key, row]) => [key, { ...row }]));
+      try {
+        const results = [];
+        for (const item of statements) results.push(await item.run());
+        return results;
+      } catch (error) {
+        appointments.clear();
+        previousAppointments.forEach((row, key) => appointments.set(key, row));
+        slots.clear();
+        previousSlots.forEach((row, key) => slots.set(key, row));
+        throw error;
+      }
+    }
+  };
+}
+
 function createStorefrontOrderDatabase() {
   const orders = new Map();
   const holds = new Map();
@@ -934,6 +1071,7 @@ test('Cloudflare Worker serves only the filled published theme at the shop root'
   const html = await response.text();
   assert.match(html, /Filled shop theme/);
   assert.match(html, /window\.__ESHOP_CLOUDFLARE_STOREFRONT__=true/);
+  assert.match(html, /rel="manifest" href="\/manifest\.webmanifest"/);
   assert.match(html, /craft-storefront-cloudflare\.js/);
   assert.match(html, /storefront-analytics\.js\?v=events-1/);
   assert.match(html, /#7C3AED/);
@@ -956,6 +1094,53 @@ test('Cloudflare Worker serves only the filled published theme at the shop root'
     const page = await worker.fetch(new Request(`https://shop.example${path}`), env);
     assert.equal(page.status, 200, `The published storefront should load directly at ${path}.`);
   }
+});
+
+test('storefront manifest uses the shop name and theme colors', async () => {
+  const env = {
+    TENANTS: {
+      async get(name) {
+        return name === 'tenant:amani' ? { id: 'amani', name: 'Amani' } : null;
+      }
+    },
+    DB: {
+      prepare(query) {
+        assert.match(query, /SELECT payload FROM catalog_snapshots/);
+        return {
+          bind(tenantId) {
+            assert.equal(tenantId, 'amani');
+            return {
+              async first() {
+                return {
+                  payload: JSON.stringify({
+                    store: { name: 'Amani Home', primary_color: '#7C3AED', background_color: '#F4F1FF' }
+                  })
+                };
+              }
+            };
+          }
+        };
+      }
+    },
+    ASSETS: { async fetch() { throw new Error('A published shop should have a catalog manifest.'); } }
+  };
+  const response = await worker.fetch(new Request('https://amani.rrobin.co.ke/manifest.webmanifest'), env);
+
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type'), /application\/manifest\+json/);
+  assert.deepEqual(await response.json(), {
+    name: 'Amani Home',
+    short_name: 'Amani Home',
+    start_url: '/',
+    scope: '/',
+    display: 'standalone',
+    background_color: '#F4F1FF',
+    theme_color: '#7C3AED',
+    icons: [
+      { src: '/favicon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+      { src: '/favicon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+    ]
+  });
 });
 
 test('Cloudflare Worker upgrades existing Litrus exports to refresh their live catalog', async () => {
@@ -2252,6 +2437,117 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
   }
 });
 
+test('service appointment requests expose slots and prevent duplicate or overlapping reservations', async () => {
+  const catalog = {
+    products: [{ id: 8, name: "Haircut", price: 2500, duration_minutes: 60 }],
+    categories: [],
+    store: {
+      name: "Studio", currency: "KES", offer_type: "services", service_timezone: "Africa/Nairobi",
+      service_open_time: "09:00", service_close_time: "17:00", service_days: [0, 1, 2, 3, 4, 5, 6],
+      service_buffer_minutes: 15, service_deposit_percent: 20
+    }
+  };
+  const DB = createServiceAppointmentDatabase(catalog);
+  const env = { DB, TENANTS: createTenantStore(), PUBLISH_TOKEN: "test-token", PAYSTACK_SECRET_KEY: "test-secret" };
+  const privateList = await worker.fetch(new Request("https://rrobin.co.ke/api/service-appointments"), env);
+  assert.equal(privateList.status, 401);
+  const localDate = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Africa/Nairobi", year: "numeric", month: "2-digit", day: "2-digit"
+  }).formatToParts(new Date(Date.now() + 48 * 60 * 60 * 1000));
+  const dateParts = Object.fromEntries(localDate.filter(part => part.type !== "literal").map(part => [part.type, part.value]));
+  const date = `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
+  const availability = await worker.fetch(new Request(
+    `https://rrobin.co.ke/api/service-appointments/availability?service_id=8&date=${date}`
+  ), env);
+  assert.equal(availability.status, 200);
+  const slots = (await availability.json()).slots;
+  assert.ok(slots.length > 0);
+
+  const request = slot => worker.fetch(new Request("https://rrobin.co.ke/api/service-appointments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      idempotency_key: "8a17bcb2-9ec7-4e8c-9c2c-0f129f34da91",
+      service_id: "8",
+      starts_at: slot,
+      customer_name: "Sam Customer",
+      customer_email: "sam@example.test",
+      customer_phone: "+254700000000"
+    })
+  }), env);
+  const created = await request(slots[0].starts_at);
+  assert.equal(created.status, 201);
+  const createdBody = await created.json();
+  assert.equal(createdBody.appointment.status, "pending");
+  const duplicate = await request(slots[0].starts_at);
+  assert.equal(duplicate.status, 200);
+  assert.equal((await duplicate.json()).duplicate, true);
+
+  const conflict = await worker.fetch(new Request("https://rrobin.co.ke/api/service-appointments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      idempotency_key: "bc4e6f4a-28ad-4bfc-a91e-6daec0ed9d5a",
+      service_id: "8",
+      starts_at: slots[0].starts_at,
+      customer_name: "Another Customer",
+      customer_email: "other@example.test",
+      customer_phone: "+254711111111"
+    })
+  }), env);
+  assert.equal(conflict.status, 409);
+
+  const unavailable = await worker.fetch(new Request(
+    `https://rrobin.co.ke/api/service-appointments/availability?service_id=8&date=${date}`
+  ), env);
+  assert.ok(!(await unavailable.json()).slots.some(slot => slot.starts_at === slots[0].starts_at));
+
+  const appointmentId = createdBody.appointment.id;
+  const originalFetch = globalThis.fetch;
+  let reference = "";
+  globalThis.fetch = async (url, init) => {
+    assert.equal(String(url), "https://api.paystack.co/transaction/initialize");
+    const body = JSON.parse(init.body);
+    assert.equal(body.amount, 50000);
+    assert.equal(body.currency, "KES");
+    assert.equal(body.metadata.appointment_id, appointmentId);
+    reference = body.reference;
+    return new Response(JSON.stringify({
+      data: { authorization_url: "https://checkout.paystack.com/service-test", reference }
+    }), { status: 200 });
+  };
+  try {
+    const confirmed = await worker.fetch(new Request("https://rrobin.co.ke/api/service-appointments", {
+      method: "PATCH",
+      headers: { Authorization: "Bearer test-token", "Content-Type": "application/json" },
+      body: JSON.stringify({ id: appointmentId, action: "confirm" })
+    }), env);
+    assert.equal(confirmed.status, 200);
+    const appointment = (await confirmed.json()).appointment;
+    assert.equal(appointment.status, "confirmed");
+    assert.equal(appointment.payment_status, "pending");
+    assert.equal(appointment.payment_authorization_url, "https://checkout.paystack.com/service-test");
+    assert.equal(appointment.payment_reference, reference);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  globalThis.fetch = async (url, init) => {
+    assert.equal(String(url), `https://api.paystack.co/transaction/verify/${reference}`);
+    return new Response(JSON.stringify({
+      data: { reference, amount: 50000, currency: "KES", status: "success" }
+    }), { status: 200 });
+  };
+  try {
+    const verified = await worker.fetch(new Request(
+      `https://rrobin.co.ke/api/service-appointments/payment?reference=${reference}`
+    ), env);
+    assert.equal(verified.status, 200);
+    assert.equal((await verified.json()).appointment.payment_status, "paid");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('storefront commerce migrations enforce tenant isolation and valid activity and hold states', async () => {
   const SQL = await initSqlJs({
     locateFile: (file) => fileURLToPath(new URL(`../node_modules/sql.js/dist/${file}`, import.meta.url))
@@ -2262,6 +2558,7 @@ test('storefront commerce migrations enforce tenant isolation and valid activity
     db.exec(await readFile(new URL('../cloudflare/migrations/0010_storefront_order_payments.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0018_storefront_interest_holds.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0022_storefront_event_daily.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0023_storefront_service_appointments.sql', import.meta.url), 'utf8'));
     assert.equal(db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='storefront_orders'")[0].values.length, 1);
     assert.equal(db.exec('PRAGMA table_info(storefront_orders)')[0].values.length, 23);
     db.run("INSERT INTO storefront_orders (tenant_id,order_number,idempotency_key,status,customer_name,customer_email,customer_phone,shipping_address,city,postal_code,country,currency,subtotal_cents,discount_cents,shipping_cents,total_cents,items_json,created_at,updated_at) VALUES ('shop-a','ORD-TEST-00000001','key-a','pending','Sam','sam@example.test','0700000000','12 Market','Nairobi','','KE','KES',100,0,0,100,'[]','now','now')");
@@ -2298,6 +2595,36 @@ test('storefront commerce migrations enforce tenant isolation and valid activity
     assert.deepEqual(db.exec(
       "SELECT event_type,n FROM storefront_event_daily WHERE tenant_id='shop-a' AND product_id='7' ORDER BY event_type"
     )[0].values, [['booking', 1], ['view', 5]]);
+    assert.ok(db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='storefront_service_appointments'")[0].values.length);
+    assert.ok(db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='storefront_appointment_slots'")[0].values.length);
+    assert.throws(() => db.run(
+      `INSERT INTO storefront_service_appointments
+       (id,tenant_id,idempotency_key,service_id,service_name,service_price_cents,currency,duration_minutes,
+        starts_at,ends_at,slot_reserved_until,timezone,customer_name,customer_email,customer_phone,status,
+        request_expires_at,deposit_percent,deposit_cents,payment_status,created_at,updated_at)
+       VALUES ('appt','shop-a','key-a','8','Haircut',2500,'KES',20,'now','later','later','Africa/Nairobi',
+        'Sam','sam@example.test','0700000000','pending','later',20,500,'not_required','now','now')`
+    ), /CHECK constraint failed/);
+    db.run(
+      `INSERT INTO storefront_service_appointments
+       (id,tenant_id,idempotency_key,service_id,service_name,service_price_cents,currency,duration_minutes,
+        starts_at,ends_at,slot_reserved_until,timezone,customer_name,customer_email,customer_phone,status,
+        request_expires_at,deposit_percent,deposit_cents,payment_status,created_at,updated_at)
+       VALUES ('appt-a','shop-a','appointment-key','8','Haircut',2500,'KES',45,'start','end','reserved',
+        'Africa/Nairobi','Sam','sam@example.test','0700000000','pending','later',20,500,'not_required','now','now')`
+    );
+    assert.throws(() => db.run(
+      `INSERT INTO storefront_service_appointments
+       (id,tenant_id,idempotency_key,service_id,service_name,service_price_cents,currency,duration_minutes,
+        starts_at,ends_at,slot_reserved_until,timezone,customer_name,customer_email,customer_phone,status,
+        request_expires_at,deposit_percent,deposit_cents,payment_status,created_at,updated_at)
+       VALUES ('appt-b','shop-a','appointment-key','8','Haircut',2500,'KES',45,'start','end','reserved',
+        'Africa/Nairobi','Sam','sam@example.test','0700000000','pending','later',20,500,'not_required','now','now')`
+    ), /UNIQUE constraint failed/);
+    db.run("INSERT INTO storefront_appointment_slots (tenant_id,slot_start,appointment_id,expires_at) VALUES ('shop-a','start','appt-a','later')");
+    assert.throws(() => db.run(
+      "INSERT INTO storefront_appointment_slots (tenant_id,slot_start,appointment_id,expires_at) VALUES ('shop-a','start','appt-b','later')"
+    ), /UNIQUE constraint failed/);
   } finally {
     db.close();
   }
@@ -2703,6 +3030,38 @@ test('catalog publishing is authenticated and stores only public fields and link
   const privateCatalog = await privateResult.json();
   assert.equal(privateCatalog.products[0].cost_price, 2);
   assert.deepEqual(privateCatalog.pages.map(page => page.slug), ['about', 'draft']);
+});
+
+test('catalog publishing preserves service schedules and rejects invalid service durations', async () => {
+  const env = { DB: createDatabase(), TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
+  const request = catalog => worker.fetch(new Request('https://rrobin.co.ke/api/catalog', {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify(catalog)
+  }), env);
+  const catalog = {
+    categories: [],
+    products: [{ id: 8, name: 'Haircut', price: 2500, duration_minutes: 45 }],
+    store: {
+      name: 'Studio', currency: 'KES', offer_type: 'services',
+      service_days: [1, 2, 3, 4, 5], service_open_time: '09:00', service_close_time: '17:00',
+      service_timezone: 'Africa/Nairobi', service_buffer_minutes: 15, service_deposit_percent: 20
+    }
+  };
+  const published = await request(catalog);
+  assert.equal(published.status, 200);
+  const saved = await (await worker.fetch(new Request('https://rrobin.co.ke/api/catalog'), env)).json();
+  assert.equal(saved.store.offer_type, 'services');
+  assert.deepEqual(saved.store.service_days, [1, 2, 3, 4, 5]);
+  assert.equal(saved.store.service_timezone, 'Africa/Nairobi');
+  assert.equal(saved.store.service_deposit_percent, 20);
+  assert.equal(saved.products[0].duration_minutes, 45);
+
+  const invalid = await request({
+    ...catalog,
+    products: [{ ...catalog.products[0], duration_minutes: 20 }]
+  });
+  assert.equal(invalid.status, 400);
 });
 
 test('catalog API provides CORS preflight and rejects oversized payloads', async () => {
@@ -3207,7 +3566,7 @@ test('shop creation limit stays at five per hour unless local dev vars enable th
     new URL('../cloudflare/wrangler.jsonc', import.meta.url), 'utf8'
   ));
   assert.equal(wranglerConfig.vars?.DEV_SKIP_SHOP_CREATE_LIMIT, undefined);
-  assert.deepEqual(wranglerConfig.assets?.run_worker_first, ['/', '/robots.txt', '/sitemap.xml', '/sitemap-main.xml', '/shops', '/shops/', '/api/*', '/media/*', '/themes/*', '/theme-skeletons/*']);
+  assert.deepEqual(wranglerConfig.assets?.run_worker_first, ['/', '/robots.txt', '/sitemap.xml', '/sitemap-main.xml', '/manifest.webmanifest', '/shops', '/shops/', '/api/*', '/media/*', '/themes/*', '/theme-skeletons/*']);
 
   const makeEnvironment = () => ({
     DB: createDatabase(),
