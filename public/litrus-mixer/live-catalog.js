@@ -4,6 +4,12 @@
     if (!data || !catalog || !Array.isArray(catalog.products) || !Array.isArray(catalog.categories)) return;
     const slug = value => String(value || "").toLocaleLowerCase().replace(/&/g, " and ")
       .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "x";
+    const fallbackProductImage = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 244 200" preserveAspectRatio="xMidYMid slice">' +
+      '<rect width="100%" height="100%" fill="#e9d8c4"/>' +
+      '<rect x="62" y="58" width="120" height="100" rx="14" fill="rgba(0,0,0,.28)"/>' +
+      '<circle cx="122" cy="108" r="22" fill="rgba(255,255,255,.45)"/></svg>'
+    );
     const categorySlugs = new Set();
     const categories = catalog.categories.map(category => {
       const name = String(category.name || "").trim();
@@ -113,8 +119,9 @@
       const image = card.querySelector(".p-img-wrapper img,.p-image img,img");
       if (image) {
         image.alt = product.name;
-        if (product.img) image.src = product.img;
-        else image.removeAttribute("src");
+        image.dataset.litrusFallback = fallbackProductImage;
+        image.setAttribute("onerror", "this.onerror=null;this.src=this.dataset.litrusFallback");
+        image.src = product.img || fallbackProductImage;
       }
       return card;
     };
@@ -478,27 +485,51 @@
     const home = parse(pages.home);
     const homeSection = home.querySelector(".sp-main .prods");
     fillProducts(homeSection, products);
-    const categoryTiles = home.querySelector(".cats");
+    const categoryTiles = home.querySelector(".litrus-categories, .cats");
     if (categoryTiles) {
       const heading = categoryTiles.querySelector(".sole-category-heading");
-      const tileTemplate = categoryTiles.querySelector(".sole-category-chip") || categoryTiles.querySelector("a[href]") || (() => {
+      const styledTemplate = categoryTiles.querySelector("[data-litrus-category]");
+      if (styledTemplate) {
+        const categoryContainer = styledTemplate.parentElement;
+        const items = categories.flatMap(category => {
+          const copies = categoryContainer.classList.contains("cat-marquee") ? 4 : 1;
+          return Array.from({ length: copies }, () => {
+            const item = styledTemplate.cloneNode(true);
+            item.href = "#";
+            item.dataset.go = `c/${category.slug}`;
+            item.dataset.litrusCategory = category.slug;
+            item.querySelectorAll("[data-litrus-category-name]").forEach(label => {
+              label.textContent = category.name;
+            });
+            const image = item.querySelector("img");
+            if (image) {
+              image.alt = category.name;
+              if (category.image) image.src = category.image;
+            }
+            return item;
+          });
+        });
+        categoryContainer.replaceChildren(...items);
+      } else {
+        const tileTemplate = categoryTiles.querySelector(".sole-category-chip") || categoryTiles.querySelector("a[href]") || (() => {
         const tile = document.createElement("a");
         tile.className = "sole-category-chip";
         return tile;
       })();
-      categoryTiles.replaceChildren(...(heading ? [heading] : []), ...categories.map(category => {
-        const tile = tileTemplate.cloneNode(true);
-        const label = tile.querySelector("span,h4") || tile;
-        tile.setAttribute("href", "#");
-        tile.dataset.go = `c/${category.slug}`;
-        if (label) label.textContent = category.name;
-        const image = tile.querySelector("img");
-        if (image && !tile.classList.contains("sole-category-chip")) {
-          image.alt = category.name;
-          if (category.image) image.src = category.image;
-        }
-        return tile;
-      }));
+        categoryTiles.replaceChildren(...(heading ? [heading] : []), ...categories.map(category => {
+          const tile = tileTemplate.cloneNode(true);
+          const label = tile.querySelector("span,h4") || tile;
+          tile.setAttribute("href", "#");
+          tile.dataset.go = `c/${category.slug}`;
+          if (label) label.textContent = category.name;
+          const image = tile.querySelector("img");
+          if (image && !tile.classList.contains("sole-category-chip")) {
+            image.alt = category.name;
+            if (category.image) image.src = category.image;
+          }
+          return tile;
+        }));
+      }
     }
     if (homeSection || categoryTiles) pages.home = home.innerHTML;
     pages.shop = listHtml(
@@ -658,6 +689,19 @@
     form.dataset.eshopPaystackOption = "true";
   }
 
+  function serviceAppointmentRequestKey() {
+    const cryptoApi = global.crypto;
+    if (typeof cryptoApi?.randomUUID === "function") return cryptoApi.randomUUID();
+    if (typeof cryptoApi?.getRandomValues !== "function") {
+      throw new Error("Secure booking requests are not supported by this browser. Update your browser or contact the shop.");
+    }
+    const bytes = cryptoApi.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+
   async function postStorefrontJson(path, payload) {
     const response = await fetch(path, {
       method: "POST",
@@ -729,8 +773,10 @@
     if (submit) submit.disabled = true;
     if (status) status.textContent = "Sending appointment request…";
     try {
+      const idempotencyKey = form.dataset.idempotencyKey || serviceAppointmentRequestKey();
+      form.dataset.idempotencyKey = idempotencyKey;
       const result = await postStorefrontJson("/api/service-appointments", {
-        idempotency_key: global.crypto?.randomUUID?.() || `litrus-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        idempotency_key: idempotencyKey,
         service_id: form.dataset.serviceId,
         starts_at: form.elements.namedItem("starts_at")?.value || "",
         customer_name: form.elements.namedItem("customer_name")?.value.trim() || "",
@@ -738,6 +784,7 @@
         customer_phone: form.elements.namedItem("customer_phone")?.value.trim() || ""
       });
       form.reset();
+      delete form.dataset.idempotencyKey;
       const slots = form.elements.namedItem("starts_at");
       if (slots) {
         slots.disabled = true;

@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile as readFileRaw } from "node:fs/promises";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 
+const readFile = async (path, options) => {
+  const contents = await readFileRaw(path, options);
+  return typeof contents === "string" ? contents.replace(/\r\n/g, "\n") : contents;
+};
 const runtime = await readFile(new URL("../public/litrus-mixer/live-catalog.js", import.meta.url), "utf8");
 const editor = await readFile(new URL("../public/litrus-mixer/index.html", import.meta.url), "utf8");
 const adapter = await readFile(new URL("../public/theme-catalog-adapter.js", import.meta.url), "utf8");
@@ -195,6 +199,68 @@ test("published service cards route to booking details instead of adding to cart
     window.document.querySelector(".p-btn").click();
     assert.deepEqual(routes, ["p/42"]);
     assert.deepEqual(trackedEvents, []);
+  } finally {
+    window.close();
+  }
+});
+
+test("Litrus service booking submits an RFC 4122 key and all customer details without randomUUID", async () => {
+  const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/", runScripts: "outside-only" });
+  const { window } = dom;
+  const requests = [];
+  const catalog = {
+    categories: [],
+    products: [{ id: 42, name: "Consultation", price: 2500, images: [], duration_minutes: 45 }],
+    store: { name: "Example", currency: "KES", offer_type: "services", service_timezone: "Africa/Nairobi" }
+  };
+  window.__ESHOP_THEME_CATALOG__ = catalog;
+  window.SPD = {
+    shop: { key: "example", products: [] },
+    pages: {
+      home: '<main class="sp-main"><section class="prods"></section></main>',
+      shop: '<main class="sp-main"><section class="prods"></section></main>',
+      "p/template": '<main class="sp-main"><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p><div class="sp-buy"></div></div></div></main>'
+    },
+    shell: { head: "", foot: "", tail: "" },
+    templates: { productCard: '<article data-pid=""></article>' }
+  };
+  window.fetch = async (url, options) => {
+    requests.push({ url, body: JSON.parse(options.body) });
+    return {
+      ok: true,
+      async json() { return { appointment: { id: "appointment-1", status: "pending" } }; }
+    };
+  };
+  Object.defineProperty(window.crypto, "randomUUID", { configurable: true, value: undefined });
+  window.SPRT = options => {
+    window.document.getElementById("store").innerHTML = options.page("p/42");
+    return {};
+  };
+
+  try {
+    window.eval(runtime);
+    window.litrusStartLiveStore(window.SPD);
+    const form = window.document.querySelector("[data-litrus-service-booking-form]");
+    const time = form.elements.namedItem("starts_at");
+    const option = window.document.createElement("option");
+    option.value = "2030-01-02T10:00:00.000Z";
+    time.append(option);
+    time.value = option.value;
+    form.elements.namedItem("customer_name").value = "Sam Customer";
+    form.elements.namedItem("customer_email").value = "sam@example.test";
+    form.elements.namedItem("customer_phone").value = "+254700000000";
+    form.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+    await pause(0);
+
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].url, "/api/service-appointments");
+    assert.match(requests[0].body.idempotency_key, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i);
+    assert.equal(requests[0].body.service_id, "42");
+    assert.equal(requests[0].body.starts_at, "2030-01-02T10:00:00.000Z");
+    assert.equal(requests[0].body.customer_name, "Sam Customer");
+    assert.equal(requests[0].body.customer_email, "sam@example.test");
+    assert.equal(requests[0].body.customer_phone, "+254700000000");
+    assert.match(form.querySelector(".sp-service-booking-status").textContent, /request was sent/i);
   } finally {
     window.close();
   }
@@ -457,12 +523,20 @@ test("Litrus requires a product-or-service choice and switches shop types", () =
   }
 });
 
+test("Litrus defers full storefront redraws until its integrated preview is visible", async () => {
+  const mixer = editor;
+
+  assert.match(mixer, /tm=setTimeout\(\(\)=>\{if\(!craftIntegrated\|\|previewVisible\(\)\)render\(\);sync\(\);autosave\(\)\},120\)/);
+  assert.match(mixer, /if\(mode==='preview'\)\{render\(\);sync\(\)\}/);
+  assert.match(mixer, /if\(mode==='preview'\)\{layoutPreview\(\);refreshPreview\(\)\}/);
+});
+
 test("Litrus word shuffle uses the selected product or service language bank", () => {
   const types = ["food", "beauty", "electronics", "salon", "barber", "repair", "wellness", "other-service"];
   const optionsStart = editor.indexOf("const OFFER_TYPE_OPTIONS=");
   const optionsEnd = editor.indexOf("\nconst DEFAULT_SERVICE_CATEGORIES", optionsStart);
   const bankStart = editor.indexOf("const COPY_RULES=");
-  const bankEnd = editor.indexOf("const craftIntegrated=", bankStart);
+  const bankEnd = editor.indexOf("const wordCount=", bankStart);
   const shuffleStart = editor.indexOf("function shuffleShopWords(){");
   const shuffleEnd = editor.indexOf("\ng('wShufWords').onclick", shuffleStart);
   const optionCode = editor.slice(optionsStart, optionsEnd);
@@ -510,6 +584,56 @@ test("Litrus word shuffle uses the selected product or service language bank", (
     }
   } finally {
     window.close();
+  }
+});
+
+test("Litrus new Craft drafts use deterministic Good Form defaults", () => {
+  const start = editor.indexOf("window.litrusSetCraftCatalog=function(payload){");
+  const end = editor.indexOf("\nwindow.litrusGetCraftPublishPayload=function", start);
+  assert.ok(start >= 0 && end > start);
+  const hydrate = editor.slice(start, end);
+  const ids = [...new Set([...hydrate.matchAll(/\bg\('([^']+)'\)/g)].map(match => match[1]))];
+  const dom = new JSDOM(
+    `${ids.map(id => `<input id="${id}">`).join("")}<div id="wMoods"></div>`,
+    { runScripts: "outside-only" }
+  );
+
+  try {
+    dom.window.eval(`
+      const g = id => document.getElementById(id);
+      const MOODS = [{ n: "Good Form" }, { n: "Another style" }];
+      const GOOD_FORM = MOODS[0];
+      let mood = null, step = 1, designDraftId = "", generatedDefaultDesign = false;
+      let SHOP = { categoriesPosition: "after-products" }, prods = [];
+      const MAX_CATEGORIES = 30, MAX_PRODUCTS = 100, craftIntegrated = true;
+      const R = values => values[0];
+      const applyRecipe = () => false, applyOfferTypeUI = () => {};
+      const setCategoryNames = () => {}, read = () => {}, drawProds = () => {};
+      const render = () => {}, previewVisible = () => false, sync = () => {};
+      const setSaved = () => {}, apply = () => {}, autosave = () => {};
+      const mb = g("wMoods");
+      ${hydrate}
+      window.getSelectedMood = () => mood?.n;
+      window.getCategoryPosition = () => SHOP.categoriesPosition;
+    `);
+    const categories = ["Shoes", "Bags", "New", "Sale"].map((name, index) => ({ id: index + 1, name }));
+    const products = categories.map((category, index) => ({
+      id: index + 1, name: `Draft product ${index + 1}`, price: 100 + index,
+      category_names: [category.name], images: []
+    }));
+
+    const result = dom.window.litrusSetCraftCatalog({
+      shop: { name: "Good Form draft", is_new_shop_draft: true, draft_id: "draft-1" },
+      categories,
+      products
+    });
+
+    assert.equal(result.products, 4);
+    assert.equal(result.categories, 4);
+    assert.equal(dom.window.getSelectedMood(), "Good Form");
+    assert.equal(dom.window.getCategoryPosition(), "after-hero");
+  } finally {
+    dom.window.close();
   }
 });
 
@@ -572,4 +696,23 @@ test("Litrus mood choices autosave, while the initial default does not overwrite
   } finally {
     dom.window.close();
   }
+});
+
+test("Litrus style randomization preserves the automatic contrast setting", () => {
+  const start = editor.indexOf("function randomizeSecondaryControls(){");
+  const marker = editor.indexOf("let generatedDefaultDesign", start);
+  const end = editor.lastIndexOf("}", marker) + 1;
+  assert.ok(start >= 0 && end > start);
+  const control = () => ({ options: { length: 3 }, selectedIndex: 0, value: "" });
+  const fixC = { checked: false };
+  const randomize = new Function(
+    "cRad", "cSp", "cHeart", "cRate", "cSale", "cBag", "selScroll", "fixC",
+    `${editor.slice(start, end)}\nreturn randomizeSecondaryControls;`
+  )(control(), control(), control(), control(), control(), control(), control(), fixC);
+
+  randomize();
+  assert.equal(fixC.checked, false, "random style choices must not disable auto-fix");
+  fixC.checked = true;
+  randomize();
+  assert.equal(fixC.checked, true, "random style choices must preserve auto-fix");
 });

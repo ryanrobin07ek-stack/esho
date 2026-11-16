@@ -347,9 +347,14 @@ async function requireTenant(request, env, tenantId) {
   return await env.TENANTS.get(`tenant:${tenantId}`, "json");
 }
 
-function storefrontCacheKey(request, catalogUpdatedAt, verificationVersion = "none") {
+function storefrontCacheKey(
+  request,
+  catalogUpdatedAt,
+  verificationVersion = "none",
+  publishedThemeKey = "none"
+) {
   const url = new URL(request.url);
-  url.pathname = `/__worker-cache/storefront/filled-v18/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
+  url.pathname = `/__worker-cache/storefront/filled-v19/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(publishedThemeKey)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
   url.search = "";
   url.hash = "";
   return new Request(url, { method: "GET" });
@@ -2173,22 +2178,27 @@ async function findImageForSlot(env, query) {
   throw error;
 }
 
-async function handleCraftImages(request, env, tenantId) {
+async function handleCraftImages(request, env, tenantId, { draft = false } = {}) {
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
   }
-  if (!env.TENANTS || !env.BUSINESS_ARCHIVE) {
+  if (!env.TENANTS || (!draft && !env.BUSINESS_ARCHIVE)) {
     return jsonResponse({ error: "Craft image storage is not configured." }, 503);
+  }
+  if (draft && tenantId !== "main") {
+    return jsonResponse({ error: "Draft image search is only available before a shop is created." }, 400);
   }
   if (tenantId !== "main" && (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId))) {
     return jsonResponse({ error: "Invalid shop address." }, 400);
   }
-  const isOwner = tenantId === "main"
-    ? await authorizeMainOwner(request, env)
-    : await authorizeTenantOwner(request, env, tenantId) ||
-      await authorizeTenantAccount(request, env, tenantId);
-  if (!isOwner && !await authorizeAdmin(request, env)) {
-    return jsonResponse({ error: "Shop owner authorization required." }, 401);
+  if (!draft) {
+    const isOwner = tenantId === "main"
+      ? await authorizeMainOwner(request, env)
+      : await authorizeTenantOwner(request, env, tenantId) ||
+        await authorizeTenantAccount(request, env, tenantId);
+    if (!isOwner && !await authorizeAdmin(request, env)) {
+      return jsonResponse({ error: "Shop owner authorization required." }, 401);
+    }
   }
   if (!IMAGE_PROVIDER_ORDER.some(provider => providerKey(env, provider))) {
     return jsonResponse({ error: "Craft image search is not configured on Cloudflare." }, 503);
@@ -2220,7 +2230,8 @@ async function handleCraftImages(request, env, tenantId) {
     slots.add(slot);
     images.push({ slot, query });
   }
-  if (!await limitAuthRequests(request, env, `craft-images:${tenantId}`, 3, 60)) {
+  if (!await limitAuthRequests(request, env, draft ? "craft-images-draft" : `craft-images:${tenantId}`,
+      draft ? 1 : 3, 60)) {
     return jsonResponse({ error: "Craft image search is busy for this network. Try again shortly." }, 429);
   }
 
@@ -2228,6 +2239,14 @@ async function handleCraftImages(request, env, tenantId) {
     try {
       const hit = await findImageForSlot(env, query);
       const sourceUrl = new URL(hit.imageUrl);
+      const allowedImageHosts = {
+        unsplash: "images.unsplash.com",
+        pixabay: "cdn.pixabay.com",
+        pexels: "images.pexels.com"
+      };
+      if (sourceUrl.protocol !== "https:" || sourceUrl.hostname !== allowedImageHosts[hit.source]) {
+        throw new Error(`${hit.source} returned an unsupported image location.`);
+      }
       if (hit.source === "unsplash" && hit.downloadUrl) {
         const downloadUrl = new URL(hit.downloadUrl);
         if (downloadUrl.protocol === "https:" && downloadUrl.hostname === "api.unsplash.com") {
@@ -2242,6 +2261,15 @@ async function handleCraftImages(request, env, tenantId) {
           }
         }
       }
+      if (draft) {
+        return {
+          slot,
+          url: sourceUrl.href,
+          source: hit.source,
+          attemptedProviders: hit.attemptedProviders,
+          credit: { user: hit.user || "Image contributor", url: hit.pageUrl }
+        };
+      }
       const upstream = await fetch(sourceUrl, {
         redirect: "manual",
         signal: AbortSignal.timeout(20_000)
@@ -2252,11 +2280,6 @@ async function handleCraftImages(request, env, tenantId) {
       }
       if (!upstream.ok) throw new Error(`Could not download the selected image (HTTP ${upstream.status}).`);
       const finalUrl = upstream.url ? new URL(upstream.url) : sourceUrl;
-      const allowedImageHosts = {
-        unsplash: "images.unsplash.com",
-        pixabay: "cdn.pixabay.com",
-        pexels: "images.pexels.com"
-      };
       if (finalUrl.protocol !== "https:" || finalUrl.hostname !== allowedImageHosts[hit.source]) {
         throw new Error(`${hit.source} returned an unsupported image location.`);
       }
@@ -2305,7 +2328,8 @@ async function handleCraftImages(request, env, tenantId) {
     event: "craft_image_search",
     tenantId,
     requestedCount: images.length,
-    storedCount: stored.length,
+    resultCount: stored.length,
+    draft,
     failedCount: errors.length,
     availableProviders: IMAGE_PROVIDER_ORDER.filter(provider => providerKey(env, provider)),
     selectedProviders: stored.map(outcome => outcome.source),
@@ -2504,7 +2528,8 @@ async function handleThemePublish(request, env, tenantId) {
     return jsonResponse({ error: "Filled storefront and public catalogue are too large to publish." }, 413);
   }
   const version = input.catalog_updated_at.replace(/[^a-zA-Z0-9-]/g, "");
-  const key = `published-sites/${tenantId}/${themeId}/${version}.html`;
+  const publishId = crypto.randomUUID();
+  const key = `published-sites/${tenantId}/${themeId}/${version}-${publishId}.html`;
   await env.BUSINESS_ARCHIVE.put(key, html, {
     httpMetadata: { contentType: "text/html; charset=utf-8", cacheControl: "public, max-age=60" },
     customMetadata: { themeId, catalogUpdatedAt: input.catalog_updated_at }
@@ -3606,6 +3631,10 @@ async function verifyServiceAppointmentPayment(env, tenantId, reference) {
   if (!serviceAppointmentPaymentMatches(transaction, appointment)) {
     return jsonResponse({ error: "Payment details do not match this appointment." }, 409);
   }
+  const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
+  if (!transactionMatchesSubaccount(transaction, appointment.payment_subaccount_code, mode)) {
+    return jsonResponse({ error: "Paystack could not confirm the expected subaccount for this deposit." }, 409);
+  }
   const paymentStatus = transaction.status === "success" ? "paid"
     : ["failed", "abandoned"].includes(transaction.status) ? "failed" : "pending";
   await env.DB.prepare(
@@ -3676,16 +3705,23 @@ async function handleServiceAppointments(request, env, tenantId, action = "appoi
       if (appointment.currency !== "KES" || Number(appointment.deposit_cents) < 1) {
         return jsonResponse({ error: "This appointment does not have a payable KES deposit configured." }, 409);
       }
+      const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
+      if (!mode) return jsonResponse({ error: "Configure a Paystack test or live secret key before taking appointment deposits." }, 503);
       const subaccount = await getEffectivePaystackSubaccount(env, tenantId);
-      if (!subaccount?.subaccount_code || subaccount.status !== "connected") {
-        return jsonResponse({ error: "Select an active Paystack account in Craft before confirming this appointment." }, 409);
+      if (!paystackSubaccountReady(subaccount, mode)) {
+        return jsonResponse({
+          error: mode === "live"
+            ? "Connect a verified live Paystack subaccount in Craft before confirming deposits."
+            : "Select an active test Paystack account in Craft before confirming this appointment."
+        }, 409);
       }
       const reference = paystackReference();
       const reserved = await env.DB.prepare(
         `UPDATE storefront_service_appointments
-         SET status='confirming',payment_status='initializing',payment_reference=?,payment_authorization_url=NULL,updated_at=?
+         SET status='confirming',payment_status='initializing',payment_reference=?,payment_subaccount_code=?,
+             payment_authorization_url=NULL,updated_at=?
          WHERE tenant_id=? AND id=? AND status='pending' AND request_expires_at>? AND starts_at>?`
-      ).bind(reference, now, tenantId, id, now, now).run();
+      ).bind(reference, subaccount.subaccount_code, now, tenantId, id, now, now).run();
       if (!Number(reserved.meta?.changes || 0)) {
         return jsonResponse({ error: "Appointment changed; reload and try again." }, 409);
       }
@@ -3712,7 +3748,8 @@ async function handleServiceAppointments(request, env, tenantId, action = "appoi
       const failInitialization = async () => {
         await env.DB.prepare(
           `UPDATE storefront_service_appointments
-           SET status='pending',payment_status='failed',payment_reference=NULL,payment_authorization_url=NULL,updated_at=?
+           SET status='pending',payment_status='failed',payment_reference=NULL,payment_subaccount_code=NULL,
+               payment_authorization_url=NULL,updated_at=?
            WHERE tenant_id=? AND id=? AND payment_reference=? AND status='confirming'`
         ).bind(new Date().toISOString(), tenantId, id, reference).run();
       };
@@ -3863,12 +3900,25 @@ function paystackAuthorization(secret) {
   return { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" };
 }
 
+function paystackAccountMode(secret) {
+  if (secret.startsWith("sk_test_")) return "test";
+  if (secret.startsWith("sk_live_")) return "live";
+  return "";
+}
+
+function paystackSubaccountReady(subaccount, mode) {
+  return !!subaccount?.subaccount_code && subaccount.status === "connected"
+    && subaccount.account_mode === mode && (mode !== "live" || Number(subaccount.is_verified) === 1);
+}
+
 function paystackSetupResponse(row) {
   if (!row || !row.subaccount_code) return { connected: false };
   return {
     configured: true,
     connected: row.status === "connected",
     status: row.status,
+    account_mode: row.account_mode || "unknown",
+    is_verified: Number(row.is_verified) === 1,
     bank_name: row.bank_name,
     account_last4: row.account_last4,
     updated_at: row.updated_at
@@ -3876,19 +3926,22 @@ function paystackSetupResponse(row) {
 }
 
 async function getEffectivePaystackSubaccount(env, tenantId) {
+  const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY || "");
   const tenant = await env.TENANTS?.get(`tenant:${tenantId}`, "json");
   const ownerUsername = typeof tenant?.owner_username === "string" ? tenant.owner_username : "";
   if (ownerUsername) {
     const appDefault = await env.DB.prepare(
-      `SELECT account.subaccount_code,account.status,account.bank_name,account.account_last4,account.updated_at
+      `SELECT account.subaccount_code,account.status,account.bank_name,account.account_last4,
+              account.account_mode,account.is_verified,account.updated_at
        FROM paystack_owner_defaults defaults
        JOIN paystack_subaccounts account ON account.tenant_id=defaults.source_tenant_id
        WHERE defaults.owner_username=?`
     ).bind(ownerUsername).first();
-    if (appDefault?.subaccount_code && appDefault.status === "connected") return appDefault;
+    if (paystackSubaccountReady(appDefault, mode)) return appDefault;
   }
   return await env.DB.prepare(
-    "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+    `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,updated_at
+     FROM paystack_subaccounts WHERE tenant_id=?`
   ).bind(tenantId).first();
 }
 
@@ -3909,7 +3962,8 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
       ).bind(session.username).first();
       if (!preference) return jsonResponse({ default_account: null });
       const account = await env.DB.prepare(
-        "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+        `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,updated_at
+         FROM paystack_subaccounts WHERE tenant_id=?`
       ).bind(preference.source_tenant_id).first();
       return jsonResponse({
         default_account: account?.status === "connected"
@@ -3947,7 +4001,8 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
          source_tenant_id=excluded.source_tenant_id,updated_at=excluded.updated_at`
     ).bind(session.username, sourceTenantId, now, now).run();
     const account = await env.DB.prepare(
-      "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+      `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,updated_at
+       FROM paystack_subaccounts WHERE tenant_id=?`
     ).bind(sourceTenantId).first();
     return jsonResponse({
       default_account: { tenant_id: sourceTenantId, ...paystackSetupResponse(account) }
@@ -3978,13 +4033,15 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
       return jsonResponse({ error: "You can only reuse a Paystack account from a shop you own." }, 403);
     }
     const source = await env.DB.prepare(
-      "SELECT subaccount_code,status,bank_name,account_last4,created_at,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+      `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at
+       FROM paystack_subaccounts WHERE tenant_id=?`
     ).bind(sourceTenantId).first();
     if (!source?.subaccount_code || source.status !== "connected") {
       return jsonResponse({ error: "The selected shop does not have an active Paystack account." }, 409);
     }
     const existing = await env.DB.prepare(
-      "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+      `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,updated_at
+       FROM paystack_subaccounts WHERE tenant_id=?`
     ).bind(tenantId).first();
     if (existing?.subaccount_code && existing.subaccount_code !== source.subaccount_code) {
       return jsonResponse({ error: "This website already has a different Paystack account connected. Update it under Payments first." }, 409);
@@ -3992,15 +4049,18 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
     const updatedAt = new Date().toISOString();
     await env.DB.prepare(
       `INSERT INTO paystack_subaccounts
-        (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at)
-       VALUES (?,?,?,?,?,?,?)
+        (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?)
        ON CONFLICT(tenant_id) DO UPDATE SET
          subaccount_code=excluded.subaccount_code,status=excluded.status,bank_name=excluded.bank_name,
-         account_last4=excluded.account_last4,updated_at=excluded.updated_at`
+         account_last4=excluded.account_last4,account_mode=excluded.account_mode,
+         is_verified=excluded.is_verified,updated_at=excluded.updated_at`
     ).bind(tenantId, source.subaccount_code, "connected", source.bank_name, source.account_last4,
+      source.account_mode || "unknown", Number(source.is_verified) === 1 ? 1 : 0,
       existing?.created_at || updatedAt, updatedAt).run();
     const linked = await env.DB.prepare(
-      "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+      `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,updated_at
+       FROM paystack_subaccounts WHERE tenant_id=?`
     ).bind(tenantId).first();
     return jsonResponse({ account: paystackSetupResponse(linked), reused: true });
   }
@@ -4035,11 +4095,46 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
   if (!isOwner) return jsonResponse({ error: "Shop owner authorization required." }, 401);
   if (!env.DB) return jsonResponse({ error: "Payment setup storage is not configured." }, 503);
   if (!env.PAYSTACK_SECRET_KEY) return jsonResponse({ error: "Paystack is not configured on this server." }, 503);
+  const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
+  if (!mode) return jsonResponse({ error: "Configure a Paystack test or live secret key before connecting an account." }, 503);
 
   if (request.method === "GET") {
-    const row = await env.DB.prepare(
-      "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+    let row = await env.DB.prepare(
+      `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,updated_at
+       FROM paystack_subaccounts WHERE tenant_id=?`
     ).bind(tenantId).first();
+    if (mode === "live" && row?.account_mode === "live" && row.subaccount_code) {
+      let accountResponse;
+      try {
+        accountResponse = await fetch(
+          `https://api.paystack.co/subaccount/${encodeURIComponent(row.subaccount_code)}`,
+          { headers: paystackAuthorization(env.PAYSTACK_SECRET_KEY) }
+        );
+      } catch {
+        return jsonResponse({ error: "Could not reach Paystack to refresh this account's verification status." }, 502);
+      }
+      if (!accountResponse.ok) {
+        return jsonResponse({ error: "Paystack could not refresh this account's verification status." }, 502);
+      }
+      let accountResult;
+      try {
+        accountResult = await accountResponse.json();
+      } catch {
+        return jsonResponse({ error: "Paystack returned an unreadable account status response." }, 502);
+      }
+      const account = accountResult?.data;
+      if (accountResult?.status !== true || account?.subaccount_code !== row.subaccount_code
+        || account?.domain !== "live" || typeof account?.is_verified !== "boolean") {
+        return jsonResponse({ error: "Paystack could not confirm this live subaccount's status." }, 502);
+      }
+      const updatedAt = new Date().toISOString();
+      const status = account.active === false ? "inactive" : "connected";
+      await env.DB.prepare(
+        `UPDATE paystack_subaccounts SET status=?,is_verified=?,updated_at=?
+         WHERE tenant_id=? AND subaccount_code=?`
+      ).bind(status, account.is_verified ? 1 : 0, updatedAt, tenantId, row.subaccount_code).run();
+      row = { ...row, status, is_verified: account.is_verified ? 1 : 0, updated_at: updatedAt };
+    }
     return jsonResponse({ account: paystackSetupResponse(row) });
   }
 
@@ -4064,12 +4159,53 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
     return jsonResponse({ error: "Enter a business name, contact details, supported bank and valid account number." }, 400);
   }
 
+  if (!env.PAYSTACK_SECRET_KEY.startsWith("sk_test_")) {
+    const resolveUrl = new URL("https://api.paystack.co/bank/resolve");
+    resolveUrl.search = new URLSearchParams({ account_number: accountNumber, bank_code: bankCode }).toString();
+    let resolveResponse;
+    try {
+      resolveResponse = await fetch(resolveUrl, {
+        headers: paystackAuthorization(env.PAYSTACK_SECRET_KEY)
+      });
+    } catch {
+      return jsonResponse({ error: "Could not reach Paystack to verify this bank account." }, 502);
+    }
+    if (!resolveResponse.ok) {
+      const invalidDetails = [400, 422].includes(resolveResponse.status);
+      return jsonResponse({
+        error: invalidDetails
+          ? "Paystack could not verify this account number for the selected bank. Check both details and try again."
+          : "Paystack could not verify this bank account right now. Try again later."
+      }, invalidDetails ? 422 : 502);
+    }
+    let resolveResult;
+    try {
+      resolveResult = await resolveResponse.json();
+    } catch {
+      return jsonResponse({ error: "Paystack returned an unreadable bank verification response." }, 502);
+    }
+    const resolvedAccount = resolveResult?.data;
+    const resolvedNumber = typeof resolvedAccount?.account_number === "string"
+      ? resolvedAccount.account_number.replace(/\D/g, "")
+      : "";
+    const resolvedName = typeof resolvedAccount?.account_name === "string"
+      ? resolvedAccount.account_name.trim()
+      : "";
+    if (resolveResult?.status !== true || !resolvedName || resolvedNumber !== accountNumber) {
+      return jsonResponse({
+        error: "Paystack could not verify this account number for the selected bank. Check both details and try again."
+      }, 422);
+    }
+  }
+
   const existing = await env.DB.prepare(
-    "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+    `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at
+     FROM paystack_subaccounts WHERE tenant_id=?`
   ).bind(tenantId).first();
   if (existing?.status === "setup_in_progress") {
     return jsonResponse({ error: "Paystack setup is already in progress for this shop." }, 409);
   }
+  const existingForMode = existing?.account_mode === mode ? existing : null;
   const lockTime = new Date().toISOString();
   if (!existing) {
     const lock = await env.DB.prepare(
@@ -4091,10 +4227,10 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
   };
   let response;
   try {
-    response = await fetch(existing?.subaccount_code
-      ? `https://api.paystack.co/subaccount/${encodeURIComponent(existing.subaccount_code)}`
+    response = await fetch(existingForMode?.subaccount_code
+      ? `https://api.paystack.co/subaccount/${encodeURIComponent(existingForMode.subaccount_code)}`
       : "https://api.paystack.co/subaccount", {
-      method: existing?.subaccount_code ? "PUT" : "POST",
+      method: existingForMode?.subaccount_code ? "PUT" : "POST",
       headers: paystackAuthorization(env.PAYSTACK_SECRET_KEY),
       body: JSON.stringify(payload)
     });
@@ -4131,21 +4267,31 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
     }
     return jsonResponse({ error: "Paystack returned an incomplete account setup response." }, 502);
   }
+  if (data.domain && data.domain !== mode) {
+    if (!existing) {
+      await env.DB.prepare("DELETE FROM paystack_subaccounts WHERE tenant_id=? AND subaccount_code IS NULL")
+        .bind(tenantId).run();
+    }
+    return jsonResponse({ error: "Paystack returned a subaccount from the wrong mode. No account was connected." }, 502);
+  }
   const bankName = cleanText(data.settlement_bank || bankCode, 120);
   const returnedAccountNumber = typeof data.account_number === "string" ? data.account_number : accountNumber;
   const accountLast4 = returnedAccountNumber.replace(/\D/g, "").slice(-4);
+  const isVerified = data.is_verified === true || data.is_verified === 1;
   const updatedAt = new Date().toISOString();
   await env.DB.prepare(
     `INSERT INTO paystack_subaccounts
-      (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at)
-     VALUES (?,?,?, ?,?,?,?)
+      (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?)
      ON CONFLICT(tenant_id) DO UPDATE SET
        subaccount_code=excluded.subaccount_code,status=excluded.status,bank_name=excluded.bank_name,
-       account_last4=excluded.account_last4,updated_at=excluded.updated_at`
+       account_last4=excluded.account_last4,account_mode=excluded.account_mode,
+       is_verified=excluded.is_verified,updated_at=excluded.updated_at`
   ).bind(tenantId, subaccountCode, data.active === false ? "inactive" : "connected",
-    bankName, accountLast4, existing?.created_at || updatedAt, updatedAt).run();
+    bankName, accountLast4, mode, isVerified ? 1 : 0, existing?.created_at || updatedAt, updatedAt).run();
   const saved = await env.DB.prepare(
-    "SELECT subaccount_code,status,bank_name,account_last4,updated_at FROM paystack_subaccounts WHERE tenant_id=?"
+    `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,updated_at
+     FROM paystack_subaccounts WHERE tenant_id=?`
   ).bind(tenantId).first();
   return jsonResponse({ account: paystackSetupResponse(saved) });
 }
@@ -4240,9 +4386,18 @@ function transactionMatchesOrder(transaction, order) {
     && transaction.currency === order.currency;
 }
 
+function transactionMatchesSubaccount(transaction, subaccountCode, mode) {
+  if (!subaccountCode) return false;
+  if (mode === "live" ? transaction?.domain !== "live" : transaction?.domain && transaction.domain !== mode) return false;
+  const actualCode = transaction?.subaccount?.subaccount_code || transaction?.subaccount_code;
+  return mode === "live" ? actualCode === subaccountCode : !actualCode || actualCode === subaccountCode;
+}
+
 async function handlePaystackPayment(request, env, tenantId, action) {
   if (!env.DB) return jsonResponse({ error: "Payment storage is not configured." }, 503);
   if (!env.PAYSTACK_SECRET_KEY) return jsonResponse({ error: "Paystack is not configured on this server." }, 503);
+  const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
+  if (!mode) return jsonResponse({ error: "Configure a Paystack test or live secret key before processing payments." }, 503);
 
   if (action === "initialize") {
     if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
@@ -4280,16 +4435,20 @@ async function handlePaystackPayment(request, env, tenantId, action) {
       return jsonResponse({ error: "Payment setup is already in progress for this order." }, 409);
     }
     const subaccount = await getEffectivePaystackSubaccount(env, tenantId);
-    if (!subaccount?.subaccount_code || subaccount.status !== "connected") {
-      return jsonResponse({ error: "This app account has not selected an active Paystack default. Connect or choose one in Payments in the E-Shop app." }, 409);
+    if (!paystackSubaccountReady(subaccount, mode)) {
+      return jsonResponse({
+        error: mode === "live"
+          ? "Connect a verified live Paystack subaccount in Craft before accepting payments."
+          : "Connect or choose an active test Paystack account in Payments in the E-Shop app."
+      }, 409);
     }
 
     const reference = paystackReference();
     const reserved = await env.DB.prepare(
-      `UPDATE storefront_orders SET payment_reference=?,payment_status='initializing',
+      `UPDATE storefront_orders SET payment_reference=?,payment_subaccount_code=?,payment_status='initializing',
          payment_authorization_url=NULL,paid_at=NULL,updated_at=?
        WHERE tenant_id=? AND order_number=? AND payment_status IN ('unpaid','failed')`
-    ).bind(reference, new Date().toISOString(), tenantId, orderNumber).run();
+    ).bind(reference, subaccount.subaccount_code, new Date().toISOString(), tenantId, orderNumber).run();
     if (!Number(reserved.meta?.changes || 0)) {
       return jsonResponse({ error: "Could not reserve payment setup for this order. Retry once." }, 409);
     }
@@ -4384,6 +4543,9 @@ async function handlePaystackPayment(request, env, tenantId, action) {
     if (!transactionMatchesOrder(transaction, order)) {
       return jsonResponse({ error: "Payment details do not match this order." }, 409);
     }
+    if (!transactionMatchesSubaccount(transaction, order.payment_subaccount_code, mode)) {
+      return jsonResponse({ error: "Paystack could not confirm that this payment used the expected live subaccount." }, 409);
+    }
     const paymentStatus = transaction.status === "success" ? "paid"
       : ["failed", "abandoned"].includes(transaction.status) ? "failed" : "pending";
     const paidAt = paymentStatus === "paid" ? new Date().toISOString() : null;
@@ -4433,7 +4595,9 @@ async function handlePaystackWebhook(request, env) {
       "SELECT * FROM storefront_service_appointments WHERE payment_reference=?"
     ).bind(reference).first();
     if (!appointment) return jsonResponse({ error: "Payment reference not found." }, 404);
-    if (!serviceAppointmentPaymentMatches(event.data, appointment) || event.data.status !== "success") {
+    const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
+    if (!serviceAppointmentPaymentMatches(event.data, appointment) || event.data.status !== "success"
+      || !transactionMatchesSubaccount(event.data, appointment.payment_subaccount_code, mode)) {
       return jsonResponse({ error: "Payment does not match the expected appointment deposit and currency." }, 409);
     }
     await env.DB.prepare(
@@ -4442,7 +4606,9 @@ async function handlePaystackWebhook(request, env) {
     ).bind(new Date().toISOString(), appointment.tenant_id, appointment.id, reference).run();
     return jsonResponse({ ok: true, payment_status: "paid", appointment_id: appointment.id });
   }
-  if (!transactionMatchesOrder(event.data, order) || event.data.status !== "success") {
+  const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
+  if (!transactionMatchesOrder(event.data, order) || event.data.status !== "success"
+    || !transactionMatchesSubaccount(event.data, order.payment_subaccount_code, mode)) {
     return jsonResponse({ error: "Payment does not match the expected order amount and currency." }, 409);
   }
   if (order.payment_status !== "paid") {
@@ -5907,6 +6073,81 @@ async function deleteTenant(request, env, tenantId) {
   return jsonResponse({ ok: true, deleted_tenant_id: tenantId });
 }
 
+async function getTenantUsage(request, env, tenantId) {
+  if (!TENANT_ID_PATTERN.test(tenantId) && tenantId !== "main") {
+    return jsonResponse({ error: "Invalid shop address." }, 400);
+  }
+  const isOwner = tenantId === "main"
+    ? await authorizeMainOwner(request, env)
+    : await authorizeTenantOwner(request, env, tenantId) ||
+      await authorizeTenantAccount(request, env, tenantId);
+  if (!isOwner && !await authorizeAdmin(request, env)) {
+    return jsonResponse({ error: "Shop owner authorization required." }, 401);
+  }
+  if (!env.DB || !env.BUSINESS_ARCHIVE) {
+    return jsonResponse({ error: "D1 or R2 usage storage is not configured." }, 503);
+  }
+
+  const prefixes = ["media", "published-sites", "business", "push"]
+    .map(folder => `${folder}/${tenantId}/`);
+  const maxObjects = 5000;
+  let objectCount = 0;
+  let bytes = 0;
+  let complete = true;
+  for (const prefix of prefixes) {
+    let cursor;
+    do {
+      const remaining = maxObjects - objectCount;
+      if (remaining <= 0) {
+        complete = false;
+        break;
+      }
+      const page = await env.BUSINESS_ARCHIVE.list({
+        prefix,
+        limit: Math.min(1000, remaining),
+        ...(cursor ? { cursor } : {})
+      });
+      for (const object of page.objects || []) {
+        objectCount++;
+        bytes += Number(object.size) || 0;
+      }
+      if (page.truncated && objectCount >= maxObjects) {
+        complete = false;
+        break;
+      }
+      if (page.truncated && !page.cursor) {
+        throw new Error("R2 returned a truncated usage listing without a cursor.");
+      }
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
+    if (!complete) break;
+  }
+
+  const schema = await env.DB.prepare(
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+  ).all();
+  const tables = [];
+  for (const row of schema.results || []) {
+    const name = String(row.name || "");
+    if (!/^[A-Za-z0-9_]+$/.test(name)) continue;
+    const columnsResult = await env.DB.prepare(`PRAGMA table_info("${name}")`).all();
+    const columns = new Set((columnsResult.results || []).map(column => String(column.name)));
+    const tenantColumns = ["tenant_id", "source_tenant_id"].filter(column => columns.has(column));
+    if (!tenantColumns.length) continue;
+    const where = tenantColumns.map(column => `"${column}" = ?`).join(" OR ");
+    const counts = await env.DB.prepare(
+      `SELECT COUNT(*) AS count FROM "${name}" WHERE ${where}`
+    ).bind(...tenantColumns.map(() => tenantId)).first();
+    const count = Number(counts?.count) || 0;
+    if (count) tables.push({ name, count });
+  }
+  return jsonResponse({
+    tenant_id: tenantId,
+    r2: { objects: objectCount, bytes, complete },
+    d1: { total_records: tables.reduce((sum, table) => sum + table.count, 0), tables }
+  }, 200, { "Cache-Control": "private, no-store" });
+}
+
 const DIRECTORY_CACHE_KEY = "directory:v1";
 const DIRECTORY_TTL_SECONDS = 3600;
 
@@ -6194,6 +6435,9 @@ export default {
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
           return await handleCraftImages(request, env, tenantId);
         }
+        if (url.pathname === "/api/images/draft-search") {
+          return await handleCraftImages(request, env, "main", { draft: true });
+        }
         if (url.pathname === "/api/media") {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
@@ -6301,6 +6545,10 @@ export default {
         if (tenantDeleteMatch && request.method === "DELETE") {
           return await deleteTenant(request, env, tenantDeleteMatch[1]);
         }
+        const tenantUsageMatch = url.pathname.match(/^\/api\/tenants\/([a-z0-9-]+)\/usage$/);
+        if (tenantUsageMatch && request.method === "GET") {
+          return await getTenantUsage(request, env, tenantUsageMatch[1]);
+        }
         if (url.pathname === "/api/tenants/main/owner-key" && request.method === "PUT") {
           return await provisionMainOwnerKey(request, env);
         }
@@ -6372,14 +6620,18 @@ export default {
       const verification = await env.TENANTS?.get(searchConsoleVerificationKey(hostTenantId), "json");
       seoVerificationToken = verification?.content || "";
       const verificationVersion = verification?.version || "none";
-      let publishedThemePointer = null;
+      let publishedThemePointer = await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
       let catalogUpdatedAt = hostTenant?.catalog_updated_at || "";
       if (!catalogUpdatedAt) {
-        publishedThemePointer = await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
         catalogUpdatedAt = publishedThemePointer?.catalogUpdatedAt || "";
       }
       let cacheKey = catalogUpdatedAt
-        ? storefrontCacheKey(request, catalogUpdatedAt, verificationVersion)
+        ? storefrontCacheKey(
+          request,
+          catalogUpdatedAt,
+          verificationVersion,
+          publishedThemePointer?.key || "none"
+        )
         : null;
       if (storefrontCache && cacheKey) {
         const cachedPage = await storefrontCache.match(cacheKey);
@@ -6388,9 +6640,6 @@ export default {
       let snapshot = null;
       let publishedObjectForRequest = null;
       let publishedHtmlForRequest = "";
-      if (!publishedThemePointer) {
-        publishedThemePointer = await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
-      }
       if (publishedThemePointer &&
           publishedThemePointer.catalogUpdatedAt === catalogUpdatedAt &&
           typeof publishedThemePointer.key === "string" &&
@@ -6420,7 +6669,12 @@ export default {
         if (snapshotUpdatedAt && snapshotUpdatedAt !== catalogUpdatedAt) {
           catalogUpdatedAt = snapshotUpdatedAt;
           await recordCatalogVersion(env, hostTenantId, hostTenant, catalogUpdatedAt);
-          cacheKey = storefrontCacheKey(request, catalogUpdatedAt, verificationVersion);
+          cacheKey = storefrontCacheKey(
+            request,
+            catalogUpdatedAt,
+            verificationVersion,
+            publishedThemePointer?.key || "none"
+          );
           if (storefrontCache) {
             const cachedPage = await storefrontCache.match(cacheKey);
             if (cachedPage) return cachedStorefrontResponse(cachedPage);

@@ -120,6 +120,30 @@ test("Worker persists only a complete supported fill and serves that same publis
   assert.match(html, /storefront-analytics\.js\?v=events-1/);
 });
 
+test("Worker gives every theme republish a fresh R2 object key", async () => {
+  const env = createEnv();
+  const firstResponse = await worker.fetch(publishRequest({
+    theme_id: themeId,
+    catalog_updated_at: catalogUpdatedAt,
+    html: publishedHtml
+  }), env);
+  assert.equal(firstResponse.status, 200);
+  const firstKey = JSON.parse(env.values.get("published-theme:main")).key;
+
+  const updatedHtml = publishedHtml.replace("Owner Shop", "Updated Owner Shop");
+  const secondResponse = await worker.fetch(publishRequest({
+    theme_id: themeId,
+    catalog_updated_at: catalogUpdatedAt,
+    html: updatedHtml
+  }), env);
+  assert.equal(secondResponse.status, 200);
+  const secondKey = JSON.parse(env.values.get("published-theme:main")).key;
+
+  assert.notEqual(secondKey, firstKey);
+  assert.match(env.objects.get(firstKey).body, /Owner Shop/);
+  assert.match(env.objects.get(secondKey).body, /Updated Owner Shop/);
+});
+
 test("Worker rejects unsupported, incomplete, stale, and unauthenticated theme publishes", async () => {
   const env = createEnv();
   const unsupported = await worker.fetch(publishRequest({

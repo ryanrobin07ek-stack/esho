@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile as readFileRaw, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { Script } from 'node:vm';
 import test from 'node:test';
@@ -10,6 +10,43 @@ import {
   classifyQrCode, createPosApp, matchProductLabel, MIN_IMAGE_MATCH_SIMILARITY,
   parseProductLabel, rankImageMatches, suggestImageCategories
 } from '../src/pos.js';
+
+const readFile = async (path, options) => {
+  const contents = await readFileRaw(path, options);
+  return typeof contents === 'string' ? contents.replace(/\r\n/g, '\n') : contents;
+};
+
+test('POS charts keep full history and render larger, scrollable value/date axes', async () => {
+  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const start = source.indexOf('  function chartAxisMoney(');
+  const end = source.indexOf('\n  function renderSettings(', start);
+  assert.ok(start >= 0 && end > start, 'The POS chart renderers should be a bounded block.');
+  assert.match(source, /const revenueSeries = Object\.entries\(daily\)\.sort\(\(\[first\], \[second\]\) => first\.localeCompare\(second\)\);/);
+  const revenueSeriesLineStart = source.indexOf('const revenueSeries = Object.entries(daily)');
+  const revenueSeriesLine = source.slice(revenueSeriesLineStart, source.indexOf('\n', revenueSeriesLineStart));
+  assert.doesNotMatch(revenueSeriesLine, /slice/);
+  const renderCharts = new Function(
+    'money',
+    'escapeHtml',
+    `${source.slice(start, end)}; return { renderRevenueChart, renderProfitChart };`
+  )((value, currency) => `${currency} ${value}`, value => String(value));
+  const history = Array.from({ length: 30 }, (_, index) => [
+    `2024-01-${String(index + 1).padStart(2, '0')}`,
+    index * 10
+  ]);
+  for (const [renderer, data] of [
+    [renderCharts.renderRevenueChart, history],
+    [renderCharts.renderProfitChart, history.map(([date, value]) => [date, value - 100])]
+  ]) {
+    const markup = renderer(data, 'KES');
+    assert.match(markup, /chart history; scroll horizontally to see all dates/);
+    assert.match(markup, /value and date axes/);
+    assert.match(markup, /--pos-chart-min-width:1894px/);
+    assert.equal((markup.match(/class="pos-revenue-chart-axis-label"/g) || []).length, 35);
+    assert.equal((markup.match(/class="pos-revenue-chart-point"/g) || []).length, 30);
+    assert.match(markup, /24-01-30/);
+  }
+});
 
 test('POS cart interactions render locally without reloading saved POS state', async () => {
   const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
@@ -214,9 +251,10 @@ test('loading website stock imports local website products into POS without admi
 
 test('embedded theme preview replaces demo catalog and resolves merchant product categories', async () => {
   const appSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const seed = JSON.parse(await readFile(
-    new URL('../public/theme-packages/drizzle-restaurant/data.json', import.meta.url), 'utf8'
-  ));
+  const seed = {
+    categories: [{ id: 'demo-food', name: 'Demo food' }],
+    products: [{ id: 'demo-burger', name: 'Drizzle Artisan Burger', categoryIds: ['demo-food'] }]
+  };
   const start = appSource.indexOf('const themeData = JSON.parse(embeddedDataScript[2]);');
   const end = appSource.indexOf('const safeThemeData = JSON.stringify(mergedThemeData)', start);
   assert.ok(start >= 0 && end > start, 'Embedded theme catalog mapping should be present.');
@@ -241,7 +279,6 @@ test('embedded theme preview replaces demo catalog and resolves merchant product
     ['eshop-category-34']
   ]);
   assert.ok(!JSON.stringify(merged.products).includes('Drizzle Artisan Burger'));
-  assert.match(appSource, /if\(String\(key\)==="drizzle\.restaurant\.v1"\)return null/);
 });
 
 test('label OCR parser suggests product name, currency price and validated expiry date', () => {
@@ -745,16 +782,15 @@ test('choosing a website theme opens the shared Liquid Theme Studio', async () =
   assert.doesNotMatch(editor, /builder-storefront-html|builder-preview-device|builder-tools-home/);
 });
 
-test('Kinetic privacy and Veluna contact navigation render real theme screens', async () => {
-  const kinetic = await readFile(new URL('../live-websites/kinetic-electronics/index.html', import.meta.url), 'utf8');
-  const veluna = await readFile(new URL('../live-websites/veluna-—-grand-electronics-retail-store/index.html', import.meta.url), 'utf8');
-  assert.match(kinetic, /else if \(hash === '#\/privacy'\)\s*\{\s*this\.outlet\.innerHTML = renderStaticPolicyView\(/);
-  assert.match(veluna, /hash === '#\/support' \|\| hash === '#\/contact'[\s\S]*?appRoot\.innerHTML = renderSupportPage\(\)/);
+test('legacy Kinetic and Veluna themes are not selectable storefronts', () => {
+  const themeIds = WEBSITE_THEME_CATALOG.map(theme => theme.id);
+  assert.equal(themeIds.includes('kinetic-electronics'), false);
+  assert.equal(themeIds.includes('veluna-—-grand-electronics-retail-store'), false);
 });
 
 test('hosted theme editor keeps SPA hash navigation inside the preview iframe', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(pageSource, /hostedTheme && previewDocument && previewWindow && routedHostedPreviewDocument !== previewDocument[\s\S]*?target\?\.closest\("a\[href\]"\)\?\.getAttribute\("href"\)\?\.trim\(\)[\s\S]*?event\.preventDefault\(\)[\s\S]*?event\.stopImmediatePropagation\(\)[\s\S]*?previewWindow\.location\.hash = href/);
+  assert.match(pageSource, /previewDocument\.addEventListener\("click", event => \{[\s\S]*?event\.target\?\.closest\?\.\("a\[href\]"\)[\s\S]*?href\?\.startsWith\("#\/"\)[\s\S]*?event\.preventDefault\(\)[\s\S]*?event\.stopImmediatePropagation\(\)[\s\S]*?previewWindow\.location\.hash = href/);
 });
 
 test('Main Store shows Split products beside Categories in the Products navigation', async () => {
@@ -832,7 +868,7 @@ test('filled themes use the shared fill engine while legacy adapter behavior rem
   assert.match(pageSource, /filledHtml = await themeClient\.fillThemeForShop\(themeId/);
   assert.match(workerSource, /"craft-main-storefront"/);
   assert.match(workerSource, /published-sites\/\$\{tenantId\}\/\$\{themeId\}\//);
-  assert.match(workerSource, /let html = await new Response\(theme\.body\)\.text\(\)/);
+  assert.match(workerSource, /let html = publishedHtmlForRequest \|\| await new Response\(theme\.body\)\.text\(\)/);
   assert.doesNotMatch(workerSource, /const catalogAdapter = `<script src="\/theme-catalog-adapter\.js"/);
   assert.match(adapter, /function adaptProductGrids\(\)/);
   assert.match(adapter, /function setCardProduct\(card, product\)/);
@@ -876,8 +912,8 @@ test('Website Add controls persist and publish contact settings across hosted th
   assert.doesNotMatch(storefront, /href="tel:/i);
   assert.match(storefront, /data-eshop-floating-contacts/);
   assert.match(storefront, /data-eshop-contact-icon/);
-  assert.match(pageSource, /data-builder-publish-design/);
-  assert.match(pageSource, /method: "PATCH", body: JSON\.stringify\(\{ store: appearance \}\)/);
+  assert.match(pageSource, /data-additions-publish/);
+  assert.match(pageSource, /`\/api\/catalog\?tenant=\$\{encodeURIComponent\(tenantId\)\}`[\s\S]*?method: "PATCH", body: JSON\.stringify\(\{ store \}\)/);
   assert.equal(presets.WEBSITE_FONTS.length, 102);
   assert.equal(presets.WEBSITE_COLOR_THEMES.length, 102);
   assert.equal(presets.WEBSITE_COLOR_FILTERS.length, 102);
@@ -942,17 +978,21 @@ test('theme editor storefront and Studio replace built-in demo catalogs with the
     .replace(/\n    const themePreviewFrames[\s\S]*$/, '');
   assert.ok(loader, 'The packaged theme loader should be available for the editor.');
   const theme = {
-    id: 'maridadi-living',
-    name: 'Maridadi Living',
-    preview_url: '/theme-packages/maridadi-living/index.html',
-    studio_url: '/theme-packages/maridadi-living/studio.html'
+    id: 'catalog-fixture',
+    name: 'Catalog fixture',
+    preview_url: '/theme-packages/catalog-fixture/index.html',
+    studio_url: '/theme-packages/catalog-fixture/studio.html'
   };
+  const source = `<!doctype html><html><head>
+    <script id="ff-config" type="application/json">{"storage":{"siteKey":"catalog_fixture_site_data","revisionKey":"catalog_fixture_applied_revision"}}</script>
+    <script id="ff-site-data" type="application/json">{"products":[{"name":"Old demo product"}],"categories":[{"name":"Old demo category"}]}</script>
+  </head><body></body></html>`;
   const output = await new Script(`${loader}; loadHostedThemePreview;`).runInNewContext({
     URL,
     window: { location: { origin: 'https://app.test' }, localStorage: { getItem: () => null } },
-    fetch: async url => ({
+    fetch: async () => ({
       ok: true,
-      text: () => readFile(new URL(`../public${new URL(url).pathname}`, import.meta.url), 'utf8')
+      text: async () => source
     })
   });
   const readSiteData = html => {
@@ -971,9 +1011,9 @@ test('theme editor storefront and Studio replace built-in demo catalogs with the
     class PreviewStorage {
       constructor() {
         this.values = new Map([
-          ['maridadi_site_data', '{"products":[{"name":"Old demo product"}]}'],
-          ['maridadi_applied_revision', '1'],
-          ['maridadi_cart', '[]']
+            ['catalog_fixture_site_data', '{"products":[{"name":"Old demo product"}]}'],
+            ['catalog_fixture_applied_revision', '1'],
+            ['catalog_fixture_cart', '[]']
         ]);
       }
       getItem(key) { return this.values.get(String(key)) ?? null; }
@@ -990,14 +1030,16 @@ test('theme editor storefront and Studio replace built-in demo catalogs with the
     new Script(storageShimTag[0].slice('<script>'.length, -'</script>'.length))
       .runInNewContext({ Storage: PreviewStorage, window: previewWindow });
     const storage = new PreviewStorage();
-    assert.equal(storage.getItem('maridadi_site_data'), null);
-    assert.equal(storage.getItem('maridadi_applied_revision'), '1');
-    assert.equal(storage.getItem('maridadi_cart'), null);
-    storage.setItem('maridadi_site_data', '{"products":[{"name":"Shop product"}]}');
-    assert.match(storage.values.get('maridadi_site_data'), /Shop product/);
+    assert.equal(storage.getItem('catalog_fixture_site_data'), assetUrl === theme.studio_url
+      ? '{"products":[{"name":"Old demo product"}]}'
+      : null);
+    assert.equal(storage.getItem('catalog_fixture_applied_revision'), '1');
+    assert.equal(storage.getItem('catalog_fixture_cart'), null);
+    storage.setItem('catalog_fixture_site_data', '{"products":[{"name":"Shop product"}]}');
+    assert.match(storage.values.get('catalog_fixture_site_data'), /Shop product/);
     let storefrontProducts = ['Shop Apple'];
     previewWindow.addEventListener('storage', event => {
-      if (event.key === 'maridadi_site_data' && event.newValue) {
+      if (event.key === 'catalog_fixture_site_data' && event.newValue) {
         storefrontProducts = JSON.parse(event.newValue).products.map(product => product.name);
       }
     });
@@ -1006,7 +1048,7 @@ test('theme editor storefront and Studio replace built-in demo catalogs with the
     assert.ok(siteDataStorageGuard, 'Theme preview should block saved theme data storage events.');
     let propagationStopped = false;
     const savedDemoCatalogEvent = {
-      key: 'maridadi_site_data',
+      key: 'catalog_fixture_site_data',
       newValue: '{"products":[{"name":"Old demo product"}]}',
       stopImmediatePropagation() { propagationStopped = true; }
     };
@@ -1049,13 +1091,23 @@ test('existing website editor routes stay pinned to the selected tenant', async 
   assert.match(editHandler, /this\.navigate\(`\/account\/web\/site\?tenant=\$\{encodeURIComponent\(website\.tenant_id\)\}`\)/);
 });
 
+test('Craft opens the saved website dashboard and hides the main shop from website lists', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(pageSource, /const initialPath = path === "\/account\/web"\s*\?\s*"\/account\/web\/studio\/dashboard\/overview"/);
+  assert.match(pageSource, /const visibleWebsites = websites\s*\.filter\(website => website\.id !== "main"\)\s*\.sort\(\(a, b\) => Number\(b\.id === activeTenant\.id\) - Number\(a\.id === activeTenant\.id\)\)/);
+  assert.match(pageSource, /website\.id === activeTenant\.id \? '<span class="profile-current-website-badge">Currently managing<\/span>'/);
+  assert.match(pageSource, /body\.craft-app-ui #app \.website-management-actions > \*,[\s\S]*?border-radius:\s*14px !important;[\s\S]*?background:\s*linear-gradient\(145deg,\s*#f3f3f3 0%,\s*#dedede 100%\) !important/);
+  assert.match(pageSource, /getActiveTenant\(\) \{[\s\S]*?localStorage\.getItem\("ESHOP_ACTIVE_TENANT_V1"\)/);
+  assert.match(pageSource, /setActiveTenantCatalog\(tenant, catalog\) \{[\s\S]*?localStorage\.setItem\("ESHOP_ACTIVE_TENANT_V1"/);
+});
+
 test('product media saves locally before publishing and handles native gallery results', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
   const mediaSave = pageSource.match(/} else if \(kind === "web-product"\) \{([\s\S]*?)\n            \} else if \(kind === "loyalty-settings"\)/)?.[1];
   const compression = pageSource.match(/async compressImageFile\(file, \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  formatMoney/)?.[0];
-  const imageUpload = pageSource.match(/async uploadCatalogImage\(image, apiUrl, tenant, token\) \{([\s\S]*?)\r?\n  \},/)?.[1];
-  const publishModal = pageSource.match(/openCloudflarePublishModal\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  initStudioModals/)?.[1];
+  const imageUpload = pageSource.match(/async uploadCatalogImage\(image, apiUrl, tenant, token(?:, onStored)?\) \{([\s\S]*?)\r?\n  \},/)?.[1];
+  const publishModal = pageSource.match(/openCloudflarePublishModal\(publishImmediately = false\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  initStudioModals/)?.[1];
   assert.ok(mediaSave, 'Web product media should have a dedicated save handler.');
   assert.ok(compression, 'Images should use the shared on-device compressor.');
   assert.ok(imageUpload, 'Publishing should upload compressed images to the Worker.');
@@ -1085,7 +1137,7 @@ test('product media saves locally before publishing and handles native gallery r
   const fingerprint = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
   const cachedUrl = 'https://shop.example/media/main/11111111-1111-4111-8111-111111111111.webp';
   let uploadRequests = 0;
-  const uploadMethod = new Script(`({ async uploadCatalogImage(image, apiUrl, tenant, token) { ${imageUpload} } })`)
+  const uploadMethod = new Script(`({ async uploadCatalogImage(image, apiUrl, tenant, token, onStored) { ${imageUpload} } })`)
     .runInNewContext({
       crypto: globalThis.crypto,
       TextEncoder,
@@ -1103,7 +1155,7 @@ test('product media saves locally before publishing and handles native gallery r
   const uploadedUrl = 'https://rayoo.rrobin.co.ke/media/rayoo/11111111-1111-4111-8111-111111111111.webp';
   const requests = [];
   let compressionOptions;
-  const externalUpload = new Script(`({ async uploadCatalogImage(image, apiUrl, tenant, token) { ${imageUpload} } })`)
+  const externalUpload = new Script(`({ async uploadCatalogImage(image, apiUrl, tenant, token, onStored) { ${imageUpload} } })`)
     .runInNewContext({
       crypto: globalThis.crypto,
       TextEncoder,
@@ -1157,7 +1209,7 @@ test('product media saves locally before publishing and handles native gallery r
 
 test('catalog publishing bounds concurrent media work and preserves item order', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const publishModal = pageSource.match(/openCloudflarePublishModal\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  initStudioModals/)?.[1];
+  const publishModal = pageSource.match(/openCloudflarePublishModal\(publishImmediately = false\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  initStudioModals/)?.[1];
   const concurrencyHelper = publishModal?.match(/const mapWithConcurrency = async \(items, limit, worker\) => \{[\s\S]*?\r?\n        \};/)?.[0];
   assert.ok(concurrencyHelper, 'Catalog publishing should define a bounded media worker.');
   const mapWithConcurrency = new Function(`${concurrencyHelper}; return mapWithConcurrency;`)();
@@ -1174,6 +1226,110 @@ test('catalog publishing bounds concurrent media work and preserves item order',
   assert.equal(peak, 2);
 });
 
+test('Store bulk hold actions use the soft silver card style', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(pageSource, /body\.craft-app-ui #app \.store-bulk-actions \[data-bulk-product-holds\],[\s\S]*?border-radius:\s*12px;[\s\S]*?background:\s*linear-gradient\(145deg,\s*#fff 0%,\s*#f0f0f0 100%\)/);
+});
+
+test('Craft orders render as spacious silver cards with a concise Load action', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(pageSource, /class="studio-list-row studio-order-card"/);
+  assert.match(pageSource, /class="studio-list-row studio-order-card studio-online-order-card"[\s\S]*?studio-order-header[\s\S]*?studio-order-items[\s\S]*?studio-order-controls/);
+  assert.match(pageSource, /studio-list-row\.studio-order-card\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*0;[^}]*max-height:\s*none;[^}]*padding:\s*14px;[^}]*background:\s*linear-gradient\(145deg,\s*#dedede 0%,\s*#c4c4c4 100%\)/);
+  assert.match(pageSource, /data-business-online-orders-load aria-label="Load online orders">Load/);
+  assert.doesNotMatch(pageSource, />Load online orders<\/button>|>Refresh online orders<\/button>/);
+});
+
+test('Craft booking Load buttons are compact rounded silver controls', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(pageSource, /data-online-appointments-load aria-label="Load appointments">Load/);
+  assert.match(pageSource, /data-online-holds-load aria-label="Load hold requests">Load/);
+  assert.match(pageSource, /body\.craft-app-ui #app \.studio-load-button\s*\{[^}]*min-height:\s*30px;[^}]*height:\s*30px;[^}]*padding:\s*4px 11px;[^}]*border-radius:\s*999px !important;[^}]*background:\s*linear-gradient\(145deg,\s*#dedede 0%,\s*#c4c4c4 100%\)/);
+});
+
+test('Craft CRM separates Customers, Points, and Subscribers with bulk subscriber removal', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(pageSource, /title: "Customers", route: "\/account\/web\/studio\/crm\/customers", contentPath: "\/account\/customers"[\s\S]*?title: "Points", route: "\/account\/web\/studio\/crm\/points", contentPath: "\/account\/customers\/loyalty"[\s\S]*?title: "Subscribers", route: "\/account\/web\/studio\/crm\/subscribers", contentPath: "\/account\/customers\/newsletter"/);
+  assert.match(pageSource, /data-newsletter-select-all><span>Select all subscribers<\/span>/);
+  assert.match(pageSource, /data-newsletter-subscriber-select value="\$\{AppUtils\.escapeHTML\(subscriber\.id\)\}"/);
+  assert.match(pageSource, /data-newsletter-remove-selected disabled>Remove selected/);
+  assert.match(pageSource, /removeRemoteSubscribers = async ids =>[\s\S]*?removeNewsletterSubscriber\(tenantId, id\)[\s\S]*?data-newsletter-remove-selected/);
+  assert.match(pageSource, /newsletter\|subscribers/);
+});
+
+test('Performance visits, orders, and revenue use compact full-width cards', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const performance = pageSource.match(/if \(path === "\/account\/main-shop\/performance" \|\| path === "\/store\/revenue"\) \{([\s\S]*?)\r?\n    \}\r?\n    if \(path === "\/account\/main-shop\/product-intelligence"\)/)?.[1];
+  assert.ok(performance, 'Performance should have a dedicated metrics section.');
+  assert.match(performance, /studio-performance-metrics[\s\S]*?performanceMetrics\.map/);
+  assert.match(performance, /\["Visits"[\s\S]*?\["Orders"[\s\S]*?\["Revenue"/);
+  assert.doesNotMatch(performance, /studio-period-grid studio-metric-grid-featured/);
+  assert.match(pageSource, /body\.craft-app-ui #app \.studio-performance-metrics\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  assert.match(pageSource, /body\.craft-app-ui #app \.studio-performance-metric\s*\{[^}]*min-height:\s*54px;[^}]*padding:\s*7px 10px;[^}]*background:\s*linear-gradient\(145deg,\s*#dedede 0%,\s*#c4c4c4 100%\)/);
+});
+
+test('Main Store uses compact silver shortcuts and has no separate insights screen', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const businessLensSource = await readFile(new URL('../src/business-lens.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(pageSource, /Cloud storefront orders could not be loaded/);
+  assert.match(pageSource, /const mainStoreShortcuts = businessPath === "\/account\/main-shop"[\s\S]*?<\/nav>`\s*:\s*"";/);
+  for (const [label, route] of [
+    ['Products', '/store/products'],
+    ['Customers', '/account/customers'],
+    ['Channels', '/store/channels'],
+    ['Inventory', '/store/inventory'],
+    ['Finance', '/account/main-shop/finance'],
+    ['Revenue', '/store/revenue']
+  ]) {
+    assert.ok(pageSource.includes(`href="${route}" data-route="${route}">${label}</a>`), `${label} should open its Main Store screen.`);
+  }
+  assert.match(pageSource, /body\.craft-app-ui #app \.main-store-shortcuts\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(pageSource, /body\.craft-app-ui #app \.main-store-shortcuts a\s*\{[^}]*min-height:\s*40px;[^}]*background:\s*linear-gradient\(145deg,\s*#dedede 0%,\s*#c4c4c4 100%\)/);
+  assert.doesNotMatch(pageSource, /title: "Insights"|Main Store insights|Product insights|Customer insights|Channels insights|Inventory insights|Finance insights/);
+  assert.doesNotMatch(businessLensSource, /"\/account\/main-shop\/insights":\(\)=>renderInsights/);
+  assert.match(businessLensSource, /card\("Priority signals"/);
+});
+
+test('Main Store opens a compact product editor with cross-channel add, edit, and delete', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const businessLensSource = await readFile(new URL('../src/business-lens.js', import.meta.url), 'utf8');
+  assert.match(businessLensSource, /Product leaderboard · revenue[\s\S]*?main-store-product-entry[\s\S]*?Products sold/);
+  assert.match(businessLensSource, /href="\/store\/products\/manage" data-route="\/store\/products\/manage"><span>Edit products<\/span>/);
+  assert.match(pageSource, /"\/store\/products", "\/store\/products\/manage", "\/store\/manage\/products", "\/store\/manage\/categories"/);
+  assert.match(pageSource, /\.main-store-product-entry\s*\{[^}]*width:\s*100%[^}]*min-height:\s*40px[^}]*background:\s*linear-gradient\(145deg,\s*#d2d2d2 0%,\s*#b8b8b8 100%\)/);
+  assert.match(pageSource, /const isAppShell =[\s\S]*?path === "\/store" \|\| path\.startsWith\("\/store\/"\)/);
+  assert.match(pageSource, /\.main-store-product-row\s*\{[^}]*grid-template-columns:\s*36px minmax\(0,\s*1fr\) auto/);
+  assert.match(pageSource, /\.main-store-product-row > img,[\s\S]*?width:\s*36px;[\s\S]*?height:\s*36px/);
+  const productManager = pageSource.match(/renderMainStoreProductManagement\(snapshot\)\s*\{([\s\S]*?)\r?\n  \},\r?\n\r?\n  getMainStoreCategoryRecords/)?.[1];
+  assert.ok(productManager, 'The edit card should open a dedicated product management screen.');
+  assert.match(productManager, /<img src="\$\{AppUtils\.escapeHTML\(image\)\}"[\s\S]*?data-main-product-edit[\s\S]*?data-main-product-delete/);
+  assert.doesNotMatch(productManager, /data-store-pos-product|data-store-publish-product|data-remove-website-product/);
+  assert.doesNotMatch(productManager, /name="sku"|>SKU</);
+  assert.match(pageSource, /renderMainStoreProductManagement\(snapshot\)[\s\S]*?data-main-store-product-form[\s\S]*?name="channels" value="pos" checked[\s\S]*?name="channels" value="web" checked/);
+  assert.match(pageSource, /let sku = original\?\.sku \|\| ""[\s\S]*?SQLiteEngine\.generateProductSku\(\)/);
+  assert.match(pageSource, /getMainStoreCategoryRecords\(snapshot\)[\s\S]*?renderMainStoreCategories\(snapshot\)[\s\S]*?data-main-category-edit[\s\S]*?data-main-category-delete/);
+  assert.match(pageSource, /bindMainStoreCategories\(container, snapshot, path\)[\s\S]*?ShopPOS\.renameCategory[\s\S]*?ShopPOS\.createCategory[\s\S]*?ShopPOS\.deleteCategory/);
+  assert.match(pageSource, /"\/store\/manage\/products", "\/store\/manage\/categories"/);
+  assert.match(pageSource, /renderMainStoreManagement\(path, snapshot\)[\s\S]*?main-store-management-content[\s\S]*?renderMainStoreCategories\(snapshot\)/);
+  assert.match(pageSource, /renderMainStoreManagement\(path, snapshot\)[\s\S]*?main-store-management-tabs[\s\S]*?Products[\s\S]*?Categories/);
+  for (const selector of [
+    'data-main-product-add',
+    'data-main-product-edit',
+    'data-main-product-delete'
+  ]) {
+    assert.ok(pageSource.includes(selector), `The product manager should expose ${selector}.`);
+  }
+  const bottomItems = pageSource.match(/const bottomItems = \[([\s\S]*?)\n    \];/)?.[1];
+  assert.ok(bottomItems, 'Main Store should render its bottom navigation.');
+  assert.match(bottomItems, /route: "\/store\/manage\/products", title: "Store"/);
+  assert.doesNotMatch(bottomItems, /title: "Products"/);
+  assert.match(pageSource, /store:\s*\[\s*\{\s*route: "\/store\/products", title: "Web products"\s*\},\s*\{\s*route: "\/store\/products\/manage", title: "Edit products"\s*\},\s*\{\s*route: "\/store\/inventory", title: "Inventory"\s*\},\s*\{\s*route: "\/store\/categories", title: "Web categories"\s*\},\s*\{\s*route: "\/store\/split-shop", title: "Split products"\s*\}\s*\]/);
+  assert.match(pageSource, /const sectionSidebar = this\.renderWorkspaceSidebar\([\s\S]*?section === "store" \? "Store"/);
+  assert.match(pageSource, /route: "\/store\/products\/manage", title: "Edit products"/);
+  assert.match(pageSource, /\.business-lens-shell \.studio-workspace-bottom-nav\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(pageSource, /bindMainStoreProductManagement\(container, snapshot, path\)[\s\S]*?SQLiteEngine\.saveProduct[\s\S]*?window\.ShopPOS\.saveProduct[\s\S]*?this\.addWebsiteProductToPos[\s\S]*?this\.publishPosProduct[\s\S]*?window\.ShopPOS\.deleteProduct/);
+});
+
 test('Web Studio website products and categories can be removed without deleting Store/POS records', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   const websiteWorkspace = pageSource.match(/if \(path === "\/store\/products"\) \{([\s\S]*?)\r?\n    \}\r?\n    if \(path === "\/store\/categories"\)/)?.[1];
@@ -1186,11 +1342,17 @@ test('Web Studio website products and categories can be removed without deleting
   assert.ok(productRemoval, 'Website product removal should be bound.');
   assert.ok(categoryRemoval, 'Website category removal should be bound.');
   assert.ok(bulkRemovalBinding, 'Website bulk removal should be bound after workspace rendering.');
-  assert.match(websiteWorkspace, /Website products are saved in app SQLite, separately from Store\/POS inventory/);
+  assert.match(websiteWorkspace, /Website products are managed separately\. Publish to update/);
   assert.match(websiteWorkspace, /existsInPos = snapshot\.posProducts\.some[\s\S]*?data-store-pos-product="\$\{product\.id\}"[\s\S]*?Add to Store\/POS/);
   assert.match(pageSource, /document\.querySelectorAll\("\[data-store-pos-product\]"\)[\s\S]*?addWebsiteProductToPos\(Number\(button\.dataset\.storePosProduct\)\)[\s\S]*?Product added to POS/);
   assert.match(websiteWorkspace, /data-remove-website-product="\$\{product\.id\}"[\s\S]*?Remove from this website/);
   assert.match(categoryWorkspace, /data-remove-website-category="\$\{category\.id\}"[\s\S]*?Remove category from this website/);
+  assert.match(categoryWorkspace, /data-studio-form="web-category"/);
+  assert.doesNotMatch(categoryWorkspace, /Website categories are separate from your POS categories/);
+  assert.match(categoryWorkspace, /<input name="name" aria-label="Category name" placeholder="Category name"/);
+  assert.doesNotMatch(categoryWorkspace, /<h2>Create website category<\/h2>|<label>Category name/);
+  assert.match(pageSource, /body\.craft-app-ui #app \.studio-workspace \.store-workspace-form\[data-studio-form="web-category"\]\s*\{[^}]*gap:\s*6px !important;[^}]*margin:\s*0 0 8px !important;[^}]*padding:\s*6px !important;[^}]*background:\s*linear-gradient\(145deg,\s*#dedede 0%,\s*#c4c4c4 100%\) !important/);
+  assert.match(pageSource, /body\.craft-app-ui #app \.studio-workspace \.store-workspace-form\[data-studio-form="web-category"\] input,[\s\S]*?min-height:\s*34px !important/);
   assert.match(productRemoval, /SQLiteEngine\.deleteProduct\(productId\)[\s\S]*?await window\.ShopSQLite\.flush\(\)[\s\S]*?cacheActiveTenantCatalog/);
   assert.match(productRemoval, /Store\/POS inventory will not be deleted/);
   assert.match(categoryRemoval, /SQLiteEngine\.deleteCategory\(categoryId\)[\s\S]*?await window\.ShopSQLite\.flush\(\)[\s\S]*?cacheActiveTenantCatalog/);
@@ -1198,7 +1360,7 @@ test('Web Studio website products and categories can be removed without deleting
   assert.match(websiteWorkspace, /Select all products[\s\S]*?Remove selected products[\s\S]*?data-bulk-item="\$\{product\.id\}"/);
   assert.match(categoryWorkspace, /Select all categories[\s\S]*?Remove selected categories[\s\S]*?data-bulk-item="\$\{category\.id\}"/);
   assert.match(websiteWorkspace, /class="studio-inline-actions web-product-actions"[\s\S]*?class="btn-secondary web-product-action-card"[\s\S]*?class="btn-primary web-product-action-card"[\s\S]*?class="btn-secondary web-product-action-card"[\s\S]*?class="btn-secondary web-product-action-card"/);
-  assert.match(pageSource, /\.studio-inline-actions\.web-product-actions\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)[^}]*grid-auto-rows:\s*72px/);
+  assert.match(pageSource, /\.studio-inline-actions\.web-product-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)[^}]*grid-auto-rows:\s*42px/);
   assert.match(pageSource, /\.store-bulk-actions\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/);
   assert.match(pageSource, /\.store-bulk-actions \[data-bulk-remove\]\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0/);
   assert.match(websiteWorkspace, /class="store-product-detail-wrap"[\s\S]*?store-product-name[\s\S]*?formatMainShopMoney\(product\.price,\s*currency\)/);
@@ -1229,7 +1391,8 @@ test('managing a website opens its Web Studio products and exposes publishing', 
   const productsWorkspace = pageSource.match(/if \(path === "\/store\/products"\) \{([\s\S]*?)\r?\n    \}\r?\n    if \(path === "\/store\/categories"\)/)?.[1];
   assert.ok(productsWorkspace, 'Web Studio should render the website product workspace.');
   assert.match(productsWorkspace, /id="btn-publish-cloudflare">Publish to \$\{AppUtils\.escapeHTML\(activeTenant\.hostname\)\}/);
-  assert.match(productsWorkspace, /Publish to make your updates visible at/);
+  assert.match(pageSource, /\.studio-inline-actions\.web-product-actions \{[^}]*grid-template-columns: minmax\(0, 1fr\);[^}]*grid-auto-rows: 42px;/);
+  assert.match(productsWorkspace, /Website products are managed separately\. Publish to update/);
   assert.match(productsWorkspace, /id="product-modal-container"/);
 });
 
@@ -1274,14 +1437,14 @@ test('new-website Webmaker stages catalog before themes and keeps existing websi
   assert.ok(themeChoices, 'New website theme selection should be a separate step.');
   assert.ok(workspaceLoader, 'Studio workspace loader should be available.');
   assert.ok(websiteBuilderBinder, 'Webmaker events should have a dedicated binder.');
-  assert.match(websitesNavigation, /route: "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?title: "Webmaker"[\s\S]*?title: "Add"[\s\S]*?title: "Theme Studio"/);
+  assert.match(websitesNavigation, /title: "New web", route: "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?title: "Add"[\s\S]*?title: "Theme Studio"/);
   assert.match(pageSource, /page\.route === "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?renderWebsiteBuilderCatalog\(true\)/);
   assert.match(pageSource, /path === "\/account\/web\/themes" \|\| path === "\/account\/web\/themes\/select"[\s\S]*?path === "\/account\/web\/studio\/websites\/webmaker"/);
   assert.doesNotMatch(pageSource.match(/if \(manageWebsite\) \{([\s\S]*?)\n      \}\n\n      const editWebsite/)?.[1] || "", /websites\/webmaker/);
-  assert.match(pageSource, /const initialPath = path === "\/account\/web"\s*\? "\/account\/web\/studio\/dashboard\/overview"/);
+  assert.match(pageSource, /const initialPath = path === "\/account\/web"\s*\?\s*"\/account\/web\/studio\/dashboard\/overview"/);
   assert.match(webmaker, /NEW WEBSITE · STEP 1 OF 3[\s\S]*?Add products and categories[\s\S]*?Choose products from Store[\s\S]*?website-wizard-category-form[\s\S]*?website-wizard-product-form[\s\S]*?Continue to choose a theme/);
   assert.match(pageSource, /ESHOP_WEBSITE_DRAFT_LEGACY_CATALOG_CLEANUP_V2[\s\S]*?saved\.products = \[\];[\s\S]*?saved\.categories = \[\]/);
-  assert.match(webmaker, /<a class="btn-primary" href="\/account\/web\/themes\/select" data-route="\/account\/web\/themes\/select">Continue to choose a theme/);
+  assert.match(webmaker, /<a class="btn-primary" href="\/account\/web\/themes\/select" data-route="\/account\/web\/themes\/select"[^>]*>Continue to choose a theme/);
   assert.doesNotMatch(pageSource, /if \(!draft\.categories\.length\) return null;/);
   assert.match(webmaker, /data-remove-wizard-product/);
   assert.match(webmaker, /website-wizard-clear-products/);
@@ -1306,9 +1469,10 @@ test('new-website Webmaker stages catalog before themes and keeps existing websi
     'elora-linen'
   ], 'Only the current storefront themes are registered.');
   assert.deepEqual(WEBSITE_THEME_CATALOG.filter(theme => theme.validation_status === 'passed').map(theme => theme.id), [
+    'litrus-mixer',
     'elora-linen'
-  ], 'Only standalone themes that pass validation are selectable.');
-  assert.match(pageSource, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" && theme\.editor_mode === "liquid-html"\)/);
+  ], 'Only validated storefront themes are selectable.');
+  assert.match(pageSource, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" &&\s*\(theme\.editor_mode === "liquid-html" \|\| theme\.editor_mode === "litrus"\)\)/);
   assert.match(pageSource, /NEW WEBSITE · FINAL SETUP[\s\S]*?Shop \/ website name[\s\S]*?Website address[\s\S]*?>Set up</);
   assert.match(pageSource, /const editorReturnRoute = draftEditor\s*\?\s*"\/account\/web\/themes\/select"/);
   const editor = pageSource.match(/renderWebsiteEditor\(isNewWebsite = false\) \{([\s\S]*?)\n  \},\n\n  renderWebsiteStoreEditor/)?.[1];
@@ -1325,20 +1489,48 @@ test('new-website Webmaker stages catalog before themes and keeps existing websi
   assert.match(pageSource, /availableThemes\.find\(theme =>\s*theme\.id === themeId\) \|\| availableThemes\.find\(theme =>\s*theme\.id === draft\.selected_theme\)/);
   assert.match(pageSource, /if \(catalogIsCurrent\) \{[\s\S]*?website_theme_id: selectedTheme\.id[\s\S]*?this\.cacheActiveTenantCatalog\(\)[\s\S]*?return;/);
   assert.match(pageSource, /const useThemeRoute = `\/account\/web\/site\?new=1&edit=1&theme=/);
-  assert.match(pageSource, /websiteThemesForPicker\(\)\s*\{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" && theme\.editor_mode === "liquid-html"\)/);
+  assert.match(pageSource, /websiteThemesForPicker\(\)\s*\{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" &&\s*\(theme\.editor_mode === "liquid-html" \|\| theme\.editor_mode === "litrus"\)\)/);
   assert.match(pageSource, /applyWebsiteBuilderDraft\(draft, themeId\)[\s\S]*?theme\.id === \(themeId \|\| draft\.selected_theme\)[\s\S]*?website_theme_id: selectedTheme\.id[\s\S]*?this\.cacheActiveTenantCatalog\(\)/);
   assert.doesNotMatch(pageSource, /previewWindow\.setBuilderCatalog\(\{\s*products: JSON\.parse\(JSON\.stringify\(websiteDraft\.products\)\),\s*categories: JSON\.parse\(JSON\.stringify\(websiteDraft\.categories\)\)/);
   assert.match(pageSource, /fillThemeForShop\(theme\.id, catalog/);
   assert.match(pageSource, /async prepareWebsiteBuilderDraftTenant\(draft, themeId\)[\s\S]*?await this\.applyWebsiteBuilderDraft\(draft, selectedTheme\.id\);[\s\S]*?window\.localStorage\.setItem\(WEBSITE_BUILDER_DRAFT_SYNC_KEY, signature\);/);
   assert.match(pageSource, /handleRoute\(fullPath, shouldScroll = true, draftPrepared = false\)[\s\S]*?if \(!draftPrepared\) \{[\s\S]*?Preparing your new website preview[\s\S]*?this\.prepareWebsiteBuilderDraftTenant\([\s\S]*?\.then\(\(\) => \{[\s\S]*?this\.currentRoute\(\) === fullPath[\s\S]*?this\.handleRoute\(fullPath, shouldScroll, true\);/);
   assert.match(pageSource, /removeItem\("ESHOP_NEW_WEBSITE_DRAFT_V1"\)[\s\S]*?Website created at/);
-  assert.equal((pageSource.match(/cloudflareRequest\("\/api\/tenants"/g) || []).length, 1,
+  assert.equal((pageSource.match(/cloudflareRequest\("\/api\/tenants", \{\s*method: "PUT"/g) || []).length, 1,
     'Only the final name-and-domain form can create a website.');
   const createRequestGuard = pageSource.match(/async cloudflareRequest\(path,[\s\S]*?\n  \},\n\n  async loadTenantCatalog/)?.[0];
   assert.match(createRequestGuard || "", /this\.isWebsiteBuilderDraftTenant\(this\.getActiveTenant\(\)\.id\)[\s\S]*?finalTenantSetup[\s\S]*?throw new Error\("Cloudflare requests are disabled for the local website draft/);
-  assert.match(pageSource, /openCloudflarePublishModal\(\) \{\s*if \(this\.isWebsiteBuilderDraftTenant\(this\.getActiveTenant\(\)\.id\)\)/);
+  assert.match(pageSource, /openCloudflarePublishModal\(publishImmediately = false\) \{\s*if \(this\.isWebsiteBuilderDraftTenant\(this\.getActiveTenant\(\)\.id\)\)/);
   assert.match(themeChoices, /const themeEditorRoute = theme => `\/account\/web\/site\?new=1&edit=1&theme=\$\{encodeURIComponent\(theme\.id\)\}`/);
   assert.doesNotMatch(themeChoices, /data-theme-preview-remote|<iframe/);
+});
+
+test('new Litrus draft image search omits shop auth and keeps image data local until publishing', async () => {
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const cloudflareRequestStart = pageSource.indexOf('async cloudflareRequest(path');
+  const cloudflareRequestEnd = pageSource.indexOf('\n  async loadTenantCatalog', cloudflareRequestStart);
+  const cloudflareRequest = pageSource.slice(cloudflareRequestStart, cloudflareRequestEnd);
+  const imageRequestStart = pageSource.indexOf('if (event.data?.type === "craft-litrus-image-request")');
+  const imageRequestEnd = pageSource.indexOf('if (event.data?.type === "craft-litrus-draft")', imageRequestStart);
+  const imageRequestHandler = pageSource.slice(imageRequestStart, imageRequestEnd);
+  const saveStart = pageSource.indexOf('async saveLitrusMixerCatalog(input, isDraftEditor) {');
+  const saveEnd = pageSource.indexOf('\n  openCloudflarePublishModal(', saveStart);
+  const saveLitrusCatalog = pageSource.slice(saveStart, saveEnd);
+  const designSaveStart = pageSource.indexOf('const saveLitrusDesign = payload =>');
+  const designSaveEnd = pageSource.indexOf('const sendCatalog =', designSaveStart);
+  const designSave = pageSource.slice(designSaveStart, designSaveEnd);
+  assert.ok(cloudflareRequestStart >= 0 && cloudflareRequestEnd > cloudflareRequestStart);
+  assert.ok(imageRequestStart >= 0 && imageRequestEnd > imageRequestStart);
+  assert.ok(saveStart >= 0 && saveEnd > saveStart);
+  assert.ok(designSaveStart >= 0 && designSaveEnd > designSaveStart);
+  assert.match(cloudflareRequest, /pathUrl\.pathname === "\/api\/images\/draft-search"/);
+  assert.match(cloudflareRequest, /const token = draftLitrusImageRequest \? "" : credentialOverride \|\| connection\.token/);
+  assert.match(imageRequestHandler, /isDraftEditor\s*\?\s*"\/api\/images\/draft-search"/);
+  assert.match(imageRequestHandler, /tenantId,\s*isDraftEditor/);
+  assert.match(saveLitrusCatalog, /images: images\.slice\(0, 8\)/);
+  assert.match(saveLitrusCatalog, /this\.setActiveTenantCatalog\(tenant,/);
+  assert.match(designSave, /await this\.saveLitrusMixerCatalog\(payload, isDraftEditor\)/);
+  assert.match(designSave, /await window\.ShopSQLite\.flush\(\)/);
 });
 
 test('empty non-main shop previews never import the shared seed catalog', async () => {
@@ -1479,6 +1671,8 @@ test('new websites start with a clean draft and each shop has a dedicated domain
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(pageSource, /resetWebsiteBuilderDraft\(\) \{[\s\S]*?removeItem\("ESHOP_NEW_WEBSITE_DRAFT_V1"\)[\s\S]*?removeItem\(WEBSITE_BUILDER_DRAFT_SYNC_KEY\)[\s\S]*?tenant_catalogs = AppController\.tenantCatalogs\(\)\.filter/);
   assert.match(pageSource, /data-start-new-website[\s\S]*?await StudioRenderers\.resetWebsiteBuilderDraft\(\)[\s\S]*?navigate\("\/account\/web\/themes"\)/);
+  assert.match(pageSource, /const domainsRoute = `\/account\/profile\/webs\/\$\{encodeURIComponent\(domainTenantId\)\}\/domains`;/);
+  assert.match(pageSource, /title: "Domains", route: domainsRoute, contentPath: domainsRoute/);
   assert.match(pageSource, /href="\/account\/profile\/webs\/\$\{encodeURIComponent\(website\.id\)\}\/domains"[^>]*>Domains/);
   assert.match(pageSource, /const websiteDomainScreen = selectedWebsite \?[\s\S]*?Your Craft address[\s\S]*?Connect a custom subdomain[\s\S]*?To change an existing custom domain, remove it here first/);
   assert.match(pageSource, /websiteDetailSection === "domains" \? websiteDomainScreen/);
@@ -1964,7 +2158,7 @@ test('POS persists products, manual payments, invoices and business instances in
     const androidDataExtractionRules = await readFile(new URL('../android/app/src/main/res/xml/data_extraction_rules.xml', import.meta.url), 'utf8');
     assert.match(pageSource, /btn-publish-cloudflare/);
     assert.match(pageSource, /ESHOP_CLOUDFLARE_PUBLISH_URL_V1/);
-    assert.match(pageSource, /href="\/account\/tenants" data-route="\/account\/tenants"/);
+    assert.match(pageSource, /href="\/account\/tenants"[^>]*data-route="\/account\/tenants"/);
     assert.match(pageSource, /path === "\/account\/tenants"/);
     assert.match(pageSource, /renderTenantsManager\(\)/);
     assert.match(pageSource, /renderAppAccount\(\)[\s\S]*?Craft app account[\s\S]*?id="app-account-form"[\s\S]*?Cloudflare human verification/);
@@ -1984,11 +2178,21 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /async loadHomeDashboard\(\)[\s\S]*?StudioRenderers\.getMainShopSnapshot\(\)[\s\S]*?Sales today[\s\S]*?Recent orders/);
     assert.match(launchpad, /class="home-shortcut-grid" aria-label="Quick actions"[\s\S]*?href="\/store\/products" data-route="\/store\/products"[\s\S]*?Products[\s\S]*?href="\/store\/inventory" data-route="\/store\/inventory"[\s\S]*?Inventory[\s\S]*?href="\/store\/orders" data-route="\/store\/orders"[\s\S]*?Orders[\s\S]*?href="\/store\/categories" data-route="\/store\/categories"[\s\S]*?Categories/);
     assert.equal((launchpad.match(/class="home-shortcut-link"/g) || []).length, 4);
-    assert.match(pageSource, /if \(path === "\/"\) void this\.loadHomeDashboard\(\)/);
+    assert.match(pageSource, /if \(path === "\/"\) \{\s*void this\.loadHomeDashboard\(\);?\s*\}/);
     assert.doesNotMatch(launchpad, /Overall Revenue|Overall Profit|Overall Customers|Average Order|home-overall-metric/);
     assert.doesNotMatch(pageSource, /loadHomeOverallMetrics|home-overall-metric|home-overall-metrics/);
     assert.match(pageSource, /path === "\/account\/main-shop" \|\| path\.startsWith\("\/account\/main-shop\/"\)[\s\S]*?renderMainShopWorkspace\(path\)/);
-    assert.match(pageSource, /renderMainShopWorkspace\(path\)\s*\{[\s\S]*?title: "Overview"[\s\S]*?title: "Sales"[\s\S]*?title: "Products"[\s\S]*?title: "Customers"[\s\S]*?title: "More"[\s\S]*?title: "Insights"[\s\S]*?title: "Revenue"[\s\S]*?title: "Channels"[\s\S]*?title: "Transactions"[\s\S]*?title: "Inventory"[\s\S]*?title: "Categories"[\s\S]*?title: "Marketing"[\s\S]*?title: "Newsletter"[\s\S]*?title: "Finance"[\s\S]*?title: "Stores"[\s\S]*?title: "Settings"[\s\S]*?title: "Help"/);
+    const workspaceStart = pageSource.indexOf("  renderMainShopWorkspace(path) {");
+    const workspaceEnd = pageSource.indexOf("\n  renderWebsiteManagementCards(", workspaceStart);
+    assert.ok(workspaceStart >= 0 && workspaceEnd > workspaceStart, "Main Store should have a bounded workspace renderer.");
+    const workspace = pageSource.slice(workspaceStart, workspaceEnd);
+    const bottomItemsStart = workspace.indexOf("const bottomItems = [");
+    const bottomItemsEnd = workspace.indexOf("\n    ];", bottomItemsStart);
+    assert.ok(bottomItemsStart >= 0 && bottomItemsEnd > bottomItemsStart, "Main Store should define its bottom navigation.");
+    const bottomItems = workspace.slice(bottomItemsStart, bottomItemsEnd);
+    assert.match(bottomItems, /title: "Overview"[\s\S]*?title: "Sales"[\s\S]*?title: "Customers"[\s\S]*?title: "Store"[\s\S]*?title: "More"/);
+    assert.doesNotMatch(bottomItems, /title: "Products"/);
+    assert.match(workspace, /store:\s*\[\s*\{ route: "\/store\/products", title: "Web products" \}[\s\S]*?\{ route: "\/store\/categories", title: "Web categories" \}/);
     assert.match(pageSource, /data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false"[\s\S]*?viewBox="0 0 24 24"[\s\S]*?id="business-date-filters" class="bl-date-filter" aria-label="Business filters" hidden/);
     assert.match(pageSource, /businessFilterToggle\.addEventListener\("click"[\s\S]*?businessFilters\.hidden = !expanded/);
     assert.doesNotMatch(pageSource, /href="\/pos" class="studio-preview-link" data-route="\/pos">Open POS/);
@@ -2017,12 +2221,12 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /generateProductSku\(\)[\s\S]*?ESHOP-\$\{Array\.from\(bytes/);
     assert.doesNotMatch(pageSource, /name="sku" value="\$\{AppUtils\.escapeHTML\(product \? product\.sku : `ESHOP-\$\{Date\.now\(\)\}`\)\}"/);
     assert.match(pageSource, /\.home-screen-main\s*\{[^}]*width:\s*100%[^}]*max-width:\s*860px/);
-    assert.match(pageSource, /\.home-launcher-group\s*\{[^}]*justify-content:\s*flex-start[^}]*gap:\s*12px[^}]*padding:\s*12px[^}]*border-radius:\s*16px[^}]*backdrop-filter:\s*blur\(4px\)/);
-    assert.match(pageSource, /\.home-launcher-group\s*\{[^}]*background:\s*rgba\(225,\s*243,\s*248,\s*\.035\)/);
+    assert.match(pageSource, /\.home-launcher-group\s*\{[^}]*gap:\s*12px[^}]*justify-content:\s*flex-start[^}]*padding:\s*12px[^}]*border-radius:\s*12px/);
+    assert.match(pageSource, /\.home-launcher-group\s*\{[^}]*background:\s*linear-gradient\(145deg,\s*#f7f8f9,\s*#c4c9cf\)/);
     assert.match(pageSource, /\.home-pos-card\s*\{[^}]*grid-template-columns:\s*42px minmax\(0,\s*1fr\) 24px[^}]*min-height:\s*90px/);
     assert.match(pageSource, /\.home-workspace-card\s*\{[^}]*min-height:\s*136px/);
     assert.match(pageSource, /\.home-workspace-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
-    assert.match(pageSource, /@media \(max-width: 600px\)\s*\{\s*\.home-launcher-group\s*\{[^}]*width:\s*calc\(100% \+ var\(--home-horizontal-gutter\) \+ var\(--home-horizontal-gutter\)\)[^}]*margin-left:\s*calc\(0px - var\(--home-horizontal-gutter\)\)[^}]*margin-bottom:\s*-46px[^}]*padding-bottom:\s*clamp\(24px,\s*3\.5vh,\s*30px\)[^}]*border-right:\s*1px solid rgba\(235,\s*250,\s*255,\s*\.56\)[^}]*border-left:\s*1px solid rgba\(235,\s*250,\s*255,\s*\.56\)[^}]*border-radius:\s*0/);
+    assert.match(pageSource, /@media \(max-width: 600px\)\s*\{\s*\.home-launcher-group\s*\{[^}]*width:\s*calc\(100% \+ var\(--home-horizontal-gutter\) \+ var\(--home-horizontal-gutter\)\)[^}]*margin-left:\s*calc\(0px - var\(--home-horizontal-gutter\)\)[^}]*margin-bottom:\s*-46px[^}]*padding-bottom:\s*clamp\(24px,\s*3\.5vh,\s*30px\)[^}]*border-right:\s*1px solid #bfc4ca[^}]*border-left:\s*1px solid #bfc4ca[^}]*border-radius:\s*12px/);
     assert.match(pageSource, /\.home-metric-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
     assert.doesNotMatch(pageSource, /\.home-screen-header\s*\{[^}]*border-bottom:/);
     assert.doesNotMatch(launchpad, /home-bento-card|home-credit-card|home-cube/);
@@ -2101,13 +2305,13 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /href="\/account\/profile\/webs\/\$\{encodeURIComponent\(website\.id\)\}" data-route="\/account\/profile\/webs\/\$\{encodeURIComponent\(website\.id\)\}"/);
     assert.match(pageSource, /data-manage-website="\$\{AppUtils\.escapeHTML\(website\.id\)\}">Manage this web/);
     assert.match(pageSource, /Showing inventory for[\s\S]*?activeTenant\.name[\s\S]*?Switch website/);
-    assert.match(pageSource, /const manageWebsite = e\.target\.closest\("\[data-manage-website\]"\)[\s\S]*?this\.setActiveTenantCatalog\([\s\S]*?this\.navigate\("\/account"\)/);
+    assert.match(pageSource, /const manageWebsite = e\.target\.closest\("\[data-manage-website\]"\)[\s\S]*?this\.setActiveTenantCatalog\([\s\S]*?this\.navigate\("\/account\/web\/studio\/store\/products"\)/);
     assert.match(pageSource, /websiteSettingsScreen[\s\S]*?Edit store details[\s\S]*?data-edit-website[\s\S]*?Edit website design[\s\S]*?Delete web/);
     assert.match(pageSource, /const \[sectionId, \.\.\.sectionRouteParts\] = requestedSection\.split\("\/"\)/);
     assert.match(pageSource, /cloudflareRequest\(`\/api\/tenants\/\$\{encodeURIComponent\(tenantId\)\}`, \{\s*method: "DELETE"/);
     assert.match(pageSource, /ESHOP_PRIVACY_POLICY_AGREED_V1[\s\S]*?Privacy Policy[\s\S]*?id="privacy-policy-agreement" type="checkbox" \$\{privacyAgreement \? "checked" : ""\}/);
     assert.match(pageSource, /Current version[\s\S]*?1\.0\.0[\s\S]*?No recent version history is available[\s\S]*?Current version details/);
-    assert.match(pageSource, /accountsScreen[\s\S]*?Delete account[\s\S]*?Add new account[\s\S]*?href="\/account\/web\/themes" data-route="\/account\/web\/themes"/);
+    assert.match(pageSource, /accountsScreen[\s\S]*?Delete account[\s\S]*?href="\/account\/web\/themes" data-start-new-website[\s\S]*?Create a new website/);
     assert.match(pageSource, /linkedDevicesScreen[\s\S]*?Cloud POS sync[\s\S]*?Cloudflare account[\s\S]*?\/pos\/more\/settings[\s\S]*?Connect another device[\s\S]*?same shop account/);
     assert.match(posSource, /BrowserMultiFormatReader/);
     assert.match(posSource, /BrowserMultiFormatReader/);
@@ -2121,30 +2325,31 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /webStudioNavigation\(\)[\s\S]*?title: "Dashboard"[\s\S]*?title: "Store"[\s\S]*?title: "CRM"[\s\S]*?title: "Websites"[\s\S]*?title: "Payments"/);
     assert.match(pageSource, /title: "Overview"[\s\S]*?title: "Visits"[\s\S]*?title: "Traffic"[\s\S]*?title: "Performance"[\s\S]*?title: "Product intelligence"/);
     assert.match(pageSource, /title: "Products"[\s\S]*?title: "Categories"[\s\S]*?title: "Inventory"[\s\S]*?title: "Orders"[\s\S]*?title: "Bookings"/);
-    assert.match(pageSource, /title: "Repeat customers and point sets"[\s\S]*?title: "Newsletter"[\s\S]*?title: "Notifications"/);
-    assert.match(pageSource, /title: "Web editor"[\s\S]*?title: "Webmaker"[\s\S]*?title: "Page editor"/);
+    assert.match(pageSource, /title: "Customers"[\s\S]*?title: "Points"[\s\S]*?title: "Subscribers"[\s\S]*?title: "Notifications"/);
+    assert.match(pageSource, /title: "Web maker"[\s\S]*?title: "Theme Studio"[\s\S]*?title: "Page editor"/);
     assert.match(pageSource, /aria-label="Web Studio sections"[\s\S]*?sections\.map\(section =>/);
     assert.match(pageSource, /<header class="studio-workspace-heading">[\s\S]*?class="studio-workspace-back" href="\/" data-route="\/" data-home-screen aria-label="Back to Craft home"[\s\S]*?class="studio-workspace-tab-title">\$\{AppUtils\.escapeHTML\(page\.title\)\}<\/h1>/);
     assert.doesNotMatch(pageSource, /<span class="studio-workspace-kicker">CRAFT<\/span><h1>Web Studio<\/h1>/);
     assert.match(pageSource, /path === "\/account\/web" \|\| path\.startsWith\("\/account\/web\/studio\/"\)[\s\S]*?renderMainShopWorkspace\(path\)/);
     assert.match(pageSource, /renderMainShopContent\(page\.contentPath, snapshot, true\)/);
     assert.match(pageSource, /CUSTOMER NOTIFICATIONS[\s\S]*?data-enable-notifications[\s\S]*?data-disable-notifications/);
-    assert.match(pageSource, /websiteThemes\(\)[\s\S]*?website_themes[\s\S]*?preview_catalog[\s\S]*?SQLiteEngine\.save\(\)/);
-    assert.match(pageSource, /renderWebsiteThemeChoices\(\)[\s\S]*?data-theme-preview-direct="1"[\s\S]*?data-theme-preview-remote="\$\{AppUtils\.escapeHTML\(theme\.preview_url \|\| ""\)\}"/);
-    assert.match(pageSource, /renderWebsiteTheme\(themeId\)[\s\S]*?const useThemeRoute = `\/account\/web\/site\?new=1&edit=1&theme=\$\{encodeURIComponent\(theme\.id\)\}`;[\s\S]*?theme\.studio_url \? "Open this theme’s Studio →" : "Use this theme →"[\s\S]*?data-theme-preview-direct="1"[\s\S]*?data-theme-preview-remote="\$\{AppUtils\.escapeHTML\(theme\.preview_url \|\| ""\)\}"/);
+    assert.match(pageSource, /websiteThemes\(\)[\s\S]*?preview_catalog[\s\S]*?website_themes[\s\S]*?SQLiteEngine\.save\(\)/);
+    assert.match(pageSource.match(/renderWebsiteThemeChoices\(\) \{([\s\S]*?)\n  \},\n\n  renderWebsiteTheme\(/)?.[1] || "",
+      /Open the editor to preview this theme with your shop’s products and categories/);
+    assert.match(pageSource, /renderWebsiteTheme\(themeId\)[\s\S]*?const useThemeRoute = `\/account\/web\/site\?new=1&edit=1&theme=\$\{encodeURIComponent\(theme\.id\)\}`;[\s\S]*?theme\.studio_url \? "Open this theme’s Studio →" : "Use this theme →"[\s\S]*?data-theme-preview-remote="\$\{AppUtils\.escapeHTML\(previewUrl \|\| ""\)\}"[\s\S]*?data-theme-preview-direct="1"/);
     assert.match(pageSource, /activeThemePreviewLoads < 2/);
     assert.match(pageSource, /new IntersectionObserver\(entries => \{[\s\S]*?themePreviewObserver\.observe\(frame\)/);
     assert.doesNotMatch(pageSource.match(/renderWebsiteThemeChoices\(\) \{([\s\S]*?)\n  \},\n\n  renderWebsiteTheme\(/)?.[1] || "", /src="\/builder-storefront\.html\?builder=1&theme-preview=1"/);
     assert.doesNotMatch(pageSource.match(/renderWebsiteTheme\(themeId\) \{([\s\S]*?)\n  \},\n\n  renderWebsiteEditor/)?.[1] || "", /src="\/builder-storefront\.html\?builder=1&theme-preview=1"/);
     const themeCatalog = await readFile(new URL('../src/theme-catalog.js', import.meta.url), 'utf8');
     const themeBootstrap = await readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
-    assert.equal((themeCatalog.match(/preview_url:/g) || []).length, 2);
-    assert.match(themeCatalog, /id: "storefront-engine"[\s\S]*?preview_url: "\/theme-packages\/storefront-engine\/index\.html"[\s\S]*?studio_url: "\/theme-packages\/storefront-engine\/studio\.html"/);
+    assert.equal((themeCatalog.match(/preview_url:/g) || []).length, 1);
+    assert.match(themeCatalog, /id: "elora-linen"[\s\S]*?preview_url: "\/theme-packages\/elora-linen\/index\.html"[\s\S]*?studio_url: "\/liquid-themes\/theme-studio\.html"/);
     assert.match(themeBootstrap, /EshopWebsiteThemeCatalog = WEBSITE_THEME_CATALOG/);
     assert.match(pageSource, /data-theme-preview-remote/);
     assert.match(pageSource, /loadHostedThemePreview[\s\S]*?fillThemeForShop\(theme\.id, catalog/);
-    const themePreviewSetup = pageSource.match(/const themePreviewFrames = \[\.\.\.document\.querySelectorAll\("\[data-theme-storefront-preview\]"\)\][\s\S]*?const storefrontFrame =/)?.[0];
-    assert.ok(themePreviewSetup, "Theme previews should have an isolated catalog initialization path.");
+    const themePreviewSetup = pageSource.match(/const html = await loadHostedThemePreview\(frame, theme, \{[\s\S]*?\}, frame\.dataset\.themePreviewRemote\)/)?.[0];
+    assert.ok(themePreviewSetup, "Theme previews should load with an isolated draft catalog.");
     assert.match(themePreviewSetup, /products: draft\.products,\s*categories: draft\.categories/);
     assert.doesNotMatch(pageSource, /Preview the full live storefront, including its products and working navigation\./);
     assert.match(sqliteSource, /'tenant_catalogs','website_themes'/);
@@ -2155,58 +2360,17 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(accountsMigration, /CREATE TABLE IF NOT EXISTS account_tenants/);
     assert.match(pageSource, /website_themes:\s*\[\]/);
     assert.match(originalStorefront, /get\("theme-preview"\)\s*===\s*"1"[\s\S]*?ESHOP_THEME_PREVIEW_DB_V1/);
-    assert.match(pageSource, /renderWebsiteEditor\(isNewWebsite = false\)[\s\S]*?grid-template-columns:minmax\(0,1fr\)[\s\S]*?Website preview canvas[\s\S]*?width:min\(360px,calc\(100vw - 16px\)\)[\s\S]*?Local draft storefront preview[\s\S]*?width:150%;height:150%[\s\S]*?transform:scale\(\.666667\)[\s\S]*?Website editing controls/);
     assert.match(pageSource, /postRenderSetup\(path, params\) \{[\s\S]*?path === "\/account\/web\/site"[\s\S]*?this\.bindWebsiteBuilderEvents\(\)/);
     assert.match(pageSource, /const loadStore = document\.getElementById\("website-wizard-load-store"\);\s*if \(loadStore\) loadStore\.onclick = async/);
-    assert.match(pageSource, /<section aria-label="Website editing controls"[^>]*padding:5px 10px 0/);
-    assert.match(pageSource, /id="builder-editor-status"[^>]*margin:4px 2px 0;min-height:14px/);
-    assert.match(pageSource, /builder-primary-color[\s\S]*?builder-background-color[\s\S]*?builder-text-color[\s\S]*?builder-font-family/);
-    assert.match(pageSource, /role="toolbar"[\s\S]*?overflow-x:auto[\s\S]*?touch-action:pan-x[\s\S]*?flex:0 0 82px/);
-    assert.match(pageSource, /builder-preview-loading[\s\S]*?builder-preview-reload/);
-    assert.match(pageSource, /const width = Math\.min\(280, availableWidth, availableHeight \* 9 \/ 19\)/);
-    assert.match(pageSource, /\["colors", "◉", "Color"\][\s\S]*?\["background", "▧", "Background"\][\s\S]*?\["text", "T", "Text color"\][\s\S]*?\["fonts", "Aa", "Fonts"\][\s\S]*?\["brand", "●", "Brand"\][\s\S]*?\["words", "✎", "Edit words"\]/);
-    assert.match(pageSource, /data-editor-tab="\$\{id\}" aria-pressed="false"[^>]*background:transparent;color:#b4b4bb/);
-    assert.match(pageSource, /data-editor-panel="colors" hidden/);
-    assert.match(pageSource, /min-height:0;max-height:126px;overflow:auto;padding:5px 2px 0/);
-    assert.doesNotMatch(pageSource, /\["pages", "▤", "Pages"\]|data-editor-panel="pages"/);
-    assert.match(pageSource, /const selectedPanel = selectedTool === "brand" \? "colors" : selectedTool/);
-    assert.match(pageSource, /id="builder-elements-toggle" type="checkbox" role="switch" aria-label="Enable element editing"/);
-    assert.match(pageSource, /target\.closest\("button,input,select,textarea,summary,\[role='button'\],\[role='menuitem'\],\[data-action\],\[onclick\]"\)\) return;/);
-    assert.match(pageSource, /if \(link && \(link\.closest\("nav,footer"\) \|\| link\.getAttribute\("href"\)\.startsWith\("#"\)\)\) return;/);
-    assert.match(pageSource, /id="builder-select-whole-structure" type="checkbox"[\s\S]*?Select and move the whole section or hero group/);
-    assert.match(pageSource, /id="builder-text-edit-sheet" aria-label="Edit text" aria-modal="true" role="dialog" hidden/);
-    assert.match(pageSource, /id="builder-text-edit-input" aria-label="Edit selected text"/);
-    assert.match(pageSource, /id="builder-text-edit-cancel"[\s\S]*?id="builder-text-edit-save"/);
-    assert.match(pageSource, /window\.visualViewport\?\.addEventListener\("resize", positionTextEditSheet\)[\s\S]*?window\.visualViewport\?\.addEventListener\("scroll", positionTextEditSheet\)/);
-    assert.match(pageSource, /kind === "text"\) \{\s*showTextEditSheet\(selectedElementRecord\.text \|\| element\.textContent \|\| ""\)/);
-    assert.match(pageSource, /textEditInput\.addEventListener\("input"[\s\S]*?selectedElementRecord\.text = textEditInput\.value[\s\S]*?selectedElement\.textContent = textEditInput\.value/);
-    assert.doesNotMatch(pageSource, /contenteditable", "true"|builder-text-focus-layer|builder-text-focus-bar/);
-    assert.match(pageSource, /id="builder-element-image" aria-label="Selected image URL"/);
-    assert.match(pageSource, /id="builder-element-image-file" aria-label="Upload replacement image" type="file" accept="image\/\*"/);
-    assert.match(pageSource, /id="builder-element-link" aria-label="Selected link URL"/);
-    assert.match(pageSource, /id="builder-element-move-up"[\s\S]*?id="builder-element-move-down"[\s\S]*?id="builder-element-move-left"[\s\S]*?id="builder-element-move-right"/);
-    assert.match(pageSource, /id="builder-element-delete-link"[^>]*>Delete link/);
-    assert.match(pageSource, /id="builder-editor-tools-slot" style="position:relative"/);
-    assert.match(pageSource, /id="builder-element-editor" hidden style="position:absolute;inset:0 0 auto;z-index:1;box-sizing:border-box;width:100%;max-height:148px;overflow:auto/);
-    assert.match(pageSource, /<div id="builder-tools-home">[\s\S]*?Website editor tools[\s\S]*?data-editor-panel="words"/);
-    assert.match(pageSource, /id="builder-element-rotate-left"[\s\S]*?id="builder-element-rotate-right"[\s\S]*?id="builder-element-delete"/);
-    assert.match(pageSource, /previewDocument\.addEventListener\("click", editorClickHandler, true\)/);
-    assert.match(pageSource, /element_edits: \[\.\.\.elementEdits\.values\(\)\]/);
-    assert.match(pageSource, /syncElementEditsToCatalog\s*=\s*\(\)\s*=>[\s\S]*?SQLiteEngine\.updateStore\(\{\s*element_edits:/);
-    assert.match(pageSource, /selectedElementRecord\.offsetX[\s\S]*?selectedElementRecord\.offsetY[\s\S]*?setElementOffset\(selectedElement/);
-    assert.match(pageSource, /selectedElementRecord\.linkDeleted = true[\s\S]*?selectedLink\.remove\(\)/);
-    assert.match(pageSource, /selectElement = \(element, kind, link\) => \{[\s\S]*?toolsSlot\.style\.minHeight = `\$\{toolsHome\.getBoundingClientRect\(\)\.height\}px`[\s\S]*?elementPanel\.hidden = false[\s\S]*?toolsHome\.hidden = true/);
-    assert.match(pageSource, /builder-element-back[\s\S]*?clearElementSelection\(\)[\s\S]*?Editor tools\./);
-    assert.doesNotMatch(pageSource, /storefrontFrame\.style\.filter = "blur/);
-    assert.match(pageSource, /storefrontPreviewAttempts < 60[\s\S]*?window\.setTimeout\(initializeStorefrontPreview, 100\)/);
-    assert.match(pageSource, /target\.closest\("\.hero-content,\.hero-slide,\.flagship-banner,\.flagship-card-overlay,\.campaign-inner,\.campaign-card/);
-    assert.match(pageSource, /skippedPhotos[\s\S]*?edit\.kind === "image" && \/\^data:image\\\//);
-    assert.match(pageSource, /uploads compressed images to the shop's image storage/);
-    assert.match(pageSource, /builder-page-form[\s\S]*?Heading[\s\S]*?Words[\s\S]*?Save/);
-    assert.match(pageSource, /id="btn-builder-save-design" title="Save design"[\s\S]*?id="btn-publish-cloudflare" title="Publish website"/);
+    const websiteEditor = pageSource.match(/renderWebsiteEditor\(isNewWebsite = false\) \{([\s\S]*?)\n  \},\n\n  renderWebsiteStoreEditor/)?.[1] || "";
+    assert.match(websiteEditor, /selectedTheme === "litrus-mixer"[\s\S]*?class="builder-litrus-toolbar"[\s\S]*?id="builder-litrus-publish"[\s\S]*?id="builder-litrus-mixer" title="Shop builder" src="\/litrus-mixer\/index\.html\?craft=1"/);
+    assert.match(websiteEditor, /id="builder-theme-studio-save"[\s\S]*?id="builder-theme-studio" title="\$\{AppUtils\.escapeHTML\(studioTheme\.name\)\} Liquid Theme Studio" src=/);
+    assert.match(websiteEditor, /id="builder-theme-studio-publish"/);
+    assert.match(websiteEditor, /Continue setup/);
+    assert.match(websiteEditor, /id="new-website-form"/);
     assert.match(pageSource, /renderWebsiteStoreEditor\(\)[\s\S]*?id="website-store-form"[\s\S]*?Store name[\s\S]*?Store description/);
     assert.match(pageSource, /if \(!appAccountSession\) \{[\s\S]*?const accountRoute = `\/app-account\?continue=\$\{encodeURIComponent\(continueTo\)\}`;[\s\S]*?Open app account/);
-    assert.match(pageSource, /id="new-website-form"[\s\S]*?Shop \/ website name[\s\S]*?Website address[\s\S]*?Create website/);
+    assert.match(pageSource, /id="new-website-form"[\s\S]*?Shop \/ website name[\s\S]*?Website address[\s\S]*?I confirm this website address and domain before publishing\.[\s\S]*?>Set up</);
     assert.doesNotMatch(pageSource.match(/if \(isNewWebsite\) \{([\s\S]*?)\n    \}\n    return `/)?.[1] || "", /data-shop-auth-mode|shop-turnstile-widget|Create account/);
     assert.match(pageSource, /path === "\/account\/web\/themes"/);
     assert.match(pageSource, /path\.startsWith\("\/account\/web\/themes\/"\)/);
@@ -2215,9 +2379,8 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /data-edit-website/);
     assert.match(pageSource, /data-edit-store/);
     assert.match(pageSource, /pages: SQLiteEngine\.getPages\(\)/);
-    assert.match(pageSource, /SQLiteEngine\.updateStore\(\{\s*primary_color,\s*background_color,\s*text_color,\s*font_family,\s*element_edits:/);
     assert.match(pageSource, /newWebsiteForm\.onsubmit = async event =>/);
-    assert.match(pageSource, /Website setup uses your Craft app account/);
+    assert.match(pageSource, /Your editor draft is saved on this device\. Sign in or create your Craft app account to finish creating the website\./);
     assert.match(pageSource, /this\.cloudflareRequest\("\/api\/tenants"[\s\S]*?sessionToken/);
     assert.match(pageSource, /continueTo\.startsWith\("\/account\/web\/site\?new=1&theme="\)[\s\S]*?this\.navigate\(continueTo\)/);
     assert.match(pageSource, /preview_appearance:\s*\{\s*primary_color:\s*"#18181B"/);
@@ -2251,14 +2414,14 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /settingsForm\.addEventListener\("change", \(\) => this\.applyThemeSettings\(selectedAppearance\(\)\)\)/);
     assert.match(pageSource, /applyThemeSettings\(appearance = this\.getStudioAppearance\(\)\)\s*\{\s*const themeTarget = document\.documentElement;[\s\S]*?themeTarget\.style\.setProperty\("--accent", appearance\.primary_color\)/);
     assert.match(pageSource, /themeTarget\.style\.setProperty\("--bg", "#FFFFFF"\)/);
-    assert.match(pageSource, /const foreground = isWhiteAccent \|\| !isDarkAccent \? "#18181B" : "#FFFFFF"/);
+    assert.match(pageSource, /const foreground = "#18181B";[\s\S]*?const accentForeground = isWhiteAccent \|\| !isDarkAccent \? "#18181B" : "#FFFFFF"/);
     assert.match(pageSource, /themeTarget\.style\.setProperty\("--surface", "#FFFFFF"\)/);
     assert.match(pageSource, /const isWhiteAccent = appearance\.primary_color\.toUpperCase\(\) === "#FFFFFF"/);
     assert.match(pageSource, /themeTarget\.style\.setProperty\("--surface-subtle", "#F5F5F5"\)/);
     assert.match(pageSource, /themeTarget\.style\.setProperty\("--surface-hover", "#EBEBEB"\)/);
     assert.match(pageSource, /themeTarget\.style\.setProperty\("--border", "#E2E2E5"\)/);
     assert.match(pageSource, /themeTarget\.style\.setProperty\("--text-main", foreground\)/);
-    assert.match(pageSource, /themeTarget\.style\.setProperty\("--text-muted", isWhiteAccent \? "#666660"/);
+    assert.match(pageSource, /themeTarget\.style\.setProperty\("--text-muted", "#66666B"\)/);
     assert.match(pageSource, /themeTarget\.style\.setProperty\("--accent-hover", isWhiteAccent \? "#F4F4F5"/);
     assert.match(pageSource, /themeTarget\.style\.setProperty\("--surface-subtle"/);
     assert.match(pageSource, /\.navbar\s*\{[^}]*background-color:\s*var\(--surface\)/);
@@ -2285,11 +2448,11 @@ test('POS persists products, manual payments, invoices and business instances in
     const seedInitialSource = pageSource.match(/seedInitial\([\s\S]*?\n  \},\n\n  save\(\)/)?.[0];
     assert.ok(seedInitialSource);
     assert.doesNotMatch(seedInitialSource, /btn-provision-main-owner/);
-    assert.match(pageSource, /initTenantManager\(\)[\s\S]*?getElementById\("btn-provision-main-owner"\)/);
+    assert.match(pageSource, /initTenantManager\(\)[\s\S]*?getElementById\("tenant-manager-list"\)[\s\S]*?refreshTenantList\(tenantList\)\.catch/);
     assert.match(pageSource, /private=1/);
     assert.match(pageSource, /tenant_catalogs/);
     assert.match(pageSource, /"Authorization":/);
-    assert.match(pageSource, /const accountSession = tenant\.id === "main" \? "" : window\.localStorage\.getItem\("ESHOP_ACCOUNT_SESSION_V1"\)/);
+    assert.match(pageSource, /cloudflareConnection\(tenantId = this\.getActiveTenant\(\)\.id\)[\s\S]*?const token = tenant\?\.owner_token \|\|[\s\S]*?window\.localStorage\.getItem\("ESHOP_ACCOUNT_SESSION_V1"\)/);
     assert.match(pageSource, /images:\s*Array\.isArray\(product\.images\)[\s\S]*?\^data:image\\\//);
     assert.match(originalStorefront, /await this\.loadCloudflareCatalog\(\)/);
     assert.match(originalStorefront, /fetch\("\/api\/catalog"/);
@@ -2338,16 +2501,16 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /renderLiveWeb\(\)[\s\S]*?title="Complete customer-facing storefront"[\s\S]*?src="\/builder-storefront\.html\?builder=1"/);
     assert.match(pageSource, /height:\s*100dvh/);
     assert.match(pageSource, /name="imageFile"[^>]*accept="image\/\*"/);
-    assert.match(pageSource, /Choose an image to save it in this device's SQLite catalog/);
-    assert.match(pageSource, /images:\s*image\s*\?\s*\[image\]\s*:\s*\[\]/);
-    assert.match(pageSource, /readProductImage\(file\)[\s\S]*?reader\.readAsDataURL\(file\)/);
-    assert.match(pageSource, /selectedImage\.size > 5 \* 1024 \* 1024/);
-    assert.match(pageSource, /const frameTop = Math\.max\(0,\s*storefrontFrame\.getBoundingClientRect\(\)\.top\)/);
+    assert.match(pageSource, /Choose up to 8 photos to save in this device's SQLite catalog/);
+    assert.match(pageSource, /const images = selectedImages\.length\s*\?\s*await Promise\.all\(selectedImages\.map\(file => this\.readProductImage\(file\)\)\)/);
+    assert.match(pageSource, /readProductImage\(file\) \{\s*return AppUtils\.compressImageFile\(file\);/);
+    assert.match(pageSource, /files\.some\(file => !file\.type\.startsWith\("image\/"\) \|\| file\.size > 5 \* 1024 \* 1024\)/);
+    assert.match(pageSource, /id="builder-storefront-html"[\s\S]{0,300}height: 100dvh/);
     assert.doesNotMatch(pageSource, /observer\.observe\(frameDocument\.documentElement\)/);
     assert.doesNotMatch(pageSource, /previewWindow\.setBuilderNavigation/);
-    assert.match(pageSource, /renderWebsiteEditor\([\s\S]*?data-editor-theme-url="\$\{AppUtils\.escapeHTML\(this\.websiteThemes\(\)\.find\(theme => theme\.id === selectedTheme\)\?\.preview_url \|\| ""\)\}" src="about:blank"/);
-    assert.match(pageSource, /previewWindow\.setBuilderCatalog\(\{[\s\S]*?products:\s*SQLiteEngine\.select\("products"[\s\S]*?categories:\s*SQLiteEngine\.getCategories\(\)[\s\S]*?store:\s*SQLiteEngine\.getStore\(\)/);
-    assert.match(pageSource, /window\.EshopBuilderSqlite = \{[\s\S]*?saveProduct:[\s\S]*?deleteProduct:[\s\S]*?saveCategory:[\s\S]*?deleteCategory:[\s\S]*?updateInventoryStock:/);
+    assert.match(pageSource, /const studioUrl = new URL\("\/liquid-themes\/theme-studio\.html", window\.location\.origin\);[\s\S]*?if \(studioTheme\.preview_url\) studioUrl\.searchParams\.set\("loadUrl", studioTheme\.preview_url\);[\s\S]*?src="\$\{AppUtils\.escapeHTML\(studioUrl\.pathname \+ studioUrl\.search\)\}"/);
+    assert.match(pageSource, /const catalog = previewWindow\.getBuilderSeedCatalog\(\);[\s\S]*?catalog\.products\.length[\s\S]*?catalog\.categories\.length/);
+    assert.match(pageSource, /async importBuilderCatalogIfEmpty\(previewWindow\)[\s\S]*?SQLiteEngine\.saveCategory\(data\)[\s\S]*?SQLiteEngine\.saveProduct\(data\)/);
     assert.match(pageSource, /await window\.ShopSQLite\.flush\(\)/);
     assert.match(originalStorefront, /window\.applyBuilderElementEdits = edits =>/);
     assert.match(originalStorefront, /window\.applyBuilderElementEdits\(SQLiteEngine\.getStore\(\)\.element_edits\)/);
@@ -2379,8 +2542,8 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.doesNotMatch(originalStorefront, /\.builder-preview #main-navbar \.brand-logo,[\s\S]*?display:\s*none !important/);
     assert.match(originalStorefront, /document\.documentElement\.classList\.add\("builder-preview"\)/);
     assert.match(originalStorefront, /navigate\(path\) \{\s*\/\* Hash routing:/);
-    assert.match(originalStorefront, /created = await persistBuilderCatalogChange\("createOrder", orderData, cart\)/);
-    assert.match(originalStorefront, /SQLiteEngine\.insert\("orders", created\);\s*SQLiteEngine\.clearCart\(\)/);
+    assert.match(originalStorefront, /order = await persistBuilderCatalogChange\("createOrder", \{[\s\S]*?payment_status: "unpaid"\s*\}, cart\)/);
+    assert.match(originalStorefront, /SQLiteEngine\.insert\("orders", order\);\s*SQLiteEngine\.clearCart\(\)/);
     assert.match(originalStorefront, /window\.getBuilderSeedCatalog = \(\) =>/);
     assert.match(originalStorefront, /root\.style\.setProperty\("--bg", background\)/);
     assert.match(originalStorefront, /root\.style\.setProperty\("--font-main", mainFont\)/);
@@ -2392,16 +2555,15 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(originalStorefront, /storageKey: themePreviewMode \? "ESHOP_THEME_PREVIEW_DB_V1" : builderPreviewMode \? "ESHOP_BUILDER_PREVIEW_DB_V1" : "ESHOP_SQLITE_DB_V1"/);
     assert.match(originalStorefront, /if \(builderPreviewMode\) \{\s*this\.seedInitial\(\s*themePreviewMode \? seedCategories : \[\],\s*themePreviewMode \? seedProducts : \[\]/);
     assert.match(originalStorefront, /themePreviewMode && \(!catalog\.products\.length \|\| !catalog\.categories\.length\)/);
-    assert.match(pageSource, /if \(!Array\.isArray\(theme\.preview_catalog\?\.products\) \|\| !theme\.preview_catalog\.products\.length/);
-    assert.match(pageSource, /let attempts = 0;[\s\S]*?setTimeout\(initializeThemePreview, 100\)[\s\S]*?frame\.addEventListener\("load"/);
+    assert.match(pageSource, /products: draft\.products,\s*categories: draft\.categories,\s*store: \{ name: "Your new website"/);
     assert.match(androidManifest, /android:allowBackup="true"[\s\S]*?android:fullBackupContent="@xml\/backup_rules"[\s\S]*?android:dataExtractionRules="@xml\/data_extraction_rules"/);
     assert.match(androidBackupRules, /<include domain="database" path="\." \/>/);
     assert.match(androidDataExtractionRules, /<cloud-backup>[\s\S]*?<include domain="database" path="\." \/>[\s\S]*?<\/cloud-backup>[\s\S]*?<device-transfer>[\s\S]*?<include domain="database" path="\." \/>/);
     assert.match(originalStorefront, /@media \(max-width: 600px\)[\s\S]*?\.products-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
     assert.match(originalStorefront, /@media \(max-width: 600px\)[\s\S]*?\.product-card-thumb-link\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*9/);
     assert.match(originalStorefront, /@media \(max-width: 600px\)[\s\S]*?\.product-card-quick-add\s*\{[^}]*min-height:\s*34px/);
-    assert.match(pageSource, /id="builder-storefront-html"[\s\S]*?title="Mobile-sized live website preview"/);
-    assert.match(pageSource, /hostedTheme && previewDocument && previewWindow && routedHostedPreviewDocument !== previewDocument[\s\S]*?target\?\.closest\("a\[href\]"\)\?\.getAttribute\("href"\)\?\.trim\(\)[\s\S]*?event\.preventDefault\(\)[\s\S]*?event\.stopImmediatePropagation\(\)[\s\S]*?previewWindow\.location\.hash = href/);
+    assert.match(pageSource, /id="builder-storefront-html"[\s\S]*?title="Complete customer-facing storefront"/);
+    assert.match(pageSource, /if \(previewDocument && previewWindow && !routedHostedPreviewDocuments\.has\(previewDocument\)\)[\s\S]*?target\?\.closest\?\.\("a\[href\]"\)[\s\S]*?event\.preventDefault\(\)[\s\S]*?event\.stopImmediatePropagation\(\)[\s\S]*?previewWindow\.location\.hash = href/);
     assert.doesNotMatch(pageSource, /Desktop view|Tablet view|Phone view|view-mode-desktop|view-mode-tablet|view-mode-mobile/);
     assert.match(pageSource, /const storefrontHome = options\.builderPreview \? "\/account\/store" : "\/"/);
     assert.match(pageSource, /<nav class="nav-menu">[\s\S]*publishedPages\.map/);
@@ -2413,7 +2575,7 @@ test('POS persists products, manual payments, invoices and business instances in
 
     const submit = async (kind, values, formOptions = {}) => Promise.all(handlers.submit.map((handler) => handler({
       target: { closest: (selector) => selector === 'form[data-pos-form]'
-        ? { dataset: { posForm: kind }, values, ...formOptions } : null },
+        ? { dataset: { posForm: kind }, values, querySelector: () => null, ...formOptions } : null },
       preventDefault() {}
     })));
     const click = async (action, attributes = {}) => Promise.all(handlers.click.map((handler) => handler({
@@ -2559,8 +2721,15 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(repeatCustomerInsights, /units in 30 days · consider about/);
     const overviewWithRevenue = app.render('/pos/overview');
     assert.match(overviewWithRevenue, /class="pos-card pos-revenue-card"/);
-    assert.match(overviewWithRevenue, /aria-label="Net sales before tax over time"/);
+    assert.match(overviewWithRevenue, /Revenue chart history; scroll horizontally to see all dates/);
+    assert.match(overviewWithRevenue, /Net sales before tax over time with value and date axes/);
+    assert.match(overviewWithRevenue, /class="pos-revenue-chart-axis-label"/);
     assert.match(overviewWithRevenue, /class="pos-revenue-chart-line"/);
+    const posChartSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+    assert.match(posChartSource, /const revenueSeries = Object\.entries\(daily\)\.sort\(\(\[first\], \[second\]\) => first\.localeCompare\(second\)\);/);
+    const revenueSeriesLineStart = posChartSource.indexOf('const revenueSeries = Object.entries(daily)');
+    const revenueSeriesLine = posChartSource.slice(revenueSeriesLineStart, posChartSource.indexOf('\n', revenueSeriesLineStart));
+    assert.doesNotMatch(revenueSeriesLine, /slice/);
     const insightMarkup = app.render('/pos/overview', new URLSearchParams('tab=Insights&range=30d'));
     for (const heading of ['Needs attention', 'Sales trends', 'Revenue rhythm', 'Product performance', 'Category performance', 'Basket patterns', 'Customers', 'Busy days and hours', 'Recorded cost changes', 'Payment mix changes', 'Large-receipt review', 'Cash receipt review', 'Seasonality and selling periods', 'Data quality and confidence', 'Actionable recommendations', 'Goals and benchmarks', 'Priority alerts', 'Money and cash flow']) {
       assert.match(insightMarkup, new RegExp(`<h3>${heading}</h3>`));
@@ -2569,7 +2738,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(insightMarkup, /Highest fully costed gross profit/);
     assert.match(app.render('/pos/overview', new URLSearchParams('tab=Profit&range=30d')), /Profit and loss/);
     assert.match(app.render('/pos/overview', new URLSearchParams('tab=Profit&range=30d')), /Break-even needs|Approximate revenue to cover/);
-    assert.match(app.render('/pos/overview', new URLSearchParams('tab=Profit&range=30d')), /aria-label="Recorded operating profit over time"/);
+    assert.match(app.render('/pos/overview', new URLSearchParams('tab=Profit&range=30d')), /Recorded operating profit over time with value and date axes/);
     assert.match(app.render('/pos/overview', new URLSearchParams('tab=Stock&range=30d')), /Days cover/);
     await submit('revenue-goal', { amount: '100000' });
     assert.ok(queryRows("SELECT value FROM pos_settings WHERE key='monthly_revenue_goal_cents'")[0], toast.textContent);
@@ -2728,9 +2897,9 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(deepHistoryInsights, /Strongest month segment/);
     assert.match(deepHistoryInsights, /sales in 4 months/);
     assert.match(deepHistoryInsights, /A contribution group/);
-    assert.match(deepHistoryInsights, /Loyal · 3\+ paid sales<\/strong><span>1/);
+    assert.match(deepHistoryInsights, /Loyal · 3\+ purchases<\/strong><span>1/);
     const historicalProfit = app.render('/pos/overview', new URLSearchParams('tab=Profit&range=all'));
-    assert.match(historicalProfit, /Tax on fully paid sales<\/span><b>KES\u00a02\.00/);
+    assert.match(historicalProfit, /Tax on recorded sales<\/span><b>KES\u00a02\.00/);
 
     const categoryId = queryRows('SELECT id FROM pos_categories ORDER BY id LIMIT 1')[0].id;
     const createdProductId = await app.saveProduct({

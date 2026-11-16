@@ -20,6 +20,16 @@ const shortMoney = (value, currency) => {
   return amount >= 1000000 ? `${money(amount / 1000000, currency)}m`
     : amount >= 10000 ? `${money(amount / 1000, currency)}k` : money(amount, currency);
 };
+const chartAxisMoney = (value, currency) => {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency", currency, currencyDisplay: "narrowSymbol",
+      notation: "compact", maximumFractionDigits: 1
+    }).format(value);
+  } catch {
+    return shortMoney(value, currency);
+  }
+};
 const safePercent = (value, total) => total ? value / total * 100 : 0;
 const dateLabel = value => localDate(value)?.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) || "Date unavailable";
 const card = (title, body, subtitle = "") => `<article class="bl-card"><header><h2>${title}</h2>${subtitle ? `<p>${subtitle}</p>` : ""}</header>${body}</article>`;
@@ -36,23 +46,37 @@ const barRows = (items, label, value, formatter, color = "var(--accent)") => {
 };
 const lineChart = (series, keys, currency) => {
   if (!series.length || !series.some(point => keys.some(key => Number(point[key]) > 0))) return `<p class="bl-empty">More recorded activity is needed to chart this period.</p>`;
-  const width = 640, height = 210, padX = 28, padY = 20;
-  const values=series.flatMap(point=>keys.map(key=>Number(point[key])||0));
-  const minimum=Math.min(0,...values), maximum=Math.max(1,...values);
-  const yFor=value=>padY+(maximum-value)/(maximum-minimum||1)*(height-padY*2);
+  const height = 250, padLeft = 76, padRight = 16, padTop = 18, padBottom = 42;
+  const width = Math.max(360, padLeft + padRight + Math.max(1, series.length - 1) * 62);
+  const values = series.flatMap(point => keys.map(key => Number(point[key]) || 0));
+  const minimum = Math.min(0, ...values), maximum = Math.max(1, ...values);
+  const plotHeight = height - padTop - padBottom;
+  const plotWidth = width - padLeft - padRight;
+  const yFor = value => padTop + (maximum - value) / (maximum - minimum || 1) * plotHeight;
+  const grid = Array.from({ length: 5 }, (_, index) => {
+    const value = maximum - (maximum - minimum) * index / 4;
+    const y = padTop + plotHeight * index / 4;
+    return `<line class="bl-chart-grid" x1="${padLeft}" y1="${y.toFixed(1)}" x2="${width - padRight}" y2="${y.toFixed(1)}"/><text class="bl-chart-axis-label" x="${padLeft - 7}" y="${(y + 3).toFixed(1)}" text-anchor="end">${$(chartAxisMoney(value, currency))}</text>`;
+  }).join("");
   const colors = ["#191919", "#737373", "#a3a3a3", "#d4d4d4"];
   const lines = keys.map((key, index) => {
     const points = series.map((point, i) => {
-      const x = padX + (series.length === 1 ? 0 : i * (width - padX * 2) / (series.length - 1));
-      const y = yFor(Number(point[key])||0);
+      const x = padLeft + (series.length === 1 ? plotWidth / 2 : i * plotWidth / (series.length - 1));
+      const y = yFor(Number(point[key]) || 0);
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(" ");
-    return `<polyline fill="none" stroke="${colors[index % colors.length]}" stroke-width="2.5" points="${points}"/>`;
+    const markers = series.map((point, i) => {
+      const x = padLeft + (series.length === 1 ? plotWidth / 2 : i * plotWidth / (series.length - 1));
+      const value = Number(point[key]) || 0;
+      return `<circle class="bl-chart-point" cx="${x.toFixed(1)}" cy="${yFor(value).toFixed(1)}" r="3"><title>${$(point.label)} · ${$(key)}: ${$(money(value, currency))}</title></circle>`;
+    }).join("");
+    return `<polyline fill="none" stroke="${colors[index % colors.length]}" stroke-width="2.5" points="${points}"/>${markers}`;
   }).join("");
-  const labels = [series[0], series[Math.floor((series.length - 1) / 2)], series[series.length - 1]]
-    .filter((point, index, rows) => point && rows.indexOf(point) === index)
-    .map(point => `<span>${$(point.label)}</span>`).join("");
-  return `<svg class="bl-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Revenue chart"><line x1="${padX}" y1="${yFor(0)}" x2="${width - padX}" y2="${yFor(0)}" stroke="currentColor" opacity=".14"/>${lines}</svg><div class="bl-chart-labels">${labels}</div><div class="bl-legend">${keys.map((key,index)=>`<span><i style="background:${colors[index%colors.length]}"></i>${$(key)}</span>`).join("")}</div>`;
+  const labels = series.map((point, index) => {
+    const x = padLeft + (series.length === 1 ? plotWidth / 2 : index * plotWidth / (series.length - 1));
+    return `<line class="bl-chart-tick" x1="${x.toFixed(1)}" y1="${height - padBottom}" x2="${x.toFixed(1)}" y2="${height - padBottom + 4}"/><text class="bl-chart-axis-label" x="${x.toFixed(1)}" y="${height - 10}" text-anchor="middle">${$(point.label)}</text>`;
+  }).join("");
+  return `<div class="bl-chart-scroll" role="region" aria-label="Chart history; scroll horizontally to see all periods" tabindex="0"><svg class="bl-chart" viewBox="0 0 ${width} ${height}" style="--bl-chart-min-width:${width}px" role="img" aria-label="Revenue chart with value and date axes"><line class="bl-chart-axis" x1="${padLeft}" y1="${padTop}" x2="${padLeft}" y2="${height - padBottom}"/><line class="bl-chart-axis" x1="${padLeft}" y1="${height - padBottom}" x2="${width - padRight}" y2="${height - padBottom}"/>${grid}${labels}${lines}</svg></div><div class="bl-legend">${keys.map((key,index)=>`<span><i style="background:${colors[index%colors.length]}"></i>${$(key)}</span>`).join("")}</div>`;
 };
 const table = (headers, rows) => `<div class="bl-table-wrap"><table class="bl-table"><thead><tr>${headers.map(header=>`<th>${header}</th>`).join("")}</tr></thead><tbody>${rows.length ? rows.join("") : `<tr><td colspan="${headers.length}" class="bl-empty">No matching records.</td></tr>`}</tbody></table></div>`;
 const filterSelect = (key,label,value,options) => `<label class="bl-inline-filter"><span>${$(label)}</span><select data-business-filter="${$(key)}">${options.map(([option,text])=>`<option value="${$(option)}" ${value===option?"selected":""}>${$(text)}</option>`).join("")}</select></label>`;
@@ -257,9 +281,9 @@ function analyse(data, filters) {
     if (granularity === "month") return { key:`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`, label:`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}` };
     if (granularity === "week") {
       const week = dayStart(date); week.setDate(week.getDate()-((week.getDay()+6)%7));
-      return { key:week.toISOString().slice(0,10), label:week.toLocaleDateString(undefined,{day:"numeric",month:"short"}) };
+      return { key:week.toISOString().slice(0,10), label:week.toLocaleDateString(undefined,{day:"numeric",month:"short",year:"2-digit"}) };
     }
-    return { key:dayStart(date).toISOString().slice(0,10), label:date.toLocaleDateString(undefined,{day:"numeric",month:"short"}) };
+    return { key:dayStart(date).toISOString().slice(0,10), label:date.toLocaleDateString(undefined,{day:"numeric",month:"short",year:"2-digit"}) };
   };
   salesInRange.filter(paid).forEach(sale => {
     const date = localDate(sale.createdAt); if (!date) return;
@@ -329,7 +353,7 @@ function analyse(data, filters) {
   if(lowStock.length) insights.push({tone:"critical",type:"inventory",title:`${lowStock.length} product lines need immediate stock attention`,detail:lowStock.slice(0,5).map(item=>`${item.name}: ${item.stock} left`).join(" · "),action:"Review Inventory and update stock before promoting these products."});
   if(revenue && !data.products.some(product=>Number(product.costPrice)>0)) insights.push({tone:"warning",type:"finance",title:"Profit is a ceiling because product costs are missing",detail:"The available catalogue has no recorded unit cost for products sold in this period.",action:"Add buying prices in product management before relying on margin estimates."});
   if(kpis.netProfit<0 && expenses) insights.push({tone:"critical",type:"finance",title:"Recorded operating costs exceed gross profit",detail:`Gross profit ${money(grossProfit,data.currency)} · recorded expenses ${money(expenses,data.currency)}.`,action:"Review the expense ledger and product cost prices."});
-  if(!insights.length) insights.push({tone:"neutral",type:"general",title:"No urgent signals in the current data",detail:"Insights are based on the recorded local sales, stock, visits and expenses.",action:"Keep records up to date; filters and recorded history determine what can be assessed."});
+  if(!insights.length) insights.push({tone:"neutral",type:"general",title:"No urgent signals in the current data",detail:"Signals use the recorded local sales, stock, visits and expenses.",action:"Keep records up to date; filters and recorded history determine what can be assessed."});
   const categoryCapital = new Map();
   data.products.forEach(product => {
     const category = product.categoryName || product.category || "Uncategorized";
@@ -389,15 +413,9 @@ function renderOverview(a) {
     : `${kpis.delta>=0?"+":""}${kpis.delta.toFixed(1)}% vs previous equal period`;
   return `<div class="bl-kpis">${metric("Revenue",shortMoney(kpis.revenue,currency),revenueNote)}${metric("Paid orders",kpis.orders,`${kpis.units} units`)}${metric("Gross profit",shortMoney(kpis.profit,currency),`${kpis.margin.toFixed(1)}% estimated margin`)}${metric("Customers",kpis.customers,`${a.customers.filter(customer=>customer.orders.length>1).length} repeat`)}${metric("Average order",money(kpis.aov,currency))}${metric("Net after recorded expenses",shortMoney(kpis.netProfit,currency))}${metric("Web visitors",a.webVisitors,`${a.visitors.length} page views`)}${metric("Stock value at cost",shortMoney(kpis.stockValue,currency))}</div>
     ${card("Business performance","<div class='bl-chart-tabs'><span>Revenue · Web · Counter</span></div>"+lineChart(series,["web","pos"],currency))}
-    <div class="bl-two">${card("Priority insights",listRows(insights.slice(0,4).map(item=>`<div class="bl-insight ${item.tone}"><strong>${$(item.title)}</strong><p>${$(item.detail)}</p><small>Next: ${$(item.action)}</small></div>`)))}${card("Break-even position",`<div class="bl-big-number">${money(kpis.netProfit,currency)}</div><p>Gross profit less recorded expenses for the selected period.</p><div class="bl-rule">${row("Gross revenue",money(kpis.revenue,currency))}${row("Cost of goods (available cost data)",money(a.cogs,currency))}${row("Recorded operating expenses",money(kpis.expenses,currency))}</div>`)}</div>
+    <div class="bl-two">${card("Priority signals",listRows(insights.slice(0,4).map(item=>`<div class="bl-insight ${item.tone}"><strong>${$(item.title)}</strong><p>${$(item.detail)}</p><small>Next: ${$(item.action)}</small></div>`)))}${card("Break-even position",`<div class="bl-big-number">${money(kpis.netProfit,currency)}</div><p>Gross profit less recorded expenses for the selected period.</p><div class="bl-rule">${row("Gross revenue",money(kpis.revenue,currency))}${row("Cost of goods (available cost data)",money(a.cogs,currency))}${row("Recorded operating expenses",money(kpis.expenses,currency))}</div>`)}</div>
     <div class="bl-two">${card("Top products",barRows(productStats.slice(0,7),item=>item.name,item=>item.revenue,(value)=>shortMoney(value,currency)))}${card("Revenue by category",barRows([...categoryStats.entries()].sort((x,y)=>y[1]-x[1]).slice(0,7),item=>item[0],item=>item[1],value=>shortMoney(value,currency)))}</div>
     <div class="bl-two">${card("Payment methods",barRows(payments,item=>item.method,item=>item.revenue,value=>shortMoney(value,currency)))}${card("Latest transactions",listRows([...scoped].slice(0,6).map(sale=>row(sale.reference, money(sale.collected,currency),`${sale.channel} · ${dateLabel(sale.date)} · ${sale.status}`))))}</div>`;
-}
-
-function renderInsights(a) {
-  const severity=a.filters.insightSeverity||"all", type=a.filters.insightType||"all";
-  const filtered=a.insights.filter(item=>(severity==="all"||item.tone===severity)&&(type==="all"||item.type===type));
-  return `<div class="bl-insight-summary">${metric("Critical",a.insights.filter(item=>item.tone==="critical").length)}${metric("Worth watching",a.insights.filter(item=>item.tone==="warning").length)}${metric("Positive",a.insights.filter(item=>item.tone==="positive").length)}</div><div class="bl-filter-row">${filterSelect("insightSeverity","Severity",severity,[["all","All severity"],["critical","Critical"],["warning","Watch"],["positive","Positive"],["neutral","Neutral"]])}${filterSelect("insightType","Signal type",type,[["all","All types"],["revenue","Revenue"],["products","Products"],["customers","Customers"],["channels","Channels"],["inventory","Inventory"],["finance","Finance"],["general","General"]])}</div>${listRows(filtered.map(item=>`<article class="bl-insight ${item.tone}"><span>${$(item.tone)} · BUSINESS SIGNAL · ${$(item.type||"general").toUpperCase()}</span><h2>${$(item.title)}</h2><p>${$(item.detail)}</p><b>Action: ${$(item.action)}</b></article>`))}`;
 }
 
 function forecastSeries(series) {
@@ -468,17 +486,21 @@ function renderChannels(a) {
 
 function renderProducts(a, snapshot) {
   const top=a.productStats.slice(0,10), max=Math.max(1,...top.map(item=>item.revenue));
+  const maxUnitsSold=Math.max(1,...a.productStats.map(item=>item.units));
+  const minMarginPercent=Math.min(0,...a.productStats.map(item=>item.margin));
+  const maxMarginPercent=Math.max(1,...a.productStats.map(item=>item.margin));
+  const marginRange=maxMarginPercent-minMarginPercent||1;
   const pairs=a.pairs.filter(item=>item.count>=2).slice(0,12);
   const items=a.productStats.map(item=>`<tr><td>${$(item.name)}</td><td>${$(item.category)}</td><td>${item.units}</td><td>${money(item.revenue,a.currency)}</td><td>${money(item.profit,a.currency)}</td><td>${item.margin.toFixed(1)}%</td><td>${item.abc}</td><td>${money(item.web,a.currency)} / ${money(item.pos,a.currency)}</td></tr>`);
-  return `<div class="bl-kpis">${metric("Products sold",a.productStats.length,`${a.kpis.units} units`)}${metric("A-class lines",a.productStats.filter(item=>item.abc==="A").length,"Top 80% revenue contribution")}${metric("Best margin",a.productStats.length?`${a.productStats.reduce((best,item)=>item.margin>best.margin?item:best).margin.toFixed(1)}%`:"—")}${metric("Catalogue lines",snapshot.products.length)}</div>
-    <div class="bl-two">    ${card("Product leaderboard · revenue",barRows(top,item=>item.name,item=>item.revenue,value=>money(value,a.currency)))}
-    ${card("Fastest movers · units sold",barRows([...a.productStats].sort((x,y)=>y.units-x.units).slice(0,10),item=>item.name,item=>item.units,value=>`${value} units`))}${card("Pareto · revenue contribution",listRows(a.productStats.slice(0,12).map((item,index)=>`<div class="bl-bar-row"><div><span>${index+1}. ${$(item.name)} · ${item.abc}</span><b>${item.share.toFixed(1)}% · cum. ${item.cumulative.toFixed(1)}%</b></div><i><span style="width:${Math.min(100,item.cumulative||item.share)}%"></span></i></div>`)))}</div>
-    ${card("Volume against margin",`<div class="bl-scatter">${a.productStats.filter(item=>item.units).map(item=>`<span title="${$(item.name)} · ${item.units} units · ${item.margin.toFixed(1)}% margin" style="left:${Math.min(96,Math.max(2,item.units/Math.max(1,...a.productStats.map(p=>p.units))*94))}%;bottom:${Math.min(92,Math.max(3,item.margin/Math.max(1,...a.productStats.map(p=>p.margin))*88))}%">${$(item.name.slice(0,2))}</span>`).join("")||`<p class="bl-empty">No paid product sales in this period.</p>`}</div><p class="bl-caption">Horizontal: units sold · vertical: margin percentage. Margin is estimated from recorded unit costs.</p>`)}
+  return `${card("Product leaderboard · revenue",barRows(top,item=>item.name,item=>item.revenue,value=>money(value,a.currency)))}
+    <a class="main-store-product-entry" href="/store/products/manage" data-route="/store/products/manage"><span>Edit products</span><span aria-hidden="true">›</span></a>
+    <div class="bl-kpis">${metric("Products sold",a.productStats.length,`${a.kpis.units} units`)}${metric("A-class lines",a.productStats.filter(item=>item.abc==="A").length,"Top 80% revenue contribution")}${metric("Best margin",a.productStats.length?`${a.productStats.reduce((best,item)=>item.margin>best.margin?item:best).margin.toFixed(1)}%`:"—")}${metric("Catalogue lines",snapshot.products.length)}</div>
+    <div class="bl-two">${card("Fastest movers · units sold",barRows([...a.productStats].sort((x,y)=>y.units-x.units).slice(0,10),item=>item.name,item=>item.units,value=>`${value} units`))}${card("Pareto · revenue contribution",listRows(a.productStats.slice(0,12).map((item,index)=>`<div class="bl-bar-row"><div><span>${index+1}. ${$(item.name)} · ${item.abc}</span><b>${item.share.toFixed(1)}% · cum. ${item.cumulative.toFixed(1)}%</b></div><i><span style="width:${Math.min(100,item.cumulative||item.share)}%"></span></i></div>`)))}</div>
+    ${card("Volume against margin",`<div class="bl-scatter-wrap"><span class="bl-scatter-y-title">Margin (%)</span><div class="bl-scatter-y-labels"><span>${maxMarginPercent.toFixed(0)}%</span><span>${((maxMarginPercent+minMarginPercent)/2).toFixed(0)}%</span><span>${minMarginPercent.toFixed(0)}%</span></div><div class="bl-scatter">${a.productStats.filter(item=>item.units).map(item=>`<span title="${$(item.name)} · ${item.units} units · ${item.margin.toFixed(1)}% margin" style="left:${Math.min(96,Math.max(2,item.units/maxUnitsSold*94))}%;bottom:${Math.min(92,Math.max(3,3+(item.margin-minMarginPercent)/marginRange*88))}%">${$(item.name.slice(0,2))}</span>`).join("")||`<p class="bl-empty">No paid product sales in this period.</p>`}</div><div class="bl-scatter-x-labels"><span>0</span><span>${Math.round(maxUnitsSold/2)}</span><span>${maxUnitsSold}</span></div><span class="bl-scatter-axis-title">Units sold</span></div><p class="bl-caption">Margin uses recorded unit costs; products without a saved cost do not have a verified margin.</p>`)}
     ${card("Category performance",barRows([...a.categoryStats.entries()].sort((x,y)=>y[1]-x[1]),item=>item[0],item=>item[1],value=>money(value,a.currency)))}
     ${card("Frequently bought together",listRows(pairs.map(item=>row(item.pair,item.count,`Lift ${item.lift.toFixed(2)} · observed in ${item.count} baskets; above 1 means more frequent than chance.`))))}
     ${card("Every product",table(["Product","Category","Units","Revenue","Profit*","Margin*","ABC","Web / counter"],items))}
-    <p class="bl-caption">*Profit and margin are only estimates where the matching product has a recorded cost price. Existing catalogue management remains available from the Store products and POS screens.</p>
-    <div class="bl-actions"><a href="/account/products" data-route="/account/products">Edit website products</a><a href="/pos/products" data-route="/pos/products">Edit POS products</a></div>`;
+    <p class="bl-caption">*Profit and margin are only estimates where the matching product has a recorded cost price.</p>`;
 }
 
 function renderInventory(a) {
@@ -629,7 +651,6 @@ function renderMarketingAndNewsletter(a,context,path) { return path.endsWith("/n
 function render(a, path, snapshot, context) {
   const views={
     "/account/main-shop":()=>renderOverview(a),
-    "/account/main-shop/insights":()=>renderInsights(a),
     "/store/revenue":()=>renderRevenue(a),
     "/store/channels":()=>renderChannels(a),
     "/store/sales":()=>renderTransactions(a),

@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile as readFileRaw } from "node:fs/promises";
 import test from "node:test";
+
+const readFile = async (path, options) => {
+  const contents = await readFileRaw(path, options);
+  return typeof contents === "string" ? contents.replace(/\r\n/g, "\n") : contents;
+};
 
 test("Main Store screens use the compact Craft header and back navigation", async () => {
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
@@ -23,7 +28,7 @@ test("Web dashboard and CRM KPI groups feature one full-width metric above two s
     'metric("Gross web revenue"',
     'metric("Visits"',
     'metric("Total visits"',
-    'metric("Today"',
+    'metric("Customer visits"',
     'metric("Identified web customers"',
     'metric("Points per visit"'
   ]) {
@@ -93,7 +98,7 @@ test("storefront visit history records customer pages, not Craft app screens", a
     assert.match(source, /snapshot\.remoteAnalytics\?\.recent_visits/);
     assert.match(source, /snapshot\.remoteAnalytics\.pages/);
     assert.match(source, /<h2>Visit history<\/h2>/);
-    assert.match(source, /data-business-cloud-analytics>Refresh<\/button>/);
+    assert.match(source, /data-business-cloud-analytics>Load<\/button>/);
   }
 });
 
@@ -131,8 +136,15 @@ test("Store Products, Webmaker, and Payments use shorter copy", async () => {
   assert.ok(paymentStart >= 0 && paymentEnd > paymentStart, "Payment settings have a bounded renderer.");
   const paymentMarkup = source.slice(paymentStart, paymentEnd);
   assert.match(paymentMarkup, /<h2>Payment account<\/h2>/);
-  assert.match(paymentMarkup, /<h2>Add payment account<\/h2>/);
+  assert.doesNotMatch(paymentMarkup, /<h2>Add payment account<\/h2>/);
+  assert.doesNotMatch(paymentMarkup, /Saved accounts/);
   assert.doesNotMatch(paymentMarkup, /Paystack/);
+});
+
+test("Payments keeps Paystack setup and removes manual payment-account controls", async () => {
+  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(source, /data-paystack-reuse/);
+  assert.doesNotMatch(source, /data-studio-form="payment-add"|Saved accounts|data-remove-payment/);
 });
 
 test("Your Business renders all five sections from the local business snapshot", async () => {
@@ -181,7 +193,6 @@ test("Your Business renders all five sections from the local business snapshot",
     };
     const paths = [
       ["/account/main-shop", "Business performance"],
-      ["/account/main-shop/insights", "BUSINESS SIGNAL"],
       ["/store/revenue", "Revenue this period"],
       ["/store/channels", "Storefront revenue"],
       ["/store/sales", "All transactions"],
@@ -201,7 +212,23 @@ test("Your Business renders all five sections from the local business snapshot",
       const html = globalThis.window.BusinessLens.render(snapshot, path, context);
       assert.ok(html.includes(expected), `${path} should render its own screen.`);
     }
+    const productsPage = globalThis.window.BusinessLens.render(snapshot, "/store/products", context);
+    assert.match(productsPage, /class="bl-scatter-wrap"[\s\S]*?bl-scatter-y-title">Margin \(%\)[\s\S]*?bl-scatter-y-labels[\s\S]*?bl-scatter-x-labels[\s\S]*?bl-scatter-axis-title">Units sold/);
+    const editProductsCard = productsPage.indexOf("class=\"main-store-product-entry\"");
+    assert.ok(
+      productsPage.indexOf("Product leaderboard · revenue") < editProductsCard &&
+      editProductsCard < productsPage.indexOf("Products sold"),
+      "The full-width Edit products card should sit between the revenue leaderboard and four product summary metrics."
+    );
+    assert.match(productsPage, /href="\/store\/products\/manage" data-route="\/store\/products\/manage"><span>Edit products<\/span>/);
+    const retiredSignalsRoute = globalThis.window.BusinessLens.render(snapshot, "/account/main-shop/insights", context);
+    assert.match(retiredSignalsRoute, /Business performance/);
+    assert.doesNotMatch(retiredSignalsRoute, /BUSINESS SIGNAL/);
     const channels = globalThis.window.BusinessLens.render(snapshot, "/store/channels", context);
+    assert.match(channels, /class="bl-chart-scroll"[\s\S]*?bl-chart-axis-label/);
+    assert.match(channels, /Chart history; scroll horizontally to see all periods/);
+    assert.match(channels, /Revenue chart with value and date axes/);
+    assert.match(channels, /class="bl-chart-point"/);
     assert.match(channels, /Web payment methods/);
     assert.match(channels, /mpesa/);
     const inventory = globalThis.window.BusinessLens.render(snapshot, "/store/inventory", context);

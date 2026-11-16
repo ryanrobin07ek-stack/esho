@@ -5,12 +5,12 @@ import { runInNewContext } from "node:vm";
 import { JSDOM, VirtualConsole } from "jsdom";
 import { WEBSITE_THEME_CATALOG } from "../src/theme-catalog.js";
 
-const read = path => readFile(new URL(path, import.meta.url), "utf8");
+const read = async path => (await readFile(new URL(path, import.meta.url), "utf8")).replace(/\r\n/g, "\n");
 
 test("customer shop screens never collect or persist the Cloudflare master key", async () => {
   const app = await read("../index.html");
   const shopsScreen = app.match(/renderTenantsManager\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  renderInventory/)?.[1];
-  const publishModal = app.match(/openCloudflarePublishModal\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  [A-Za-z]/)?.[1];
+  const publishModal = app.match(/openCloudflarePublishModal\([^)]*\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  [A-Za-z]/)?.[1];
 
   assert.ok(shopsScreen);
   assert.ok(publishModal);
@@ -38,6 +38,13 @@ test("storefront newsletter and owner push broadcasts use Cloudflare", async () 
   assert.match(app, /\/api\/push\/broadcast\?tenant=/);
   assert.match(app, /window\.confirm\("Send this notification now/);
   assert.match(app, /this\.bindBusinessCloudActions\(currentContent, path, renderSnapshot, activeTenant\.id\);/);
+});
+
+test("nested Web Studio routes dispatch through the workspace renderer", async () => {
+  const app = await read("../index.html");
+  assert.match(app, /path === "\/account\/web" \|\| path\.startsWith\("\/account\/web\/studio\/"\)\)\s*\{\s*html = StudioRenderers\.renderMainShopWorkspace\(path\);/);
+  assert.match(app, /title: "Websites",\s*route: "\/account\/web\/studio\/websites\/list"/);
+  assert.match(app, /const initialPath = path === "\/account\/web"\s*\?\s*"\/account\/web\/studio\/dashboard\/overview"/);
 });
 
 test("CHESSER styling is limited to Craft app routes and excludes Theme Studio", async () => {
@@ -106,10 +113,15 @@ test("Liquid theme choices open the shared Studio and Litrus opens its integrate
   assert.match(editor, /searchParams\.set\("loadUrl", studioTheme\.preview_url\)/);
   assert.match(editor, /id="builder-theme-studio"/);
   assert.match(editor, /id="builder-theme-studio-save"/);
+  assert.match(editor, /id="builder-theme-studio-publish"/);
   assert.match(editor, /grid-template-columns:minmax\(0,1fr\)/);
   assert.match(editor, /id="builder-theme-studio"[\s\S]*?min-width:0/);
   assert.match(app, /liquid-html-theme-draft:\$\{themeId\}/);
   assert.match(app, /type: "eshop-theme-studio-export-request"/);
+  assert.match(app, /const themeId = params\.get\("theme"\) \|\|\s*SQLiteEngine\.getStore\(\)\.website_theme_id \|\| "elora-linen";/);
+  assert.match(app, /if \(publishButton\) publishButton\.onclick = \(\) => requestDesignSave\(true\);/);
+  assert.match(app, /this\.openCloudflarePublishModal\(true\)/);
+  assert.match(app, /if \(publishImmediately\) form\.requestSubmit\(\);/);
   assert.match(app, /event\.data\?\.type === "eshop-theme-studio-catalog-request"/);
   assert.match(app, /type: "eshop-theme-studio-catalog"/);
   assert.match(app, /window\.addEventListener\("message", this\.themeStudioMessageHandler\)/);
@@ -133,19 +145,31 @@ test("Liquid theme choices open the shared Studio and Litrus opens its integrate
   assert.match(studio, /preview\.documentElement\.outerHTML/);
   assert.doesNotMatch(studio, /aviya-luxury|stepz-footwear/);
   assert.match(app, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" &&\s*\(theme\.editor_mode === "liquid-html" \|\| theme\.editor_mode === "litrus"\)\)/);
-  assert.match(app, /href="\/account\/web\/site\?new=1&edit=1&theme=litrus-mixer" data-route="\/account\/web\/site\?new=1&edit=1&theme=litrus-mixer"/);
+  assert.match(app, /const themeEditorRoute = theme => `\/account\/web\/site\?new=1&edit=1&theme=\$\{encodeURIComponent\(theme\.id\)\}`/);
+  assert.match(app, /href="\$\{AppUtils\.escapeHTML\(themeEditorRoute\(theme\)\)\}" data-route="\$\{AppUtils\.escapeHTML\(themeEditorRoute\(theme\)\)\}"/);
   assert.match(app, /id="builder-litrus-mixer"[\s\S]{0,180}litrus-mixer\/index\.html\?craft=1/);
-  assert.match(app, /id="builder-litrus-build"/);
+  assert.match(app, /id="builder-litrus-sections"/);
+  assert.match(app, /id="builder-litrus-advanced"/);
+  assert.doesNotMatch(app, /id="builder-litrus-build"/);
   assert.match(app, /id="builder-litrus-publish"/);
-  assert.match(app, /id="builder-litrus-store-details" href="\/account\/web\/store" data-route="\/account\/web\/store">Store details/);
+  assert.match(app, /id="builder-litrus-store-details" href="\/account\/web\/store" data-route="\/account\/web\/store">Store/);
+  assert.equal((editor.match(/id="product-modal-container"/g) || []).length, 2);
+  assert.match(editor, /background:var\(--surface\)/);
+  assert.match(app, /type: "craft-litrus-theme"/);
+  assert.match(mixer, /event\.data\?\.type==='craft-litrus-theme'/);
+  assert.match(mixer, /:not\(\.craft-integrated\)/);
+  assert.match(mixer, /html\.craft-integrated #wz \.prow\{grid-template-columns:48px/);
+  assert.match(mixer, /html\.craft-integrated #wz \.catchips button\{[^}]*border-radius:14px/);
   assert.match(app, /href="\/account\/web\/store" data-route="\/account\/web\/store">Edit store details/);
   assert.match(app, /data-litrus-preview-device="phone"/);
   assert.match(app, /craft-litrus-image-request/);
   assert.match(app, /\/api\/images\/search\?tenant=/);
   assert.match(app, /errors: result\.errors \|\| \[\], error: result\.error \|\| ""/);
   assert.match(app, /event\.data\?\.type === "craft-litrus-ready"/);
+  assert.match(app, /event\.data\?\.type === "craft-litrus-mode"/);
   assert.match(app, /event\.data\?\.type === "craft-litrus-draft"/);
   assert.match(app, /await saveLitrusDesign\(event\.data\)/);
+  assert.match(app, /await saveLitrusDesign\(event\.data\);[\s\S]{0,240}this\.openCloudflarePublishModal\(true\)/);
   assert.match(app, /await this\.saveLitrusMixerCatalog\(payload, isDraftEditor\)/);
   assert.match(app, /new=1&finish=1&theme=litrus-mixer/);
   assert.match(app, /renameLitrusMixerStorefront\(html, shopName\)/);
@@ -155,6 +179,10 @@ test("Liquid theme choices open the shared Studio and Litrus opens its integrate
   assert.match(mixer, /craftIntegrated\?JSON\.stringify\(names\)/);
   assert.match(mixer, /if\(craftIntegrated\)\{\s*if\(window\.parent===window\|\|!document\.documentElement\.classList\.contains\('craft-ready'\)\)return/);
   assert.match(mixer, /type:'craft-litrus-publish'/);
+  assert.match(mixer, /id="tabEdit" role="tab" aria-pressed="true">Edit/);
+  assert.match(mixer, /id="tabView" role="tab" aria-pressed="false">Preview/);
+  assert.doesNotMatch(mixer, /id="tabAdvanced"/);
+  assert.match(mixer, /craftLitrusShowSections/);
   assert.match(mixer, /type:'craft-litrus-draft'/);
   assert.match(mixer, /type==='craft-litrus-draft-saved'/);
   assert.match(mixer, /if\(craftIntegrated\)\{/);
@@ -211,6 +239,8 @@ test("Litrus mobile build and settings panels have bounded touch-scroll areas", 
   assert.match(mixer, /#wz\{[^}]*height:calc\(100dvh - 58px[^}]*min-height:0;max-height:calc\([^}]*\);overflow:hidden/);
   assert.match(mixer, /#wz \.wz-sec\{[^}]*overflow-y:auto;[^}]*touch-action:pan-y/);
   assert.match(mixer, /#wz #shopSettingsPanel\{[^}]*min-height:0;overflow-y:auto;[^}]*touch-action:pan-y/);
+  assert.match(mixer, /settingsButton\.id='shopSettingsToggle'/);
+  assert.match(mixer, /#wz \.wz-head>#shopSettingsToggle\{display:inline-flex!important/);
   assert.match(mixer, /#mobileAdvancedScreen\{[^}]*overflow-y:auto;[^}]*touch-action:pan-y/);
 });
 
@@ -273,6 +303,128 @@ test("Litrus refreshes published pages and preserves spin and video product medi
     );
     const videoPage = new JSDOM(data.pages["p/102"]).window.document;
     assert.equal(videoPage.querySelector(".sp-gallery video").getAttribute("src"), "https://cdn.test/bag.mp4");
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("Litrus product cards keep a local image when catalog photos are missing or fail", async () => {
+  const liveCatalog = await read("../public/litrus-mixer/live-catalog.js");
+  const dom = new JSDOM("<!doctype html><html><body></body></html>", { runScripts: "outside-only" });
+  try {
+    dom.window.eval(liveCatalog);
+    const card = '<article data-pid=""><div class="p-img-wrapper"><img></div><h3 class="p-title"></h3></article>';
+    const data = {
+      shop: { name: "Example", cur: "KES", products: [] },
+      pages: {
+        home: `<main class="sp-main"><section class="prods">${card}</section></main>`,
+        shop: `<main class="sp-main"><section class="prods"></section></main>`
+      },
+      templates: { productCard: card }
+    };
+    dom.window.litrusRefreshPublishedCatalog(data, {
+      store: { name: "Example" },
+      categories: [],
+      products: [{ id: 1, name: "No photo", images: [] }]
+    });
+
+    const image = new dom.window.DOMParser().parseFromString(data.pages.home, "text/html").querySelector("img");
+    assert.match(image.getAttribute("src"), /^data:image\/svg\+xml;charset=utf-8,/);
+    image.setAttribute("src", "https://broken.example/image.webp");
+    new Function(image.getAttribute("onerror")).call(image);
+    assert.match(image.getAttribute("src"), /^data:image\/svg\+xml;charset=utf-8,/);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("Litrus category styles render every category as a working category link", async () => {
+  const mixer = await read("../public/litrus-mixer/index.html");
+  const categoryBuilder = mixer.match(/function cgSec\(PV\)\{[\s\S]*?\n\}/)?.[0];
+  assert.ok(categoryBuilder);
+  assert.match(mixer, /categories\.length\?cgSec\(PV\):null/);
+  assert.match(mixer, /SHOP\.categoriesPosition==='after-products'/);
+  assert.match(mixer, /Categories placement/);
+
+  const categories = ["Shoes", "Bags", "<b>Hats</b>", "Belts", "More"];
+  const build = style => {
+    const dom = new JSDOM("<!doctype html><html><body></body></html>");
+    try {
+      return runInNewContext(`${categoryBuilder}\ncgSec(true)`, {
+        document: dom.window.document,
+        SHOP: { custom: true, cats: categories },
+        catList: () => categories.map(name => ({
+          name,
+          slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+        })),
+        shopProds: () => [],
+        cs: { value: style },
+        art: () => "https://images.test/category.webp",
+        escH: value => String(value).replace(/[&<>"']/g, character => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[character]),
+        slugify: value => String(value).toLowerCase().replace(/[^a-z0-9]+/g, "-")
+      });
+    } finally {
+      dom.window.close();
+    }
+  };
+
+  const circles = build("cg0");
+  assert.equal(circles.querySelectorAll("[data-litrus-category]").length, categories.length);
+  assert.equal(circles.querySelector('[data-go="c/shoes"] [data-litrus-category-name]').textContent, "Shoes");
+  assert.equal(circles.querySelector('[data-litrus-category-name]').textContent, "Shoes");
+  assert.equal(circles.querySelector('[data-litrus-category="b-hats-b"] [data-litrus-category-name]').textContent, "<b>Hats</b>");
+  assert.ok(build("cg4").querySelector(".cat-arches"), "The selected category style should change the generated layout.");
+});
+
+test("Litrus category pills keep readable text on white backgrounds", async () => {
+  const mixer = await read("../public/litrus-mixer/index.html");
+  const pillStyle = mixer.match(/\.cgw \.cat-pill\{[^}]*\}/)?.[0];
+  const hoverStyle = mixer.match(/\.cgw \.cat-pill:hover\{[^}]*\}/)?.[0];
+  assert.ok(pillStyle);
+  assert.ok(hoverStyle);
+  assert.match(pillStyle, /background:\s*#fff/);
+  assert.match(pillStyle, /color:\s*#111/);
+  assert.match(hoverStyle, /color:\s*var\(--btn-text,\s*#fff\)/);
+});
+
+test("Litrus published catalog updates category names without flattening the selected layout", async () => {
+  const liveCatalog = await read("../public/litrus-mixer/live-catalog.js");
+  const dom = new JSDOM("<!doctype html><html><body></body></html>", { runScripts: "outside-only" });
+  try {
+    dom.window.eval(liveCatalog);
+    const card = '<article data-pid="old"><div class="p-img-wrapper"><img></div><h3 class="p-title">Old product</h3><span class="p-price">1</span><p class="p-desc"></p><button class="p-btn" data-add="old"></button></article>';
+    const categorySection = '<section class="litrus-categories cgw"><h2 class="sole-category-heading">Shop by category</h2><div class="cat-bento"><a class="litrus-category-link cat-bento-item" data-litrus-category="old" data-go="c/old" href="#"><img src="https://images.test/old.webp"><div class="cat-bento-overlay"><span data-litrus-category-name="">Old</span></div></a></div></section>';
+    const home = `<main class="sp-main">${categorySection}<section class="prods">${card}</section></main>`;
+    const data = {
+      shop: { name: "Old shop", cur: "KES", offerType: "products", products: [] },
+      pages: {
+        home,
+        shop: `<main class="sp-main"><div class="sp-top"><h1></h1><p></p></div><section class="prods">${card}</section></main>`
+      },
+      shell: { head: '<header><nav class="sp-nav"></nav></header>' },
+      templates: { productCard: card }
+    };
+
+    dom.window.litrusRefreshPublishedCatalog(data, {
+      store: { name: "Live shop", currency: "KES" },
+      categories: [{ id: 1, name: "Bracelets & Rings" }, { id: 2, name: "New Arrivals" }],
+      products: [{
+        id: 101, name: "Gold ring", price: 1800, category_id: 1,
+        images: ["https://images.test/ring.webp"]
+      }]
+    });
+
+    const page = new JSDOM(data.pages.home).window.document;
+    const layout = page.querySelector(".cat-bento");
+    assert.ok(layout);
+    assert.deepEqual(
+      [...layout.querySelectorAll("[data-litrus-category-name]")].map(label => label.textContent),
+      ["Bracelets & Rings", "New Arrivals"]
+    );
+    assert.equal(layout.querySelector('[data-go="c/bracelets-and-rings"]').dataset.litrusCategory, "bracelets-and-rings");
+    assert.equal(page.querySelector(".sole-category-heading").textContent, "Shop by category");
   } finally {
     dom.window.close();
   }
@@ -447,6 +599,168 @@ test("Litrus catalog saves and restores every product category", async () => {
   assert.equal(flushCount, 0, "The caller persists the combined catalog and design changes with one flush.");
 });
 
+test("Litrus catalog round-trips service settings and booking details", async () => {
+  const app = await read("../index.html");
+  const mixer = await read("../public/litrus-mixer/index.html");
+  const method = app.match(/async saveLitrusMixerCatalog\(input, isDraftEditor\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  openCloudflarePublishModal/)?.[1];
+  const sendCatalog = app.match(/const sendCatalog = \(\) => \{([\s\S]*?)\r?\n        \};/)?.[1];
+  const hydrateCatalog = mixer.match(/window\.litrusSetCraftCatalog=function\(payload\)\{([\s\S]*?)\r?\n\};/)?.[1];
+  const payloadBuilder = mixer.match(/window\.litrusGetCraftPublishPayload=function\(\)\{([\s\S]*?)\r?\n\};/)?.[1];
+  assert.ok(method);
+  assert.ok(sendCatalog);
+  assert.ok(hydrateCatalog);
+  assert.ok(payloadBuilder);
+  assert.match(sendCatalog, /offer_type:\s*store\.offer_type/);
+  assert.match(sendCatalog, /duration_minutes:\s*Number\(product\.duration_minutes\)/);
+  assert.match(hydrateCatalog, /duration_minutes:Number\(product\.duration_minutes\)\|\|60/);
+  assert.match(hydrateCatalog, /if\(isNewShopDraft&&\(!hasRecipe\|\|replaceGeneratedRecipe\)\)\{[\s\S]*?autosave\(\)/);
+  assert.equal((hydrateCatalog.match(/\bautosave\(\)/g) || []).length, 1);
+  assert.match(payloadBuilder, /offer_type:SHOP\.offerType/);
+
+  let savedCatalog;
+  const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor) {${method}\n};`)(
+    {},
+    { ShopSQLite: { async flush() {} } }
+  );
+  const tenant = { id: "service-shop", name: "Repair studio" };
+  const current = {
+    tenant_id: tenant.id,
+    categories: [{ id: 21, name: "Repairs" }],
+    products: [],
+    inventory: [],
+    store: {}
+  };
+  const controller = {
+    getActiveTenant: () => tenant,
+    tenantCatalogs: () => [current],
+    setActiveTenantCatalog(_tenant, catalog) {
+      savedCatalog = catalog;
+    }
+  };
+
+  await save.call(controller, {
+    catalog: {
+      shop: {
+        name: tenant.name,
+        offer_type: "services",
+        service_days: [1, 2, 3, 4, 5],
+        service_open_time: "08:30",
+        service_close_time: "17:30",
+        service_timezone: "Africa/Nairobi",
+        service_buffer_minutes: 15,
+        service_deposit_percent: 20
+      },
+      categories: [{ name: "Repairs" }],
+      products: [{
+        id: "service-1",
+        name: "Device repair",
+        price: 2500,
+        category_names: ["Repairs"],
+        booking_enabled: true,
+        duration_minutes: 45
+      }]
+    }
+  }, false);
+
+  assert.equal(savedCatalog.store.offer_type, "services");
+  assert.deepEqual(savedCatalog.store.service_days, [1, 2, 3, 4, 5]);
+  assert.equal(savedCatalog.store.service_open_time, "08:30");
+  assert.equal(savedCatalog.store.service_close_time, "17:30");
+  assert.equal(savedCatalog.store.service_timezone, "Africa/Nairobi");
+  assert.equal(savedCatalog.store.service_buffer_minutes, 15);
+  assert.equal(savedCatalog.store.service_deposit_percent, 20);
+  assert.equal(savedCatalog.products[0].booking_enabled, true);
+  assert.equal(savedCatalog.products[0].duration_minutes, 45);
+});
+
+test("Craft Litrus reload restores saved design without overwriting it on hydration", async () => {
+  const app = await read("../index.html");
+  const mixer = await read("../public/litrus-mixer/index.html");
+  const designSave = app.match(/const saveLitrusDesign = payload => \{([\s\S]*?)\r?\n        \};/)?.[1];
+  const sendCatalog = app.match(/const sendCatalog = \(\) => \{([\s\S]*?)\r?\n        \};/)?.[1];
+  const hydrateCatalog = mixer.match(/window\.litrusSetCraftCatalog=function\(payload\)\{([\s\S]*?)\r?\n\};/)?.[1];
+  const recipeBuilder = mixer.match(/function getCraftDesignRecipe\(\)\{([\s\S]*?)\r?\n\}/)?.[1];
+  const payloadBuilder = mixer.match(/window\.litrusGetCraftPublishPayload=function\(\)\{([\s\S]*?)\r?\n\};/)?.[1];
+  assert.ok(designSave);
+  assert.ok(sendCatalog);
+  assert.ok(hydrateCatalog);
+  assert.ok(recipeBuilder);
+  assert.ok(payloadBuilder);
+  assert.match(designSave, /setWorkspaceSetting\(litrusRecipeKey, payload\.recipe\)/);
+  assert.match(app, /const litrusScope = isDraftEditor \? `draft:\$\{draftId \|\| "new"\}` : `tenant:\$\{this\.getActiveTenant\(\)\.id\}`/);
+  assert.match(app, /getWorkspaceSetting\(litrusRecipeKey, null\)/);
+  assert.match(app, /liquid-html-theme-draft:litrus-mixer:tenant:\$\{tenant\.id\}/);
+  assert.match(app, /litrus-mixer-recipe:tenant:\$\{result\.tenant\.id\}/);
+  assert.match(sendCatalog, /recipe:\s*savedLitrusRecipe/);
+  assert.match(hydrateCatalog, /isNewShopDraft=shop\.is_new_shop_draft===true/);
+  assert.match(hydrateCatalog, /generatedDefault===true&&payload\.recipe\.draftId!==draftId/);
+  assert.match(hydrateCatalog, /if\(isNewShopDraft&&\(!hasRecipe\|\|replaceGeneratedRecipe\)\)/);
+  assert.match(sendCatalog, /is_new_shop_draft:\s*isDraftEditor/);
+  assert.match(sendCatalog, /draft_id:\s*draft\?\.draft_id/);
+  assert.match(app, /draft_id:\s*draftId/);
+  assert.match(payloadBuilder, /recipe=getCraftDesignRecipe\(\)/);
+  assert.match(payloadBuilder, /return \{html,catalog,recipe\}/);
+  assert.match(recipeBuilder, /recipe\.generatedDefault=generatedDefaultDesign/);
+
+  const compactRecipe = new Function("getRecipe", "generatedDefaultDesign", "designDraftId", `return function () {${recipeBuilder}\n};`)(
+    () => ({
+      litrus: "mixer-recipe",
+      details: { products: [{ name: "product" }], cats: ["category"], headline: "Saved headline" }
+    }),
+    true,
+    "draft-abc123"
+  )();
+  assert.equal(compactRecipe.details.headline, "Saved headline");
+  assert.equal("products" in compactRecipe.details, false);
+  assert.equal("cats" in compactRecipe.details, false);
+  assert.equal(compactRecipe.generatedDefault, true);
+  assert.equal(compactRecipe.draftId, "draft-abc123");
+});
+
+test("Litrus defers hidden mobile preview work and avoids identical iframe reloads", async () => {
+  const mixer = await read("../public/litrus-mixer/index.html");
+  const refreshPreview = mixer.match(/function refreshPreview\(\)\{[\s\S]*?\n\}/)?.[0];
+  assert.ok(refreshPreview);
+  assert.match(mixer, /id="storePreviewFrame"[^>]*loading="lazy"/);
+  assert.match(mixer, /if\(mode==='preview'\)\{layoutPreview\(\);refreshPreview\(\)\}/);
+  assert.match(mixer, /function syncPreviewStyles\(doc\)/);
+  assert.match(refreshPreview, /currentStore\.replaceWith\(updated\)/);
+
+  let visible = false;
+  const writes = [];
+  const refresh = new Function(
+    "previewVisible",
+    "previewDocument",
+    "previewFrame",
+    "setTimeout",
+    "clearTimeout",
+    "setPreviewUpdating",
+    "setPreviewReady",
+    `let previewTimer;let lastPreviewDocument='';${refreshPreview}\nreturn refreshPreview;`
+  )(
+    () => visible,
+    () => "<main>shop</main>",
+    { set srcdoc(value) { writes.push(value); } },
+    setTimeout,
+    clearTimeout,
+    () => {},
+    () => {}
+  );
+
+  refresh();
+  await new Promise(resolve => setTimeout(resolve, 140));
+  assert.deepEqual(writes, [], "The hidden mobile preview should not render during builder startup.");
+
+  visible = true;
+  refresh();
+  await new Promise(resolve => setTimeout(resolve, 140));
+  assert.deepEqual(writes, ["<main>shop</main>"]);
+
+  refresh();
+  await new Promise(resolve => setTimeout(resolve, 140));
+  assert.deepEqual(writes, ["<main>shop</main>"], "An unchanged preview should not reload its iframe.");
+});
+
 test("Roles5 experimental footers remain usable when the catalog has no categories", async () => {
   const mixer = await read("../public/litrus-mixer/index.html");
   const footerSource = mixer.match(/function expFoot\(id,name\)\{[\s\S]*?\n\}/)?.[0];
@@ -536,11 +850,94 @@ test("Roles5 product cards keep Good Form hierarchy and preserve editorial add b
   }
 });
 
+test("Litrus product grid and animation selections reach the rendered storefront", async () => {
+  const mixer = await read("../public/litrus-mixer/index.html");
+  const layoutSource = mixer.match(/function layout\(sec,nodes\)\{[\s\S]*?\n\}/)?.[0];
+  const postFxSource = mixer.match(/function postFx\(w\)\{[\s\S]*?\n\}/)?.[0];
+  const animationSource = mixer.match(/ANI=(\[[^\]]+\]);\s*ani\.add/)?.[1];
+
+  assert.ok(layoutSource);
+  assert.ok(postFxSource);
+  assert.ok(animationSource);
+  assert.match(mixer, /\.sole-store \.sole-product-grid\{display:grid;grid-template-columns:repeat\(var\(--shop-cols,4\),minmax\(0,1fr\)\)\}/);
+  assert.match(mixer, /\.prods\.shop-settings-grid\{display:grid!important;grid-template-columns:repeat\(var\(--shop-cols,3\),minmax\(0,1fr\)\)!important\}/);
+  assert.match(mixer, /shop-settings-grid:has\(\>:nth-child\(3\):last-child\)\{grid-template-columns:repeat\(var\(--shop-cols,3\)/);
+  assert.match(layoutSource, /Math\.min\(4,Number\(SHOP\.productsPerRow\)\|\|4,nodes\.length\|\|4\)/);
+  assert.doesNotMatch(mixer, /sole-product-grid>\*,[^{}]*\{[^}]*animation:none!important/);
+  assert.doesNotMatch(mixer, /\.sole-product-grid \[data-pid\],[^{}]*\.p-card\.sole-product\{[^}]*animation:none!important/);
+  assert.doesNotMatch(mixer, /\.prods\.lay16>\*\{transform:none!important\}/);
+  assert.match(mixer, /\.sole-product-grid\.lay19\{display:flex;flex-direction:column/);
+  assert.match(mixer, /\.sole-product-grid\.lay20\{grid-template-columns:repeat\(3/);
+  assert.match(mixer, /layout:\+lay\.value[\s\S]*?animation:ani\.value/);
+  assert.match(mixer, /setSel\(lay,r\.layout[\s\S]*?setSel\(ani,r\.animation/);
+
+  const dom = new JSDOM("<!doctype html><html><body></body></html>");
+  try {
+    const layoutControl = { value: "0" };
+    const shopConfig = { productsPerRow: 3, cats: ["Shoes", "Bags"] };
+    const makeLayout = new Function(
+      "SHOP", "document", "escH", "lay",
+      `${layoutSource}; return layout;`
+    )(shopConfig, dom.window.document, value => String(value), layoutControl);
+
+    for (let index = 0; index <= 20; index++) {
+      layoutControl.value = String(index);
+      const section = dom.window.document.createElement("section");
+      const nodes = [1, 2, 3].map(() => dom.window.document.createElement("article"));
+      nodes.forEach(node => { node.className = "p-card"; node.dataset.cats = "Shoes|Bags"; });
+      makeLayout(section, nodes);
+      if (index) assert.ok(section.classList.contains(`lay${index}`), `Layout ${index} should be applied`);
+      if ([0, 1, 2, 4, 9].includes(index)) assert.ok(section.classList.contains("shop-settings-grid"));
+      if (index === 5) assert.ok(section.querySelector(".split-right"));
+      if (index === 11) assert.ok(section.querySelector(".tabs-bar"));
+      if (index === 18) assert.ok(nodes[0].classList.contains("lpk-editorial-feature"));
+      if (index === 19) assert.ok(nodes[0].classList.contains("lpk-quick-order-card"));
+      if (index === 20) assert.ok(nodes[0].classList.contains("lpk-lookbook-card"));
+    }
+
+    layoutControl.value = "1";
+    shopConfig.productsPerRow = 2;
+    const selectedTwoColumns = dom.window.document.createElement("section");
+    makeLayout(selectedTwoColumns, [1, 2, 3].map(() => dom.window.document.createElement("article")));
+    assert.equal(selectedTwoColumns.style.getPropertyValue("--shop-cols"), "2");
+    shopConfig.productsPerRow = 4;
+    const cappedToCatalogSize = dom.window.document.createElement("section");
+    makeLayout(cappedToCatalogSize, [1, 2].map(() => dom.window.document.createElement("article")));
+    assert.equal(cappedToCatalogSize.style.getPropertyValue("--shop-cols"), "2");
+
+    const animations = JSON.parse(animationSource);
+    for (const animation of ["rev-up", "cont-float", "hov-lift"]) {
+      const root = dom.window.document.createElement("div");
+      root.innerHTML = '<div class="prods"><article class="p-card"></article></div>';
+      const postFx = new Function(
+        "state", "lay", "ani", "io", "lpkBindMotion", "fitText", "fnt", "$", "window", "document",
+        `${postFxSource}; return postFx;`
+      )(
+        { loopSkip: false },
+        { value: "0" },
+        { value: animation },
+        null,
+        () => {},
+        () => {},
+        { value: "" },
+        () => null,
+        dom.window,
+        dom.window.document
+      );
+      postFx(root);
+      assert.ok(root.querySelector(".p-card").classList.contains(animation), `${animation} should reach product cards`);
+      assert.ok(animations.includes(animation));
+    }
+  } finally {
+    dom.window.close();
+  }
+});
+
 test("Roles5 starts from a fixed Good Form storefront preset", async () => {
   const mixer = await read("../public/litrus-mixer/index.html");
   assert.match(mixer, /configureStyleKit\('Good Form','layout-overlay','card-swiss','tiles','cols','Good Form','Barlow Condensed','Classic grid'\)/);
   assert.match(mixer, /PALS\.push\(\["Good Form","#f7f6f3","#dedbd5","#222321","#252725","#b47a57"\]\)/);
-  assert.match(mixer, /mood=GOOD_FORM\|\|MOODS\[0\];[\s\S]*?apply\(mood,false\);show\(1\)/);
+  assert.match(mixer, /mood=GOOD_FORM\|\|MOODS\[0\];[\s\S]*?apply\(mood,false(?:,false)?\);show\(1\)/);
   assert.doesNotMatch(mixer, /apply\(MOODS\[0\]\);pl\.value='0';render\(\);sync\(\);show\(1\)/);
 });
 

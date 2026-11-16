@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Craft — Build a website. Run your business.</title>
+  <title>Craft</title>
   <meta name="description" content="Build your business website, manage in-person sales with POS, and understand your business with Craft.">
   <meta property="og:title" content="Craft — Build a website. Run your business.">
   <meta property="og:description" content="Create a website for your business, take sales at the counter, and learn from your business records with Craft.">
@@ -2295,6 +2295,169 @@ a.launchpad-link:focus-visible {
   gap: 14px;
 }
 
+.website-management-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.website-management-heading h2 {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+}
+
+.website-management-heading p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: .84rem;
+}
+
+.website-management-new {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.profile-website-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-website-card-heading h2 {
+  margin: 0 0 6px;
+  color: var(--text-main);
+  font-size: 1.02rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.profile-website-card-heading .profile-website-domain {
+  margin: 0 !important;
+  color: var(--text-muted);
+  font-size: .82rem;
+}
+
+.profile-website-live {
+  display: grid;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-subtle);
+  color: var(--text-main);
+}
+
+.profile-website-live svg {
+  width: 19px;
+  height: 19px;
+}
+
+.website-management-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.website-management-actions > * {
+  display: flex;
+  min-width: 0;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.website-management-manage {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 8px 12px;
+}
+
+.website-wizard-compact-action {
+  min-height: 36px !important;
+  padding: 5px 10px !important;
+  border-radius: 999px !important;
+  font-size: .78rem !important;
+  line-height: 1.2;
+}
+
+.website-wizard-category-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.website-wizard-category-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.website-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.website-usage-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+}
+
+.website-usage-card span,
+.website-usage-card strong,
+.website-usage-card small {
+  display: block;
+}
+
+.website-usage-card span,
+.website-usage-card small {
+  color: var(--text-muted);
+  font-size: .76rem;
+}
+
+.website-usage-card strong {
+  margin: 4px 0;
+  font-size: 1.12rem;
+  overflow-wrap: anywhere;
+}
+
+.website-usage-tables {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.website-usage-table-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .84rem;
+}
+
 .profile-add-account {
   display: inline-flex;
   align-items: center;
@@ -2460,6 +2623,31 @@ a.launchpad-link:focus-visible {
   padding: 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
+}
+
+.store-workspace-form[data-studio-form="web-category"] {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 6px;
+}
+
+.store-workspace-form[data-studio-form="web-category"] [role="status"] {
+  grid-column: 1 / -1;
+}
+
+.store-workspace-form[data-studio-form="web-category"] input,
+.store-workspace-form[data-studio-form="web-category"] button {
+  min-height: 34px;
+}
+
+.store-workspace-form[data-studio-form="web-category"] input {
+  padding: 5px 8px;
+}
+
+.store-workspace-form[data-studio-form="web-category"] button {
+  padding: 5px 9px;
 }
 
 .store-product-form[hidden] {
@@ -4955,10 +5143,20 @@ a.launchpad-link:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
+.pos-revenue-chart-scroll {
+  width: 100%;
+  margin-top: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+  scrollbar-width: thin;
+}
+
 .pos-revenue-chart svg {
   display: block;
   width: 100%;
-  min-height: 210px;
+  min-width: var(--pos-chart-min-width);
+  height: 280px;
   overflow: visible;
 }
 
@@ -4986,9 +5184,21 @@ a.launchpad-link:focus-visible {
   stroke-width: 2;
 }
 
-.pos-revenue-chart-label {
+.pos-revenue-chart-grid {
+  stroke: var(--border);
+  stroke-dasharray: 3 4;
+  stroke-width: 1;
+}
+
+.pos-revenue-chart-axis,
+.pos-revenue-chart-tick {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+}
+
+.pos-revenue-chart-axis-label {
   fill: var(--text-muted);
-  font: 11px var(--font-main);
+  font: 10px var(--font-main);
 }
 
 .pos-overview-metrics {
@@ -7546,12 +7756,83 @@ a.launchpad-link:focus-visible {
   letter-spacing: -.02em;
 }
 
+.studio-panel .studio-overview-activity-title {
+  font-size: .9rem;
+}
+
+.studio-overview-load {
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: #5f5f64;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.studio-overview-load:hover {
+  color: #18181b;
+  text-decoration: underline;
+}
+
+.studio-overview-activity-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
 .studio-panel-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 12px;
+}
+
+.newsletter-header h2 {
+  font-size: 1rem;
+}
+
+.newsletter-refresh-button {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+.newsletter-refresh-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.newsletter-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.newsletter-metrics .studio-data-card {
+  min-height: 66px;
+  gap: 3px;
+  padding: 9px 11px;
+  border-radius: 14px;
+}
+
+.newsletter-metrics .studio-data-card > span {
+  font-size: .68rem;
+  line-height: 1.2;
+}
+
+.newsletter-metrics .studio-data-card > strong {
+  font-size: clamp(1rem, 2.6vw, 1.25rem);
+}
+
+.newsletter-metrics .studio-data-card > small {
+  font-size: .65rem;
+  line-height: 1.25;
 }
 
 .studio-workspace-header-actions {
@@ -7709,6 +7990,33 @@ a.launchpad-link:focus-visible {
   font-weight: 650;
 }
 
+.studio-workspace .store-workspace-form.crm-points-rules {
+  gap: 10px;
+  padding: 14px;
+}
+
+.studio-workspace .store-workspace-form.crm-points-rules h2 {
+  font-size: .96rem;
+}
+
+.studio-workspace .store-workspace-form.crm-points-rules p {
+  font-size: .72rem;
+  line-height: 1.35;
+}
+
+.studio-workspace .store-workspace-form.crm-points-rules label {
+  gap: 5px;
+  font-size: .76rem;
+}
+
+.studio-workspace .store-workspace-form.crm-points-rules input {
+  min-height: 38px;
+}
+
+.studio-workspace .store-workspace-form.crm-points-rules .btn-primary {
+  height: 42px;
+}
+
 .studio-workspace .store-workspace-form .studio-check-label {
   display: flex;
   align-items: center;
@@ -7758,9 +8066,9 @@ a.launchpad-link:focus-visible {
 
 .studio-inline-actions.web-product-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: 72px;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 42px;
+  gap: 6px;
   width: 100%;
 }
 
@@ -7768,14 +8076,14 @@ a.launchpad-link:focus-visible {
   display: flex;
   width: 100%;
   min-width: 0;
-  min-height: 72px;
+  min-height: 42px;
   align-items: center;
   justify-content: center;
-  padding: 9px 10px;
+  padding: 4px 10px;
   text-align: center;
   white-space: normal;
   overflow-wrap: anywhere;
-  line-height: 1.25;
+  line-height: 1.15;
 }
 
 .web-product-media {
@@ -8180,7 +8488,7 @@ a.launchpad-link:focus-visible {
 .business-lens-shell .studio-workspace-header-actions { gap: 4px; }
 .business-lens-shell .workspace-menu summary { width: 38px; height: 38px; }
 .business-lens-shell .workspace-sidebar-link { font-size: .76rem; }
-.business-lens-shell .studio-workspace-bottom-nav { min-height: 57px; padding: 5px; border-radius: 18px; }
+.business-lens-shell .studio-workspace-bottom-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); min-height: 57px; padding: 5px; border-radius: 18px; }
 .business-lens-shell .studio-workspace-bottom-link { gap: 2px; font-size: .55rem; }
 .business-lens-shell .studio-nav-icon { font-size: 1rem; }
 .business-lens-content { display: grid; gap: 9px; padding-top: 0 !important; }
@@ -8212,9 +8520,14 @@ a.launchpad-link:focus-visible {
 .bl-bar-row > div b { flex: 0 0 auto; }
 .bl-bar-row > i, .bl-channel-product i { display: block; height: 5px; margin-top: 4px; overflow: hidden; border-radius: 9px; background: #eee; }
 .bl-bar-row > i span { display: block; height: 100%; border-radius: inherit; }
-.bl-chart { display: block; width: 100%; height: 150px; color: #777; }
-.bl-chart-labels, .bl-legend { display: flex; justify-content: space-between; gap: 5px; color: #777; font-size: 9px; }
-.bl-legend { justify-content: flex-start; margin-top: 8px; gap: 12px; }
+.bl-chart-scroll { width: 100%; overflow-x: auto; overscroll-behavior-x: contain; touch-action: pan-x pan-y; scrollbar-width: thin; }
+.bl-chart { display: block; width: 100%; min-width: var(--bl-chart-min-width); height: 230px; color: #777; }
+.bl-chart-grid { stroke: currentColor; stroke-opacity: .16; stroke-dasharray: 3 4; }
+.bl-chart-axis, .bl-chart-tick { stroke: currentColor; stroke-opacity: .5; }
+.bl-chart-axis-label { fill: currentColor; font: 10px sans-serif; }
+.bl-chart-point { fill: #fff; stroke: #555; stroke-width: 1.5; }
+.bl-legend { display: flex; justify-content: flex-start; gap: 12px; color: #777; font-size: 10px; }
+.bl-legend { margin-top: 8px; }
 .bl-legend span { display: flex; align-items: center; gap: 4px; }
 .bl-legend i { width: 8px; height: 8px; border-radius: 50%; }
 .bl-big-number { margin: 8px 0; font-size: 24px; font-weight: 750; overflow-wrap: anywhere; }
@@ -8248,8 +8561,14 @@ a.launchpad-link:focus-visible {
 .bl-channel-product > div { display: grid; grid-template-columns: 1fr 1.4fr; gap: 3px 7px; color: #777; font-size: 9px; }
 .bl-channel-product i { margin: 0; }
 .bl-channel-product i b { display: block; height: 100%; background: #222; }
-.bl-scatter { position: relative; height: 185px; border-left: 1px solid #aaa; border-bottom: 1px solid #aaa; background: linear-gradient(90deg,transparent 49.7%,#ddd 50%,transparent 50.3%),linear-gradient(0deg,transparent 49.7%,#ddd 50%,transparent 50.3%); }
+.bl-scatter-wrap { display: grid; grid-template-columns: 14px 34px minmax(0,1fr); grid-template-rows: minmax(190px, 230px) 20px 16px; align-items: stretch; }
+.bl-scatter-y-labels { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 0 4px; color: #777; font-size: 9px; text-align: right; }
+.bl-scatter { position: relative; height: 100%; border-left: 1px solid #888; border-bottom: 1px solid #888; background: repeating-linear-gradient(to right,transparent 0,transparent calc(25% - 1px),#ddd 25%,transparent calc(25% + 1px)),repeating-linear-gradient(to bottom,transparent 0,transparent calc(25% - 1px),#ddd 25%,transparent calc(25% + 1px)); }
 .bl-scatter > span { position: absolute; display: grid; width: 24px; height: 24px; place-items: center; overflow: hidden; border: 1px solid #888; border-radius: 50%; background: #eee; font-size: 7px; transform: translate(-50%,50%); }
+.bl-scatter { grid-column: 3; grid-row: 1; }
+.bl-scatter-x-labels { grid-column: 3; grid-row: 2; display: flex; justify-content: space-between; padding-top: 4px; color: #777; font-size: 9px; }
+.bl-scatter-axis-title { grid-column: 3; grid-row: 3; color: #777; font-size: 9px; text-align: center; }
+.bl-scatter-y-title { grid-column: 1; grid-row: 1 / 3; align-self: center; color: #777; font-size: 9px; writing-mode: vertical-rl; transform: rotate(180deg); }
 .bl-actions { display: flex; flex-wrap: wrap; gap: 7px; }
 .bl-actions a, .bl-actions button, .bl-card > a, .bl-settings-form button { padding: 8px 10px; border: 1px solid #ccc; border-radius: 9px; background: #f5f5f5; color: #222; font-size: 10px; text-decoration: none; cursor: pointer; }
 .bl-settings-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
@@ -8600,12 +8919,125 @@ body.craft-app-ui #app textarea {
 }
 
 body.craft-app-ui #app .web-product-actions .web-product-action-card,
-body.craft-app-ui #app .store-bulk-actions [data-bulk-remove] {
+body.craft-app-ui #app .store-bulk-actions [data-bulk-product-holds],
+body.craft-app-ui #app .store-bulk-actions [data-bulk-remove],
+body.craft-app-ui #app .newsletter-refresh-button {
   border: 1px solid #dedede;
   border-radius: 12px;
   background: linear-gradient(145deg, #fff 0%, #f0f0f0 100%);
   color: #111;
   box-shadow: 0 12px 24px -22px #000;
+}
+
+body.craft-app-ui #app .web-product-actions .web-product-action-card {
+  border-color: #adadad;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%);
+  box-shadow: 0 8px 18px -18px #000;
+}
+
+body.craft-app-ui #app .web-studio-shell .studio-panel .studio-list-row.studio-order-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  align-items: start;
+  gap: 10px 14px;
+  overflow: visible;
+  margin: 0 0 10px;
+  padding: 14px;
+  border: 1px solid #adadad;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%);
+  box-shadow: 0 8px 18px -18px #000;
+}
+
+body.craft-app-ui #app .web-studio-shell .studio-panel .studio-list-row.studio-online-order-card {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.craft-app-ui #app .studio-order-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+body.craft-app-ui #app .studio-order-header > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+body.craft-app-ui #app .studio-order-total {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+body.craft-app-ui #app .studio-order-items {
+  color: #333337;
+  font-size: .82rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+body.craft-app-ui #app .studio-order-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+body.craft-app-ui #app .studio-order-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+}
+
+body.craft-app-ui #app .studio-order-controls label {
+  display: grid;
+  gap: 4px;
+  color: #333337;
+  font-size: .74rem;
+}
+
+body.craft-app-ui #app .studio-order-controls select,
+body.craft-app-ui #app .studio-order-controls button {
+  min-height: 36px;
+}
+
+@media (max-width: 420px) {
+  body.craft-app-ui #app .web-studio-shell .studio-panel .studio-list-row.studio-order-card:not(.studio-online-order-card) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.craft-app-ui #app .studio-order-card > .studio-row-end {
+    justify-items: start;
+  }
+}
+
+body.craft-app-ui #app .studio-workspace .store-workspace-form[data-studio-form="web-category"] {
+  gap: 6px !important;
+  margin: 0 0 8px !important;
+  padding: 6px !important;
+  border-color: #adadad !important;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%) !important;
+  box-shadow: 0 8px 18px -18px #000 !important;
+}
+
+body.craft-app-ui #app .studio-workspace .store-workspace-form[data-studio-form="web-category"] input,
+body.craft-app-ui #app .studio-workspace .store-workspace-form[data-studio-form="web-category"] button {
+  min-height: 34px !important;
+}
+
+body.craft-app-ui #app .studio-workspace .store-workspace-form[data-studio-form="web-category"] input {
+  padding: 5px 8px !important;
+}
+
+body.craft-app-ui #app .studio-workspace .store-workspace-form[data-studio-form="web-category"] [role="status"]:empty {
+  display: none;
 }
 
 body.craft-app-ui #app .store-product-detail-wrap,
@@ -8643,6 +9075,432 @@ body.craft-app-ui #app .btn-studio-pill {
   color: #050505;
 }
 
+body.craft-app-ui #app .studio-load-button {
+  min-height: 30px;
+  height: 30px;
+  padding: 4px 11px;
+  border: 1px solid #adadad;
+  border-radius: 999px !important;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%);
+  box-shadow: none;
+  color: #111;
+  font-size: .72rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+body.craft-app-ui #app .website-management-actions > *,
+body.craft-app-ui #app .website-management-manage,
+body.craft-app-ui #app .website-management-new,
+body.craft-app-ui #app .profile-website-actions a,
+body.craft-app-ui #app .profile-website-actions button {
+  border: 1px solid #c5c5c5 !important;
+  border-radius: 14px !important;
+  background: linear-gradient(145deg, #f3f3f3 0%, #dedede 100%) !important;
+  color: #191919 !important;
+  box-shadow: 0 6px 16px -14px #000 !important;
+}
+
+body.craft-app-ui #app .profile-website-actions .profile-website-delete {
+  border-color: #dfc5c5 !important;
+  background: linear-gradient(145deg, #f8f2f2 0%, #eadede 100%) !important;
+  color: #7e3434 !important;
+}
+
+body.craft-app-ui #app .profile-current-website-badge {
+  border: 1px solid #c5c5c5;
+  background: linear-gradient(145deg, #f3f3f3 0%, #dedede 100%);
+  color: #333;
+}
+
+body.craft-app-ui #app .studio-performance-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+body.craft-app-ui #app .studio-performance-metric {
+  display: grid;
+  grid-template-columns: minmax(52px, .6fr) repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 54px;
+  padding: 7px 10px;
+  border: 1px solid #adadad;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%);
+  box-shadow: 0 8px 18px -18px #000;
+  color: #191919;
+  text-decoration: none;
+}
+
+body.craft-app-ui #app .studio-performance-label {
+  font-size: .78rem;
+}
+
+body.craft-app-ui #app .studio-performance-period {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+body.craft-app-ui #app .studio-performance-period small {
+  color: #555;
+  font-size: .62rem;
+}
+
+body.craft-app-ui #app .studio-performance-period strong {
+  overflow-wrap: anywhere;
+  color: #191919;
+  font-size: .7rem;
+  line-height: 1.15;
+}
+
+body.craft-app-ui #app .studio-performance-metric:hover {
+  background: linear-gradient(145deg, #e7e7e7 0%, #cecece 100%);
+}
+
+body.craft-app-ui #app .main-store-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0 0 7px;
+}
+
+body.craft-app-ui #app .main-store-shortcuts a {
+  display: flex;
+  min-width: 0;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 3px;
+  border: 1px solid #adadad;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%);
+  box-shadow: none;
+  color: #111;
+  font-size: .66rem;
+  font-weight: 650;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+}
+
+body.craft-app-ui #app .main-store-shortcuts a:active {
+  background: linear-gradient(145deg, #d2d2d2 0%, #b8b8b8 100%);
+}
+
+body.craft-app-ui #app .main-store-product-entry {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 12px;
+  border: 1px solid #999;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #d2d2d2 0%, #b8b8b8 100%);
+  color: #111;
+  font-size: .72rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+body.craft-app-ui #app .main-store-product-manager {
+  display: grid;
+  gap: 8px;
+}
+
+body.craft-app-ui #app .main-store-management-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  margin-bottom: 8px;
+  padding: 4px;
+  border: 1px solid #b1b1b1;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #d2d2d2 0%, #b8b8b8 100%);
+}
+
+body.craft-app-ui #app .main-store-management-tabs a {
+  display: grid;
+  min-height: 36px;
+  place-items: center;
+  border-radius: 9px;
+  color: #333;
+  font-size: .72rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+body.craft-app-ui #app .main-store-management-tabs a.is-active {
+  background: #f2f2f2;
+  color: #111;
+}
+
+body.craft-app-ui #app .main-store-product-manager > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+body.craft-app-ui #app .main-store-product-manager > header p {
+  flex: 1 1 auto;
+  margin: 3px 0 0;
+  color: #707070;
+  font-size: .65rem;
+  line-height: 1.3;
+}
+
+body.craft-app-ui #app .main-store-product-manager button {
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 1px solid #adadad;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%);
+  color: #111;
+  font-size: .66rem;
+  line-height: 1.1;
+}
+
+body.craft-app-ui #app .main-store-product-form,
+body.craft-app-ui #app .main-store-category-form,
+body.craft-app-ui #app .main-store-product-form-fields {
+  display: grid;
+  gap: 7px;
+}
+
+body.craft-app-ui #app .main-store-product-form-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.craft-app-ui #app .main-store-product-form[hidden],
+body.craft-app-ui #app .main-store-category-form[hidden] {
+  display: none;
+}
+
+body.craft-app-ui #app .main-store-product-form label,
+body.craft-app-ui #app .main-store-category-form label {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  color: #555;
+  font-size: .64rem;
+}
+
+body.craft-app-ui #app .main-store-product-form input:not([type="checkbox"]),
+body.craft-app-ui #app .main-store-category-form input:not([type="checkbox"]) {
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 7px;
+  border: 1px solid #c5c5c5;
+  border-radius: 8px;
+  background: #f7f7f7;
+  color: #111;
+  font-size: .72rem;
+}
+
+body.craft-app-ui #app .main-store-product-channels,
+body.craft-app-ui #app .main-store-product-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+body.craft-app-ui #app .main-store-product-channels label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 25px;
+  padding: 3px 7px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #eee;
+}
+
+body.craft-app-ui #app .main-store-product-channels input {
+  margin: 0;
+}
+
+body.craft-app-ui #app .main-store-product-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  padding: 6px;
+  border: 1px solid #adadad;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%);
+}
+
+body.craft-app-ui #app .main-store-product-row > img,
+body.craft-app-ui #app .main-store-product-image-placeholder {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  max-width: none;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 7px;
+  background: #f2f2f2;
+  object-fit: cover;
+}
+
+body.craft-app-ui #app .main-store-product-image-placeholder svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: #777;
+  stroke-width: 1.5;
+}
+
+body.craft-app-ui #app .main-store-product-row-info {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+body.craft-app-ui #app .main-store-product-row-info strong {
+  overflow: hidden;
+  font-size: .75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.craft-app-ui #app .main-store-product-row-info span {
+  color: #686868;
+  font-size: .62rem;
+  line-height: 1.3;
+}
+
+body.craft-app-ui #app .main-store-category-list {
+  display: grid;
+  gap: 5px;
+}
+
+body.craft-app-ui #app .main-store-category-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid #adadad;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%);
+}
+
+body.craft-app-ui #app .main-store-category-row-info {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+body.craft-app-ui #app .main-store-category-row-info strong {
+  overflow: hidden;
+  font-size: .75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.craft-app-ui #app .main-store-category-row-info span {
+  color: #686868;
+  font-size: .62rem;
+}
+
+body.craft-app-ui #app .main-store-product-actions {
+  justify-content: flex-end;
+}
+
+body.craft-app-ui #app .main-store-product-actions .main-store-product-icon-button {
+  display: grid;
+  width: 29px;
+  min-width: 29px;
+  height: 29px;
+  min-height: 29px;
+  padding: 5px;
+  place-items: center;
+  border-radius: 8px;
+}
+
+body.craft-app-ui #app .main-store-product-actions button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+body.craft-app-ui #app .main-store-product-status {
+  min-height: 1em;
+  margin: 0;
+  color: #555;
+  font-size: .66rem;
+}
+
+@media (max-width: 600px) {
+  body.craft-app-ui #app .main-store-product-actions {
+    width: auto;
+  }
+}
+
+body.craft-app-ui #app .newsletter-bulk-actions {
+  margin: 0 0 10px;
+}
+
+body.craft-app-ui #app .web-studio-shell .studio-panel .studio-list-row.newsletter-subscriber-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  height: auto;
+  min-height: 60px;
+  max-height: none;
+  align-items: center;
+  gap: 10px;
+  overflow: visible;
+  margin: 0 0 8px;
+  padding: 10px;
+  border: 1px solid #adadad;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #dedede 0%, #c4c4c4 100%);
+  box-shadow: 0 8px 18px -18px #000;
+}
+
+body.craft-app-ui #app .newsletter-subscriber-select {
+  display: grid;
+  place-items: center;
+  margin: 0;
+}
+
+body.craft-app-ui #app .newsletter-subscriber-select input {
+  width: 18px;
+  min-height: 18px;
+  margin: 0;
+  accent-color: #111;
+}
+
+body.craft-app-ui #app [data-newsletter-action-status]:empty {
+  display: none;
+}
+
+@media (max-width: 380px) {
+  body.craft-app-ui #app .web-studio-shell .studio-panel .studio-list-row.newsletter-subscriber-row {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+
+  body.craft-app-ui #app .newsletter-subscriber-row > button {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
 body.craft-app-ui #app input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 body.craft-app-ui #app select,
 body.craft-app-ui #app textarea {
@@ -8669,7 +9527,7 @@ body.craft-app-ui #app .launchpad-link {
   .bl-two { grid-template-columns: minmax(0,1fr); gap: 7px; }
   .bl-kpi { min-height: 64px; padding: 8px; }
   .bl-card { padding: 10px; border-radius: 11px; }
-  .bl-chart { height: 130px; }
+  .bl-chart { height: 230px; }
   .business-lens-shell .studio-workspace-title h1 { font-size: .96rem; }
   .business-lens-shell .studio-preview-link { font-size: 0; }
   .business-lens-shell .studio-preview-link span { font-size: 14px; }
@@ -8678,7 +9536,8 @@ body.craft-app-ui #app .launchpad-link {
   </style>
   <meta name="theme-color" content="#F5FAFF">
   <link rel="manifest" href="/manifest.webmanifest">
-  <script type="module" crossorigin src="/assets/app-BRRTa1H9.js"></script>
+  <script type="module" crossorigin src="/assets/app-BEP_Nssq.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/pos-Dl67ujJN.js">
   <link rel="stylesheet" crossorigin href="/assets/app-BdPRDpn5.css">
 </head>
 <body>
@@ -11343,7 +12202,7 @@ const StudioRenderers = {
       { title: "Products Manager", description: "Manage products, pricing, imagery, and specifications with live SQLite sync.", route: "/account/products" },
       { title: "Inventory", description: "Review stock counts, valuations, and low-stock items.", route: "/account/inventory" },
       { title: "Categories", description: "Organize collections, reassign products, and manage department details.", route: "/account/categories" },
-      { title: "Business Dashboard", description: "Explore sales volume, conversion metrics, and business insights.", route: "/account/dashboard" },
+      { title: "Business Dashboard", description: "Explore sales volume, conversion metrics, and business performance.", route: "/account/dashboard" },
       { title: "Build Your Web", description: "Edit store details and pages, then open the customer-facing storefront.", route: "/account/web" },
       { title: "Live Web", description: "Preview the customer-facing Craft website.", route: "/web", className: "studio-card-live-web" },
       { title: "Store Settings", description: "Adjust your storefront appearance and preferences.", route: "/account/settings" },
@@ -11435,6 +12294,7 @@ const StudioRenderers = {
   },
 
   renderMainShopWorkspace(path) {
+    if (path === "/account/main-shop/insights") path = "/account/main-shop";
     if (path === "/account/web" || path.startsWith("/account/web/studio/")) {
       return this.renderWebStudioWorkspace(path);
     }
@@ -11442,11 +12302,13 @@ const StudioRenderers = {
     const bottomItems = [
       { route: "/account/main-shop", title: "Overview", section: "overview", icon: "⌂" },
       { route: "/store/revenue", title: "Sales", section: "sales", icon: "↗" },
-      { route: "/store/products", title: "Products", section: "products", icon: "▦" },
       { route: "/account/customers", title: "Customers", section: "customers", icon: "◉" },
+      { route: "/store/manage/products", title: "Store", section: "store", icon: "▤" },
       { route: "/account/main-shop/finance", title: "More", section: "more", icon: "⋮" }
     ];
-    const section = path === "/account/main-shop" || path === "/account/main-shop/insights" ? "overview"
+    const isStoreManagement = path === "/store/manage" || path.startsWith("/store/manage/");
+    const section = isStoreManagement ? "store"
+      : path === "/account/main-shop" ? "overview"
       : ["/store/revenue", "/store/channels", "/store/sales", "/store/orders", "/store/payments"].includes(path) ? "sales"
         : ["/store/products", "/store/inventory", "/store/categories", "/store/split-shop"].includes(path) ? "products"
           : path.startsWith("/account/customers") || path === "/account/main-shop/marketing" ? "customers"
@@ -11454,8 +12316,7 @@ const StudioRenderers = {
               : path.startsWith("/store/") ? "products" : "overview";
     const pagesBySection = {
       overview: [
-        { route: "/account/main-shop", title: "Overview" },
-        { route: "/account/main-shop/insights", title: "Insights" }
+        { route: "/account/main-shop", title: "Overview" }
       ],
       sales: [
         { route: "/store/revenue", title: "Revenue" },
@@ -11466,8 +12327,16 @@ const StudioRenderers = {
       ],
       products: [
         { route: "/store/products", title: "Products" },
+        { route: "/store/products/manage", title: "Edit products" },
         { route: "/store/inventory", title: "Inventory" },
         { route: "/store/categories", title: "Categories" },
+        { route: "/store/split-shop", title: "Split products" }
+      ],
+      store: [
+        { route: "/store/products", title: "Web products" },
+        { route: "/store/products/manage", title: "Edit products" },
+        { route: "/store/inventory", title: "Inventory" },
+        { route: "/store/categories", title: "Web categories" },
         { route: "/store/split-shop", title: "Split products" }
       ],
       customers: [
@@ -11486,10 +12355,15 @@ const StudioRenderers = {
     const canonicalPath = path === "/account/main-shop/" ? "/account/main-shop"
       : path === "/store/sales" ? "/store/sales"
         : path;
-    const page = pages.find(item => item.route === canonicalPath) || pages[0];
+    const page = isStoreManagement
+      ? { title: path.endsWith("/categories") ? "Categories" : "Products" }
+      : pages.find(item => item.route === canonicalPath) || pages[0];
     const sectionSidebar = this.renderWorkspaceSidebar(
-      `${section[0].toUpperCase()}${section.slice(1)} screens`, pages, canonicalPath
+      section === "store" ? "Store" : `${section[0].toUpperCase()}${section.slice(1)} screens`,
+      pages,
+      canonicalPath
     );
+    const showBusinessFilters = !isStoreManagement && path !== "/store/products/manage";
     const cachedSnapshot = this.getCachedMainShopSnapshot();
     const initialContent = cachedSnapshot
       ? this.renderMainShopContent(path, cachedSnapshot)
@@ -11504,20 +12378,20 @@ const StudioRenderers = {
           <a class="studio-workspace-back" href="/" data-route="/" data-home-screen aria-label="Back to Craft home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg></a>
           <h1 class="studio-workspace-tab-title">${AppUtils.escapeHTML(page.title)}</h1>
           <div class="studio-workspace-header-actions">
-            <button type="button" class="studio-preview-link bl-filter-toggle" data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false">
+            ${showBusinessFilters ? `<button type="button" class="studio-preview-link bl-filter-toggle" data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"/></svg>
-            </button>
+            </button>` : ""}
             ${sectionSidebar}
           </div>
         </header>
-        <nav id="business-date-filters" class="bl-date-filter" aria-label="Business filters" hidden>
+        ${showBusinessFilters ? `<nav id="business-date-filters" class="bl-date-filter" aria-label="Business filters" hidden>
           <label><span>Range</span><select class="business-filter" data-filter="range"><option value="today" ${businessFilters.range === "today" ? "selected" : ""}>Today</option><option value="7d" ${businessFilters.range === "7d" ? "selected" : ""}>7 days</option><option value="30d" ${(!businessFilters.range || businessFilters.range === "30d") ? "selected" : ""}>30 days</option><option value="90d" ${businessFilters.range === "90d" ? "selected" : ""}>90 days</option><option value="month" ${businessFilters.range === "month" ? "selected" : ""}>This month</option><option value="ytd" ${businessFilters.range === "ytd" ? "selected" : ""}>Year to date</option><option value="all" ${businessFilters.range === "all" ? "selected" : ""}>All time</option><option value="custom" ${businessFilters.range === "custom" ? "selected" : ""}>Custom</option></select></label>
           <label><span>From</span><input class="business-filter" data-filter="from" type="date" value="${AppUtils.escapeHTML(businessFilters.from || "")}"></label>
           <label><span>To</span><input class="business-filter" data-filter="to" type="date" value="${AppUtils.escapeHTML(businessFilters.to || "")}"></label>
           <label><span>Channel</span><select class="business-filter" data-filter="channel"><option value="all" ${(!businessFilters.channel || businessFilters.channel === "all") ? "selected" : ""}>All</option><option value="web" ${businessFilters.channel === "web" ? "selected" : ""}>Web</option><option value="pos" ${businessFilters.channel === "pos" ? "selected" : ""}>Counter</option></select></label>
           <label><span>Category</span><select class="business-filter" data-filter="category"><option value="all">All</option>${SQLiteEngine.getCategories().map(category => `<option value="${AppUtils.escapeHTML(category.name)}" ${businessFilters.category === category.name ? "selected" : ""}>${AppUtils.escapeHTML(category.name)}</option>`).join("")}</select></label>
           <label><span>Interval</span><select class="business-filter" data-filter="granularity"><option value="day" ${(!businessFilters.granularity || businessFilters.granularity === "day") ? "selected" : ""}>Daily</option><option value="week" ${businessFilters.granularity === "week" ? "selected" : ""}>Weekly</option><option value="month" ${businessFilters.granularity === "month" ? "selected" : ""}>Monthly</option></select></label>
-        </nav>
+        </nav>` : ""}
         <nav class="studio-workspace-bottom-nav" aria-label="Business sections">
           ${bottomItems.map(item => `
             <a href="${item.route}" class="studio-workspace-bottom-link ${item.section === section ? "is-active" : ""}" data-route="${item.route}" ${item.section === section ? 'aria-current="page"' : ""}>
@@ -11533,7 +12407,49 @@ const StudioRenderers = {
     `;
   },
 
+  renderWebsiteManagementCards(websites, deleteLabel = "Delete web", ariaLabel = "Your websites") {
+    const activeTenant = AppController.getActiveTenant();
+    const visibleWebsites = websites
+      .filter(website => website.id !== "main")
+      .sort((a, b) => Number(b.id === activeTenant.id) - Number(a.id === activeTenant.id));
+    const value = input => AppUtils.escapeHTML(String(input || "").trim() || "Not added yet");
+    return `
+      <section class="profile-page-websites" aria-label="${AppUtils.escapeHTML(ariaLabel)}">
+        ${visibleWebsites.map(website => `
+          <article class="profile-page-card profile-website-card">
+            <header class="profile-website-card-heading">
+              <div>
+                <h2><a class="profile-website-settings-link" href="/account/profile/webs/${encodeURIComponent(website.id)}" data-route="/account/profile/webs/${encodeURIComponent(website.id)}">${AppUtils.escapeHTML(website.name)}</a></h2>
+                <p class="profile-website-domain"><a href="https://${AppUtils.escapeHTML(website.hostname)}" target="_blank" rel="noopener">${AppUtils.escapeHTML(website.hostname)}</a></p>
+              </div>
+              <a class="profile-website-live" href="https://${AppUtils.escapeHTML(website.hostname)}" target="_blank" rel="noopener" aria-label="Open ${AppUtils.escapeHTML(website.name)} live website">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+              </a>
+            </header>
+            ${website.id === activeTenant.id ? '<span class="profile-current-website-badge">Currently managing</span>' : ""}
+            <div class="profile-page-details">
+              <p>Store details: ${value(website.store.description)}</p>
+              <p>Location: ${value(website.store.location_address || website.store.location)}</p>
+              <p>Email: ${value(website.store.email)}</p>
+              <p>Phone: ${value(website.store.phone)}</p>
+              <p>${website.products.length} products · ${website.categories.length} categories</p>
+            </div>
+            <div class="website-management-actions">
+              <button class="btn-primary" type="button" data-edit-website="${AppUtils.escapeHTML(website.id)}">Edit</button>
+              <a class="btn-secondary" href="/account/profile/webs/${encodeURIComponent(website.id)}/domains" data-route="/account/profile/webs/${encodeURIComponent(website.id)}/domains">Domains</a>
+              <a class="btn-secondary" href="/account/profile/webs/${encodeURIComponent(website.id)}/stats" data-route="/account/profile/webs/${encodeURIComponent(website.id)}/stats">Stats</a>
+              <button class="btn-secondary profile-website-delete" type="button" data-delete-website="${AppUtils.escapeHTML(website.id)}"${website.id === "main" ? ' disabled title="The main Craft domain cannot be deleted."' : ""}>${deleteLabel}</button>
+            </div>
+            <button class="btn-primary website-management-manage" type="button" data-manage-website="${AppUtils.escapeHTML(website.id)}">Manage this web</button>
+          </article>
+        `).join("")}
+      </section>`;
+  },
+
   webStudioNavigation() {
+    const activeTenant = AppController.getActiveTenant();
+    const domainTenantId = AppController.isWebsiteBuilderDraftTenant(activeTenant.id) ? "main" : activeTenant.id;
+    const domainsRoute = `/account/profile/webs/${encodeURIComponent(domainTenantId)}/domains`;
     return [
       {
         title: "Dashboard",
@@ -11561,20 +12477,23 @@ const StudioRenderers = {
       },
       {
         title: "CRM",
-        route: "/account/web/studio/crm/repeat-customers",
+        route: "/account/web/studio/crm/customers",
         icon: "◉",
         tabs: [
-          { title: "Repeat customers and point sets", route: "/account/web/studio/crm/repeat-customers", contentPath: "/account/customers/loyalty" },
-          { title: "Newsletter", route: "/account/web/studio/crm/newsletter", contentPath: "/account/customers/newsletter" },
+          { title: "Customers", route: "/account/web/studio/crm/customers", contentPath: "/account/customers" },
+          { title: "Points", route: "/account/web/studio/crm/points", contentPath: "/account/customers/loyalty" },
+          { title: "Subscribers", route: "/account/web/studio/crm/subscribers", contentPath: "/account/customers/newsletter" },
           { title: "Notifications", route: "/account/web/studio/crm/notifications", contentPath: "/account/web/studio/crm/notifications" }
         ]
       },
       {
         title: "Websites",
-        route: "/account/web/studio/websites/webmaker",
+        route: "/account/web/studio/websites/list",
         icon: "▤",
         tabs: [
-          { title: "Webmaker", route: "/account/web/studio/websites/webmaker", contentPath: "/account/web/studio/websites/webmaker" },
+          { title: "Websites", route: "/account/web/studio/websites/list", contentPath: "/account/web/studio/websites/list" },
+          { title: "Domains", route: domainsRoute, contentPath: domainsRoute },
+          { title: "New web", route: "/account/web/studio/websites/webmaker", contentPath: "/account/web/studio/websites/webmaker" },
           { title: "Add", route: "/account/web/studio/websites/add", contentPath: "/account/web/studio/websites/add" },
           { title: "Theme Studio", route: "/account/web/studio/websites/editor", contentPath: "/account/web/studio/websites/editor" }
         ]
@@ -11593,9 +12512,11 @@ const StudioRenderers = {
     const initialPath = path === "/account/web"
       ? "/account/web/studio/dashboard/overview"
       : path;
-    const route = initialPath === "/account/web/studio/store/orders-bookings"
-      ? "/account/web/studio/store/orders"
-      : initialPath;
+    const route = ({
+      "/account/web/studio/store/orders-bookings": "/account/web/studio/store/orders",
+      "/account/web/studio/crm/repeat-customers": "/account/web/studio/crm/customers",
+      "/account/web/studio/crm/newsletter": "/account/web/studio/crm/subscribers"
+    })[initialPath] || initialPath;
     for (const section of sections) {
       const tab = section.tabs.find(item => item.route === route);
       if (tab) return { ...tab, section };
@@ -11603,7 +12524,52 @@ const StudioRenderers = {
     return { ...sections[0].tabs[0], section: sections[0] };
   },
 
+  renderWebStudioWebsiteList() {
+    const activeTenant = AppController.getActiveTenant();
+    const activeStore = SQLiteEngine.getStore();
+    const websites = AppController.tenantCatalogs()
+      .filter(website => website && typeof website.tenant_id === "string")
+      .map(website => ({
+        id: website.tenant_id,
+        name: website.name || website.store?.name || website.tenant_id,
+        hostname: website.hostname || (website.tenant_id === "main" ? "rrobin.co.ke" : `${website.tenant_id}.rrobin.co.ke`),
+        store: website.tenant_id === activeTenant.id ? activeStore : website.store || {},
+        products: Array.isArray(website.products) ? website.products : [],
+        categories: Array.isArray(website.categories) ? website.categories : []
+      }));
+    if (!websites.some(website => website.id === "main")) {
+      websites.unshift({
+        id: "main",
+        name: "Craft",
+        hostname: "rrobin.co.ke",
+        store: activeTenant.id === "main" ? activeStore : {},
+        products: [],
+        categories: []
+      });
+    }
+    if (!websites.some(website => website.id === activeTenant.id)) {
+      websites.push({
+        id: activeTenant.id,
+        name: activeTenant.name || activeStore.name || activeTenant.id,
+        hostname: activeTenant.hostname || `${activeTenant.id}.rrobin.co.ke`,
+        store: activeStore,
+        products: [],
+        categories: []
+      });
+    }
+    return `<section class="studio-workspace-section">
+      <header class="website-management-heading">
+        <div><h2>Your websites</h2><p>Choose a website to edit or manage.</p></div>
+        <a class="btn-primary website-management-new" href="/account/web/themes" data-start-new-website>+ New web</a>
+      </header>
+      ${this.renderWebsiteManagementCards(websites)}
+    </section>`;
+  },
+
   renderWebStudioWebsiteTool(page) {
+    if (page.route === "/account/web/studio/websites/list") {
+      return this.renderWebStudioWebsiteList();
+    }
     if (page.route === "/account/web/studio/websites/webmaker") {
       return `<section class="studio-workspace-section">${this.renderWebsiteBuilderCatalog(true)}</section>`;
     }
@@ -11651,7 +12617,9 @@ const StudioRenderers = {
       "/account/web/studio/dashboard/traffic"
     ].includes(path);
     const cachedSnapshot = this.getCachedMainShopSnapshot();
-    const initialContent = cachedSnapshot
+    const initialContent = page.section.title === "Websites"
+      ? this.renderWebStudioWebsiteTool(page)
+      : cachedSnapshot
       ? this.renderMainShopContent(path, cachedSnapshot)
       : this.renderWorkspaceLoading("Web Studio");
     AppUtils.updateSEO({ title: `${page.title} — Web Studio`, description: "Manage your website, visitors, customers, store, and payments." });
@@ -12087,6 +13055,424 @@ const StudioRenderers = {
     rows.forEach(recompute);
   },
 
+  renderMainStoreProductManagement(snapshot) {
+    const products = snapshot.products || [];
+    const rows = products.map((product, index) => {
+      const image = product.imageUri || product.webProduct?.images?.[0] || product.posProduct?.imageUri || "";
+      return `<article class="main-store-product-row">
+        ${image
+          ? `<img src="${AppUtils.escapeHTML(image)}" alt="" loading="lazy">`
+          : `<span class="main-store-product-image-placeholder" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><circle cx="9" cy="10" r="2"/><path d="m4 16 5-4 3 2 3-3 5 5"/></svg></span>`}
+        <div class="main-store-product-row-info">
+          <strong title="${AppUtils.escapeHTML(product.name)}">${AppUtils.escapeHTML(product.name)}</strong>
+          <span>${this.formatMainShopMoney(product.price, snapshot.currency || "KES")}</span>
+        </div>
+        <div class="main-store-product-actions">
+          <button type="button" class="main-store-product-icon-button" data-main-product-edit="${index}" aria-label="Edit ${AppUtils.escapeHTML(product.name)}" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+          <button type="button" class="main-store-product-icon-button" data-main-product-delete="${index}" aria-label="Delete ${AppUtils.escapeHTML(product.name)}" title="Delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button>
+        </div>
+      </article>`;
+    }).join("");
+    return `<article class="bl-card main-store-product-manager">
+      <header class="main-store-product-manager-header"><p>Add products or edit them in POS, Web, or both. Web changes need publishing to go live.</p><button type="button" data-main-product-add>Add product</button></header>
+      <form class="main-store-product-form" data-main-store-product-form hidden>
+        <input type="hidden" name="productIndex" value="">
+        <div class="main-store-product-form-fields">
+          <label>Product name<input name="name" maxlength="160" required></label>
+          <label>Category<input name="category" maxlength="100" required></label>
+          <label>Price<input name="price" type="number" min="0" step="0.01" required></label>
+          <label>Cost price<input name="costPrice" type="number" min="0" step="0.01"></label>
+          <label>Stock<input name="stock" type="number" min="0" step="1" required></label>
+        </div>
+        <div class="main-store-product-channels" aria-label="Save product to">
+          <label><input type="checkbox" name="channels" value="pos" checked> POS</label>
+          <label><input type="checkbox" name="channels" value="web" checked> Web</label>
+        </div>
+        <p class="main-store-product-status" data-main-product-status role="status" aria-live="polite"></p>
+        <div class="main-store-product-actions"><button type="submit">Save product</button><button type="button" data-main-product-cancel>Cancel</button></div>
+      </form>
+      <div class="main-store-product-list">${rows || `<p class="bl-empty">No products yet. Add one to start your catalogue.</p>`}</div>
+    </article>`;
+  },
+
+  getMainStoreCategoryRecords(snapshot) {
+    const categories = new Map();
+    for (const category of SQLiteEngine.getCategories()) {
+    const key = category.name.trim().toLocaleLowerCase();
+    categories.set(key, { name: category.name, webCategory: category, posCategory: null });
+    }
+    for (const category of snapshot.posCategories || []) {
+    const key = category.name.trim().toLocaleLowerCase();
+    const record = categories.get(key) || { name: category.name, webCategory: null, posCategory: null };
+    record.posCategory = category;
+    categories.set(key, record);
+    }
+    return [...categories.values()].sort((a, b) => a.name.localeCompare(b.name));
+  },
+
+  renderMainStoreCategories(snapshot) {
+    const categories = this.getMainStoreCategoryRecords(snapshot);
+    const rows = categories.map((category, index) => {
+    const products = (snapshot.products || []).filter(product =>
+      String(product.categoryName || "").trim().toLocaleLowerCase() === category.name.trim().toLocaleLowerCase()).length;
+    const sources = [category.posCategory ? "Store" : "", category.webCategory ? "Web" : ""].filter(Boolean).join(" · ");
+    const protectedCategory = category.name.toLocaleLowerCase() === "other";
+    return `<article class="main-store-category-row">
+      <div class="main-store-category-row-info">
+        <strong title="${AppUtils.escapeHTML(category.name)}">${AppUtils.escapeHTML(category.name)}</strong>
+        <span>${products} products · ${sources || "Store"}</span>
+      </div>
+      <div class="main-store-product-actions">
+        <button type="button" class="main-store-product-icon-button" data-main-category-edit="${index}" aria-label="Edit ${AppUtils.escapeHTML(category.name)}" title="Edit category" ${protectedCategory ? "disabled" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+        <button type="button" class="main-store-product-icon-button" data-main-category-delete="${index}" aria-label="Delete ${AppUtils.escapeHTML(category.name)}" title="Delete category" ${protectedCategory ? "disabled" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button>
+      </div>
+    </article>`;
+    }).join("");
+    return `<article class="bl-card main-store-product-manager">
+    <header class="main-store-product-manager-header"><p>Manage categories used by products in your Store and Web catalog.</p><button type="button" data-main-category-add>Add category</button></header>
+    <form class="main-store-category-form" data-main-store-category-form hidden>
+      <input type="hidden" name="originalName">
+      <label>Category name<input name="name" maxlength="120" required></label>
+      <p class="main-store-product-status" data-main-category-status role="status" aria-live="polite"></p>
+      <div class="main-store-product-actions"><button type="submit">Save category</button><button type="button" data-main-category-cancel>Cancel</button></div>
+    </form>
+    <div class="main-store-category-list">${rows || `<p class="bl-empty">No categories yet. Add one to organize your products.</p>`}</div>
+    </article>`;
+  },
+
+  renderMainStoreManagement(path, snapshot) {
+    const categoryTab = path.endsWith("/categories");
+    const productsPath = "/store/manage/products";
+    const categoriesPath = "/store/manage/categories";
+    return `<nav class="main-store-management-tabs" aria-label="Store management">
+    <a href="${productsPath}" data-route="${productsPath}" ${categoryTab ? "" : 'class="is-active" aria-current="page"'}>Products</a>
+    <a href="${categoriesPath}" data-route="${categoriesPath}" ${categoryTab ? 'class="is-active" aria-current="page"' : ""}>Categories</a>
+    </nav>
+    <section class="main-store-management-content" aria-live="polite">
+    ${categoryTab ? this.renderMainStoreCategories(snapshot) : this.renderMainStoreProductManagement(snapshot)}
+    </section>`;
+  },
+
+  bindMainStoreCategories(container, snapshot, path) {
+    const form = container.querySelector("[data-main-store-category-form]");
+    if (!form) return;
+    const status = form.querySelector("[data-main-category-status]");
+    const originalField = form.querySelector('[name="originalName"]');
+    const nameField = form.querySelector('[name="name"]');
+    const categories = this.getMainStoreCategoryRecords(snapshot);
+    const openForm = category => {
+    form.reset();
+    originalField.value = category?.name || "";
+    nameField.value = category?.name || "";
+    form.hidden = false;
+    if (status) status.textContent = "";
+    nameField.focus();
+    };
+    container.querySelector("[data-main-category-add]")?.addEventListener("click", () => openForm(null));
+    container.querySelector("[data-main-category-cancel]")?.addEventListener("click", () => {
+    form.reset();
+    form.hidden = true;
+    if (status) status.textContent = "";
+    });
+    container.querySelectorAll("[data-main-category-edit]").forEach(button => {
+    button.addEventListener("click", () => {
+      const category = categories[Number(button.dataset.mainCategoryEdit)];
+      if (category) openForm(category);
+    });
+    });
+    form.addEventListener("submit", async event => {
+    event.preventDefault();
+    const name = nameField.value.trim();
+    const originalName = originalField.value.trim();
+    const original = originalName
+      ? categories.find(category => category.name.trim().toLocaleLowerCase() === originalName.toLocaleLowerCase())
+      : null;
+    if (!name) {
+      if (status) status.textContent = "Enter a category name.";
+      return;
+    }
+    if (categories.some(category =>
+      category.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase() &&
+      category.name.trim().toLocaleLowerCase() !== originalName.toLocaleLowerCase())) {
+      if (status) status.textContent = `The category "${name}" already exists.`;
+      return;
+    }
+    const submit = form.querySelector('[type="submit"]');
+    submit.disabled = true;
+    if (status) status.textContent = "Saving category…";
+    try {
+      if (original?.posCategory && original.name !== name) {
+        await window.ShopPOS.renameCategory(original.posCategory.id, name);
+      } else if (!original?.posCategory) {
+        const posCategories = await window.ShopPOS.listCategories();
+        if (!posCategories.some(category => category.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase())) {
+          await window.ShopPOS.createCategory(name);
+        }
+      }
+      if (original?.webCategory) {
+        SQLiteEngine.saveCategory({ id: original.webCategory.id, name });
+      } else if (!original) {
+        const webCategory = SQLiteEngine.getCategories().find(category =>
+          category.name.trim().toLocaleLowerCase() === name.toLocaleLowerCase());
+        if (!webCategory) SQLiteEngine.saveCategory({ name });
+      }
+      AppController.cacheActiveTenantCatalog();
+      await window.ShopSQLite.flush();
+      await this.loadMainShopWorkspace(path);
+      AppUtils.showToast(original ? "Category updated." : "Category added.");
+    } catch (error) {
+      console.error("Store category could not be saved.", error);
+      if (status) status.textContent = error instanceof Error ? error.message : "The category could not be saved.";
+      submit.disabled = false;
+    }
+    });
+    container.querySelectorAll("[data-main-category-delete]").forEach(button => {
+    button.addEventListener("click", async () => {
+      const category = categories[Number(button.dataset.mainCategoryDelete)];
+      if (!category) {
+        AppUtils.showToast("That category is no longer available. Refresh the Store screen.", "danger");
+        return;
+      }
+      if (!window.confirm(`Delete "${category.name}"? Products in the POS catalog will move to Other.`)) return;
+      button.disabled = true;
+      try {
+        if (category.posCategory) await window.ShopPOS.deleteCategory(category.posCategory.id);
+        if (category.webCategory) SQLiteEngine.deleteCategory(category.webCategory.id);
+        AppController.cacheActiveTenantCatalog();
+        await window.ShopSQLite.flush();
+        await this.loadMainShopWorkspace(path);
+        AppUtils.showToast("Category deleted.");
+      } catch (error) {
+        console.error("Store category could not be deleted.", error);
+        AppUtils.showToast(error instanceof Error ? error.message : "The category could not be deleted.", "danger");
+        button.disabled = false;
+      }
+    });
+    });
+  },
+
+  bindMainStoreProductManagement(container, snapshot, path) {
+    const form = container.querySelector("[data-main-store-product-form]");
+    if (!form) return;
+    const status = form.querySelector("[data-main-product-status]");
+    const editField = form.querySelector('[name="productIndex"]');
+    const fields = Object.fromEntries(["name", "category", "price", "costPrice", "stock"]
+      .map(name => [name, form.querySelector(`[name="${name}"]`)]));
+    const channelInputs = [...form.querySelectorAll('[name="channels"]')];
+    const openForm = (product, index) => {
+      form.reset();
+      editField.value = index == null ? "" : String(index);
+      fields.name.value = product?.name || "";
+      fields.category.value = product?.categoryName || "Uncategorized";
+      fields.price.value = product?.price == null ? "" : String(product.price);
+      fields.costPrice.value = product?.costPrice == null ? "" : String(product.costPrice);
+      fields.stock.value = product?.stock == null ? "0" : String(product.stock);
+      channelInputs.forEach(input => {
+        input.checked = product
+          ? input.value === "pos" ? Boolean(product.posProductId) : Boolean(product.webProductId)
+          : true;
+      });
+      if (status) status.textContent = "";
+      form.hidden = false;
+      fields.name.focus();
+    };
+
+    container.querySelector("[data-main-product-add]")?.addEventListener("click", () => openForm(null, null));
+    container.querySelector("[data-main-product-cancel]")?.addEventListener("click", () => {
+      form.reset();
+      form.hidden = true;
+      if (status) status.textContent = "";
+    });
+    container.querySelectorAll("[data-main-product-edit]").forEach(button => {
+      button.addEventListener("click", () => {
+        const index = Number(button.dataset.mainProductEdit);
+        const product = snapshot.products[index];
+        if (!product) {
+          AppUtils.showToast("That product is no longer available. Refresh the Store screen.", "danger");
+          return;
+        }
+        openForm(product, index);
+      });
+    });
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      const submit = form.querySelector('[type="submit"]');
+      const values = new FormData(form);
+      const productIndex = String(values.get("productIndex") || "");
+      const editingIndex = productIndex === "" ? -1 : Number(productIndex);
+      const original = editingIndex < 0 ? null : snapshot.products[editingIndex];
+      if (productIndex !== "" && !original) {
+        if (status) status.textContent = "That product is no longer available. Refresh the Store screen and try again.";
+        return;
+      }
+      const name = String(values.get("name") || "").trim();
+      const categoryName = String(values.get("category") || "").trim();
+      let sku = original?.sku || "";
+      const price = Number(values.get("price"));
+      const costText = String(values.get("costPrice") || "").trim();
+      const costPrice = costText === "" ? null : Number(costText);
+      const stock = Number(values.get("stock"));
+      const channels = new Set(values.getAll("channels").map(String));
+      const writePos = channels.has("pos");
+      const writeWeb = channels.has("web");
+      let webSaved = false;
+      let posSaved = false;
+
+      if (!name || !categoryName || !Number.isFinite(price) || price < 0 ||
+        (costPrice !== null && (!Number.isFinite(costPrice) || costPrice < 0)) ||
+        !Number.isSafeInteger(stock) || stock < 0 || (!writePos && !writeWeb)) {
+        if (status) status.textContent = "Enter a product name, category, valid prices and stock, and select POS or Web.";
+        return;
+      }
+      if (!sku) {
+        const existingSkus = new Set(snapshot.products.map(product => String(product.sku || "").toLocaleUpperCase()));
+        do {
+          sku = SQLiteEngine.generateProductSku();
+        } while (existingSkus.has(sku.toLocaleUpperCase()));
+      }
+      if (sku && snapshot.products.some((product, index) =>
+        index !== editingIndex && String(product.sku || "").toLocaleUpperCase() === sku.toLocaleUpperCase())) {
+        if (status) status.textContent = "That SKU is already used by another catalogue product.";
+        return;
+      }
+
+      submit.disabled = true;
+      if (status) status.textContent = "Saving product…";
+      try {
+        let posProducts = await window.ShopPOS.listProducts();
+        let posProduct = original?.posProductId
+          ? posProducts.find(item => Number(item.id) === Number(original.posProductId))
+          : sku ? posProducts.find(item => String(item.sku || "").toLocaleUpperCase() === sku.toLocaleUpperCase()) : null;
+        let webProduct = original?.webProductId
+          ? SQLiteEngine.getProductById(original.webProductId)
+          : sku ? SQLiteEngine.select("products").find(item => String(item.sku || "").toLocaleUpperCase() === sku.toLocaleUpperCase()) : null;
+
+        const ensurePosCategory = async () => {
+          let category = (await window.ShopPOS.listCategories()).find(item =>
+            item.name.trim().toLocaleLowerCase() === categoryName.toLocaleLowerCase());
+          if (!category) {
+            await window.ShopPOS.addCategory(categoryName);
+            category = (await window.ShopPOS.listCategories()).find(item =>
+              item.name.trim().toLocaleLowerCase() === categoryName.toLocaleLowerCase());
+          }
+          if (!category) throw new Error(`Could not create POS category "${categoryName}".`);
+          return category;
+        };
+        const ensureWebCategory = () => {
+          let category = SQLiteEngine.getCategories().find(item =>
+            item.name.trim().toLocaleLowerCase() === categoryName.toLocaleLowerCase());
+          if (!category) {
+            SQLiteEngine.saveCategory({ name: categoryName });
+            category = SQLiteEngine.getCategories().find(item =>
+              item.name.trim().toLocaleLowerCase() === categoryName.toLocaleLowerCase());
+          }
+          if (!category) throw new Error(`Could not create Web category "${categoryName}".`);
+          return category;
+        };
+        const saveWebProduct = () => {
+          const category = ensureWebCategory();
+          webProduct = SQLiteEngine.saveProduct({
+            ...(webProduct || {}),
+            ...(webProduct ? { id: webProduct.id } : {}),
+            name, sku: sku || webProduct?.sku || "", category_id: category.id,
+            price, cost_price: costPrice ?? 0, stock,
+            images: webProduct?.images || [], status: webProduct?.status || "active"
+          });
+          sku = String(webProduct.sku || sku);
+          webSaved = true;
+        };
+        const savePosProduct = async () => {
+          const category = await ensurePosCategory();
+          const id = await window.ShopPOS.saveProduct({
+            ...(posProduct || {}),
+            id: Number(posProduct?.id) || 0,
+            name, sku: sku || posProduct?.sku || "", categoryId: category.id,
+            price, buyingPrice: costPrice == null ? "" : costPrice, stock,
+            imageUri: posProduct?.imageUri || webProduct?.images?.[0] || "",
+            lowStockThreshold: Number(posProduct?.lowStockThreshold) || 3
+          });
+          posProducts = await window.ShopPOS.listProducts();
+          posProduct = posProducts.find(item => Number(item.id) === Number(id));
+          if (!posProduct) throw new Error("The POS product saved, but could not be reloaded.");
+          sku = String(posProduct.sku || sku);
+          posSaved = true;
+        };
+
+        if (writeWeb && writePos && webProduct) saveWebProduct();
+        if (writePos) {
+          if (!posProduct && webProduct) {
+            await this.addWebsiteProductToPos(Number(webProduct.id));
+            posProducts = await window.ShopPOS.listProducts();
+            posProduct = posProducts.find(item => String(item.sku || "") === String(webProduct.sku || ""));
+          }
+          await savePosProduct();
+        }
+        if (writeWeb && writePos) {
+          await this.publishPosProduct(posProduct);
+          webSaved = true;
+        } else if (writeWeb) {
+          saveWebProduct();
+          AppController.cacheActiveTenantCatalog();
+          await window.ShopSQLite.flush();
+          await window.EshopInventoryBridge?.setLocalStock(AppController.getActiveTenant().id, webProduct.sku, stock);
+        }
+        await this.loadMainShopWorkspace(path);
+        AppUtils.showToast("Product saved to the selected catalogue.");
+      } catch (error) {
+        console.error("Main Store product could not be saved.", error);
+        const detail = error instanceof Error ? error.message : "Product could not be saved.";
+        if (status) {
+          status.textContent = webSaved && !posSaved
+            ? `The Web copy was saved, but POS could not be updated: ${detail}`
+            : posSaved && !webSaved
+              ? `POS was saved, but Web could not be updated: ${detail}`
+              : detail;
+        }
+        submit.disabled = false;
+      }
+    });
+
+    container.querySelectorAll("[data-main-product-delete]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const index = Number(button.dataset.mainProductDelete);
+        const product = snapshot.products[index];
+        if (!product) {
+          AppUtils.showToast("That product is no longer available. Refresh the Store screen.", "danger");
+          return;
+        }
+        const posId = Number(product.posProductId) || 0;
+        const webId = Number(product.webProductId) || 0;
+        const destinations = [posId ? "POS" : "", webId ? "Web" : ""].filter(Boolean).join(" and ");
+        if (!window.confirm(`Delete "${product.name}" from ${destinations}? Recorded sales will remain.`)) return;
+        button.disabled = true;
+        const removed = [];
+        try {
+          if (posId) {
+            await window.ShopPOS.deleteProduct(posId);
+            removed.push("POS");
+          }
+          if (webId) {
+            SQLiteEngine.deleteProduct(webId);
+            removed.push("Web");
+            AppController.cacheActiveTenantCatalog();
+            await window.ShopSQLite.flush();
+          }
+          await this.loadMainShopWorkspace(path);
+          AppUtils.showToast(`"${product.name}" was deleted from ${destinations}.`);
+        } catch (error) {
+          console.error("Main Store product could not be deleted from all selected channels.", error);
+          const detail = error instanceof Error ? error.message : "Product could not be deleted.";
+          AppUtils.showToast(
+            removed.length ? `Removed from ${removed.join(" and ")}, but deletion was incomplete: ${detail}` : detail,
+            "danger"
+          );
+          button.disabled = false;
+        }
+      });
+    });
+  },
+
   renderMainShopContent(path, snapshot, skipBusinessLens = false) {
     const { products, categories, sales, posCategories } = snapshot;
     const activeTenant = AppController.getActiveTenant();
@@ -12142,7 +13528,6 @@ const StudioRenderers = {
       ...(snapshot.remoteNewsletter || [])
     ].forEach(item => newsletterByEmail.set(String(item.email || "").toLowerCase(), item));
     const newsletterSubscribers = [...newsletterByEmail.values()];
-    const paymentMethods = SQLiteEngine.select("payment_methods", item => item.tenant_id === activeTenant.id, (a, b) => String(a.created_at).localeCompare(String(b.created_at)));
     const currency = snapshot.currency || "KES";
     const today = new Date();
     const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
@@ -12160,18 +13545,17 @@ const StudioRenderers = {
     const orderRows = orders => orders.map(order => {
       const amount = Number(order.total) || 0;
       const status = String(order.status || "awaiting payment").replaceAll("_", " ");
-      return `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(order.order_number || `WEB-${order.id}`)}</strong><span>${AppUtils.escapeHTML(order.customer_name || "Web customer")} · ${AppUtils.escapeHTML(order.created_at || "Date unavailable")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(amount, order.currency || currency)}</strong><span>${AppUtils.escapeHTML(status)}</span></div></article>`;
+      return `<article class="studio-list-row studio-order-card"><div><strong>${AppUtils.escapeHTML(order.order_number || `WEB-${order.id}`)}</strong><span>${AppUtils.escapeHTML(order.customer_name || "Web customer")} · ${AppUtils.escapeHTML(order.created_at || "Date unavailable")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(amount, order.currency || currency)}</strong><span>${AppUtils.escapeHTML(status)}</span></div></article>`;
     }).join("") || `<p class="store-workspace-empty">No web orders recorded yet.</p>`;
-    const remoteOrderRows = (snapshot.remoteOrders || []).map(order => `<article class="studio-list-row" data-online-order-row>
-      <div><strong>${AppUtils.escapeHTML(order.order_number)}</strong><span>${AppUtils.escapeHTML(order.customer_name)} · ${AppUtils.escapeHTML(order.customer_email)} · ${AppUtils.escapeHTML(order.created_at)}</span>
-        <small>${(order.items || []).map(item => `${AppUtils.escapeHTML(item.name)} × ${Number(item.quantity) || 0}`).join(" · ")}</small></div>
-      <div class="studio-row-end"><strong>${this.formatMainShopMoney(order.total, order.currency)}</strong>
-        <span>Payment: ${AppUtils.escapeHTML(order.payment_status || "unpaid")}</span>
-        <label>Status <select data-online-order-status="${AppUtils.escapeHTML(order.order_number)}">${["pending", "confirmed", "processing", "ready", "fulfilled", "cancelled"].map(status => `<option value="${status}" ${order.status === status ? "selected" : ""}>${status}</option>`).join("")}</select></label>
+    const remoteOrderRows = (snapshot.remoteOrders || []).map(order => `<article class="studio-list-row studio-order-card studio-online-order-card" data-online-order-row>
+      <div class="studio-order-header"><div><strong>${AppUtils.escapeHTML(order.order_number)}</strong><span>${AppUtils.escapeHTML(order.customer_name || "Customer not recorded")} · ${AppUtils.escapeHTML(order.customer_email || "No email")} · ${AppUtils.escapeHTML(order.created_at || "Date unavailable")}</span></div><strong class="studio-order-total">${this.formatMainShopMoney(order.total, order.currency)}</strong></div>
+      <div class="studio-order-items">${(order.items || []).map(item => `${AppUtils.escapeHTML(item.name)} × ${Number(item.quantity) || 0}`).join(" · ") || "No item details"}</div>
+      <div class="studio-order-meta"><span>Payment: ${AppUtils.escapeHTML(order.payment_status || "unpaid")}</span><span>Status: ${AppUtils.escapeHTML(order.status || "pending")}</span></div>
+      <div class="studio-order-controls"><label>Status<select data-online-order-status="${AppUtils.escapeHTML(order.order_number)}">${["pending", "confirmed", "processing", "ready", "fulfilled", "cancelled"].map(status => `<option value="${status}" ${order.status === status ? "selected" : ""}>${status}</option>`).join("")}</select></label>
         <button type="button" class="btn-secondary" data-online-order-update="${AppUtils.escapeHTML(order.order_number)}">Save status</button></div>
       </article>`).join("") || `<p class="store-workspace-empty">No server-backed orders loaded.</p>`;
     const businessOrderRows = [...sales].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(sale =>
-      `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.customerName || "Customer not recorded")} · ${AppUtils.escapeHTML(sale.date || "Date unavailable")}</span><small>${AppUtils.escapeHTML(sale.channel)} · ${sale.itemCount} item${sale.itemCount === 1 ? "" : "s"}</small></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.total, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status)}</span></div></article>`
+      `<article class="studio-list-row studio-order-card"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.customerName || "Customer not recorded")} · ${AppUtils.escapeHTML(sale.date || "Date unavailable")}</span><small>${AppUtils.escapeHTML(sale.channel)} · ${sale.itemCount} item${sale.itemCount === 1 ? "" : "s"}</small></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.total, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status)}</span></div></article>`
     ).join("") || `<p class="store-workspace-empty">No business orders or POS receipts recorded yet.</p>`;
     const paymentActivityRows = [...sales].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(sale =>
       `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.channel)} · ${AppUtils.escapeHTML(sale.paymentMethod || "Method not recorded")} · ${AppUtils.escapeHTML(sale.date || "")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.collected, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status || "Awaiting payment")}</span></div></article>`
@@ -12250,7 +13634,7 @@ const StudioRenderers = {
       if (page.route === "/account/web/studio/store/orders") {
         const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
         return `<section class="studio-workspace-section">
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders</h2><button type="button" class="btn-secondary" data-business-online-orders-load>Load online orders</button></div>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders</h2><button type="button" class="btn-secondary studio-load-button" data-business-online-orders-load aria-label="Load online orders">Load</button></div>
             <p class="studio-panel-note" data-online-orders-status>Orders and payment status are stored privately for this shop.</p>
             ${orderRows(orders)}${remoteOrderRows}</article>
         </section>`;
@@ -12276,11 +13660,11 @@ const StudioRenderers = {
               return `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(booking.product_name)} · ${booking.quantity}</strong><span>${AppUtils.escapeHTML(booking.customer_name)} · ${AppUtils.escapeHTML(booking.contact)} · Expires ${AppUtils.escapeHTML(booking.expires_at)}</span></div><div class="studio-row-end"><span>${expired ? "Expired" : AppUtils.escapeHTML(booking.status || "On hold")}</span>${!expired && booking.status !== "released" ? `<button type="button" class="btn-secondary" data-release-hold="${booking.id}">Release</button>` : ""}</div></article>`;
             }).join("") || `<p class="store-workspace-empty">No bookings or holds recorded yet.</p>`}
           </article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Service appointment requests</h2><button type="button" class="btn-secondary" data-online-appointments-load>Load appointments</button></div>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Service appointment requests</h2><button type="button" class="btn-secondary studio-load-button" data-online-appointments-load aria-label="Load appointments">Load</button></div>
             <p class="studio-panel-note" data-online-appointments-status>${snapshot.remoteAppointmentsError ? AppUtils.escapeHTML(snapshot.remoteAppointmentsError) : snapshot.remoteAppointments ? `${remoteAppointments.length} service appointment${remoteAppointments.length === 1 ? "" : "s"} loaded.` : "Customers choose an available time; confirm or decline requests here. Deposit links are created after approval when enabled."}</p>
             ${remoteAppointmentRows}
           </article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold requests</h2><button type="button" class="btn-secondary" data-online-holds-load>Load requests</button></div>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold requests</h2><button type="button" class="btn-secondary studio-load-button" data-online-holds-load aria-label="Load hold requests">Load</button></div>
             <p class="studio-panel-note" data-online-holds-status>${snapshot.remoteHoldsError ? AppUtils.escapeHTML(snapshot.remoteHoldsError) : snapshot.remoteHolds ? `${remoteHolds.length} live hold${remoteHolds.length === 1 ? "" : "s"} loaded.` : "Customer holds reserve available website stock immediately until released or expired."}</p>
             ${remoteHoldRows}
           </article>
@@ -12316,8 +13700,9 @@ const StudioRenderers = {
         ["/store/inventory", "/account/web/studio/store/inventory"],
         ["/store/orders", "/account/web/studio/store/orders"],
         ["/store/bookings", "/account/web/studio/store/bookings"],
-        ["/account/customers/loyalty", "/account/web/studio/crm/repeat-customers"],
-        ["/account/customers/newsletter", "/account/web/studio/crm/newsletter"],
+        ["/account/customers", "/account/web/studio/crm/customers"],
+        ["/account/customers/loyalty", "/account/web/studio/crm/points"],
+        ["/account/customers/newsletter", "/account/web/studio/crm/subscribers"],
         ["/account/payments", "/account/web/studio/payments"]
       ]);
       for (const [legacyRoute, studioRoute] of studioRoutes) {
@@ -12326,8 +13711,14 @@ const StudioRenderers = {
       return content;
     }
     const businessPath = path.replace(/\/$/, "") || "/account/main-shop";
+    if (!skipBusinessLens && /^\/store\/manage(?:\/|$)/.test(businessPath)) {
+      return this.renderMainStoreManagement(businessPath, snapshot);
+    }
+    if (!skipBusinessLens && businessPath === "/store/products/manage") {
+      return this.renderMainStoreProductManagement(snapshot);
+    }
     if (!skipBusinessLens && window.BusinessLens && [
-      "/account/main-shop", "/account/main-shop/insights", "/account/main-shop/marketing",
+      "/account/main-shop", "/account/main-shop/marketing",
       "/account/main-shop/finance", "/account/main-shop/stores", "/account/main-shop/settings",
       "/account/main-shop/help", "/store/revenue", "/store/channels", "/store/sales",
       "/store/products", "/store/inventory", "/store/categories", "/account/customers",
@@ -12346,10 +13737,17 @@ const StudioRenderers = {
         instances: snapshot.instances,
         activeTenant
       });
-      const cloudWarning = snapshot.remoteOrdersError
-        ? `<p class="bl-caption" role="status">Cloud storefront orders could not be loaded: ${AppUtils.escapeHTML(snapshot.remoteOrdersError)}. Showing available offline records.</p>`
+      const mainStoreShortcuts = businessPath === "/account/main-shop"
+        ? `<nav class="main-store-shortcuts" aria-label="Main Store shortcuts">
+            <a href="/store/products" data-route="/store/products">Products</a>
+            <a href="/account/customers" data-route="/account/customers">Customers</a>
+            <a href="/store/channels" data-route="/store/channels">Channels</a>
+            <a href="/store/inventory" data-route="/store/inventory">Inventory</a>
+            <a href="/account/main-shop/finance" data-route="/account/main-shop/finance">Finance</a>
+            <a href="/store/revenue" data-route="/store/revenue">Revenue</a>
+          </nav>`
         : "";
-      return `${cloudWarning}${dashboard}`;
+      return `${mainStoreShortcuts}${dashboard}`;
     }
     const visitPages = new Map();
     const visitDevices = new Map();
@@ -12403,7 +13801,7 @@ const StudioRenderers = {
         <section class="studio-workspace-section">
           <div class="studio-metric-grid studio-metric-grid-featured">${metric("Gross web revenue", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency), "", "/account/web/studio/store/orders")}${metric("Customer visits", storefrontVisitCount, "", "/account/web/studio/dashboard/visits")}${metric("Awaiting payments", awaiting.length, "", "/account/web/studio/store/orders")}</div>
           <div class="studio-dashboard-grid">
-            <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">RECENT ACTIVITY</span><h2>Storefront visit history</h2></div><div><button type="button" class="btn-secondary" data-business-cloud-analytics>Refresh</button><a href="/account/main-shop/visits" data-route="/account/main-shop/visits">View all</a></div></div>
+            <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">RECENT ACTIVITY</span><h2 class="studio-overview-activity-title">Storefront visit history</h2></div><div class="studio-overview-activity-actions"><button type="button" class="studio-overview-load" data-business-cloud-analytics>Load</button><a href="/account/main-shop/visits" data-route="/account/main-shop/visits">View all</a></div></div>
               <p class="studio-panel-note" data-business-cloud-analytics-status role="status">${snapshot.remoteAnalyticsError
                 ? "Could not load visits."
                 : snapshot.remoteAnalytics
@@ -12411,7 +13809,7 @@ const StudioRenderers = {
                   : "Analytics not loaded."}</p>
               ${recentVisitRows || recentVisitEmpty}
             </article>
-            <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">WEB SHOP</span><h2>What’s moving</h2></div><a href="/account/main-shop/performance" data-route="/account/main-shop/performance">Performance</a></div>
+            <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">WEB SHOP</span><h2 class="studio-overview-activity-title">What’s moving</h2></div><a href="/account/main-shop/performance" data-route="/account/main-shop/performance">Performance</a></div>
               ${moving.map(([name, quantity]) => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(name)}</strong><span>${quantity} sold</span></article>`).join("") || `<p class="store-workspace-empty">No paid product sales yet. Completed sales will show the products gaining momentum.</p>`}
             </article>
           </div>
@@ -12446,8 +13844,22 @@ const StudioRenderers = {
       const monthSales = salesIn(monthStart);
       const pendingOrders = SQLiteEngine.select("orders", order => !["paid", "completed", "refunded", "cancelled", "canceled", "failed"].includes(String(order.status || "").toLowerCase()));
       const cart = SQLiteEngine.getCart();
+      const performanceMetrics = [
+        ["Visits", [uniqueIn(dayStart), uniqueIn(weekStart), uniqueIn(monthStart)], "/account/web/studio/dashboard/traffic"],
+        ["Orders", [salesIn(dayStart).length, weekSales.length, monthSales.length], "/account/web/studio/store/orders"],
+        ["Revenue", [
+          this.formatMainShopMoney(revenueIn(dayStart), currency),
+          this.formatMainShopMoney(revenueIn(weekStart), currency),
+          this.formatMainShopMoney(revenueIn(monthStart), currency)
+        ], "/account/web/studio/store/orders"]
+      ];
       return `<section class="studio-workspace-section">
-        <div class="studio-period-grid studio-metric-grid-featured">${metric("Today", `${uniqueIn(dayStart)} visits · ${salesIn(dayStart).length} orders · ${this.formatMainShopMoney(revenueIn(dayStart), currency)}`, "", "/account/web/studio/store/orders")}${metric("This week", `${uniqueIn(weekStart)} visits · ${weekSales.length} orders · ${this.formatMainShopMoney(revenueIn(weekStart), currency)}`, "", "/account/web/studio/store/orders")}${metric("This month", `${uniqueIn(monthStart)} visits · ${monthSales.length} orders · ${this.formatMainShopMoney(revenueIn(monthStart), currency)}`, "", "/account/web/studio/store/orders")}</div>
+        <div class="studio-performance-metrics" aria-label="Visits, orders, and revenue">
+          ${performanceMetrics.map(([label, values, route]) => `<a class="studio-performance-metric" href="${route}" data-route="${route}" aria-label="${label}">
+            <strong class="studio-performance-label">${label}</strong>
+            ${values.map((value, index) => `<span class="studio-performance-period"><small>${["Today", "This week", "This month"][index]}</small><strong>${AppUtils.escapeHTML(String(value))}</strong></span>`).join("")}
+          </a>`).join("")}
+        </div>
         <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Paid conversion</h2></div>${metric("Paid web orders", paidSales.length)}${metric("Web order value", this.formatMainShopMoney(paidSales.reduce((sum, sale) => sum + sale.total, 0), currency))}<p class="studio-panel-note">Conversion rate is not calculated until visits and paid orders can be joined using shared visitor attribution.</p></article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders awaiting payment</h2><a href="/store/orders" data-route="/store/orders">Open orders</a></div>${orderRows(pendingOrders)}</article></div>
         <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Checkouts without an order</h2></div><p class="studio-panel-note">Browser-local sessions that entered checkout and have no later order record.</p>${abandonedRows || `<p class="store-workspace-empty">No unfinished checkout sessions recorded.</p>`}</article>
@@ -12473,16 +13885,16 @@ const StudioRenderers = {
       </section>`;
     }
     if (path === "/account/customers" || path === "/account/customers/") {
-      return `<section class="studio-workspace-section"><div class="studio-metric-grid studio-metric-grid-featured">${metric("Identified web customers", customers.length, "", "/account/web/studio/crm/repeat-customers")}${metric("Repeat customers", customers.filter(customer => customer.orders > 1).length, "", "/account/web/studio/crm/repeat-customers")}${metric("Newsletter subscribers", newsletterSubscribers.length, "", "/account/web/studio/crm/newsletter")}</div>
-        <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">CUSTOMER RELATIONSHIPS</span><h2>Returning customers</h2></div><a href="/account/customers/loyalty" data-route="/account/customers/loyalty">Manage points</a></div>
+      return `<section class="studio-workspace-section"><div class="studio-metric-grid studio-metric-grid-featured">${metric("Identified web customers", customers.length, "", "/account/web/studio/crm/customers")}${metric("Repeat customers", customers.filter(customer => customer.orders > 1).length, "", "/account/web/studio/crm/customers")}${metric("Newsletter subscribers", newsletterSubscribers.length, "", "/account/web/studio/crm/subscribers")}</div>
+      <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">CUSTOMER RELATIONSHIPS</span><h2>Returning customers</h2></div><a href="/account/customers/loyalty" data-route="/account/customers/loyalty">Manage points</a></div>
         ${customerRows || `<p class="store-workspace-empty">Customers will appear after they place an order with an email address or phone number.</p>`}</article></section>`;
     }
     if (path === "/account/customers/loyalty") {
       const pointsPerVisit = Number(this.getWorkspaceSetting("points_per_visit", 1));
       const pointsPerCurrency = Number(this.getWorkspaceSetting("points_per_currency", 0));
       return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid studio-metric-grid-featured">${metric("Points per visit", pointsPerVisit)}${metric("Points per " + AppUtils.escapeHTML(currency) + " spent", pointsPerCurrency)}${metric("Customers with points", customers.filter(customer => customer.points > 0).length)}</div>
-        <form class="store-workspace-form" data-studio-form="loyalty-settings"><h2>Points rules</h2><p>Set points per verified visit and per whole ${AppUtils.escapeHTML(currency)} spent. Staff award them below after confirming the visit or paid purchase.</p><div class="studio-form-grid"><label>Points per verified visit<input name="pointsPerVisit" type="number" min="0" step="1" value="${pointsPerVisit}" required></label><label>Points per ${AppUtils.escapeHTML(currency)} spent<input name="pointsPerCurrency" type="number" min="0" step="1" value="${pointsPerCurrency}" required></label></div><button type="submit" class="btn-primary">Save points rules</button><p role="status"></p></form>
+        <div class="studio-metric-grid studio-metric-grid-featured">${metric("Points per visit", pointsPerVisit)}${metric("Pts / " + AppUtils.escapeHTML(currency) + " spent", pointsPerCurrency)}${metric("Customers with points", customers.filter(customer => customer.points > 0).length)}</div>
+        <form class="store-workspace-form crm-points-rules" data-studio-form="loyalty-settings"><h2>Points rules</h2><p>Points per verified visit and each full ${AppUtils.escapeHTML(currency)} spent.</p><div class="studio-form-grid"><label>Pts / verified visit<input name="pointsPerVisit" type="number" min="0" step="1" value="${pointsPerVisit}" required></label><label>Pts / full ${AppUtils.escapeHTML(currency)} spent<input name="pointsPerCurrency" type="number" min="0" step="1" value="${pointsPerCurrency}" required></label></div><button type="submit" class="btn-primary">Save rules</button><p role="status"></p></form>
         <form class="store-workspace-form" data-studio-form="points-adjust"><h2>Record verified activity or adjust points</h2><label>Customer<select name="customerKey" required><option value="">Choose a customer</option>${customers.map(customer => `<option value="${AppUtils.escapeHTML(customer.key)}">${AppUtils.escapeHTML(customer.name)} · ${customer.points} points</option>`).join("")}</select></label><div class="studio-form-grid"><label>Verified paid purchase amount (${AppUtils.escapeHTML(currency)})<input name="purchaseAmount" type="number" min="0" step="0.01" placeholder="Optional"></label><label>Manual adjustment (+/- points)<input name="delta" type="number" step="1" placeholder="Optional"></label></div><label class="studio-check-label"><input name="verifiedVisit" type="checkbox" value="yes"> Add points for one verified visit</label><label>Reason for manual adjustment<input name="reason" maxlength="140" placeholder="Required only for a manual adjustment"></label><button type="submit" class="btn-primary">Record points</button><p role="status"></p></form>
         <article class="studio-panel"><div class="studio-panel-heading"><h2>Points balances</h2></div>${customerRows || `<p class="store-workspace-empty">No identified customers yet.</p>`}</article>
       </section>`;
@@ -12503,11 +13915,22 @@ const StudioRenderers = {
       const confirmedSubscribers = remoteSubscribers.filter(subscriber => subscriber.status === "subscribed").length;
       const pendingSubscribers = remoteSubscribers.filter(subscriber => subscriber.status === "pending").length;
       return `<section class="studio-workspace-section">
-        <div class="studio-panel-heading"><h2>Email newsletter</h2><button type="button" class="btn-secondary" data-business-newsletter-refresh>Refresh subscribers</button></div>
-        <div class="studio-metric-grid">${metric("Confirmed subscribers", confirmedSubscribers, "Eligible for campaigns")}${metric("Awaiting confirmation", pendingSubscribers, "Not sent campaigns")}</div>
+        <div class="studio-panel-heading newsletter-header"><h2>Email newsletter</h2><button type="button" class="btn-secondary newsletter-refresh-button" data-business-newsletter-refresh aria-label="Refresh subscribers" title="Refresh subscribers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 17 5l3 2M4 17l3 2a7 7 0 0 0 11.5-4"/></svg></button></div>
+        <div class="studio-metric-grid newsletter-metrics">${metric("Confirmed", confirmedSubscribers, "Campaign-ready")}${metric("Pending", pendingSubscribers, "Email unconfirmed")}</div>
         <p class="studio-panel-note">${snapshot.remoteNewsletterError ? `Could not load shared subscribers: ${AppUtils.escapeHTML(snapshot.remoteNewsletterError)}` : "Storefront signups are confirmed by email and shared with this shop in Cloudflare. Campaign delivery uses the configured Resend sender."}</p>
         <form class="store-workspace-form" data-business-newsletter-send><h2>Compose and send</h2><label>Subject<input name="subject" maxlength="120" required></label><label>Message<textarea name="message" rows="5" maxlength="4000" required></textarea></label><p class="studio-panel-note">Unsubscribe links are added automatically. The app reports provider acceptance, not guaranteed inbox delivery.</p><button type="submit" class="btn-primary" ${confirmedSubscribers ? "" : "disabled"}>Send to ${confirmedSubscribers} confirmed subscriber${confirmedSubscribers === 1 ? "" : "s"}</button><p role="status"></p></form>
-        <article class="studio-panel"><div class="studio-panel-heading"><h2>Shared subscribers (${remoteSubscribers.length})</h2></div>${remoteSubscribers.map(subscriber => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(subscriber.name || subscriber.email)}</strong><span>${AppUtils.escapeHTML(subscriber.email)} · ${AppUtils.escapeHTML(subscriber.status)} · joined ${AppUtils.escapeHTML(subscriber.created_at)}</span></div><button type="button" class="btn-secondary" data-remove-remote-subscriber="${AppUtils.escapeHTML(subscriber.id)}">Remove</button></article>`).join("") || `<p class="store-workspace-empty">No storefront subscribers yet.</p>`}</article>
+        <article class="studio-panel"><div class="studio-panel-heading"><h2>Subscribers (${remoteSubscribers.length})</h2></div>
+          ${remoteSubscribers.length ? `<div class="store-bulk-actions newsletter-bulk-actions" data-newsletter-bulk>
+            <label class="store-bulk-select-all"><input type="checkbox" data-newsletter-select-all><span>Select all subscribers</span></label>
+            <span class="store-bulk-selection-count" data-newsletter-selection-count>0 selected</span>
+            <button type="button" class="btn-secondary" data-newsletter-remove-selected disabled>Remove selected</button>
+          </div>` : ""}
+          <p role="status" aria-live="polite" data-newsletter-action-status></p>
+          ${remoteSubscribers.map(subscriber => `<article class="studio-list-row newsletter-subscriber-row">
+            <label class="newsletter-subscriber-select" aria-label="Select ${AppUtils.escapeHTML(subscriber.email)}"><input type="checkbox" data-newsletter-subscriber-select value="${AppUtils.escapeHTML(subscriber.id)}"></label>
+            <div><strong>${AppUtils.escapeHTML(subscriber.name || subscriber.email)}</strong><span>${AppUtils.escapeHTML(subscriber.email)} · ${AppUtils.escapeHTML(subscriber.status)} · joined ${AppUtils.escapeHTML(subscriber.created_at)}</span></div>
+            <button type="button" class="btn-secondary" data-remove-remote-subscriber="${AppUtils.escapeHTML(subscriber.id)}">Remove</button>
+          </article>`).join("") || `<p class="store-workspace-empty">No storefront subscribers yet.</p>`}</article>
       </section>`;
     }
     if (path === "/account/website" || path === "/account/website/" || path === "/store/website") {
@@ -12554,7 +13977,7 @@ const StudioRenderers = {
       return `<section class="studio-workspace-section"><article class="studio-panel"><div class="studio-panel-heading"><h2>Payment account</h2><span data-paystack-status>Checking account…</span></div>
         <p class="studio-panel-note">Connect or change the account used for payments across your websites.</p>
         ${nativeCurrencySettings}
-        <p class="studio-panel-note">Your bank details are securely processed for verification. This app saves only a reference and masked account details.</p>
+        <p class="studio-panel-note">Test mode cannot confirm payouts. In Live mode, the bank must be verified before connection. Only a reference and masked account details are stored.</p>
         <form class="store-workspace-form" data-paystack-setup autocomplete="off"><div class="studio-form-grid">
           <label>Business name<input name="business_name" maxlength="120" autocomplete="organization" required></label>
           <label>Bank<select name="settlement_bank" required><option value="">Loading banks…</option></select></label><button type="button" class="btn-secondary" data-paystack-retry hidden>Retry</button>
@@ -12569,16 +13992,14 @@ const StudioRenderers = {
           <label style="display:flex;align-items:flex-start;gap:8px;"><input type="checkbox" name="confirm_reuse" required><span>Use this as the default payment account for my websites.</span></label>
           <button type="submit" class="btn-secondary" data-paystack-reuse-submit>Use this account</button><p role="status" data-paystack-reuse-status></p>
         </form>
-        </article><p class="studio-panel-note">Add a manual payment option if needed. Never enter a PIN, CVV, or full card number.</p>
-        <form class="store-workspace-form" data-studio-form="payment-add"><h2>Add payment account</h2><div class="studio-form-grid"><label>Type<select name="type" required><option value="card">Card instructions</option><option value="paybill">Paybill</option><option value="till">Till number</option><option value="pochi">Pochi la Biashara</option><option value="crypto">Crypto wallet</option></select></label><label>Display name<input name="label" maxlength="100" required></label><label>Account / till / paybill number<input name="account" maxlength="120"></label><label>Card brand / last four only<input name="cardHint" maxlength="40" placeholder="Visa · 1234"></label><label class="studio-payment-address">Wallet address<input name="address" maxlength="240"></label><label class="studio-payment-image">Wallet QR image<input name="image" type="file" accept="image/*"></label></div><button type="submit" class="btn-primary">Save account</button><p role="status"></p></form>
-        <article class="studio-panel"><div class="studio-panel-heading"><h2>Saved accounts</h2></div>${paymentMethods.map(method => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(method.label)}</strong><span>${AppUtils.escapeHTML(method.type)} · ${AppUtils.escapeHTML(method.account || method.cardHint || method.address || "Details saved")}</span>${method.image ? `<img class="studio-payment-qr" src="${AppUtils.escapeHTML(method.image)}" alt="QR for ${AppUtils.escapeHTML(method.label)}">` : ""}</div><button type="button" class="btn-secondary" data-remove-payment="${method.id}">Remove</button></article>`).join("") || `<p class="store-workspace-empty">No accounts saved.</p>`}</article></section>`;
+        </article></section>`;
     }
     if (path === "/store/orders" || path === "/store/sales" || path === "/store/payments") {
       const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
       const view = path === "/store/sales" ? "sales" : path === "/store/payments" ? "payments" : "orders";
       return `<section class="studio-workspace-section">
         ${view === "orders" ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Business orders and POS receipts</h2><span>${sales.length} recorded</span></div>${businessOrderRows}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Online order management</h2><button type="button" class="btn-secondary" data-business-online-orders-load>Refresh online orders</button></div>
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Online order management</h2><button type="button" class="btn-secondary studio-load-button" data-business-online-orders-load aria-label="Load online orders">Load</button></div>
             <p class="studio-panel-note" data-online-orders-status>${snapshot.remoteOrdersError ? AppUtils.escapeHTML(snapshot.remoteOrdersError) : "Orders and payment status are stored privately for this shop."}</p>
             ${remoteOrderRows}</article>`
           : view === "sales" ? `<div class="studio-metric-grid">${metric("Order value", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency))}${metric("Paid orders", paidSales.length)}${metric("Unpaid orders", orders.filter(order => !["paid", "completed"].includes(String(order.status || "").toLowerCase())).length)}</div><article class="studio-panel"><div class="studio-panel-heading"><h2>Sales history</h2></div>${orderRows(orders)}</article>`
@@ -12613,7 +14034,7 @@ const StudioRenderers = {
           <a class="btn-secondary web-product-action-card" href="/account/products" data-route="/account/products">Advanced web catalog</a>
           <button type="button" class="btn-secondary web-product-action-card" id="btn-publish-cloudflare">Publish to ${AppUtils.escapeHTML(activeTenant.hostname)}</button>
         </div>
-        <p class="studio-panel-note">Add products, then publish to update your website.</p>
+        <p class="studio-panel-note">Website products are managed separately. Publish to update ${AppUtils.escapeHTML(activeTenant.hostname)}.</p>
         <div id="product-modal-container"></div>
         ${webProducts.length ? `<div class="store-bulk-actions" data-bulk-removal="products"><label class="store-bulk-select-all"><input type="checkbox" data-bulk-select-all><span>Select all products</span></label><span class="store-bulk-selection-count" data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-product-holds="enable" disabled>Enable holds</button><button type="button" class="btn-secondary" data-bulk-product-holds="disable" disabled>Disable holds</button><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected products</button></div>` : ""}
         <form class="store-workspace-form store-existing-product-form" data-store-web-import hidden>
@@ -12678,9 +14099,8 @@ const StudioRenderers = {
       const websiteCategories = SQLiteEngine.getCategories();
       const storeOnlyCategories = snapshot.posCategories.filter(posCategory => !websiteCategories.some(webCategory => webCategory.name.trim().toLocaleLowerCase() === posCategory.name.trim().toLocaleLowerCase()));
       return `
-        <p class="studio-panel-note">Website categories are separate from your POS categories. You can add one from the main Store catalog without changing POS.</p>
         <form class="store-workspace-form" data-studio-form="web-category">
-          <h2>Create website category</h2><label>Category name<input name="name" required maxlength="120"></label><button type="submit" class="btn-primary">Add website category</button><p role="status"></p>
+          <input name="name" aria-label="Category name" placeholder="Category name" required maxlength="120"><button type="submit" class="btn-primary">Add category</button><p role="status"></p>
         </form>
         <section class="studio-panel"><div class="studio-panel-heading"><h2>Categories available in Store inventory</h2></div>
           ${storeOnlyCategories.map(category => `<article class="store-category-import-row"><strong>${AppUtils.escapeHTML(category.name)}</strong><button type="button" class="btn-secondary" data-store-website-category="${AppUtils.escapeHTML(category.name)}">Add from Store</button></article>`).join("") || `<p class="store-workspace-empty">No additional Store categories to import.</p>`}
@@ -12806,12 +14226,15 @@ const StudioRenderers = {
       ]);
       const setup = setupResult.status === "fulfilled" ? setupResult.value : null;
       const account = setup?.account || { connected: false };
+      const accountModeLabel = account.account_mode === "live"
+        ? account.is_verified ? "Live · verified" : "Live · not verified"
+        : account.account_mode === "test" ? "Test mode" : "mode unknown";
       const defaultAccount = defaultResult.status === "fulfilled" ? defaultResult.value.default_account : null;
       const banks = banksResult.status === "fulfilled" ? banksResult.value.banks : null;
       if (status) status.textContent = setupResult.status === "rejected"
         ? "Shop owner access required"
         : account.connected
-          ? `Connected · ${account.bank_name} ·••${account.account_last4}`
+          ? `Connected · ${accountModeLabel} · ${account.bank_name} ·••${account.account_last4}`
           : defaultAccount
             ? `Default · ${defaultAccount.bank_name} ·••${defaultAccount.account_last4}`
           : account.status ? `Account status: ${account.status}` : "Not connected";
@@ -12828,16 +14251,22 @@ const StudioRenderers = {
       const errors = [
         ...(setupResult.status === "rejected" ? [setupResult.reason] : []),
         ...(banksResult.status === "rejected" ? [banksResult.reason] : []),
-        ...(defaultResult.status === "rejected" ? [defaultResult.reason] : []),
         ...(banksResult.status === "fulfilled" && !banks?.length ? [new Error("No supported banks were returned.")] : [])
       ];
       if (formStatus) {
         formStatus.textContent = errors.length
-          ? "Could not load payment setup. Check your connection and retry."
+          ? errors.map(error => error instanceof Error ? error.message : String(error)).join(" ")
           : account.connected
-            ? "Account connected."
+            ? account.account_mode === "live" && !account.is_verified
+              ? "Live account is not verified by Paystack; live checkout is disabled."
+              : account.account_mode === "test"
+                ? "Test account only. It cannot receive live payments."
+                : "Live account is verified and ready for live checkout."
             : "";
         if (errors.length) console.error("Payment account setup could not be loaded.", errors);
+      }
+      if (defaultResult.status === "rejected") {
+        console.warn("The app-wide default Paystack account could not be loaded.", defaultResult.reason);
       }
       const loaded = setupResult.status === "fulfilled" && !!banks?.length;
       if (retry) {
@@ -12858,7 +14287,11 @@ const StudioRenderers = {
         const result = await window.EshopInventoryBridge.savePaystackAccount(tenantId, values);
         const account = result.account;
         form.reset();
-        if (status) status.textContent = `Connected · ${account.bank_name} ·••${account.account_last4}`;
+        const accountModeLabel = account.account_mode === "live"
+          ? account.is_verified ? "Live · verified" : "Live · not verified"
+          : account.account_mode === "test" ? "Test mode" : "mode unknown";
+        if (status) status.textContent =
+          `Connected · ${accountModeLabel} · ${account.bank_name} ·••${account.account_last4}`;
         let defaultSaved = false;
         const sessionToken = window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") || "";
         const sourceTenant = AppController.tenantCatalogs().find(tenant => tenant.tenant_id === tenantId);
@@ -12873,8 +14306,12 @@ const StudioRenderers = {
           }
         }
         if (formStatus) formStatus.textContent = defaultSaved
-          ? "Account connected and set as the default for your websites."
-          : "Account connected. Choose it below to use it for your websites.";
+          ? account.account_mode === "live" && account.is_verified
+            ? "Verified live account connected and set as the default for your websites."
+            : "Account set as default, but live checkout remains disabled until a verified live account is connected."
+          : account.account_mode === "live" && account.is_verified
+            ? "Verified live account connected. Choose it below to use it for your websites."
+            : "Account connected, but live checkout remains disabled until a verified live account is connected.";
         if (submit) submit.textContent = "Update account";
       } catch (error) {
         console.error("Payment account setup failed.", error);
@@ -13000,9 +14437,11 @@ const StudioRenderers = {
       });
     }
     const branchesUrl = `/api/business/branches?tenant=${encodeURIComponent(tenantId)}`;
-    const renderNewsletterSubscribers = subscribers => {
+    const renderNewsletterSubscribers = (subscribers, actionStatus = "") => {
       const updatedSnapshot = { ...snapshot, remoteNewsletter: subscribers, remoteNewsletterError: "" };
       container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
+      const status = container.querySelector("[data-newsletter-action-status]");
+      if (status) status.textContent = actionStatus;
       this.bindBusinessCloudActions(container, path, updatedSnapshot, tenantId);
     };
     container.querySelector("[data-business-newsletter-refresh]")?.addEventListener("click", async event => {
@@ -13010,12 +14449,57 @@ const StudioRenderers = {
       button.disabled = true;
       try {
         const result = await window.EshopInventoryBridge.listNewsletterSubscribers(tenantId);
-        renderNewsletterSubscribers(Array.isArray(result.subscribers) ? result.subscribers : []);
+        const subscribers = Array.isArray(result.subscribers) ? result.subscribers : [];
+        renderNewsletterSubscribers(subscribers, `${subscribers.length} subscriber${subscribers.length === 1 ? "" : "s"} loaded.`);
       } catch (error) {
         const note = container.querySelector(".studio-panel-note");
         if (note) note.textContent = error instanceof Error ? error.message : "Could not load newsletter subscribers.";
         button.disabled = false;
       }
+    });
+    const removeRemoteSubscribers = async ids => {
+      const removedIds = new Set();
+      const failures = [];
+      for (const id of ids) {
+        try {
+          await window.EshopInventoryBridge.removeNewsletterSubscriber(tenantId, id);
+          removedIds.add(String(id));
+        } catch (error) {
+          failures.push(error instanceof Error ? error.message : "A subscriber could not be removed.");
+        }
+      }
+      const subscribers = (snapshot.remoteNewsletter || []).filter(subscriber => !removedIds.has(String(subscriber.id)));
+      const actionStatus = failures.length
+        ? `Removed ${removedIds.size} of ${ids.length} subscribers. ${failures.length} failed: ${failures[0]}`
+        : `Removed ${removedIds.size} subscriber${removedIds.size === 1 ? "" : "s"}.`;
+      renderNewsletterSubscribers(subscribers, actionStatus);
+    };
+    const newsletterSelectAll = container.querySelector("[data-newsletter-select-all]");
+    const newsletterChecks = [...container.querySelectorAll("[data-newsletter-subscriber-select]")];
+    const newsletterSelectedCount = container.querySelector("[data-newsletter-selection-count]");
+    const newsletterRemoveSelected = container.querySelector("[data-newsletter-remove-selected]");
+    const updateNewsletterSelection = () => {
+      const selectedCount = newsletterChecks.filter(input => input.checked).length;
+      if (newsletterSelectedCount) newsletterSelectedCount.textContent = `${selectedCount} selected`;
+      if (newsletterRemoveSelected) newsletterRemoveSelected.disabled = selectedCount === 0;
+      if (newsletterSelectAll) {
+        newsletterSelectAll.checked = newsletterChecks.length > 0 && selectedCount === newsletterChecks.length;
+        newsletterSelectAll.indeterminate = selectedCount > 0 && selectedCount < newsletterChecks.length;
+      }
+    };
+    newsletterSelectAll?.addEventListener("change", () => {
+      newsletterChecks.forEach(input => { input.checked = newsletterSelectAll.checked; });
+      updateNewsletterSelection();
+    });
+    newsletterChecks.forEach(input => input.addEventListener("change", updateNewsletterSelection));
+    newsletterRemoveSelected?.addEventListener("click", async () => {
+      const ids = newsletterChecks.filter(input => input.checked).map(input => input.value).filter(Boolean);
+      if (!ids.length || !window.confirm(`Remove ${ids.length} selected subscriber${ids.length === 1 ? "" : "s"}?`)) return;
+      newsletterRemoveSelected.disabled = true;
+      newsletterChecks.forEach(input => { input.disabled = true; });
+      const status = container.querySelector("[data-newsletter-action-status]");
+      if (status) status.textContent = `Removing ${ids.length} subscriber${ids.length === 1 ? "" : "s"}…`;
+      await removeRemoteSubscribers(ids);
     });
     container.querySelector("[data-business-newsletter-send]")?.addEventListener("submit", async event => {
       event.preventDefault();
@@ -13051,15 +14535,7 @@ const StudioRenderers = {
         const id = button.dataset.removeRemoteSubscriber;
         if (!id || !window.confirm("Remove this subscriber from the shop newsletter list?")) return;
         button.disabled = true;
-        try {
-          await window.EshopInventoryBridge.removeNewsletterSubscriber(tenantId, id);
-          const subscribers = (snapshot.remoteNewsletter || []).filter(subscriber => subscriber.id !== id);
-          renderNewsletterSubscribers(subscribers);
-        } catch (error) {
-          const note = container.querySelector(".studio-panel-note");
-          if (note) note.textContent = error instanceof Error ? error.message : "Could not remove subscriber.";
-          button.disabled = false;
-        }
+        await removeRemoteSubscribers([id]);
       });
     });
     const renderWithBranches = (branches, statusText) => {
@@ -13452,11 +14928,12 @@ const StudioRenderers = {
       }
       const remoteLoads = [];
       const combinedSalesPaths = new Set([
-        "/account/main-shop", "/account/main-shop/insights", "/account/main-shop/marketing",
+        "/account/main-shop", "/account/main-shop/marketing",
         "/account/main-shop/finance", "/account/main-shop/stores", "/account/main-shop/settings",
         "/account/main-shop/help", "/store/revenue", "/store/channels", "/store/sales",
         "/store/products", "/store/inventory", "/store/categories", "/store/orders",
-        "/store/payments", "/account/customers", "/account/customers/loyalty"
+        "/store/payments", "/account/customers", "/account/customers/loyalty",
+        "/account/web/studio/crm/customers", "/account/web/studio/crm/points"
       ]);
       const ordersPage = /\/(?:store\/orders|orders-bookings)(?:\/|$)/.test(path);
       const bookingsPage = /\/(?:store\/bookings|orders-bookings)(?:\/|$)/.test(path);
@@ -13495,7 +14972,7 @@ const StudioRenderers = {
           load: () => window.EshopInventoryBridge.fetchStorefrontEventAnalytics(activeTenant.id, 30)
         });
       }
-      if (/\/newsletter(?:\/|$)/.test(path)) {
+      if (/\/(?:newsletter|subscribers)(?:\/|$)/.test(path)) {
         remoteLoads.push({
           key: "remoteNewsletter",
           load: () => window.EshopInventoryBridge.listNewsletterSubscribers(activeTenant.id)
@@ -13753,6 +15230,10 @@ const StudioRenderers = {
         void this.loadMainShopWorkspace(path);
       });
       this.bindBusinessCloudActions(currentContent, path, renderSnapshot, activeTenant.id);
+      if (["/store/products/manage", "/store/manage/products"].includes(path)) {
+        this.bindMainStoreProductManagement(currentContent, renderSnapshot, path);
+      }
+      if (path === "/store/manage/categories") this.bindMainStoreCategories(currentContent, renderSnapshot, path);
       const exportButton = currentContent.querySelector('[data-business-export="transactions"]');
       if (exportButton) exportButton.addEventListener("click", () => {
         const headers = ["receipt", "channel", "date", "status", "currency", "total", "collected", "items"];
@@ -14332,29 +15813,6 @@ const StudioRenderers = {
               if (!subject || !message) throw new Error("Enter both a subject and message.");
               this.setWorkspaceSetting("newsletter_draft", { subject, message, saved_at: new Date().toISOString() });
               await window.ShopSQLite.flush();
-            } else if (kind === "payment-add") {
-              const type = String(data.get("type") || "");
-              const label = String(data.get("label") || "").trim();
-              const account = String(data.get("account") || "").trim();
-              const cardHint = String(data.get("cardHint") || "").trim();
-              const address = String(data.get("address") || "").trim();
-              if (!label) throw new Error("Add a display name.");
-              if (type === "card" && !/^(visa|mastercard|amex|american express|discover|other)\s*[·-]\s*\d{4}$/i.test(cardHint)) throw new Error("For card methods, enter a supported brand and last four digits, such as Visa · 1234. Do not enter the full card number or CVV.");
-              if (["paybill", "till", "pochi"].includes(type) && !account) throw new Error("Enter the business payment number.");
-              if (type === "crypto" && !address) throw new Error("Enter the wallet address.");
-              let image = "";
-              const imageFile = data.get("image");
-              if (imageFile instanceof File && imageFile.size > 0) {
-                if (!imageFile.type.startsWith("image/") || imageFile.size > 5 * 1024 * 1024) throw new Error("Choose a QR image smaller than 5 MB.");
-                image = await new Promise((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("The QR image could not be read."));
-                  reader.onerror = () => reject(new Error("The QR image could not be read."));
-                  reader.readAsDataURL(imageFile);
-                });
-              }
-              SQLiteEngine.insert("payment_methods", { tenant_id: activeTenant.id, type, label, account, cardHint, address, image, created_at: new Date().toISOString() });
-              await window.ShopSQLite.flush();
             } else {
               throw new Error("This action is not available.");
             }
@@ -14409,11 +15867,6 @@ const StudioRenderers = {
       }));
       document.querySelectorAll("[data-remove-subscriber]").forEach(button => button.addEventListener("click", async () => {
         SQLiteEngine.delete("newsletter_subscribers", item => item.tenant_id === activeTenant.id && Number(item.id) === Number(button.dataset.removeSubscriber));
-        await window.ShopSQLite.flush();
-        await this.loadMainShopWorkspace(path);
-      }));
-      document.querySelectorAll("[data-remove-payment]").forEach(button => button.addEventListener("click", async () => {
-        SQLiteEngine.delete("payment_methods", item => item.tenant_id === activeTenant.id && Number(item.id) === Number(button.dataset.removePayment));
         await window.ShopSQLite.flush();
         await this.loadMainShopWorkspace(path);
       }));
@@ -14932,35 +16385,12 @@ const StudioRenderers = {
     const selectedWebsite = websites.find(website => website.id === websiteDetailId);
     if (selectedWebsite) activeLabel = websiteDetailSection === "domains"
       ? `${selectedWebsite.name} · Domains`
-      : selectedWebsite.name;
+      : websiteDetailSection === "stats"
+        ? `${selectedWebsite.name} · Stats`
+        : selectedWebsite.name;
     const profileValue = value => AppUtils.escapeHTML(String(value || "").trim() || "Not added yet");
-    const renderWebsiteCards = (deleteLabel, ariaLabel = "Your websites") => `
-      <section class="profile-page-websites" aria-label="${ariaLabel}">
-        ${websites.map(website => `
-          <article class="profile-page-card profile-website-card">
-            <h2>
-              <a class="profile-website-settings-link" href="/account/profile/webs/${encodeURIComponent(website.id)}" data-route="/account/profile/webs/${encodeURIComponent(website.id)}">${AppUtils.escapeHTML(website.name)}</a>
-              ${website.id === activeTenant.id ? '<span class="profile-current-website-badge">Currently managing</span>' : ""}
-            </h2>
-            <p class="profile-website-domain">Domain: <a href="https://${AppUtils.escapeHTML(website.hostname)}" target="_blank" rel="noopener">${AppUtils.escapeHTML(website.hostname)}</a></p>
-            <div class="profile-page-details">
-              <p>Store details: ${profileValue(website.store.description)}</p>
-              <p>Location: ${profileValue(website.store.location)}</p>
-              <p>Email: ${profileValue(website.store.email)}</p>
-              <p>Phone: ${profileValue(website.store.phone)}</p>
-              <p>${website.products.length} products · ${website.categories.length} categories</p>
-            </div>
-            <div class="profile-website-actions">
-              <button class="btn-primary" type="button" data-manage-website="${AppUtils.escapeHTML(website.id)}">Manage this web</button>
-              <a class="btn-secondary" href="/account/profile/webs/${encodeURIComponent(website.id)}" data-route="/account/profile/webs/${encodeURIComponent(website.id)}">Website settings</a>
-              <a class="btn-secondary" href="/account/profile/webs/${encodeURIComponent(website.id)}/domains" data-route="/account/profile/webs/${encodeURIComponent(website.id)}/domains">Domains</a>
-              <a class="btn-primary" href="https://${AppUtils.escapeHTML(website.hostname)}" target="_blank" rel="noopener">Browse web</a>
-              <button class="btn-secondary profile-website-delete" type="button" data-delete-website="${AppUtils.escapeHTML(website.id)}"${website.id === "main" ? ' disabled title="The main Craft domain cannot be deleted."' : ""}>${deleteLabel}</button>
-            </div>
-            ${website.id === "main" ? '<p class="profile-website-note">The main Craft website is required and cannot be deleted.</p>' : ""}
-          </article>
-        `).join("")}
-      </section>`;
+    const renderWebsiteCards = (deleteLabel, ariaLabel = "Your websites") =>
+      StudioRenderers.renderWebsiteManagementCards(websites, deleteLabel, ariaLabel);
     const websiteCards = renderWebsiteCards("Delete web");
     const websiteSettingsScreen = selectedWebsite ? `
       <article class="profile-page-card profile-website-settings">
@@ -15033,6 +16463,17 @@ const StudioRenderers = {
         <h2>Website not found</h2>
         <p>This website is not saved in this app. Return to Webs and choose one of your saved websites.</p>
       </article>`;
+    const websiteStatsScreen = selectedWebsite ? `
+      <article class="profile-page-card">
+        <div class="studio-panel-heading">
+          <div><h2>Website usage</h2><p class="studio-panel-note">Storage and tenant-scoped database records for ${AppUtils.escapeHTML(selectedWebsite.name)}.</p></div>
+          <button class="btn-secondary" type="button" data-load-website-stats="${AppUtils.escapeHTML(selectedWebsite.id)}">Refresh</button>
+        </div>
+        <p data-website-stats-status role="status" aria-live="polite">Load usage statistics for this website.</p>
+        <div data-website-stats-content></div>
+        <p class="profile-website-note">D1 is shared between websites, so this reports rows scoped to this website, not a fictional per-website database size.</p>
+      </article>` : `
+      <article class="profile-page-card"><h2>Website not found</h2><p>This website is not saved in this app.</p></article>`;
     const accountsScreen = `
       ${renderWebsiteCards("Delete account", "Shop accounts")}
       <a class="btn-primary profile-add-account" href="/account/web/themes" data-start-new-website>Create a new website</a>`;
@@ -15135,7 +16576,7 @@ const StudioRenderers = {
           <h1 class="profile-page-title">${AppUtils.escapeHTML(activeLabel)}</h1>
         </header>
         <section class="profile-page-content" aria-label="${AppUtils.escapeHTML(activeLabel)} details">
-          ${websiteDetailId ? websiteDetailSection === "domains" ? websiteDomainScreen : websiteSettingsScreen : activeSection === "profile" ? profileCards : activeSection === "accounts" ? accountsScreen : activeSection === "webs" ? websiteCards : activeSection === "privacy" ? privacyPolicy : activeSection === "updates" ? updatesScreen : activeSection === "link-devices" ? linkedDevicesScreen : ""}
+          ${websiteDetailId ? websiteDetailSection === "domains" ? websiteDomainScreen : websiteDetailSection === "stats" ? websiteStatsScreen : websiteSettingsScreen : activeSection === "profile" ? profileCards : activeSection === "accounts" ? accountsScreen : activeSection === "webs" ? websiteCards : activeSection === "privacy" ? privacyPolicy : activeSection === "updates" ? updatesScreen : activeSection === "link-devices" ? linkedDevicesScreen : ""}
         </section>
       </main>
       ${StoreRenderers.renderFooter()}
@@ -15184,6 +16625,13 @@ const StudioRenderers = {
   websiteBuilderDraft() {
     try {
       const saved = JSON.parse(window.localStorage.getItem("ESHOP_NEW_WEBSITE_DRAFT_V1") || "{}");
+      const draftId = typeof saved.draft_id === "string" && /^[a-z0-9-]{8,100}$/i.test(saved.draft_id)
+        ? saved.draft_id
+        : `draft-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      if (saved.draft_id !== draftId) {
+        saved.draft_id = draftId;
+        window.localStorage.setItem("ESHOP_NEW_WEBSITE_DRAFT_V1", JSON.stringify(saved));
+      }
       const legacyImportCleanupKey = "ESHOP_WEBSITE_DRAFT_LEGACY_CATALOG_CLEANUP_V2";
       const needsLegacyImportCleanup = window.localStorage.getItem(legacyImportCleanupKey) !== "1";
       if (needsLegacyImportCleanup) {
@@ -15200,6 +16648,7 @@ const StudioRenderers = {
       return {
         products: Array.isArray(saved.products) ? saved.products : [],
         categories: Array.isArray(saved.categories) ? saved.categories : [],
+        draft_id: draftId,
         shop_name: typeof saved.shop_name === "string" ? saved.shop_name : "",
         section_layout: saved.section_layout && typeof saved.section_layout === "object"
           ? saved.section_layout
@@ -15243,10 +16692,9 @@ const StudioRenderers = {
         <a href="/account" class="studio-back-link" data-route="/account" aria-label="Back to your websites">&larr;</a>
         <header style="margin:3px 0 8px;">
           <span class="studio-workspace-kicker">NEW WEBSITE · STEP 1 OF 3</span>
-          <h1 class="section-heading" style="font-size:1.25rem;margin:2px 0;">Products &amp; categories</h1>
+          <h1 class="section-heading" style="font-size:1.25rem;margin:2px 0;">Add products and categories</h1>
           <p style="margin:2px 0 0;color:var(--text-muted);font-size:.8rem;">Add Store products or create new ones for this website.</p>
         </header>
-        <a class="btn-primary" href="/account/web/site?new=1&edit=1&theme=litrus-mixer" data-route="/account/web/site?new=1&edit=1&theme=litrus-mixer" style="display:inline-flex;align-items:center;min-height:40px;margin-bottom:8px;">Continue to build shop &rarr;</a>
         <button class="btn-secondary" id="website-wizard-load-store" type="button" style="width:100%;min-height:40px;margin-bottom:10px;">Choose products from Store</button>
         <section id="website-wizard-store-picker" hidden role="dialog" aria-modal="true" aria-labelledby="website-wizard-store-title" style="position:fixed;inset:0;z-index:1200;background:var(--bg);overflow:auto;padding:env(safe-area-inset-top,0px) 14px env(safe-area-inset-bottom,0px);">
           <div style="max-width:900px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;">
@@ -15262,23 +16710,27 @@ const StudioRenderers = {
         <section class="studio-panel" style="margin-bottom:14px;">
           <div class="studio-panel-heading"><h2>Categories (${categories.length})</h2></div>
           <form id="website-wizard-category-form" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="hidden" name="id">
             <input class="form-input" name="name" required maxlength="80" placeholder="Category name" aria-label="New category name" style="flex:1;min-width:170px;">
-            <button class="btn-secondary" type="submit">Add category</button>
+            <button class="btn-secondary website-wizard-compact-action" type="submit">Add category</button>
           </form>
-          <p class="studio-panel-note" id="website-wizard-category-list">${categories.map(category => AppUtils.escapeHTML(category.name)).join(" · ") || "Add a category before creating products."}</p>
+          <div class="website-wizard-category-list" id="website-wizard-category-list">${categories.map(category => `<div class="website-wizard-category-row"><span>${AppUtils.escapeHTML(category.name)}</span><button class="btn-secondary website-wizard-compact-action" type="button" data-edit-wizard-category="${AppUtils.escapeHTML(String(category.id))}">Edit</button></div>`).join("") || `<p class="studio-panel-note">Add a category before creating products.</p>`}</div>
         </section>
         <section class="studio-panel" style="margin-bottom:14px;">
           <div class="studio-panel-heading" style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><h2>Products (${products.length})</h2>${products.length ? `<button class="btn-secondary" id="website-wizard-clear-products" type="button">Remove all</button>` : ""}</div>
-          <div id="website-wizard-product-list">${products.map(product => `<article class="studio-list-row" style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><strong>${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(product.category_name || "Uncategorized")}</span></div><strong>${AppUtils.escapeHTML(String(product.price ?? ""))}</strong><button class="btn-secondary" type="button" data-remove-wizard-product="${AppUtils.escapeHTML(String(product.id))}" aria-label="Remove ${AppUtils.escapeHTML(product.name)} from this website">Remove</button></article>`).join("") || `<p class="studio-panel-note">No products yet. Add from Store or create one below.</p>`}</div>
+          <div id="website-wizard-product-list">${products.map(product => `<article class="studio-list-row" style="display:flex;align-items:center;gap:8px;"><div style="flex:1;min-width:0;"><strong>${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(product.category_name || "Uncategorized")}</span></div><strong>${AppUtils.escapeHTML(String(product.price ?? ""))}</strong><button class="btn-secondary website-wizard-compact-action" type="button" data-edit-wizard-product="${AppUtils.escapeHTML(String(product.id))}">Edit</button><button class="btn-secondary website-wizard-compact-action" type="button" data-remove-wizard-product="${AppUtils.escapeHTML(String(product.id))}" aria-label="Remove ${AppUtils.escapeHTML(product.name)} from this website">Remove</button></article>`).join("") || `<p class="studio-panel-note">No products yet. Add from Store or create one below.</p>`}</div>
           <form id="website-wizard-product-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:8px;margin-top:12px;">
+            <input type="hidden" name="id">
             <input class="form-input" name="name" required maxlength="120" placeholder="Product name">
             <input class="form-input" name="price" type="number" min="0" step="0.01" required placeholder="Price">
             <select class="form-input" name="category_id" required aria-label="Product category">
               <option value="">Choose category</option>${categories.map(category => `<option value="${AppUtils.escapeHTML(String(category.id))}">${AppUtils.escapeHTML(category.name)}</option>`).join("")}
             </select>
-            <button class="btn-primary" type="submit" ${categories.length ? "" : "disabled"}>Add product</button>
+            <button class="btn-primary website-wizard-compact-action" type="submit" ${categories.length ? "" : "disabled"}>Add product</button>
+            <button class="btn-secondary website-wizard-compact-action" type="button" id="website-wizard-cancel-product-edit" hidden>Cancel edit</button>
           </form>
         </section>
+        <a class="btn-primary" href="/account/web/themes/select" data-route="/account/web/themes/select" style="display:inline-flex;align-items:center;min-height:40px;margin-bottom:8px;">Continue to choose a theme &rarr;</a>
       </main>
       ${embedded ? "" : StoreRenderers.renderFooter()}
     `;
@@ -15393,7 +16845,7 @@ const StudioRenderers = {
       this.saveWebsiteBuilderDraft(newWebsiteDraft);
     }
     const editorReturnRoute = draftEditor
-      ? "/account/web/themes"
+      ? "/account/web/themes/select"
       : `/account/profile/webs/${encodeURIComponent(tenant.id)}`;
     AppUtils.updateSEO({
       title: "Litrus Mixer — Craft",
@@ -15429,7 +16881,8 @@ const StudioRenderers = {
         <form id="new-website-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-lg);">
           <label class="form-field"><span class="form-label">Shop / website name</span><input class="form-input" name="name" required maxlength="120" placeholder="My Shop" value="${AppUtils.escapeHTML(newWebsiteDraft.shop_name || "")}"></label>
           <label class="form-field"><span class="form-label">Website address</span><span style="display:flex;align-items:center;gap:5px;"><input class="form-input" name="id" required maxlength="40" pattern="[A-Za-z0-9-]+" placeholder="my-store" value="${AppUtils.escapeHTML(String(newWebsiteDraft.shop_name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40).replace(/-$/g, ""))}"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
-          <p class="studio-panel-note" style="grid-column:1/-1;">Payment settings apply across your websites.</p>
+          <label style="grid-column:1/-1;display:flex;align-items:flex-start;gap:8px;font-size:.84rem;"><input type="checkbox" name="confirm_domain" required><span>I confirm this website address and domain before publishing.</span></label>
+          <p class="studio-panel-note" style="grid-column:1/-1;">App-account Paystack payments are shared across your websites. Payment settings belong to your signed-in app account. Every website registered to your app account will use this account at checkout.</p>
           <p id="new-website-error" role="alert" hidden style="grid-column:1/-1;color:#b42318;margin:0;"></p>
           <button class="btn-primary" type="submit" style="min-height:42px;align-self:end;">Set up</button>
         </form>
@@ -15445,29 +16898,39 @@ const StudioRenderers = {
     if (selectedTheme === "litrus-mixer") {
       return `
         <style>
-          .builder-litrus-toolbar{z-index:1;min-height:42px;padding:3px 8px;display:flex;align-items:center;gap:6px;overflow-x:auto;background:#191a1e;border-bottom:1px solid #303136}
-          .builder-litrus-toolbar button,.builder-litrus-toolbar a{height:34px;min-height:34px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border:1px solid #45464c;border-radius:8px;background:#27282d;color:#f5f5f6;font:600 12px system-ui,sans-serif;text-decoration:none}
-          .builder-litrus-toolbar #builder-litrus-publish{background:#f5f5f6;color:#111;border-color:#f5f5f6}
-          .builder-litrus-device-controls{display:flex;align-items:center;gap:4px;margin-left:auto}
-          .builder-litrus-device-controls button[aria-pressed="true"]{background:#f5f5f6;color:#111;border-color:#f5f5f6}
-          @media(max-width:520px){.builder-litrus-toolbar{gap:4px;padding-inline:5px}.builder-litrus-toolbar button,.builder-litrus-toolbar a{padding-inline:7px;font-size:11px}.builder-litrus-device-controls{gap:2px}}
-          @media(max-width:400px){.builder-litrus-device-controls button{width:30px;padding:0;font-size:0}.builder-litrus-device-controls button:after{font-size:11px}.builder-litrus-device-controls [data-litrus-preview-device="fit"]:after{content:"F"}.builder-litrus-device-controls [data-litrus-preview-device="phone"]:after{content:"P"}.builder-litrus-device-controls [data-litrus-preview-device="tablet"]:after{content:"T"}.builder-litrus-device-controls [data-litrus-preview-device="laptop"]:after{content:"L"}}
+          .builder-litrus-toolbar{z-index:1;min-height:46px;padding:5px 10px;display:flex;align-items:center;gap:7px;overflow:visible;background:var(--surface);color:var(--text-main);border-bottom:1px solid var(--border)}
+          .builder-litrus-toolbar button,.builder-litrus-toolbar a,.builder-litrus-device-controls summary{height:36px;min-height:36px;padding:0 11px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border:1px solid var(--border);border-radius:14px;background:var(--surface-subtle);color:var(--text-main);font:600 12px system-ui,sans-serif;text-decoration:none;cursor:pointer}
+          .builder-litrus-toolbar [hidden]{display:none!important}
+          .builder-litrus-toolbar #builder-litrus-publish{background:var(--surface);color:var(--text-main);border-color:var(--border)}
+          .builder-litrus-device-controls{position:relative;margin-left:auto}
+          .builder-litrus-device-controls[hidden]{display:none!important}
+          .builder-litrus-device-controls summary{gap:7px;list-style:none}
+          .builder-litrus-device-controls summary::-webkit-details-marker{display:none}
+          .builder-litrus-device-controls summary svg{width:17px;height:17px}
+          .builder-litrus-device-menu{position:absolute;top:42px;right:0;z-index:20;display:grid;min-width:150px;gap:4px;padding:6px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:0 12px 30px rgba(24,24,27,.14)}
+          .builder-litrus-device-menu button{width:100%;justify-content:flex-start}
+          .builder-litrus-device-menu button[aria-pressed="true"]{background:var(--accent-light);color:var(--text-main);border-color:var(--border)}
+          @media(max-width:520px){.builder-litrus-toolbar{gap:4px;padding-inline:5px}.builder-litrus-toolbar button,.builder-litrus-toolbar a,.builder-litrus-device-controls summary{padding-inline:7px;font-size:11px}}
         </style>
-        <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:#101114;color:#f5f5f6;">
+        <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:var(--bg);color:var(--text-main);">
           <header class="builder-litrus-toolbar" aria-label="Shop builder controls">
-            <a class="builder-back-link" href="${AppUtils.escapeHTML(editorReturnRoute)}" data-route="${AppUtils.escapeHTML(editorReturnRoute)}" aria-label="Back to previous screen">&larr;</a>
-            <a id="builder-litrus-store-details" href="/account/web/store" data-route="/account/web/store">Store details</a>
-            <button id="builder-litrus-build" type="button">Build</button>
             <button id="builder-litrus-publish" type="button">Publish</button>
-            <div class="builder-litrus-device-controls" role="group" aria-label="Preview size">
-              <button type="button" data-litrus-preview-device="fit" aria-label="Fit preview" aria-pressed="true">Fit</button>
-              <button type="button" data-litrus-preview-device="phone" aria-label="Phone preview" aria-pressed="false">Phone</button>
-              <button type="button" data-litrus-preview-device="tablet" aria-label="Tablet preview" aria-pressed="false">Tablet</button>
-              <button type="button" data-litrus-preview-device="laptop" aria-label="Laptop preview" aria-pressed="false">Laptop</button>
-            </div>
+            <a id="builder-litrus-store-details" href="/account/web/store" data-route="/account/web/store">Store</a>
+            <button id="builder-litrus-sections" type="button">Sections</button>
+            <button id="builder-litrus-advanced" type="button">Advanced</button>
+            <details class="builder-litrus-device-controls" id="builder-litrus-devices" hidden>
+              <summary aria-label="Devices"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="13" height="15" rx="2"/><path d="M8 16h3M19 8h2v12h-7v-1"/></svg><span>Devices</span></summary>
+              <div class="builder-litrus-device-menu" role="group" aria-label="Preview device">
+                <button type="button" data-litrus-preview-device="fit" aria-pressed="true">Fit</button>
+                <button type="button" data-litrus-preview-device="phone" aria-pressed="false">Phone</button>
+                <button type="button" data-litrus-preview-device="tablet" aria-pressed="false">Tablet</button>
+                <button type="button" data-litrus-preview-device="laptop" aria-pressed="false">Laptop</button>
+              </div>
+            </details>
           </header>
-          <iframe id="builder-litrus-mixer" title="Shop builder" src="/litrus-mixer/index.html?craft=1" allow="clipboard-read; clipboard-write" style="display:block;width:100%;min-width:0;height:100%;border:0;background:#fff;"></iframe>
+          <iframe id="builder-litrus-mixer" title="Shop builder" src="/litrus-mixer/index.html?craft=1" allow="clipboard-read; clipboard-write" style="display:block;width:100%;min-width:0;height:100%;border:0;background:var(--bg);"></iframe>
         </main>
+        <div id="product-modal-container"></div>
       `;
     }
     const studioUrl = new URL("/liquid-themes/theme-studio.html", window.location.origin);
@@ -15480,11 +16943,13 @@ const StudioRenderers = {
           <a href="/account/web/store" data-route="/account/web/store" style="min-height:36px;padding:0 10px;display:inline-flex;align-items:center;white-space:nowrap;color:#fff;">Store details</a>
           <strong style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;">${AppUtils.escapeHTML(studioTheme.name)} · Theme Studio</strong>
           <button class="btn-secondary" id="builder-theme-studio-save" type="button" style="min-height:36px;padding:0 10px;white-space:nowrap;">Save design</button>
+          ${!draftEditor && selectedTheme !== "classic" ? '<button class="btn-primary" id="builder-theme-studio-publish" type="button" style="min-height:36px;padding:0 12px;white-space:nowrap;">Publish</button>' : ""}
           ${draftEditor ? `<a class="btn-primary" href="${AppUtils.escapeHTML(continueRoute)}" data-route="${AppUtils.escapeHTML(continueRoute)}" style="min-height:36px;padding:0 12px;display:inline-flex;align-items:center;white-space:nowrap;">Continue setup</a>` : ""}
         </header>
         <p id="builder-theme-studio-status" role="status" aria-live="polite" style="position:absolute;z-index:2;right:12px;bottom:12px;margin:0;padding:8px 12px;background:#191a1e;color:#fff;border-radius:8px;font-size:.8rem;pointer-events:none;"></p>
         <iframe id="builder-theme-studio" title="${AppUtils.escapeHTML(studioTheme.name)} Liquid Theme Studio" src="${AppUtils.escapeHTML(studioUrl.pathname + studioUrl.search)}" allow="clipboard-read; clipboard-write" style="display:block;width:100%;min-width:0;height:100%;border:0;background:#fff;"></iframe>
       </main>
+      <div id="product-modal-container"></div>
     `;
   },
 
@@ -16389,6 +17854,35 @@ const AppController = {
     }
   },
 
+  getBuilderCatalogSnapshot() {
+    return {
+      products: SQLiteEngine.select("products"),
+      categories: SQLiteEngine.getCategories(),
+      store: SQLiteEngine.getStore(),
+      pages: SQLiteEngine.getPages(),
+      appearance: this.getStudioAppearance()
+    };
+  },
+
+  async persistBuilderCatalogMutation(mutation) {
+    const value = mutation();
+    await window.ShopSQLite.flush();
+    return { value, catalog: this.getBuilderCatalogSnapshot() };
+  },
+
+  installBuilderSqliteBridge() {
+    const persist = mutation => this.persistBuilderCatalogMutation(mutation);
+    window.EshopBuilderSqlite = {
+      saveProduct: data => persist(() => SQLiteEngine.saveProduct(data)),
+      deleteProduct: id => persist(() => SQLiteEngine.deleteProduct(id)),
+      duplicateProduct: id => persist(() => SQLiteEngine.duplicateProduct(id)),
+      saveCategory: data => persist(() => SQLiteEngine.saveCategory(data)),
+      deleteCategory: id => persist(() => SQLiteEngine.deleteCategory(id)),
+      updateInventoryStock: (productId, stock) => persist(() => SQLiteEngine.updateInventoryStock(productId, stock)),
+      createOrder: (data, items) => persist(() => SQLiteEngine.createOrder(data, items))
+    };
+  },
+
   tenantCatalogs() {
     if (!Array.isArray(SQLiteEngine.db.tables.tenant_catalogs)) {
       SQLiteEngine.db.tables.tenant_catalogs = [];
@@ -16690,6 +18184,7 @@ const AppController = {
   },
 
   async cloudflareRequest(path, options = {}, tenantId = this.getActiveTenant().id, anonymous = false, credentialOverride = "") {
+    let draftLitrusImageRequest = false;
     if (this.isWebsiteBuilderDraftTenant(this.getActiveTenant().id) ||
         this.isWebsiteBuilderDraftTenant(tenantId)) {
       const [route, query] = this.currentRoute().split("?");
@@ -16705,12 +18200,12 @@ const AppController = {
           String(options.method || "GET").toUpperCase() === "PUT" ||
           pathUrl.pathname === "/api/theme-publish" &&
           String(options.method || "GET").toUpperCase() === "POST");
-      const draftLitrusImageRequest = route === "/account/web/site" &&
+      draftLitrusImageRequest = route === "/account/web/site" &&
         routeParams.get("new") === "1" &&
         routeParams.get("edit") === "1" &&
         routeParams.get("theme") === "litrus-mixer" &&
         tenantId === "main" &&
-        pathUrl.pathname === "/api/images/search" &&
+        pathUrl.pathname === "/api/images/draft-search" &&
         String(options.method || "GET").toUpperCase() === "POST";
       const rollbackCreatedTenant = finalTenantSetup && !!credentialOverride &&
         tenantId !== WEBSITE_BUILDER_DRAFT_TENANT_ID &&
@@ -16724,7 +18219,7 @@ const AppController = {
       }
     }
     const connection = this.cloudflareConnection(tenantId);
-    const token = credentialOverride || connection.token;
+    const token = draftLitrusImageRequest ? "" : credentialOverride || connection.token;
     const { origin } = connection;
     if (!token && !anonymous) throw new Error(tenantId === "main"
       ? "Sign in to the Craft account that owns the main website."
@@ -17031,6 +18526,7 @@ const AppController = {
     else if (window.ShopSQLiteReady) await window.ShopSQLiteReady;
     await SQLiteEngine.init(categories, products, storeInfo, plans, demoAnalytics);
     this.cacheActiveTenantCatalog();
+    this.installBuilderSqliteBridge();
     await SQLiteEngine.resetBuildYourWebDataOnce();
     try {
       await this.ensureBuilderCatalogImported();
@@ -17230,7 +18726,8 @@ const AppController = {
 
   setAppShellTheme(path, params = new URLSearchParams()) {
     const isAppShell = path === "/" || path === "" || path === "/account" ||
-      path.startsWith("/account/") || path === "/app-account" || path === "/pos" || path.startsWith("/pos/");
+      path.startsWith("/account/") || path === "/app-account" || path === "/pos" ||
+      path.startsWith("/pos/") || path === "/store" || path.startsWith("/store/");
     const isAppScreen = isAppShell || path === "/web" || path === "/categories" ||
       path === "/store" || path.startsWith("/store/");
     const isNewLitrusEditor = path === "/account/web/site" &&
@@ -17382,7 +18879,9 @@ const AppController = {
       html = StudioRenderers.renderAppAccount();
     } else if (path === "/account" || path === "/account/main-shop" || path.startsWith("/account/main-shop/") || path === "/account/dashboard" || path.startsWith("/account/customers") || path.startsWith("/account/website") || path === "/account/payments") {
       html = StudioRenderers.renderMainShopWorkspace(path);
-    } else if (["/store/products", "/store/categories", "/store/inventory", "/store/split-shop", "/store/revenue", "/store/channels", "/store/sales", "/store/website", "/store/orders", "/store/bookings", "/store/payments"].includes(path)) {
+    } else if (path === "/account/web" || path.startsWith("/account/web/studio/")) {
+      html = StudioRenderers.renderMainShopWorkspace(path);
+    } else if (["/store/products", "/store/products/manage", "/store/manage/products", "/store/manage/categories", "/store/categories", "/store/inventory", "/store/split-shop", "/store/revenue", "/store/channels", "/store/sales", "/store/website", "/store/orders", "/store/bookings", "/store/payments"].includes(path)) {
       html = StudioRenderers.renderMainShopWorkspace(path);
     } else if (path === "/account/profile" || path.startsWith("/account/profile/")) {
       html = StudioRenderers.renderProfileScreen(path);
@@ -17488,20 +18987,63 @@ const AppController = {
     const categoryForm = document.getElementById("website-wizard-category-form");
     if (categoryForm) categoryForm.onsubmit = event => {
       event.preventDefault();
-      const name = String(new FormData(categoryForm).get("name") || "").trim();
+      const formData = new FormData(categoryForm);
+      const name = String(formData.get("name") || "").trim();
       if (!name) return;
       const draft = StudioRenderers.websiteBuilderDraft();
-      if (draft.categories.some(category => category.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+      const categoryId = String(formData.get("id") || "");
+      if (draft.categories.some(category => String(category.id) !== categoryId &&
+          category.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
         AppUtils.showToast("That category is already in your new website draft.", "danger");
         return;
       }
-      draft.categories.push({ id: Date.now() + draft.categories.length, name });
+      if (categoryId) {
+        const category = draft.categories.find(item => String(item.id) === categoryId);
+        if (!category) {
+          AppUtils.showToast("That category is no longer in this website draft.", "danger");
+          return;
+        }
+        category.name = name;
+        draft.products.forEach(product => {
+          if (String(product.category_id) === categoryId) product.category_name = name;
+        });
+      } else {
+        draft.categories.push({ id: Date.now() + draft.categories.length, name });
+      }
       StudioRenderers.saveWebsiteBuilderDraft(draft);
       this.handleRoute(this.currentRoute());
+    };
+    const categoryList = document.getElementById("website-wizard-category-list");
+    if (categoryList) categoryList.onclick = event => {
+      const button = event.target.closest("[data-edit-wizard-category]");
+      if (!button || !categoryForm) return;
+      const category = StudioRenderers.websiteBuilderDraft().categories.find(item =>
+        String(item.id) === button.dataset.editWizardCategory);
+      if (!category) return;
+      categoryForm.elements.id.value = String(category.id);
+      categoryForm.elements.name.value = category.name;
+      categoryForm.querySelector('button[type="submit"]').textContent = "Save category";
+      categoryForm.elements.name.focus();
     };
 
     const productList = document.getElementById("website-wizard-product-list");
     if (productList) productList.onclick = event => {
+      const editButton = event.target.closest("[data-edit-wizard-product]");
+      const productForm = document.getElementById("website-wizard-product-form");
+      if (editButton && productForm) {
+        const product = StudioRenderers.websiteBuilderDraft().products.find(item =>
+          String(item.id) === editButton.dataset.editWizardProduct);
+        if (!product) return;
+        productForm.elements.id.value = String(product.id);
+        productForm.elements.name.value = product.name;
+        productForm.elements.price.value = String(product.price ?? "");
+        productForm.elements.category_id.value = String(product.category_id ?? "");
+        productForm.querySelector('button[type="submit"]').textContent = "Save product";
+        document.getElementById("website-wizard-cancel-product-edit").hidden = false;
+        productForm.scrollIntoView({ behavior: "smooth", block: "center" });
+        productForm.elements.name.focus();
+        return;
+      }
       const button = event.target.closest("[data-remove-wizard-product]");
       if (!button) return;
       const draft = StudioRenderers.websiteBuilderDraft();
@@ -17530,18 +19072,38 @@ const AppController = {
         AppUtils.showToast("Add or choose a category for this product.", "danger");
         return;
       }
-      draft.products.push({
-        id: Date.now() + draft.products.length,
+      const productId = String(formData.get("id") || "");
+      const values = {
         name: String(formData.get("name") || "").trim(),
         price: Number(formData.get("price")),
-        stock: 0,
-        description: "",
-        images: [],
         category_id: category.id,
         category_name: category.name
-      });
+      };
+      if (productId) {
+        const product = draft.products.find(item => String(item.id) === productId);
+        if (!product) {
+          AppUtils.showToast("That product is no longer in this website draft.", "danger");
+          return;
+        }
+        Object.assign(product, values);
+      } else {
+        draft.products.push({
+          id: Date.now() + draft.products.length,
+          ...values,
+          stock: 0,
+          description: "",
+          images: []
+        });
+      }
       StudioRenderers.saveWebsiteBuilderDraft(draft);
       this.handleRoute(this.currentRoute());
+    };
+    const cancelProductEdit = document.getElementById("website-wizard-cancel-product-edit");
+    if (cancelProductEdit && productForm) cancelProductEdit.onclick = () => {
+      productForm.reset();
+      productForm.elements.id.value = "";
+      productForm.querySelector('button[type="submit"]').textContent = "Add product";
+      cancelProductEdit.hidden = true;
     };
 
     const loadStore = document.getElementById("website-wizard-load-store");
@@ -17672,14 +19234,21 @@ const AppController = {
     if (path === "/account/web/site") {
       const frame = document.getElementById("builder-theme-studio");
       const saveButton = document.getElementById("builder-theme-studio-save");
+      const publishButton = document.getElementById("builder-theme-studio-publish");
       const status = document.getElementById("builder-theme-studio-status");
       if (frame && saveButton && status) {
         const themeId = params.get("theme") ||
-          StudioRenderers.websiteThemesForPicker()[0]?.id || "elora-linen";
-        saveButton.onclick = () => {
-          status.textContent = "Capturing the current design…";
+          SQLiteEngine.getStore().website_theme_id || "elora-linen";
+        let publishAfterSave = false;
+        const requestDesignSave = publish => {
+          publishAfterSave = publish;
+          status.textContent = publish
+            ? "Capturing the current design before publishing…"
+            : "Capturing the current design…";
           frame.contentWindow?.postMessage({ type: "eshop-theme-studio-export-request" }, window.location.origin);
         };
+        saveButton.onclick = () => requestDesignSave(false);
+        if (publishButton) publishButton.onclick = () => requestDesignSave(true);
         if (this.themeStudioMessageHandler) {
           window.removeEventListener("message", this.themeStudioMessageHandler);
         }
@@ -17723,6 +19292,7 @@ const AppController = {
             return;
           }
           if (event.data?.type === "eshop-theme-studio-design-error") {
+            publishAfterSave = false;
             status.textContent = `Could not save this design: ${String(event.data.message || "Studio export failed.")}`;
             return;
           }
@@ -17730,14 +19300,22 @@ const AppController = {
           if (typeof event.data.html !== "string" ||
               !/^<!doctype\s+html>/i.test(event.data.html) ||
               event.data.html.length > 3_000_000) {
+            publishAfterSave = false;
             status.textContent = "The current Studio design could not be saved.";
             return;
           }
+          const shouldPublish = publishAfterSave;
+          publishAfterSave = false;
           try {
             StudioRenderers.setWorkspaceSetting(`liquid-html-theme-draft:${themeId}`, event.data.html);
             if (!window.ShopSQLite) throw new Error("The app database is not ready.");
             await window.ShopSQLite.flush();
-            status.textContent = "Design saved for this website. Publish to apply it live.";
+            if (shouldPublish) {
+              status.textContent = "Design saved. Publishing to Cloudflare…";
+              this.openCloudflarePublishModal(true);
+            } else {
+              status.textContent = "Design saved for this website. Publish to apply it live.";
+            }
           } catch (error) {
             console.error("Theme Studio design could not be saved.", error);
             status.textContent = "Could not save this design on the device.";
@@ -17750,6 +19328,11 @@ const AppController = {
       const litrusFrame = document.getElementById("builder-litrus-mixer");
       if (litrusFrame) {
         const isDraftEditor = params.get("new") === "1" && params.get("edit") === "1";
+        const draftId = isDraftEditor ? StudioRenderers.websiteBuilderDraft().draft_id : "";
+        const litrusScope = isDraftEditor ? `draft:${draftId || "new"}` : `tenant:${this.getActiveTenant().id}`;
+        const litrusRecipeKey = `litrus-mixer-recipe:${litrusScope}`;
+        const litrusDesignKey = `liquid-html-theme-draft:litrus-mixer:${litrusScope}`;
+        const savedLitrusRecipe = StudioRenderers.getWorkspaceSetting(litrusRecipeKey, null);
         let litrusSaveQueue = Promise.resolve();
         const validLitrusHtml = html => typeof html === "string" && html.length <= 3_000_000 &&
           /^<!doctype\s+html>/i.test(html) &&
@@ -17758,7 +19341,10 @@ const AppController = {
           const save = litrusSaveQueue.then(async () => {
             if (!window.ShopSQLite) throw new Error("The app database is not ready.");
             await this.saveLitrusMixerCatalog(payload, isDraftEditor);
-            StudioRenderers.setWorkspaceSetting("liquid-html-theme-draft:litrus-mixer", payload.html);
+            StudioRenderers.setWorkspaceSetting(litrusDesignKey, payload.html);
+            if (payload.recipe?.litrus === "mixer-recipe" && payload.recipe.v === 1) {
+              StudioRenderers.setWorkspaceSetting(litrusRecipeKey, payload.recipe);
+            }
             await window.ShopSQLite.flush();
           });
           litrusSaveQueue = save.catch(() => {});
@@ -17785,6 +19371,8 @@ const AppController = {
                   media_type: product.media_type || "image",
                   spin_frames: Array.isArray(product.spin_frames) ? product.spin_frames : [],
                   video_url: product.video_url || "",
+                  booking_enabled: product.booking_enabled === true || product.booking_enabled === 1,
+                  duration_minutes: Number(product.duration_minutes) || 60,
                   category_names: categories
                     .filter(category => productCategoryIds.some(id => String(category.id) === String(id)))
                     .map(category => category.name)
@@ -17793,10 +19381,20 @@ const AppController = {
             const draft = isDraftEditor ? StudioRenderers.websiteBuilderDraft() : null;
             litrusFrame.contentWindow?.postMessage({
               type: "craft-litrus-catalog",
+              recipe: savedLitrusRecipe,
               catalog: {
                 shop: {
                   name: draft?.shop_name || (isDraftEditor ? "" : store.name),
+                  is_new_shop_draft: isDraftEditor,
+                  draft_id: draft?.draft_id || "",
                   currency: store.currency || "KES",
+                  offer_type: store.offer_type === "services" ? "services" : "products",
+                  service_days: Array.isArray(store.service_days) ? store.service_days : [1, 2, 3, 4, 5, 6],
+                  service_open_time: store.service_open_time || "09:00",
+                  service_close_time: store.service_close_time || "17:00",
+                  service_timezone: store.service_timezone || "Africa/Nairobi",
+                  service_buffer_minutes: Number(store.service_buffer_minutes) || 0,
+                  service_deposit_percent: Number(store.service_deposit_percent) || 0,
                   tagline: store.tagline || "",
                   description: store.description || "",
                   email: store.email || "",
@@ -17822,7 +19420,34 @@ const AppController = {
         this.litrusMixerMessageHandler = async event => {
           if (event.origin !== window.location.origin || event.source !== litrusFrame.contentWindow) return;
           if (event.data?.type === "craft-litrus-ready") {
+            const appTheme = getComputedStyle(document.documentElement);
+            const themeValue = (property, fallback) => appTheme.getPropertyValue(property).trim() || fallback;
+            litrusFrame.contentWindow?.postMessage({
+              type: "craft-litrus-theme",
+              theme: {
+                background: themeValue("--surface-subtle", "#f5f5f5"),
+                surface: themeValue("--surface", "#fff"),
+                text: themeValue("--text-main", "#18181b"),
+                muted: themeValue("--text-muted", "#66666b"),
+                border: themeValue("--border", "#e2e2e5"),
+                accent: themeValue("--accent", "#18181b"),
+                accentText: themeValue("--accent-contrast", "#fff")
+              }
+            }, window.location.origin);
             sendCatalog();
+            return;
+          }
+          if (event.data?.type === "craft-litrus-mode") {
+            const devices = document.getElementById("builder-litrus-devices");
+            const previewing = event.data.mode === "preview";
+            const sections = document.getElementById("builder-litrus-sections");
+            const advanced = document.getElementById("builder-litrus-advanced");
+            if (sections) sections.hidden = previewing;
+            if (advanced) advanced.hidden = previewing;
+            if (devices) {
+              devices.hidden = !previewing;
+              if (devices.hidden) devices.open = false;
+            }
             return;
           }
           if (event.data?.type === "craft-litrus-error") {
@@ -17843,10 +19468,14 @@ const AppController = {
             }
             try {
               const tenantId = isDraftEditor ? "main" : this.getActiveTenant().id;
+              const imageSearchPath = isDraftEditor
+                ? "/api/images/draft-search"
+                : `/api/images/search?tenant=${encodeURIComponent(tenantId)}`;
               const result = await this.cloudflareRequest(
-                `/api/images/search?tenant=${encodeURIComponent(tenantId)}`,
+                imageSearchPath,
                 { method: "POST", body: JSON.stringify({ images: event.data.images }) },
-                tenantId
+                tenantId,
+                isDraftEditor
               );
               reply({ images: result.images || [], errors: result.errors || [], error: result.error || "" });
             } catch (error) {
@@ -17885,8 +19514,7 @@ const AppController = {
             if (isDraftEditor) {
               this.navigate("/account/web/site?new=1&finish=1&theme=litrus-mixer");
             } else {
-              AppUtils.showToast("Litrus design saved. Review the catalog and publish when ready.");
-              this.openCloudflarePublishModal();
+              this.openCloudflarePublishModal(true);
             }
           } catch (error) {
             console.error("Litrus Mixer changes could not be saved in Craft.", error);
@@ -17894,10 +19522,14 @@ const AppController = {
           }
         };
         window.addEventListener("message", this.litrusMixerMessageHandler);
-        const buildButton = document.getElementById("builder-litrus-build");
         const publishButton = document.getElementById("builder-litrus-publish");
-        buildButton?.addEventListener("click", () => {
-          litrusFrame.contentDocument?.getElementById("previewBack")?.click();
+        const sectionsButton = document.getElementById("builder-litrus-sections");
+        const advancedButton = document.getElementById("builder-litrus-advanced");
+        sectionsButton?.addEventListener("click", () => {
+          litrusFrame.contentWindow?.craftLitrusShowSections?.();
+        });
+        advancedButton?.addEventListener("click", () => {
+          litrusFrame.contentWindow?.craftLitrusSetMode?.("advanced");
         });
         publishButton?.addEventListener("click", () => {
           litrusFrame.contentDocument?.getElementById("craftPublish")?.click();
@@ -17913,6 +19545,8 @@ const AppController = {
             document.querySelectorAll("[data-litrus-preview-device]").forEach(control => {
               control.setAttribute("aria-pressed", control === button ? "true" : "false");
             });
+            const devices = document.getElementById("builder-litrus-devices");
+            if (devices) devices.open = false;
           });
         });
       } else if (this.litrusMixerMessageHandler) {
@@ -18497,10 +20131,17 @@ const AppController = {
             website_theme_id: selectedTheme,
             element_edits: []
           };
-          const themeDesignKey = `liquid-html-theme-draft:${selectedTheme}`;
+          const draftId = StudioRenderers.websiteBuilderDraft().draft_id || "new";
+          const litrusDraftScope = `draft:${draftId}`;
+          const themeDesignKey = litrusMixerTheme
+            ? `liquid-html-theme-draft:litrus-mixer:${litrusDraftScope}`
+            : `liquid-html-theme-draft:${selectedTheme}`;
           let savedThemeDesign = liquidHtmlTheme || litrusMixerTheme
             ? StudioRenderers.getWorkspaceSetting(themeDesignKey, "")
             : "";
+          const savedLitrusRecipe = litrusMixerTheme
+            ? StudioRenderers.getWorkspaceSetting(`litrus-mixer-recipe:${litrusDraftScope}`, null)
+            : null;
           if (litrusMixerTheme) {
             savedThemeDesign = this.renameLitrusMixerStorefront(savedThemeDesign, name);
             StudioRenderers.setWorkspaceSetting(themeDesignKey, savedThemeDesign);
@@ -18630,7 +20271,14 @@ const AppController = {
             owner_token: result.owner_token,
             store
           });
-          if (savedThemeDesign) StudioRenderers.setWorkspaceSetting(themeDesignKey, savedThemeDesign);
+          if (savedThemeDesign) StudioRenderers.setWorkspaceSetting(
+            `liquid-html-theme-draft:litrus-mixer:tenant:${result.tenant.id}`,
+            savedThemeDesign
+          );
+          if (savedLitrusRecipe) StudioRenderers.setWorkspaceSetting(
+            `litrus-mixer-recipe:tenant:${result.tenant.id}`,
+            savedLitrusRecipe
+          );
           const catalogs = this.tenantCatalogs();
           const temporaryIndex = catalogs.findIndex(item =>
             item.tenant_id === WEBSITE_BUILDER_DRAFT_TENANT_ID);
@@ -18641,7 +20289,7 @@ const AppController = {
           window.localStorage.removeItem("ESHOP_NEW_WEBSITE_DRAFT_V1");
           window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
           window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_PREVIOUS_TENANT_KEY);
-          AppUtils.showToast(`Website created at ${result.tenant.hostname}. It uses your default payment account.`);
+          AppUtils.showToast(`Website created at ${result.tenant.hostname}. It uses your app account's Paystack default.`);
           this.navigate(`/account/web/site?tenant=${encodeURIComponent(result.tenant.id)}`);
         } catch (error) {
           console.error("Website setup failed.", error);
@@ -19250,6 +20898,7 @@ const AppController = {
     const themePreviewFrames = [...document.querySelectorAll("[data-theme-storefront-preview]")]
       .filter(frame => frame.dataset.themePreviewDirect !== "1");
     const themePreviewQueue = [];
+    const routedHostedPreviewDocuments = new WeakSet();
     let activeThemePreviewLoads = 0;
     const pumpThemePreviewQueue = () => {
       while (activeThemePreviewLoads < 2 && themePreviewQueue.length) {
@@ -19288,6 +20937,19 @@ const AppController = {
       frame.addEventListener("load", () => {
         if (frame.dataset.themePreviewLoaded !== "1" ||
             frame.contentDocument?.URL !== "about:srcdoc") return;
+        const previewDocument = frame.contentDocument;
+        const previewWindow = frame.contentWindow;
+        if (previewDocument && previewWindow && !routedHostedPreviewDocuments.has(previewDocument)) {
+          routedHostedPreviewDocuments.add(previewDocument);
+          previewDocument.addEventListener("click", event => {
+            const target = event.target?.closest?.("a[href]");
+            const href = target?.getAttribute("href")?.trim();
+            if (!href?.startsWith("#/")) return;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            previewWindow.location.hash = href;
+          }, true);
+        }
         frame.style.visibility = "visible";
         const placeholder = frame.parentElement?.querySelector("[data-theme-preview-placeholder]");
         if (placeholder) placeholder.hidden = true;
@@ -20030,6 +21692,7 @@ const AppController = {
       const mediaType = ["image", "cutout", "spin", "video"].includes(item.media_type)
         ? item.media_type
         : original?.media_type || "image";
+      const durationMinutes = Number(item.duration_minutes);
       return {
         ...(original || {}),
         id: original?.id ?? Date.now() + categories.length + index,
@@ -20042,6 +21705,11 @@ const AppController = {
           ? item.spin_frames.filter(value => typeof value === "string").slice(0, 36)
           : original?.spin_frames || [],
         video_url: typeof item.video_url === "string" ? item.video_url : original?.video_url || "",
+        booking_enabled: item.booking_enabled === true || item.booking_enabled === 1,
+        ...(Number.isSafeInteger(durationMinutes) ? { duration_minutes: durationMinutes } :
+          Number.isSafeInteger(Number(original?.duration_minutes))
+            ? { duration_minutes: Number(original.duration_minutes) }
+            : {}),
         category_id: productCategoryIds[0] ?? null,
         category_ids: productCategoryIds,
         category_names: categoryNames.filter(name => categoryIds.has(name.toLocaleLowerCase())),
@@ -20073,7 +21741,14 @@ const AppController = {
       location_address: String(shop.address || "").slice(0, 200),
       delivery_fee: Number(shop.delivery_fee) || 0,
       free_delivery_over: Number(shop.free_delivery_over) || 0,
-      about: String(shop.about || "").slice(0, 4000)
+      about: String(shop.about || "").slice(0, 4000),
+      offer_type: shop.offer_type === "services" ? "services" : "products",
+      service_days: Array.isArray(shop.service_days) ? shop.service_days.map(Number) : [1, 2, 3, 4, 5, 6],
+      service_open_time: String(shop.service_open_time || "09:00"),
+      service_close_time: String(shop.service_close_time || "17:00"),
+      service_timezone: String(shop.service_timezone || "Africa/Nairobi"),
+      service_buffer_minutes: Number(shop.service_buffer_minutes) || 0,
+      service_deposit_percent: Number(shop.service_deposit_percent) || 0
     };
     this.setActiveTenantCatalog(tenant, {
       ...current,
@@ -20118,7 +21793,7 @@ const AppController = {
     if (!window.ShopSQLite) throw new Error("The app database is not ready.");
   },
 
-  openCloudflarePublishModal() {
+  openCloudflarePublishModal(publishImmediately = false) {
     if (this.isWebsiteBuilderDraftTenant(this.getActiveTenant().id)) {
       AppUtils.showToast("A local website draft cannot be published. Finish setup to create its live shop.", "danger");
       return;
@@ -20353,7 +22028,7 @@ const AppController = {
           let filledHtml;
           if (litrusMixerTheme) {
             filledHtml = StudioRenderers.getWorkspaceSetting(
-              `liquid-html-theme-draft:${themeId}`, "");
+              `liquid-html-theme-draft:litrus-mixer:tenant:${tenant.id}`, "");
             if (typeof filledHtml !== "string" ||
                 !filledHtml.includes('<meta name="eshop-filled-theme" content="litrus-mixer">')) {
               throw new Error("Publish the Litrus Mixer design from Preview before publishing this shop.");
@@ -20455,6 +22130,7 @@ const AppController = {
         submitButton.textContent = "Publish catalog";
       }
     };
+    if (publishImmediately) form.requestSubmit();
   },
 
   initStudioModals() {
@@ -21019,6 +22695,59 @@ const AppController = {
         e.preventDefault();
         const route = link.getAttribute("data-route");
         this.navigate(route, link.hasAttribute("data-home-screen"));
+        return;
+      }
+
+      const loadWebsiteStats = e.target.closest("[data-load-website-stats]");
+      if (loadWebsiteStats) {
+        const tenantId = loadWebsiteStats.dataset.loadWebsiteStats || "";
+        const status = document.querySelector("[data-website-stats-status]");
+        const content = document.querySelector("[data-website-stats-content]");
+        const website = this.tenantCatalogs().find(item => item.tenant_id === tenantId);
+        const credential = window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") ||
+          website?.owner_token || "";
+        loadWebsiteStats.disabled = true;
+        if (status) status.textContent = "Loading usage…";
+        if (content) content.replaceChildren();
+        try {
+          if (!credential) throw new Error("Sign in to the account that owns this website.");
+          const result = await this.cloudflareRequest(
+            `/api/tenants/${encodeURIComponent(tenantId)}/usage`,
+            {},
+            tenantId,
+            false,
+            credential
+          );
+          const r2 = result.r2 || {};
+          const d1 = result.d1 || {};
+          const formatBytes = value => {
+            const bytes = Number(value) || 0;
+            if (bytes < 1024) return `${bytes} B`;
+            const units = ["KB", "MB", "GB", "TB"];
+            let size = bytes / 1024;
+            let unit = 0;
+            while (size >= 1024 && unit < units.length - 1) {
+              size /= 1024;
+              unit++;
+            }
+            return `${size.toFixed(1)} ${units[unit]}`;
+          };
+          if (content) content.innerHTML = `
+            <div class="website-usage-grid">
+              <div class="website-usage-card"><span>R2 objects</span><strong>${Number(r2.objects) || 0}</strong><small>${AppUtils.escapeHTML(formatBytes(r2.bytes))}${r2.complete === false ? " · partial scan" : ""}</small></div>
+              <div class="website-usage-card"><span>D1 records</span><strong>${Number(d1.total_records) || 0}</strong><small>Tenant-scoped rows</small></div>
+            </div>
+            <div class="website-usage-tables" aria-label="Database records by table">
+              ${(Array.isArray(d1.tables) ? d1.tables : []).map(table => `<div class="website-usage-table-row"><span>${AppUtils.escapeHTML(table.name)}</span><strong>${Number(table.count) || 0}</strong></div>`).join("") || "<p>No tenant-scoped D1 records yet.</p>"}
+            </div>`;
+          if (status) status.textContent = "Usage updated.";
+        } catch (error) {
+          console.error("Website usage could not be loaded.", error);
+          if (status) status.textContent = error.message || "Website usage could not be loaded.";
+          AppUtils.showToast(error.message || "Website usage could not be loaded.", "danger");
+        } finally {
+          loadWebsiteStats.disabled = false;
+        }
         return;
       }
 

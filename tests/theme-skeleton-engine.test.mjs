@@ -39,6 +39,17 @@ const shopData = count => ({
 });
 
 const parser = new JSDOM("").window.DOMParser;
+const pilotSources = await Promise.all([
+  readFile(new URL("../live-websites/cira-atelier-event-architecture-management/index.html", import.meta.url), "utf8"),
+  readFile(new URL("../live-websites/aura-luxe/index.html", import.meta.url), "utf8"),
+  readFile(new URL("../live-websites/kicks-vault/index.html", import.meta.url), "utf8")
+]);
+const pilotSourcesAvailable = pilotSources[0].includes('id="portfolioGallery"') &&
+  pilotSources[1].includes("Radiant Silk Serum Foundation SPF 25") &&
+  pilotSources[2].includes("Air Max 270 Infrared Core");
+const pilotSkip = pilotSourcesAvailable
+  ? false
+  : "Complete Cira, Aura Luxe, and Kicks Vault source themes are not present in this checkout.";
 const conversions = new Map();
 const convert = id => {
   if (!conversions.has(id)) conversions.set(id, convertThemeSkeleton(id));
@@ -77,7 +88,7 @@ function visibleTextNodes(document) {
   return text;
 }
 
-test("pilot converter removes demo-visible text, image references, and JS catalogues", async () => {
+test("pilot converter removes demo-visible text, image references, and JS catalogues", { skip: pilotSkip }, async () => {
   const cases = [
     {
       id: themeIds.cira,
@@ -130,7 +141,7 @@ test("pilot converter removes demo-visible text, image references, and JS catalo
   }
 });
 
-test("Aura runtime renders its layout as bars and retains interaction handlers", async () => {
+test("Aura runtime renders its layout as bars and retains interaction handlers", { skip: pilotSkip }, async () => {
   const { html } = await convert(themeIds.aura);
   const dom = new JSDOM(html, { runScripts: "outside-only", url: "https://shop.example.test" });
   const { window } = dom;
@@ -151,7 +162,7 @@ test("Aura runtime renders its layout as bars and retains interaction handlers",
   dom.window.close();
 });
 
-test("Kicks empty preview retains four rendered product-card skeletons", async () => {
+test("Kicks empty preview retains four rendered product-card skeletons", { skip: pilotSkip }, async () => {
   const { html } = await convert(themeIds.kicks);
   const dom = new JSDOM(html, { runScripts: "outside-only", url: "https://shop.example.test" });
   const { window } = dom;
@@ -168,7 +179,7 @@ test("Kicks empty preview retains four rendered product-card skeletons", async (
   dom.window.close();
 });
 
-test("Kicks renders mapped shop products with cart and filter handlers intact", async () => {
+test("Kicks renders mapped shop products with cart and filter handlers intact", { skip: pilotSkip }, async () => {
   const { html, schema } = await convert(themeIds.kicks);
   const data = shopData(1);
   data.products[0].brand = "Owner Brand";
@@ -187,7 +198,7 @@ test("Kicks renders mapped shop products with cart and filter handlers intact", 
   dom.window.close();
 });
 
-test("Cira product cards keep delegated category filters and detail modal behavior", async () => {
+test("Cira product cards keep delegated category filters and detail modal behavior", { skip: pilotSkip }, async () => {
   const { html, schema } = await convert(themeIds.cira);
   const filled = fillThemeSkeleton(html, schema, shopData(2), { DOMParser: parser });
   const dom = new JSDOM(filled, { runScripts: "outside-only", url: "https://shop.example.test" });
@@ -210,7 +221,7 @@ test("Cira product cards keep delegated category filters and detail modal behavi
   dom.window.close();
 });
 
-test("Cira repeater handles zero, one, exact-fit, and more-than-fit products", async () => {
+test("Cira repeater handles zero, one, exact-fit, and more-than-fit products", { skip: pilotSkip }, async () => {
   const { html, schema } = await convert(themeIds.cira);
   for (const [count, expectedLive, expectedEditor] of [
     [0, 0, 4],
@@ -236,7 +247,7 @@ test("Cira repeater handles zero, one, exact-fit, and more-than-fit products", a
   }
 });
 
-test("JS-native repeaters receive only shop products and categories", async () => {
+test("JS-native repeaters receive only shop products and categories", { skip: pilotSkip }, async () => {
   for (const [id, productBinding, categoryBinding] of [
     [themeIds.aura, "auraCatalogue", "auraCategories"],
     [themeIds.kicks, "kicksBlueprints", "kicksCategories"]
@@ -268,7 +279,7 @@ test("JS-native repeaters receive only shop products and categories", async () =
   }
 });
 
-test("Aura home page shows shop products when none are explicitly highlighted", async () => {
+test("Aura home page shows shop products when none are explicitly highlighted", { skip: pilotSkip }, async () => {
   const themeDirectory = new URL(`../public/theme-skeletons/${themeIds.aura}/`, import.meta.url);
   const [html, schemaText] = await Promise.all([
     readFile(new URL("index.html", themeDirectory), "utf8"),

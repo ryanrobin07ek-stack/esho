@@ -1,14 +1,6 @@
 import { fillThemeSkeleton } from "./theme-skeleton-engine.js";
 
-export const SUPPORTED_THEME_IDS = Object.freeze([
-  "cira-atelier-event-architecture-management",
-  "aura-luxe-fine-botanical-cosmetics-luxury-beauty",
-  "kicks-vault-curated-sneaker-footwear-archive",
-  "elura-botanicals-luxury-cosmetics-skincare",
-  "autopro-kenya-premium-automotive-spares-parts",
-  "etalon-premium-fashion-apparel",
-  "aurex-electronics"
-]);
+export const SUPPORTED_THEME_IDS = Object.freeze([]);
 
 export function isSupportedThemeId(themeId) {
   return SUPPORTED_THEME_IDS.includes(themeId);

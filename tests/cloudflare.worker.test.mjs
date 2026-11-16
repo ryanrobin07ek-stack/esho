@@ -125,7 +125,10 @@ function createServiceAppointmentDatabase(catalog) {
         }
         if (query.includes("FROM paystack_owner_defaults")) return null;
         if (query.includes("FROM paystack_subaccounts")) {
-          return { subaccount_code: "ACCT_test_service", status: "connected" };
+          return {
+            subaccount_code: "ACCT_test_service", status: "connected",
+            account_mode: "test", is_verified: 0
+          };
         }
         throw new Error(`Unsupported service appointment first query: ${query}`);
       },
@@ -173,19 +176,20 @@ function createServiceAppointmentDatabase(catalog) {
         }
         if (query.includes("UPDATE storefront_service_appointments")) {
           const reserving = query.includes("SET status='confirming'");
-          const row = appointments.get(values[3]);
-          if (!row || row.tenant_id !== values[2]) {
+          const row = appointments.get(reserving ? values[4] : values[3]);
+          if (!row || row.tenant_id !== (reserving ? values[3] : values[2])) {
             return { success: true, meta: { changes: 0 } };
           }
           if (reserving) {
-            if (row.status !== "pending" || row.request_expires_at <= values[4] || row.starts_at <= values[5]) {
+            if (row.status !== "pending" || row.request_expires_at <= values[5] || row.starts_at <= values[6]) {
               return { success: true, meta: { changes: 0 } };
             }
             row.status = "confirming";
             row.payment_status = "initializing";
             row.payment_reference = values[0];
+            row.payment_subaccount_code = values[1];
             row.payment_authorization_url = null;
-            row.updated_at = values[1];
+            row.updated_at = values[2];
             return { success: true, meta: { changes: 1 } };
           }
           if (query.includes("SET status='confirmed'")) {
@@ -199,6 +203,7 @@ function createServiceAppointmentDatabase(catalog) {
           if (query.includes("SET payment_status=?")) {
             if (row.payment_reference !== values[4] || row.payment_status === "paid") return { success: true, meta: { changes: 0 } };
             row.payment_status = values[0];
+            if (values[0] === "failed") row.payment_subaccount_code = null;
             row.updated_at = values[1];
             return { success: true, meta: { changes: 1 } };
           }
@@ -431,10 +436,13 @@ function createStorefrontOrderDatabase() {
                 return { meta: { changes: 1 } };
               }
               if (query.includes("SET payment_reference=?")) {
-                const [payment_reference, updated_at, tenant_id, order_number] = values;
+                const [payment_reference, payment_subaccount_code, updated_at, tenant_id, order_number] = values;
                 const order = [...orders.values()].find(row => row.tenant_id === tenant_id && row.order_number === order_number);
                 if (!order || !['unpaid', 'failed'].includes(order.payment_status)) return { meta: { changes: 0 } };
-                Object.assign(order, { payment_reference, payment_status: 'initializing', payment_authorization_url: null, paid_at: null, updated_at });
+                Object.assign(order, {
+                  payment_reference, payment_subaccount_code, payment_status: 'initializing',
+                  payment_authorization_url: null, paid_at: null, updated_at
+                });
                 return { meta: { changes: 1 } };
               }
               if (query.includes("SET payment_status='pending'")) {
@@ -511,8 +519,18 @@ function createPaystackDatabase() {
                 return { meta: { changes: 1 } };
               }
               if (query.includes('INSERT INTO paystack_subaccounts')) {
-                const [tenant_id, subaccount_code, status, bank_name, account_last4, created_at, updated_at] = values;
-                rows.set(tenant_id, { tenant_id, subaccount_code, status, bank_name, account_last4, created_at, updated_at });
+                const [tenant_id, subaccount_code, status, bank_name, account_last4, account_mode, is_verified, created_at, updated_at] = values;
+                rows.set(tenant_id, {
+                  tenant_id, subaccount_code, status, bank_name, account_last4,
+                  account_mode, is_verified, created_at, updated_at
+                });
+                return { meta: { changes: 1 } };
+              }
+              if (query.includes('UPDATE paystack_subaccounts SET status=?')) {
+                const [status, is_verified, updated_at, tenant_id, subaccount_code] = values;
+                const row = rows.get(tenant_id);
+                if (!row || row.subaccount_code !== subaccount_code) return { meta: { changes: 0 } };
+                Object.assign(row, { status, is_verified, updated_at });
                 return { meta: { changes: 1 } };
               }
               throw new Error(`Unsupported Paystack run query: ${query}`);
@@ -1191,7 +1209,7 @@ test('Cloudflare Worker upgrades existing Litrus exports to refresh their live c
   assert.doesNotMatch(html, /SPRT\(\{root:R/);
 });
 
-test('published storefront HTML is cached by host and catalog version without repeat D1 or R2 reads', async () => {
+test('published storefront HTML cache changes on theme-only republish', async () => {
   const originalCaches = Object.getOwnPropertyDescriptor(globalThis, 'caches');
   const cacheEntries = new Map();
   const cacheKeys = [];
@@ -1209,6 +1227,8 @@ test('published storefront HTML is cached by host and catalog version without re
     }
   };
   let catalogUpdatedAt = '2026-10-14T09:29:36.380Z';
+  let pointerCatalogUpdatedAt = catalogUpdatedAt;
+  let publishedThemeVersion = 'design-v1';
   let catalogReads = 0;
   let themeReads = 0;
   const themeId = 'cira-atelier-event-architecture-management';
@@ -1219,9 +1239,9 @@ test('published storefront HTML is cached by host and catalog version without re
         assert.equal(type, 'json');
         if (key === 'tenant:rayoo') return { ...tenant, catalog_updated_at: catalogUpdatedAt };
         if (key === 'published-theme:rayoo') return {
-          key: `published-sites/rayoo/${themeId}/${catalogUpdatedAt.replace(/[^a-zA-Z0-9-]/g, '')}.html`,
+          key: `published-sites/rayoo/${themeId}/${publishedThemeVersion}.html`,
           themeId,
-          catalogUpdatedAt
+          catalogUpdatedAt: pointerCatalogUpdatedAt
         };
         return null;
       },
@@ -1257,10 +1277,10 @@ test('published storefront HTML is cached by host and catalog version without re
       async put() {},
       async get(key) {
         themeReads += 1;
-        assert.equal(key, `published-sites/rayoo/${themeId}/${catalogUpdatedAt.replace(/[^a-zA-Z0-9-]/g, '')}.html`);
+        assert.equal(key, `published-sites/rayoo/${themeId}/${publishedThemeVersion}.html`);
         return {
-          body: `<!doctype html><html><head><meta name="eshop-filled-theme" content="${themeId}"></head><body>version-${catalogReads}</body></html>`,
-          customMetadata: { themeId, catalogUpdatedAt }
+          body: `<!doctype html><html><head><meta name="eshop-filled-theme" content="${themeId}"></head><body>${publishedThemeVersion}</body></html>`,
+          customMetadata: { themeId, catalogUpdatedAt: pointerCatalogUpdatedAt }
         };
       }
     },
@@ -1271,23 +1291,32 @@ test('published storefront HTML is cached by host and catalog version without re
     const first = await worker.fetch(request(), env);
     assert.equal(first.status, 200);
     assert.equal(first.headers.get('Cache-Control'), 'public, max-age=60');
-    assert.match(await first.text(), /version-1/);
+    assert.match(await first.text(), /design-v1/);
     const second = await worker.fetch(request(), env);
     assert.equal(second.status, 200);
-    assert.match(await second.text(), /version-1/);
+    assert.match(await second.text(), /design-v1/);
     assert.equal(catalogReads, 1);
     assert.equal(themeReads, 1);
     assert.equal(cacheMatchCount, 2);
     assert.match(cacheKeys[0], /rayoo\.rrobin\.co\.ke/);
     assert.match(cacheKeys[0], /2026-10-14T09%3A29%3A36\.380Z/);
+    assert.match(cacheKeys[0], /design-v1/);
     assert.equal(cacheEntries.get(cacheKeys[0]).headers.get('Cache-Control'), 'public, max-age=3600');
 
-    catalogUpdatedAt = '2026-10-14T10:29:36.380Z';
-    const afterPublish = await worker.fetch(request(), env);
-    assert.match(await afterPublish.text(), /version-2/);
+    publishedThemeVersion = 'design-v2';
+    const afterDesignPublish = await worker.fetch(request(), env);
+    assert.match(await afterDesignPublish.text(), /design-v2/);
     assert.equal(catalogReads, 2);
     assert.equal(themeReads, 2);
-    assert.equal(cacheKeys.length, 2);
+
+    catalogUpdatedAt = '2026-10-14T10:29:36.380Z';
+    pointerCatalogUpdatedAt = catalogUpdatedAt;
+    publishedThemeVersion = 'design-v3';
+    const afterPublish = await worker.fetch(request(), env);
+    assert.match(await afterPublish.text(), /design-v3/);
+    assert.equal(catalogReads, 3);
+    assert.equal(themeReads, 3);
+    assert.equal(cacheKeys.length, 3);
   } finally {
     if (originalCaches) Object.defineProperty(globalThis, 'caches', originalCaches);
     else delete globalThis.caches;
@@ -1448,6 +1477,65 @@ test('shared inventory migration deducts stock atomically and rolls back insuffi
   } finally {
     db.close();
   }
+});
+
+test('website usage is owner-authorized and reports tenant-scoped D1 rows and R2 bytes', async () => {
+  const ownerToken = 'website-usage-owner';
+  const TENANTS = createTenantStore();
+  await TENANTS.put('tenant:shop', JSON.stringify({
+    id: 'shop',
+    owner_token_hash: await sha256HexForTest(ownerToken)
+  }));
+  const DB = {
+    prepare(query) {
+      const all = async () => {
+        if (query.includes('sqlite_master')) {
+          return { results: [{ name: 'catalog_snapshots' }, { name: 'global_settings' }] };
+        }
+        if (query.startsWith('PRAGMA table_info')) {
+          return {
+            results: query.includes('catalog_snapshots')
+              ? [{ name: 'tenant_id' }, { name: 'payload' }]
+              : [{ name: 'value' }]
+          };
+        }
+        throw new Error(`Unsupported usage query: ${query}`);
+      };
+      return {
+        all,
+        bind(...values) {
+          return {
+            all,
+            async first() {
+              assert.match(query, /COUNT\(\*\)/);
+              return { count: values[0] === 'shop' ? 2 : 0 };
+            }
+          };
+        }
+      };
+    }
+  };
+  const env = {
+    TENANTS,
+    DB,
+    BUSINESS_ARCHIVE: {
+      async list({ prefix }) {
+        return { objects: prefix === 'media/shop/' ? [{ size: 12 }, { size: 8 }] : [], truncated: false };
+      }
+    }
+  };
+  const url = 'https://eshop-storefront.workers.dev/api/tenants/shop/usage';
+  const denied = await worker.fetch(new Request(url), env);
+  assert.equal(denied.status, 401);
+  const response = await worker.fetch(new Request(url, {
+    headers: { Authorization: `Bearer ${ownerToken}` }
+  }), env);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    tenant_id: 'shop',
+    r2: { objects: 2, bytes: 20, complete: true },
+    d1: { total_records: 2, tables: [{ name: 'catalog_snapshots', count: 2 }] }
+  });
 });
 
 test('Main Store allocation migration keeps POS, Web and reserved stock exact across sales', async () => {
@@ -2048,17 +2136,40 @@ test('Paystack setup sends bank details only upstream and persists masked connec
   await TENANTS.put('tenant:main', JSON.stringify({
     id: 'main', owner_token_hash: await sha256HexForTest(ownerToken)
   }));
-  const env = { DB, TENANTS, PAYSTACK_SECRET_KEY: 'test-paystack-secret' };
+  const env = { DB, TENANTS, PAYSTACK_SECRET_KEY: 'sk_live_paystack-secret' };
   const baseUrl = 'https://eshop-storefront.workers.dev/api/payments/paystack';
   const authorization = { Authorization: `Bearer ${ownerToken}` };
   const calls = [];
+  let remoteVerified = true;
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(String(input));
     calls.push({ url, init });
-    assert.equal(new Headers(init.headers).get('Authorization'), 'Bearer test-paystack-secret');
+    assert.equal(new Headers(init.headers).get('Authorization'), 'Bearer sk_live_paystack-secret');
     if (url.pathname.endsWith('/bank')) {
       return Response.json({ status: true, data: [{ name: 'Example Bank', code: '001', currency: 'KES' }] });
+    }
+    if (url.pathname.endsWith('/bank/resolve')) {
+      assert.equal(init.method, undefined);
+      if (url.searchParams.get('account_number') === '0000000000') {
+        return Response.json({ status: false, message: 'Account could not be resolved' }, { status: 422 });
+      }
+      return Response.json({
+        status: true,
+        data: {
+          account_number: url.searchParams.get('account_number'),
+          account_name: 'Example Account Holder'
+        }
+      });
+    }
+    if (url.pathname === '/subaccount/ACCT_test123') {
+      return Response.json({
+        status: true,
+        data: {
+          subaccount_code: 'ACCT_test123', active: true, domain: 'live',
+          is_verified: remoteVerified
+        }
+      });
     }
     const submitted = JSON.parse(init.body);
     assert.equal(submitted.percentage_charge, 0);
@@ -2068,6 +2179,8 @@ test('Paystack setup sends bank details only upstream and persists masked connec
       data: {
         subaccount_code: 'ACCT_test123',
         active: true,
+        domain: 'live',
+        is_verified: true,
         settlement_bank: 'Example Bank',
         account_number: submitted.account_number
       }
@@ -2092,6 +2205,23 @@ test('Paystack setup sends bank details only upstream and persists masked connec
       primary_contact_email: 'owner@example.test',
       primary_contact_phone: '+254700000000'
     };
+    const invalid = await worker.fetch(new Request(`${baseUrl}/subaccount?tenant=main`, {
+      method: 'POST',
+      headers: { ...authorization, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...details, account_number: '0000000000' })
+    }), env);
+    assert.equal(invalid.status, 422);
+    assert.match((await invalid.json()).error, /could not verify/i);
+    assert.equal(DB.rows.size, 0);
+    assert.equal(calls.some(call => call.url.pathname === '/subaccount'), false);
+
+    const malformed = await worker.fetch(new Request(`${baseUrl}/subaccount?tenant=main`, {
+      method: 'POST',
+      headers: { ...authorization, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...details, account_number: '123' })
+    }), env);
+    assert.equal(malformed.status, 400);
+
     const connected = await worker.fetch(new Request(`${baseUrl}/subaccount?tenant=main`, {
       method: 'POST',
       headers: { ...authorization, 'Content-Type': 'application/json' },
@@ -2100,17 +2230,21 @@ test('Paystack setup sends bank details only upstream and persists masked connec
     assert.equal(connected.status, 200);
     assert.deepEqual((await connected.json()).account, {
       configured: true, connected: true, status: 'connected', bank_name: 'Example Bank', account_last4: '6789',
+      account_mode: 'live', is_verified: true,
       updated_at: DB.rows.get('main').updated_at
     });
     assert.equal(DB.rows.size, 1);
     assert.equal(JSON.stringify([...DB.rows.values()]).includes('0123456789'), false);
     assert.equal(JSON.stringify([...DB.rows.values()]).includes('owner@example.test'), false);
 
+    DB.rows.get('main').is_verified = 0;
     const saved = await worker.fetch(new Request(`${baseUrl}/subaccount?tenant=main`, {
       headers: authorization
     }), env);
     const savedResult = await saved.json();
     assert.equal(savedResult.account.connected, true);
+    assert.equal(savedResult.account.is_verified, true);
+    assert.equal(DB.rows.get('main').is_verified, 1);
     assert.equal(JSON.stringify(savedResult).includes('0123456789'), false);
 
     const updatedDetails = { ...details, account_number: '9876543210' };
@@ -2120,10 +2254,127 @@ test('Paystack setup sends bank details only upstream and persists masked connec
       body: JSON.stringify(updatedDetails)
     }), env);
     assert.equal(updated.status, 200);
-    assert.equal(calls.at(-1).init.method, 'PUT');
-    assert.equal(calls.at(-1).url.pathname, '/subaccount/ACCT_test123');
+    const updateCall = calls.filter(call => call.url.pathname === '/subaccount/ACCT_test123').at(-1);
+    assert.equal(updateCall.init.method, 'PUT');
     assert.equal(DB.rows.get('main').account_last4, '3210');
     assert.equal(JSON.stringify([...DB.rows.values()]).includes('9876543210'), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('Paystack test mode can set up a subaccount without live bank resolution', async () => {
+  const DB = createPaystackDatabase();
+  const TENANTS = createTenantStore();
+  const ownerToken = 'paystack-test-owner-key';
+  await TENANTS.put('tenant:main', JSON.stringify({
+    id: 'main', owner_token_hash: await sha256HexForTest(ownerToken)
+  }));
+  const env = { DB, TENANTS, PAYSTACK_SECRET_KEY: 'sk_test_paystack-secret' };
+  const calls = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init = {}) => {
+    const url = new URL(String(input));
+    calls.push(url.pathname);
+    assert.equal(new Headers(init.headers).get('Authorization'), 'Bearer sk_test_paystack-secret');
+    assert.equal(url.pathname, '/subaccount');
+    const submitted = JSON.parse(init.body);
+    return Response.json({
+      status: true,
+      data: {
+        subaccount_code: 'ACCT_testmode123',
+        active: true,
+        domain: 'test',
+        is_verified: false,
+        settlement_bank: 'Absa',
+        account_number: submitted.account_number
+      }
+    });
+  };
+  try {
+    const response = await worker.fetch(new Request(
+      'https://eshop-storefront.workers.dev/api/payments/paystack/subaccount?tenant=main',
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${ownerToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          business_name: 'Example Shop',
+          settlement_bank: '001',
+          account_number: '0123456789',
+          primary_contact_name: 'Shop Owner',
+          primary_contact_email: 'owner@example.test',
+          primary_contact_phone: '+254700000000'
+        })
+      }
+    ), env);
+    assert.equal(response.status, 200);
+    assert.deepEqual(calls, ['/subaccount']);
+    assert.equal(DB.rows.get('main').account_last4, '6789');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('switching from test to live creates a new subaccount and records its verification state', async () => {
+  const DB = createPaystackDatabase();
+  const TENANTS = createTenantStore();
+  const ownerToken = 'paystack-mode-switch-owner';
+  await TENANTS.put('tenant:main', JSON.stringify({
+    id: 'main', owner_token_hash: await sha256HexForTest(ownerToken)
+  }));
+  DB.rows.set('main', {
+    tenant_id: 'main', subaccount_code: 'ACCT_test_only', status: 'connected',
+    account_mode: 'test', is_verified: 0, bank_name: 'Absa', account_last4: '6789',
+    created_at: '2026-10-10T00:00:00.000Z', updated_at: '2026-10-10T00:00:00.000Z'
+  });
+  const env = { DB, TENANTS, PAYSTACK_SECRET_KEY: 'sk_live_paystack-secret' };
+  const calls = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init = {}) => {
+    const url = new URL(String(input));
+    calls.push({ path: url.pathname, method: init.method || 'GET' });
+    if (url.pathname.endsWith('/bank/resolve')) {
+      return Response.json({
+        status: true,
+        data: { account_number: url.searchParams.get('account_number'), account_name: 'Example Account Holder' }
+      });
+    }
+    if (url.pathname === '/subaccount') {
+      return Response.json({
+        status: true,
+        data: {
+          subaccount_code: 'ACCT_newlive', active: true, domain: 'live', is_verified: false,
+          settlement_bank: 'Absa', account_number: '0123456789'
+        }
+      });
+    }
+    throw new Error(`Unexpected Paystack request: ${url.pathname}`);
+  };
+  try {
+    const response = await worker.fetch(new Request(
+      'https://eshop-storefront.workers.dev/api/payments/paystack/subaccount?tenant=main',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${ownerToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          business_name: 'Example Shop', settlement_bank: '001', account_number: '0123456789',
+          primary_contact_name: 'Shop Owner', primary_contact_email: 'owner@example.test',
+          primary_contact_phone: '+254700000000'
+        })
+      }
+    ), env);
+    assert.equal(response.status, 200, await response.clone().text());
+    const result = await response.json();
+    assert.equal(result.account.account_mode, 'live');
+    assert.equal(result.account.is_verified, false);
+    assert.equal(DB.rows.get('main').subaccount_code, 'ACCT_newlive');
+    assert.deepEqual(calls, [
+      { path: '/bank/resolve', method: 'GET' },
+      { path: '/subaccount', method: 'POST' }
+    ]);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -2157,16 +2408,19 @@ test('a shop owner can reuse a connected Paystack subaccount on another owned we
   DB.accountTenants.add('shop-owner:new-store');
   DB.rows.set('source-shop', {
     tenant_id: 'source-shop', subaccount_code: 'ACCT_shared123', status: 'connected',
+    account_mode: 'test', is_verified: 0,
     bank_name: 'Example Bank', account_last4: '6789', created_at: '2026-10-10T00:00:00.000Z',
     updated_at: '2026-10-10T00:00:00.000Z'
   });
   DB.rows.set('main', {
     tenant_id: 'main', subaccount_code: 'ACCT_main123', status: 'connected',
+    account_mode: 'test', is_verified: 0,
     bank_name: 'Main Bank', account_last4: '4321', created_at: '2026-10-10T00:00:00.000Z',
     updated_at: '2026-10-10T00:00:00.000Z'
   });
   DB.rows.set('source-shop-2', {
     tenant_id: 'source-shop-2', subaccount_code: 'ACCT_shared456', status: 'connected',
+    account_mode: 'test', is_verified: 0,
     bank_name: 'Second Bank', account_last4: '2468', created_at: '2026-10-10T00:00:00.000Z',
     updated_at: '2026-10-10T00:00:00.000Z'
   });
@@ -2200,7 +2454,8 @@ test('a shop owner can reuse a connected Paystack subaccount on another owned we
   assert.equal(linked.status, 200, await linked.clone().text());
   assert.deepEqual((await linked.json()).account, {
     configured: true, connected: true, status: 'connected', bank_name: 'Example Bank',
-    account_last4: '6789', updated_at: DB.rows.get('new-store').updated_at
+    account_mode: 'test', is_verified: false, account_last4: '6789',
+    updated_at: DB.rows.get('new-store').updated_at
   });
   assert.equal(DB.rows.get('new-store').subaccount_code, DB.rows.get('source-shop').subaccount_code);
 
@@ -2258,10 +2513,12 @@ test('websites under one app account use its shared default Paystack account at 
     id: 'website-two', owner_username: 'shop-owner'
   }));
   DB.paystackSubaccounts.set('website-two', {
-    tenant_id: 'website-two', subaccount_code: 'ACCT_olderSite', status: 'connected'
+    tenant_id: 'website-two', subaccount_code: 'ACCT_olderSite', status: 'connected',
+    account_mode: 'test', is_verified: 0
   });
   DB.paystackSubaccounts.set('website-one', {
-    tenant_id: 'website-one', subaccount_code: 'ACCT_appDefault', status: 'connected'
+    tenant_id: 'website-one', subaccount_code: 'ACCT_appDefault', status: 'connected',
+    account_mode: 'test', is_verified: 0
   });
   DB.paystackOwnerDefaults.set('shop-owner', { source_tenant_id: 'website-one' });
   const created = await worker.fetch(new Request(
@@ -2300,7 +2557,7 @@ test('websites under one app account use its shared default Paystack account at 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order_number: createdOrder.order_number })
       }
-    ), { DB, TENANTS, PAYSTACK_SECRET_KEY: 'test-paystack-secret' });
+    ), { DB, TENANTS, PAYSTACK_SECRET_KEY: 'sk_test_paystack-secret' });
     assert.equal(initialized.status, 200, await initialized.clone().text());
     assert.equal((await initialized.json()).authorization_url, 'https://checkout.paystack.com/default');
   } finally {
@@ -2311,9 +2568,10 @@ test('websites under one app account use its shared default Paystack account at 
 test('Paystack checkout uses the shop subaccount and verifies signed payments idempotently', async () => {
   const DB = createStorefrontOrderDatabase();
   const TENANTS = createTenantStore();
-  const env = { DB, TENANTS, PAYSTACK_SECRET_KEY: 'test-paystack-secret' };
+  const env = { DB, TENANTS, PAYSTACK_SECRET_KEY: 'sk_live_paystack-secret' };
   DB.paystackSubaccounts.set('main', {
-    tenant_id: 'main', subaccount_code: 'ACCT_test123', status: 'connected'
+    tenant_id: 'main', subaccount_code: 'ACCT_test123', status: 'connected',
+    account_mode: 'live', is_verified: 1
   });
   const holdResponse = await worker.fetch(new Request(
     'https://eshop-storefront.workers.dev/api/product-holds?tenant=main',
@@ -2344,12 +2602,25 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
   }), env);
   assert.equal(created.status, 201);
   const orderNumber = (await created.json()).order.order_number;
+  DB.paystackSubaccounts.get('main').is_verified = 0;
+  const blocked = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/payments/paystack/initialize?tenant=main',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_number: orderNumber })
+    }
+  ), env);
+  assert.equal(blocked.status, 409);
+  assert.match((await blocked.json()).error, /verified live/i);
+  assert.equal(DB.orders.values().next().value.payment_status, 'unpaid');
+  DB.paystackSubaccounts.get('main').is_verified = 1;
   const calls = [];
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(String(input));
     calls.push({ url, init });
-    assert.equal(new Headers(init.headers).get('Authorization'), 'Bearer test-paystack-secret');
+    assert.equal(new Headers(init.headers).get('Authorization'), 'Bearer sk_live_paystack-secret');
     if (url.pathname.endsWith('/transaction/initialize')) {
       const body = JSON.parse(init.body);
       assert.equal(body.subaccount, 'ACCT_test123');
@@ -2368,7 +2639,8 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
         status: true,
         data: {
           reference: url.pathname.split('/').at(-1), status: 'success',
-          amount: 2500, currency: 'KES'
+          amount: 2500, currency: 'KES', domain: 'live',
+          subaccount: { subaccount_code: 'ACCT_test123' }
         }
       });
     }
@@ -2385,6 +2657,7 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
     const initialized = await initialize.json();
     assert.equal(initialized.authorization_url, 'https://checkout.paystack.com/abc123');
     assert.equal(DB.orders.values().next().value.payment_status, 'pending');
+    assert.equal(DB.orders.values().next().value.payment_subaccount_code, 'ACCT_test123');
 
     const retry = await worker.fetch(new Request(initializeUrl, {
       method: 'POST',
@@ -2402,10 +2675,13 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
     assert.equal((await verified.json()).payment_status, 'paid');
     assert.equal(DB.holds.get(hold.id).status, 'released');
 
-    const sendWebhook = async (amount) => {
+    const sendWebhook = async (amount, subaccountCode = 'ACCT_test123') => {
       const body = JSON.stringify({
         event: 'charge.success',
-        data: { reference: initialized.reference, status: 'success', amount, currency: 'KES' }
+        data: {
+          reference: initialized.reference, status: 'success', amount, currency: 'KES',
+          domain: 'live', subaccount: { subaccount_code: subaccountCode }
+        }
       });
       const key = await crypto.subtle.importKey(
         'raw', new TextEncoder().encode(env.PAYSTACK_SECRET_KEY),
@@ -2421,6 +2697,8 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
     };
     const mismatchedWebhook = await sendWebhook(1);
     assert.equal(mismatchedWebhook.status, 409);
+    const mismatchedSubaccountWebhook = await sendWebhook(2500, 'ACCT_wrong_recipient');
+    assert.equal(mismatchedSubaccountWebhook.status, 409);
     const paidWebhook = await sendWebhook(2500);
     assert.equal(paidWebhook.status, 200);
     assert.equal((await paidWebhook.json()).payment_status, 'paid');
@@ -2448,7 +2726,7 @@ test('service appointment requests expose slots and prevent duplicate or overlap
     }
   };
   const DB = createServiceAppointmentDatabase(catalog);
-  const env = { DB, TENANTS: createTenantStore(), PUBLISH_TOKEN: "test-token", PAYSTACK_SECRET_KEY: "test-secret" };
+  const env = { DB, TENANTS: createTenantStore(), PUBLISH_TOKEN: "test-token", PAYSTACK_SECRET_KEY: "sk_test_service-secret" };
   const privateList = await worker.fetch(new Request("https://rrobin.co.ke/api/service-appointments"), env);
   assert.equal(privateList.status, 401);
   const localDate = new Intl.DateTimeFormat("en-US", {
@@ -2534,7 +2812,10 @@ test('service appointment requests expose slots and prevent duplicate or overlap
   globalThis.fetch = async (url, init) => {
     assert.equal(String(url), `https://api.paystack.co/transaction/verify/${reference}`);
     return new Response(JSON.stringify({
-      data: { reference, amount: 50000, currency: "KES", status: "success" }
+      data: {
+        reference, amount: 50000, currency: "KES", status: "success",
+        domain: "test", subaccount: { subaccount_code: "ACCT_test_service" }
+      }
     }), { status: 200 });
   };
   try {
@@ -2555,12 +2836,14 @@ test('storefront commerce migrations enforce tenant isolation and valid activity
   const db = new SQL.Database();
   try {
     db.exec(await readFile(new URL('../cloudflare/migrations/0008_storefront_orders.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0009_paystack_subaccounts.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0010_storefront_order_payments.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0018_storefront_interest_holds.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0022_storefront_event_daily.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0023_storefront_service_appointments.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0024_paystack_live_account_audit.sql', import.meta.url), 'utf8'));
     assert.equal(db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='storefront_orders'")[0].values.length, 1);
-    assert.equal(db.exec('PRAGMA table_info(storefront_orders)')[0].values.length, 23);
+    assert.equal(db.exec('PRAGMA table_info(storefront_orders)')[0].values.length, 24);
     db.run("INSERT INTO storefront_orders (tenant_id,order_number,idempotency_key,status,customer_name,customer_email,customer_phone,shipping_address,city,postal_code,country,currency,subtotal_cents,discount_cents,shipping_cents,total_cents,items_json,created_at,updated_at) VALUES ('shop-a','ORD-TEST-00000001','key-a','pending','Sam','sam@example.test','0700000000','12 Market','Nairobi','','KE','KES',100,0,0,100,'[]','now','now')");
     assert.throws(() => db.run("INSERT INTO storefront_orders (tenant_id,order_number,idempotency_key,status,customer_name,customer_email,customer_phone,shipping_address,city,postal_code,country,currency,subtotal_cents,discount_cents,shipping_cents,total_cents,items_json,created_at,updated_at) VALUES ('shop-a','ORD-TEST-00000002','key-a','pending','Sam','sam@example.test','0700000000','12 Market','Nairobi','','KE','KES',100,0,0,100,'[]','now','now')"), /UNIQUE constraint failed/);
     db.run("INSERT INTO storefront_orders (tenant_id,order_number,idempotency_key,status,customer_name,customer_email,customer_phone,shipping_address,city,postal_code,country,currency,subtotal_cents,discount_cents,shipping_cents,total_cents,items_json,created_at,updated_at) VALUES ('shop-b','ORD-TEST-00000002','key-a','pending','Sam','sam@example.test','0700000000','12 Market','Nairobi','','KE','KES',100,0,0,100,'[]','now','now')");
@@ -2636,14 +2919,19 @@ test('Paystack migration stores only tenant-scoped references and masked account
   });
   const db = new SQL.Database();
   try {
+    db.exec(await readFile(new URL('../cloudflare/migrations/0008_storefront_orders.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0010_storefront_order_payments.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0023_storefront_service_appointments.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0009_paystack_subaccounts.sql', import.meta.url), 'utf8'));
     db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at) VALUES ('shop-a','ACCT_test123','connected','Example Bank','6789','now','now')");
     db.exec(await readFile(new URL('../cloudflare/migrations/0013_reusable_paystack_subaccounts.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0014_allow_pending_paystack_setup.sql', import.meta.url), 'utf8'));
     db.exec(await readFile(new URL('../cloudflare/migrations/0015_app_default_paystack_account.sql', import.meta.url), 'utf8'));
+    db.exec(await readFile(new URL('../cloudflare/migrations/0024_paystack_live_account_audit.sql', import.meta.url), 'utf8'));
     const columns = db.exec('PRAGMA table_info(paystack_subaccounts)')[0].values.map(row => row[1]);
     assert.deepEqual(columns, [
-      'tenant_id', 'subaccount_code', 'status', 'bank_name', 'account_last4', 'created_at', 'updated_at'
+      'tenant_id', 'subaccount_code', 'status', 'bank_name', 'account_last4', 'created_at', 'updated_at',
+      'account_mode', 'is_verified'
     ]);
     assert.equal(db.exec("SELECT subaccount_code FROM paystack_subaccounts WHERE tenant_id='shop-a'")[0].values[0][0], 'ACCT_test123');
     db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at) VALUES ('shop-b','ACCT_test123','connected','Example Bank','6789','now','now')");
@@ -3279,6 +3567,45 @@ test('Craft image search stores Pixabay results in tenant R2 and caches provider
     assert.equal(stored.options.customMetadata.pixabayUser, 'Test Photographer');
     assert.equal(stored.options.httpMetadata.contentType, 'image/jpeg');
     assert.deepEqual([...stored.value], [1, 2, 3]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('new-shop draft image search needs no owner key and does not store image bytes remotely', async () => {
+  const TENANTS = createTenantStore();
+  const env = { TENANTS, PIXABAY_API_KEY: 'test-pixabay-key' };
+  const originalFetch = globalThis.fetch;
+  const providerCalls = [];
+  globalThis.fetch = async input => {
+    const url = new URL(String(input));
+    providerCalls.push(url.hostname);
+    assert.equal(url.hostname, 'pixabay.com');
+    return Response.json({
+      hits: [{
+        webformatURL: 'https://cdn.pixabay.com/photo/draft.jpg',
+        pageURL: 'https://pixabay.com/photos/draft-123/',
+        user: 'Draft Artist'
+      }]
+    });
+  };
+  try {
+    const response = await worker.fetch(new Request('https://rrobin.co.ke/api/images/draft-search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'CF-Connecting-IP': '192.0.2.77'
+      },
+      body: JSON.stringify({ images: [{ slot: 'hero-image', query: 'linen shop' }] })
+    }), env);
+    assert.equal(response.status, 200, await response.clone().text());
+    const result = await response.json();
+    assert.equal(result.images[0].url, 'https://cdn.pixabay.com/photo/draft.jpg');
+    assert.deepEqual(result.images[0].credit, {
+      user: 'Draft Artist',
+      url: 'https://pixabay.com/photos/draft-123/'
+    });
+    assert.deepEqual(providerCalls, ['pixabay.com'], 'Draft search must not download or store image bytes in R2.');
   } finally {
     globalThis.fetch = originalFetch;
   }
