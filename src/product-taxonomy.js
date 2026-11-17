@@ -8,19 +8,85 @@ const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character =>
   "'": '&#39;'
 })[character]);
 
+function normalizeCategoryText(value) {
+  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+const taxonomySearchCache = new WeakMap();
+
+export function searchProductTaxonomyCategories(categories, query, limit = 30) {
+  const normalizedQuery = normalizeCategoryText(query);
+  if (!normalizedQuery || !Array.isArray(categories) || !Number.isSafeInteger(limit) || limit < 1) return [];
+  const queryParts = normalizedQuery.split(/\s+/);
+  let entries = taxonomySearchCache.get(categories);
+  if (!entries) {
+    entries = categories.map(category => ({
+      category,
+      name: normalizeCategoryText(category.name),
+      path: String(category.fullName || '').split('>').map(normalizeCategoryText)
+    }));
+    taxonomySearchCache.set(categories, entries);
+  }
+  return entries.map(entry => {
+    const { category, name, path } = entry;
+    const searchable = [name, ...path];
+    if (!queryParts.every(part => searchable.some(value => value.includes(part)))) return null;
+    const score = name === normalizedQuery ? 1000
+      : name.startsWith(normalizedQuery) ? 900
+        : path.some(value => value === normalizedQuery) ? 850
+          : name.includes(normalizedQuery) ? 750
+            : path.some(value => value.startsWith(normalizedQuery)) ? 650
+              : 500;
+    return { category, score };
+  }).filter(Boolean)
+    .sort((left, right) => right.score - left.score
+      || left.category.fullName.localeCompare(right.category.fullName))
+    .slice(0, limit)
+    .map(result => result.category);
+}
+
+export function matchProductTaxonomyCategory(categories, categoryName) {
+  const normalizedName = normalizeCategoryText(categoryName);
+  if (!normalizedName || !Array.isArray(categories)) return null;
+  const exactPath = categories.find(category => normalizeCategoryText(category.fullName) === normalizedName);
+  if (exactPath) return exactPath;
+  return categories.filter(category => normalizeCategoryText(category.name) === normalizedName)
+    .sort((left, right) => left.fullName.split('>').length - right.fullName.split('>').length
+      || left.fullName.localeCompare(right.fullName))[0] || null;
+}
+
 export function createProductTaxonomyFields({
   categoryId = '',
   categoryName = '',
   customCategory = '',
-  attributes = []
+  attributes = [],
+  storeCategories = [],
+  storeCategoryFieldName = 'categoryId',
+  storeCategoryValue = ''
 } = {}) {
+  const categoryOptions = storeCategories.map(category =>
+    `<option value="${escapeHtml(category.value)}" ${String(category.value) === String(storeCategoryValue) ? 'selected' : ''}>${escapeHtml(category.name)}</option>`
+  ).join('');
   return `<section class="product-taxonomy-picker" data-product-taxonomy
     data-initial-category-id="${escapeHtml(categoryId)}"
     data-initial-category-name="${escapeHtml(categoryName)}"
     data-initial-custom-category="${escapeHtml(customCategory)}"
     data-initial-attributes="${escapeHtml(JSON.stringify(attributes))}">
-    <h3>Choose product category <span>(optional)</span></h3>
-    <label>Search categories<input type="search" data-taxonomy-search autocomplete="off" maxlength="160" placeholder="Search, e.g. sneakers" disabled></label>
+    <div class="product-category-pill">
+      <label><select aria-label="Category" name="${escapeHtml(storeCategoryFieldName)}" data-store-category-select>
+        <option value="">Choose a category</option>${categoryOptions}
+      </select></label>
+      <button type="button" data-taxonomy-add-open>Add</button>
+    </div>
+    <div class="product-taxonomy-add-panel" data-taxonomy-add-panel hidden>
+      <label><input type="search" data-taxonomy-search aria-label="Search all categories"
+        autocomplete="off" maxlength="160" placeholder="Search, e.g. shoes"></label>
+      <div class="product-taxonomy-add-actions">
+        <button type="button" data-taxonomy-add-manually>Enter manually</button>
+        <button type="button" data-taxonomy-add-close>Close</button>
+      </div>
+    </div>
     <input type="hidden" name="taxonomyCategoryId" data-taxonomy-category-id value="${escapeHtml(categoryId)}">
     <input type="hidden" name="taxonomyCategoryName" data-taxonomy-category-name value="${escapeHtml(categoryName)}">
     <input type="hidden" name="taxonomyCustomCategory" data-taxonomy-custom-category value="${escapeHtml(customCategory)}">
@@ -28,38 +94,34 @@ export function createProductTaxonomyFields({
     <div data-taxonomy-custom-offer></div>
     <div data-taxonomy-selected aria-live="polite"></div>
     <div data-taxonomy-attributes></div>
-    <p data-taxonomy-status role="status" aria-live="polite">Loading product categories…</p>
+    <p data-taxonomy-status role="status" aria-live="polite">Choose a category or add your own. Standard matches load when needed.</p>
+    <button class="btn-secondary" type="button" data-taxonomy-retry hidden>Retry loading categories</button>
   </section>`;
 }
 
 export async function loadProductTaxonomy() {
   if (!taxonomyPromise) {
-    taxonomyPromise = (async () => {
+    const pending = (async () => {
       if (typeof DecompressionStream !== 'function') {
         throw new Error('This device cannot open the compressed product category file.');
       }
-      const url = new URL('/data/shopify-product-taxonomy.json.gz', document.baseURI);
-      const response = await fetch(url);
-      let taxonomy;
-      if (response.status === 404) {
-        const packagedUrl = new URL('/data/shopify-product-taxonomy.json', document.baseURI);
-        const packagedResponse = await fetch(packagedUrl);
-        if (!packagedResponse.ok) {
-          throw new Error(`Could not load product categories (${packagedResponse.status || 'no response'}).`);
-        }
-        taxonomy = await packagedResponse.json();
-      } else {
-        if (!response.ok || !response.body) {
-          throw new Error(`Could not load product categories (${response.status || 'no response'}).`);
-        }
-        const decompressed = response.body.pipeThrough(new DecompressionStream('gzip'));
-        taxonomy = await new Response(decompressed).json();
+      const encoded = globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__;
+      if (typeof encoded !== 'string' || !encoded) {
+        throw new Error('The offline product category data is missing from this app build.');
       }
+      const binary = atob(encoded);
+      const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+      const decompressed = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+      const taxonomy = await new Response(decompressed).json();
       if (!taxonomy || !Array.isArray(taxonomy.categories) || !Array.isArray(taxonomy.attributes)) {
         throw new Error('The product category data has an invalid format.');
       }
       return taxonomy;
     })();
+    taxonomyPromise = pending.catch(error => {
+      taxonomyPromise = undefined;
+      throw error;
+    });
   }
   return taxonomyPromise;
 }
@@ -89,18 +151,17 @@ function renderAttributeFields(container, category, attributesById, initialAttri
   }).join('');
 }
 
-export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverride) {
+export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverride, { onCategoryCreate } = {}) {
   if (!root || typeof root.querySelectorAll !== 'function') return;
   const widgets = [
     ...(root.matches?.('[data-product-taxonomy]') ? [root] : []),
     ...root.querySelectorAll('[data-product-taxonomy]')
   ];
   if (!widgets.length) return;
-  const dataPromise = taxonomyPromiseOverride || loadProductTaxonomy();
 
   for (const widget of widgets) {
     if (widget.dataset.taxonomyInitialized) continue;
-    widget.dataset.taxonomyInitialized = 'loading';
+    widget.dataset.taxonomyInitialized = 'idle';
     const search = widget.querySelector('[data-taxonomy-search]');
     const categoryInput = widget.querySelector('[data-taxonomy-category-id]');
     const categoryNameInput = widget.querySelector('[data-taxonomy-category-name]');
@@ -110,8 +171,23 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
     const selected = widget.querySelector('[data-taxonomy-selected]');
     const attributeFields = widget.querySelector('[data-taxonomy-attributes]');
     const status = widget.querySelector('[data-taxonomy-status]');
+    const retry = widget.querySelector('[data-taxonomy-retry]');
+    const storeCategorySelect = widget.closest('form')?.querySelector('[data-store-category-select]');
+    const addPanel = widget.querySelector('[data-taxonomy-add-panel]');
+    const addOpen = widget.querySelector('[data-taxonomy-add-open]');
+    const addClose = widget.querySelector('[data-taxonomy-add-close]');
+    const addManually = widget.querySelector('[data-taxonomy-add-manually]');
     if (!search || !categoryInput || !categoryNameInput || !customCategoryInput || !results || !customOffer || !selected || !attributeFields || !status) {
       throw new Error('The product category picker is missing required controls.');
+    }
+    const stockField = widget.closest('form')?.querySelector('[name="stock"]')?.closest('label');
+    if (stockField && attributeFields.parentElement === widget) {
+      const section = widget.ownerDocument.createElement('section');
+      section.className = 'product-taxonomy-attributes';
+      const heading = widget.ownerDocument.createElement('h3');
+      heading.textContent = 'Attributes';
+      section.append(heading, attributeFields);
+      stockField.insertAdjacentElement('afterend', section);
     }
 
     let taxonomy;
@@ -133,18 +209,15 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
         status.textContent = 'Type at least two letters to search categories.';
         return;
       }
-      const matches = taxonomy.categories.filter(category =>
-        category.name.toLocaleLowerCase().includes(query)
-        || category.fullName.toLocaleLowerCase().includes(query)
-      ).slice(0, 30);
+      const matches = searchProductTaxonomyCategories(taxonomy.categories, query, 30);
       if (matches.length) {
-        status.textContent = `${matches.length === 30 ? 'Showing the first 30 matches.' : `${matches.length} matches.`} Choose the full category path.`;
+        status.textContent = `${matches.length === 30 ? 'Top 30 matches.' : `${matches.length} matches.`} Choose the closest match, or add your own.`;
         results.innerHTML = matches.map(category => `<button type="button" role="option"
-        data-taxonomy-result="${escapeHtml(category.id)}">${escapeHtml(category.fullName)}</button>`).join('');
+        data-taxonomy-result="${escapeHtml(category.id)}"><strong>${escapeHtml(category.name)}</strong><small>${escapeHtml(category.fullName)}</small></button>`).join('');
       } else {
-        status.textContent = 'No standard category matches. You can add this as a custom category.';
+        status.textContent = 'No close match. You can add your own category.';
       }
-      customOffer.innerHTML = `<button type="button" data-taxonomy-add-custom>Add as custom: ${escapeHtml(search.value.trim())}</button>`;
+      customOffer.innerHTML = `<button type="button" data-taxonomy-add-custom>Add “${escapeHtml(search.value.trim())}” as my category</button>`;
     };
 
     const selectCategory = category => {
@@ -166,6 +239,11 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
     const selectCustomCategory = value => {
       const customCategory = String(value || '').trim().slice(0, 160);
       if (!customCategory) return;
+      const matchedCategory = matchProductTaxonomyCategory(taxonomy?.categories, customCategory);
+      if (matchedCategory) {
+        selectCategory(matchedCategory);
+        return;
+      }
       categoryInput.value = '';
       categoryNameInput.value = '';
       customCategoryInput.value = customCategory;
@@ -178,16 +256,130 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
       status.textContent = 'This custom category will be saved with the product.';
     };
 
+    const saveStoreCategory = async (name, category) => {
+      if (!storeCategorySelect || typeof onCategoryCreate !== 'function') return;
+      const existing = [...storeCategorySelect.options].find(option =>
+        normalizeCategoryText(option.textContent) === normalizeCategoryText(name));
+      const saved = existing
+        ? { value: existing.value, name: existing.textContent }
+        : await onCategoryCreate(name, category);
+      if (!saved || saved.value == null) throw new Error(`The category "${name}" could not be added.`);
+      let option = [...storeCategorySelect.options].find(item => String(item.value) === String(saved.value));
+      if (!option) {
+        option = widget.ownerDocument.createElement('option');
+        option.value = String(saved.value);
+        option.textContent = saved.name || name;
+        storeCategorySelect.append(option);
+      }
+      storeCategorySelect.value = String(saved.value);
+      return saved;
+    };
+
+    const addTaxonomyCategory = async category => {
+      try {
+        selectCategory(category);
+        if (addPanel) addPanel.hidden = true;
+        await saveStoreCategory(category.name, category);
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'The category could not be saved.';
+      }
+    };
+
+    const loadData = () => {
+      if (widget.dataset.taxonomyInitialized === 'loading' || widget.dataset.taxonomyInitialized === 'true') return;
+      widget.dataset.taxonomyInitialized = 'loading';
+      if (retry) retry.hidden = true;
+      status.textContent = 'Loading standard category matches. You can still add your own category.';
+      void (taxonomyPromiseOverride || loadProductTaxonomy()).then(data => {
+        taxonomy = data;
+        categoriesById = new Map(data.categories.map(category => [category.id, category]));
+        attributesById = new Map(data.attributes.map(attribute => [attribute.id, attribute]));
+        widget.dataset.taxonomyInitialized = 'true';
+        const initialCategoryId = widget.dataset.initialCategoryId || '';
+        if (initialCategoryId) {
+          const category = categoriesById.get(initialCategoryId);
+          if (!category) throw new Error(`Saved product category ${initialCategoryId} is no longer available.`);
+          selectCategory(category);
+        } else if (widget.dataset.initialCustomCategory) {
+          selectCustomCategory(widget.dataset.initialCustomCategory);
+        } else if (storeCategorySelect?.selectedOptions[0]?.value) {
+          const matchedCategory = matchProductTaxonomyCategory(
+            data.categories,
+            storeCategorySelect.selectedOptions[0].textContent
+          );
+          if (matchedCategory) selectCategory(matchedCategory);
+          else status.textContent = 'No standard attributes match this Store category yet.';
+        } else {
+          status.textContent = 'Search by category name to choose a standard category.';
+        }
+        if (addPanel && !addPanel.hidden && search.value.trim()) renderMatches();
+      }).catch(error => {
+        widget.dataset.taxonomyInitialized = 'error';
+        status.textContent = error instanceof Error ? error.message : 'Product categories could not be loaded.';
+        if (retry) retry.hidden = false;
+        console.error('Product taxonomy could not be initialized.', error);
+      });
+    };
+
     search.addEventListener('input', renderMatches);
+    addOpen?.addEventListener('click', () => {
+      if (!addPanel) return;
+      addPanel.hidden = false;
+      if (!taxonomy) loadData();
+      search.focus();
+    });
+    addClose?.addEventListener('click', () => {
+      if (addPanel) addPanel.hidden = true;
+    });
+    addManually?.addEventListener('click', async () => {
+      const name = search.value.trim().slice(0, 120);
+      if (!name) {
+        status.textContent = 'Type a category name first.';
+        search.focus();
+        return;
+      }
+      try {
+        const matchedCategory = matchProductTaxonomyCategory(taxonomy?.categories, name);
+        if (matchedCategory) selectCategory(matchedCategory);
+        else selectCustomCategory(name);
+        if (addPanel) addPanel.hidden = true;
+        await saveStoreCategory(name, matchedCategory);
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'The category could not be saved.';
+      }
+    });
+    storeCategorySelect?.addEventListener('change', () => {
+      if (!taxonomy) {
+        loadData();
+        return;
+      }
+      const matchedCategory = matchProductTaxonomyCategory(
+        taxonomy?.categories,
+        storeCategorySelect.selectedOptions[0]?.textContent
+      );
+      selectCategory(matchedCategory);
+      if (!matchedCategory) {
+        status.textContent = 'No standard attributes match this Store category yet.';
+      }
+    });
     results.addEventListener('click', event => {
       const button = event.target.closest('[data-taxonomy-result]');
       if (!button) return;
       const category = categoriesById.get(button.dataset.taxonomyResult);
-      if (category) selectCategory(category);
+      if (category) void addTaxonomyCategory(category);
     });
     customOffer.addEventListener('click', event => {
       if (!event.target.closest('[data-taxonomy-add-custom]')) return;
-      selectCustomCategory(search.value);
+      const name = search.value.trim().slice(0, 120);
+      try {
+        selectCustomCategory(name);
+        if (addPanel) addPanel.hidden = true;
+        void saveStoreCategory(name, matchProductTaxonomyCategory(taxonomy?.categories, name)).catch(error => {
+          status.textContent = error instanceof Error ? error.message : 'The category could not be saved.';
+        });
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'The category could not be selected.';
+      }
     });
     selected.addEventListener('click', event => {
       if (!event.target.closest('[data-taxonomy-clear]')) return;
@@ -195,28 +387,11 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
       search.value = '';
       search.focus();
     });
-
-    void dataPromise.then(data => {
-      taxonomy = data;
-      categoriesById = new Map(data.categories.map(category => [category.id, category]));
-      attributesById = new Map(data.attributes.map(attribute => [attribute.id, attribute]));
-      search.disabled = false;
-      widget.dataset.taxonomyInitialized = 'true';
-      const initialCategoryId = widget.dataset.initialCategoryId || '';
-      if (initialCategoryId) {
-        const category = categoriesById.get(initialCategoryId);
-        if (!category) throw new Error(`Saved product category ${initialCategoryId} is no longer available.`);
-        selectCategory(category);
-      } else if (widget.dataset.initialCustomCategory) {
-        selectCustomCategory(widget.dataset.initialCustomCategory);
-      } else {
-        status.textContent = 'Search by category name to choose a standard category.';
-      }
-    }).catch(error => {
-      widget.dataset.taxonomyInitialized = 'error';
-      status.textContent = error instanceof Error ? error.message : 'Product categories could not be loaded.';
-      console.error('Product taxonomy could not be initialized.', error);
+    retry?.addEventListener('click', () => {
+      if (widget.dataset.taxonomyInitialized === 'loading') return;
+      loadData();
     });
+    if (widget.dataset.initialCategoryId || widget.dataset.initialCustomCategory || storeCategorySelect?.value) loadData();
   }
 }
 

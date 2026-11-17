@@ -2395,19 +2395,241 @@ a.launchpad-link:focus-visible {
   line-height: 1.2;
 }
 
+.website-wizard-go-builder {
+  display: inline-flex !important;
+  width: fit-content;
+  min-height: 36px !important;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  padding: 0 16px;
+  border: 1px solid #050505;
+  border-radius: 999px !important;
+  background: #050505;
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+body.craft-app-ui #app .website-wizard-go-builder,
+body.craft-app-ui #app .website-wizard-go-builder:hover {
+  border-color: #050505;
+  border-radius: 999px;
+  background: #050505;
+  color: #fff;
+}
+
+.website-wizard-main {
+  max-width: 900px;
+  padding: 6px 0 calc(200px + env(safe-area-inset-bottom, 0px));
+}
+
 .website-wizard-category-list {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
 }
 
 .website-wizard-category-row {
-  display: flex;
+  display: inline-flex;
+  min-height: 34px;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  padding: 3px 4px 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--app-card-surface, var(--bg));
+}
+
+.website-wizard-category-row span {
+  overflow: hidden;
+  max-width: 180px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.website-wizard-product-list {
+  display: grid;
+  max-height: min(42vh, 380px);
+  gap: 6px;
+  overflow: auto;
+  padding: 2px;
+}
+
+.website-wizard-product-row {
+  display: grid;
+  min-height: 58px;
+  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--app-card-surface, var(--bg));
+}
+
+.website-wizard-product-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--border);
+}
+
+.website-wizard-product-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.website-wizard-product-copy strong,
+.website-wizard-product-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.website-wizard-product-copy span,
+.website-wizard-list-status {
+  color: var(--text-muted);
+  font-size: .76rem;
+}
+
+.website-wizard-product-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.website-wizard-product-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.website-wizard-product-form > label,
+.website-wizard-product-form .website-wizard-wide {
+  min-width: 0;
+}
+
+.website-wizard-product-form > label {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  font-size: .82rem;
+}
+
+.website-wizard-product-form .website-wizard-wide {
+  grid-column: 1 / -1;
+}
+
+.website-wizard-product-form [data-wizard-video-options] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.website-wizard-product-form [data-wizard-video-options][hidden] {
+  display: none;
+}
+
+.website-wizard-media-modes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.website-wizard-media-modes button[aria-pressed="true"] {
+  border-color: var(--primary, #3568e8);
+  background: color-mix(in srgb, var(--primary, #3568e8) 12%, var(--bg));
+  color: var(--text-main);
+}
+
+.website-wizard-media-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.website-wizard-media-preview img {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.website-wizard-media-preview video {
+  width: min(100%, 280px);
+  max-height: 180px;
+  border-radius: 8px;
+}
+
+.website-wizard-sticky-footer {
+  position: fixed;
+  z-index: 1100;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  box-shadow: 0 -8px 24px rgb(0 0 0 / 10%);
+}
+
+.website-wizard-sticky-footer.has-bottom-nav {
+  bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+}
+
+.website-wizard-sticky-footer > div {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.website-wizard-sticky-footer a {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .website-wizard-product-row {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+  }
+
+  .website-wizard-product-thumb {
+    width: 36px;
+    height: 36px;
+  }
+
+  .website-wizard-product-row > strong {
+    grid-column: 2;
+  }
+
+  .website-wizard-product-actions {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    flex-direction: column;
+  }
+
+  .website-wizard-product-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .website-wizard-product-form .website-wizard-wide {
+    grid-column: auto;
+  }
+
+  .website-wizard-media-modes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .website-usage-grid {
@@ -7633,6 +7855,10 @@ a.launchpad-link:focus-visible {
   backdrop-filter: blur(24px) saturate(155%);
 }
 
+body.web-product-field-focused #app .studio-workspace-bottom-nav {
+  display: none !important;
+}
+
 .studio-workspace-bottom-link {
   display: flex;
   min-width: 0;
@@ -8091,23 +8317,165 @@ a.launchpad-link:focus-visible {
   gap: 8px;
 }
 
+.web-product-taxonomy .product-taxonomy-picker {
+  width: fit-content;
+  max-width: 100%;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.web-product-taxonomy .product-category-pill {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.web-product-taxonomy .product-category-pill label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  white-space: nowrap;
+}
+
+.web-product-taxonomy .product-category-pill select {
+  width: auto !important;
+  min-width: 88px;
+  max-width: min(38vw, 170px);
+  min-height: 26px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font-size: .72rem !important;
+  text-overflow: ellipsis;
+}
+
+.web-product-taxonomy .product-category-pill button {
+  width: auto !important;
+  min-height: 30px !important;
+  padding: 4px 8px !important;
+  border-radius: 0 999px 999px 0 !important;
+  font-size: .72rem !important;
+}
+
+.web-product-taxonomy .product-taxonomy-add-panel {
+  width: min(100%, 300px);
+  gap: 6px;
+  padding: 7px;
+}
+
+.web-product-taxonomy .product-taxonomy-add-panel label input {
+  min-height: 34px;
+  padding: 5px 8px;
+}
+
+.web-product-taxonomy .product-taxonomy-add-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.web-product-taxonomy .product-taxonomy-add-actions button {
+  width: auto;
+  min-height: 30px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: .72rem;
+}
+
+.web-product-taxonomy [data-taxonomy-status] {
+  margin: 0;
+  font-size: .72rem;
+}
+
 .web-product-file {
   display: grid;
   gap: 6px;
 }
 
+.studio-workspace .store-workspace-form .web-product-file input[type="file"] {
+  min-height: 34px;
+  padding: 4px 7px;
+  border-radius: 8px;
+}
+
 .web-product-media-modes {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.studio-workspace .store-workspace-form .web-product-media-modes button,
+.studio-workspace .store-workspace-form .web-product-video-options button {
+  min-width: 0;
+  min-height: 32px !important;
+  padding: 3px 5px !important;
+  border: 1px solid #c7ccd2 !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  font-size: .7rem !important;
+}
+
+.web-product-variants .product-variant-fields {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0;
+  padding: 8px;
+  border: 1px solid #d8d8db;
+  border-radius: 8px;
+}
+
+.web-product-variants .product-variant-fields h3,
+.web-product-variants .product-variant-fields p {
+  margin: 0;
+}
+
+.web-product-variants .product-variant-fields p {
+  font-size: .72rem;
+  line-height: 1.3;
+}
+
+.web-product-variants .product-variant-fields .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
 }
 
-.web-product-media-modes button,
-.web-product-video-options button {
-  min-width: 0;
-  min-height: 40px;
-  padding: 7px 5px;
-  font-size: .78rem;
+.studio-workspace .store-workspace-form .web-product-variants .product-variant-fields label {
+  gap: 4px;
+  font-size: .72rem;
+}
+
+.studio-workspace .store-workspace-form .web-product-variants .product-variant-fields input {
+  min-height: 34px;
+  padding: 5px 8px;
+}
+
+.web-product-variants .product-variant-row {
+  grid-template-columns: minmax(80px, 1fr) repeat(2, minmax(72px, .8fr));
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.studio-workspace .store-workspace-form label.web-product-hold {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 9px;
+  border: 1px solid #d8d8db;
+  border-radius: 999px;
+  font-size: .75rem;
+}
+
+.studio-workspace .store-workspace-form label.web-product-hold input[type="checkbox"] {
+  width: 15px;
+  min-height: 15px;
+  margin: 0;
+  padding: 0;
 }
 
 .web-product-media-modes button[aria-pressed="true"] {
@@ -10010,9 +10378,18 @@ const SQLiteEngine = {
   addToCart(productId, quantity = 1, size = null, color = null) {
     const product = this.getProductById(productId);
     if (!product) return false;
+    const option1Value = size ?? product.sizes?.[0] ?? null;
+    const option2Value = color ?? product.colors?.[0] ?? null;
+    const variant = (product.variants || []).find(item =>
+      (item.option1_value ?? item.size ?? "") === (option1Value || "") &&
+      (item.option2_value ?? item.color ?? "") === (option2Value || ""));
     const existing = (this.db.tables.cart_items || []).find(
-      item => item.product_id === product.id && item.size === size && item.color === color
+      item => item.product_id === product.id && item.size === option1Value && item.color === option2Value
     );
+    if (variant && Number(variant.stock) < (Number(quantity) || 1) + (Number(existing?.quantity) || 0)) {
+      AppUtils.showToast("There is not enough stock for this option.", "danger");
+      return false;
+    }
     if (existing) {
       existing.quantity += quantity;
     } else {
@@ -10020,12 +10397,14 @@ const SQLiteEngine = {
         product_id: product.id,
         name: product.name,
         brand: product.brand,
-        price: product.price,
+        price: variant?.price ?? product.price,
         original_price: product.original_price,
         image: product.images && product.images[0] ? product.images[0] : "",
         sku: product.sku,
-        size: size || (product.sizes ? product.sizes[0] : null),
-        color: color || (product.colors ? product.colors[0] : null),
+        size: option1Value,
+        color: option2Value,
+        option1_name: product.option1_name || (option1Value ? "Size" : ""),
+        option2_name: product.option2_name || (option2Value ? "Color" : ""),
         quantity: quantity,
         added_at: new Date().toISOString()
       });
@@ -10500,7 +10879,7 @@ const StoreRenderers = {
     const studioSurface = activePath.startsWith("/account");
     const store = SQLiteEngine.getStore();
     const publishedPages = SQLiteEngine.getPages(true);
-    const storefrontHome = options.builderPreview ? "/account/store" : "/";
+    const storefrontHome = "/";
     const cart = SQLiteEngine.getCart();
     const cartCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
     const favs = SQLiteEngine.getFavorites();
@@ -11051,7 +11430,7 @@ const StoreRenderers = {
     return `
       ${this.renderNavbar(`/pages/${encodeURIComponent(page.slug)}`)}
       <main id="main-content" class="container" style="max-width: 900px; min-height:65vh; padding:48px 16px 80px;">
-        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/web" data-route="/web">Home</a><span>/</span><span>${AppUtils.escapeHTML(page.title)}</span></nav>
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/" data-route="/">Home</a><span>/</span><span>${AppUtils.escapeHTML(page.title)}</span></nav>
         <article>
           <h1 class="section-heading" style="font-size:clamp(2rem,7vw,3rem); margin:16px 0 24px;">${AppUtils.escapeHTML(page.title)}</h1>
           <div style="line-height:1.8; white-space:normal;">${safeContent}</div>
@@ -11256,6 +11635,13 @@ const StoreRenderers = {
     const isFav = SQLiteEngine.isFavorite(product.id);
     const hasDiscount = product.discount && product.discount > 0;
     const images = product.images || [];
+    const option1Name = product.option1_name || (product.sizes?.length ? "Size / Dimension" : "");
+    const option2Name = product.option2_name || (product.colors?.length ? "Artisanal Finish" : "");
+    const defaultVariant = (product.variants || []).find(variant =>
+      (variant.option1_value ?? variant.size ?? "") === (product.sizes?.[0] || "") &&
+      (variant.option2_value ?? variant.color ?? "") === (product.colors?.[0] || ""));
+    const defaultPrice = defaultVariant?.price ?? product.price;
+    const defaultStock = defaultVariant?.stock ?? product.stock;
 
     AppUtils.updateSEO({
       title: `${product.name} — ${product.brand}`,
@@ -11326,14 +11712,14 @@ const StoreRenderers = {
                   <span style="font-weight: 600;">${product.rating.toFixed(1)}</span>
                   <span style="color: var(--text-muted);">(${product.review_count} client reviews)</span>
                   <span style="margin: 0 4px; color: var(--border);">&bull;</span>
-                  <span style="color: ${product.stock > 0 ? 'var(--success)' : 'var(--danger)'}; font-size: 0.8125rem; font-weight: 600;">
-                    ${product.stock > 10 ? 'In Stock (Ready to dispatch)' : (product.stock > 0 ? `Low Stock (${product.stock} units remain)` : 'Sold Out')}
+                  <span id="product-stock-status" style="color: ${defaultStock > 0 ? 'var(--success)' : 'var(--danger)'}; font-size: 0.8125rem; font-weight: 600;">
+                    ${defaultStock > 10 ? 'In Stock (Ready to dispatch)' : (defaultStock > 0 ? `Low Stock (${defaultStock} units remain)` : 'Sold Out')}
                   </span>
                 </div>
               </div>
 
               <div class="product-price-box">
-                <span class="price-current">${AppUtils.formatMoney(product.price)}</span>
+                <span class="price-current">${AppUtils.formatMoney(defaultPrice)}</span>
                 ${hasDiscount ? `<span class="price-original">${AppUtils.formatMoney(product.original_price)}</span>` : ""}
                 ${hasDiscount ? `<span class="price-discount">Save ${product.discount}%</span>` : ""}
               </div>
@@ -11342,12 +11728,12 @@ const StoreRenderers = {
                 ${AppUtils.escapeHTML(product.description)}
               </p>
 
-              <!-- Size / Option Selector -->
+              <!-- Product option selectors -->
               ${product.sizes && product.sizes.length ? `
                 <div>
                   <div class="options-title">
-                    <span>Select Size / Dimension</span>
-                    <a href="/help" data-route="/help" style="color: var(--text-muted); font-size: 0.8125rem; text-decoration: underline;">Sizing Guide</a>
+                    <span>Select ${AppUtils.escapeHTML(option1Name || "Option 1")}</span>
+                    ${/size|dimension/i.test(option1Name) ? `<a href="/help" data-route="/help" style="color: var(--text-muted); font-size: 0.8125rem; text-decoration: underline;">Sizing Guide</a>` : ""}
                   </div>
                   <div class="options-chips" id="product-size-chips">
                     ${product.sizes.map((s, idx) => `
@@ -11357,10 +11743,9 @@ const StoreRenderers = {
                 </div>
               ` : ""}
 
-              <!-- Color / Variant Selector -->
               ${product.colors && product.colors.length ? `
                 <div>
-                  <div class="options-title"><span>Artisanal Finish</span></div>
+                  <div class="options-title"><span>${AppUtils.escapeHTML(option2Name || "Option 2")}</span></div>
                   <div class="options-chips" id="product-color-chips">
                     ${product.colors.map((c, idx) => `
                       <button class="option-chip ${idx === 0 ? 'active' : ''}" data-val="${AppUtils.escapeHTML(c)}">${AppUtils.escapeHTML(c)}</button>
@@ -11595,8 +11980,8 @@ const StoreRenderers = {
                       <a href="/product/${item.sku ? item.sku.toLowerCase() : ''}" style="color: inherit;">${AppUtils.escapeHTML(item.name)}</a>
                     </h3>
                     <div style="font-size: 0.8125rem; color: var(--text-muted);">
-                      ${item.size ? `Size: <strong>${AppUtils.escapeHTML(item.size)}</strong>` : ""}
-                      ${item.color ? ` &bull; Color: <strong>${AppUtils.escapeHTML(item.color)}</strong>` : ""}
+                      ${item.size ? `${AppUtils.escapeHTML(item.option1_name || "Size")}: <strong>${AppUtils.escapeHTML(item.size)}</strong>` : ""}
+                      ${item.color ? ` &bull; ${AppUtils.escapeHTML(item.option2_name || "Color")}: <strong>${AppUtils.escapeHTML(item.color)}</strong>` : ""}
                     </div>
                     <div class="bag-item-price">${AppUtils.formatMoney(item.price)}</div>
 
@@ -12202,7 +12587,6 @@ const StudioRenderers = {
       { title: "Categories", description: "Organize collections, reassign products, and manage department details.", route: "/account/categories" },
       { title: "Business Dashboard", description: "Explore sales volume, conversion metrics, and business performance.", route: "/account/dashboard" },
       { title: "Build Your Web", description: "Edit store details and pages, then open the customer-facing storefront.", route: "/account/web" },
-      { title: "Live Web", description: "Preview the customer-facing Craft website.", route: "/web", className: "studio-card-live-web" },
       { title: "Store Settings", description: "Adjust your storefront appearance and preferences.", route: "/account/settings" },
       { title: "My shops", description: "Manage the websites linked to your account.", route: "/account/tenants" },
       { title: "Plans & Tiering", description: "View available plans and features.", route: "/account/plans" },
@@ -12257,7 +12641,9 @@ const StudioRenderers = {
       <aside class="workspace-sidebar" aria-label="${label} menu">
         <h2>${label}</h2>
         <nav class="workspace-sidebar-links" aria-label="${label} pages">
-          ${items.map(item => `<a href="${AppUtils.escapeHTML(item.route)}" data-route="${AppUtils.escapeHTML(item.route)}" class="workspace-sidebar-link ${item.route === activeRoute ? "is-active" : ""}" ${item.route === activeRoute ? 'aria-current="page"' : ""}>${AppUtils.escapeHTML(item.title)}</a>`).join("")}
+          ${items.map(item => item.disabled
+            ? `<a href="#" class="workspace-sidebar-link" aria-disabled="true" tabindex="-1">${AppUtils.escapeHTML(item.title)}</a>`
+            : `<a href="${AppUtils.escapeHTML(item.route)}" data-route="${AppUtils.escapeHTML(item.route)}" class="workspace-sidebar-link ${item.route === activeRoute ? "is-active" : ""}" ${item.route === activeRoute ? 'aria-current="page"' : ""}>${AppUtils.escapeHTML(item.title)}</a>`).join("")}
         </nav>
         <div class="workspace-sidebar-divider" aria-hidden="true"></div>
         <nav class="workspace-sidebar-links" aria-label="Profile and app links">
@@ -12516,7 +12902,7 @@ const StudioRenderers = {
       "/account/web/studio/crm/newsletter": "/account/web/studio/crm/subscribers"
     })[initialPath] || initialPath;
     for (const section of sections) {
-      const tab = section.tabs.find(item => item.route === route);
+      const tab = section.tabs.find(item => item.route === route && !item.disabled);
       if (tab) return { ...tab, section };
     }
     return { ...sections[0].tabs[0], section: sections[0] };
@@ -12558,9 +12944,87 @@ const StudioRenderers = {
     return `<section class="studio-workspace-section">
       <header class="website-management-heading">
         <div><h2>Your websites</h2><p>Choose a website to edit or manage.</p></div>
-        <a class="btn-primary website-management-new" href="/account/web/themes" data-start-new-website>+ New web</a>
+        <a class="btn-primary website-management-new" href="/account/web/studio/websites/webmaker" data-start-new-website>+ New web</a>
       </header>
       ${this.renderWebsiteManagementCards(websites)}
+    </section>`;
+  },
+
+  renderNewWebsiteProducts() {
+    const draft = this.websiteBuilderDraft();
+    const litrusBuilderRoute = "/account/web/site?new=1&edit=1&theme=litrus-mixer";
+    return `<section class="studio-workspace-section">
+      <header class="website-management-heading">
+        <div><span class="studio-workspace-kicker">NEW WEBSITE</span><h2>Website products</h2><p>Choose Store products to add or create products just for this website.</p></div>
+      </header>
+      <div class="studio-inline-actions web-product-actions">
+        <button type="button" class="btn-secondary web-product-action-card" id="website-wizard-load-store">Add from Store</button>
+        <button type="button" class="btn-primary web-product-action-card" id="website-wizard-create-product">Add web product</button>
+      </div>
+      <section class="studio-panel">
+        <div class="studio-panel-heading"><h3>Website categories</h3></div>
+        <form id="website-wizard-category-form" class="store-workspace-form">
+          <input type="hidden" name="id" value="">
+          <label>Category name<input name="name" maxlength="120" required></label>
+          <button type="submit" class="btn-secondary">Add category</button>
+        </form>
+        <div class="website-wizard-category-list" id="website-wizard-category-list">${draft.categories.map(category =>
+          `<div class="website-wizard-category-row"><span>${AppUtils.escapeHTML(category.name)}</span><button type="button" class="btn-secondary website-wizard-compact-action" data-edit-wizard-category="${AppUtils.escapeHTML(String(category.id))}">Edit</button></div>`
+        ).join("") || `<p class="studio-panel-note">No categories yet. Add from Store or create a category to add web products.</p>`}</div>
+      </section>
+      <section class="studio-panel">
+        <div class="studio-panel-heading"><h3>Products</h3></div>
+        <input class="form-input" id="website-wizard-product-search" type="search" placeholder="Search website products" aria-label="Search website products">
+        <p class="website-wizard-list-status" id="website-wizard-product-count" role="status"></p>
+        <div class="website-wizard-product-list" id="website-wizard-product-list"></div>
+      </section>
+      <form id="website-wizard-product-form" class="store-workspace-form website-wizard-product-form" hidden>
+        <h3>Add web product</h3>
+        <input type="hidden" name="id" value="">
+        <label>Product name<input name="name" maxlength="160" required></label>
+        <label>Category<select name="category_id" required><option value="">Choose a category</option>${draft.categories.map(category =>
+          `<option value="${AppUtils.escapeHTML(String(category.id))}">${AppUtils.escapeHTML(category.name)}</option>`
+        ).join("")}</select></label>
+        <div class="studio-form-grid">
+          <label>Selling price<input name="price" type="number" min="0" step="0.01" required></label>
+          <label>Cost price<input name="cost_price" type="number" min="0" step="0.01"></label>
+          <label>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label>
+          <label>SKU<input name="sku" maxlength="120"></label>
+        </div>
+        <label>Description<textarea name="description" rows="3"></textarea></label>
+        <div data-wizard-product-taxonomy></div>
+        <div data-wizard-product-variants></div>
+        <div class="web-product-media">
+          <label data-wizard-photo-label>Add photos (up to 8)<input type="file" accept="image/*" data-wizard-product-images multiple></label>
+          <div class="web-product-media-modes" role="group" aria-label="Product media type">
+            <button type="button" class="btn-secondary" data-wizard-media-mode="image">Photos</button>
+            <button type="button" class="btn-secondary" data-wizard-media-mode="spin">360° spin</button>
+            <button type="button" class="btn-secondary" data-wizard-media-mode="video">Video</button>
+            <button type="button" class="btn-secondary" data-wizard-media-mode="cutout">Cutout</button>
+          </div>
+          <div data-wizard-video-options hidden>
+            <button type="button" class="btn-secondary" data-wizard-video-record>Record video</button>
+            <button type="button" class="btn-secondary" data-wizard-video-pick>Pick video</button>
+            <input type="file" accept="video/*" data-wizard-video-file hidden>
+          </div>
+          <div data-wizard-media-preview hidden></div>
+          <p data-wizard-media-status role="status" aria-live="polite"></p>
+        </div>
+        <div class="studio-inline-actions">
+          <button type="button" class="btn-secondary" id="website-wizard-cancel-product-edit" hidden>Cancel edit</button>
+          <button type="submit" class="btn-primary">Add product</button>
+        </div>
+      </form>
+      <section id="website-wizard-store-picker" class="studio-panel" hidden>
+        <a id="website-wizard-go-builder" class="btn-primary website-wizard-go-builder" href="${AppUtils.escapeHTML(litrusBuilderRoute)}" data-route="${AppUtils.escapeHTML(litrusBuilderRoute)}">Go to web builder</a>
+        <div class="studio-panel-heading"><h3>Choose products from Store</h3><button type="button" class="btn-secondary" id="website-wizard-store-close">Close</button></div>
+        <input class="form-input" id="website-wizard-store-search" type="search" placeholder="Search Store products" aria-label="Search Store products">
+        <select class="form-input" id="website-wizard-store-category" aria-label="Filter by Store category"><option value="all">All categories</option></select>
+        <label><input type="checkbox" id="website-wizard-store-select-all"> Select all shown</label>
+        <p class="studio-panel-note" id="website-wizard-store-count" role="status"></p>
+        <div id="website-wizard-store-list"></div>
+        <button type="button" class="btn-primary" id="website-wizard-import-store" disabled>Add selected from Store</button>
+      </section>
     </section>`;
   },
 
@@ -12569,7 +13033,7 @@ const StudioRenderers = {
       return this.renderWebStudioWebsiteList();
     }
     if (page.route === "/account/web/studio/websites/webmaker") {
-      return `<section class="studio-workspace-section">${this.renderWebsiteBuilderCatalog(true)}</section>`;
+      return this.renderNewWebsiteProducts();
     }
     if (page.route === "/account/web/studio/websites/add") {
       const store = SQLiteEngine.getStore();
@@ -13679,7 +14143,7 @@ const StudioRenderers = {
             <h2>Send a push notification</h2>
             <label>Title<input name="title" maxlength="80" required></label>
             <label>Message<textarea name="body" rows="3" maxlength="240" required></textarea></label>
-            <label>Open this page when tapped<input name="url" value="/web" maxlength="300" required></label>
+            <label>Open this page when tapped<input name="url" value="/" maxlength="300" required></label>
             <p class="studio-panel-note">This sends now to all browsers that opted in to this shop’s notifications.</p>
             <button type="submit" class="btn-primary">Send notification</button>
             <p role="status" aria-live="polite"></p>
@@ -13933,7 +14397,6 @@ const StudioRenderers = {
     }
     if (path === "/account/website" || path === "/account/website/" || path === "/store/website") {
       return `<section class="studio-workspace-section"><div class="studio-dashboard-grid">
-        <article class="studio-panel"><span class="studio-workspace-kicker">LIVE STOREFRONT</span><h2>Customer-facing shop</h2><p class="studio-panel-note">Preview your published customer experience.</p><a class="btn-primary" href="/web" data-route="/web">Open live web</a></article>
         <article class="studio-panel"><span class="studio-workspace-kicker">BUILD</span><h2>Web maker</h2><p class="studio-panel-note">Choose a theme and configure your storefront structure.</p><a class="btn-secondary" href="/account/website/maker" data-route="/account/website/maker">Open web maker</a></article>
         </div><article class="studio-panel"><div class="studio-panel-heading"><h2>Website pages</h2><a href="/account/website/pages" data-route="/account/website/pages">Manage pages</a></div>${SQLiteEngine.getPages().map(page => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(page.title || page.name || "Untitled page")}</strong><span>${page.published ? "Published" : "Draft"}</span></article>`).join("") || `<p class="store-workspace-empty">No custom pages yet. Use Pages to create one.</p>`}</article></section>`;
     }
@@ -14056,7 +14519,34 @@ const StudioRenderers = {
           <button type="submit" class="btn-primary" disabled>Add selected from Store</button>
           <p role="status"></p>
         </form>
-        ${websiteCategories.length ? `<form class="store-workspace-form" data-studio-form="web-product" hidden><h2>Create web-only product</h2><label>Product name<input name="name" maxlength="160" required></label><label>Category<select name="categoryId" required>${websiteCategories.map(category => `<option value="${category.id}">${AppUtils.escapeHTML(category.name)}</option>`).join("")}</select></label><div class="studio-form-grid"><label>Price<input name="price" type="number" min="0" step="0.01" required></label><label>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label></div><label class="studio-panel-note"><input type="checkbox" name="booking_enabled"> Allow customers to place temporary holds on this product</label><div class="web-product-media"><label class="web-product-file">Add file<input name="image" type="file" accept="image/*" data-web-product-image></label><div class="web-product-media-modes" role="group" aria-label="Product media type">${[["keep", "Keep"], ["3d", "3D"], ["video", "Video"], ["cutout", "Cutout images"]].map(([value, label], index) => `<button type="button" class="btn-secondary" data-web-product-media-mode="${value}" aria-pressed="${index === 0}">${label}</button>`).join("")}</div><div class="web-product-video-options" data-web-product-video-options hidden><button type="button" class="btn-secondary" data-web-product-video-record>Record video</button><button type="button" class="btn-secondary" data-web-product-video-pick>Pick video</button><input type="file" accept="video/*" capture="environment" data-web-product-record-file hidden><input type="file" accept="video/*" data-web-product-video-file hidden></div><div class="web-product-media-preview" data-web-product-media-preview hidden></div><p class="studio-panel-note" data-web-product-media-status role="status" aria-live="polite">Keep the selected image, or choose another media type.</p></div><button type="submit" class="btn-primary">Save web product</button><p role="status"></p></form>` : `<p class="store-workspace-empty">Add a website category before creating a web product. <a href="/store/categories" data-route="/store/categories">Create a category</a></p>`}
+        <form class="store-workspace-form" data-studio-form="web-product" hidden>
+          <h2>Create web-only product</h2>
+          <input type="hidden" name="productId" value="">
+          <label>Product name<input name="name" maxlength="160" required></label>
+          <div class="web-product-taxonomy" data-web-product-taxonomy></div>
+          <div class="studio-form-grid">
+            <label>Selling price<input name="price" type="number" min="0" step="0.01" required></label>
+            <label>Buying price · optional<input name="costPrice" type="number" min="0" step="0.01"></label>
+          </div>
+          <div class="web-product-media">
+            <label class="web-product-file">Add photos (up to 8)<input name="image" type="file" accept="image/*" data-web-product-image multiple></label>
+            <div class="web-product-media-modes" role="group" aria-label="Product media type">${[["keep", "Photos"], ["3d", "360° spin"], ["video", "Video"], ["cutout", "Cutout"]].map(([value, label], index) => `<button type="button" class="btn-secondary" data-web-product-media-mode="${value}" aria-pressed="${index === 0}">${label}</button>`).join("")}</div>
+            <div class="web-product-video-options" data-web-product-video-options hidden>
+              <button type="button" class="btn-secondary" data-web-product-video-record>Record video</button>
+              <button type="button" class="btn-secondary" data-web-product-video-pick>Pick video</button>
+              <input type="file" accept="video/*" capture="environment" data-web-product-record-file hidden>
+              <input type="file" accept="video/*" data-web-product-video-file hidden>
+            </div>
+            <div class="web-product-media-preview" data-web-product-media-preview hidden></div>
+            <p class="studio-panel-note" data-web-product-media-status role="status" aria-live="polite">Add product photos or choose another media type.</p>
+          </div>
+          <label>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label>
+          <div class="web-product-variants" data-web-product-variants></div>
+          <label class="web-product-hold"><input type="checkbox" name="booking_enabled"><span>Allow customer holds</span></label>
+          <button type="button" class="btn-secondary" data-web-product-cancel hidden>Cancel edit</button>
+          <button type="submit" class="btn-primary">Save web product</button>
+          <p role="status"></p>
+        </form>
         <div class="store-workspace-list">
           ${webProducts.map(product => {
             const categoryName = SQLiteEngine.getCategories().find(category => Number(category.id) === Number(product.category_id))?.name || "Uncategorized";
@@ -14085,6 +14575,7 @@ const StudioRenderers = {
                 <label class="studio-panel-note"><input type="checkbox" data-web-product-booking="${product.id}" ${product.booking_enabled ? "checked" : ""}> Allow customers to place temporary holds on this product</label>
                 <p>${AppUtils.escapeHTML(product.description || "No description.")}</p>
                 ${product.images?.[0] ? `<img class="store-product-detail-image" src="${AppUtils.escapeHTML(product.images[0])}" alt="${AppUtils.escapeHTML(product.name)}">` : ""}
+                <button type="button" class="btn-secondary" data-edit-web-product="${product.id}" style="margin-top:12px;">Edit product</button>
                 ${existsInPos ? "" : `<button type="button" class="btn-secondary" data-store-pos-product="${product.id}" style="margin-top:12px;">Add to Store/POS</button>`}
                 <button type="button" class="btn-secondary" data-remove-website-product="${product.id}" style="margin-top:12px;">Remove from this website</button>
               </div>
@@ -14191,7 +14682,6 @@ const StudioRenderers = {
           <p>Editing <strong>${AppUtils.escapeHTML(activeTenant.name)}</strong> · ${AppUtils.escapeHTML(activeTenant.hostname)}. Products added from this Store workspace are also saved to the website catalog.</p>
           <div class="studio-nav-grid">
             <a class="studio-card" href="/account/web" data-route="/account/web"><h3 class="studio-card-title">Build your website</h3><p class="studio-card-desc">Edit storefront pages and presentation.</p></a>
-            <a class="studio-card" href="/web" data-route="/web"><h3 class="studio-card-title">Preview live website</h3><p class="studio-card-desc">Open the customer-facing shop.</p></a>
           </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
             <a class="btn-secondary" href="/account/web/store" data-route="/account/web/store">Edit store details</a>
@@ -15272,16 +15762,57 @@ const StudioRenderers = {
       };
       const webProductForm = currentContent.querySelector('[data-studio-form="web-product"]');
       if (webProductForm) {
-        const taxonomyMarkup = document.createElement("div");
-        taxonomyMarkup.innerHTML = window.EshopProductTaxonomy.createProductTaxonomyFields();
-        const taxonomyFields = taxonomyMarkup.firstElementChild;
-        webProductForm.querySelector('[name="categoryId"]').closest("label").insertAdjacentElement("afterend", taxonomyFields);
-        window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyFields);
-        const variantsMarkup = document.createElement("div");
-        variantsMarkup.innerHTML = window.EshopProductVariants.createProductVariantFields();
-        const variantFields = variantsMarkup.firstElementChild;
-        taxonomyFields.insertAdjacentElement("afterend", variantFields);
-        window.EshopProductVariants.bindProductVariantFields(variantFields);
+        const isWebProductField = element =>
+          Boolean(element?.matches?.('input:not([type="hidden"]), select, textarea'));
+        webProductForm.addEventListener("focusin", event => {
+          if (isWebProductField(event.target)) document.body.classList.add("web-product-field-focused");
+        });
+        webProductForm.addEventListener("focusout", () => {
+          requestAnimationFrame(() => {
+            if (!isWebProductField(document.activeElement)) {
+              document.body.classList.remove("web-product-field-focused");
+            }
+          });
+        });
+        const taxonomyHost = webProductForm.querySelector("[data-web-product-taxonomy]");
+        const variantsHost = webProductForm.querySelector("[data-web-product-variants]");
+        if (!taxonomyHost || !variantsHost) throw new Error("The Web product form is missing category or options controls.");
+        const websiteCategories = SQLiteEngine.getCategories();
+        const bindProductDetails = product => {
+          taxonomyHost.innerHTML = window.EshopProductTaxonomy.createProductTaxonomyFields({
+            categoryId: product?.taxonomy_category_id || "",
+            categoryName: product?.taxonomy_category_name || "",
+            customCategory: product?.taxonomy_custom_category || "",
+            attributes: product?.taxonomy_attributes || [],
+            storeCategories: websiteCategories.map(category => ({ value: category.id, name: category.name })),
+            storeCategoryFieldName: "categoryId",
+            storeCategoryValue: product?.category_id ?? ""
+          });
+          window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyHost, undefined, {
+            onCategoryCreate: async name => {
+              let category = SQLiteEngine.getCategories().find(item =>
+                item.name.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase());
+              if (!category) {
+                SQLiteEngine.saveCategory({ name });
+                category = SQLiteEngine.getCategories().find(item =>
+                  item.name.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase());
+              }
+              if (!category) throw new Error(`Could not save Web category "${name}".`);
+              await window.ShopSQLite.flush();
+              AppController.cacheActiveTenantCatalog();
+              return { value: category.id, name: category.name };
+            }
+          });
+          variantsHost.innerHTML = window.EshopProductVariants.createProductVariantFields({
+            option1Name: product?.option1_name || "",
+            option2Name: product?.option2_name || "",
+            sizes: product?.sizes || [],
+            colors: product?.colors || [],
+            variants: product?.variants || []
+          });
+          window.EshopProductVariants.bindProductVariantFields(variantsHost);
+        };
+        bindProductDetails(null);
         const mediaStatus = webProductForm.querySelector("[data-web-product-media-status]");
         const imageInput = webProductForm.querySelector("[data-web-product-image]");
         const spinModeButton = webProductForm.querySelector('[data-web-product-media-mode="3d"]');
@@ -15600,6 +16131,63 @@ const StudioRenderers = {
                   : "Cutout requires the Android Craft app and Google Play services."
                 : "Keep the selected image as-is.");
         };
+        const productMediaUrl = reference => {
+          const value = String(reference || "");
+          if (!value.startsWith(LOCAL_PRODUCT_MEDIA_PREFIX)) return value;
+          return nativeMedia?.Capacitor ? nativeFileUrl(value.slice(LOCAL_PRODUCT_MEDIA_PREFIX.length)) : "";
+        };
+        const showExistingProductMedia = product => {
+          const images = Array.isArray(product.images) ? product.images : [];
+          if (media.mode === "3d" && Array.isArray(product.spin_frames) && product.spin_frames.length) {
+            showImagePreviews(product.spin_frames.map(productMediaUrl).filter(Boolean), true);
+          } else {
+            showImagePreviews(images.map(productMediaUrl).filter(Boolean));
+          }
+          setMediaStatus("Existing media will be kept unless you choose replacement media.");
+        };
+        const setEditingProduct = product => {
+          webProductForm.reset();
+          webProductForm.querySelector('[name="productId"]').value = String(product.id);
+          webProductForm.querySelector("h2").textContent = "Edit web product";
+          webProductForm.querySelector('button[type="submit"]').textContent = "Save changes";
+          webProductForm.querySelector("[data-web-product-cancel]").hidden = false;
+          webProductForm.querySelector('[name="name"]').value = product.name || "";
+          webProductForm.querySelector('[name="price"]').value = product.price ?? "";
+          webProductForm.querySelector('[name="costPrice"]').value = product.cost_price ?? "";
+          webProductForm.querySelector('[name="stock"]').value = product.stock ?? 0;
+          webProductForm.querySelector('[name="booking_enabled"]').checked = Boolean(product.booking_enabled);
+          bindProductDetails(product);
+          const mediaMode = product.media_type === "spin" ? "3d"
+            : ["video", "cutout"].includes(product.media_type) ? product.media_type : "keep";
+          updateMediaMode(mediaMode);
+          media.videoPath = mediaMode === "video" ? product.video_path || "" : "";
+          showExistingProductMedia(product);
+          webProductForm.querySelector('[name="name"]').focus();
+        };
+        const resetProductEdit = () => {
+          webProductForm.reset();
+          webProductForm.querySelector('[name="productId"]').value = "";
+          webProductForm.querySelector("h2").textContent = "Create web-only product";
+          webProductForm.querySelector('button[type="submit"]').textContent = "Save web product";
+          webProductForm.querySelector("[data-web-product-cancel]").hidden = true;
+          bindProductDetails(null);
+          updateMediaMode("keep");
+        };
+        currentContent.querySelectorAll("[data-edit-web-product]").forEach(button => {
+          button.addEventListener("click", () => {
+            const product = SQLiteEngine.getProductById(Number(button.dataset.editWebProduct));
+            if (!product) {
+              AppUtils.showToast("Product not found. Refresh the Store workspace and try again.", "danger");
+              return;
+            }
+            webProductForm.hidden = false;
+            setEditingProduct(product);
+          });
+        });
+        webProductForm.querySelector("[data-web-product-cancel]")?.addEventListener("click", () => {
+          resetProductEdit();
+          webProductForm.querySelector('[name="name"]').focus();
+        });
         webProductForm.querySelectorAll("[data-web-product-media-mode]").forEach(button => {
           button.addEventListener("click", () => updateMediaMode(button.dataset.webProductMediaMode));
         });
@@ -15668,6 +16256,7 @@ const StudioRenderers = {
           if (status) status.textContent = "";
           try {
             const kind = form.dataset.studioForm;
+            const wasEditingWebProduct = kind === "web-product" && String(data.get("productId") || "").trim() !== "";
             if (kind === "web-category") {
               const name = String(data.get("name") || "").trim();
               if (!name) throw new Error("Enter a category name.");
@@ -15680,24 +16269,40 @@ const StudioRenderers = {
             } else if (kind === "web-product") {
               const mediaMode = form.querySelector('[data-web-product-media-mode][aria-pressed="true"]')?.dataset.webProductMediaMode || "keep";
               const media = webProductMediaState.get(form);
+              const productIdText = String(data.get("productId") || "").trim();
+              const productId = productIdText ? Number(productIdText) : null;
+              const existingProduct = productIdText && Number.isSafeInteger(productId) && productId > 0
+                ? SQLiteEngine.getProductById(productId)
+                : null;
+              if (productIdText && !existingProduct) throw new Error("That Web product could not be found. Refresh and try again.");
               const name = String(data.get("name") || "").trim();
               const price = Number(data.get("price"));
+              const costText = String(data.get("costPrice") || "").trim();
+              const costPrice = costText === "" ? null : Number(costText);
               const stock = Number(data.get("stock"));
               const categoryId = Number(data.get("categoryId"));
               const taxonomy = window.EshopProductTaxonomy.readProductTaxonomyFields(form);
-              if (!name || !Number.isFinite(price) || price < 0 || !Number.isSafeInteger(stock) || stock < 0) {
-                throw new Error("Enter a product name, valid price, and whole-number stock quantity.");
+              if (!name || !Number.isFinite(price) || price < 0 ||
+                (costPrice !== null && (!Number.isFinite(costPrice) || costPrice < 0)) ||
+                !Number.isSafeInteger(stock) || stock < 0 ||
+                !Number.isSafeInteger(categoryId) ||
+                !SQLiteEngine.getCategories().some(category => Number(category.id) === categoryId)) {
+                throw new Error("Enter a product name, category, valid prices, and whole-number stock quantity.");
               }
               if (!media) throw new Error("Product media could not be initialized. Reopen the product form and try again.");
               const productVariants = window.EshopProductVariants.readProductVariantFields(form);
               const imageFiles = data.getAll("image").filter(file => file instanceof File && file.size > 0);
               if (imageFiles.length > 8) throw new Error("Choose up to 8 product photos.");
-              let images = [];
+              const existingImages = Array.isArray(existingProduct?.images) ? existingProduct.images.slice(0, 8) : [];
+              const isExistingPhotoProduct = !existingProduct?.media_type || existingProduct.media_type === "image";
+              let images = mediaMode === "keep" && isExistingPhotoProduct ? existingImages : [];
               let spinFrames = [];
               let videoPath = "";
+              let videoUrl = "";
               if (imageFiles.length) {
                 if (mediaMode === "keep") {
                   setWebProductMediaStatus(form, "Compressing product image for local SQLite storage…");
+                  images = [];
                   for (const imageFile of imageFiles) {
                     images.push(await AppUtils.compressImageFile(imageFile));
                   }
@@ -15709,37 +16314,56 @@ const StudioRenderers = {
                 if (window.EshopNativeMedia?.Capacitor?.getPlatform?.() !== "android") {
                   throw new Error("Cutout requires the Android Craft app and Google Play services.");
                 }
-                if (!media.cutoutPaths.length) throw new Error("Choose at least one product photo for cutout.");
-                images = media.cutoutPaths.map(path => `${LOCAL_PRODUCT_MEDIA_PREFIX}${path}`);
-              } else if (mediaMode === "3d") {
-                if (!media.spinFrames.length) throw new Error("Record or choose a video to generate the 360 spin frames.");
-                spinFrames = media.spinFrames.map(path => `${LOCAL_PRODUCT_MEDIA_PREFIX}${path}`);
-                images = spinFrames.length ? [spinFrames[0]] : [];
-              } else if (mediaMode === "video") {
-                if (!(media.videoBlob instanceof Blob) || !media.videoBlob.size) {
-                  throw new Error("Record or choose a product video before saving.");
+                if (media.cutoutPaths.length) {
+                  images = media.cutoutPaths.map(path => `${LOCAL_PRODUCT_MEDIA_PREFIX}${path}`);
+                } else if (existingProduct?.media_type === "cutout" && existingImages.length) {
+                  images = existingImages;
+                } else {
+                  throw new Error("Choose at least one product photo for cutout.");
                 }
-                setWebProductMediaStatus(form, "Saving product video to local storage…");
-                videoPath = media.videoPath || await AppUtils.storeLocalProductVideo(media.videoBlob);
-                if (media.videoPoster) {
-                  images = [await AppUtils.compressImageFile(media.videoPoster)];
+              } else if (mediaMode === "3d") {
+                if (media.spinFrames.length) {
+                  spinFrames = media.spinFrames.map(path => `${LOCAL_PRODUCT_MEDIA_PREFIX}${path}`);
+                  images = spinFrames.length ? [spinFrames[0]] : [];
+                } else if (existingProduct?.media_type === "spin" && Array.isArray(existingProduct.spin_frames) && existingProduct.spin_frames.length) {
+                  spinFrames = existingProduct.spin_frames.slice();
+                  images = existingImages;
+                } else {
+                  throw new Error("Record or choose a video to generate the 360 spin frames.");
+                }
+              } else if (mediaMode === "video") {
+                if (media.videoBlob instanceof Blob && media.videoBlob.size) {
+                  setWebProductMediaStatus(form, "Saving product video to local storage…");
+                  videoPath = media.videoPath || await AppUtils.storeLocalProductVideo(media.videoBlob);
+                  if (media.videoPoster) {
+                    images = [await AppUtils.compressImageFile(media.videoPoster)];
+                  }
+                } else if (existingProduct?.media_type === "video" &&
+                  (media.videoPath || existingProduct.video_path || existingProduct.video_url)) {
+                  videoPath = media.videoPath || existingProduct.video_path;
+                  images = existingImages;
+                  videoUrl = existingProduct.video_url || "";
+                } else {
+                  throw new Error("Record or choose a product video before saving.");
                 }
               }
               SQLiteEngine.saveProduct({
+                ...(existingProduct ? { id: existingProduct.id, sku: existingProduct.sku } : {}),
                 name, category_id: categoryId, price, stock: productVariants.stock ?? stock,
+                cost_price: costPrice ?? 0,
                 taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
                 taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
                 taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
                 taxonomy_attributes: taxonomy.taxonomyAttributes,
                 ...productVariants,
                 booking_enabled: data.get("booking_enabled") === "on",
-                description: "",
+                description: existingProduct?.description || "",
                 images,
                 media_type: mediaMode === "keep" ? "image" : mediaMode === "3d" ? "spin" : mediaMode,
                 spin_frames: spinFrames,
-                video_url: "",
+                video_url: videoUrl,
                 video_path: videoPath,
-                status: "active"
+                status: existingProduct?.status || "active"
               });
               await window.ShopSQLite.flush();
               AppController.cacheActiveTenantCatalog();
@@ -15815,6 +16439,13 @@ const StudioRenderers = {
               throw new Error("This action is not available.");
             }
             await this.loadMainShopWorkspace(path);
+            if (kind === "web-product" && !wasEditingWebProduct) {
+              const nextProductForm = document.querySelector('[data-studio-form="web-product"]');
+              if (nextProductForm) {
+                nextProductForm.hidden = false;
+                nextProductForm.querySelector('[name="name"]')?.focus();
+              }
+            }
           } catch (error) {
             console.error("Studio workspace action failed.", error);
             if (status) status.textContent = error instanceof Error ? error.message : "The change could not be saved.";
@@ -16474,7 +17105,7 @@ const StudioRenderers = {
       <article class="profile-page-card"><h2>Website not found</h2><p>This website is not saved in this app.</p></article>`;
     const accountsScreen = `
       ${renderWebsiteCards("Delete account", "Shop accounts")}
-      <a class="btn-primary profile-add-account" href="/account/web/themes" data-start-new-website>Create a new website</a>`;
+      <a class="btn-primary profile-add-account" href="/account/web/studio/websites/webmaker" data-start-new-website>Create a new website</a>`;
     const privacyAgreement = window.localStorage.getItem("ESHOP_PRIVACY_POLICY_AGREED_V1") !== "declined";
     const privacyPolicy = `
       <article class="profile-page-card profile-privacy-policy">
@@ -16642,7 +17273,7 @@ const StudioRenderers = {
       const availableThemes = this.websiteThemesForPicker();
       const selectedTheme = availableThemes.some(theme => theme.id === saved.selected_theme)
         ? saved.selected_theme
-        : availableThemes[0]?.id || "elora-linen";
+        : availableThemes[0]?.id || "litrus-mixer";
       return {
         products: Array.isArray(saved.products) ? saved.products : [],
         categories: Array.isArray(saved.categories) ? saved.categories : [],
@@ -16679,101 +17310,6 @@ const StudioRenderers = {
     await window.ShopSQLite.flush();
   },
 
-  renderWebsiteBuilderCatalog(embedded = false) {
-    const draft = this.websiteBuilderDraft();
-    const categories = draft.categories;
-    const products = draft.products;
-    AppUtils.updateSEO({ title: "Webmaker — Craft", description: "Prepare the new website catalog before choosing a theme." });
-    return `
-      ${embedded ? "" : StoreRenderers.renderNavbar("/account")}
-      <main class="container" style="padding:6px 0 36px;max-width:900px;">
-        <a href="/account" class="studio-back-link" data-route="/account" aria-label="Back to your websites">&larr;</a>
-        <header style="margin:3px 0 8px;">
-          <span class="studio-workspace-kicker">NEW WEBSITE · STEP 1 OF 3</span>
-          <h1 class="section-heading" style="font-size:1.25rem;margin:2px 0;">Add products and categories</h1>
-          <p style="margin:2px 0 0;color:var(--text-muted);font-size:.8rem;">Add Store products or create new ones for this website.</p>
-        </header>
-        <button class="btn-secondary" id="website-wizard-load-store" type="button" style="width:100%;min-height:40px;margin-bottom:10px;">Choose products from Store</button>
-        <section id="website-wizard-store-picker" hidden role="dialog" aria-modal="true" aria-labelledby="website-wizard-store-title" style="position:fixed;inset:0;z-index:1200;background:var(--bg);overflow:auto;padding:env(safe-area-inset-top,0px) 14px env(safe-area-inset-bottom,0px);">
-          <div style="max-width:900px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;">
-            <header style="position:sticky;top:0;z-index:1;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--border);">
-              <div style="display:flex;align-items:center;gap:10px;"><button class="btn-secondary" id="website-wizard-store-close" type="button" aria-label="Close Store picker">Back</button><div style="flex:1;"><span class="studio-workspace-kicker">NEW WEBSITE CATALOG</span><h2 id="website-wizard-store-title" style="margin:2px 0;">Choose from Store</h2></div><button class="btn-primary" id="website-wizard-import-store" type="button" disabled>Add selected</button></div>
-              <p class="studio-panel-note" id="website-wizard-store-count" role="status">Loading all Store products…</p>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><input class="form-input" type="search" id="website-wizard-store-search" placeholder="Search all products" aria-label="Search Store products"><select class="form-input" id="website-wizard-store-category" aria-label="Filter Store products"><option value="all">All categories</option><option value="general">General (uncategorized)</option></select></div>
-              <label style="display:flex;align-items:center;gap:8px;padding:10px 0;"><input type="checkbox" id="website-wizard-store-select-all"><span>Select all shown</span></label>
-            </header>
-            <div id="website-wizard-store-list" style="flex:1;"></div>
-          </div>
-        </section>
-        <section class="studio-panel" style="margin-bottom:14px;">
-          <div class="studio-panel-heading"><h2>Categories (${categories.length})</h2></div>
-          <form id="website-wizard-category-form" style="display:flex;gap:8px;flex-wrap:wrap;">
-            <input type="hidden" name="id">
-            <input class="form-input" name="name" required maxlength="80" placeholder="Category name" aria-label="New category name" style="flex:1;min-width:170px;">
-            <button class="btn-secondary website-wizard-compact-action" type="submit">Add category</button>
-          </form>
-          <div class="website-wizard-category-list" id="website-wizard-category-list">${categories.map(category => `<div class="website-wizard-category-row"><span>${AppUtils.escapeHTML(category.name)}</span><button class="btn-secondary website-wizard-compact-action" type="button" data-edit-wizard-category="${AppUtils.escapeHTML(String(category.id))}">Edit</button></div>`).join("") || `<p class="studio-panel-note">Add a category before creating products.</p>`}</div>
-        </section>
-        <section class="studio-panel" style="margin-bottom:14px;">
-          <div class="studio-panel-heading" style="display:flex;align-items:center;justify-content:space-between;gap:8px;"><h2>Products (${products.length})</h2>${products.length ? `<button class="btn-secondary" id="website-wizard-clear-products" type="button">Remove all</button>` : ""}</div>
-          <div id="website-wizard-product-list">${products.map(product => `<article class="studio-list-row" style="display:flex;align-items:center;gap:8px;"><div style="flex:1;min-width:0;"><strong>${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(product.category_name || "Uncategorized")}</span></div><strong>${AppUtils.escapeHTML(String(product.price ?? ""))}</strong><button class="btn-secondary website-wizard-compact-action" type="button" data-edit-wizard-product="${AppUtils.escapeHTML(String(product.id))}">Edit</button><button class="btn-secondary website-wizard-compact-action" type="button" data-remove-wizard-product="${AppUtils.escapeHTML(String(product.id))}" aria-label="Remove ${AppUtils.escapeHTML(product.name)} from this website">Remove</button></article>`).join("") || `<p class="studio-panel-note">No products yet. Add from Store or create one below.</p>`}</div>
-          <form id="website-wizard-product-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:8px;margin-top:12px;">
-            <input type="hidden" name="id">
-            <input class="form-input" name="name" required maxlength="120" placeholder="Product name">
-            <input class="form-input" name="price" type="number" min="0" step="0.01" required placeholder="Price">
-            <select class="form-input" name="category_id" required aria-label="Product category">
-              <option value="">Choose category</option>${categories.map(category => `<option value="${AppUtils.escapeHTML(String(category.id))}">${AppUtils.escapeHTML(category.name)}</option>`).join("")}
-            </select>
-            <button class="btn-primary website-wizard-compact-action" type="submit" ${categories.length ? "" : "disabled"}>Add product</button>
-            <button class="btn-secondary website-wizard-compact-action" type="button" id="website-wizard-cancel-product-edit" hidden>Cancel edit</button>
-          </form>
-        </section>
-        <a class="btn-primary" href="/account/web/themes/select" data-route="/account/web/themes/select" style="display:inline-flex;align-items:center;min-height:40px;margin-bottom:8px;">Continue to choose a theme &rarr;</a>
-      </main>
-      ${embedded ? "" : StoreRenderers.renderFooter()}
-    `;
-  },
-
-  renderWebsiteThemes() {
-    return this.renderWebsiteBuilderCatalog();
-  },
-
-  renderWebsiteThemeChoices() {
-    const themes = this.websiteThemesForPicker();
-    const canFillTheme = theme => Boolean(theme.studio_url) ||
-      theme.editor_mode === "app" || theme.editor_mode === "liquid-html"
-      || window.EshopThemeSkeletons?.isSupportedThemeId(theme.id) === true;
-    const themeEditorRoute = theme => `/account/web/site?new=1&edit=1&theme=${encodeURIComponent(theme.id)}`;
-    const unsupportedThemeNotice = `<div role="status" style="position:absolute;inset:12px;display:grid;place-items:center;padding:12px;text-align:center;color:var(--text-muted);font-size:.82rem;">Shop-data filling is not available for this theme yet.</div>`;
-    AppUtils.updateSEO({ title: "Choose a theme — Craft", description: "Preview themes with your new website's products and categories." });
-    return `
-      ${StoreRenderers.renderNavbar("/account")}
-      <main class="container" style="padding:18px 0 48px;max-width:900px;">
-        <a href="/account/web/themes" class="studio-back-link" data-route="/account/web/themes" aria-label="Back to Webmaker">&larr;</a>
-        <header style="margin:12px 0 18px;">
-          <span class="studio-workspace-kicker">NEW WEBSITE · STEP 2 OF 3</span>
-          <h1 class="section-heading" style="font-size:1.65rem;margin:4px 0;">Choose a storefront theme</h1>
-          <p style="margin:4px 0 12px;color:var(--text-muted);font-size:.9rem;">Preview all themes and choose the look you want. Your Store products are added only when you select them.</p>
-        </header>
-        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px;" aria-label="Website themes">
-          ${themes.map(theme => `
-            <a class="website-theme-card" ${canFillTheme(theme) ? `href="${AppUtils.escapeHTML(themeEditorRoute(theme))}" data-route="${AppUtils.escapeHTML(themeEditorRoute(theme))}"` : `aria-disabled="true" tabindex="-1"`} style="display:block;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--surface);color:inherit;text-decoration:none;${canFillTheme(theme) ? "" : "opacity:.72;cursor:not-allowed;"}">
-              <div class="website-theme-thumbnail" aria-hidden="true" style="position:relative;height:200px;overflow:hidden;background:var(--surface-subtle);">
-                ${canFillTheme(theme) ? `<div role="status" style="position:absolute;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:var(--text-muted);font-size:.9rem;">Open the editor to preview this theme with your shop’s products and categories.</div>` : unsupportedThemeNotice}
-              </div>
-              <div style="padding:14px;">
-                <h2 style="font-size:1.05rem;margin:0;">${AppUtils.escapeHTML(theme.name)}</h2>
-                <p style="margin:4px 0 0;color:var(--text-muted);font-size:.85rem;">${AppUtils.escapeHTML(theme.description)}</p>
-                <span style="display:inline-block;margin-top:10px;font-size:.85rem;font-weight:600;">${canFillTheme(theme) ? "Open editor →" : "Not yet available for shop data"}</span>
-              </div>
-            </a>
-          `).join("")}
-        </section>
-      </main>
-      ${StoreRenderers.renderFooter()}
-    `;
-  },
-
   renderWebsiteTheme(themeId) {
     const theme = this.websiteThemesForPicker().find(item => item.id === themeId);
     if (!theme) return null;
@@ -16789,7 +17325,7 @@ const StudioRenderers = {
       return `
         ${StoreRenderers.renderNavbar("/account")}
         <main class="container" style="padding:24px 0 48px;max-width:720px;">
-          <a href="/account/web/themes/select" data-route="/account/web/themes/select" class="studio-back-link" aria-label="Back to themes">&larr;</a>
+          <a href="/account/web/studio/websites/list" data-route="/account/web/studio/websites/list" class="studio-back-link" aria-label="Back to websites">&larr;</a>
           <section class="profile-page-card" role="alert" style="margin-top:16px;">
             <h1 class="section-heading" style="font-size:1.4rem;margin:0;">This theme is not ready for shop data</h1>
             <p style="margin:10px 0;color:var(--text-muted);">Its skeleton has no verified shop-data mapping yet, so it cannot be opened or published. Currently supported: ${AppUtils.escapeHTML(supported)}.</p>
@@ -16808,7 +17344,7 @@ const StudioRenderers = {
       <main style="padding:14px 0 0;">
         <div class="container" style="padding-bottom:0;">
           <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-            <a href="/account/web/themes/select" data-route="/account/web/themes/select" aria-label="Back to themes" style="display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border:1px solid var(--border);border-radius:999px;color:var(--text-main);font-size:.78rem;white-space:nowrap;">&larr;</a>
+            <a href="/account/web/studio/websites/list" data-route="/account/web/studio/websites/list" aria-label="Back to websites" style="display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border:1px solid var(--border);border-radius:999px;color:var(--text-main);font-size:.78rem;white-space:nowrap;">&larr;</a>
             <a href="${AppUtils.escapeHTML(useThemeRoute)}" data-route="${AppUtils.escapeHTML(useThemeRoute)}" style="display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-contrast);font:inherit;font-size:.78rem;font-weight:600;text-decoration:none;white-space:nowrap;">${theme.studio_url ? "Open this theme’s Studio →" : "Use this theme →"}</a>
           </div>
         </div>
@@ -16831,7 +17367,7 @@ const StudioRenderers = {
     const requestedTheme = editorParams.get("theme") ||
       (isNewWebsite
         ? newWebsiteDraft.selected_theme || ""
-        : store.website_theme_id) || "elora-linen";
+        : store.website_theme_id) || "litrus-mixer";
     const availableThemes = this.websiteThemesForPicker();
     const selectedTheme = !isNewWebsite
       ? requestedTheme
@@ -16843,13 +17379,12 @@ const StudioRenderers = {
       this.saveWebsiteBuilderDraft(newWebsiteDraft);
     }
     const editorReturnRoute = draftEditor
-      ? "/account/web/themes/select"
+      ? "/account/web/studio/websites/list"
       : `/account/profile/webs/${encodeURIComponent(tenant.id)}`;
     AppUtils.updateSEO({
       title: "Litrus Mixer — Craft",
       description: "Build and preview your storefront with Litrus Mixer."
     });
-    const activeEditorTheme = this.websiteThemes().find(theme => theme.id === selectedTheme);
     if (isNewWebsite && !draftEditor) {
     if (!appAccountSession) {
       const continueTo = `/account/web/site?new=1&finish=1&theme=${encodeURIComponent(selectedTheme)}`;
@@ -16888,12 +17423,6 @@ const StudioRenderers = {
       ${StoreRenderers.renderFooter()}
     `;
     }
-    const studioTheme = activeEditorTheme || {
-      id: selectedTheme,
-      name: "Theme",
-      preview_url: ""
-    };
-    if (selectedTheme === "litrus-mixer") {
       return `
         <style>
           .builder-litrus-toolbar{z-index:1;min-height:46px;padding:5px 10px;display:flex;align-items:center;gap:7px;overflow:visible;background:var(--surface);color:var(--text-main);border-bottom:1px solid var(--border)}
@@ -16930,25 +17459,6 @@ const StudioRenderers = {
         </main>
         <div id="product-modal-container"></div>
       `;
-    }
-    const studioUrl = new URL("/liquid-themes/theme-studio.html", window.location.origin);
-    if (studioTheme.preview_url) studioUrl.searchParams.set("loadUrl", studioTheme.preview_url);
-    const continueRoute = `/account/web/site?new=1&finish=1&theme=${encodeURIComponent(selectedTheme)}`;
-    return `
-      <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:#101114;color:#f5f5f6;">
-        <header style="z-index:1;min-height:48px;padding:5px 12px;display:flex;align-items:center;gap:10px;background:#191a1e;border-bottom:1px solid #303136;">
-          <a class="builder-back-link" href="${AppUtils.escapeHTML(editorReturnRoute)}" data-route="${AppUtils.escapeHTML(editorReturnRoute)}" aria-label="Back to previous screen" style="font-size:1.2rem;padding:5px 8px;color:#fff;">&larr;</a>
-          <a href="/account/web/store" data-route="/account/web/store" style="min-height:36px;padding:0 10px;display:inline-flex;align-items:center;white-space:nowrap;color:#fff;">Store details</a>
-          <strong style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem;">${AppUtils.escapeHTML(studioTheme.name)} · Theme Studio</strong>
-          <button class="btn-secondary" id="builder-theme-studio-save" type="button" style="min-height:36px;padding:0 10px;white-space:nowrap;">Save design</button>
-          ${!draftEditor && selectedTheme !== "classic" ? '<button class="btn-primary" id="builder-theme-studio-publish" type="button" style="min-height:36px;padding:0 12px;white-space:nowrap;">Publish</button>' : ""}
-          ${draftEditor ? `<a class="btn-primary" href="${AppUtils.escapeHTML(continueRoute)}" data-route="${AppUtils.escapeHTML(continueRoute)}" style="min-height:36px;padding:0 12px;display:inline-flex;align-items:center;white-space:nowrap;">Continue setup</a>` : ""}
-        </header>
-        <p id="builder-theme-studio-status" role="status" aria-live="polite" style="position:absolute;z-index:2;right:12px;bottom:12px;margin:0;padding:8px 12px;background:#191a1e;color:#fff;border-radius:8px;font-size:.8rem;pointer-events:none;"></p>
-        <iframe id="builder-theme-studio" title="${AppUtils.escapeHTML(studioTheme.name)} Liquid Theme Studio" src="${AppUtils.escapeHTML(studioUrl.pathname + studioUrl.search)}" allow="clipboard-read; clipboard-write" style="display:block;width:100%;min-width:0;height:100%;border:0;background:#fff;"></iframe>
-      </main>
-      <div id="product-modal-container"></div>
-    `;
   },
 
   renderWebsiteStoreEditor() {
@@ -16977,29 +17487,6 @@ const StudioRenderers = {
       </form>
     </main>
     ${StoreRenderers.renderFooter()}
-    `;
-  },
-
-  renderStudioStore() {
-    AppUtils.updateSEO({
-      title: "Edit Storefront — Craft",
-      description: "View the customer-facing Craft storefront."
-    });
-    return this.renderLiveWeb();
-  },
-
-  renderLiveWeb() {
-    AppUtils.updateSEO({
-      title: "Craft — Customer Storefront",
-      description: "Browse the complete Craft customer-facing storefront."
-    });
-    return `
-      <iframe
-        id="builder-storefront-html"
-        title="Complete customer-facing storefront"
-        src="/builder-storefront.html?builder=1"
-        style="display: block; width: 100%; min-height: 70vh; height: 100dvh; border: 0; background: var(--bg);"
-      ></iframe>
     `;
   },
 
@@ -17284,7 +17771,7 @@ const StudioRenderers = {
         <section style="margin:20px 0; padding:18px; border:1px solid var(--border); border-radius:var(--radius);">
           <h2 style="font-size:1.05rem; margin:0 0 12px;">Create a shop</h2>
           <p style="margin:0 0 12px; color:var(--text-muted); font-size:.85rem;">Sign in to your Craft account first. Each new shop gets its own website and catalog.</p>
-          <a class="btn-secondary" href="/account/web/themes" data-route="/account/web/themes">Create a shop or website</a>
+          <a class="btn-secondary" href="/account/web/studio/websites/webmaker" data-start-new-website>Create a shop or website</a>
         </section>
         <div id="tenant-manager-status" role="status" style="color:var(--text-muted); margin:12px 0;"></div>
         <div id="tenant-manager-list" class="product-list" style="padding:0 12px;"></div>
@@ -17892,8 +18379,135 @@ const AppController = {
     return tenantId === WEBSITE_BUILDER_DRAFT_TENANT_ID;
   },
 
+  async websiteBuilderSourceCatalog() {
+    const activeTenant = this.getActiveTenant();
+    const cachedMainCatalog = this.tenantCatalogs().find(item => item.tenant_id === "main");
+    let source;
+    if (activeTenant.id === WEBSITE_BUILDER_DRAFT_TENANT_ID) {
+      source = cachedMainCatalog;
+      if (!source) throw new Error("The Main Store catalog is not available on this device.");
+    } else if (activeTenant.id === "main") {
+      source = {
+        products: SQLiteEngine.select("products"),
+        categories: SQLiteEngine.getCategories()
+      };
+    } else {
+      if (!cachedMainCatalog) throw new Error("The Main Store catalog is not available on this device.");
+      source = cachedMainCatalog;
+    }
+
+    const categories = JSON.parse(JSON.stringify(source.categories || []));
+    const products = JSON.parse(JSON.stringify(source.products || []))
+      .filter(product => product && product.status !== "archived");
+    let nextCategoryId = categories.reduce((maximum, category) =>
+      Math.max(maximum, Number(category.id) || 0), 0);
+    const categoriesByName = new Map(categories.map(category =>
+      [String(category.name || "").trim().toLocaleLowerCase(), category]));
+    const ensureCategory = name => {
+      const categoryName = String(name || "").trim();
+      if (!categoryName) return null;
+      const key = categoryName.toLocaleLowerCase();
+      if (categoriesByName.has(key)) return categoriesByName.get(key);
+      const category = { id: ++nextCategoryId, name: categoryName };
+      categories.push(category);
+      categoriesByName.set(key, category);
+      return category;
+    };
+    const categoriesById = new Map(categories.map(category => [String(category.id), category]));
+    products.forEach(product => {
+      const category = categoriesById.get(String(product.category_id ?? product.categoryId));
+      product.category_name ||= product.categoryName || category?.name || "";
+      if (!category && product.category_name) {
+        const added = ensureCategory(product.category_name);
+        if (added) product.category_id = added.id;
+      }
+    });
+
+    let posProductCount = 0;
+    let posConnected = false;
+    if (window.ShopPOS?.listProducts && window.ShopPOS?.listCategories) {
+      const [posProducts, posCategories] = await Promise.all([
+        window.ShopPOS.listProducts(),
+        window.ShopPOS.listCategories()
+      ]);
+      if (!Array.isArray(posProducts) || !Array.isArray(posCategories)) {
+        throw new Error("Main Store/POS returned an invalid product catalog.");
+      }
+      posConnected = true;
+      const posCategoryName = product => String(product.categoryName || product.category_name ||
+        posCategories.find(category => Number(category.id) === Number(product.categoryId ?? product.category_id))?.name || "").trim();
+      posCategories.forEach(category => ensureCategory(category.name));
+      let nextProductId = products.reduce((maximum, product) =>
+        Math.max(maximum, Number(product.id) || 0), 0);
+      const productsBySku = new Map(products.filter(product => product.sku)
+        .map(product => [String(product.sku).trim().toLocaleLowerCase(), product]));
+      const productsByName = new Map(products.map(product => [
+        `${String(product.name || "").trim().toLocaleLowerCase()}|${String(product.category_name || "").trim().toLocaleLowerCase()}`,
+        product
+      ]));
+      for (const posProduct of posProducts.filter(product => product?.active !== false)) {
+        const name = String(posProduct.name || "").trim();
+        if (!name) continue;
+        const sku = String(posProduct.sku || "").trim();
+        const categoryName = posCategoryName(posProduct);
+        const key = `${name.toLocaleLowerCase()}|${categoryName.toLocaleLowerCase()}`;
+        const existing = (sku && productsBySku.get(sku.toLocaleLowerCase())) || productsByName.get(key);
+        if (existing) {
+          const category = ensureCategory(categoryName);
+          if (!existing.category_name && category) {
+            existing.category_id = category.id;
+            existing.category_name = category.name;
+          }
+          if (existing.stock === undefined || existing.stock === null || existing.stock === "") {
+            existing.stock = Math.max(0, Number(posProduct.stock) || 0);
+          }
+          if (!existing.sku && sku) {
+            existing.sku = sku;
+            productsBySku.set(sku.toLocaleLowerCase(), existing);
+          }
+          continue;
+        }
+        const category = ensureCategory(categoryName);
+        const posAttributes = Array.isArray(posProduct.taxonomyAttributes)
+          ? posProduct.taxonomyAttributes
+          : [];
+        products.push({
+          id: ++nextProductId,
+          source_pos_product_id: posProduct.id,
+          name,
+          sku,
+          barcode: String(posProduct.barcode || ""),
+          brand: String(posProduct.brand || ""),
+          price: Math.max(0, Number(posProduct.price) || 0),
+          cost_price: Math.max(0, Number(posProduct.buyingPrice) || 0),
+          stock: Math.max(0, Number(posProduct.stock) || 0),
+          description: String(posProduct.description || ""),
+          images: posProduct.imageUri ? [String(posProduct.imageUri)] : [],
+          media_type: "image",
+          taxonomy_category_id: posProduct.taxonomyCategoryId || null,
+          taxonomy_custom_category: posProduct.taxonomyCustomCategory || "",
+          taxonomy_attributes: posAttributes,
+          sizes: [],
+          colors: [],
+          variants: [],
+          category_id: category?.id ?? null,
+          category_name: category?.name || categoryName
+        });
+        const added = products[products.length - 1];
+        if (sku) productsBySku.set(sku.toLocaleLowerCase(), added);
+        productsByName.set(key, added);
+        posProductCount += 1;
+      }
+    }
+    return { products, categories, posProductCount, posConnected };
+  },
+
   async prepareWebsiteBuilderDraftTenant(draft, themeId) {
     const activeTenant = this.getActiveTenant();
+    const sourceCatalog = await this.websiteBuilderSourceCatalog();
+    draft.products = sourceCatalog.products;
+    draft.categories = sourceCatalog.categories;
+    StudioRenderers.saveWebsiteBuilderDraft(draft);
     if (activeTenant.id !== WEBSITE_BUILDER_DRAFT_TENANT_ID &&
         !window.localStorage.getItem(WEBSITE_BUILDER_DRAFT_PREVIOUS_TENANT_KEY)) {
       window.localStorage.setItem(WEBSITE_BUILDER_DRAFT_PREVIOUS_TENANT_KEY, JSON.stringify(activeTenant));
@@ -17911,20 +18525,38 @@ const AppController = {
         String(product.source_product_id || ""),
         product.name,
         Number(product.price) || 0,
+        Number(product.cost_price) || 0,
         Number(product.stock) || 0,
-        String(product.category_id)
+        String(product.category_id),
+        String(product.sku || ""),
+        String(product.description || ""),
+        String(product.media_type || "image"),
+        String(product.video_path || ""),
+        Array.isArray(product.images) ? product.images.map(image => {
+          const value = String(image || "");
+          return [value.length, value.slice(0, 64), value.slice(-32)];
+        }) : [],
+        Array.isArray(product.spin_frames) ? product.spin_frames : [],
+        String(product.taxonomy_category_id || ""),
+        String(product.taxonomy_category_name || ""),
+        String(product.taxonomy_custom_category || ""),
+        Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes : [],
+        String(product.option1_name || ""),
+        String(product.option2_name || ""),
+        Array.isArray(product.sizes) ? product.sizes : [],
+        Array.isArray(product.colors) ? product.colors : [],
+        Array.isArray(product.variants) ? product.variants : []
       ])
     });
     const signature = catalogSignature(draft);
     const savedSignature = window.localStorage.getItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY) || "";
     const hasSavedDraftCatalog = Boolean(savedCatalog?.draft_signature);
-    const catalogIsCurrent = Boolean(draft.categories.length &&
-      savedSignature === signature && savedCatalog?.draft_signature === signature);
+    const catalogIsCurrent = Boolean(savedSignature === signature && savedCatalog?.draft_signature === signature);
     const previousDraftStore = hasSavedDraftCatalog ? savedCatalog.store || {} : {};
     const draftStore = {
       name: "New website draft",
       title: "New website draft",
-      website_theme_id: selectedTheme?.id || "elora-linen",
+      website_theme_id: selectedTheme?.id || "litrus-mixer",
       section_layout: draft.section_layout,
       primary_color: "#18181B",
       background_color: "#FAFAF8",
@@ -17943,8 +18575,8 @@ const AppController = {
       hostname: "Draft — not created yet"
     };
     const draftCatalog = catalogIsCurrent ? savedCatalog : {
-      products: [],
-      categories: [],
+      products: draft.products,
+      categories: draft.categories,
       inventory: [],
       pages: [],
       store: draftStore
@@ -17959,28 +18591,17 @@ const AppController = {
       }
     }
 
-    if (!selectedTheme || !draft.categories.length) return;
+    if (!selectedTheme) return;
 
     draft.selected_theme = selectedTheme.id;
-    if (catalogIsCurrent) {
-      SQLiteEngine.updateStore({
-        website_theme_id: selectedTheme.id,
-        section_layout: draft.section_layout
-      });
-      this.cacheActiveTenantCatalog();
-      window.localStorage.setItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY, signature);
-      return;
-    }
-    StudioRenderers.saveWebsiteBuilderDraft(draft);
-    SQLiteEngine.db.tables.products = [];
-    SQLiteEngine.db.tables.categories = [];
-    SQLiteEngine.db.tables.inventory = [];
-    SQLiteEngine.db.tables.pages = [];
-    await this.applyWebsiteBuilderDraft(draft, selectedTheme.id);
+    SQLiteEngine.updateStore({
+      website_theme_id: selectedTheme.id,
+      section_layout: draft.section_layout
+    });
+    this.cacheActiveTenantCatalog();
     const cachedDraft = this.tenantCatalogs().find(item =>
       item.tenant_id === WEBSITE_BUILDER_DRAFT_TENANT_ID);
     if (cachedDraft) cachedDraft.draft_signature = signature;
-    SQLiteEngine.save();
     await window.ShopSQLite.flush();
     window.localStorage.setItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY, signature);
   },
@@ -18100,15 +18721,29 @@ const AppController = {
       categoryIds.set(category.id, saved.id);
     }
     for (const product of draft.products) {
+      const stock = Math.max(0, Number(product.stock) || 0);
       const saved = SQLiteEngine.saveProduct({
         name: product.name,
-        sku: "",
+        sku: product.sku || "",
+        brand: product.brand || "",
         price: Number(product.price) || 0,
         original_price: Number(product.price) || 0,
-        stock: Math.max(0, Number(product.stock) || 0),
+        cost_price: Math.max(0, Number(product.cost_price) || 0),
+        stock,
         description: product.description || "",
         category_id: categoryIds.get(product.category_id) ?? null,
-        images: Array.isArray(product.images) ? product.images : []
+        images: Array.isArray(product.images) ? product.images : [],
+        media_type: ["image", "cutout", "spin", "video"].includes(product.media_type) ? product.media_type : "image",
+        spin_frames: Array.isArray(product.spin_frames) ? product.spin_frames : [],
+        video_url: product.video_url || "",
+        video_path: product.video_path || "",
+        taxonomy_category_id: product.taxonomy_category_id || null,
+        taxonomy_category_name: product.taxonomy_category_name || "",
+        taxonomy_custom_category: product.taxonomy_custom_category || null,
+        taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes : [],
+        sizes: Array.isArray(product.sizes) ? product.sizes : [],
+        colors: Array.isArray(product.colors) ? product.colors : [],
+        variants: Array.isArray(product.variants) ? product.variants : []
       });
       if (!saved) throw new Error(`Could not save website product "${product.name}".`);
     }
@@ -18526,12 +19161,6 @@ const AppController = {
     this.cacheActiveTenantCatalog();
     this.installBuilderSqliteBridge();
     await SQLiteEngine.resetBuildYourWebDataOnce();
-    try {
-      await this.ensureBuilderCatalogImported();
-    } catch (error) {
-      console.error("Could not import the HTML storefront catalog into app SQLite.", error);
-      AppUtils.showToast("Storefront products and categories could not be imported into Studio.", "danger");
-    }
 
     // Apply saved store theme settings
     this.applyThemeSettings();
@@ -18591,89 +19220,6 @@ const AppController = {
     }
   },
 
-  async importBuilderCatalogIfEmpty(previewWindow) {
-    if (AppController.getActiveTenant().id !== "main") return false;
-    const importedKey = "ESHOP_BUILDER_HTML_CATALOG_IMPORTED_V1";
-    if (SQLiteEngine.select("products").length || SQLiteEngine.getCategories().length ||
-      window.localStorage.getItem(importedKey) === "1") return false;
-    if (typeof previewWindow.getBuilderSeedCatalog !== "function") {
-      throw new Error("The HTML storefront did not expose its seed catalog.");
-    }
-
-    const catalog = previewWindow.getBuilderSeedCatalog();
-    if (!catalog.products.length || !catalog.categories.length) {
-      throw new Error("The HTML storefront catalog is empty.");
-    }
-    const previous = {
-      products: SQLiteEngine.select("products"),
-      categories: SQLiteEngine.getCategories(),
-      inventory: SQLiteEngine.select("inventory")
-    };
-    try {
-      const categoryIds = new Map();
-      for (const category of catalog.categories) {
-        const existingIds = new Set(SQLiteEngine.getCategories().map(item => item.id));
-        const data = { ...category };
-        delete data.id;
-        SQLiteEngine.saveCategory(data);
-        const savedCategory = SQLiteEngine.getCategories().find(item => !existingIds.has(item.id) && item.name === category.name);
-        if (!savedCategory) throw new Error(`Could not import category "${category.name}".`);
-        categoryIds.set(category.id, savedCategory.id);
-      }
-      for (const product of catalog.products) {
-        const data = { ...product };
-        delete data.id;
-        data.category_id = categoryIds.get(product.category_id) ?? null;
-        SQLiteEngine.saveProduct(data);
-      }
-      await window.ShopSQLite.flush();
-      const savedProducts = SQLiteEngine.select("products");
-      const savedCategories = SQLiteEngine.getCategories();
-      if (savedProducts.length !== catalog.products.length || savedCategories.length !== catalog.categories.length) {
-        throw new Error("SQLite did not persist the complete storefront catalog.");
-      }
-      window.localStorage.setItem(importedKey, "1");
-      return true;
-    } catch (error) {
-      SQLiteEngine.db.tables.products = previous.products;
-      SQLiteEngine.db.tables.categories = previous.categories;
-      SQLiteEngine.db.tables.inventory = previous.inventory;
-      SQLiteEngine.save();
-      await window.ShopSQLite.flush();
-      throw error;
-    }
-  },
-
-  async ensureBuilderCatalogImported() {
-    if (AppController.getActiveTenant().id !== "main") return;
-    const importedKey = "ESHOP_BUILDER_HTML_CATALOG_IMPORTED_V1";
-    if (SQLiteEngine.select("products").length || SQLiteEngine.getCategories().length ||
-      window.localStorage.getItem(importedKey) === "1") return;
-
-    const frame = document.createElement("iframe");
-    frame.title = "Storefront catalog importer";
-    frame.setAttribute("aria-hidden", "true");
-    frame.style.cssText = "position:fixed;width:1px;height:1px;left:-10000px;top:0;border:0;visibility:hidden";
-    const loaded = new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error("Timed out loading the HTML storefront catalog.")), 20000);
-      frame.addEventListener("load", () => {
-        clearTimeout(timeout);
-        resolve(frame.contentWindow);
-      }, { once: true });
-      frame.addEventListener("error", () => {
-        clearTimeout(timeout);
-        reject(new Error("Could not load the HTML storefront catalog."));
-      }, { once: true });
-      frame.src = "/builder-storefront.html?builder=1&catalog-import=1";
-      document.body.appendChild(frame);
-    });
-    try {
-      await this.importBuilderCatalogIfEmpty(await loaded);
-    } finally {
-      frame.remove();
-    }
-  },
-
   applyThemeSettings(appearance = this.getStudioAppearance()) {
     const themeTarget = document.documentElement;
     if (/^#[0-9a-f]{6}$/i.test(appearance.primary_color || "")) {
@@ -18726,7 +19272,7 @@ const AppController = {
     const isAppShell = path === "/" || path === "" || path === "/account" ||
       path.startsWith("/account/") || path === "/app-account" || path === "/pos" ||
       path.startsWith("/pos/") || path === "/store" || path.startsWith("/store/");
-    const isAppScreen = isAppShell || path === "/web" || path === "/categories" ||
+    const isAppScreen = isAppShell || path === "/categories" ||
       path === "/store" || path.startsWith("/store/");
     const isNewLitrusEditor = path === "/account/web/site" &&
       params.get("new") === "1" && params.get("edit") === "1" &&
@@ -18761,9 +19307,6 @@ const AppController = {
 
   navigate(path, openWorkspaceHome = false) {
     /* Hash routing: works from file://, any sub-path, or a hosted page */
-    if (path === "/" && !openWorkspaceHome && this.currentRoute() !== "/" && !this.currentRoute().startsWith("/account")) {
-      path = "/web";
-    }
     if (this.currentRoute() === path) { this.handleRoute(path); window.scrollTo(0, 0); return; }
     window.location.hash = "#" + path;   /* hashchange -> handleRoute */
     window.scrollTo(0, 0);
@@ -18781,11 +19324,6 @@ const AppController = {
     const [path, queryString] = fullPath.split("?");
     document.body.classList.toggle("app-interior-theme", path !== "/");
     const params = new URLSearchParams(queryString || "");
-    if (path === "/account/web/themes/select" &&
-        StudioRenderers.websiteBuilderDraft().categories.length) {
-      this.navigate("/account/web/site?new=1&edit=1&theme=litrus-mixer", true);
-      return;
-    }
     if (path === "/mpesa" || path.startsWith("/mpesa/")) {
       this.navigate("/", true);
       return;
@@ -18818,7 +19356,7 @@ const AppController = {
         }).catch(error => {
           console.error("The new website draft could not be opened.", error);
           AppUtils.showToast(error.message || "The new website draft could not be opened.", "danger");
-          this.navigate("/account/web/themes/select");
+          this.navigate("/account/web/studio/websites/list");
         });
         return;
       }
@@ -18833,8 +19371,6 @@ const AppController = {
     // Route matching
     if (path === "/" || path === "") {
       html = this.renderLaunchpad();
-    } else if (path === "/web") {
-      html = StudioRenderers.renderLiveWeb();
     } else if (path === "/pos" || path.startsWith("/pos/")) {
       html = window.ShopPOS.render(path, params);
     } else if (path === "/categories") {
@@ -18846,7 +19382,7 @@ const AppController = {
         <main class="container" style="padding:80px 16px; text-align:center;">
           <h1 class="section-heading">Page not found</h1>
           <p style="color:var(--text-muted);">This page may have been removed or is not published.</p>
-          <a href="/web" class="btn-primary" data-route="/web" style="display:inline-flex; margin-top:20px;">Return to store</a>
+          <a href="/" class="btn-primary" data-route="/" style="display:inline-flex; margin-top:20px;">Return home</a>
         </main>
         ${StoreRenderers.renderFooter()}
       `;
@@ -18883,17 +19419,13 @@ const AppController = {
       html = StudioRenderers.renderMainShopWorkspace(path);
     } else if (path === "/account/profile" || path.startsWith("/account/profile/")) {
       html = StudioRenderers.renderProfileScreen(path);
-    } else if (path === "/account/web/themes") {
-      html = StudioRenderers.renderWebsiteThemes();
-    } else if (path === "/account/web/themes/select") {
-      html = StudioRenderers.renderWebsiteThemeChoices();
     } else if (path.startsWith("/account/web/themes/")) {
       html = StudioRenderers.renderWebsiteTheme(decodeURIComponent(path.slice("/account/web/themes/".length)));
       if (!html) {
         html = `
           ${StoreRenderers.renderNavbar("/account")}
           <main class="container" style="padding:40px 0;">
-            <a href="/account/web/themes" class="studio-back-link" data-route="/account/web/themes" aria-label="Back to themes">&larr;</a>
+            <a href="/account/web/studio/websites/list" class="studio-back-link" data-route="/account/web/studio/websites/list" aria-label="Back to websites">&larr;</a>
             <h1 class="section-heading" style="margin-top:12px;">Theme not found</h1>
           </main>
           ${StoreRenderers.renderFooter()}
@@ -18903,8 +19435,6 @@ const AppController = {
       html = StudioRenderers.renderWebsiteEditor(params.get("new") === "1");
     } else if (path === "/account/web/store") {
       html = StudioRenderers.renderWebsiteStoreEditor();
-    } else if (path === "/account/store") {
-      html = StudioRenderers.renderStudioStore();
     } else if (path === "/account/products") {
       html = StudioRenderers.renderProductsManager();
     } else if (path === "/account/dashboard") {
@@ -18982,6 +19512,69 @@ const AppController = {
   bindWebsiteBuilderEvents() {
     const editorRouteParams = new URLSearchParams(this.currentRoute().split("?")[1] || "");
     const draftEditor = editorRouteParams.get("new") === "1" && editorRouteParams.get("edit") === "1";
+    const sharedCatalogRefresh = document.getElementById("website-wizard-refresh-catalog");
+    const sharedCatalogStatus = document.getElementById("website-wizard-catalog-status");
+    const sharedCategoryList = document.getElementById("website-wizard-category-list");
+    const sharedProductList = document.getElementById("website-wizard-product-list");
+    const sharedProductSearch = document.getElementById("website-wizard-product-search");
+    const sharedProductCount = document.getElementById("website-wizard-product-count");
+    if (sharedCatalogRefresh && sharedCatalogStatus && sharedCategoryList && sharedProductList &&
+        sharedProductSearch && sharedProductCount) {
+      let products = SQLiteEngine.select("products").filter(product => product.status !== "archived");
+      let categories = SQLiteEngine.getCategories();
+      const renderSharedCatalog = () => {
+        const categoryById = new Map(categories.map(category => [String(category.id), category.name]));
+        sharedCategoryList.innerHTML = categories.map(category =>
+          `<div class="website-wizard-category-row"><span>${AppUtils.escapeHTML(category.name)}</span></div>`
+        ).join("") || `<p class="studio-panel-note">No Store categories yet. Add them in Store or POS.</p>`;
+        const query = sharedProductSearch.value.trim().toLocaleLowerCase();
+        const matches = products.filter(product =>
+          `${product.name || ""} ${product.sku || ""} ${product.category_name || ""}`.toLocaleLowerCase().includes(query));
+        const visible = matches.slice(0, 50);
+        sharedProductCount.textContent = query
+          ? `Showing ${visible.length} of ${matches.length} matches · ${products.length} total`
+          : `Showing ${visible.length} of ${products.length} products`;
+        sharedProductList.innerHTML = visible.map(product => {
+          const image = Array.isArray(product.images)
+            ? product.images.find(value => typeof value === "string" && /^(data:image\/|https?:\/\/|\/)/i.test(value))
+            : "";
+          const category = product.category_name || categoryById.get(String(product.category_id ?? product.categoryId)) || "Uncategorized";
+          return `<article class="website-wizard-product-row">
+            ${image ? `<img class="website-wizard-product-thumb" src="${AppUtils.escapeHTML(image)}" alt="">` : `<span class="website-wizard-product-thumb" aria-hidden="true"></span>`}
+            <span class="website-wizard-product-copy"><strong>${AppUtils.escapeHTML(product.name || "Unnamed product")}</strong><span>${AppUtils.escapeHTML(category)}</span></span>
+            <span>${AppUtils.escapeHTML(String(product.stock ?? 0))} in stock</span>
+            <strong>${AppUtils.formatMoney(product.price ?? 0)}</strong>
+          </article>`;
+        }).join("") || `<p class="studio-panel-note">${query ? "No Store products match your search." : "No Store products yet. Add products in Store or POS to show them here."}</p>`;
+      };
+      sharedProductSearch.oninput = renderSharedCatalog;
+      const refreshSharedCatalog = async () => {
+        sharedCatalogRefresh.disabled = true;
+        sharedCatalogStatus.textContent = "Refreshing the Main Store/POS catalog…";
+        try {
+          const catalog = await this.websiteBuilderSourceCatalog();
+          products = catalog.products;
+          categories = catalog.categories;
+          const draft = StudioRenderers.websiteBuilderDraft();
+          draft.products = products;
+          draft.categories = categories;
+          StudioRenderers.saveWebsiteBuilderDraft(draft);
+          window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
+          renderSharedCatalog();
+          sharedCatalogStatus.textContent = `Showing ${products.length} products and ${categories.length} categories${catalog.posConnected ? ` from Main Store/POS${catalog.posProductCount ? `, including ${catalog.posProductCount} POS-only products` : ""}` : " from Main Store; POS is unavailable on this device"}. Edit the catalog in Store or POS.`;
+        } catch (error) {
+          console.error("The shared Store/POS catalog could not be loaded in Webmaker.", error);
+          sharedCatalogStatus.textContent = error instanceof Error ? error.message : "The shared catalog could not be loaded.";
+          AppUtils.showToast(sharedCatalogStatus.textContent, "danger");
+        } finally {
+          sharedCatalogRefresh.disabled = false;
+        }
+      };
+      sharedCatalogRefresh.onclick = () => { void refreshSharedCatalog(); };
+      renderSharedCatalog();
+      void refreshSharedCatalog();
+    }
+
     const categoryForm = document.getElementById("website-wizard-category-form");
     if (categoryForm) categoryForm.onsubmit = event => {
       event.preventDefault();
@@ -19025,32 +19618,416 @@ const AppController = {
     };
 
     const productList = document.getElementById("website-wizard-product-list");
-    if (productList) productList.onclick = event => {
-      const editButton = event.target.closest("[data-edit-wizard-product]");
-      const productForm = document.getElementById("website-wizard-product-form");
-      if (editButton && productForm) {
-        const product = StudioRenderers.websiteBuilderDraft().products.find(item =>
-          String(item.id) === editButton.dataset.editWizardProduct);
-        if (!product) return;
-        productForm.elements.id.value = String(product.id);
-        productForm.elements.name.value = product.name;
-        productForm.elements.price.value = String(product.price ?? "");
-        productForm.elements.category_id.value = String(product.category_id ?? "");
-        productForm.querySelector('button[type="submit"]').textContent = "Save product";
-        document.getElementById("website-wizard-cancel-product-edit").hidden = false;
-        productForm.scrollIntoView({ behavior: "smooth", block: "center" });
-        productForm.elements.name.focus();
-        return;
-      }
-      const button = event.target.closest("[data-remove-wizard-product]");
-      if (!button) return;
-      const draft = StudioRenderers.websiteBuilderDraft();
-      draft.products = draft.products.filter(product =>
-        String(product.id) !== button.dataset.removeWizardProduct);
-      window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
-      StudioRenderers.saveWebsiteBuilderDraft(draft);
-      this.handleRoute(this.currentRoute());
+    const productSearch = document.getElementById("website-wizard-product-search");
+    const productCount = document.getElementById("website-wizard-product-count");
+    const productForm = document.getElementById("website-wizard-product-form");
+    const cancelProductEdit = document.getElementById("website-wizard-cancel-product-edit");
+    const createProductButton = document.getElementById("website-wizard-create-product");
+    if (createProductButton && productForm) createProductButton.onclick = () => {
+      productForm.hidden = !productForm.hidden;
+      if (!productForm.hidden) productForm.querySelector('[name="name"]')?.focus();
     };
+    if (productList && productSearch && productCount && productForm) {
+      let editingProduct = null;
+      const media = {
+        mode: "image",
+        imageFiles: [],
+        videoBlob: null,
+        videoPath: "",
+        spinFrames: [],
+        cutoutImages: []
+      };
+      const mediaStatus = productForm.querySelector("[data-wizard-media-status]");
+      const mediaPreview = productForm.querySelector("[data-wizard-media-preview]");
+      const imageInput = productForm.querySelector("[data-wizard-product-images]");
+      const videoInput = productForm.querySelector("[data-wizard-video-file]");
+      const nativeMedia = window.EshopNativeMedia;
+      const isAndroidApp = nativeMedia?.Capacitor?.getPlatform?.() === "android";
+      let previewUrls = [];
+
+      const setMediaStatus = message => {
+        if (mediaStatus) mediaStatus.textContent = message;
+      };
+      const clearMediaPreview = () => {
+        previewUrls.forEach(url => URL.revokeObjectURL(url));
+        previewUrls = [];
+        mediaPreview?.replaceChildren();
+        if (mediaPreview) mediaPreview.hidden = true;
+      };
+      const showMediaPreview = (files, video = false) => {
+        clearMediaPreview();
+        if (!mediaPreview || !files.length) return;
+        files.slice(0, video ? 1 : 8).forEach(file => {
+          const url = URL.createObjectURL(file);
+          previewUrls.push(url);
+          if (video) {
+            const element = document.createElement("video");
+            element.src = url;
+            element.controls = true;
+            element.playsInline = true;
+            mediaPreview.append(element);
+          } else {
+            const element = document.createElement("img");
+            element.src = url;
+            element.alt = "Selected product photo";
+            mediaPreview.append(element);
+          }
+        });
+        mediaPreview.hidden = false;
+      };
+      const setMediaMode = (mode, reset = false) => {
+        if (reset) {
+          media.imageFiles = [];
+          media.videoBlob = null;
+          media.videoPath = "";
+          media.spinFrames = [];
+          media.cutoutImages = [];
+          if (imageInput) imageInput.value = "";
+          if (videoInput) videoInput.value = "";
+          clearMediaPreview();
+        }
+        media.mode = mode;
+        productForm.querySelectorAll("[data-wizard-media-mode]").forEach(button => {
+          button.setAttribute("aria-pressed", String(button.dataset.wizardMediaMode === mode));
+        });
+        const photoLabel = productForm.querySelector("[data-wizard-photo-label]");
+        const videoOptions = productForm.querySelector("[data-wizard-video-options]");
+        if (photoLabel) photoLabel.hidden = mode !== "image";
+        if (videoOptions) videoOptions.hidden = mode !== "video" && mode !== "spin";
+        setMediaStatus(mode === "spin"
+          ? isAndroidApp ? "Choose or record a product video. Craft will generate 24 rotatable frames on this Android device." : "360° processing requires the Android Craft app and Google Play services."
+          : mode === "cutout"
+            ? isAndroidApp ? "Choose product photos for on-device background removal." : "Cutout requires the Android Craft app and Google Play services."
+            : mode === "video"
+              ? "Choose or record a product video. MP4, WebM, and QuickTime are supported."
+              : "Add up to 8 photos. Images are compressed before saving.");
+      };
+      const bindProductFields = product => {
+        const taxonomyHost = productForm.querySelector("[data-wizard-product-taxonomy]");
+        const variantsHost = productForm.querySelector("[data-wizard-product-variants]");
+        if (!taxonomyHost || !variantsHost) throw new Error("The new-website product form is missing product details.");
+        taxonomyHost.innerHTML = window.EshopProductTaxonomy.createProductTaxonomyFields({
+          categoryId: product?.taxonomy_category_id || product?.taxonomyCategoryId || "",
+          categoryName: product?.taxonomy_category_name || product?.taxonomyCategoryName || "",
+          customCategory: product?.taxonomy_custom_category || product?.taxonomyCustomCategory || "",
+          attributes: product?.taxonomy_attributes || product?.taxonomyAttributes || []
+        });
+        window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyHost);
+        variantsHost.innerHTML = window.EshopProductVariants.createProductVariantFields({
+          option1Name: product?.option1_name || "",
+          option2Name: product?.option2_name || "",
+          sizes: product?.sizes || [],
+          colors: product?.colors || [],
+          variants: product?.variants || []
+        });
+        window.EshopProductVariants.bindProductVariantFields(variantsHost);
+      };
+      const renderDraftProducts = () => {
+        const allProducts = StudioRenderers.websiteBuilderDraft().products;
+        const query = productSearch.value.trim().toLocaleLowerCase();
+        const matches = allProducts.filter(product =>
+          `${product.name || ""} ${product.sku || ""} ${product.category_name || ""}`.toLocaleLowerCase().includes(query));
+        const visible = matches.slice(0, 50);
+        productCount.textContent = query
+          ? `Showing ${visible.length} of ${matches.length} matches · ${allProducts.length} total`
+          : `Showing ${visible.length} of ${allProducts.length} products`;
+        productList.innerHTML = visible.map(product => {
+          const image = Array.isArray(product.images)
+            ? product.images.find(value => typeof value === "string" && /^(data:image\/|https?:\/\/|\/)/i.test(value))
+            : "";
+          return `<article class="website-wizard-product-row">
+            ${image ? `<img class="website-wizard-product-thumb" src="${AppUtils.escapeHTML(image)}" alt="">` : `<span class="website-wizard-product-thumb" aria-hidden="true"></span>`}
+            <span class="website-wizard-product-copy"><strong>${AppUtils.escapeHTML(product.name || "Unnamed product")}</strong><span>${AppUtils.escapeHTML(product.category_name || "Uncategorized")}</span></span>
+            <strong>Sell ${AppUtils.escapeHTML(String(product.price ?? 0))}</strong>
+            <span class="website-wizard-product-actions"><button class="btn-secondary website-wizard-compact-action" type="button" data-edit-wizard-product="${AppUtils.escapeHTML(String(product.id))}">Edit</button><button class="btn-secondary website-wizard-compact-action" type="button" data-remove-wizard-product="${AppUtils.escapeHTML(String(product.id))}" aria-label="Remove ${AppUtils.escapeHTML(product.name || "product")} from this website">Remove</button></span>
+          </article>`;
+        }).join("") || `<p class="studio-panel-note">${query ? "No products match your search." : "No products yet. Add from Store or create one below."}</p>`;
+      };
+      const selectNativeVideo = async record => {
+        if (!isAndroidApp || !nativeMedia?.Camera) return null;
+        const selected = record
+          ? await nativeMedia.Camera.recordVideo({ isPersistent: true, includeMetadata: true })
+          : (await nativeMedia.Camera.chooseFromGallery({
+            mediaType: nativeMedia.MediaTypeSelection.Video,
+            includeMetadata: true
+          })).results?.[0];
+        return selected || null;
+      };
+      const loadSelectedVideo = async (record = false) => {
+        if (!isAndroidApp) {
+          videoInput?.click();
+          return;
+        }
+        try {
+          setMediaStatus(record ? "Opening video camera…" : "Opening video gallery…");
+          const selected = await selectNativeVideo(record);
+          if (!selected?.uri) {
+            setMediaStatus("No video was selected.");
+            return;
+          }
+          const url = selected.webPath || nativeMedia.Capacitor.convertFileSrc(selected.uri);
+          const response = await fetch(url);
+          if (!response.ok) throw new Error("The selected video could not be opened.");
+          media.videoBlob = await response.blob();
+          media.videoPath = await AppUtils.storeLocalProductVideo(media.videoBlob);
+          showMediaPreview([media.videoBlob], true);
+          setMediaStatus("Video selected and saved locally.");
+        } catch (error) {
+          console.error("New-website product video could not be selected.", error);
+          setMediaStatus(error instanceof Error ? error.message : "The product video could not be selected.");
+        }
+      };
+      const processSpinVideo = async record => {
+        if (!isAndroidApp || !nativeMedia?.ProductCutout || !nativeMedia?.Camera) {
+          setMediaStatus("360° processing requires the Android Craft app and Google Play services.");
+          return;
+        }
+        try {
+          setMediaStatus(record ? "Opening video camera…" : "Opening video gallery…");
+          const selected = await selectNativeVideo(record);
+          if (!selected?.uri) {
+            setMediaStatus("No video was selected.");
+            return;
+          }
+          setMediaStatus("Generating 24 product spin frames…");
+          const result = await nativeMedia.ProductCutout.processVideo({
+            path: selected.uri,
+            count: 24,
+            width: 720
+          });
+          media.spinFrames = (result.frames || []).map(path =>
+            String(path).startsWith(LOCAL_PRODUCT_MEDIA_PREFIX) ? String(path) : `${LOCAL_PRODUCT_MEDIA_PREFIX}${path}`);
+          if (!media.spinFrames.length) throw new Error("No 360° frames were generated. Try a clearer product video.");
+          clearMediaPreview();
+          const image = document.createElement("img");
+          image.src = nativeMedia.Capacitor.convertFileSrc(result.frames[0]);
+          image.alt = "Generated 360-degree product preview";
+          mediaPreview?.append(image);
+          if (mediaPreview) mediaPreview.hidden = false;
+          setMediaStatus(`${media.spinFrames.length} rotatable product frames are ready.`);
+        } catch (error) {
+          console.error("New-website 360 product media could not be processed.", error);
+          setMediaStatus(error instanceof Error ? error.message : "360° product media could not be processed.");
+        }
+      };
+      const processCutoutPhotos = async () => {
+        if (!isAndroidApp || !nativeMedia?.ProductCutout || !nativeMedia?.Camera) {
+          setMediaStatus("Cutout requires the Android Craft app and Google Play services.");
+          return;
+        }
+        try {
+          setMediaStatus("Choose up to 8 product photos…");
+          const result = await nativeMedia.Camera.chooseFromGallery({
+            mediaType: nativeMedia.MediaTypeSelection.Photo,
+            allowMultipleSelection: true,
+            limit: 8,
+            quality: 100
+          });
+          const paths = (result.results || []).map(item => item.uri).filter(Boolean).slice(0, 8);
+          if (!paths.length) {
+            setMediaStatus("No product photos were selected.");
+            return;
+          }
+          setMediaStatus("Removing photo backgrounds…");
+          const processed = await nativeMedia.ProductCutout.cutoutImages({ paths, width: 1200 });
+          media.cutoutImages = (processed.images || []).map(path =>
+            String(path).startsWith(LOCAL_PRODUCT_MEDIA_PREFIX) ? String(path) : `${LOCAL_PRODUCT_MEDIA_PREFIX}${path}`);
+          if (!media.cutoutImages.length) throw new Error("No cutout photos were created.");
+          clearMediaPreview();
+          media.cutoutImages.forEach(path => {
+            const image = document.createElement("img");
+            image.src = nativeMedia.Capacitor.convertFileSrc(path.slice(LOCAL_PRODUCT_MEDIA_PREFIX.length));
+            image.alt = "Product photo with background removed";
+            mediaPreview?.append(image);
+          });
+          if (mediaPreview) mediaPreview.hidden = false;
+          setMediaStatus(`${media.cutoutImages.length} cutout photos are ready.`);
+        } catch (error) {
+          console.error("New-website product cutout could not be processed.", error);
+          setMediaStatus(error instanceof Error ? error.message : "Product photo background removal failed.");
+        }
+      };
+      const resetProductForm = () => {
+        editingProduct = null;
+        productForm.reset();
+        productForm.elements.id.value = "";
+        productForm.querySelector('button[type="submit"]').textContent = "Add product";
+        if (cancelProductEdit) cancelProductEdit.hidden = true;
+        bindProductFields(null);
+        setMediaMode("image", true);
+      };
+
+      bindProductFields(null);
+      setMediaMode("image");
+      productSearch.oninput = renderDraftProducts;
+      renderDraftProducts();
+      productList.onclick = event => {
+        const editButton = event.target.closest("[data-edit-wizard-product]");
+        if (editButton) {
+          editingProduct = StudioRenderers.websiteBuilderDraft().products.find(item =>
+            String(item.id) === editButton.dataset.editWizardProduct);
+          if (!editingProduct) return;
+          productForm.elements.id.value = String(editingProduct.id);
+          productForm.elements.name.value = editingProduct.name || "";
+          productForm.elements.price.value = String(editingProduct.price ?? "");
+          productForm.elements.cost_price.value = String(editingProduct.cost_price ?? "");
+          productForm.elements.stock.value = String(editingProduct.stock ?? 0);
+          productForm.elements.sku.value = editingProduct.sku || "";
+          productForm.elements.description.value = editingProduct.description || "";
+          productForm.elements.category_id.value = String(editingProduct.category_id ?? "");
+          productForm.querySelector('button[type="submit"]').textContent = "Save product";
+          if (cancelProductEdit) cancelProductEdit.hidden = false;
+          bindProductFields(editingProduct);
+          setMediaMode(editingProduct.media_type === "spin" ? "spin"
+            : editingProduct.media_type === "video" ? "video"
+              : editingProduct.media_type === "cutout" ? "cutout" : "image");
+          media.videoPath = editingProduct.video_path || "";
+          media.spinFrames = Array.isArray(editingProduct.spin_frames) ? editingProduct.spin_frames.slice() : [];
+          media.cutoutImages = editingProduct.media_type === "cutout" && Array.isArray(editingProduct.images)
+            ? editingProduct.images.slice()
+            : [];
+          productForm.scrollIntoView({ behavior: "smooth", block: "center" });
+          productForm.elements.name.focus();
+          return;
+        }
+        const button = event.target.closest("[data-remove-wizard-product]");
+        if (!button) return;
+        const draft = StudioRenderers.websiteBuilderDraft();
+        draft.products = draft.products.filter(product =>
+          String(product.id) !== button.dataset.removeWizardProduct);
+        window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
+        StudioRenderers.saveWebsiteBuilderDraft(draft);
+        this.handleRoute(this.currentRoute());
+      };
+      productForm.querySelectorAll("[data-wizard-media-mode]").forEach(button => {
+        button.addEventListener("click", () => {
+          const mode = button.dataset.wizardMediaMode;
+          setMediaMode(mode, mode !== media.mode);
+          if (mode === "cutout") void processCutoutPhotos();
+        });
+      });
+      imageInput?.addEventListener("change", () => {
+        media.imageFiles = Array.from(imageInput.files || []);
+        if (media.imageFiles.length > 8) {
+          media.imageFiles = [];
+          imageInput.value = "";
+          clearMediaPreview();
+          setMediaStatus("Choose up to 8 product photos.");
+          return;
+        }
+        showMediaPreview(media.imageFiles);
+        setMediaStatus(`${media.imageFiles.length} photo${media.imageFiles.length === 1 ? "" : "s"} selected.`);
+      });
+      videoInput?.addEventListener("change", () => {
+        media.videoBlob = videoInput.files?.[0] || null;
+        media.videoPath = "";
+        if (media.videoBlob) {
+          showMediaPreview([media.videoBlob], true);
+          setMediaStatus(`${media.videoBlob.name} selected. It will be saved locally with this draft.`);
+        }
+      });
+      productForm.querySelector("[data-wizard-video-pick]")?.addEventListener("click", () => {
+        if (media.mode === "spin") void processSpinVideo(false);
+        else void loadSelectedVideo(false);
+      });
+      productForm.querySelector("[data-wizard-video-record]")?.addEventListener("click", () => {
+        if (media.mode === "spin") void processSpinVideo(true);
+        else void loadSelectedVideo(true);
+      });
+      productForm.onsubmit = async event => {
+        event.preventDefault();
+        const submit = productForm.querySelector('button[type="submit"]');
+        const draft = StudioRenderers.websiteBuilderDraft();
+        const category = draft.categories.find(item => String(item.id) === String(productForm.elements.category_id.value));
+        const name = productForm.elements.name.value.trim();
+        const price = Number(productForm.elements.price.value);
+        const costText = productForm.elements.cost_price.value.trim();
+        const costPrice = costText ? Number(costText) : null;
+        const stock = Number(productForm.elements.stock.value);
+        if (!category) {
+          AppUtils.showToast("Add or choose a category for this product.", "danger");
+          return;
+        }
+        if (!name || !Number.isFinite(price) || price < 0 ||
+            (costPrice !== null && (!Number.isFinite(costPrice) || costPrice < 0)) ||
+            !Number.isSafeInteger(stock) || stock < 0) {
+          AppUtils.showToast("Enter a product name, valid selling and cost prices, and whole-number stock.", "danger");
+          return;
+        }
+        if (media.mode === "video" && !media.videoPath && !media.videoBlob && !editingProduct?.video_path) {
+          AppUtils.showToast("Choose a product video before saving.", "danger");
+          return;
+        }
+        if (media.mode === "spin" && !media.spinFrames.length && !editingProduct?.spin_frames?.length) {
+          AppUtils.showToast("Generate 360° frames before saving this product.", "danger");
+          return;
+        }
+        if (media.mode === "cutout" && !media.cutoutImages.length &&
+            !(editingProduct?.media_type === "cutout" && editingProduct.images?.length)) {
+          AppUtils.showToast("Choose photos and remove their backgrounds before saving.", "danger");
+          return;
+        }
+        if (submit) submit.disabled = true;
+        try {
+          const taxonomy = window.EshopProductTaxonomy.readProductTaxonomyFields(productForm);
+          const variants = window.EshopProductVariants.readProductVariantFields(productForm);
+          const imageFiles = media.mode === "image" ? media.imageFiles : [];
+          if (imageFiles.length > 8 || imageFiles.some(file => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
+            throw new Error("Choose up to 8 product photos, each smaller than 5 MB.");
+          }
+          const images = media.mode === "image"
+            ? imageFiles.length
+              ? await Promise.all(imageFiles.map(file => AppUtils.compressImageFile(file, { maxDimension: 1200, maxBytes: 250_000 })))
+              : Array.isArray(editingProduct?.images) ? editingProduct.images.slice(0, 8) : []
+            : media.mode === "spin"
+              ? media.spinFrames.length ? [media.spinFrames[0]] : editingProduct.images.slice(0, 8)
+              : media.mode === "cutout"
+                ? media.cutoutImages.length ? media.cutoutImages.slice(0, 8) : editingProduct.images.slice(0, 8)
+                : Array.isArray(editingProduct?.images) ? editingProduct.images.slice(0, 8) : [];
+          const videoPath = media.mode === "video"
+            ? media.videoPath || (media.videoBlob ? await AppUtils.storeLocalProductVideo(media.videoBlob) : editingProduct?.video_path || "")
+            : "";
+          const spinFrames = media.mode === "spin" ? media.spinFrames.slice() : [];
+          const values = {
+            name,
+            sku: productForm.elements.sku.value.trim(),
+            price,
+            cost_price: costPrice ?? 0,
+            category_id: category.id,
+            category_name: category.name,
+            description: productForm.elements.description.value.trim(),
+            images,
+            media_type: media.mode === "image" ? "image" : media.mode === "spin" ? "spin" : media.mode,
+            spin_frames: spinFrames,
+            video_url: "",
+            video_path: videoPath,
+            taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
+            taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
+            taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
+            taxonomy_attributes: taxonomy.taxonomyAttributes,
+            ...variants,
+            stock: variants.stock ?? stock
+          };
+          if (editingProduct) {
+            const target = draft.products.find(product => String(product.id) === String(editingProduct.id));
+            if (!target) throw new Error("That product is no longer in this website draft.");
+            Object.assign(target, values);
+          } else {
+            draft.products.push({ id: Date.now() + draft.products.length, ...values });
+          }
+          StudioRenderers.saveWebsiteBuilderDraft(draft);
+          this.handleRoute(this.currentRoute());
+        } catch (error) {
+          console.error("New-website product could not be saved.", error);
+          setMediaStatus(error instanceof Error ? error.message : "Product could not be saved.");
+          AppUtils.showToast(error instanceof Error ? error.message : "Product could not be saved.", "danger");
+        } finally {
+          if (submit) submit.disabled = false;
+        }
+      };
+      if (cancelProductEdit) cancelProductEdit.onclick = resetProductForm;
+    }
+
     const clearProducts = document.getElementById("website-wizard-clear-products");
     if (clearProducts) clearProducts.onclick = () => {
       const draft = StudioRenderers.websiteBuilderDraft();
@@ -19058,50 +20035,6 @@ const AppController = {
       window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
       StudioRenderers.saveWebsiteBuilderDraft(draft);
       this.handleRoute(this.currentRoute());
-    };
-
-    const productForm = document.getElementById("website-wizard-product-form");
-    if (productForm) productForm.onsubmit = event => {
-      event.preventDefault();
-      const formData = new FormData(productForm);
-      const draft = StudioRenderers.websiteBuilderDraft();
-      const category = draft.categories.find(item => String(item.id) === String(formData.get("category_id")));
-      if (!category) {
-        AppUtils.showToast("Add or choose a category for this product.", "danger");
-        return;
-      }
-      const productId = String(formData.get("id") || "");
-      const values = {
-        name: String(formData.get("name") || "").trim(),
-        price: Number(formData.get("price")),
-        category_id: category.id,
-        category_name: category.name
-      };
-      if (productId) {
-        const product = draft.products.find(item => String(item.id) === productId);
-        if (!product) {
-          AppUtils.showToast("That product is no longer in this website draft.", "danger");
-          return;
-        }
-        Object.assign(product, values);
-      } else {
-        draft.products.push({
-          id: Date.now() + draft.products.length,
-          ...values,
-          stock: 0,
-          description: "",
-          images: []
-        });
-      }
-      StudioRenderers.saveWebsiteBuilderDraft(draft);
-      this.handleRoute(this.currentRoute());
-    };
-    const cancelProductEdit = document.getElementById("website-wizard-cancel-product-edit");
-    if (cancelProductEdit && productForm) cancelProductEdit.onclick = () => {
-      productForm.reset();
-      productForm.elements.id.value = "";
-      productForm.querySelector('button[type="submit"]').textContent = "Add product";
-      cancelProductEdit.hidden = true;
     };
 
     const loadStore = document.getElementById("website-wizard-load-store");
@@ -19140,19 +20073,20 @@ const AppController = {
         const renderStoreProducts = () => {
           const query = searchInput.value.trim().toLocaleLowerCase();
           const selectedCategory = categoryFilter.value;
-          const visibleProducts = products.map((product, index) => ({ product, index, category: categoryName(product) }))
+          const matchingProducts = products.map((product, index) => ({ product, index, category: categoryName(product) }))
             .filter(({ product, category }) => {
               const categoryMatches = selectedCategory === "all" ||
                 (selectedCategory === "general" ? !category : category.toLocaleLowerCase() === selectedCategory);
-              return categoryMatches && (!query || `${product.name} ${product.description || ""} ${category}`.toLocaleLowerCase().includes(query));
+              return categoryMatches && (!query || `${product.name} ${product.sku || ""} ${product.description || ""} ${category}`.toLocaleLowerCase().includes(query));
             });
-          list.innerHTML = visibleProducts.map(({ product, index, category }) => `<label class="studio-list-row" style="display:flex;align-items:center;gap:12px;min-height:64px;padding:10px 4px;">
+          const visibleProducts = matchingProducts.slice(0, 50);
+          list.innerHTML = visibleProducts.map(({ product, index, category }) => `<label class="studio-list-row" style="display:flex;align-items:center;gap:9px;min-height:52px;padding:6px 4px;">
             <input type="checkbox" data-wizard-store-product="${index}" ${selectedProductIds.has(index) ? "checked" : ""}>
-            ${product.imageUri ? `<img src="${AppUtils.escapeHTML(product.imageUri)}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:8px;">` : ""}
+            ${product.imageUri ? `<img src="${AppUtils.escapeHTML(product.imageUri)}" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:7px;">` : ""}
             <span style="flex:1;min-width:0;"><strong>${AppUtils.escapeHTML(product.name || "Unnamed product")}</strong><span>${AppUtils.escapeHTML(category || "General")} · ${AppUtils.escapeHTML(String(product.stock ?? 0))} in stock</span></span>
             <strong>${AppUtils.escapeHTML(String(product.price ?? ""))}</strong>
           </label>`).join("") || `<p class="studio-panel-note">No products match this filter.</p>`;
-          status.textContent = `${visibleProducts.length} of ${products.length} Store products shown · ${selectedProductIds.size} selected`;
+          status.textContent = `${visibleProducts.length < matchingProducts.length ? `Showing ${visibleProducts.length} of ${matchingProducts.length} matches` : `${matchingProducts.length} matches`} · ${products.length} Store products · ${selectedProductIds.size} selected`;
           importButton.disabled = selectedProductIds.size === 0;
           selectAll.checked = visibleProducts.length > 0 && visibleProducts.every(({ index }) => selectedProductIds.has(index));
           selectAll.indeterminate = !selectAll.checked && visibleProducts.some(({ index }) => selectedProductIds.has(index));
@@ -19170,16 +20104,17 @@ const AppController = {
         selectAll.onchange = () => {
           const query = searchInput.value.trim().toLocaleLowerCase();
           const selectedCategory = categoryFilter.value;
-          products.forEach((product, index) => {
-            const category = categoryName(product);
-            const categoryMatches = selectedCategory === "all" ||
-              (selectedCategory === "general" ? !category : category.toLocaleLowerCase() === selectedCategory);
-            const queryMatches = !query || `${product.name} ${product.description || ""} ${category}`.toLocaleLowerCase().includes(query);
-            if (categoryMatches && queryMatches) {
+          products.map((product, index) => ({ product, index, category: categoryName(product) }))
+            .filter(({ product, category }) => {
+              const categoryMatches = selectedCategory === "all" ||
+                (selectedCategory === "general" ? !category : category.toLocaleLowerCase() === selectedCategory);
+              return categoryMatches && (!query || `${product.name} ${product.sku || ""} ${product.description || ""} ${category}`.toLocaleLowerCase().includes(query));
+            })
+            .slice(0, 50)
+            .forEach(({ index }) => {
               if (selectAll.checked) selectedProductIds.add(index);
               else selectedProductIds.delete(index);
-            }
-          });
+            });
           renderStoreProducts();
         };
         importButton.onclick = () => {
@@ -19199,10 +20134,24 @@ const AppController = {
               id: Date.now() + draft.products.length,
               source_product_id: product.id,
               name: String(product.name || "Unnamed product"),
+              sku: String(product.sku || ""),
+              brand: String(product.brand || ""),
               price: Number(product.price ?? product.selling_price) || 0,
+              cost_price: Number(product.cost_price ?? product.costPrice) || 0,
               stock: Math.max(0, Number(product.stock) || 0),
               description: String(product.description || ""),
-              images: product.imageUri ? [product.imageUri] : [],
+              images: Array.isArray(product.images) ? product.images.slice(0, 8) : product.imageUri ? [product.imageUri] : [],
+              media_type: ["image", "cutout", "spin", "video"].includes(product.media_type) ? product.media_type : "image",
+              spin_frames: Array.isArray(product.spin_frames) ? product.spin_frames.slice() : [],
+              video_path: String(product.video_path || ""),
+              video_url: String(product.video_url || ""),
+              taxonomy_category_id: product.taxonomy_category_id || null,
+              taxonomy_category_name: String(product.taxonomy_category_name || ""),
+              taxonomy_custom_category: product.taxonomy_custom_category || null,
+              taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes : [],
+              sizes: Array.isArray(product.sizes) ? product.sizes : [],
+              colors: Array.isArray(product.colors) ? product.colors : [],
+              variants: Array.isArray(product.variants) ? product.variants : [],
               category_id: category.id,
               category_name: category.name
             });
@@ -19229,97 +20178,20 @@ const AppController = {
     if (path === "/") {
       void this.loadHomeDashboard();
     }
-    if (path === "/account/web/site") {
-      const frame = document.getElementById("builder-theme-studio");
-      const saveButton = document.getElementById("builder-theme-studio-save");
-      const publishButton = document.getElementById("builder-theme-studio-publish");
-      const status = document.getElementById("builder-theme-studio-status");
-      if (frame && saveButton && status) {
-        const themeId = params.get("theme") ||
-          SQLiteEngine.getStore().website_theme_id || "elora-linen";
-        let publishAfterSave = false;
-        const requestDesignSave = publish => {
-          publishAfterSave = publish;
-          status.textContent = publish
-            ? "Capturing the current design before publishing…"
-            : "Capturing the current design…";
-          frame.contentWindow?.postMessage({ type: "eshop-theme-studio-export-request" }, window.location.origin);
-        };
-        saveButton.onclick = () => requestDesignSave(false);
-        if (publishButton) publishButton.onclick = () => requestDesignSave(true);
-        if (this.themeStudioMessageHandler) {
-          window.removeEventListener("message", this.themeStudioMessageHandler);
-        }
-        this.themeStudioMessageHandler = async event => {
-          if (event.origin !== window.location.origin || event.source !== frame.contentWindow) return;
-          if (event.data?.type === "eshop-theme-studio-catalog-request") {
-            try {
-              const productFields = [
-                "id", "name", "description", "price", "selling_price", "comparePrice", "compare_at_price",
-                "category_id", "categoryId", "category_name", "categoryName", "brand", "sku", "images", "image",
-                "image_uri", "imageUrl", "sizes", "colors", "stock", "stock_count", "material", "rating",
-                "reviews_count", "reviewCount", "featured", "is_featured", "bestseller", "is_bestseller",
-                "published", "status"
-              ];
-              const products = SQLiteEngine.select("products", product => product.status !== "archived")
-                .map(product => Object.fromEntries(productFields
-                  .filter(field => product[field] !== undefined)
-                  .map(field => [field, product[field]])));
-              const currentStore = SQLiteEngine.getStore();
-              frame.contentWindow?.postMessage({
-                type: "eshop-theme-studio-catalog",
-                catalog: {
-                  store: {
-                    name: currentStore.name,
-                    currency: currentStore.currency,
-                    phone: currentStore.phone,
-                    email: currentStore.email,
-                    address: currentStore.address,
-                    location_address: currentStore.location_address
-                  },
-                  categories: SQLiteEngine.getCategories().map(({ id, name, slug }) => ({ id, name, slug })),
-                  products
-                }
-              }, window.location.origin);
-            } catch (error) {
-              frame.contentWindow?.postMessage({
-                type: "eshop-theme-studio-catalog",
-                error: String(error?.message || "Could not read the shop catalog.")
-              }, window.location.origin);
-            }
-            return;
+    if (path === "/account/web/studio/websites/webmaker") {
+      this.bindWebsiteBuilderEvents();
+      if (!StudioRenderers.websiteBuilderDraft().categories.length) {
+        this.websiteBuilderSourceCatalog().then(catalog => {
+          const draft = StudioRenderers.websiteBuilderDraft();
+          if (!draft.categories.length && catalog.categories.length) {
+            draft.categories = catalog.categories;
+            StudioRenderers.saveWebsiteBuilderDraft(draft);
+            if (this.currentRoute().split("?")[0] === path) this.handleRoute(this.currentRoute());
           }
-          if (event.data?.type === "eshop-theme-studio-design-error") {
-            publishAfterSave = false;
-            status.textContent = `Could not save this design: ${String(event.data.message || "Studio export failed.")}`;
-            return;
-          }
-          if (event.data?.type !== "eshop-theme-studio-design") return;
-          if (typeof event.data.html !== "string" ||
-              !/^<!doctype\s+html>/i.test(event.data.html) ||
-              event.data.html.length > 3_000_000) {
-            publishAfterSave = false;
-            status.textContent = "The current Studio design could not be saved.";
-            return;
-          }
-          const shouldPublish = publishAfterSave;
-          publishAfterSave = false;
-          try {
-            StudioRenderers.setWorkspaceSetting(`liquid-html-theme-draft:${themeId}`, event.data.html);
-            if (!window.ShopSQLite) throw new Error("The app database is not ready.");
-            await window.ShopSQLite.flush();
-            if (shouldPublish) {
-              status.textContent = "Design saved. Publishing to Cloudflare…";
-              this.openCloudflarePublishModal(true);
-            } else {
-              status.textContent = "Design saved for this website. Publish to apply it live.";
-            }
-          } catch (error) {
-            console.error("Theme Studio design could not be saved.", error);
-            status.textContent = "Could not save this design on the device.";
-          }
-        };
-        window.addEventListener("message", this.themeStudioMessageHandler);
+        }).catch(error => {
+          console.error("New-website categories could not be loaded from Store.", error);
+          AppUtils.showToast(error instanceof Error ? error.message : "Store categories could not be loaded.", "danger");
+        });
       }
     }
     if (path === "/account/web/site") {
@@ -19331,6 +20203,7 @@ const AppController = {
         const litrusRecipeKey = `litrus-mixer-recipe:${litrusScope}`;
         const litrusDesignKey = `liquid-html-theme-draft:litrus-mixer:${litrusScope}`;
         const savedLitrusRecipe = StudioRenderers.getWorkspaceSetting(litrusRecipeKey, null);
+        const savedLitrusHtml = isDraftEditor ? "" : StudioRenderers.getWorkspaceSetting(litrusDesignKey, "");
         let litrusSaveQueue = Promise.resolve();
         const validLitrusHtml = html => typeof html === "string" && html.length <= 3_000_000 &&
           /^<!doctype\s+html>/i.test(html) &&
@@ -19381,6 +20254,7 @@ const AppController = {
               type: "craft-litrus-catalog",
               recipe: savedLitrusRecipe,
               catalog: {
+                existing_html: validLitrusHtml(savedLitrusHtml) ? savedLitrusHtml : "",
                 shop: {
                   name: draft?.shop_name || (isDraftEditor ? "" : store.name),
                   is_new_shop_draft: isDraftEditor,
@@ -19552,21 +20426,20 @@ const AppController = {
         this.litrusMixerMessageHandler = null;
       }
     }
-    if (path === "/account/web/themes" || path === "/account/web/themes/select" ||
-        path === "/account/web/studio/websites/webmaker" || path === "/account/web/site") {
+    if (path === "/account/web/site") {
       this.bindWebsiteBuilderEvents();
     }
-    if (path === "/account/web/themes/select" || path.startsWith("/account/web/themes/") ||
+    if (path.startsWith("/account/web/themes/") ||
         (path === "/account/web/site" && params.get("new") === "1")) {
       const draft = StudioRenderers.websiteBuilderDraft();
       if (!draft.categories.length) {
         AppUtils.showToast("Add a category before choosing a theme.", "danger");
-        this.navigate("/account/web/themes");
+        this.navigate("/account/web/studio/websites/list");
       } else if (path === "/account/web/site" && params.get("new") === "1" &&
           !StudioRenderers.websiteThemesForPicker().some(theme =>
             theme.id === (params.get("theme") || draft.selected_theme))) {
         AppUtils.showToast("Choose a website theme before creating this website.", "danger");
-        this.navigate("/account/web/themes/select");
+        this.navigate("/account/web/studio/websites/list");
       }
     }
     const businessFilterToggle = document.querySelector("[data-business-filter-toggle]");
@@ -20489,8 +21362,8 @@ const AppController = {
         event.preventDefault();
         const websiteDraft = StudioRenderers.websiteBuilderDraft();
         if (!websiteDraft.categories.length) {
-          this.navigate("/account/web/themes");
-          AppUtils.showToast("Add a category in Webmaker before creating a website.", "danger");
+          this.navigate("/account/web/studio/websites/list");
+          AppUtils.showToast("Add a category before creating a website.", "danger");
           return;
         }
         const formData = new FormData(newWebsiteForm);
@@ -21221,6 +22094,24 @@ const AppController = {
           parent.querySelectorAll(".option-chip").forEach(c => c.classList.remove("active"));
           chip.classList.add("active");
         }
+        const productId = Number(document.getElementById("btn-add-to-bag")?.getAttribute("data-id"));
+        const product = productId ? SQLiteEngine.getProductById(productId) : null;
+        if (!product) return;
+        const value1 = document.querySelector("#product-size-chips .option-chip.active")?.getAttribute("data-val") || "";
+        const value2 = document.querySelector("#product-color-chips .option-chip.active")?.getAttribute("data-val") || "";
+        const variant = (product.variants || []).find(item =>
+          (item.option1_value ?? item.size ?? "") === value1 &&
+          (item.option2_value ?? item.color ?? "") === value2);
+        const price = document.querySelector(".product-price-box .price-current");
+        if (price) price.textContent = AppUtils.formatMoney(variant?.price ?? product.price);
+        const stock = document.getElementById("product-stock-status");
+        if (stock) {
+          const quantity = Number(variant?.stock ?? product.stock);
+          stock.textContent = quantity > 10
+            ? "In Stock (Ready to dispatch)"
+            : quantity > 0 ? `Low Stock (${quantity} units remain)` : "Sold Out";
+          stock.style.color = quantity > 0 ? "var(--success)" : "var(--danger)";
+        }
       };
     });
 
@@ -21241,7 +22132,7 @@ const AppController = {
         const qty = Number(qtyInput ? qtyInput.value : 1);
         const activeSize = document.querySelector("#product-size-chips .option-chip.active");
         const activeColor = document.querySelector("#product-color-chips .option-chip.active");
-        SQLiteEngine.addToCart(prodId, qty, activeSize ? activeSize.getAttribute("data-val") : null, activeColor ? activeColor.getAttribute("data-val") : null);
+        if (!SQLiteEngine.addToCart(prodId, qty, activeSize ? activeSize.getAttribute("data-val") : null, activeColor ? activeColor.getAttribute("data-val") : null)) return;
         AppUtils.showToast("Artifact added to your shopping bag");
         this.updateNavBadges();
       };
@@ -21255,7 +22146,7 @@ const AppController = {
         const qty = Number(qtyInput ? qtyInput.value : 1);
         const activeSize = document.querySelector("#product-size-chips .option-chip.active");
         const activeColor = document.querySelector("#product-color-chips .option-chip.active");
-        SQLiteEngine.addToCart(prodId, qty, activeSize ? activeSize.getAttribute("data-val") : null, activeColor ? activeColor.getAttribute("data-val") : null);
+        if (!SQLiteEngine.addToCart(prodId, qty, activeSize ? activeSize.getAttribute("data-val") : null, activeColor ? activeColor.getAttribute("data-val") : null)) return;
         this.navigate("/checkout");
       };
     }
@@ -21713,6 +22604,8 @@ const AppController = {
         category_names: categoryNames.filter(name => categoryIds.has(name.toLocaleLowerCase())),
         sizes: Array.isArray(item.sizes) ? item.sizes : original?.sizes || [],
         colors: Array.isArray(item.colors) ? item.colors : original?.colors || [],
+        option1_name: item.option1_name || original?.option1_name || "",
+        option2_name: item.option2_name || original?.option2_name || "",
         variants: Array.isArray(item.variants) ? item.variants.slice(0, 100) : original?.variants || [],
         taxonomy_category_id: item.taxonomy_category_id ?? original?.taxonomy_category_id ?? null,
         taxonomy_category_name: item.taxonomy_category_name || original?.taxonomy_category_name || "",
@@ -21767,6 +22660,11 @@ const AppController = {
         stock: product.stock,
         description: product.description,
         images: product.images,
+        option1_name: product.option1_name || "",
+        option2_name: product.option2_name || "",
+        sizes: product.sizes || [],
+        colors: product.colors || [],
+        variants: product.variants || [],
         category_id: product.category_id,
         category_name: product.category_name
       }));
@@ -21846,7 +22744,7 @@ const AppController = {
       submitButton.textContent = "Preparing images…";
       await new Promise(resolve => requestAnimationFrame(() => resolve()));
       try {
-        const themeId = String(store.website_theme_id || "elora-linen");
+        const themeId = String(store.website_theme_id || "litrus-mixer");
         const litrusMixerTheme = themeId === "litrus-mixer";
         const themeClient = litrusMixerTheme ? null : await window.EshopThemeRuntime.loadThemeSkeleton();
         const selectedTheme = StudioRenderers.websiteThemes().find(theme => theme.id === themeId);
@@ -22497,6 +23395,8 @@ const AppController = {
     window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyFields);
     const variantsMarkup = document.createElement("div");
     variantsMarkup.innerHTML = window.EshopProductVariants.createProductVariantFields({
+      option1Name: product?.option1_name || "",
+      option2Name: product?.option2_name || "",
       sizes: product?.variants?.length ? product.sizes || [] : [],
       colors: product?.variants?.length ? product.colors || [] : [],
       variants: product?.variants || []
@@ -22629,12 +23529,10 @@ const AppController = {
 
       if (path.startsWith("/account/")) {
         this.navigate("/account");
-      } else if (path === "/web") {
-        window.location.hash = "#/";
       } else if (path.startsWith("/category/") && new URLSearchParams(this.currentRoute().split("?")[1] || "").get("studio") === "1") {
         this.navigate("/account/categories");
       } else if (path.startsWith("/product/") || path.startsWith("/category/") || ["/categories", "/favorites", "/bag", "/search"].includes(path)) {
-        this.navigate("/web");
+        this.navigate("/");
       } else {
         this.navigate("/");
       }
@@ -22681,7 +23579,7 @@ const AppController = {
         e.preventDefault();
         try {
           await StudioRenderers.resetWebsiteBuilderDraft();
-          this.navigate("/account/web/themes");
+          this.navigate("/account/web/studio/websites/webmaker");
         } catch (error) {
           console.error("The previous website draft could not be cleared.", error);
           AppUtils.showToast(error.message || "Could not start a clean website draft.", "danger");

@@ -9,7 +9,10 @@ import {
   loadProductTaxonomy,
   readProductTaxonomyFields
 } from "../src/product-taxonomy.js";
-const { loadProductTaxonomy: loadTaxonomyWithAndroidFallback } = await import("../src/product-taxonomy.js?android-fallback");
+const {
+  bindProductTaxonomyFields: bindRetryableTaxonomyFields,
+  createProductTaxonomyFields: createRetryableTaxonomyFields
+} = await import("../src/product-taxonomy.js?retry-after-failure");
 
 const compressedTaxonomy = await readFile(new URL("../public/data/shopify-product-taxonomy.json.gz", import.meta.url));
 const taxonomy = JSON.parse(gunzipSync(compressedTaxonomy).toString("utf8"));
@@ -34,44 +37,62 @@ test("compact taxonomy includes the category tree and sneaker-specific options",
   assert.ok(compressedTaxonomy.byteLength < 2_000_000);
 });
 
-test("taxonomy loader decompresses the bundled asset", async () => {
-  const previousDocument = globalThis.document;
+test("taxonomy loader reads compressed taxonomy bundled into the app without network fetches", async () => {
+  const previousPayload = globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__;
   const previousFetch = globalThis.fetch;
-  globalThis.document = { baseURI: "https://app.test/" };
-  globalThis.fetch = async url => {
-    assert.equal(url.href, "https://app.test/data/shopify-product-taxonomy.json.gz");
-    return new Response(compressedTaxonomy, { status: 200 });
+  let fetchCount = 0;
+  globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__ = compressedTaxonomy.toString("base64");
+  globalThis.fetch = async () => {
+    fetchCount += 1;
+    throw new Error("Offline taxonomy must not call fetch.");
   };
   try {
     const loaded = await loadProductTaxonomy();
     assert.equal(loaded.categories.length, 14606);
+    assert.equal(fetchCount, 0);
   } finally {
-    if (previousDocument === undefined) delete globalThis.document;
-    else globalThis.document = previousDocument;
+    if (previousPayload === undefined) delete globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__;
+    else globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__ = previousPayload;
     globalThis.fetch = previousFetch;
   }
 });
 
-test("taxonomy loader falls back to Android's packaged JSON asset", async () => {
-  const previousDocument = globalThis.document;
+test("category picker exposes retry after bundled taxonomy decode failure", async () => {
+  const previousPayload = globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__;
   const previousFetch = globalThis.fetch;
-  const requests = [];
-  globalThis.document = { baseURI: "https://app.test/" };
-  globalThis.fetch = async url => {
-    requests.push(url.href);
-    if (url.pathname.endsWith(".gz")) return new Response("", { status: 404 });
-    return new Response(JSON.stringify(taxonomy), { status: 200 });
+  let fetchCount = 0;
+  globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__ = "not-valid-gzip";
+  globalThis.fetch = async () => {
+    fetchCount += 1;
+    throw new Error("Offline taxonomy must not call fetch.");
   };
+  const document = new JSDOM(`<form>${createRetryableTaxonomyFields()}</form>`).window.document;
+  const widget = document.querySelector("[data-product-taxonomy]");
   try {
-    const loaded = await loadTaxonomyWithAndroidFallback();
-    assert.equal(loaded.categories.length, 14606);
-    assert.deepEqual(requests, [
-      "https://app.test/data/shopify-product-taxonomy.json.gz",
-      "https://app.test/data/shopify-product-taxonomy.json"
-    ]);
+    bindRetryableTaxonomyFields(widget);
+    widget.querySelector("[data-taxonomy-add-open]").click();
+    const waitForState = async state => {
+      for (let attempt = 0; attempt < 1000; attempt += 1) {
+        if (widget.dataset.taxonomyInitialized === state) return;
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      assert.fail(`Taxonomy picker did not reach ${state} state.`);
+    };
+    await waitForState("error");
+    const retry = widget.querySelector("[data-taxonomy-retry]");
+    assert.equal(retry.hidden, false);
+    assert.ok(widget.querySelector("[data-taxonomy-status]").textContent);
+
+    globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__ = compressedTaxonomy.toString("base64");
+    retry.click();
+    await waitForState("true");
+    assert.equal(retry.hidden, true);
+    assert.equal(widget.querySelector("[data-taxonomy-search]").disabled, false);
+    assert.equal(fetchCount, 0);
   } finally {
-    if (previousDocument === undefined) delete globalThis.document;
-    else globalThis.document = previousDocument;
+    document.defaultView.close();
+    if (previousPayload === undefined) delete globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__;
+    else globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__ = previousPayload;
     globalThis.fetch = previousFetch;
   }
 });
@@ -81,14 +102,17 @@ test("category picker searches, selects, and saves taxonomy attributes", async (
   const form = document.querySelector("form");
   const widget = form.querySelector("[data-product-taxonomy]");
   bindProductTaxonomyFields(widget, Promise.resolve(taxonomy));
+  widget.querySelector("[data-taxonomy-add-open]").click();
   await new Promise(resolve => setImmediate(resolve));
 
   const search = widget.querySelector("[data-taxonomy-search]");
   search.value = "Sneakers";
   search.dispatchEvent(new document.defaultView.Event("input", { bubbles: true }));
   const result = [...widget.querySelectorAll("[data-taxonomy-result]")]
-    .find(button => button.textContent === sneakerCategory.fullName);
+    .find(button => button.dataset.taxonomyResult === sneakerCategory.id);
   assert.ok(result);
+  assert.match(result.textContent, /Sneakers/);
+  assert.match(result.textContent, /Apparel & Accessories > Shoes > Sneakers/);
   result.click();
 
   const style = [...widget.querySelectorAll("[data-taxonomy-attribute]")]
@@ -113,6 +137,7 @@ test("category picker lets the merchant save a custom category when needed", asy
   const form = document.querySelector("form");
   const widget = form.querySelector("[data-product-taxonomy]");
   bindProductTaxonomyFields(widget, Promise.resolve(taxonomy));
+  widget.querySelector("[data-taxonomy-add-open]").click();
   await new Promise(resolve => setImmediate(resolve));
 
   const search = widget.querySelector("[data-taxonomy-search]");
@@ -130,13 +155,74 @@ test("category picker lets the merchant save a custom category when needed", asy
   });
 });
 
+test("saving a Web custom category keeps its taxonomy selection and reusable category id", async () => {
+  const document = new JSDOM(`<form>${createProductTaxonomyFields({
+    storeCategories: [],
+    storeCategoryFieldName: "categoryId"
+  })}</form>`).window.document;
+  const form = document.querySelector("form");
+  const widget = form.querySelector("[data-product-taxonomy]");
+  bindProductTaxonomyFields(widget, Promise.resolve(taxonomy), {
+    onCategoryCreate: async name => ({ value: "7", name })
+  });
+  await new Promise(resolve => setImmediate(resolve));
+
+  widget.querySelector("[data-taxonomy-add-open]").click();
+  const search = widget.querySelector("[data-taxonomy-search]");
+  search.value = "My made-to-order socks";
+  widget.querySelector("[data-taxonomy-add-manually]").click();
+  await new Promise(resolve => setImmediate(resolve));
+
+  assert.equal(form.querySelector("[name=categoryId]").value, "7");
+  assert.deepEqual(readProductTaxonomyFields(form), {
+    taxonomyCategoryId: "",
+    taxonomyCategoryName: "",
+    taxonomyCustomCategory: "My made-to-order socks",
+    taxonomyAttributes: []
+  });
+  document.defaultView.close();
+});
+
+test("manual Web categories stay available while the standard taxonomy is loading", async () => {
+  let resolveTaxonomy;
+  const pendingTaxonomy = new Promise(resolve => { resolveTaxonomy = resolve; });
+  let createdName = "";
+  const document = new JSDOM(`<form>${createProductTaxonomyFields({
+    storeCategories: [],
+    storeCategoryFieldName: "categoryId"
+  })}</form>`).window.document;
+  const form = document.querySelector("form");
+  const widget = form.querySelector("[data-product-taxonomy]");
+  bindProductTaxonomyFields(widget, pendingTaxonomy, {
+    onCategoryCreate: async name => {
+      createdName = name;
+      return { value: "12", name };
+    }
+  });
+  const search = widget.querySelector("[data-taxonomy-search]");
+  assert.equal(search.disabled, false);
+  assert.equal(widget.dataset.taxonomyInitialized, "idle");
+
+  widget.querySelector("[data-taxonomy-add-open]").click();
+  search.value = "My custom product type";
+  widget.querySelector("[data-taxonomy-add-manually]").click();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(createdName, "My custom product type");
+  assert.equal(form.querySelector("[name=categoryId]").value, "12");
+  assert.equal(readProductTaxonomyFields(form).taxonomyCustomCategory, "My custom product type");
+
+  resolveTaxonomy(taxonomy);
+  await new Promise(resolve => setImmediate(resolve));
+  document.defaultView.close();
+});
+
 test("POS and website product forms persist standard taxonomy data separately", () => {
   assert.match(posSource, /taxonomy_category_id TEXT/);
   assert.match(posSource, /taxonomy_custom_category TEXT/);
   assert.match(posSource, /taxonomy_attributes_json TEXT/);
   assert.match(posSource, /taxonomy_custom_category TEXT/);
   assert.match(posSource, /readProductTaxonomyFields\(form\)/);
-  assert.match(appHtml, /createProductTaxonomyFields\(\)/);
+  assert.match(appHtml, /createProductTaxonomyFields\(\{/);
   assert.match(appHtml, /taxonomy_category_id:\s*taxonomy\.taxonomyCategoryId/);
   assert.match(appHtml, /taxonomy_custom_category:\s*taxonomy\.taxonomyCustomCategory/);
   assert.match(appHtml, /taxonomy_attributes:\s*taxonomy\.taxonomyAttributes/);

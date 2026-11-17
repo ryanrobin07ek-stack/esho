@@ -16,7 +16,7 @@ test("native app screens share the homepage visual foundation", () => {
   assert.doesNotMatch(appHtml, /home-background|app-screen-background|app-background-emblem|home-backgrounds\/|app-backgrounds\//);
   assert.doesNotMatch(appHtml, /setupHomeBackground|setupAppScreenBackground/);
   assert.match(appHtml, /classList\.toggle\("app-screen-fade-active", showScreenFade\)/);
-  assert.match(appHtml, /const isAppScreen = isAppShell \|\| path === "\/web" \|\| path === "\/categories" \|\|\s*path === "\/store" \|\| path\.startsWith\("\/store\/"\)/);
+  assert.match(appHtml, /const isAppScreen = isAppShell \|\| path === "\/categories" \|\|\s*path === "\/store" \|\| path\.startsWith\("\/store\/"\)/);
   assert.match(appHtml, /const showScreenFade = isAppScreen && path !== "\/" &&\s*!isNewLitrusEditor && !isExistingLitrusEditor/);
   assert.match(visualTheme, /body\.app-shell #app,\s*body\.app-screen-fade-active #app\s*\{[^}]*background:\s*transparent !important/);
   assert.match(visualTheme, /Inter, "Segoe UI", Roboto, Arial, sans-serif/);

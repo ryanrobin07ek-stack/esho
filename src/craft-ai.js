@@ -1,9 +1,13 @@
+import { CRAFT_AI_SCREEN_DIRECTORY } from "./craft-ai-screens.js";
+
 const sessions = new Map();
 let currentContext = null;
 let isOpen = false;
 let resizeListenerInstalled = false;
+const screenLinks = new Map(CRAFT_AI_SCREEN_DIRECTORY.map(screen => [screen.id, screen]));
 
 const screenTitles = [
+  [/^\/$/, "Craft home"],
   [/\/(?:account\/dashboard|account\/main-shop|store\/revenue)/, "Sales & analytics"],
   [/\/(?:account\/inventory|store\/inventory|pos\/inventory)/, "Inventory"],
   [/\/(?:account\/products|store\/products|pos\/products)/, "Products"],
@@ -14,14 +18,17 @@ const screenTitles = [
 ];
 
 const styles = `
-.craft-ai-launcher{position:fixed;z-index:10020;right:22px;bottom:var(--craft-ai-bottom-offset,22px);display:flex;align-items:center;gap:9px;padding:12px 17px;border:0;border-radius:999px;background:#18181b;color:#fff;box-shadow:0 10px 32px #0003;font:600 14px/1.1 var(--font-main,Arial,sans-serif);cursor:pointer}
-.craft-ai-launcher:hover{background:#333337}.craft-ai-launcher:focus-visible,.craft-ai-panel button:focus-visible,.craft-ai-panel textarea:focus-visible{outline:3px solid #8ab4ff;outline-offset:2px}
+.craft-ai-launcher{position:fixed;z-index:10020;right:22px;bottom:var(--craft-ai-bottom-offset,22px);display:flex;align-items:center;padding:12px 17px;border:1px solid #ffffff52;border-radius:999px;background:#18181b99;color:#fff;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 10px 32px #0003;font:600 14px/1.1 var(--font-main,Arial,sans-serif);cursor:pointer}
+.craft-ai-launcher:hover{background:#333337bb}.craft-ai-launcher:focus-visible,.craft-ai-panel button:focus-visible,.craft-ai-panel textarea:focus-visible{outline:3px solid #8ab4ff;outline-offset:2px}
 .craft-ai-panel{position:fixed;z-index:10021;right:22px;bottom:calc(var(--craft-ai-bottom-offset,22px) + 58px);width:min(420px,calc(100vw - 28px));height:min(640px,calc(100dvh - var(--craft-ai-bottom-offset,22px) - 92px));display:flex;flex-direction:column;overflow:hidden;border:1px solid #e2e2e5;border-radius:18px;background:#fff;color:#18181b;box-shadow:0 20px 70px #0003;font-family:var(--font-main,Arial,sans-serif)}
-.craft-ai-panel[hidden]{display:none}.craft-ai-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #eee}.craft-ai-head h2{margin:0;font-size:16px}.craft-ai-head p{margin:4px 0 0;color:#66666b;font-size:12px}.craft-ai-head-actions{display:flex;gap:6px}.craft-ai-panel button{cursor:pointer}.craft-ai-icon-button{width:34px;height:34px;border:1px solid #e2e2e5;border-radius:9px;background:#fff;color:#333;font-size:18px}.craft-ai-messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:16px}.craft-ai-bubble{max-width:92%;padding:11px 13px;border-radius:13px;background:#f5f5f5;color:#222;font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.craft-ai-bubble[data-role=user]{align-self:flex-end;background:#18181b;color:#fff}.craft-ai-bubble[data-role=assistant]{align-self:flex-start}.craft-ai-suggestions{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 12px;color:#666;font-size:11px;line-height:1.5}.craft-ai-suggestions[hidden]{display:none}.craft-ai-form{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 14px;border-top:1px solid #eee}.craft-ai-form textarea{min-height:44px;max-height:110px;resize:vertical;padding:10px;border:1px solid #ddd;border-radius:10px;font:13px/1.4 var(--font-main,Arial,sans-serif)}.craft-ai-form button{align-self:end;min-height:42px;padding:0 15px;border:0;border-radius:10px;background:#18181b;color:#fff;font-weight:600}.craft-ai-form button:disabled{opacity:.55;cursor:wait}.craft-ai-disclosure{margin:0;padding:0 16px 12px;color:#777;font-size:10px;line-height:1.4}.craft-ai-status{min-height:16px;padding:0 16px 8px;color:#8b2525;font-size:11px}
+.craft-ai-panel[hidden]{display:none}.craft-ai-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #eee}.craft-ai-head h2{margin:0;font-size:16px}.craft-ai-head p{margin:4px 0 0;color:#66666b;font-size:12px}.craft-ai-head-actions{display:flex;gap:6px}.craft-ai-panel button{cursor:pointer}.craft-ai-icon-button{width:34px;height:34px;border:1px solid #e2e2e5;border-radius:9px;background:#fff;color:#333;font-size:18px}.craft-ai-messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:16px}.craft-ai-bubble{max-width:92%;padding:11px 13px;border-radius:13px;background:#f5f5f5;color:#222;font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.craft-ai-bubble[data-role=user]{align-self:flex-end;background:#18181b;color:#fff}.craft-ai-bubble[data-role=assistant]{align-self:flex-start}.craft-ai-screen-link{color:#155eef;text-decoration:underline;text-underline-offset:2px}.craft-ai-suggestions{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 12px;color:#666;font-size:11px;line-height:1.5}.craft-ai-suggestions[hidden]{display:none}.craft-ai-form{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 14px;border-top:1px solid #eee}.craft-ai-form textarea{min-height:44px;max-height:110px;resize:vertical;padding:10px;border:1px solid #ddd;border-radius:10px;font:13px/1.4 var(--font-main,Arial,sans-serif)}.craft-ai-form button{align-self:end;min-height:42px;padding:0 15px;border:0;border-radius:10px;background:#18181b;color:#fff;font-weight:600}.craft-ai-form button:disabled{opacity:.55;cursor:wait}.craft-ai-disclosure{margin:0;padding:0 16px 12px;color:#777;font-size:10px;line-height:1.4}.craft-ai-status{min-height:16px;padding:0 16px 8px;color:#8b2525;font-size:11px}
 @media(max-width:600px){.craft-ai-launcher{right:14px}.craft-ai-panel{right:8px;width:calc(100vw - 16px);height:min(680px,calc(100dvh - var(--craft-ai-bottom-offset,22px) - 80px));border-radius:16px}}
 `;
 
 function titleFor(path) {
+  const route = path.split(/[?#]/, 1)[0].replace(/\/+$/, "") || "/";
+  const knownScreen = CRAFT_AI_SCREEN_DIRECTORY.find(screen => screen.route.split(/[?#]/, 1)[0] === route);
+  if (knownScreen) return knownScreen.title;
   return screenTitles.find(([pattern]) => pattern.test(path))?.[1] || "Shop workspace";
 }
 
@@ -35,14 +42,35 @@ function appendMessage(container, role, text) {
   const bubble = document.createElement("div");
   bubble.className = "craft-ai-bubble";
   bubble.dataset.role = role;
-  bubble.textContent = text;
+  if (role === "assistant") {
+    let offset = 0;
+    const linkPattern = /\[\[screen:([a-z0-9-]+)\]\]/gi;
+    for (const match of text.matchAll(linkPattern)) {
+      bubble.append(document.createTextNode(text.slice(offset, match.index)));
+      const screen = screenLinks.get(match[1]);
+      if (screen) {
+        const link = document.createElement("a");
+        link.className = "craft-ai-screen-link";
+        link.href = screen.route;
+        link.dataset.route = screen.route;
+        link.textContent = screen.title;
+        bubble.append(link);
+      } else {
+        bubble.append(document.createTextNode(match[0]));
+      }
+      offset = match.index + match[0].length;
+    }
+    bubble.append(document.createTextNode(text.slice(offset)));
+  } else {
+    bubble.textContent = text;
+  }
   container.append(bubble);
   container.scrollTop = container.scrollHeight;
   return bubble;
 }
 
 function isEligibleScreen(path) {
-  return (path.startsWith("/account/") || path === "/account" ||
+  return (path === "/" || path.startsWith("/account/") || path === "/account" ||
     path === "/pos" || path.startsWith("/pos/") || path.startsWith("/store/")) &&
     path !== "/account/web/site" && !path.startsWith("/account/profile");
 }
@@ -220,7 +248,7 @@ function renderPanel() {
   launcher.setAttribute("aria-expanded", String(isOpen));
   launcher.setAttribute("aria-controls", "craft-ai-panel");
   launcher.setAttribute("aria-label", "Ask Craft AI about this shop");
-  launcher.innerHTML = `<span aria-hidden="true">✦</span><span>Ask AI</span>`;
+  launcher.textContent = "AI";
 
   const panel = document.createElement("section");
   panel.id = "craft-ai-panel";
@@ -253,7 +281,7 @@ function renderPanel() {
   messages.setAttribute("aria-live", "polite");
   const history = currentSession();
   if (!history.length) {
-    appendMessage(messages, "assistant", "Ask me anything about this shop, its products, stock, sales, expenses, storefront, or how to use this screen. I can only report on data available to your account, and I won't change anything for you.");
+    appendMessage(messages, "assistant", "Ask me about this shop, its products, stock, sales, expenses, storefront, or how to use this screen. I can also link you to the right app screen. I can only report on data available to your account, and I won't change anything for you.");
   } else {
     history.forEach(item => appendMessage(messages, item.role, item.content));
   }
@@ -349,7 +377,8 @@ function renderPanel() {
       if (typeof result.answer !== "string" || !result.answer) {
         throw new Error("Craft AI returned an empty answer.");
       }
-      pending.textContent = result.answer;
+      pending.remove();
+      appendMessage(output, "assistant", result.answer);
       session.push({ role: "user", content: question }, { role: "assistant", content: result.answer });
       if (session.length > 8) session.splice(0, session.length - 8);
       output.scrollTop = output.scrollHeight;

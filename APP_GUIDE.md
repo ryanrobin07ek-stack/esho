@@ -1,6 +1,6 @@
 # Craft App Guide
 
-This guide describes the screens and functionality currently present in this Craft app workspace. It is an operator-oriented map of the application, not a promise that every analysis or integration is a live external service. Where a screen is heuristic, local-only, or not yet connected to a real transaction flow, that is called out below.
+This guide maps the app's active user-facing screens, actions, and workflows. It is not a list of every internal JavaScript helper. Optional services and analysis that depend on local data, permissions, or server configuration are identified below instead of being presented as guaranteed live services.
 
 ## What the app is
 
@@ -17,20 +17,45 @@ The app's route controller is in `index.html`; POS is implemented primarily in `
 
 | Area | Screen or route | What it is for |
 |---|---|---|
-| Home | `/` | Open Craft/Web Studio, POS, and Main Store. |
+| Home | `/` | Open Craft/Web Studio, POS, Main Store, quick links, and the store overview. |
 | App account | `/app-account` | Sign in or create/manage the Craft app account used for shop ownership and account-level services. |
-| Web Studio | `/account/web` and `/account/web/studio/...` | Manage websites and the main shop workspace. |
-| Products | `/account/products`, `/store/products` | Add, edit, remove, and publish products. |
-| Categories | `/account/categories`, `/store/categories` | Create and manage product categories. |
-| Inventory | `/account/inventory`, `/store/inventory` | Review and update shop stock. |
-| Website design | `/account/web/themes`, `/account/web/themes/select`, `/account/web/site` | Choose a theme and edit the storefront in Theme Studio. |
+| Web Studio | `/account/web` and `/account/web/studio/...` | Dashboard, Store, CRM, Websites, and Payments workspaces. |
+| Main Store | `/account/main-shop`, `/store/...` | Manage the main shop catalog, inventory, orders, and business views. |
+| New website | `/account/web/studio/websites/webmaker` | Add existing Store products or create website-only products, then open the Litrus builder. |
+| Website editor | `/account/web/site?...` | Edit, preview, and publish a new or existing Litrus storefront. |
 | Website/store settings | `/account/web/store`, `/account/store` | Update customer-facing store details and related store information. |
 | Web profile | `/account/profile/...` | Manage profile sections, accounts, websites, and custom domains. |
 | POS | `/pos` and `/pos/...` | Counter sales, inventory, customer records, orders, and business management. |
-| Live storefront | `/web` | Preview/open the customer-facing shop. |
 | Storefront pages | `/categories`, `/category/...`, `/product/...`, `/search`, `/bag`, `/checkout` | Customer shopping journey. |
+| Published website | The selected shop's hostname | The customer's live site; its root is served by the publishing service, not by the Craft home screen. |
 
 Routes can have additional query parameters (for example search, sort, price range, stock filter, or a new-site setup state).
+
+### Web Studio navigation
+
+| Menu | Screens | Main functions |
+|---|---|---|
+| Dashboard | Overview, Visits, Traffic, Performance, Product intelligence | Review store activity and metrics; apply date/range filters where offered. |
+| Store | Products, Categories, Inventory, Orders, Bookings | Manage the web catalog and stock; review customer orders and booking/hold requests. |
+| CRM | Customers, Points, Subscribers, Notifications | Review customer activity and loyalty points, manage newsletter subscribers, and access notification tools. |
+| Websites | Websites, Domains, New web, Add, Theme Studio | Select/manage sites, connect a subdomain, set up a new site, choose its products, and edit its storefront. |
+| Payments | Payments | Configure or review supported website payment-account settings. |
+
+The **Main Store** workspace has direct Store routes such as `/store/products`,
+`/store/categories`, `/store/inventory`, `/store/orders`, `/store/revenue`,
+`/store/channels`, `/store/split-shop`, `/store/website`, and
+`/store/bookings`. These routes share the selected shop context; they do not
+make the POS catalog identical to the web catalog.
+
+### POS navigation
+
+| POS tab | Screens and actions |
+|---|---|
+| Sell | Search/filter products, build a receipt, change quantities, apply supported discounts/tax, add customer details, select a recorded payment method, park/cancel, or complete a sale. |
+| Overview | Summary, Revenue, Profit, Products, Stock, Payments, and Reports views with date-range filters. |
+| Catalogue | Inventory, Products, Categories, and Suppliers; update stock, edit products, manage categories, and receive supplier purchases. |
+| Orders | Orders, Invoices, and Quotations; review receipts, create/manage invoices and quotes, and record full or partial payments. |
+| More | Sales & receipts, Customers, Instances, and Settings; manage expenses, cash movements, till close, business sessions, and device/sync settings where available. |
 
 ## Home
 
@@ -42,6 +67,7 @@ The Home screen is the app launchpad. It provides:
 - **POS** link to the counter-sales workspace.
 - **Main Store** link to the main shop workspace.
 - **Account** icon to the app account screen.
+- Quick links to Products, Inventory, Orders, and Categories.
 - Summary metrics for overall revenue, profit, customers, and average order.
 
 The overall metrics are assembled from the data available to the app; they are not a bank balance.
@@ -115,6 +141,13 @@ Product management supports creating, viewing, editing, and deleting products. P
 
 Products are scoped to the currently selected shop. Publishing a catalog sends the selected shop's catalog, not every shop's data.
 
+Product forms can also expose product options/variants and category-based
+attributes. On supported Android devices, product media tools can capture or
+select photos, remove photo backgrounds, and prepare a 360-degree product spin
+from video. Barcode/text scanning and image-assisted identification are
+permission- and device-dependent helpers; the merchant reviews and saves the
+resulting product data.
+
 ### Categories
 
 **Routes:** `/account/categories` and `/store/categories`
@@ -143,38 +176,56 @@ Custom pages are distinct from the theme's product/category content. The theme s
 
 ## Theme selection, Theme Studio, and publishing
 
-### Theme catalog
+### New website setup
 
-**Routes:** `/account/web/themes` and `/account/web/themes/select`
+**Routes:** `/account/web/studio/websites/webmaker`,
+`/account/web/studio/websites/add`, and
+`/account/web/site?new=1&edit=1&theme=litrus-mixer`
 
-The current selectable theme is **Elora Linen**. Aviya and Stepz are not offered in the picker. Legacy theme files and compatibility code may remain for older already-published websites; their presence does not make them current selectable themes.
+The **New web** workflow lets an owner add products from the Store catalog or
+create products specifically for the website, review the website categories,
+and then select **Go to web builder**. The builder opens the Litrus Mixer
+editor for the website draft. The draft is separate from the published site
+until the owner completes the setup and publishes it.
 
-### Theme Studio
+### Current website editor: Litrus Mixer
 
-**Route:** `/account/web/site` (with query parameters for editing or new-site setup)
+`src/theme-catalog.js` currently lists **Litrus Mixer** as the selectable
+theme. Other HTML/Liquid theme engines or archived theme files in the
+repository are implementation/legacy assets; they are not additional active
+choices in this picker.
 
-Theme Studio loads the bundled theme in the shared HTML editor. It supports editing a preview, saving a design, and returning the saved design to Craft. A new shop can continue from the editor into final website setup.
+The embedded Litrus editor has these main steps:
 
-For Elora, the intended division is:
+| Step | What it does |
+|---|---|
+| Shop | Set the shop name, products/services type, category/type, description, slogan, currency, contact, and delivery details. |
+| Content | Edit homepage Promo cards and FAQs. Product and category management stays in Craft's Store/POS tools, so it is not duplicated here. |
+| Style | Choose a visual style and adjust the available storefront presentation controls. |
+| Review | Preview the storefront and use the available save/publish actions. |
+| Settings | Open shop appearance and homepage settings. The Settings tab also returns to the builder when the panel is open. |
 
-- Preserve the theme's visual design, typography, colors, and product/category card styling.
-- Populate product and category content from the selected shop's Craft catalog.
-- Do not import Elora's sample product names or sample catalog as the shop's data.
-- Product and category imagery comes from the shop catalog; owners add actual product photos through product management.
+The **Edit/Preview** switch changes between editor controls and the live
+storefront preview. Preview controls can change the page being viewed and the
+device size. Edits to the website draft do not automatically publish a public
+site.
 
 ### Publishing
 
 Publishing validates the filled storefront and sends the selected shop's catalog/site output through the Cloudflare Worker. Published storefronts serve the validated, shop-filled result rather than exposing the raw editor template. Product media is uploaded to the configured R2 media area when the publishing configuration supports it.
 
-**Payment limitation:** the bundled Elora demo checkout is not a live payment integration. It no longer displays a false “checkout complete” success message. A real online payment experience requires the supported payment/account configuration and checkout route, not just the demo theme's button.
+**Payment limitation:** a storefront preview or publish button is not a
+payment processor. Online payments require the shop's supported payment
+configuration and server-side provider confirmation.
 
 ## Customer-facing storefront
 
-### Live Web
+### Published shop
 
-**Route:** `/web`
-
-Displays the live shop preview/storefront using the selected shop's catalog and store configuration.
+Customers open the shop's published hostname. The `/` route inside the Craft
+app is the owner launchpad; it is not the public storefront root. Owners use
+the website preview and website-management screens to inspect a site before
+publishing it.
 
 ### Shopping screens
 
@@ -309,16 +360,17 @@ The debug APK is written under `android/app/build/outputs/apk/debug/`. Installat
 | `src/pos.js` | POS screens, checkout, inventory, orders, invoices, suppliers, reports, settings, and sync workflows. |
 | `archive/mpesa-ui/` | Archived dedicated M-Pesa workspace snapshot and tools; not compiled into the active app. |
 | `archive/mpesa-notification-listener/` | Archived Android listener and JavaScript bridge; not compiled into the active app. |
-| `src/theme-catalog.js` | Selectable storefront theme catalog; currently Elora Linen only. |
-| `public/theme-packages/elora-linen/index.html` | Elora storefront package and preview. |
-| `public/theme-importer.js`, `public/theme-skeleton-engine.js` | Import and fill HTML themes using the shop's current products/categories. |
-| `public/liquid-themes/theme-studio.html` | Shared HTML/Liquid Theme Studio editor. |
+| `src/theme-catalog.js` | Selectable storefront theme catalog; currently Litrus Mixer. |
+| `public/litrus-mixer/index.html` | Litrus editor, embedded editor flow, preview and shop-content controls. |
+| `src/product-taxonomy.js`, `src/product-variants.js` | Product category attributes and product option/variant fields. |
+| `src/product-cutout.js`, `src/product-vision.js` | Native product-media processing and image-assisted tools where supported. |
+| `public/theme-importer.js`, `public/theme-skeleton-engine.js`, Liquid theme modules | Additional theme rendering/import compatibility code; not necessarily active picker choices. |
 | `cloudflare/worker.js` | Cloudflare API, authentication/account/shop endpoints, publishing, storefront delivery, and related services. |
 | `tests/` | Automated coverage for POS, archived M-Pesa tools, themes, accounts, domains, analytics, and Worker behavior. |
 
 ## Known boundaries
 
 - Theme previews and demo content are not a substitute for a real shop catalog; published catalog content should come from the selected shop's records.
-- The Elora template's checkout is not itself a real payment processor.
+- A storefront preview or publish action does not itself process a payment; online checkout requires supported provider configuration.
 - Analytics and business warnings depend on the completeness and correctness of saved data.
 - Optional Cloudflare publishing, custom domains, online payments, and cloud sync require their respective accounts, credentials, DNS, and service configuration.

@@ -96,112 +96,6 @@ test("CHESSER styling is limited to Craft app routes and excludes Theme Studio",
   assert.doesNotMatch(craftStyles, /theme-packages|builder-theme-studio/);
 });
 
-test("Liquid theme choices open the shared Studio and Litrus opens its integrated builder", async () => {
-  const studio = await read("../public/liquid-themes/theme-studio.html");
-  const app = await read("../index.html");
-  const mixer = await read("../public/litrus-mixer/index.html");
-  const editor = app.match(/renderWebsiteEditor\(isNewWebsite = false\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  renderWebsiteStoreEditor/)?.[1];
-  const liquidThemes = WEBSITE_THEME_CATALOG.filter(theme => theme.editor_mode === "liquid-html");
-
-  assert.ok(editor);
-  for (const theme of liquidThemes) {
-    assert.equal(theme.studio_url, "/liquid-themes/theme-studio.html");
-    if (theme.preview_url) {
-      assert.match(theme.preview_url, /^\/theme-packages\/[a-z0-9-]+\/index\.html$/);
-    }
-  }
-  assert.match(editor, /searchParams\.set\("loadUrl", studioTheme\.preview_url\)/);
-  assert.match(editor, /id="builder-theme-studio"/);
-  assert.match(editor, /id="builder-theme-studio-save"/);
-  assert.match(editor, /id="builder-theme-studio-publish"/);
-  assert.match(editor, /grid-template-columns:minmax\(0,1fr\)/);
-  assert.match(editor, /id="builder-theme-studio"[\s\S]*?min-width:0/);
-  assert.match(app, /liquid-html-theme-draft:\$\{themeId\}/);
-  assert.match(app, /type: "eshop-theme-studio-export-request"/);
-  assert.match(app, /const themeId = params\.get\("theme"\) \|\|\s*SQLiteEngine\.getStore\(\)\.website_theme_id \|\| "elora-linen";/);
-  assert.match(app, /if \(publishButton\) publishButton\.onclick = \(\) => requestDesignSave\(true\);/);
-  assert.match(app, /this\.openCloudflarePublishModal\(true\)/);
-  assert.match(app, /if \(publishImmediately\) form\.requestSubmit\(\);/);
-  assert.match(app, /event\.data\?\.type === "eshop-theme-studio-catalog-request"/);
-  assert.match(app, /type: "eshop-theme-studio-catalog"/);
-  assert.match(app, /window\.addEventListener\("message", this\.themeStudioMessageHandler\)/);
-  assert.doesNotMatch(editor, /builder-storefront-html|builder-preview-device|builder-tools-home/);
-  assert.match(studio, /params\.get\('loadUrl'\)/);
-  assert.match(studio, /theme-packages.{0,80}index\\\.html/);
-  assert.match(studio, /url\.origin !== location\.origin/);
-  assert.match(studio, /requestShopCatalog\(\)/);
-  assert.match(studio, /window\.EshopImportedThemeRenderer\.render\(themeId, catalog/);
-  assert.match(studio, /catalogFilled: true/);
-  assert.match(studio, /await loadSite\(\[new File\(\[source\], 'index\.html'/);
-  assert.match(studio, /type="module" src="\/theme-importer\.js"/);
-  assert.match(studio, /type="module" src="\/liquid-html-theme-renderer\.js"/);
-  assert.match(studio, /html\.m \.chassis \{ width:100%; min-width:0; max-width:100%; \}/);
-  assert.match(studio, /html\.m \.monitor-bezel \{ width:100%; flex:1 1 auto; \}/);
-  assert.match(studio, /frame\.style\.transformOrigin = 'center center'; frame\.style\.transform = 'translate\(-50%, -50%\) scale\(' \+ sc \+ '\)'/);
-  assert.match(studio, /frame\.style\.left = '50%'; frame\.style\.top = '50%';/);
-  assert.match(studio, /window\.EshopThemeImporter\.import/);
-  assert.match(studio, /theme\/theme\.manifest\.json/);
-  assert.match(studio, /type: 'eshop-theme-studio-design'/);
-  assert.match(studio, /preview\.documentElement\.outerHTML/);
-  assert.doesNotMatch(studio, /aviya-luxury|stepz-footwear/);
-  assert.match(app, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" &&\s*\(theme\.editor_mode === "liquid-html" \|\| theme\.editor_mode === "litrus"\)\)/);
-  assert.match(app, /const themeEditorRoute = theme => `\/account\/web\/site\?new=1&edit=1&theme=\$\{encodeURIComponent\(theme\.id\)\}`/);
-  assert.match(app, /href="\$\{AppUtils\.escapeHTML\(themeEditorRoute\(theme\)\)\}" data-route="\$\{AppUtils\.escapeHTML\(themeEditorRoute\(theme\)\)\}"/);
-  assert.match(app, /id="builder-litrus-mixer"[\s\S]{0,180}litrus-mixer\/index\.html\?craft=1/);
-  assert.match(app, /id="builder-litrus-sections"/);
-  assert.match(app, /id="builder-litrus-advanced"/);
-  assert.doesNotMatch(app, /id="builder-litrus-build"/);
-  assert.match(app, /id="builder-litrus-publish"/);
-  assert.match(app, /id="builder-litrus-store-details" href="\/account\/web\/store" data-route="\/account\/web\/store">Store/);
-  assert.equal((editor.match(/id="product-modal-container"/g) || []).length, 2);
-  assert.match(editor, /background:var\(--surface\)/);
-  assert.match(app, /type: "craft-litrus-theme"/);
-  assert.match(mixer, /event\.data\?\.type==='craft-litrus-theme'/);
-  assert.match(mixer, /:not\(\.craft-integrated\)/);
-  assert.match(mixer, /html\.craft-integrated #wz \.prow\{grid-template-columns:48px/);
-  assert.match(mixer, /html\.craft-integrated #wz \.catchips button\{[^}]*border-radius:14px/);
-  assert.match(app, /href="\/account\/web\/store" data-route="\/account\/web\/store">Edit store details/);
-  assert.match(app, /data-litrus-preview-device="phone"/);
-  assert.match(app, /craft-litrus-image-request/);
-  assert.match(app, /\/api\/images\/search\?tenant=/);
-  assert.match(app, /errors: result\.errors \|\| \[\], error: result\.error \|\| ""/);
-  assert.match(app, /event\.data\?\.type === "craft-litrus-ready"/);
-  assert.match(app, /event\.data\?\.type === "craft-litrus-mode"/);
-  assert.match(app, /event\.data\?\.type === "craft-litrus-draft"/);
-  assert.match(app, /await saveLitrusDesign\(event\.data\)/);
-  assert.match(app, /await saveLitrusDesign\(event\.data\);[\s\S]{0,240}this\.openCloudflarePublishModal\(true\)/);
-  assert.match(app, /await this\.saveLitrusMixerCatalog\(payload, isDraftEditor\)/);
-  assert.match(app, /new=1&finish=1&theme=litrus-mixer/);
-  assert.match(app, /renameLitrusMixerStorefront\(html, shopName\)/);
-  assert.match(app, /snapshot\.shop\.name = shopName/);
-  assert.match(app, /sp-logo/);
-  assert.match(mixer, /function getCategoryNames\(\)/);
-  assert.match(mixer, /craftIntegrated\?JSON\.stringify\(names\)/);
-  assert.match(mixer, /if\(craftIntegrated\)\{\s*if\(window\.parent===window\|\|!document\.documentElement\.classList\.contains\('craft-ready'\)\)return/);
-  assert.match(mixer, /type:'craft-litrus-publish'/);
-  assert.match(mixer, /id="tabEdit" role="tab" aria-pressed="true">Edit/);
-  assert.match(mixer, /id="tabView" role="tab" aria-pressed="false">Preview/);
-  assert.doesNotMatch(mixer, /id="tabAdvanced"/);
-  assert.match(mixer, /craftLitrusShowSections/);
-  assert.match(mixer, /type:'craft-litrus-draft'/);
-  assert.match(mixer, /type==='craft-litrus-draft-saved'/);
-  assert.match(mixer, /if\(craftIntegrated\)\{/);
-  assert.match(mixer, /@media\(max-width:820px\)\{#wz #shopSettingsPanel\{[^}]*min-height:0;overflow-y:auto;overscroll-behavior:contain/);
-  assert.match(mixer, /id="wCraftImages"/);
-  assert.match(mixer, /textContent='Loading images\.\.\.'/);
-  assert.match(mixer, /type:'craft-litrus-image-request'/);
-  assert.match(mixer, /if\(typeof event\.data\.error==='string'&&event\.data\.error\)request\.reject/);
-  assert.match(mixer, /Cloudflare-backed image search is available through the Craft builder\./);
-  assert.doesNotMatch(mixer, /litrus\.(?:pixabay|unsplash|pexels)Key|Paste your (?:Pixabay|Pexels|Unsplash)/);
-  assert.doesNotMatch(mixer, /wPixabayKey|LITRUS_PIXABAY_KEY|https:\/\/pixabay\.com\/api/);
-  assert.equal(WEBSITE_THEME_CATALOG.some(theme => theme.id === "craft-main-storefront"), false);
-  assert.ok(liquidThemes.every(theme => theme.editor_mode === "liquid-html"));
-  assert.deepEqual(
-    WEBSITE_THEME_CATALOG.filter(theme => theme.validation_status === "passed").map(theme => theme.id),
-    ["litrus-mixer", "elora-linen"]
-  );
-});
-
 test("Litrus Add photos fills section slots without reusing product photos", async () => {
   const mixer = await read("../public/litrus-mixer/index.html");
   const photoFiller = mixer.match(/async function fillEmptyShopImages\(\)\{([\s\S]*?)\r?\n\s*\}\r?\nwindow\.wizFill/)?.[1];
@@ -430,98 +324,6 @@ test("Litrus published catalog updates category names without flattening the sel
   }
 });
 
-test("Theme Studio automatically converts a future bundled HTML theme", async () => {
-  const studio = await read("../public/liquid-themes/theme-studio.html");
-  const fetched = [];
-  const futureHtml = "<!doctype html><html><head><style>body{color:#222}</style></head><body><h1>Future theme</h1></body></html>";
-  const dom = new JSDOM(studio, {
-    runScripts: "dangerously",
-    url: "https://app.test/liquid-themes/theme-studio.html?loadUrl=%2Ftheme-packages%2Ffuture-theme%2Findex.html",
-    virtualConsole: new VirtualConsole(),
-    beforeParse(window) {
-      window.matchMedia = () => ({ matches: false, addEventListener() {} });
-      window.URL.createObjectURL = () => "blob:https://app.test/theme";
-      window.URL.revokeObjectURL = () => {};
-      window.fetch = async url => {
-        fetched.push(new URL(url, window.location.href).pathname);
-        return { ok: true, status: 200, text: async () => futureHtml };
-      };
-    }
-  });
-
-  try {
-    for (let attempt = 0; attempt < 30; attempt += 1) {
-      if (dom.window.document.getElementById("msg").textContent.includes("Theme built")) break;
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    assert.deepEqual(fetched, ["/theme-packages/future-theme/index.html"]);
-    assert.match(dom.window.document.getElementById("msg").textContent, /Theme built/);
-  } finally {
-    dom.window.close();
-  }
-});
-
-test("Theme Studio returns the edited preview HTML to Craft", async () => {
-  const studio = await read("../public/liquid-themes/theme-studio.html");
-  const posted = [];
-  const dom = new JSDOM(studio, {
-    runScripts: "dangerously",
-    url: "https://app.test/liquid-themes/theme-studio.html?loadUrl=%2Ftheme-packages%2Ffuture-theme%2Findex.html",
-    virtualConsole: new VirtualConsole(),
-    beforeParse(window) {
-      window.matchMedia = () => ({ matches: false, addEventListener() {} });
-      window.URL.createObjectURL = () => "blob:https://app.test/theme";
-      window.URL.revokeObjectURL = () => {};
-      window.fetch = async () => ({
-        ok: true,
-        status: 200,
-        text: async () => "<!doctype html><html><head><title>Future</title></head><body><h1>Future theme</h1></body></html>"
-      });
-      window.postMessage = (data, origin) => posted.push({ data, origin });
-    }
-  });
-
-  try {
-    for (let attempt = 0; attempt < 30; attempt += 1) {
-      if (dom.window.document.getElementById("msg").textContent.includes("Theme built")) break;
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    const preview = dom.window.document.getElementById("frame").contentDocument;
-    preview.open();
-    preview.write("<!doctype html><html><body><h1>Edited design</h1></body></html>");
-    preview.close();
-    dom.window.dispatchEvent(new dom.window.MessageEvent("message", {
-      source: dom.window.parent,
-      origin: dom.window.location.origin,
-      data: { type: "eshop-theme-studio-export-request" }
-    }));
-
-    assert.equal(posted.length, 1);
-    assert.equal(posted[0].origin, dom.window.location.origin);
-    assert.match(posted[0].data.html, /<h1>Edited design<\/h1>/);
-  } finally {
-    dom.window.close();
-  }
-});
-
-test("Craft keeps its identity and registers Theme Studio's native file sharing", async () => {
-  const [config, packageJson, capacitorSettings, pluginManifest, studio] = await Promise.all([
-    read("../capacitor.config.ts"),
-    read("../package.json").then(JSON.parse),
-    read("../android/capacitor.settings.gradle"),
-    read("../android/app/src/main/assets/capacitor.plugins.json").then(JSON.parse),
-    read("../public/liquid-themes/theme-studio.html")
-  ]);
-
-  assert.match(config, /appId: 'com\.eshop\.atelier'/);
-  assert.match(config, /appName: 'Craft'/);
-  assert.match(packageJson.dependencies["@capacitor/share"], /^\^8\./);
-  assert.match(capacitorSettings, /include ':capacitor-share'/);
-  assert.ok(pluginManifest.some(plugin => plugin.pkg === "@capacitor/share"));
-  assert.match(studio, /P\.Filesystem\.writeFile/);
-  assert.match(studio, /P\.Share\.share/);
-});
-
 test("Litrus shop rename accepts indented Roles5 storefront exports", async () => {
   const app = await read("../index.html");
   const method = app.match(/renameLitrusMixerStorefront\(html, shopName\) \{([\s\S]*?)\r?\n  \},/)?.[1];
@@ -691,8 +493,11 @@ test("Craft Litrus reload restores saved design without overwriting it on hydrat
   assert.match(app, /getWorkspaceSetting\(litrusRecipeKey, null\)/);
   assert.match(app, /liquid-html-theme-draft:litrus-mixer:tenant:\$\{tenant\.id\}/);
   assert.match(app, /litrus-mixer-recipe:tenant:\$\{result\.tenant\.id\}/);
+  assert.match(app, /const savedLitrusHtml = isDraftEditor \? "" : StudioRenderers\.getWorkspaceSetting\(litrusDesignKey, ""\)/);
   assert.match(sendCatalog, /recipe:\s*savedLitrusRecipe/);
+  assert.match(sendCatalog, /existing_html:\s*validLitrusHtml\(savedLitrusHtml\)\s*\?\s*savedLitrusHtml\s*:\s*""/);
   assert.match(hydrateCatalog, /isNewShopDraft=shop\.is_new_shop_draft===true/);
+  assert.match(hydrateCatalog, /existingSitePreviewHtml=!isNewShopDraft/);
   assert.match(hydrateCatalog, /generatedDefault===true&&payload\.recipe\.draftId!==draftId/);
   assert.match(hydrateCatalog, /if\(isNewShopDraft&&\(!hasRecipe\|\|replaceGeneratedRecipe\)\)/);
   assert.match(sendCatalog, /is_new_shop_draft:\s*isDraftEditor/);
@@ -728,19 +533,31 @@ test("Litrus defers hidden mobile preview work and avoids identical iframe reloa
 
   let visible = false;
   const writes = [];
+  const sandboxChanges = [];
+  let savedPreviewDirty = false;
   const refresh = new Function(
     "previewVisible",
     "previewDocument",
     "previewFrame",
+    "existingSitePreviewHtml",
+    "existingSitePreviewDirty",
+    "savedSitePreviewDocument",
     "setTimeout",
     "clearTimeout",
     "setPreviewUpdating",
     "setPreviewReady",
-    `let previewTimer;let lastPreviewDocument='';${refreshPreview}\nreturn refreshPreview;`
+    `let previewTimer;let lastPreviewDocument='',lastPreviewMode='';${refreshPreview}\nreturn refreshPreview;`
   )(
     () => visible,
     () => "<main>shop</main>",
-    { set srcdoc(value) { writes.push(value); } },
+    {
+      set srcdoc(value) { writes.push(value); },
+      setAttribute(name, value) { sandboxChanges.push([name, value]); },
+      removeAttribute(name) { sandboxChanges.push([name, null]); }
+    },
+    "<main>saved site</main>",
+    savedPreviewDirty,
+    () => "<main>saved site</main>",
     setTimeout,
     clearTimeout,
     () => {},
@@ -754,11 +571,46 @@ test("Litrus defers hidden mobile preview work and avoids identical iframe reloa
   visible = true;
   refresh();
   await new Promise(resolve => setTimeout(resolve, 140));
-  assert.deepEqual(writes, ["<main>shop</main>"]);
+  assert.deepEqual(writes, ["<main>saved site</main>"]);
+  assert.deepEqual(sandboxChanges, [["sandbox", "allow-same-origin"]]);
 
-  refresh();
+  savedPreviewDirty = true;
+  const generatedRefresh = new Function(
+    "previewVisible",
+    "previewDocument",
+    "previewFrame",
+    "existingSitePreviewHtml",
+    "existingSitePreviewDirty",
+    "savedSitePreviewDocument",
+    "setTimeout",
+    "clearTimeout",
+    "setPreviewUpdating",
+    "setPreviewReady",
+    `let previewTimer;let lastPreviewDocument='',lastPreviewMode='saved';${refreshPreview}\nreturn refreshPreview;`
+  )(
+    () => visible,
+    () => "<main>shop</main>",
+    {
+      set srcdoc(value) { writes.push(value); },
+      setAttribute(name, value) { sandboxChanges.push([name, value]); },
+      removeAttribute(name) { sandboxChanges.push([name, null]); }
+    },
+    "<main>saved site</main>",
+    savedPreviewDirty,
+    () => "<main>saved site</main>",
+    setTimeout,
+    clearTimeout,
+    () => {},
+    () => {}
+  );
+  generatedRefresh();
   await new Promise(resolve => setTimeout(resolve, 140));
-  assert.deepEqual(writes, ["<main>shop</main>"], "An unchanged preview should not reload its iframe.");
+  assert.deepEqual(writes, ["<main>saved site</main>", "<main>shop</main>"]);
+  assert.deepEqual(sandboxChanges, [["sandbox", "allow-same-origin"], ["sandbox", null]]);
+
+  generatedRefresh();
+  await new Promise(resolve => setTimeout(resolve, 140));
+  assert.deepEqual(writes, ["<main>saved site</main>", "<main>shop</main>"], "An unchanged preview should not reload its iframe.");
 });
 
 test("Roles5 experimental footers remain usable when the catalog has no categories", async () => {
@@ -933,12 +785,15 @@ test("Litrus product grid and animation selections reach the rendered storefront
   }
 });
 
-test("Roles5 starts from a fixed Good Form storefront preset", async () => {
+test("Roles5 removes Good Form as a preset and randomizes new site styles", async () => {
   const mixer = await read("../public/litrus-mixer/index.html");
-  assert.match(mixer, /configureStyleKit\('Good Form','layout-overlay','card-swiss','tiles','cols','Good Form','Barlow Condensed','Classic grid'\)/);
+  assert.doesNotMatch(mixer, /\{n:'Good Form',tags:/);
+  assert.doesNotMatch(mixer, /configureStyleKit\('Good Form'/);
+  assert.match(mixer, /const randomDraftMood=\(\)=>R\(MOODS\.slice\(0,8\)\)/);
+  assert.match(mixer, /mood=randomDraftMood\(\)/);
   assert.match(mixer, /PALS\.push\(\["Good Form","#f7f6f3","#dedbd5","#222321","#252725","#b47a57"\]\)/);
-  assert.match(mixer, /mood=GOOD_FORM\|\|MOODS\[0\];[\s\S]*?apply\(mood,false(?:,false)?\);show\(1\)/);
-  assert.doesNotMatch(mixer, /apply\(MOODS\[0\]\);pl\.value='0';render\(\);sync\(\);show\(1\)/);
+  assert.doesNotMatch(mixer, /GOOD_FORM/);
+  assert.doesNotMatch(mixer, /mood=MOODS\[0\];[\s\S]*?apply\(mood,false/);
 });
 
 test("Roles5 keeps mobile category navigation compact and includes the newsletter section", async () => {

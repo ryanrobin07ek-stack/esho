@@ -194,8 +194,10 @@ try {
       loadEventMs: navigation.loadEventEnd ? Math.round(navigation.loadEventEnd) : undefined
     } : null;
   });
-  if ((await page.locator('#wMoods button.mood.on').innerText()).trim() !== 'Good Form') {
-    failures.push('initial Litrus mood is not Good Form');
+  const initialMood = (await page.locator('#wMoods button.mood.on').innerText()).trim();
+  const availableMoods = (await page.locator('#wMoods button.mood').allTextContents()).map(name => name.trim());
+  if (!initialMood || initialMood === 'Good Form' || !availableMoods.includes(initialMood)) {
+    failures.push(`initial Litrus mood is not an available randomized style: ${initialMood}`);
   }
 
   const draftPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
@@ -215,11 +217,57 @@ try {
     });
     return {
       mood: document.querySelector('#wMoods button.mood.on')?.textContent.trim(),
+      availableMoods: [...document.querySelectorAll('#wMoods button.mood')].slice(0, 8)
+        .map(button => button.textContent.trim()),
       categoryPosition: document.querySelector('#shopCategoryPosition')?.value
     };
   });
-  if (draftDefault.mood !== 'Good Form' || draftDefault.categoryPosition !== 'after-hero') {
-    failures.push(`new Craft draft default is not deterministic Good Form: ${JSON.stringify(draftDefault)}`);
+  if (!draftDefault.mood || draftDefault.mood === 'Good Form' ||
+      !draftDefault.availableMoods.includes(draftDefault.mood) ||
+      draftDefault.categoryPosition !== 'after-hero') {
+    failures.push(`new Craft draft did not receive an available randomized style: ${JSON.stringify(draftDefault)}`);
+  }
+
+  await draftPage.evaluate(() => {
+    const categories = ['Shoes', 'Bags', 'New', 'Sale'].map((name, index) => ({ id: index + 1, name }));
+    const products = categories.map((category, index) => ({
+      id: index + 1, name: `Existing product ${index + 1}`, price: 100 + index,
+      category_names: [category.name], images: []
+    }));
+    const existingHtml = '<!doctype html><html><head><meta name="eshop-filled-theme" content="litrus-mixer"><style>.saved-site{color:rgb(1, 2, 3)}</style></head><body><main id="saved-existing-site" class="saved-site">Saved existing storefront</main><script>window.savedSiteScriptRan=true</script></body></html>';
+    window.litrusSetCraftCatalog({
+      shop: { name: 'Existing site', is_new_shop_draft: false },
+      categories, products, existing_html: existingHtml
+    });
+    window.craftLitrusSetMode('preview');
+  });
+  await draftPage.waitForFunction(() =>
+    document.querySelector('#storePreviewFrame')?.contentDocument?.getElementById('saved-existing-site')
+  );
+  const savedPreview = await draftPage.locator('#storePreviewFrame').evaluate(frame => ({
+    title: frame.contentDocument.getElementById('saved-existing-site')?.textContent,
+    script: frame.contentDocument.querySelector('script'),
+    sandbox: frame.getAttribute('sandbox')
+  }));
+  if (savedPreview.title !== 'Saved existing storefront' || savedPreview.script ||
+      savedPreview.sandbox !== 'allow-same-origin') {
+    failures.push(`existing-site preview did not preserve the saved read-only storefront: ${JSON.stringify(savedPreview)}`);
+  }
+  await draftPage.evaluate(() => window.craftLitrusSetMode('build'));
+  await draftPage.locator('#selLay').evaluate(select => {
+    const next = [...select.options].find(option => option.value !== select.value);
+    if (next) {
+      select.value = next.value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+  await draftPage.evaluate(() => window.craftLitrusSetMode('preview'));
+  await draftPage.waitForFunction(() =>
+    document.querySelector('#storePreviewFrame')?.contentDocument?.querySelector('.sole-store')
+  );
+  const editedPreviewSandbox = await draftPage.locator('#storePreviewFrame').getAttribute('sandbox');
+  if (editedPreviewSandbox !== null) {
+    failures.push('editing an existing site did not switch back to the editable Litrus preview');
   }
   await draftPage.close();
 
@@ -305,7 +353,10 @@ try {
         hasRecipe: payload?.recipe?.litrus === 'mixer-recipe' &&
           typeof payload.recipe.generatedDefault === 'boolean' &&
           typeof payload.recipe.draftId === 'string',
-        hasCatalog: Array.isArray(payload?.catalog?.products)
+        hasCatalog: Array.isArray(payload?.catalog?.products),
+        // A shop without owner-entered testimonials must publish no invented reviews or trust claims.
+        fabricatedSocialProof: typeof payload?.html === 'string' &&
+          /Amina W\.|Brian O\.|Faith K\.|Real reviews from real people|Verified buyer|Free returns|2,000\+ orders|4\.8 \/ 5 rating|\(142 reviews\)/.test(payload.html)
       };
     } catch (error) {
       return { error: error instanceof Error ? error.message : String(error) };
@@ -313,6 +364,9 @@ try {
   });
   if (!publishPayload.hasHtml || !publishPayload.hasRecipe || !publishPayload.hasCatalog) {
     failures.push(`publish payload generation failed: ${publishPayload.error || JSON.stringify(publishPayload)}`);
+  }
+  if (publishPayload.fabricatedSocialProof) {
+    failures.push('published storefront contains invented reviews, ratings or trust claims');
   }
   failures.push(...pageErrors.map(error => `browser error: ${error}`));
   if (previewNavigations > 1) {

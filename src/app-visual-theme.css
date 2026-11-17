@@ -22,6 +22,61 @@ body.app-screen-fade-active {
   background: var(--app-card-surface, linear-gradient(145deg, rgba(247, 249, 251, .94), rgba(187, 193, 200, .88)));
 }
 
+.product-category-pill {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0;
+  width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--app-silver, #c7ccd2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .76);
+}
+
+.product-category-pill label {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 5px 12px 5px 14px;
+  font-size: .75rem;
+}
+
+.product-category-pill select {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.product-category-pill button {
+  align-self: stretch;
+  padding: 7px 13px;
+  border: 0;
+  border-left: 1px solid var(--app-silver, #c7ccd2);
+  background: rgba(255, 255, 255, .32);
+  color: inherit;
+  font: inherit;
+  font-size: .8rem;
+  white-space: nowrap;
+}
+
+.product-taxonomy-add-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--app-silver, #c7ccd2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .66);
+}
+
+.product-taxonomy-add-panel[hidden] {
+  display: none;
+}
+
 .product-taxonomy-picker h3 {
   margin: 0;
   font-size: 1rem;
@@ -42,7 +97,8 @@ body.app-screen-fade-active {
 
 .product-taxonomy-picker [data-taxonomy-results] button,
 .product-taxonomy-picker [data-taxonomy-custom-offer] button,
-.product-taxonomy-picker [data-taxonomy-selected] button {
+.product-taxonomy-picker [data-taxonomy-selected] button,
+.product-taxonomy-add-panel > button {
   width: 100%;
   padding: 9px 10px;
   border: 1px solid var(--app-silver, #c7ccd2);
@@ -50,6 +106,16 @@ body.app-screen-fade-active {
   background: rgba(255, 255, 255, .76);
   color: inherit;
   text-align: left;
+}
+
+.product-taxonomy-picker [data-taxonomy-results] button {
+  display: grid;
+  gap: 2px;
+}
+
+.product-taxonomy-picker [data-taxonomy-results] button small {
+  color: #555b61;
+  font-size: .76rem;
 }
 
 .product-taxonomy-picker [data-taxonomy-selected] {
@@ -68,6 +134,28 @@ body.app-screen-fade-active {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
   gap: 8px;
+}
+
+.product-taxonomy-attributes {
+  display: grid;
+  gap: 8px;
+}
+
+.product-taxonomy-attributes h3 {
+  margin: 0;
+  font-size: .9rem;
+}
+
+.product-taxonomy-attributes [data-taxonomy-attributes] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 8px;
+}
+
+.product-taxonomy-attributes [data-taxonomy-attributes] label {
+  display: grid;
+  gap: 4px;
+  font-size: .9rem;
 }
 
 .product-taxonomy-picker [data-taxonomy-attributes] label {

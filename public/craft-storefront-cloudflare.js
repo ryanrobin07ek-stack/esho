@@ -26,6 +26,16 @@
     }
   }
 
+  // Funnel events carry real catalogue ids only: anything the published catalogue does not
+  // list is dropped instead of polluting the owner's analytics.
+  function trackFunnelEvent(productId, type, count = 1) {
+    const id = String(productId ?? "").trim();
+    const products = window.__ESHOP_THEME_CATALOG__?.products;
+    if (!id || typeof window.__ESHOP_TRACK_STOREFRONT_EVENT__ !== "function") return;
+    if (Array.isArray(products) && !products.some(product => String(product.id) === id)) return;
+    window.__ESHOP_TRACK_STOREFRONT_EVENT__(id, type, count);
+  }
+
   async function sendJson(path, payload) {
     const response = await fetch(path, {
       method: "POST",
@@ -81,12 +91,12 @@
     enable.type = "button";
     enable.dataset.storefrontPushEnable = "true";
     enable.textContent = "Enable notifications";
-    enable.style.cssText = "padding:10px 14px;border:0;border-radius:6px;background:#111;color:#fff;cursor:pointer";
+    enable.style.cssText = "padding:10px 14px;min-height:44px;border:0;border-radius:6px;background:#111;color:#fff;cursor:pointer";
     const disable = document.createElement("button");
     disable.type = "button";
     disable.dataset.storefrontPushDisable = "true";
     disable.textContent = "Turn off notifications";
-    disable.style.cssText = "padding:10px 14px;border:1px solid #888;border-radius:6px;background:transparent;color:inherit;cursor:pointer";
+    disable.style.cssText = "padding:10px 14px;min-height:44px;border:1px solid #888;border-radius:6px;background:transparent;color:inherit;cursor:pointer";
     const status = document.createElement("p");
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
@@ -202,13 +212,13 @@
     dismiss.type = "button";
     dismiss.textContent = "×";
     dismiss.setAttribute("aria-label", "Dismiss install invitation");
-    dismiss.style.cssText = "flex:0 0 auto;border:0;background:transparent;color:inherit;font-size:22px;line-height:1;cursor:pointer";
+    dismiss.style.cssText = "flex:0 0 auto;min-width:44px;min-height:44px;border:0;background:transparent;color:inherit;font-size:22px;line-height:1;cursor:pointer";
     const actions = document.createElement("div");
     actions.style.cssText = "display:flex;align-items:center;gap:10px;margin-top:12px";
     const install = document.createElement("button");
     install.type = "button";
     install.textContent = "Install";
-    install.style.cssText = "padding:9px 14px;border:0;border-radius:8px;background:#171717;color:#fff;font:600 14px system-ui,sans-serif;cursor:pointer";
+    install.style.cssText = "padding:9px 14px;min-height:44px;border:0;border-radius:8px;background:#171717;color:#fff;font:600 14px system-ui,sans-serif;cursor:pointer";
     const status = document.createElement("span");
     status.setAttribute("role", "status");
     status.setAttribute("aria-live", "polite");
@@ -456,6 +466,10 @@
     }
     if (button) button.disabled = true;
     status.textContent = "Creating your order…";
+    if (form.dataset.checkoutTracked !== form.dataset.idempotencyKey) {
+      form.dataset.checkoutTracked = form.dataset.idempotencyKey;
+      for (const productId of cartProductIds) trackFunnelEvent(productId, "checkout_start");
+    }
     try {
       const customer = {
         customer_name: form.querySelector("#co-name").value.trim(),
@@ -507,6 +521,18 @@
       if (!response.ok) throw new Error(result.error || "Payment could not be verified.");
       if (result.payment_status === "paid") {
         const cart = readStorage(cartStorageKey, []);
+        const trackedKey = "eshop:purchase-tracked";
+        if (Array.isArray(cart) && readStorage(trackedKey, "") !== reference) {
+          try {
+            localStorage.setItem(trackedKey, JSON.stringify(reference));
+          } catch (error) {
+            console.warn("The purchase could not be remembered on this device.", error);
+          }
+          for (const item of cart) {
+            if (item?.productId == null) continue;
+            trackFunnelEvent(String(item.productId), "purchase", Math.max(1, Math.min(99, Math.floor(Number(item.qty) || 1))));
+          }
+        }
         localStorage.setItem(cartStorageKey, "[]");
         const purchasedProductIds = new Set(Array.isArray(cart)
           ? cart.map(item => String(item?.productId ?? "")).filter(Boolean)

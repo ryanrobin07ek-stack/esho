@@ -113,9 +113,11 @@ Android deep link declared in the manifest.
 
 ### Main screen families
 
-- **Storefront:** `/web`, `/categories`, `/category/...`, `/product/...`,
-  `/search`, `/bag`, `/checkout`, `/checkout/confirmation`, `/favorites`, and
-  `/pages/...`.
+- **Storefront customer routes:** `/categories`, `/category/...`,
+  `/product/...`, `/search`, `/bag`, `/checkout`,
+  `/checkout/confirmation`, `/favorites`, and `/pages/...`. The Craft app's
+  `/` route is its owner launchpad; published tenant websites are served at
+  their configured hostnames.
 - **Craft home and account:** `/`, `/account`, `/app-account`, and
   `/account/profile...`.
 - **Web Studio and shop management:** `/account/web/studio/...`,
@@ -123,8 +125,8 @@ Android deep link declared in the manifest.
   `/account/categories`, `/account/inventory`, `/account/tenants`,
   `/account/payments`, `/account/website...`, and `/account/web/pages`.
 - **Point of sale:** `/pos` and `/pos/...`.
-- **Website/theme editing:** `/account/web/themes...` and
-  `/account/web/site`; the latter hosts the theme editor experience.
+- **Website/theme editing:** `/account/web/studio/websites/...` and
+  `/account/web/site`; the new-site flow opens the Litrus Mixer editor.
 
 Web Studio groups screens into Dashboard, Store, CRM, Websites, and Payments.
 Its Store tabs include products, categories, inventory, and orders/bookings.
@@ -333,14 +335,10 @@ document.
    it does not knowingly serve stale output as if it were the latest
    publish.
 
-`src\theme-catalog.js` currently offers Aviya Jewellery and Stepz Footwear as
-the bundled standalone HTML theme choices. `public\theme-importer.js` and
-`public\liquid-html-theme-renderer.js` support loading/editing those HTML
-themes through the shared Theme Studio. `src\liquid-storefront-renderer.js`
-is a separate Liquid theme renderer used for the My Own Theme path. These
-are distinct rendering paths; a template being present in a renderer or
-Worker allowlist does not by itself mean it is offered in the active theme
-picker.
+`src\theme-catalog.js` currently lists Litrus Mixer as the selectable theme.
+Other HTML/Liquid rendering and import code may remain for compatibility or
+older theme paths; a template being present in a renderer or Worker allowlist
+does not by itself mean it is offered in the active theme picker.
 
 The intended separation is that a theme contributes presentation, while the
 shop's catalog remains the source for product/category data. Actual mapping

@@ -64,9 +64,9 @@ test("Web Studio separates Orders and Bookings and ranks batched storefront even
   assert.match(source, /store\/orders[\s\S]*?store\/bookings/);
 });
 
-test("Web Studio product upload offers keep, 3D, video, and cutout modes", async () => {
+test("Web Studio product upload offers photos, 360° spin, video, and cutout modes", async () => {
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
-  assert.match(source, /\["keep", "Keep"\].*\["3d", "3D"\].*\["video", "Video"\].*\["cutout", "Cutout images"\]/);
+  assert.match(source, /\["keep", "Photos"\].*\["3d", "360° spin"\].*\["video", "Video"\].*\["cutout", "Cutout"\]/);
   assert.match(source, /data-web-product-video-record>Record video/);
   assert.match(source, /data-web-product-video-pick>Pick video/);
   assert.match(source, /capture="environment" data-web-product-record-file/);
@@ -119,17 +119,10 @@ test("Visits and Traffic use a saved day filter and concise analytics panels", a
   assert.doesNotMatch(analyticsScreens, /Cloudflare|Traffic quality|shared analytics|location_note|anonymous browsers|last 30 days/i);
 });
 
-test("Store Products, Webmaker, and Payments use shorter copy", async () => {
+test("Store Products and Payments use shorter copy; new-website screens are removed", async () => {
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
   assert.doesNotMatch(source, /Website products are saved in app SQLite|separately from Store\/POS inventory/);
-
-  const makerStart = source.indexOf("renderWebsiteBuilderCatalog(embedded = false) {");
-  const makerEnd = source.indexOf("\n  renderWebsiteThemes()", makerStart);
-  assert.ok(makerStart >= 0 && makerEnd > makerStart, "Webmaker has a bounded catalog renderer.");
-  const maker = source.slice(makerStart, makerEnd);
-  assert.ok(maker.indexOf("Continue to build shop") < maker.indexOf("Choose products from Store"));
-  assert.match(maker, /Add Store products or create new ones for this website\./);
-  assert.doesNotMatch(maker, /Store products are never copied|Existing websites and your Store inventory are not changed/);
+  assert.doesNotMatch(source, /renderWebsiteBuilderCatalog|renderWebsiteThemes\(|renderWebsiteThemeChoices|NEW WEBSITE · STEP [12] OF 3/);
 
   const paymentStart = source.indexOf('const nativeCurrencySettings =');
   const paymentEnd = source.indexOf('if (path === "/store/orders"', paymentStart);

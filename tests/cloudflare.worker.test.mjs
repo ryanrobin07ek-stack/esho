@@ -3234,8 +3234,16 @@ test('catalog publishing is authenticated and stores only public fields and link
     { attributeId: 'color', attributeName: 'Color', valueId: 'black', value: 'Black' }
   ]);
   assert.deepEqual(result.products[0].variants, [
-    { id: '7-black', size: '7', color: 'Black', price: null, stock: 2 },
-    { id: '8-black', size: '8', color: 'Black', price: 30, stock: 1 }
+    {
+      id: '7-black', option1_name: 'Size', option1_value: '7',
+      option2_name: 'Color', option2_value: 'Black',
+      size: '7', color: 'Black', price: null, stock: 2
+    },
+    {
+      id: '8-black', option1_name: 'Size', option1_value: '8',
+      option2_name: 'Color', option2_value: 'Black',
+      size: '8', color: 'Black', price: 30, stock: 1
+    }
   ]);
   assert.deepEqual(result.products[0].sizes, ['7', '8']);
   assert.deepEqual(result.products[0].colors, ['Black']);
@@ -3350,6 +3358,55 @@ test('catalog publishing preserves service schedules and rejects invalid service
     products: [{ ...catalog.products[0], duration_minutes: 20 }]
   });
   assert.equal(invalid.status, 400);
+});
+
+test('catalog publishing persists merchant-defined options and normalizes legacy variants', async () => {
+  const env = { DB: createDatabase(), TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
+  const response = await worker.fetch(new Request('https://rrobin.co.ke/api/catalog', {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      categories: [],
+      products: [
+        {
+          id: 21,
+          name: 'Cereal',
+          price: 8,
+          option1_name: 'Pack size',
+          option2_name: 'Flavor',
+          sizes: ['250 g', '500 g'],
+          colors: ['Plain', 'Vanilla'],
+          variants: [
+            { option1_name: 'Pack size', option1_value: '250 g', option2_name: 'Flavor', option2_value: 'Plain', price: 5, stock: 4 },
+            { option1_name: 'Pack size', option1_value: '250 g', option2_name: 'Flavor', option2_value: 'Vanilla', price: 5.5, stock: 3 },
+            { option1_name: 'Pack size', option1_value: '500 g', option2_name: 'Flavor', option2_value: 'Plain', price: 8, stock: 2 },
+            { option1_name: 'Pack size', option1_value: '500 g', option2_name: 'Flavor', option2_value: 'Vanilla', price: 8.5, stock: 1 }
+          ]
+        },
+        {
+          id: 22,
+          name: 'Legacy shirt',
+          price: 20,
+          sizes: ['S'],
+          colors: ['Blue'],
+          variants: [{ size: 'S', color: 'Blue', price: null, stock: 6 }]
+        }
+      ],
+      store: { name: 'Test shop', currency: 'KES' }
+    })
+  }), env);
+
+  assert.equal(response.status, 200);
+  const saved = await (await worker.fetch(new Request('https://rrobin.co.ke/api/catalog'), env)).json();
+  assert.equal(saved.products[0].option1_name, 'Pack size');
+  assert.equal(saved.products[0].option2_name, 'Flavor');
+  assert.equal(saved.products[0].variants[3].option1_value, '500 g');
+  assert.equal(saved.products[0].variants[3].option2_value, 'Vanilla');
+  assert.equal(saved.products[0].stock, 10);
+  assert.equal(saved.products[1].option1_name, 'Size');
+  assert.equal(saved.products[1].option2_name, 'Color');
+  assert.equal(saved.products[1].variants[0].option1_value, 'S');
+  assert.equal(saved.products[1].variants[0].option2_value, 'Blue');
 });
 
 test('catalog API provides CORS preflight and rejects oversized payloads', async () => {

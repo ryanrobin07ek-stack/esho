@@ -3,6 +3,16 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import worker from '../cloudflare/worker.js';
+import { CRAFT_AI_SCREEN_DIRECTORY } from '../src/craft-ai-screens.js';
+
+function evaluateAssistant(dom, source) {
+  dom.window.CraftAiScreenDirectory = CRAFT_AI_SCREEN_DIRECTORY;
+  const script = source.replace(
+    'import { CRAFT_AI_SCREEN_DIRECTORY } from "./craft-ai-screens.js";',
+    'const CRAFT_AI_SCREEN_DIRECTORY = window.CraftAiScreenDirectory;'
+  );
+  dom.window.eval(script);
+}
 
 async function sha256Hex(value) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
@@ -195,6 +205,47 @@ test('Craft AI validates input, sends aggregate analytics and caches an owner-sc
   }
 });
 
+test('Craft AI receives trusted screen guidance for website product navigation', async () => {
+  const ownerToken = 'craft-ai-screen-guide-owner';
+  const TENANTS = createTenantStore();
+  await TENANTS.put('tenant:main', JSON.stringify({
+    id: 'main',
+    owner_token_hash: await sha256Hex(ownerToken)
+  }));
+  const env = {
+    DB: createAnalyticsDatabase(),
+    TENANTS,
+    OPENROUTER_API_KEY: 'test-openrouter-secret'
+  };
+  const originalFetch = globalThis.fetch;
+  let providerRequest;
+  globalThis.fetch = async (_url, init) => {
+    providerRequest = JSON.parse(init.body);
+    return Response.json({
+      choices: [{ message: { content: 'Open [[screen:web-products]] to add a website listing.' } }]
+    });
+  };
+
+  try {
+    const response = await worker.fetch(assistantRequest(ownerToken, {
+      question: 'Where do I add products for my web store?',
+      history: [],
+      screen: '/'
+    }), env);
+    assert.equal(response.status, 200);
+    assert.match((await response.json()).answer, /\[\[screen:web-products\]\]/);
+    const systemPrompt = providerRequest.messages[0].content;
+    assert.match(systemPrompt, /Trusted Craft screen directory/);
+    assert.match(systemPrompt, /analytics JSON below for business metrics and the trusted screen directory below for app navigation/);
+    assert.match(systemPrompt, /Web Store products/);
+    assert.match(systemPrompt, /\/account\/web\/studio\/store\/products/);
+    assert.match(systemPrompt, /Add web product/);
+    assert.match(systemPrompt, /\[\[screen:screen-id\]\]/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('Craft AI retries another free model and explains rejected OpenRouter keys', async () => {
   const ownerToken = 'craft-ai-fallback-owner';
   const TENANTS = createTenantStore();
@@ -306,7 +357,7 @@ test('Craft AI closes its floating panel when navigating to another screen', asy
   });
 
   try {
-    dom.window.eval(assistant);
+    evaluateAssistant(dom, assistant);
     dom.window.CraftAI.mount({ path: '/account/products', tenantId: 'shop-1', tenantName: 'Shop' });
     dom.window.document.querySelector('.craft-ai-launcher').click();
     assert.equal(dom.window.document.getElementById('craft-ai-panel').hidden, false);
@@ -326,9 +377,70 @@ test('Craft AI is not mounted in the website builder', async () => {
   });
 
   try {
-    dom.window.eval(assistant);
+    evaluateAssistant(dom, assistant);
     dom.window.CraftAI.mount({ path: '/account/web/site', tenantId: 'shop-1', tenantName: 'Shop' });
     assert.equal(dom.window.document.getElementById('craft-ai-root'), null);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test('Craft AI renders only trusted screen-link tokens as app navigation links', async () => {
+  const assistant = await readFile(new URL('../src/craft-ai.js', import.meta.url), 'utf8');
+  const dom = new JSDOM('<!doctype html><html><body></body></html>', {
+    runScripts: 'outside-only',
+    url: 'https://app.example.test/'
+  });
+
+  try {
+    evaluateAssistant(dom, assistant);
+    dom.window.fetch = async (_url, init) => {
+      assert.equal(JSON.parse(init.body).question, 'Where do I add a web product?');
+      return {
+        ok: true,
+        async json() {
+          return {
+            answer: 'Open [[screen:web-products]]. Unknown [[screen:fake-route]].'
+          };
+        }
+      };
+    };
+    dom.window.CraftAI.mount({
+      path: '/',
+      tenantId: 'screen-link-shop',
+      tenantName: 'Shop',
+      origin: 'https://app.example.test',
+      token: 'test-token'
+    });
+    dom.window.document.querySelector('.craft-ai-launcher').click();
+
+    const renderedLink = new Promise((resolve, reject) => {
+      let timeout;
+      const observer = new dom.window.MutationObserver(() => {
+        const link = dom.window.document.querySelector('.craft-ai-screen-link');
+        if (link) {
+          observer.disconnect();
+          clearTimeout(timeout);
+          resolve(link);
+        }
+      });
+      observer.observe(dom.window.document.body, { childList: true, subtree: true });
+      timeout = setTimeout(() => {
+        observer.disconnect();
+        reject(new Error('Craft AI did not render the screen link.'));
+      }, 1000);
+    });
+    const textarea = dom.window.document.querySelector('.craft-ai-form textarea');
+    textarea.value = 'Where do I add a web product?';
+    dom.window.document.querySelector('.craft-ai-form').dispatchEvent(
+      new dom.window.Event('submit', { bubbles: true, cancelable: true })
+    );
+
+    const link = await renderedLink;
+    assert.equal(link.textContent, 'Web Store products');
+    assert.equal(link.getAttribute('href'), '/account/web/studio/store/products');
+    assert.equal(link.dataset.route, '/account/web/studio/store/products');
+    assert.match(dom.window.document.querySelector('.craft-ai-messages').textContent, /\[\[screen:fake-route\]\]/);
   } finally {
     dom.window.close();
   }

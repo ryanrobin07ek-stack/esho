@@ -5,39 +5,13 @@ import { WEBSITE_THEME_CATALOG } from "../src/theme-catalog.js";
 
 const read = path => readFile(new URL(path, import.meta.url), "utf8");
 
-test("Litrus and Elora are the selectable storefront builders", async () => {
+test("Litrus Mixer is the only selectable storefront builder", async () => {
   const app = await read("../index.html");
 
-  assert.deepEqual(WEBSITE_THEME_CATALOG.map(theme => theme.id), [
-    "litrus-mixer",
-    "elora-linen"
-  ]);
+  assert.deepEqual(WEBSITE_THEME_CATALOG.map(theme => theme.id), ["litrus-mixer"]);
   assert.ok(WEBSITE_THEME_CATALOG.every(theme => theme.validation_status === "passed"));
   assert.equal(WEBSITE_THEME_CATALOG.find(theme => theme.id === "litrus-mixer")?.editor_mode, "litrus");
   assert.match(app, /websiteThemesForPicker\(\) \{\s*return this\.websiteThemes\(\)\.filter\(theme =>\s*theme\.validation_status === "passed" &&\s*\(theme\.editor_mode === "liquid-html" \|\| theme\.editor_mode === "litrus"\)\)/);
   assert.doesNotMatch(WEBSITE_THEME_CATALOG.map(theme => theme.id).join(" "), /aviya-luxury|stepz-footwear|craft-main-storefront|my-own-theme/);
 });
 
-test("Elora loads its bundled HTML into the shared Studio", async () => {
-  const app = await read("../index.html");
-
-  for (const theme of WEBSITE_THEME_CATALOG.filter(item => item.editor_mode === "liquid-html")) {
-    const source = await read(`../public${theme.preview_url}`);
-    assert.match(source, /<html\b/i);
-    assert.match(theme.studio_url, /^\/liquid-themes\/theme-studio\.html$/);
-  }
-  assert.match(app, /searchParams\.set\("loadUrl", studioTheme\.preview_url\)/);
-  assert.match(app, /id="builder-theme-studio"/);
-  assert.match(app, /id="builder-theme-studio-save"/);
-});
-
-test("saved Studio designs are reused for new-site and storefront publishing", async () => {
-  const app = await read("../index.html");
-  const studio = await read("../public/liquid-themes/theme-studio.html");
-
-  assert.match(studio, /type: 'eshop-theme-studio-design'/);
-  assert.match(studio, /preview\.documentElement\.outerHTML/);
-  assert.match(app, /setWorkspaceSetting\(`liquid-html-theme-draft:\$\{themeId\}`, event\.data\.html\)/);
-  assert.match(app, /if \(path === "index\.html" && savedThemeDesign\) return savedThemeDesign/);
-  assert.match(app, /getWorkspaceSetting\(\s*`liquid-html-theme-draft:\$\{themeId\}`/);
-});

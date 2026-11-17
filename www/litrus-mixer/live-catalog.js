@@ -50,9 +50,19 @@
         booking_enabled: product.booking_enabled === true || product.booking_enabled === 1,
         duration_minutes: Number(product.duration_minutes) || 60,
         stock: Number(product.stock) || 0,
-        variants: Array.isArray(product.variants) ? product.variants.slice(0, 100) : [],
-        sizes: Array.isArray(product.sizes) ? product.sizes.slice(0, 20) : [],
-        colors: Array.isArray(product.colors) ? product.colors.slice(0, 20) : [],
+        variants: Array.isArray(product.variants) ? product.variants.slice(0, 100).map(variant => ({
+          ...(variant && typeof variant === "object" ? variant : {}),
+          size: variant?.size ?? variant?.option1_value ?? "",
+          color: variant?.color ?? variant?.option2_value ?? ""
+        })) : [],
+        option1_name: String(product.option1_name || product.variants?.[0]?.option1_name ||
+          (product.sizes?.length || product.variants?.[0]?.option1_value || product.variants?.[0]?.size ? "Size" : "")),
+        option2_name: String(product.option2_name || product.variants?.[0]?.option2_name ||
+          (product.colors?.length || product.variants?.[0]?.option2_value || product.variants?.[0]?.color ? "Color" : "")),
+        sizes: Array.isArray(product.sizes) && product.sizes.length ? product.sizes.slice(0, 20) :
+          [...new Set((product.variants || []).map(variant => String(variant.option1_value ?? variant.size ?? "")).filter(Boolean))].slice(0, 20),
+        colors: Array.isArray(product.colors) && product.colors.length ? product.colors.slice(0, 20) :
+          [...new Set((product.variants || []).map(variant => String(variant.option2_value ?? variant.color ?? "")).filter(Boolean))].slice(0, 20),
         taxonomy_category_id: product.taxonomy_category_id || null,
         taxonomy_category_name: String(product.taxonomy_category_name || product.taxonomy_custom_category || ""),
         taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes.slice(0, 30) : []
@@ -361,7 +371,8 @@
           gallery.append(thumbnails);
         }
       }
-      const variants = product.variants.filter(variant => variant && (variant.size || variant.color));
+      const variants = product.variants.filter(variant => variant &&
+        (variant.option1_value || variant.option2_value || variant.size || variant.color));
       const buyArea = page.querySelector(".sp-buy");
       if (variants.length && buyArea) {
         const picker = document.createElement("div");
@@ -369,13 +380,15 @@
         picker.dataset.productVariantPicker = product.id;
         picker.style.cssText = "display:grid;gap:10px;margin:16px 0";
         const dimensions = [
-          ["size", [...new Set(variants.map(variant => String(variant.size || "")).filter(Boolean))], "Choose size"],
-          ["color", [...new Set(variants.map(variant => String(variant.color || "")).filter(Boolean))], "Choose color"]
+          ["size", product.option1_name || "Option 1", [...new Set(variants.map(variant => String(variant.option1_value ?? variant.size ?? "")).filter(Boolean))],
+            `Choose ${product.option1_name || "option 1"}`],
+          ["color", product.option2_name || "Option 2", [...new Set(variants.map(variant => String(variant.option2_value ?? variant.color ?? "")).filter(Boolean))],
+            `Choose ${product.option2_name || "option 2"}`]
         ];
-        dimensions.forEach(([name, values, placeholder]) => {
+        dimensions.forEach(([name, labelText, values, placeholder]) => {
           if (!values.length) return;
           const label = document.createElement("label");
-          label.textContent = name === "size" ? "Size" : "Color";
+          label.textContent = labelText;
           label.style.cssText = "display:grid;gap:6px";
           const select = document.createElement("select");
           select.dataset.variantOption = name;
@@ -424,6 +437,8 @@
       if (main && !serviceMode) {
         const sizes = [...new Set(list.flatMap(product => product.sizes))].sort();
         const colors = [...new Set(list.flatMap(product => product.colors))].sort();
+        const option1Names = [...new Set(list.map(product => product.option1_name).filter(Boolean))];
+        const option2Names = [...new Set(list.map(product => product.option2_name).filter(Boolean))];
         const productTypes = [...new Set(list.map(product => product.taxonomy_category_name).filter(Boolean))].sort();
         const filters = document.createElement("form");
         filters.className = "sp-catalog-filters";
@@ -466,8 +481,8 @@
           label.append(input);
           filters.append(label);
         });
-        addSelect("size", "Size", sizes);
-        addSelect("color", "Color", colors);
+        if (option1Names.length === 1) addSelect("size", option1Names[0], sizes);
+        if (option2Names.length === 1) addSelect("color", option2Names[0], colors);
         const attributes = new Map();
         list.forEach(product => product.taxonomy_attributes.forEach(attribute => {
           if (!attribute?.attributeName || !attribute.value) return;

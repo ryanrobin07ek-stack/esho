@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Litrus mobile editor mock</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #191a18;
+      background: #e9e9e6;
+      --accent: #879077;
+      --ink: #191a18;
+      --muted: #777972;
+      --line: #e8e8e3;
+      --soft: #f5f5f1;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: radial-gradient(ellipse at 50% 0%, #fff 0, transparent 56%), #e9e9e6;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid #87907766;
+      outline-offset: 2px;
+    }
+
+    .device {
+      width: min(100%, 430px);
+      height: min(900px, calc(100dvh - 36px));
+      min-height: 680px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #d5d5d1;
+      border-radius: 30px;
+      background: #f8f8f6;
+      box-shadow: 0 28px 80px #17171724, 0 2px 8px #17171712;
+    }
+    .status-bar {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 19px;
+      background: #fff;
+      font-size: 11px;
+      font-weight: 750;
+    }
+    .status-icons { display: flex; align-items: center; gap: 5px; }
+    .signal { display: flex; align-items: end; gap: 2px; height: 12px; }
+    .signal i { width: 3px; border-radius: 2px; background: #191a18; }
+    .signal i:nth-child(1) { height: 4px; }
+    .signal i:nth-child(2) { height: 6px; }
+    .signal i:nth-child(3) { height: 9px; }
+    .signal i:nth-child(4) { height: 12px; }
+    .battery { width: 18px; height: 9px; border: 1.3px solid #191a18; border-radius: 3px; padding: 1px; }
+    .battery::before { content: ""; display: block; width: 72%; height: 100%; border-radius: 1px; background: #191a18; }
+
+    .app-header {
+      min-height: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 10px;
+      background: var(--ink);
+      color: #fff;
+      font-family: Georgia, serif;
+      font-size: 17px;
+      font-style: italic;
+    }
+    .brand-copy { display: grid; gap: 1px; }
+    .brand-copy strong { font-size: 12px; letter-spacing: -.03em; }
+    .brand-copy span { color: var(--muted); font-size: 9px; }
+    .header-actions { display: flex; align-items: center; gap: 6px; }
+    .header-button {
+      min-height: 31px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 9px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .header-button svg { width: 13px; height: 13px; }
+    .header-button.primary { border-color: #111; background: #111; color: #fff; }
+
+    .workspace {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .mode-screen {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      padding: 15px 16px 18px;
+      overscroll-behavior: contain;
+    }
+    .mode-screen[hidden], [hidden] { display: none !important; }
+    .eyebrow {
+      margin: 0 0 5px;
+      color: #85867e;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .screen-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .screen-heading h1 { margin: 0; font-size: 19px; letter-spacing: -.055em; }
+    .screen-heading p { margin: 4px 0 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .saved-state { display: inline-flex; align-items: center; gap: 5px; color: #70736c; font-size: 8px; white-space: nowrap; }
+    .saved-state i { width: 6px; height: 6px; border-radius: 50%; background: #3a9465; }
+
+    .step-nav {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      margin: 0 -2px 12px;
+      padding: 2px 2px 5px;
+      scrollbar-width: none;
+    }
+    .step-nav::-webkit-scrollbar { display: none; }
+    .step-button {
+      min-height: 30px;
+      flex: 0 0 auto;
+      padding: 0 10px;
+      border: 1px solid #e6e6e1;
+      border-radius: 999px;
+      background: #fff;
+      color: #696b64;
+      font-size: 9px;
+      font-weight: 650;
+    }
+    .step-button.active { border-color: var(--ink); background: var(--ink); color: #fff; }
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+    .card {
+      margin-bottom: 10px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 4px 14px #191a1806;
+    }
+    .card h2 { margin: 0 0 5px; font-size: 13px; letter-spacing: -.025em; }
+    .card > p { margin: 0 0 11px; color: var(--muted); font-size: 9px; line-height: 1.45; }
+    .fields { display: grid; gap: 10px; }
+    .field { display: grid; gap: 5px; color: #41433e; font-size: 9px; font-weight: 650; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      min-height: 37px;
+      padding: 8px 10px;
+      border: 1px solid #e5e5e0;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 450;
+    }
+    .field textarea { min-height: 67px; resize: vertical; line-height: 1.4; }
+    .field small { color: var(--muted); font-size: 8px; font-weight: 450; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .inline-check { display: flex; align-items: center; gap: 8px; color: #454741; font-size: 9px; }
+    .inline-check input { accent-color: #171717; }
+    .step-actions { display: flex; justify-content: space-between; gap: 8px; margin: 11px 0 2px; }
+    .button {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 13px;
+      border: 1px solid #e4e4df;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 9px;
+      font-weight: 700;
+    }
+    .button.dark { border-color: #171717; background: #171717; color: #fff; }
+    .button:disabled { opacity: .4; cursor: default; }
+
+    .screen-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+      margin: 0 0 11px;
+      padding: 4px;
+      border-radius: 11px;
+      background: #eeeeeb;
+    }
+    .screen-tabs button {
+      min-height: 31px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #686a64;
+      font-size: 9px;
+      font-weight: 650;
+    }
+    .screen-tabs button.active { background: #fff; color: var(--ink); box-shadow: 0 1px 4px #17171715; }
+    .screen-tabs button[aria-selected="true"] { color: var(--ink); }
+    .promo-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .promo-style {
+      min-height: 52px;
+      display: flex;
+      flex-direction: column;
+      justify-content: end;
+      gap: 4px;
+      padding: 7px;
+      border: 1px solid #e5e5e0;
+      border-radius: 9px;
+      background: linear-gradient(145deg, #edf0e7, #d8dfce);
+      color: #50524c;
+      font-size: 8px;
+      text-align: left;
+    }
+    .promo-style:nth-child(2) { background: linear-gradient(145deg, #f3e7dd, #dbc2ac); }
+    .promo-style:nth-child(3) { background: linear-gradient(145deg, #e6e2d9, #c9c4b8); }
+    .promo-style.active { outline: 2px solid #191a18; outline-offset: 1px; color: #191a18; font-weight: 750; }
+    .faq-item { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+    .faq-item strong { font-size: 9px; font-weight: 650; }
+    .faq-item small { display: block; margin-top: 4px; color: var(--muted); font-size: 8px; }
+    .text-button { padding: 5px; border: 0; background: transparent; color: #6d6f68; font-size: 8px; font-weight: 700; }
+
+    .mood-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .mood {
+      min-height: 89px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 8px;
+      border: 1px solid #e6e6e1;
+      border-radius: 11px;
+      background: #fff;
+      color: #4a4b46;
+      text-align: left;
+    }
+    .mood.active { border-color: #181818; box-shadow: 0 0 0 1px #181818; }
+    .mood-art { height: 45px; border-radius: 7px; background: linear-gradient(135deg, #e3e7dc, #929d83 55%, #3b4738); }
+    .mood:nth-child(2) .mood-art { background: linear-gradient(135deg, #f0e9df, #d1b594 55%, #80644c); }
+    .mood:nth-child(3) .mood-art { background: linear-gradient(135deg, #dedce8, #858096 55%, #383746); }
+    .mood strong { font-size: 8px; }
+    .color-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+    .color-row label { color: #555650; font-size: 9px; font-weight: 650; }
+    input[type="color"] { width: 32px; height: 29px; padding: 2px; border: 1px solid #e5e5e0; border-radius: 8px; background: #fff; }
+    .finish-actions { display: grid; gap: 8px; margin-top: 12px; }
+    .finish-actions .button { width: 100%; }
+
+    .preview-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+    .preview-header h1 { margin: 0; font-size: 18px; letter-spacing: -.05em; }
+    .preview-site {
+      overflow: hidden;
+      border: 1px solid #e4e2dc;
+      border-radius: 16px;
+      background: #fffdf8;
+      box-shadow: 0 8px 22px #27231b0d;
+    }
+    .site-nav { min-height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 13px; border-bottom: 1px solid #efede7; color: #302d28; }
+    .site-nav strong { font-family: Georgia, serif; font-size: 11px; letter-spacing: .03em; }
+    .site-nav span { font-size: 9px; }
+    .site-hero {
+      min-height: 200px;
+      position: relative;
+      display: flex;
+      align-items: end;
+      overflow: hidden;
+      padding: 18px;
+      background:
+        linear-gradient(90deg, #182019d9 0%, #18201965 55%, #18201908 100%),
+        radial-gradient(ellipse at 75% 47%, #e8c69b 0 11%, transparent 12%),
+        radial-gradient(ellipse at 75% 95%, #ac7750 0 25%, transparent 26%),
+        linear-gradient(135deg, #78816c, #d4b895 55%, #9a6f53);
+      color: #fff;
+    }
+    .site-hero::after {
+      content: "";
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      right: 24px;
+      top: 24px;
+      border: 1px solid #fff7;
+      border-radius: 50%;
+      box-shadow: 0 0 0 16px #fff2, 0 0 0 32px #fff1;
+    }
+    .site-hero-copy { position: relative; z-index: 1; width: 75%; }
+    .site-hero-copy small { display: block; margin-bottom: 7px; font-size: 8px; letter-spacing: .16em; text-transform: uppercase; }
+    .site-hero-copy h2 { max-width: 230px; margin: 0; font-family: Georgia, serif; font-size: 26px; font-weight: 500; line-height: 1.05; }
+    .site-hero-copy p { margin: 8px 0 0; font-size: 9px; }
+    .site-hero-copy button { margin-top: 12px; padding: 7px 11px; border: 0; border-radius: 999px; background: #fff; color: #21251f; font-size: 8px; font-weight: 750; }
+    .site-promo {
+      margin: 10px;
+      padding: 10px;
+      border-radius: 9px;
+      background: #e9eee4;
+      color: #354131;
+      font-size: 9px;
+      text-align: center;
+    }
+    .site-section { padding: 12px; }
+    .site-section h3 { margin: 0 0 8px; font-family: Georgia, serif; font-size: 15px; font-weight: 500; }
+    .site-products { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .site-product { overflow: hidden; border: 1px solid #efede7; border-radius: 9px; background: #fff; }
+    .site-product-art { height: 84px; background: linear-gradient(135deg, #d8c8a9, #78856d); }
+    .site-product:nth-child(2) .site-product-art { background: linear-gradient(135deg, #ead4c7, #a97461); }
+    .site-product-copy { padding: 7px; }
+    .site-product-copy strong { display: block; font-size: 8px; }
+    .site-product-copy span { display: block; margin-top: 4px; color: #71736b; font-size: 8px; }
+    .site-footer { padding: 13px; border-top: 1px solid #efede7; color: #6d6d66; font-size: 8px; text-align: center; }
+
+    .section-list { display: grid; gap: 7px; }
+    .section-row {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 51px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+    }
+    .drag-mark { color: #a4a59f; font-size: 13px; letter-spacing: -3px; }
+    .section-copy strong { display: block; font-size: 9px; }
+    .section-copy small { display: block; margin-top: 3px; color: var(--muted); font-size: 8px; }
+    .switch { width: 31px; height: 18px; position: relative; padding: 0; border: 0; border-radius: 999px; background: #c9cac4; }
+    .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .18s ease; }
+    .switch[aria-checked="true"] { background: #171717; }
+    .switch[aria-checked="true"]::after { transform: translateX(13px); }
+    .order-buttons { display: grid; gap: 2px; }
+    .order-buttons button { width: 21px; height: 18px; padding: 0; border: 0; border-radius: 5px; background: #f1f1ee; color: #575852; font-size: 9px; }
+    .order-buttons button:disabled { opacity: .35; }
+
+    .setting-row { display: grid; gap: 9px; }
+    .setting-row + .setting-row { margin-top: 10px; }
+    .setting-note { margin: 8px 0 0; color: var(--muted); font-size: 8px; line-height: 1.45; }
+    .toast {
+      position: absolute;
+      z-index: 5;
+      right: 14px;
+      bottom: 69px;
+      left: 14px;
+      padding: 11px 13px;
+      border-radius: 11px;
+      background: #171717;
+      color: #fff;
+      font-size: 9px;
+      box-shadow: 0 8px 24px #0003;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .bottom-nav {
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 5px 8px calc(5px + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+    .bottom-nav button {
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      gap: 3px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: #777972;
+      font-size: 8px;
+      font-weight: 650;
+    }
+    .bottom-nav button.active { color: #171717; }
+    .bottom-nav svg { width: 17px; height: 17px; }
+
+    @media (max-width: 480px) {
+      body { display: block; padding: 0; background: #f8f8f6; }
+      .device { width: 100%; height: 100dvh; min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
+    }
+    @media (max-height: 760px) and (min-width: 481px) {
+      body { padding: 0; }
+      .device { height: 100dvh; min-height: 0; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="device" aria-label="Interactive Litrus mobile editor mock">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="status-icons" aria-hidden="true">
+        <span class="signal"><i></i><i></i><i></i><i></i></span>
+        <svg width="14" height="12" viewBox="0 0 16 12" fill="none"><path d="M1 4.5C4.8 1.2 11.2 1.2 15 4.5M3.5 7C6 4.9 10 4.9 12.5 7M6.2 9.5C7.2 8.7 8.8 8.7 9.8 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11" r="1" fill="currentColor"/></svg>
+        <span class="battery"></span>
+      </span>
+    </div>
+
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark">L</div>
+        <div class="brand-copy"><strong>Litrus Studio</strong><span>Craft Web Studio</span></div>
+      </div>
+      <div class="header-actions">
+        <button class="header-button" type="button" data-action="store">Store</button>
+        <button class="header-button primary" type="button" data-action="publish">Publish</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <section class="mode-screen" id="screen-edit" data-screen="edit">
+        <div class="screen-heading">
+          <div><p class="eyebrow">EDIT STOREFRONT</p><h1>Make it yours</h1><p>Shape the look. Your catalog stays managed in Craft.</p></div>
+          <span class="saved-state"><i></i><span id="save-status">Saved</span></span>
+        </div>
+        <nav class="step-nav" aria-label="Edit storefront steps">
+          <button class="step-button active" type="button" data-step="shop">Your shop</button>
+          <button class="step-button" type="button" data-step="content">Content</button>
+          <button class="step-button" type="button" data-step="style">Style</button>
+          <button class="step-button" type="button" data-step="finish">Finish</button>
+          <button class="step-button" type="button" data-step="settings">Shop settings</button>
+        </nav>
+
+        <section class="step-panel active" data-step-panel="shop">
+          <article class="card">
+            <h2>Tell us about your shop</h2>
+            <p>These details personalize the storefront preview.</p>
+            <div class="fields">
+              <label class="field">Shop name<input id="shop-name" value="Amani Botanics" maxlength="80"></label>
+              <label class="field">What do you offer?
+                <select id="offer-type"><option value="products">Products</option><option value="services">Services</option></select>
+              </label>
+              <label class="field">What should customers know?<input id="shop-description" value="Natural care for everyday rituals"></label>
+              <label class="field">One-line slogan<input id="shop-tagline" value="Care, grown naturally"></label>
+              <div class="field-grid">
+                <label class="field">Currency<select id="currency"><option>KES</option><option>USD</option><option>EUR</option><option>GBP</option></select></label>
+                <label class="field">Button label<input id="cta-label" value="Discover the collection"></label>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="step-panel" data-step-panel="content">
+          <article class="card">
+            <h2>Homepage content</h2>
+            <p>Adjust your promo and FAQs. Product and category editing stays in Craft.</p>
+            <nav class="screen-tabs" aria-label="Content screens">
+              <button type="button" class="active" data-content-screen="promo" aria-selected="true">Promo</button>
+              <button type="button" data-content-screen="faqs" aria-selected="false">FAQs</button>
+            </nav>
+            <section data-content-panel="promo">
+              <label class="inline-check"><input id="promo-enabled" type="checkbox" checked> Show a promo banner</label>
+              <div class="section-heading"><strong>Promo style</strong><span>Pick a look</span></div>
+              <div class="promo-options">
+                <button class="promo-style active" type="button" data-promo-style="Editorial">Editorial</button>
+                <button class="promo-style" type="button" data-promo-style="Cinematic">Cinematic</button>
+                <button class="promo-style" type="button" data-promo-style="Soft minimal">Soft minimal</button>
+              </div>
+              <div class="fields" style="margin-top:11px">
+                <label class="field">Promo headline<input id="promo-title" value="The Weekend Edit"></label>
+                <label class="field">Promo message<input id="promo-copy" value="15% off your everyday ritual"></label>
+              </div>
+            </section>
+            <section data-content-panel="faqs" hidden>
+              <div class="section-heading"><strong>Frequently asked questions</strong><span id="faq-count">2 questions</span></div>
+              <div id="faq-list">
+                <div class="faq-item"><div><strong>How long does delivery take?</strong><small>Usually 1-3 business days.</small></div><button class="text-button" type="button" data-remove-faq>Remove</button></div>
+                <div class="faq-item"><div><strong>Can I return an item?</strong><small>Contact us within 7 days.</small></div><button class="text-button" type="button" data-remove-faq>Remove</button></div>
+              </div>
+              <button class="button" type="button" id="add-faq">+ Add a question</button>
+            </section>
+          </article>
+        </section>
+
+        <section class="step-panel" data-step-panel="style">
+          <article class="card">
+            <h2>Pick a feeling</h2>
+            <p>Choose a visual direction, then fine-tune the details in Advanced.</p>
+            <div class="mood-grid">
+              <button class="mood active" type="button" data-mood="Botanical"><span class="mood-art"></span><strong>Botanical</strong></button>
+              <button class="mood" type="button" data-mood="Warm editorial"><span class="mood-art"></span><strong>Warm editorial</strong></button>
+              <button class="mood" type="button" data-mood="Modern calm"><span class="mood-art"></span><strong>Modern calm</strong></button>
+            </div>
+            <div class="color-row"><label for="accent-color">Accent colour</label><input id="accent-color" type="color" value="#879077"><span id="color-value" class="setting-note">Sage</span></div>
+          </article>
+        </section>
+
+        <section class="step-panel" data-step-panel="finish">
+          <article class="card">
+            <p class="eyebrow">READY TO REVIEW</p>
+            <h2>Your storefront look is ready</h2>
+            <p>Preview the full storefront before you publish. This mock does not send or save anything.</p>
+            <div class="finish-actions">
+              <button class="button dark" type="button" data-mode="preview">Preview my shop</button>
+              <button class="button" type="button" data-mode="sections">Arrange sections</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="step-panel" data-step-panel="settings">
+          <article class="card">
+            <h2>Shop settings</h2>
+            <p>Visual and contact settings for this prototype.</p>
+            <div class="fields">
+              <label class="field">Contact email<input id="contact-email" type="email" value="hello@amanibotanics.example"></label>
+              <label class="field">WhatsApp number<input id="contact-phone" value="+254 700 000 000"></label>
+              <label class="field">Delivery note<textarea id="delivery-note" rows="2">Delivery in Nairobi and across Kenya.</textarea></label>
+              <label class="inline-check"><input type="checkbox" checked> Show contact details in the footer</label>
+            </div>
+          </article>
+        </section>
+
+        <div class="step-actions">
+          <button class="button" type="button" id="step-back">Back</button>
+          <button class="button dark" type="button" id="step-next">Next</button>
+        </div>
+      </section>
+
+      <section class="mode-screen" id="screen-preview" data-screen="preview" hidden>
+        <div class="preview-header"><div><p class="eyebrow">LIVE STOREFRONT</p><h1>Preview</h1></div><button class="button" type="button" data-mode="edit">Back to edit</button></div>
+        <article class="preview-site">
+          <header class="site-nav"><strong id="preview-name">AMANI BOTANICS</strong><span>Menu&nbsp;&nbsp; Bag (0)</span></header>
+          <section class="site-hero" id="preview-hero">
+            <div class="site-hero-copy"><small id="preview-tagline">CARE, GROWN NATURALLY</small><h2 id="preview-description">Natural care for everyday rituals</h2><p>Thoughtful essentials, made to feel good.</p><button id="preview-cta" type="button">DISCOVER THE COLLECTION</button></div>
+          </section>
+          <div class="site-promo" id="preview-promo"><strong id="preview-promo-title">THE WEEKEND EDIT</strong>&nbsp; <span id="preview-promo-copy">15% off your everyday ritual</span></div>
+          <section class="site-section" id="preview-collection">
+            <h3>Made for your everyday</h3>
+            <div class="site-products">
+              <article class="site-product"><div class="site-product-art"></div><div class="site-product-copy"><strong>Moringa Glow Oil</strong><span>KES 1,850</span></div></article>
+              <article class="site-product"><div class="site-product-art"></div><div class="site-product-copy"><strong>Calm Skin Set</strong><span>KES 2,400</span></div></article>
+            </div>
+          </section>
+          <div class="site-footer" id="preview-footer">Questions? hello@amanibotanics.example</div>
+        </article>
+        <button class="button dark" style="width:100%;margin-top:12px" type="button" data-mode="edit">Return to editor</button>
+      </section>
+
+      <section class="mode-screen" id="screen-sections" data-screen="sections" hidden>
+        <div class="screen-heading"><div><p class="eyebrow">STOREFRONT STRUCTURE</p><h1>Sections</h1><p>Show, hide, or reorder visual sections.</p></div></div>
+        <article class="card"><p>Catalog data stays managed in Craft. These controls only change what appears in the design.</p><div class="section-list" id="section-list"></div></article>
+        <button class="button dark" type="button" data-mode="preview">Preview sections</button>
+      </section>
+
+      <section class="mode-screen" id="screen-advanced" data-screen="advanced" hidden>
+        <div class="screen-heading"><div><p class="eyebrow">DESIGN CONTROLS</p><h1>Advanced</h1><p>Fine-tune the storefront's visual details.</p></div></div>
+        <article class="card">
+          <h2>Storefront appearance</h2>
+          <p>These options affect presentation only, not products or categories.</p>
+          <div class="setting-row">
+            <label class="field">Hero style<select id="advanced-hero"><option>Editorial image</option><option>Full-bleed photo</option><option>Minimal text</option></select></label>
+            <label class="field">Collection card style<select id="advanced-card"><option>Soft rounded</option><option>Square editorial</option><option>Minimal border</option></select></label>
+            <label class="field">Category presentation<select id="advanced-category"><option>Quiet labels</option><option>Rounded chips</option><option>Editorial list</option></select></label>
+            <label class="field">Product layout<select id="advanced-layout"><option>Two columns</option><option>One column</option><option>Editorial grid</option></select></label>
+            <label class="field">Heading font<select id="advanced-font"><option>Elegant serif</option><option>Modern sans</option><option>Soft rounded</option></select></label>
+          </div>
+          <p class="setting-note">Catalog management is intentionally outside this design screen.</p>
+        </article>
+        <article class="card">
+          <h2>Motion and details</h2>
+          <div class="fields">
+            <label class="field">Animation<select id="advanced-animation"><option>Gentle reveal</option><option>None</option><option>Slow drift</option></select></label>
+            <label class="field">Scroll effect<select id="advanced-scroll"><option>Subtle parallax</option><option>None</option><option>Reveal on scroll</option></select></label>
+          </div>
+        </article>
+      </section>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Litrus editor navigation">
+      <button class="active" type="button" data-mode="edit" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 19.5V5.8a1.8 1.8 0 0 1 1.8-1.8H20M8 8h12M8 12h12M8 16h7"/><path d="m3.5 20.5 4-1-3-3-1 4Z"/></svg><span>Edit</span>
+      </button>
+      <button type="button" data-mode="preview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg><span>Preview</span>
+      </button>
+      <button type="button" data-mode="sections">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="16" height="5" rx="1"/><rect x="4" y="11" width="16" height="4" rx="1"/><rect x="4" y="17" width="16" height="3" rx="1"/></svg><span>Sections</span>
+      </button>
+      <button type="button" data-mode="advanced">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg><span>Advanced</span>
+      </button>
+    </nav>
+  </main>
+
+  <script>
+    (() => {
+      const stepOrder = ["shop", "content", "style", "finish", "settings"];
+      const sectionState = [
+        { id: "hero", name: "Hero banner", note: "First impression", visible: true },
+        { id: "promo", name: "Promo banner", note: "Current offer", visible: true },
+        { id: "collection", name: "Featured collection", note: "Catalog preview", visible: true },
+        { id: "story", name: "Brand story", note: "Image and text", visible: true },
+        { id: "reviews", name: "Customer reviews", note: "Social proof", visible: false },
+        { id: "footer", name: "Contact footer", note: "Contact and links", visible: true }
+      ];
+      let activeStep = "shop";
+      let activeMode = "edit";
+      let toastTimer;
+
+      const byId = id => document.getElementById(id);
+      const toast = message => {
+        const element = byId("toast");
+        element.textContent = message;
+        element.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => element.classList.remove("show"), 2300);
+      };
+
+      function updatePreview() {
+        const shopName = byId("shop-name").value.trim() || "Your storefront";
+        const tagline = byId("shop-tagline").value.trim() || "Made for your everyday";
+        const description = byId("shop-description").value.trim() || "Thoughtful essentials, made to feel good.";
+        byId("preview-name").textContent = shopName.toLocaleUpperCase();
+        byId("preview-tagline").textContent = tagline.toLocaleUpperCase();
+        byId("preview-description").textContent = description;
+        byId("preview-cta").textContent = byId("cta-label").value.trim().toLocaleUpperCase() || "EXPLORE";
+        byId("preview-promo-title").textContent = byId("promo-title").value.trim().toLocaleUpperCase() || "A SPECIAL OFFER";
+        byId("preview-promo-copy").textContent = byId("promo-copy").value.trim();
+        byId("preview-promo").hidden = !byId("promo-enabled").checked || !sectionState.find(section => section.id === "promo").visible;
+        byId("preview-hero").hidden = !sectionState.find(section => section.id === "hero").visible;
+        byId("preview-collection").hidden = !sectionState.find(section => section.id === "collection").visible;
+        byId("preview-footer").hidden = !sectionState.find(section => section.id === "footer").visible;
+        document.documentElement.style.setProperty("--accent", byId("accent-color").value);
+        byId("color-value").textContent = byId("accent-color").value.toUpperCase();
+        byId("save-status").textContent = "Saved";
+      }
+
+      function showMode(mode) {
+        activeMode = mode;
+        document.querySelectorAll("[data-screen]").forEach(screen => {
+          screen.hidden = screen.dataset.screen !== mode;
+        });
+        document.querySelectorAll(".bottom-nav [data-mode]").forEach(button => {
+          const selected = button.dataset.mode === mode;
+          button.classList.toggle("active", selected);
+          if (selected) button.setAttribute("aria-current", "page");
+          else button.removeAttribute("aria-current");
+        });
+        if (mode === "preview") updatePreview();
+      }
+
+      function showStep(step) {
+        activeStep = stepOrder.includes(step) ? step : "shop";
+        document.querySelectorAll("[data-step-panel]").forEach(panel => {
+          panel.classList.toggle("active", panel.dataset.stepPanel === activeStep);
+        });
+        document.querySelectorAll(".step-button").forEach(button => {
+          const selected = button.dataset.step === activeStep;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-current", selected ? "step" : "false");
+        });
+        const index = stepOrder.indexOf(activeStep);
+        byId("step-back").disabled = index === 0;
+        byId("step-next").textContent = activeStep === "finish" ? "Preview" : "Next";
+        updatePreview();
+      }
+
+      function showContentScreen(screen) {
+        const promo = screen === "promo";
+        document.querySelectorAll("[data-content-panel]").forEach(panel => {
+          panel.hidden = (panel.dataset.contentPanel === "promo") !== promo;
+        });
+        document.querySelectorAll("[data-content-screen]").forEach(button => {
+          const selected = button.dataset.contentScreen === screen;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-selected", selected ? "true" : "false");
+        });
+      }
+
+      function drawSections() {
+        const list = byId("section-list");
+        list.replaceChildren();
+        sectionState.forEach((section, index) => {
+          const row = document.createElement("div");
+          row.className = "section-row";
+          const grip = document.createElement("span");
+          grip.className = "drag-mark";
+          grip.textContent = "::";
+          grip.setAttribute("aria-hidden", "true");
+          const copy = document.createElement("span");
+          copy.className = "section-copy";
+          const name = document.createElement("strong");
+          name.textContent = section.name;
+          const note = document.createElement("small");
+          note.textContent = section.note;
+          copy.append(name, note);
+          const toggle = document.createElement("button");
+          toggle.className = "switch";
+          toggle.type = "button";
+          toggle.setAttribute("role", "switch");
+          toggle.setAttribute("aria-label", `${section.visible ? "Hide" : "Show"} ${section.name}`);
+          toggle.setAttribute("aria-checked", String(section.visible));
+          toggle.addEventListener("click", () => {
+            section.visible = !section.visible;
+            drawSections();
+            updatePreview();
+          });
+          const order = document.createElement("span");
+          order.className = "order-buttons";
+          const up = document.createElement("button");
+          up.type = "button";
+          up.textContent = "^";
+          up.setAttribute("aria-label", `Move ${section.name} up`);
+          up.disabled = index === 0;
+          up.addEventListener("click", () => moveSection(index, -1));
+          const down = document.createElement("button");
+          down.type = "button";
+          down.textContent = "v";
+          down.setAttribute("aria-label", `Move ${section.name} down`);
+          down.disabled = index === sectionState.length - 1;
+          down.addEventListener("click", () => moveSection(index, 1));
+          order.append(up, down);
+          row.append(grip, copy, toggle, order);
+          list.append(row);
+        });
+      }
+
+      function moveSection(index, offset) {
+        const target = index + offset;
+        if (target < 0 || target >= sectionState.length) return;
+        [sectionState[index], sectionState[target]] = [sectionState[target], sectionState[index]];
+        drawSections();
+      }
+
+      document.querySelectorAll("[data-mode]").forEach(button => {
+        button.addEventListener("click", () => showMode(button.dataset.mode));
+      });
+      document.querySelectorAll(".step-button").forEach(button => {
+        button.addEventListener("click", () => showStep(button.dataset.step));
+      });
+      byId("step-back").addEventListener("click", () => {
+        const index = stepOrder.indexOf(activeStep);
+        if (index > 0) showStep(stepOrder[index - 1]);
+      });
+      byId("step-next").addEventListener("click", () => {
+        if (activeStep === "finish") {
+          showMode("preview");
+          return;
+        }
+        const index = stepOrder.indexOf(activeStep);
+        if (index < stepOrder.length - 1) showStep(stepOrder[index + 1]);
+      });
+
+      document.querySelectorAll("[data-content-screen]").forEach(button => {
+        button.addEventListener("click", () => showContentScreen(button.dataset.contentScreen));
+      });
+      document.querySelectorAll("[data-promo-style]").forEach(button => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll("[data-promo-style]").forEach(option => option.classList.toggle("active", option === button));
+          toast(`${button.dataset.promoStyle} promo style selected.`);
+        });
+      });
+      document.querySelectorAll("[data-mood]").forEach(button => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll("[data-mood]").forEach(option => option.classList.toggle("active", option === button));
+          toast(`${button.dataset.mood} look selected.`);
+        });
+      });
+
+      byId("accent-color").addEventListener("input", updatePreview);
+      ["shop-name", "shop-description", "shop-tagline", "cta-label", "promo-title", "promo-copy", "promo-enabled"].forEach(id => {
+        byId(id).addEventListener("input", updatePreview);
+        byId(id).addEventListener("change", updatePreview);
+      });
+      byId("add-faq").addEventListener("click", () => {
+        const item = document.createElement("div");
+        item.className = "faq-item";
+        const copy = document.createElement("div");
+        const question = document.createElement("strong");
+        question.textContent = "New question";
+        question.contentEditable = "true";
+        question.setAttribute("aria-label", "Edit question");
+        const answer = document.createElement("small");
+        answer.textContent = "Tap the question to change it.";
+        copy.append(question, answer);
+        const remove = document.createElement("button");
+        remove.className = "text-button";
+        remove.type = "button";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", () => {
+          item.remove();
+          updateFaqCount();
+        });
+        item.append(copy, remove);
+        byId("faq-list").append(item);
+        updateFaqCount();
+      });
+      document.querySelectorAll("[data-remove-faq]").forEach(button => {
+        button.addEventListener("click", () => {
+          button.closest(".faq-item").remove();
+          updateFaqCount();
+        });
+      });
+      function updateFaqCount() {
+        const count = byId("faq-list").querySelectorAll(".faq-item").length;
+        byId("faq-count").textContent = `${count} ${count === 1 ? "question" : "questions"}`;
+      }
+      document.querySelector('[data-action="publish"]').addEventListener("click", () => {
+        toast("Mock publish complete. Nothing was sent or changed.");
+      });
+      document.querySelector('[data-action="store"]').addEventListener("click", () => {
+        toast("Products and categories are managed in Craft Store.");
+      });
+      ["advanced-hero", "advanced-card", "advanced-category", "advanced-layout", "advanced-font", "advanced-animation", "advanced-scroll"].forEach(id => {
+        byId(id).addEventListener("change", () => toast("Visual setting updated in this mock."));
+      });
+
+      drawSections();
+      updatePreview();
+      showStep("shop");
+      showMode("edit");
+    })();
+  </script>
+</body>
+</html>
