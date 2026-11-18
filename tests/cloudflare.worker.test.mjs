@@ -6891,3 +6891,72 @@ test('a deposit paid while the customer cancels is still flagged for refund (ver
   assert.deepEqual(state(b.appointment.id), { status: 'cancelled', payment_status: 'paid', deposit_refund_due: 1 });
   assert.equal(rows("SELECT * FROM owner_notifications WHERE kind='booking_refund' AND ref=?", [b.appointment.id]).length, 1);
 });
+
+test('selling an option reduces that option, and the shop cannot oversell a size', async () => {
+  const { env, rows, tokens } = await createHardeningEnv({ catalog: VARIANT_CATALOG });
+  // Publish through the real endpoint, which seeds the live counts from the published numbers.
+  const publish = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog?tenant=shop-a', {
+    method: 'PUT', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify(VARIANT_CATALOG)
+  }), env);
+  assert.equal(publish.status, 200);
+  const stockOf = variantId => rows(
+    'SELECT stock FROM storefront_variant_stock WHERE tenant_id=? AND product_id=? AND variant_id=?',
+    ['shop-a', '20', variantId]
+  )[0]?.stock;
+  assert.equal(stockOf('v42'), 2, 'the published size stock becomes the live count');
+  assert.equal(stockOf('v43'), 5);
+
+  const place = (items, ip) => worker.fetch(orderRequest('shop-a', items, {}, { ip }), env);
+  const created = await place([{ product_id: 20, quantity: 2, variant_id: 'v42' }], '10.7.0.1');
+  assert.equal(created.status, 201);
+  const { order } = await created.json();
+  assert.equal(stockOf('v42'), 2, 'an unpaid order has not taken the stock yet');
+
+  const paid = await worker.fetch(new Request(
+    `https://eshop-storefront.workers.dev/api/store/orders/${order.order_number}/payment?tenant=shop-a`,
+    { method: 'POST', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ method: 'cash' }) }
+  ), env);
+  assert.equal(paid.status, 200);
+  assert.equal(stockOf('v42'), 0, 'paying for 2 of size 42 leaves none');
+  assert.equal(stockOf('v43'), 5, 'the other size is untouched');
+
+  // The next customer is refused instead of overselling.
+  const oversell = await place([{ product_id: 20, quantity: 1, variant_id: 'v42' }], '10.7.0.2');
+  assert.equal(oversell.status, 409);
+  assert.equal((await oversell.json()).error_code, 'variant_out_of_stock');
+  // The size that still has stock is unaffected.
+  assert.equal((await place([{ product_id: 20, quantity: 1, variant_id: 'v43' }], '10.7.0.3')).status, 201);
+});
+
+test('a replayed settlement never deducts an option twice, and a republish does not resurrect sold stock', async () => {
+  const { env, rows, tokens } = await createHardeningEnv({ catalog: VARIANT_CATALOG });
+  const publishCatalog = catalog => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog?tenant=shop-a', {
+    method: 'PUT', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify(catalog)
+  }), env);
+  assert.equal((await publishCatalog(VARIANT_CATALOG)).status, 200);
+  const stockOf = variantId => rows(
+    'SELECT stock FROM storefront_variant_stock WHERE tenant_id=? AND product_id=? AND variant_id=?',
+    ['shop-a', '20', variantId]
+  )[0]?.stock;
+
+  const created = await worker.fetch(orderRequest('shop-a', [{ product_id: 20, quantity: 1, variant_id: 'v43' }], {}, { ip: '10.7.1.1' }), env);
+  const { order } = await created.json();
+  const pay = () => worker.fetch(new Request(
+    `https://eshop-storefront.workers.dev/api/store/orders/${order.order_number}/payment?tenant=shop-a`,
+    { method: 'POST', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ method: 'cash' }) }
+  ), env);
+  assert.equal((await pay()).status, 200);
+  assert.equal(stockOf('v43'), 4);
+  await pay();
+  assert.equal(stockOf('v43'), 4, 'settling the same order again takes nothing more');
+
+  // Republishing the same numbers must not undo the sale.
+  assert.equal((await publishCatalog(VARIANT_CATALOG)).status, 200);
+  assert.equal(stockOf('v43'), 4, 'a republish that changes nothing leaves the live count alone');
+
+  // Restocking is the owner changing the published number, and that does take effect.
+  const restocked = JSON.parse(JSON.stringify(VARIANT_CATALOG));
+  restocked.products[0].variants[1].stock = 9;
+  assert.equal((await publishCatalog(restocked)).status, 200);
+  assert.equal(stockOf('v43'), 9, 'a new published number is the owner restocking');
+});

@@ -2086,7 +2086,7 @@ async function handleCatalog(request, env, tenantId) {
     const payload = isPrivateRead && row.admin_payload && row.admin_payload !== "{}"
       ? row.admin_payload
       : row.payload;
-    const catalog = JSON.parse(payload);
+    const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(payload));
     const sharedRows = await env.DB.prepare(
       "SELECT sku, stock FROM inventory_stock WHERE tenant_id = ?"
     ).bind(tenantId).all();
@@ -2229,6 +2229,7 @@ async function handleCatalog(request, env, tenantId) {
      ON CONFLICT(tenant_id) DO UPDATE SET payload = excluded.payload, admin_payload = excluded.admin_payload,
      updated_at = excluded.updated_at`
   ).bind(tenantId, payload, privatePayload, updatedAt).run();
+  await syncVariantStock(env, tenantId, catalog.publicCatalog, updatedAt);
   await recordCatalogVersion(env, tenantId, tenant, updatedAt);
   return jsonResponse({
     ok: true,
@@ -3248,7 +3249,7 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
     "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id=?"
   ).bind(tenantId).first();
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
-  const catalog = JSON.parse(catalogRow.payload);
+  const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
   const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
   // product id -> { product, quantity (all options together), lines: variant id -> { variant, priceCents, quantity } }
   const requestedProducts = new Map();
@@ -3429,7 +3430,7 @@ async function handleStorefrontProductInterest(request, env, tenantId) {
     "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
   ).bind(tenantId).first();
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
-  const catalog = JSON.parse(catalogRow.payload);
+  const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
   const product = await storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at)(productId);
   if (!product) return jsonResponse({ error: "Product not found in this shop's published catalogue." }, 404);
   const canonicalProductId = String(product.id);
@@ -3863,7 +3864,7 @@ async function handleStorefrontHoldRequests(request, env, tenantId, ctx) {
     "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id=?"
   ).bind(tenantId).first();
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
-  const catalog = JSON.parse(catalogRow.payload);
+  const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
   const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
   const product = await resolveProduct(productId);
   if (!product || product.booking_enabled !== true) {
@@ -5558,6 +5559,7 @@ function parseOrderItemsForSettlement(order) {
   }
   if (!Array.isArray(items)) throw new Error("The saved order items are invalid; inventory was not changed.");
   const quantitiesBySku = new Map();
+  const quantitiesByVariant = new Map();
   const holdIds = new Set();
   for (const item of items) {
     const sku = cleanText(item?.sku, 120).trim();
@@ -5570,8 +5572,92 @@ function parseOrderItemsForSettlement(order) {
     const current = quantitiesBySku.get(sku) || { productId, quantity: 0 };
     current.quantity += quantity;
     quantitiesBySku.set(sku, current);
+    const variantId = String(item?.variant_id || "").slice(0, 120);
+    if (!variantId) continue;
+    const key = `${productId} ${variantId}`;
+    const line = quantitiesByVariant.get(key)
+      || { productId, variantId, quantity: 0, label: `${sku}/${variantId}`.slice(0, 120) };
+    line.quantity += quantity;
+    quantitiesByVariant.set(key, line);
   }
-  return { quantitiesBySku, holdIds };
+  return { quantitiesBySku, quantitiesByVariant, holdIds };
+}
+
+// Every tracked option of every product in a catalogue.
+function catalogVariantRows(catalog) {
+  const rows = [];
+  for (const product of catalog?.products || []) {
+    for (const variant of product?.variants || []) {
+      const variantId = String(variant?.id ?? "").slice(0, 120);
+      if (!variantId) continue;
+      rows.push({ productId: String(product.id), variantId, stock: Math.max(0, Number(variant.stock) || 0) });
+    }
+  }
+  return rows;
+}
+
+// The owner's published numbers become the live counts the first time, and again whenever the owner
+// changes them. A republish that leaves a number alone never undoes the sales made since.
+async function syncVariantStock(env, tenantId, catalog, updatedAt) {
+  const rows = catalogVariantRows(catalog);
+  if (!rows.length || !env.DB) return;
+  try {
+    await env.DB.batch(rows.map(row => env.DB.prepare(
+      `INSERT INTO storefront_variant_stock (tenant_id,product_id,variant_id,stock,published_stock,updated_at)
+       VALUES (?,?,?,?,?,?)
+       ON CONFLICT(tenant_id,product_id,variant_id) DO UPDATE SET
+         stock=CASE WHEN storefront_variant_stock.published_stock=excluded.published_stock
+           THEN storefront_variant_stock.stock ELSE excluded.stock END,
+         published_stock=excluded.published_stock,
+         updated_at=excluded.updated_at`
+    ).bind(tenantId, row.productId, row.variantId, row.stock, row.stock, updatedAt)));
+  } catch (error) {
+    console.error("Could not record published variant stock.", error?.message || error);
+  }
+}
+
+// Puts what is really left onto a catalogue before anyone reads it, so the storefront, the order
+// endpoint and the owner all see the same number. Falls back to the published numbers when the
+// table is not migrated yet.
+async function applyLiveVariantStock(env, tenantId, catalog) {
+  if (!env?.DB || !(catalog?.products || []).some(product => product?.variants?.length)) return catalog;
+  let rows;
+  try {
+    rows = await env.DB.prepare(
+      "SELECT product_id,variant_id,stock FROM storefront_variant_stock WHERE tenant_id=?"
+    ).bind(tenantId).all();
+  } catch {
+    return catalog;
+  }
+  const live = new Map((rows?.results || []).map(row => [`${row.product_id} ${row.variant_id}`, Number(row.stock)]));
+  if (!live.size) return catalog;
+  for (const product of catalog.products || []) {
+    if (!Array.isArray(product?.variants) || !product.variants.length) continue;
+    let total = 0;
+    let tracked = false;
+    for (const variant of product.variants) {
+      const key = `${product.id} ${variant?.id}`;
+      if (live.has(key)) {
+        variant.stock = live.get(key);
+        tracked = true;
+      }
+      total += Math.max(0, Number(variant.stock) || 0);
+    }
+    if (tracked) product.stock = total;
+  }
+  return catalog;
+}
+
+// Idempotent per (order, product, variant), like the SKU ledger beside it.
+function variantDeductionStatement(env, order, item) {
+  return env.DB.prepare(
+    `INSERT OR IGNORE INTO storefront_variant_deductions
+     (tenant_id,order_number,product_id,variant_id,quantity,created_at)
+     SELECT ?,?,?,?,?,? WHERE NOT EXISTS (
+       SELECT 1 FROM storefront_variant_deductions
+       WHERE tenant_id=? AND order_number=? AND product_id=? AND variant_id=?)`
+  ).bind(order.tenant_id, order.order_number, item.productId, item.variantId, item.quantity,
+    new Date().toISOString(), order.tenant_id, order.order_number, item.productId, item.variantId);
 }
 
 // Idempotent per (order, sku): a repeat settlement never re-deducts or trips the stock trigger.
@@ -5651,7 +5737,7 @@ async function updateOrderPayment(env, order, paymentStatus, paidAt = null, manu
     ).bind(paymentStatus, paidAt, updatedAt, order.tenant_id, order.order_number, order.payment_reference).run();
     return { settled: false, changed: false, needsAttention: false, attentionReason: null };
   }
-  const { quantitiesBySku, holdIds } = parseOrderItemsForSettlement(order);
+  const { quantitiesBySku, quantitiesByVariant, holdIds } = parseOrderItemsForSettlement(order);
   const holdStatements = [...holdIds].map(holdId => env.DB.prepare(
     "UPDATE storefront_hold_requests SET status='released',released_at=?,updated_at=? WHERE tenant_id=? AND id=? AND status='approved'"
   ).bind(updatedAt, updatedAt, order.tenant_id, holdId));
@@ -5661,6 +5747,17 @@ async function updateOrderPayment(env, order, paymentStatus, paidAt = null, manu
       "SELECT web_enabled FROM main_store_inventory WHERE tenant_id=? AND sku=?"
     ).bind(order.tenant_id, sku).first();
     if (allocation) deductions.push({ sku, statement: orderDeductionStatement(env, order, sku, item) });
+  }
+  // Options the shop tracks are deducted too, so selling "Size M" actually reduces M.
+  for (const item of quantitiesByVariant.values()) {
+    try {
+      const tracked = await env.DB.prepare(
+        "SELECT 1 AS present FROM storefront_variant_stock WHERE tenant_id=? AND product_id=? AND variant_id=?"
+      ).bind(order.tenant_id, item.productId, item.variantId).first();
+      if (tracked) deductions.push({ sku: item.label, statement: variantDeductionStatement(env, order, item) });
+    } catch (error) {
+      console.error("Could not read variant stock for settlement.", error?.message || error);
+    }
   }
   const paidUpdate = (needsAttention, reason) => manual
     ? env.DB.prepare(
@@ -6855,7 +6952,7 @@ async function handleStorefrontEventAnalytics(request, env, tenantId) {
     let ignored = coalesced.size;
     if (catalogRow?.payload) {
       ignored = 0;
-      const catalog = JSON.parse(catalogRow.payload);
+      const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
       const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at || "");
       for (const item of coalesced.values()) {
         const product = await resolveProduct(item.productId);
@@ -7817,7 +7914,7 @@ async function handleDiscountValidate(request, env, tenantId) {
     "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id=?"
   ).bind(tenantId).first();
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
-  const catalog = JSON.parse(catalogRow.payload);
+  const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
   const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
   let subtotalCents = 0;
   for (const requested of input.items) {
@@ -8735,7 +8832,7 @@ export default {
             if (cachedPage) return cachedStorefrontResponse(cachedPage);
           }
         }
-        const catalog = JSON.parse(snapshot.payload);
+        const catalog = await applyLiveVariantStock(env, hostTenantId, JSON.parse(snapshot.payload));
         // The storefront hides Paystack (and makes the email optional) only when the shop really has no
         // connected Paystack account. The flag rides in the page's embedded catalogue, so it refreshes with
         // the page cache (at most an hour) and is never trusted by the Worker itself at payment time.

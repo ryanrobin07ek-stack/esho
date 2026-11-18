@@ -2,7 +2,7 @@
 
 This document is the contract for the Worker's storefront commerce endpoints. The Litrus storefront (`public/litrus-mixer/live-catalog.js`) and the Craft owner app both rely on the shapes below. If you change a shape in `worker.js`, change it here and in `tests/cloudflare.worker.test.mjs`.
 
-It covers migrations `0025` to `0030` (`0030` is service bookings, see "Service bookings"). Apply them before deploying (`npm run cf:d1:migrate:remote`). Without them, order creation (without a discount code), holds and every pre-existing route keep working (rate limits fall back to KV and then fail open), but the new owner endpoints need their tables (and `0028` adds `storefront_orders.discount_released`, which every order status change uses, so migrate before deploying).
+It covers migrations `0025` to `0031` (`0030` is service bookings, see "Service bookings"). Apply them before deploying (`npm run cf:d1:migrate:remote`). Without them, order creation (without a discount code), holds and every pre-existing route keep working (rate limits fall back to KV and then fail open), but the new owner endpoints need their tables (and `0028` adds `storefront_orders.discount_released`, which every order status change uses, so migrate before deploying).
 
 Conventions:
 
@@ -77,7 +77,11 @@ Products with options carry `variants` in the published catalogue: `{ id, option
 * The stored line carries the variant id and a label built from the catalogue (`"Size: 42 / Color: Red"`), not from the client.
 * Sending a `variant_id` that the product does not have is `409 variant_unavailable`.
 * A product that has variants needs a `variant_id`, otherwise `409 variant_required`. The one exception is older storefronts that cannot send variants: when no variant changes the price, the line is accepted without one and is priced at the product price.
-* Several variants of one product may appear as separate lines. Stock for shared inventory is still deducted per product SKU.
+* Several variants of one product may appear as separate lines. Shared inventory is deducted per product SKU, and each option is deducted separately as well (see below).
+
+#### Stock per option
+
+Migration `0031` adds `storefront_variant_stock` (the live count per product and variant) and `storefront_variant_deductions` (one row per order and variant, so a replayed settlement deducts once). Publishing seeds the live counts from the published numbers; a republish that leaves a number unchanged keeps the live count, so it never resurrects stock that has already sold, while a changed number is the owner restocking and does take effect. Settling a paid order deducts the option as well as the SKU, and every catalogue read overlays the live counts, so `variant_out_of_stock` reflects what is really left instead of a frozen snapshot. If the option is short at settlement the order is still recorded as paid and flagged `needs_attention`, exactly as for SKU stock. The POS has no variant concept, so a till sale still moves only the product SKU.
 
 #### Holds on an order
 
