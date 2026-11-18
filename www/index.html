@@ -10091,77 +10091,61 @@ const categories = [];
 
 const products = [];
 
+// Craft's own pricing, in the currency the shop owner actually earns in. Every tier is a whole
+// shop: the first is the till on one phone, the second adds the website and lets a team share the
+// till, and the third is for an owner running several shops at once.
 const plans = [
   {
     id: 1,
-    slug: "starter",
-    name: "Starter",
-    price: 29,
+    slug: "counter",
+    name: "Counter",
+    price: 300,
     billing_period: "month",
-    description: "Essential commerce tools for emerging boutiques and independent artisans.",
+    description: "The till, on one phone. For a shop owner who sells face to face.",
     badge: null,
     is_current: 0,
     features: [
-      "Up to 25 Curated Products",
-      "Standard SQLite Browser Storage",
-      "Essential Editorial Storefront",
-      "Basic Analytics Overview",
-      "Standard Checkout Flow"
+      "One account",
+      "POS on one phone",
+      "Products, stock and receipts",
+      "Sales and profit reports",
+      "Works offline on the device"
     ]
   },
-
   {
     id: 2,
-    slug: "growth",
-    name: "Growth Studio",
-    price: 79,
+    slug: "shop-and-website",
+    name: "Shop and website",
+    price: 1140,
     billing_period: "month",
-    description: "Expanded inventory and advanced marketing controls for growing luxury brands.",
-    badge: "Popular",
+    description: "The till and your own website, with the counter shared across the team.",
+    badge: "Most shops",
     is_current: 0,
     features: [
-      "Up to 150 Curated Products",
-      "Advanced Relational SQL Queries",
-      "Custom Theme & Color Palette",
-      "Inventory Reorder Triggers",
-      "Full Business Analytics Dashboard",
-      "Priority Concierge Support"
+      "Everything in Counter",
+      "One website, with your own address",
+      "Share the till across up to 5 phones",
+      "Several sellers on one counter",
+      "Online orders, bookings and discount codes",
+      "Website visitors and sales reports"
     ]
   },
   {
     id: 3,
-    slug: "professional",
-    name: "Professional Flagship",
-    price: 199,
+    slug: "multi-shop",
+    name: "Multi-shop",
+    price: 5240,
     billing_period: "month",
-    description: "The complete enterprise-grade retail architecture for global commerce houses.",
-    badge: "Current Plan",
-    is_current: 1,
-    features: [
-      "Unlimited Products & Categories",
-      "Multi-Currency & International Shipping",
-      "Advanced SEO & Dynamic Structured Data",
-      "Deep Sales Trends & Traffic Analysis",
-      "Full Studio Customizer & Live Preview",
-      "Dedicated Technical Concierge"
-    ]
-  },
-  {
-    id: 4,
-    slug: "enterprise",
-    name: "Maison Enterprise",
-    price: 499,
-    billing_period: "month",
-    description: "Custom bespoke architecture with dedicated infrastructure and tailored curation.",
-    badge: "Bespoke",
+    description: "Several shops and several websites, run from one place.",
+    badge: null,
     is_current: 0,
     features: [
-      "Custom Microservices & API Webhooks",
-      "Real-time Multi-Warehouse Sync",
-      "Bespoke Editorial Layout Modules",
-      "Custom Domain & White-label Studio",
-      "99.99% Guaranteed SLA",
-      "Executive Account Director"
+      "Everything in Shop and website",
+      "4 accounts",
+      "3 websites, plus 1 free website",
+      "Up to 20 phones or devices on the counter",
+      "Deeper business analysis across shops",
+      "Stock split between the counter and the web"
     ]
   }
 ];
@@ -12782,6 +12766,10 @@ const StudioRenderers = {
       { title: "Privacy", route: "/account/profile/privacy" },
       { title: "Recommended actions", route: "/account/profile/recommended-actions" },
       { title: "Link devices", route: "/account/profile/link-devices" },
+      // Both of these existed with no way in: the owner could only reach them by asking the AI
+      // helper for a link. Every menu in the app opens this list, so they belong here.
+      { title: "App settings", route: "/account/settings" },
+      { title: "Plans", route: "/account/plans" },
       { title: "Updates", route: "/account/profile/updates" }
     ];
     return `<details class="workspace-menu">
@@ -18125,6 +18113,51 @@ const StudioRenderers = {
     const renderWebsiteCards = (deleteLabel, ariaLabel = "Your websites") =>
       StudioRenderers.renderWebsiteManagementCards(websites, deleteLabel, ariaLabel);
     const websiteCards = renderWebsiteCards("Delete web");
+    // Recommended actions existed in every menu and rendered nothing at all. These are read from the
+    // shop's own data, so a step only appears while it is genuinely outstanding.
+    const recommendedActionsScreen = (() => {
+      const allProducts = SQLiteEngine.select("products") || [];
+      const liveProducts = allProducts.filter(product => product && product.status !== "archived");
+      const posProducts = liveProducts.filter(product => product.sku);
+      const withPhotos = liveProducts.filter(product => product.img || (product.images || []).length);
+      const withCost = liveProducts.filter(product => Number(product.cost_price) > 0);
+      const categories = SQLiteEngine.getCategories() || [];
+      const published = websites.some(website => website.published);
+      const actions = [];
+      if (!liveProducts.length) {
+        actions.push({ title: "Add your first product", note: "Nothing can be sold or published until the shop has something in it.", route: "/store/manage/products", label: "Add a product" });
+      }
+      if (liveProducts.length && !categories.length) {
+        actions.push({ title: "Group your products into categories", note: "Customers browse by category, and your reports read better with them.", route: "/store/manage/categories", label: "Add a category" });
+      }
+      if (liveProducts.length && withPhotos.length < liveProducts.length) {
+        actions.push({ title: `Add photos to ${liveProducts.length - withPhotos.length} product${liveProducts.length - withPhotos.length === 1 ? "" : "s"}`, note: "Products without a photo are the ones customers skip.", route: "/store/manage/products", label: "Open products" });
+      }
+      if (liveProducts.length && withCost.length < liveProducts.length) {
+        actions.push({ title: `Set a buying price on ${liveProducts.length - withCost.length} product${liveProducts.length - withCost.length === 1 ? "" : "s"}`, note: "Without a buying price the profit figures are only a guess.", route: "/store/manage/products", label: "Open products" });
+      }
+      if (!published) {
+        actions.push({ title: "Publish your website", note: "Your shop is not online until you publish it.", route: "/account/web/studio/websites/list", label: "Open websites" });
+      }
+      if (!String(store.phone || "").trim() && !String(store.email || "").trim()) {
+        actions.push({ title: "Add a phone number or email", note: "Customers need a way to reach you, and receipts carry it.", route: "/account/profile/profile", label: "Edit shop details" });
+      }
+      actions.push({ title: "Connect payments", note: "Connect Paystack so customers can pay online. Counter sales work without it.", route: "/account/web/studio/payments", label: "Open payments" });
+      if (!posProducts.length && liveProducts.length) {
+        actions.push({ title: "Give your products a code", note: "A product code links the counter and the website so stock stays in step.", route: "/store/manage/products", label: "Open products" });
+      }
+      return `<div class="profile-cards">
+        <article class="profile-card">
+          <h2>What to do next</h2>
+          <p>${actions.length} step${actions.length === 1 ? "" : "s"} worth doing for this shop.</p>
+        </article>
+        ${actions.map(action => `<article class="profile-card">
+          <h2>${AppUtils.escapeHTML(action.title)}</h2>
+          <p>${AppUtils.escapeHTML(action.note)}</p>
+          <a class="btn-secondary" href="${action.route}" data-route="${action.route}">${AppUtils.escapeHTML(action.label)}</a>
+        </article>`).join("")}
+      </div>`;
+    })();
     const websiteSettingsScreen = selectedWebsite ? `
       <article class="profile-page-card profile-website-settings">
         <h2>${AppUtils.escapeHTML(selectedWebsite.name)}</h2>
@@ -18309,7 +18342,7 @@ const StudioRenderers = {
           <h1 class="profile-page-title">${AppUtils.escapeHTML(activeLabel)}</h1>
         </header>
         <section class="profile-page-content" aria-label="${AppUtils.escapeHTML(activeLabel)} details">
-          ${websiteDetailId ? websiteDetailSection === "domains" ? websiteDomainScreen : websiteDetailSection === "stats" ? websiteStatsScreen : websiteSettingsScreen : activeSection === "profile" ? profileCards : activeSection === "accounts" ? accountsScreen : activeSection === "webs" ? websiteCards : activeSection === "privacy" ? privacyPolicy : activeSection === "updates" ? updatesScreen : activeSection === "link-devices" ? linkedDevicesScreen : ""}
+          ${websiteDetailId ? websiteDetailSection === "domains" ? websiteDomainScreen : websiteDetailSection === "stats" ? websiteStatsScreen : websiteSettingsScreen : activeSection === "profile" ? profileCards : activeSection === "accounts" ? accountsScreen : activeSection === "webs" ? websiteCards : activeSection === "privacy" ? privacyPolicy : activeSection === "updates" ? updatesScreen : activeSection === "link-devices" ? linkedDevicesScreen : activeSection === "recommended-actions" ? recommendedActionsScreen : ""}
         </section>
       </main>
       ${StoreRenderers.renderFooter()}
@@ -19096,7 +19129,7 @@ const StudioRenderers = {
               <h2>${AppUtils.escapeHTML(p.name)}</h2>
               <p class="plan-card-description">${AppUtils.escapeHTML(p.description)}</p>
               <div class="plan-card-price">
-                <strong>$${p.price}</strong>
+                <strong>KES ${Number(p.price).toLocaleString("en-KE")}</strong>
                 <span>/${AppUtils.escapeHTML(p.billing_period || "month")}</span>
               </div>
               <ul class="plan-card-features">
