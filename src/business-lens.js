@@ -244,11 +244,14 @@ function analyse(data, filters) {
     product.abc = cumulative <= 80 ? "A" : cumulative <= 95 ? "B" : "C";
   });
   const customersMap = new Map();
-  data.sales.filter(paid).forEach(sale => {
+  data.sales.forEach(sale => {
+    const settled = paid(sale);
     const id = sale.customerId || `anonymous-${sale.channel}-${sale.id}`;
     const customer = customersMap.get(id) || { id, name: sale.customerName || "Walk-in", email: sale.customerEmail, phone: sale.customerPhone, city: sale.city, country: sale.country, orders: [], revenue: 0, units: 0, products: new Map() };
     customer.orders.push(sale);
-    customer.revenue += sale.total;
+    // Only money actually received counts as revenue; what is still owed is tracked beside it.
+    customer.revenue += settled ? sale.total : 0;
+    customer.owed = (customer.owed || 0) + (settled ? 0 : Math.max(0, sale.total - (Number(sale.amountPaid) || 0)));
     sale.items.forEach(item => {
       customer.units += item.quantity;
       customer.products.set(item.name, (customer.products.get(item.name) || 0) + item.lineTotal);
@@ -473,7 +476,7 @@ function renderRevenue(a) {
     return row(item.label,money(item.revenue,a.currency),`Recent baseline: ${money(item.mean ?? baseline,a.currency)} · ${item.z.toFixed(1)}σ`);
   });
   const periodRows = a.series.map(point=>`<tr><td>${$(point.label)}</td><td>${money(point.revenue,a.currency)}</td><td>${money(point.web,a.currency)}</td><td>${money(point.pos,a.currency)}</td><td>${point.orders}</td><td>${money(point.profit,a.currency)}</td></tr>`);
-  return `<div class="bl-kpis">${metric("Revenue this period",money(a.kpis.revenue,a.currency),periodLabel)}${metric("Daily average",money(a.kpis.revenue/a.days,a.currency))}${metric("Forecast next 7 periods",forecast.length?money(sum(forecast,item=>item.revenue),a.currency):"Not enough history",forecast.length?"Simple recent-average projection":"Needs four periods")} ${metric("Unusual periods",anomalies.length,"Review period table")}</div>
+  return `<div class="bl-kpis">${metric("Revenue this period",money(a.kpis.revenue,a.currency),`${periodLabel} · paid sales only`)}${metric("Daily average",money(a.kpis.revenue/a.days,a.currency))}${metric("Forecast next 7 periods",forecast.length?money(sum(forecast,item=>item.revenue),a.currency):"Not enough history",forecast.length?"Simple recent-average projection":"Needs four periods")} ${metric("Unusual periods",anomalies.length,"Review period table")}</div>
     ${card("This period · channel split",lineChart(a.series,["web","pos"],a.currency))}
     <div class="bl-two">${card("Forecast · estimate and range",forecast.length?`${lineChart(forecast,["revenue"],a.currency)}<p class="bl-caption">Projection uncertainty is shown as lower/upper estimates in the table; this is not a guarantee.</p>${table(["Period","Projection","Lower estimate","Upper estimate"],forecast.map(item=>`<tr><td>${item.label}</td><td>${money(item.revenue,a.currency)}</td><td>${money(item.lower,a.currency)}</td><td>${money(item.upper,a.currency)}</td></tr>`))}`:`<p class="bl-empty">At least four historical periods are needed to project. This view does not invent a forecast.</p>`)}${card("Profit vs running costs",lineChart(a.series.map(point=>({...point,expenses:point.expenses,net:point.profit-point.expenses})),["profit","expenses","net"],a.currency))}</div>
     ${card("Trading rhythm",`<p class="bl-caption">Paid sales by local device time · weekday bars show revenue for each day; hourly bars include all 24 hours.</p><div class="bl-heat">${weekdays.map(day=>`<div><span>${day.label}</span><i style="height:${Math.max(3,day.revenue/Math.max(1,...weekdays.map(item=>item.revenue))*38)}px"></i><small>${shortMoney(day.revenue,a.currency)}</small></div>`).join("")}</div><div class="bl-hour-bars">${hours.map(item=>`<div title="${item.hour}:00 · ${money(item.revenue,a.currency)}"><i style="height:${Math.max(2,item.revenue/max*50)}px"></i><span>${item.hour}</span></div>`).join("")}</div><div class="bl-two bl-trading-compare">${metric("Average weekday revenue",money(a.tradingComparison.weekday,a.currency),"Per weekday with recorded sales")}${metric("Average weekend-day revenue",money(a.tradingComparison.weekend,a.currency),"Per weekend day with recorded sales")}</div><p class="bl-caption">Last 28 calendar days · each square is a local date; darker means more revenue.</p><div class="bl-trading-calendar">${a.trading.map(day=>`<div title="${dateLabel(day.date)} · ${money(day.revenue,a.currency)} · ${day.orders} orders" style="--activity:${day.revenue?Math.min(.9,.18+day.revenue/Math.max(1,...a.trading.map(item=>item.revenue))*.72):.06}"><span>${day.date.getDate()}</span></div>`).join("")}</div>`) }
