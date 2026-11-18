@@ -175,6 +175,22 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
     const status = widget.querySelector('[data-taxonomy-status]');
     const retry = widget.querySelector('[data-taxonomy-retry]');
     const storeCategorySelect = widget.closest('form')?.querySelector('[data-store-category-select]');
+    // The owner has already said what this product is. The standard categories now follow that
+    // choice instead of making them pick a second time: the match only used to run once, when the
+    // form opened, so choosing a category afterwards left the attributes blank.
+    let loadedTaxonomyCategories = [];
+    storeCategorySelect?.addEventListener('change', () => {
+      if (widget.dataset.taxonomyInitialized !== 'true') return;
+      if (categoryInput.value || customCategoryInput.value) return;
+      const label = String(storeCategorySelect.selectedOptions[0]?.textContent || '').trim();
+      if (!label) return;
+      const matched = matchProductTaxonomyCategory(loadedTaxonomyCategories, label);
+      if (matched) {
+        selectCategory(matched);
+        return;
+      }
+      status.textContent = `No standard attributes match "${label}" yet. Search above to choose one.`;
+    });
     const addPanel = widget.querySelector('[data-taxonomy-add-panel]');
     const addOpen = widget.querySelector('[data-taxonomy-add-open]');
     const addClose = widget.querySelector('[data-taxonomy-add-close]');
@@ -184,6 +200,9 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
     }
     const stockField = widget.closest('form')?.querySelector('[name="stock"]')?.closest('label');
     if (stockField && attributeFields.parentElement === widget) {
+      // The section is inserted outside the widget, so a form that re-renders leaves the old one
+      // behind and the owner sees "Attributes" twice. Clear any previous one first.
+      widget.closest("form")?.querySelectorAll(".product-taxonomy-attributes").forEach(old => old.remove());
       const section = widget.ownerDocument.createElement('section');
       section.className = 'product-taxonomy-attributes';
       const heading = widget.ownerDocument.createElement('h3');
@@ -295,6 +314,7 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
       void (taxonomyPromiseOverride || loadProductTaxonomy()).then(data => {
         taxonomy = data;
         categoriesById = new Map(data.categories.map(category => [category.id, category]));
+        loadedTaxonomyCategories = data.categories;
         attributesById = new Map(data.attributes.map(attribute => [attribute.id, attribute]));
         widget.dataset.taxonomyInitialized = 'true';
         const initialCategoryId = widget.dataset.initialCategoryId || '';
