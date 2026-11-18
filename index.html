@@ -3258,7 +3258,9 @@ body.craft-app-ui #app .website-wizard-go-builder:hover {
 
 [data-orders-panel][data-orders-filter-value="counter"] .store-order-entry:not([data-order-channel="counter"]),
 [data-orders-panel][data-orders-filter-value="website"] .store-order-entry:not([data-order-channel="website"]),
-[data-orders-panel][data-orders-filter-value="booking"] .store-order-entry:not([data-order-channel="booking"]) {
+[data-orders-panel][data-orders-filter-value="booking"] .store-order-entry:not([data-order-channel="booking"]),
+[data-orders-panel][data-orders-filter-value="invoice"] .store-order-entry:not([data-order-channel="invoice"]),
+[data-orders-panel][data-orders-filter-value="quote"] .store-order-entry:not([data-order-channel="quote"]) {
   display: none;
 }
 
@@ -13262,12 +13264,15 @@ const StudioRenderers = {
   async getMainShopSnapshot() {
     const settings = await window.ShopPOS.getSettings();
     const tenantId = settings.cloudSyncTenantId || window.EshopInventoryBridge?.activeWebsiteId?.() || AppController.getActiveTenant().id;
-    const [posProducts, posCategories, posSales, expenses, instances] = await Promise.all([
+    const [posProducts, posCategories, posSales, expenses, instances, posInvoices, posQuotations] = await Promise.all([
       window.ShopPOS.listProducts(),
       window.ShopPOS.listCategories(),
       window.ShopPOS.listSales(),
       window.ShopPOS.listExpenses ? window.ShopPOS.listExpenses() : Promise.resolve([]),
-      window.ShopPOS.listInstances ? window.ShopPOS.listInstances() : Promise.resolve([])
+      window.ShopPOS.listInstances ? window.ShopPOS.listInstances() : Promise.resolve([]),
+      // Main Store is where the owner sees everything, so the till paperwork comes along too.
+      window.ShopPOS.listInvoices ? window.ShopPOS.listInvoices() : Promise.resolve([]),
+      window.ShopPOS.listQuotations ? window.ShopPOS.listQuotations() : Promise.resolve([])
     ]);
     const webProducts = SQLiteEngine.select("products", product => product.status !== "archived");
     const webCategories = SQLiteEngine.getCategories();
@@ -13418,6 +13423,7 @@ const StudioRenderers = {
     sales.sort((a, b) => String(b.date).localeCompare(String(a.date)));
     const snapshot = {
       products, categories, sales, posCategories, posProducts, expenses, instances, settings,
+      posInvoices, posQuotations,
       currency: settings.currency || "KES",
       localAllocations: SQLiteEngine.select("main_store_inventory",
         allocation => allocation.tenant_id === AppController.getActiveTenant().id)
@@ -14524,14 +14530,32 @@ const StudioRenderers = {
         html: this.renderServiceAppointmentRow(appointment)
       });
     }
+    for (const invoice of snapshot.posInvoices || []) {
+      const paid = String(invoice.status || "unpaid") === "paid";
+      entries.push({
+        at: time(invoice.created_at),
+        channel: "invoice",
+        html: `<article class="studio-list-row studio-order-card"><div><strong>${escape(invoice.invoice_number || `Invoice ${invoice.id}`)}</strong><span>${escape(invoice.customer_name || "Customer not recorded")} · ${escape(AppUtils.formatDateTime(invoice.created_at))}</span><small>Invoice · ${(invoice.items || []).length} item${(invoice.items || []).length === 1 ? "" : "s"}${invoice.due_date ? ` · due ${escape(invoice.due_date)}` : ""}</small></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(invoice.total, currency)}</strong><span>${paid ? "paid" : "unpaid"}</span></div></article>`
+      });
+    }
+    for (const quote of snapshot.posQuotations || []) {
+      const converted = Boolean(quote.invoice_id);
+      entries.push({
+        at: time(quote.created_at),
+        channel: "quote",
+        html: `<article class="studio-list-row studio-order-card"><div><strong>${escape(quote.quotation_number || `Quote ${quote.id}`)}</strong><span>${escape(quote.customer_name || "Customer not recorded")} · ${escape(AppUtils.formatDateTime(quote.created_at))}</span><small>Quotation · ${(quote.items || []).length} item${(quote.items || []).length === 1 ? "" : "s"}</small></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(quote.total, currency)}</strong><span>${converted ? "invoiced" : "open"}</span></div></article>`
+      });
+    }
     entries.sort((first, second) => second.at - first.at);
     const counts = {
       all: entries.length,
       counter: entries.filter(entry => entry.channel === "counter").length,
       website: entries.filter(entry => entry.channel === "website").length,
-      booking: entries.filter(entry => entry.channel === "booking").length
+      booking: entries.filter(entry => entry.channel === "booking").length,
+      invoice: entries.filter(entry => entry.channel === "invoice").length,
+      quote: entries.filter(entry => entry.channel === "quote").length
     };
-    const filters = [["all", "All"], ["counter", "Counter"], ["website", "Website"], ["booking", "Bookings"]];
+    const filters = [["all", "All"], ["counter", "Counter"], ["website", "Website"], ["booking", "Bookings"], ["invoice", "Invoices"], ["quote", "Quotes"]];
     const rows = entries.map(entry =>
       `<div class="store-order-entry" data-order-channel="${entry.channel}">${entry.html}</div>`).join("")
       || `<p class="store-workspace-empty">Nothing recorded yet. Counter sales, website orders and bookings all appear here.</p>`;
