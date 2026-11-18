@@ -2606,6 +2606,10 @@ body.craft-app-ui #app .website-wizard-go-builder:hover {
   margin: 0 auto;
 }
 
+.website-wizard-sticky-footer a.website-wizard-go-builder {
+  width: 100%;
+}
+
 .website-wizard-sticky-footer a {
   display: flex;
   min-height: 44px;
@@ -9827,6 +9831,85 @@ body.craft-app-ui #app .main-store-product-actions button svg {
   stroke-width: 1.7;
 }
 
+body.craft-app-ui #app .main-store-product-toolbar,
+body.craft-app-ui #app .main-store-category-contents {
+  display: grid;
+  gap: 6px;
+}
+
+body.craft-app-ui #app .main-store-product-toolbar {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+body.craft-app-ui #app .main-store-product-toolbar input[type="search"] {
+  grid-column: 1 / -1;
+}
+
+body.craft-app-ui #app .main-store-product-toolbar .main-store-product-status {
+  grid-column: 1 / -1;
+}
+
+body.craft-app-ui #app .main-store-product-toolbar input,
+body.craft-app-ui #app .main-store-product-toolbar select,
+body.craft-app-ui #app .main-store-category-contents input[type="search"],
+body.craft-app-ui #app .main-store-category-contents select {
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 5px 7px;
+  border: 1px solid #c5c5c5;
+  border-radius: 8px;
+  background: #f7f7f7;
+  color: #111;
+  font-size: .72rem;
+}
+
+body.craft-app-ui #app .main-store-category-contents {
+  padding: 8px;
+  border: 1px solid #adadad;
+  border-radius: 9px;
+  background: #ececec;
+}
+
+body.craft-app-ui #app .main-store-category-contents[hidden],
+body.craft-app-ui #app .main-store-product-row[hidden] {
+  display: none;
+}
+
+body.craft-app-ui #app .main-store-category-contents summary {
+  color: #333;
+  font-size: .7rem;
+  font-weight: 650;
+}
+
+body.craft-app-ui #app .main-store-category-contents header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: .75rem;
+}
+
+body.craft-app-ui #app .main-store-category-contents label.main-store-category-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 3px 6px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f4f4f4;
+  color: #111;
+  font-size: .7rem;
+}
+
+body.craft-app-ui #app .main-store-category-contents .main-store-category-pick-list {
+  display: grid;
+  max-height: 240px;
+  gap: 4px;
+  overflow-y: auto;
+}
+
 body.craft-app-ui #app .main-store-product-status {
   min-height: 1em;
   margin: 0;
@@ -10821,6 +10904,17 @@ const AppUtils = {
 
   // Every cloud-backed screen refuses without a Craft account session, so the shell can offer the
   // way in instead of printing an error the owner cannot act on.
+  // One readable date for everything the owner reads. Order and receipt rows used to print the raw
+  // database timestamp ("2026-11-16T10:42:57.637Z"), which is not a date a shop owner can use.
+  formatDateTime(value, { withTime = true } = {}) {
+    if (!value) return "Date unavailable";
+    const parsed = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "Date unavailable";
+    const day = parsed.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+    if (!withTime) return day;
+    return `${day}, ${parsed.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
+  },
+
   craftAccountSignedIn() {
     try {
       return Boolean(window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1")
@@ -12981,10 +13075,26 @@ const StudioRenderers = {
   renderNewWebsiteProducts() {
     const draft = this.websiteBuilderDraft();
     const litrusBuilderRoute = "/account/web/site?new=1&edit=1&theme=litrus-mixer";
+    // Step 1 is the shop's identity; the catalogue only opens once the shop has a name and address.
+    if (draft.wizard_step !== "catalogue" || !draft.shop_name || !draft.shop_address) {
+      return `<section class="studio-workspace-section">
+      <header class="website-management-heading">
+        <div><span class="studio-workspace-kicker">NEW WEBSITE · STEP 1 OF 2</span><h2>Your shop</h2><p>Start with the basics. You will add products and categories next.</p></div>
+      </header>
+      <form id="website-wizard-identity-form" class="store-workspace-form">
+        <label>Shop / website name<input name="name" maxlength="120" required placeholder="My Shop" value="${AppUtils.escapeHTML(draft.shop_name || "")}"></label>
+        <label>What do you sell?<input name="kind" maxlength="120" placeholder="For example clothes, groceries or haircuts" value="${AppUtils.escapeHTML(draft.shop_kind || "")}"></label>
+        <label>Website address<span style="display:flex;align-items:center;gap:5px;"><input name="address" maxlength="40" required placeholder="my-shop" value="${AppUtils.escapeHTML(draft.shop_address || "")}"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
+        <p id="website-wizard-identity-error" role="alert" hidden style="margin:0;color:#b42318;"></p>
+        <button type="submit" class="btn-primary" id="website-wizard-identity-continue">Continue to products</button>
+      </form>
+    </section>`;
+    }
     return `<section class="studio-workspace-section">
       <header class="website-management-heading">
-        <div><span class="studio-workspace-kicker">NEW WEBSITE</span><h2>Website products</h2><p>Choose Store products to add or create products just for this website.</p></div>
+        <div><span class="studio-workspace-kicker">NEW WEBSITE · STEP 2 OF 2</span><h2>Website products</h2><p>${AppUtils.escapeHTML(draft.shop_name)} · ${AppUtils.escapeHTML(draft.shop_address)}.rrobin.co.ke. Choose Store products to add or create products just for this website.</p></div>
       </header>
+      <div class="studio-inline-actions"><button type="button" class="btn-secondary website-wizard-compact-action" id="website-wizard-edit-identity">Edit shop details</button></div>
       <div class="studio-inline-actions web-product-actions">
         <button type="button" class="btn-secondary web-product-action-card" id="website-wizard-load-store">Add from Store</button>
         <button type="button" class="btn-primary web-product-action-card" id="website-wizard-create-product">Add web product</button>
@@ -12997,7 +13107,7 @@ const StudioRenderers = {
           <button type="submit" class="btn-secondary">Add category</button>
         </form>
         <div class="website-wizard-category-list" id="website-wizard-category-list">${draft.categories.map(category =>
-          `<div class="website-wizard-category-row"><span>${AppUtils.escapeHTML(category.name)}</span><button type="button" class="btn-secondary website-wizard-compact-action" data-edit-wizard-category="${AppUtils.escapeHTML(String(category.id))}">Edit</button></div>`
+          `<div class="website-wizard-category-row"><span>${AppUtils.escapeHTML(category.name)}</span><button type="button" class="btn-secondary website-wizard-compact-action" data-edit-wizard-category="${AppUtils.escapeHTML(String(category.id))}">Edit</button><button type="button" class="btn-secondary website-wizard-compact-action" data-remove-wizard-category="${AppUtils.escapeHTML(String(category.id))}" aria-label="Remove ${AppUtils.escapeHTML(category.name)} from this website">Remove</button></div>`
         ).join("") || `<p class="studio-panel-note">No categories yet. Add from Store or create a category to add web products.</p>`}</div>
       </section>
       <section class="studio-panel">
@@ -13043,8 +13153,11 @@ const StudioRenderers = {
           <button type="submit" class="btn-primary">Add product</button>
         </div>
       </form>
-      <section id="website-wizard-store-picker" class="studio-panel" hidden>
+      <div class="website-wizard-sticky-footer has-bottom-nav"><div>
         <a id="website-wizard-go-builder" class="btn-primary website-wizard-go-builder" href="${AppUtils.escapeHTML(litrusBuilderRoute)}" data-route="${AppUtils.escapeHTML(litrusBuilderRoute)}">Go to web builder</a>
+      </div></div>
+      <div style="height:72px" aria-hidden="true"></div>
+      <section id="website-wizard-store-picker" class="studio-panel" hidden>
         <div class="studio-panel-heading"><h3>Choose products from Store</h3><button type="button" class="btn-secondary" id="website-wizard-store-close">Close</button></div>
         <input class="form-input" id="website-wizard-store-search" type="search" placeholder="Search Store products" aria-label="Search Store products">
         <select class="form-input" id="website-wizard-store-category" aria-label="Filter by Store category"><option value="all">All categories</option></select>
@@ -13548,7 +13661,7 @@ const StudioRenderers = {
     const products = snapshot.products || [];
     const rows = products.map((product, index) => {
       const image = product.imageUri || product.webProduct?.images?.[0] || product.posProduct?.imageUri || "";
-      return `<article class="main-store-product-row">
+      return `<article class="main-store-product-row" data-main-product-row data-name="${AppUtils.escapeHTML(String(product.name || "").toLocaleLowerCase())}" data-sku="${AppUtils.escapeHTML(String(product.sku || "").toLocaleLowerCase())}" data-category="${AppUtils.escapeHTML(String(product.categoryName || "").trim().toLocaleLowerCase())}" data-price="${Number(product.price) || 0}" data-stock="${product.stock == null ? "" : Number(product.stock)}" data-index="${index}">
         ${image
           ? `<img src="${AppUtils.escapeHTML(image)}" alt="" loading="lazy">`
           : `<span class="main-store-product-image-placeholder" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><circle cx="9" cy="10" r="2"/><path d="m4 16 5-4 3 2 3-3 5 5"/></svg></span>`}
@@ -13573,6 +13686,7 @@ const StudioRenderers = {
           <label>Cost price<input name="costPrice" type="number" min="0" step="0.01"></label>
           <label>Stock<input name="stock" type="number" min="0" step="1" required></label>
         </div>
+        <div data-main-product-taxonomy></div>
         <div class="main-store-product-channels" aria-label="Save product to">
           <label><input type="checkbox" name="channels" value="pos" checked> POS</label>
           <label><input type="checkbox" name="channels" value="web" checked> Web</label>
@@ -13580,7 +13694,16 @@ const StudioRenderers = {
         <p class="main-store-product-status" data-main-product-status role="status" aria-live="polite"></p>
         <div class="main-store-product-actions"><button type="submit">Save product</button><button type="button" data-main-product-cancel>Cancel</button></div>
       </form>
-      <div class="main-store-product-list">${rows || `<p class="bl-empty">No products yet. Add one to start your catalogue.</p>`}</div>
+      ${products.length ? `<div class="main-store-product-toolbar" data-main-product-toolbar>
+        <input type="search" data-main-product-search placeholder="Search by name or SKU" aria-label="Search products" autocomplete="off">
+        <select data-main-product-category-filter aria-label="Filter by category"><option value="">All categories</option>${[...new Map(products.map(product => [String(product.categoryName || "").trim().toLocaleLowerCase(), String(product.categoryName || "").trim()])).entries()]
+          .filter(([key]) => key).sort((a, b) => a[1].localeCompare(b[1]))
+          .map(([key, label]) => `<option value="${AppUtils.escapeHTML(key)}">${AppUtils.escapeHTML(label)}</option>`).join("")}</select>
+        <select data-main-product-sort aria-label="Sort products"><option value="name">Name A to Z</option><option value="price-asc">Price low to high</option><option value="price-desc">Price high to low</option><option value="stock-asc">Stock low to high</option></select>
+        <p class="main-store-product-status" data-main-product-count role="status" aria-live="polite"></p>
+      </div>` : ""}
+      <div class="main-store-product-list" data-main-product-list>${rows || `<p class="bl-empty">No products yet. Add one to start your catalogue.</p>`}</div>
+      <p class="bl-empty" data-main-product-empty hidden>No products match your search.</p>
     </article>`;
   },
 
@@ -13612,6 +13735,7 @@ const StudioRenderers = {
         <span>${products} products · ${sources || "Store"}</span>
       </div>
       <div class="main-store-product-actions">
+        <button type="button" class="main-store-product-icon-button" data-main-category-open="${index}" aria-label="Products in ${AppUtils.escapeHTML(category.name)}" title="View and move products"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
         <button type="button" class="main-store-product-icon-button" data-main-category-edit="${index}" aria-label="Edit ${AppUtils.escapeHTML(category.name)}" title="Edit category" ${protectedCategory ? "disabled" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
         <button type="button" class="main-store-product-icon-button" data-main-category-delete="${index}" aria-label="Delete ${AppUtils.escapeHTML(category.name)}" title="Delete category" ${protectedCategory ? "disabled" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button>
       </div>
@@ -13625,6 +13749,22 @@ const StudioRenderers = {
       <p class="main-store-product-status" data-main-category-status role="status" aria-live="polite"></p>
       <div class="main-store-product-actions"><button type="submit">Save category</button><button type="button" data-main-category-cancel>Cancel</button></div>
     </form>
+    <section class="main-store-category-contents" data-main-category-contents hidden>
+      <header><strong data-category-contents-title></strong><button type="button" data-category-contents-close>Close</button></header>
+      <div class="main-store-category-pick-list" data-category-contents-list></div>
+      <div class="main-store-product-actions">
+        <label class="main-store-category-pick"><input type="checkbox" data-category-select-all> Select all</label>
+        <select data-category-move-target aria-label="Move selected products to"></select>
+        <button type="button" data-category-move-selected disabled>Move selected</button>
+      </div>
+      <details>
+        <summary>Add products from other categories</summary>
+        <input type="search" data-category-add-search placeholder="Search products to add" aria-label="Search products to add" autocomplete="off">
+        <div class="main-store-category-pick-list" data-category-add-list></div>
+        <button type="button" data-category-add-selected disabled>Move selected here</button>
+      </details>
+      <p class="main-store-product-status" data-category-contents-status role="status" aria-live="polite"></p>
+    </section>
     <div class="main-store-category-list">${rows || `<p class="bl-empty">No categories yet. Add one to organize your products.</p>`}</div>
     </article>`;
   },
@@ -13715,6 +13855,110 @@ const StudioRenderers = {
       submit.disabled = false;
     }
     });
+    const panel = container.querySelector("[data-main-category-contents]");
+    if (panel) {
+      const key = value => String(value || "").trim().toLocaleLowerCase();
+      const panelStatus = panel.querySelector("[data-category-contents-status]");
+      const contentsList = panel.querySelector("[data-category-contents-list]");
+      const addList = panel.querySelector("[data-category-add-list]");
+      const moveTarget = panel.querySelector("[data-category-move-target]");
+      const moveButton = panel.querySelector("[data-category-move-selected]");
+      const addButton = panel.querySelector("[data-category-add-selected]");
+      const addSearch = panel.querySelector("[data-category-add-search]");
+      const selectAll = panel.querySelector("[data-category-select-all]");
+      let openCategory = null;
+      const pickRow = (product, index) =>
+        `<label class="main-store-category-pick"><input type="checkbox" value="${index}"> <span>${AppUtils.escapeHTML(product.name)}${product.categoryName ? ` · ${AppUtils.escapeHTML(product.categoryName)}` : ""}</span></label>`;
+      const checked = list => [...list.querySelectorAll('input[type="checkbox"]:checked')].map(input => Number(input.value));
+      const refreshButtons = () => {
+        moveButton.disabled = !checked(contentsList).length || !moveTarget.value;
+        addButton.disabled = !checked(addList).length;
+      };
+      const renderPanel = () => {
+        if (!openCategory) return;
+        const products = snapshot.products || [];
+        const inside = products.map((product, index) => ({ product, index }))
+          .filter(entry => key(entry.product.categoryName) === key(openCategory.name));
+        panel.querySelector("[data-category-contents-title]").textContent = `${openCategory.name} (${inside.length})`;
+        contentsList.innerHTML = inside.map(entry => pickRow(entry.product, entry.index)).join("")
+          || `<p class="bl-empty">No products in this category yet.</p>`;
+        const query = key(addSearch.value);
+        addList.innerHTML = products.map((product, index) => ({ product, index }))
+          .filter(entry => key(entry.product.categoryName) !== key(openCategory.name)
+            && (!query || key(entry.product.name).includes(query) || key(entry.product.sku).includes(query)))
+          .slice(0, 100).map(entry => pickRow(entry.product, entry.index)).join("")
+          || `<p class="bl-empty">No other products found.</p>`;
+        moveTarget.innerHTML = `<option value="">Move to…</option>${categories
+          .map((category, index) => ({ category, index }))
+          .filter(entry => key(entry.category.name) !== key(openCategory.name))
+          .map(entry => `<option value="${entry.index}">${AppUtils.escapeHTML(entry.category.name)}</option>`).join("")}`;
+        selectAll.checked = false;
+        refreshButtons();
+      };
+      const moveProducts = async (indexes, target) => {
+        const items = indexes.map(index => snapshot.products[index]).filter(Boolean);
+        if (!items.length || !target) return;
+        panelStatus.textContent = `Moving ${items.length} product${items.length === 1 ? "" : "s"} to ${target.name}…`;
+        moveButton.disabled = true;
+        addButton.disabled = true;
+        try {
+          let posCategory = target.posCategory;
+          let webCategory = target.webCategory;
+          if (!posCategory && items.some(product => product.posProduct)) {
+            await window.ShopPOS.addCategory(target.name);
+            posCategory = (await window.ShopPOS.listCategories()).find(item => key(item.name) === key(target.name));
+            if (!posCategory) throw new Error(`Could not create POS category "${target.name}".`);
+          }
+          if (!webCategory && items.some(product => product.webProduct)) {
+            SQLiteEngine.saveCategory({ name: target.name });
+            webCategory = SQLiteEngine.getCategories().find(item => key(item.name) === key(target.name));
+            if (!webCategory) throw new Error(`Could not create Web category "${target.name}".`);
+          }
+          for (const product of items) {
+            if (product.posProduct) {
+              await window.ShopPOS.saveProduct({ ...product.posProduct, id: Number(product.posProduct.id), categoryId: posCategory.id });
+            }
+            if (product.webProduct) {
+              SQLiteEngine.saveProduct({ ...product.webProduct, id: product.webProduct.id, category_id: webCategory.id });
+            }
+          }
+          AppController.cacheActiveTenantCatalog();
+          await window.ShopSQLite.flush();
+          await this.loadMainShopWorkspace(path);
+          AppUtils.showToast(`${items.length} product${items.length === 1 ? "" : "s"} moved to ${target.name}.`);
+        } catch (error) {
+          console.error("Store products could not be moved.", error);
+          panelStatus.textContent = error instanceof Error ? error.message : "The products could not be moved.";
+          refreshButtons();
+        }
+      };
+      container.querySelectorAll("[data-main-category-open]").forEach(button => {
+        button.addEventListener("click", () => {
+          openCategory = categories[Number(button.dataset.mainCategoryOpen)] || null;
+          if (!openCategory) return;
+          addSearch.value = "";
+          panelStatus.textContent = "";
+          panel.hidden = false;
+          renderPanel();
+          panel.scrollIntoView?.({ block: "nearest" });
+        });
+      });
+      panel.querySelector("[data-category-contents-close]").addEventListener("click", () => {
+        panel.hidden = true;
+        openCategory = null;
+      });
+      selectAll.addEventListener("change", () => {
+        contentsList.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = selectAll.checked; });
+        refreshButtons();
+      });
+      contentsList.addEventListener("change", refreshButtons);
+      addList.addEventListener("change", refreshButtons);
+      moveTarget.addEventListener("change", refreshButtons);
+      addSearch.addEventListener("input", renderPanel);
+      moveButton.addEventListener("click", () =>
+        moveProducts(checked(contentsList), categories[Number(moveTarget.value)]));
+      addButton.addEventListener("click", () => moveProducts(checked(addList), openCategory));
+    }
     container.querySelectorAll("[data-main-category-delete]").forEach(button => {
     button.addEventListener("click", async () => {
       const category = categories[Number(button.dataset.mainCategoryDelete)];
@@ -13748,8 +13992,28 @@ const StudioRenderers = {
     const fields = Object.fromEntries(["name", "category", "price", "costPrice", "stock"]
       .map(name => [name, form.querySelector(`[name="${name}"]`)]));
     const channelInputs = [...form.querySelectorAll('[name="channels"]')];
+    const taxonomyHost = form.querySelector("[data-main-product-taxonomy]");
+    // The Category text input above owns name="category"; the picker must not render a second category select.
+    const renderTaxonomy = product => {
+      if (!taxonomyHost || !window.EshopProductTaxonomy) return;
+      const web = product?.webProduct;
+      const pos = product?.posProduct;
+      taxonomyHost.innerHTML = window.EshopProductTaxonomy.createProductTaxonomyFields({
+        categoryId: web?.taxonomy_category_id || pos?.taxonomyCategoryId || "",
+        categoryName: web?.taxonomy_category_name || "",
+        customCategory: web?.taxonomy_custom_category || pos?.taxonomyCustomCategory || "",
+        attributes: web?.taxonomy_attributes?.length ? web.taxonomy_attributes : pos?.taxonomyAttributes || [],
+        storeCategoryFieldName: ""
+      });
+      window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyHost);
+    };
+    const readTaxonomy = () => taxonomyHost?.firstElementChild && window.EshopProductTaxonomy
+      ? window.EshopProductTaxonomy.readProductTaxonomyFields(form)
+      : null;
+    renderTaxonomy(null);
     const openForm = (product, index) => {
       form.reset();
+      renderTaxonomy(product);
       editField.value = index == null ? "" : String(index);
       fields.name.value = product?.name || "";
       fields.category.value = product?.categoryName || "Uncategorized";
@@ -13765,6 +14029,43 @@ const StudioRenderers = {
       form.hidden = false;
       fields.name.focus();
     };
+
+    const searchInput = container.querySelector("[data-main-product-search]");
+    const filterSelect = container.querySelector("[data-main-product-category-filter]");
+    const sortSelect = container.querySelector("[data-main-product-sort]");
+    const productList = container.querySelector("[data-main-product-list]");
+    const countLine = container.querySelector("[data-main-product-count]");
+    const emptyLine = container.querySelector("[data-main-product-empty]");
+    const applyProductView = () => {
+      if (!productList) return;
+      const query = String(searchInput?.value || "").trim().toLocaleLowerCase();
+      const category = filterSelect?.value || "";
+      const rows = [...productList.querySelectorAll("[data-main-product-row]")];
+      const sorters = {
+        name: (a, b) => a.dataset.name.localeCompare(b.dataset.name),
+        "price-asc": (a, b) => Number(a.dataset.price) - Number(b.dataset.price),
+        "price-desc": (a, b) => Number(b.dataset.price) - Number(a.dataset.price),
+        // Untracked stock (blank) sorts last.
+        "stock-asc": (a, b) => (a.dataset.stock === "" ? Infinity : Number(a.dataset.stock))
+          - (b.dataset.stock === "" ? Infinity : Number(b.dataset.stock))
+      };
+      const sorter = sorters[sortSelect?.value] || sorters.name;
+      rows.sort((a, b) => sorter(a, b) || Number(a.dataset.index) - Number(b.dataset.index))
+        .forEach(row => productList.appendChild(row));
+      let shown = 0;
+      rows.forEach(row => {
+        const match = (!query || row.dataset.name.includes(query) || row.dataset.sku.includes(query))
+          && (!category || row.dataset.category === category);
+        row.hidden = !match;
+        if (match) shown += 1;
+      });
+      if (countLine) countLine.textContent = rows.length ? `Showing ${shown} of ${rows.length} products` : "";
+      if (emptyLine) emptyLine.hidden = !rows.length || shown > 0;
+    };
+    searchInput?.addEventListener("input", applyProductView);
+    filterSelect?.addEventListener("change", applyProductView);
+    sortSelect?.addEventListener("change", applyProductView);
+    applyProductView();
 
     container.querySelector("[data-main-product-add]")?.addEventListener("click", () => openForm(null, null));
     container.querySelector("[data-main-product-cancel]")?.addEventListener("click", () => {
@@ -13805,6 +14106,7 @@ const StudioRenderers = {
       const channels = new Set(values.getAll("channels").map(String));
       const writePos = channels.has("pos");
       const writeWeb = channels.has("web");
+      const taxonomy = readTaxonomy();
       let webSaved = false;
       let posSaved = false;
 
@@ -13866,6 +14168,12 @@ const StudioRenderers = {
             ...(webProduct ? { id: webProduct.id } : {}),
             name, sku: sku || webProduct?.sku || "", category_id: category.id,
             price, cost_price: costPrice ?? 0, stock,
+            ...(taxonomy ? {
+              taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
+              taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
+              taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
+              taxonomy_attributes: taxonomy.taxonomyAttributes
+            } : {}),
             images: webProduct?.images || [], status: webProduct?.status || "active"
           });
           sku = String(webProduct.sku || sku);
@@ -13879,6 +14187,11 @@ const StudioRenderers = {
             name, sku: sku || posProduct?.sku || "", categoryId: category.id,
             price, buyingPrice: costPrice == null ? "" : costPrice, stock,
             imageUri: posProduct?.imageUri || webProduct?.images?.[0] || "",
+            ...(taxonomy ? {
+              taxonomyCategoryId: taxonomy.taxonomyCategoryId || "",
+              taxonomyCustomCategory: taxonomy.taxonomyCustomCategory || "",
+              taxonomyAttributes: taxonomy.taxonomyAttributes
+            } : {}),
             lowStockThreshold: Number(posProduct?.lowStockThreshold) || 3
           });
           posProducts = await window.ShopPOS.listProducts();
@@ -13899,6 +14212,21 @@ const StudioRenderers = {
         }
         if (writeWeb && writePos) {
           await this.publishPosProduct(posProduct);
+          if (taxonomy) {
+            // publishPosProduct keeps the old web taxonomy when POS has none, so write the chosen value explicitly.
+            const published = SQLiteEngine.select("products").find(item => String(item.sku || "") === String(posProduct.sku || ""));
+            if (published) {
+              SQLiteEngine.saveProduct({
+                ...published, id: published.id,
+                taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
+                taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
+                taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
+                taxonomy_attributes: taxonomy.taxonomyAttributes
+              });
+              AppController.cacheActiveTenantCatalog();
+              await window.ShopSQLite.flush();
+            }
+          }
           webSaved = true;
         } else if (writeWeb) {
           saveWebProduct();
@@ -13993,7 +14321,7 @@ const StudioRenderers = {
       ? `paid${order.payment_method ? ` via ${this.manualPaymentLabel(order.payment_method)}` : ""}${order.payment_method && order.payment_reference ? ` (ref ${order.payment_reference})` : ""}`
       : order.payment_status || "unpaid";
     return `<article class="studio-list-row studio-order-card studio-online-order-card" data-online-order-row${attention ? " data-needs-attention" : ""}>
-      <div class="studio-order-header"><div><strong>${orderNumber}</strong><span>${escape(order.customer_name || "Customer not recorded")} · ${escape(order.customer_email || "No email")} · ${escape(order.created_at || "Date unavailable")}</span></div><strong class="studio-order-total">${this.formatMainShopMoney(order.total, orderCurrency)}</strong></div>
+      <div class="studio-order-header"><div><strong>${orderNumber}</strong><span>${escape(order.customer_name || "Customer not recorded")} · ${escape(order.customer_email || "No email")} · ${escape(AppUtils.formatDateTime(order.created_at))}</span></div><strong class="studio-order-total">${this.formatMainShopMoney(order.total, orderCurrency)}</strong></div>
       <div class="studio-order-items">${(order.items || []).map(item => `${escape(item.name)} × ${Number(item.quantity) || 0}`).join(" · ") || "No item details"}</div>
       <div class="studio-order-meta"><span>Payment: ${escape(paymentLabel)}</span><span>Status: ${escape(order.status || "pending")}</span>${discountAmount > 0 ? `<span>Discount${order.discount_code ? ` (${escape(order.discount_code)})` : ""}: -${this.formatMainShopMoney(discountAmount, orderCurrency)}</span>` : ""}</div>
       ${attention ? `<p class="studio-panel-note" role="alert" data-order-attention><strong>Needs attention.</strong> ${escape(this.orderAttentionText(order.attention_reason))}</p>` : ""}
@@ -14328,11 +14656,13 @@ const StudioRenderers = {
     const orderRows = orders => orders.map(order => {
       const amount = Number(order.total) || 0;
       const status = String(order.status || "awaiting payment").replaceAll("_", " ");
-      return `<article class="studio-list-row studio-order-card"><div><strong>${AppUtils.escapeHTML(order.order_number || `WEB-${order.id}`)}</strong><span>${AppUtils.escapeHTML(order.customer_name || "Web customer")} · ${AppUtils.escapeHTML(order.created_at || "Date unavailable")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(amount, order.currency || currency)}</strong><span>${AppUtils.escapeHTML(status)}</span></div></article>`;
-    }).join("") || `<p class="store-workspace-empty">No web orders recorded yet.</p>`;
+      return `<article class="studio-list-row studio-order-card"><div><strong>${AppUtils.escapeHTML(order.order_number || `WEB-${order.id}`)}</strong><span>${AppUtils.escapeHTML(order.customer_name || "Web customer")} · ${AppUtils.escapeHTML(AppUtils.formatDateTime(order.created_at))}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(amount, order.currency || currency)}</strong><span>${AppUtils.escapeHTML(status)}</span></div></article>`;
+    }).join("") || ((snapshot.remoteOrders || []).length
+      ? ""
+      : `<p class="store-workspace-empty">No web orders recorded yet.</p>`);
     const remoteOrderRows = (snapshot.remoteOrders || []).map(order => this.renderRemoteOrderRow(order, currency)).join("") || `<p class="store-workspace-empty">No server-backed orders loaded.</p>`;
     const businessOrderRows = [...sales].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(sale =>
-      `<article class="studio-list-row studio-order-card"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.customerName || "Customer not recorded")} · ${AppUtils.escapeHTML(sale.date || "Date unavailable")}</span><small>${AppUtils.escapeHTML(sale.channel)} · ${sale.itemCount} item${sale.itemCount === 1 ? "" : "s"}</small></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.total, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status)}</span></div></article>`
+      `<article class="studio-list-row studio-order-card"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.customerName || "Customer not recorded")} · ${AppUtils.escapeHTML(AppUtils.formatDateTime(sale.date))}</span><small>${AppUtils.escapeHTML(sale.channel)} · ${sale.itemCount} item${sale.itemCount === 1 ? "" : "s"}</small></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.total, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status)}</span></div></article>`
     ).join("") || `<p class="store-workspace-empty">No business orders or POS receipts recorded yet.</p>`;
     const paymentActivityRows = [...sales].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(sale =>
       `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.channel)} · ${AppUtils.escapeHTML(sale.paymentMethod || "Method not recorded")} · ${AppUtils.escapeHTML(sale.date || "")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.collected, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status || "Awaiting payment")}</span></div></article>`
@@ -14581,7 +14911,7 @@ const StudioRenderers = {
         ${analyticsLoadCard}
         ${locationGrid}
         <article class="studio-panel"><div class="studio-panel-heading"><h2>Visit history</h2></div>
-          ${snapshot.remoteAnalytics ? recentVisitRows || `<p class="store-workspace-empty">No visits yet.</p>` : analyticsVisits.slice(0, 100).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")}</span></div><span>${AppUtils.escapeHTML(visit.created_at)}</span></article>`).join("") || `<p class="store-workspace-empty">No visits yet.</p>`}
+          ${snapshot.remoteAnalytics ? recentVisitRows || `<p class="store-workspace-empty">No visits yet.</p>` : analyticsVisits.slice(0, 100).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")}</span></div><span>${AppUtils.escapeHTML(AppUtils.formatDateTime(visit.created_at))}</span></article>`).join("") || `<p class="store-workspace-empty">No visits yet.</p>`}
         </article></section>`;
     }
     if (path === "/account/main-shop/traffic") {
@@ -14944,12 +15274,12 @@ const StudioRenderers = {
         <div class="store-workspace-list">${sales.map(sale => `
           <details class="store-sale-receipt">
             <summary class="store-workspace-row">
-              <div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.channel)} · ${AppUtils.escapeHTML(sale.date || "Date unavailable")} · ${AppUtils.escapeHTML(sale.status)}</span></div>
+              <div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.channel)} · ${AppUtils.escapeHTML(AppUtils.formatDateTime(sale.date))} · ${AppUtils.escapeHTML(sale.status)}</span></div>
               <div><strong>${this.formatMainShopMoney(sale.collected, sale.currency)} collected</strong><span>${this.formatMainShopMoney(sale.total, sale.currency)} total · ${sale.itemCount} items</span></div>
             </summary>
             <div class="store-product-detail">
               <h3>Receipt · ${AppUtils.escapeHTML(sale.reference)}</h3>
-              <p>${AppUtils.escapeHTML(sale.date || "Date unavailable")} · ${AppUtils.escapeHTML(sale.channel)} · ${AppUtils.escapeHTML(sale.status)}</p>
+              <p>${AppUtils.escapeHTML(AppUtils.formatDateTime(sale.date))} · ${AppUtils.escapeHTML(sale.channel)} · ${AppUtils.escapeHTML(sale.status)}</p>
               ${sale.lineItems.map(item => `<div class="store-workspace-row"><div><strong>${AppUtils.escapeHTML(item.name)}</strong><span>${item.quantity} × ${this.formatMainShopMoney(item.unitPrice, sale.currency)}</span></div><strong>${this.formatMainShopMoney(item.quantity * item.unitPrice, sale.currency)}</strong></div>`).join("") || `<p>No item details are available for this sale.</p>`}
               <div class="store-product-detail-grid"><div><strong>Sale total</strong> <span>${this.formatMainShopMoney(sale.total, sale.currency)}</span></div><div><strong>Collected</strong> <span>${this.formatMainShopMoney(sale.collected, sale.currency)}</span></div><div><strong>Balance</strong> <span>${this.formatMainShopMoney(Math.max(0, sale.total - sale.collected), sale.currency)}</span></div></div>
             </div>
@@ -17903,6 +18233,9 @@ const StudioRenderers = {
         categories: Array.isArray(saved.categories) ? saved.categories : [],
         draft_id: draftId,
         shop_name: typeof saved.shop_name === "string" ? saved.shop_name : "",
+        shop_kind: typeof saved.shop_kind === "string" ? saved.shop_kind : "",
+        shop_address: typeof saved.shop_address === "string" ? saved.shop_address : "",
+        wizard_step: saved.wizard_step === "catalogue" ? "catalogue" : "identity",
         section_layout: saved.section_layout && typeof saved.section_layout === "object"
           ? saved.section_layout
           : { order: [], hidden: [], removed: [], added: [] },
@@ -18037,7 +18370,7 @@ const StudioRenderers = {
         </header>
         <form id="new-website-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-lg);">
           <label class="form-field"><span class="form-label">Shop / website name</span><input class="form-input" name="name" required maxlength="120" placeholder="My Shop" value="${AppUtils.escapeHTML(newWebsiteDraft.shop_name || "")}"></label>
-          <label class="form-field"><span class="form-label">Website address</span><span style="display:flex;align-items:center;gap:5px;"><input class="form-input" name="id" required maxlength="40" pattern="[A-Za-z0-9-]+" placeholder="my-store" value="${AppUtils.escapeHTML(String(newWebsiteDraft.shop_name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40).replace(/-$/g, ""))}"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
+          <label class="form-field"><span class="form-label">Website address</span><span style="display:flex;align-items:center;gap:5px;"><input class="form-input" name="id" required maxlength="40" pattern="[A-Za-z0-9-]+" placeholder="my-store" value="${AppUtils.escapeHTML(newWebsiteDraft.shop_address || String(newWebsiteDraft.shop_name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40).replace(/-$/g, ""))}"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
           <label style="grid-column:1/-1;display:flex;align-items:flex-start;gap:8px;font-size:.84rem;"><input type="checkbox" name="confirm_domain" required><span>I confirm this website address and domain before publishing.</span></label>
           <p class="studio-panel-note" style="grid-column:1/-1;">App-account Paystack payments are shared across your websites. Payment settings belong to your signed-in app account. Every website registered to your app account will use this account at checkout.</p>
           <p id="new-website-error" role="alert" hidden style="grid-column:1/-1;color:#b42318;margin:0;"></p>
@@ -20197,6 +20530,45 @@ const AppController = {
       void refreshSharedCatalog();
     }
 
+    const identityForm = document.getElementById("website-wizard-identity-form");
+    if (identityForm) {
+      const nameInput = identityForm.elements.name;
+      const addressInput = identityForm.elements.address;
+      const slugify = value => String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "").slice(0, 40).replace(/-$/g, "");
+      let addressEdited = Boolean(addressInput.value);
+      addressInput.addEventListener("input", () => { addressEdited = true; });
+      nameInput.addEventListener("input", () => {
+        if (!addressEdited) addressInput.value = slugify(nameInput.value);
+      });
+      identityForm.onsubmit = event => {
+        event.preventDefault();
+        const error = document.getElementById("website-wizard-identity-error");
+        const name = nameInput.value.trim();
+        const address = slugify(addressInput.value);
+        if (!name || !address) {
+          if (error) {
+            error.textContent = "Enter a shop name and a website address.";
+            error.hidden = false;
+          }
+          return;
+        }
+        const draft = StudioRenderers.websiteBuilderDraft();
+        draft.shop_name = name;
+        draft.shop_kind = identityForm.elements.kind.value.trim();
+        draft.shop_address = address;
+        draft.wizard_step = "catalogue";
+        StudioRenderers.saveWebsiteBuilderDraft(draft);
+        this.handleRoute(this.currentRoute());
+      };
+    }
+    const editIdentity = document.getElementById("website-wizard-edit-identity");
+    if (editIdentity) editIdentity.onclick = () => {
+      const draft = StudioRenderers.websiteBuilderDraft();
+      draft.wizard_step = "identity";
+      StudioRenderers.saveWebsiteBuilderDraft(draft);
+      this.handleRoute(this.currentRoute());
+    };
     const categoryForm = document.getElementById("website-wizard-category-form");
     if (categoryForm) categoryForm.onsubmit = event => {
       event.preventDefault();
@@ -20228,6 +20600,21 @@ const AppController = {
     };
     const categoryList = document.getElementById("website-wizard-category-list");
     if (categoryList) categoryList.onclick = event => {
+      const removeButton = event.target.closest("[data-remove-wizard-category]");
+      if (removeButton) {
+        const draft = StudioRenderers.websiteBuilderDraft();
+        const removeId = removeButton.dataset.removeWizardCategory;
+        const inUse = draft.products.filter(product => String(product.category_id) === removeId).length;
+        if (inUse) {
+          AppUtils.showToast(`${inUse} product${inUse === 1 ? " is" : "s are"} in this category. Move or remove ${inUse === 1 ? "it" : "them"} first.`, "danger");
+          return;
+        }
+        draft.categories = draft.categories.filter(category => String(category.id) !== removeId);
+        window.localStorage.removeItem(WEBSITE_BUILDER_DRAFT_SYNC_KEY);
+        StudioRenderers.saveWebsiteBuilderDraft(draft);
+        this.handleRoute(this.currentRoute());
+        return;
+      }
       const button = event.target.closest("[data-edit-wizard-category]");
       if (!button || !categoryForm) return;
       const category = StudioRenderers.websiteBuilderDraft().categories.find(item =>
@@ -20803,19 +21190,8 @@ const AppController = {
     }
     if (path === "/account/web/studio/websites/webmaker") {
       this.bindWebsiteBuilderEvents();
-      if (!StudioRenderers.websiteBuilderDraft().categories.length) {
-        this.websiteBuilderSourceCatalog().then(catalog => {
-          const draft = StudioRenderers.websiteBuilderDraft();
-          if (!draft.categories.length && catalog.categories.length) {
-            draft.categories = catalog.categories;
-            StudioRenderers.saveWebsiteBuilderDraft(draft);
-            if (this.currentRoute().split("?")[0] === path) this.handleRoute(this.currentRoute());
-          }
-        }).catch(error => {
-          console.error("New-website categories could not be loaded from Store.", error);
-          AppUtils.showToast(error instanceof Error ? error.message : "Store categories could not be loaded.", "danger");
-        });
-      }
+      // Categories are never preloaded from Store or POS: the owner adds the ones this shop needs,
+      // or brings them in with the products they pick from Store.
     }
     if (path === "/account/web/site") {
       const litrusFrame = document.getElementById("builder-litrus-mixer");
@@ -21608,11 +21984,20 @@ const AppController = {
               is_new: product.is_new,
               is_featured: product.is_featured,
               is_bestseller: product.is_bestseller,
-              images: [],
+              images: Array.isArray(product.images) ? product.images : [],
               sizes: product.sizes,
               colors: product.colors,
               tags: product.tags,
-              status: product.status
+              status: product.status,
+              duration_minutes: product.duration_minutes,
+              booking_enabled: product.booking_enabled,
+              option1_name: product.option1_name,
+              option2_name: product.option2_name,
+              variants: Array.isArray(product.variants) ? product.variants : [],
+              taxonomy_category_id: product.taxonomy_category_id || null,
+              taxonomy_category_name: product.taxonomy_category_name || "",
+              taxonomy_custom_category: product.taxonomy_custom_category || null,
+              taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes : []
             })),
             categories: draftCatalog.categories.map(category => ({
               id: category.id,
@@ -22996,7 +23381,9 @@ const AppController = {
     }
     const compressedDataUrl = await AppUtils.compressImageFile(
       new File([sourceBlob], "catalog-image", { type: sourceBlob.type }),
-      { maxDimension: 800, maxBytes: 2_800_000 }
+      // Catalogue photos are what a customer pins and zooms on a modern phone screen, so they are
+      // kept at 1600px. The small copy baked into the published HTML is made separately by the editor.
+      { maxDimension: 1600, maxBytes: 2_800_000 }
     );
     const compressedResponse = await fetch(compressedDataUrl);
     if (!compressedResponse.ok) throw new Error("A compressed product image could not be prepared for publishing.");

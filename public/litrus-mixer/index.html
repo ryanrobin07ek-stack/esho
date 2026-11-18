@@ -2667,6 +2667,13 @@ html #store .sole-store .sole-product-grid.sole-product-grid.shop-settings-grid:
 .sole-content-copy h2{margin:0;font:700 clamp(30px,4.7vw,64px)/.98 var(--sole-condensed,system-ui,sans-serif);text-transform:uppercase}
 .sole-content-copy p:not(.sole-eyebrow){max-width:48ch;margin:16px 0 22px;color:var(--sole-muted,#777);font-size:clamp(13px,1.2vw,16px);line-height:1.65}
 .sole-content-copy .sole-button{display:inline-flex}
+.content-gallery .sole-content-panel,.content-video .sole-content-panel{display:block;min-height:0}
+.content-gallery .sole-content-copy,.content-video .sole-content-copy{padding:clamp(20px,4vw,44px) clamp(20px,5vw,70px) 0}
+.sole-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:10px;padding:clamp(16px,3vw,36px) clamp(20px,5vw,70px) clamp(20px,4vw,44px)}
+.sole-gallery-grid figure{margin:0;aspect-ratio:1/1;overflow:hidden;background:var(--sole-line,#eee)}
+.sole-gallery-grid img{width:100%;height:100%;object-fit:cover;display:block}
+.sole-video-frame{padding:clamp(16px,3vw,36px) clamp(20px,5vw,70px) clamp(20px,4vw,44px)}
+.sole-video-frame video,.sole-video-frame iframe{display:block;width:100%;aspect-ratio:16/9;border:0;background:#000;max-height:80vh}
 .content-promo.promo-cinematic .sole-content-panel{position:relative;min-height:400px;background:#1b1b1b;color:#fff}
 .content-promo.promo-cinematic .sole-content-image{position:absolute;inset:0;min-height:0}
 .content-promo.promo-cinematic .sole-content-image:after{position:absolute;content:"";inset:0;background:linear-gradient(90deg,rgba(0,0,0,.78),rgba(0,0,0,.1))}
@@ -2821,9 +2828,10 @@ html #store .sole-store .sole-product-grid.sole-product-grid.shop-settings-grid:
 <div class="catalog-pane" id="wProductsPane" role="tabpanel" aria-labelledby="wProductsTabBtn"><div class="catalog-head"><h3><span id="wProductsHeading">Your products</span> <span id="wProdsCount" class="catalog-count"></span></h3><button type="button" class="ghost" id="wAdd">+ Add a product</button></div><p class="hint" id="wProductsHint">Add products, photos, and the categories each one belongs to.</p>
 <div class="product-editor" id="productEditor" role="dialog" aria-modal="true" aria-labelledby="productEditorTitle" hidden><h3 id="productEditorTitle">Add product</h3><label id="editProdNameLabel"><span id="editProdNameLabelText">Product name</span><input id="editProdName" placeholder="e.g. Everyday sneakers" autocomplete="off"></label><label>Price<input id="editProdPrice" inputmode="decimal" placeholder="e.g. 4,500"></label><label id="editProdDurationWrap" hidden>Appointment duration<select id="editProdDuration"><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60" selected>1 hr</option><option value="75">1 hr 15 min</option><option value="90">1 hr 30 min</option><option value="105">1 hr 45 min</option><option value="120">2 hrs</option><option value="135">2 hrs 15 min</option><option value="150">2 hrs 30 min</option><option value="165">2 hrs 45 min</option><option value="180">3 hrs</option><option value="195">3 hrs 15 min</option><option value="210">3 hrs 30 min</option><option value="225">3 hrs 45 min</option><option value="240">4 hrs</option></select></label><label>Short description<textarea id="editProdDesc" rows="3" placeholder="What should customers know?"></textarea></label><label>Photo link (optional)<input id="editProdImageUrl" placeholder="Paste an image link"></label><div class="ph"><img id="editProdThumb" class="thumb" alt="" hidden><button type="button" class="ghost" id="editProdUpload">Upload photo</button><button type="button" class="ghost" id="editProdRemove" hidden>Remove photo</button><input type="file" id="editProdFile" accept="image/*" hidden><span id="editProdPhotoMsg" class="phmsg hint" role="status"></span></div><div><b>Categories</b><div id="editProdGroups" class="pc"></div></div><p id="editProdMsg" class="hint" role="status"></p><div class="row"><button type="button" id="editProdSave">Save product</button><button type="button" class="ghost" id="editProdCancel">Cancel</button></div></div><div id="wProds"></div></div>
 <div class="catalog-pane" id="wCategoriesPane" role="tabpanel" aria-labelledby="wCategoriesTabBtn" hidden><h3>Your categories <span id="wCatCount" class="catalog-count"></span></h3><p class="hint" id="wCategoriesHint">Use clear groups such as Sneakers, Sandals, or New arrivals. Products can belong to more than one category.</p><div class="catadd"><input id="wCatNew" placeholder="Category name" autocomplete="off" aria-label="New category name"><button type="button" id="wCatAdd">Add category</button></div><div id="wCatChips" class="catchips"></div></div>
-<div class="catalog-pane" id="wContentPane" role="tabpanel" aria-labelledby="wContentTabBtn" hidden><h3>Homepage content</h3><p class="hint">Add promo banners or image-and-text stories between shorter product groups. If this list is empty, starter content is shown automatically.</p>
+<div class="catalog-pane" id="wContentPane" role="tabpanel" aria-labelledby="wContentTabBtn" hidden><h3>Homepage content</h3><p class="hint">Add promo banners, image-and-text stories, photo galleries or videos between shorter product groups. If this list is empty, starter content is shown automatically.</p>
 <div id="wContentScreenNav" class="catalog-tabs" role="tablist" aria-label="Homepage content screens" hidden><button type="button" id="wPromoScreenTab" role="tab" aria-controls="wPromoScreen" aria-selected="true">Promo</button><button type="button" id="wFaqScreenTab" role="tab" aria-controls="wFaqScreen" aria-selected="false">FAQs</button></div>
 <div id="wPromoScreen" class="content-screen">
+<h3>Your own pictures</h3><p class="hint">Upload your own pictures for the top banner, the offer banner and each category. Anything you leave empty keeps using stock photos.</p><div id="wOwnPhotos" class="catalog-content-list"></div><input type="file" id="wOwnPhotoFile" accept="image/*" hidden><hr>
 <label>Promo banner style<select id="wPromoStyle"><option value="split">Editorial split</option><option value="cinematic">Cinematic image</option><option value="glass">Glass card</option><option value="magazine">Magazine</option><option value="brutalist">Bold blocks</option><option value="gradient">Colour gradient</option><option value="ticket">Ticket offer</option><option value="neon">Neon edge</option><option value="organic">Soft organic</option><option value="collage">Image collage</option></select></label>
 <label>Image-and-text story style<select id="wStoryStyle"><option value="collage">Editorial collage</option><option value="dark">Dark luxury</option><option value="minimal">Minimal</option><option value="fashion">Fashion editorial</option><option value="sunset">Warm sunset</option><option value="organic">Organic</option><option value="tech">Modern grid</option><option value="romance">Soft romantic</option><option value="mono">Monochrome</option><option value="retro">Retro print</option></select></label>
 <div class="catalog-head"><h3>Promo &amp; story cards <span id="wContentCount" class="catalog-count"></span></h3><button type="button" class="ghost" id="wAddContent">+ Add a card</button></div><div id="wContentItems" class="catalog-content-list"></div>
@@ -4425,7 +4433,48 @@ function shrinkImage(file,max,q){
   im.src=u;
  });
 }
-function shopProds(){if(!SHOP.custom||!Array.isArray(SHOP.products))return PRODS;return SHOP.products.map((x,i)=>[x.name,x.price,'box',TONES[i%6],x.desc||'',x.cats||[],imgSrc(x.img),String(x.craftId||slugify(x.name)+'-'+(i+1)),x.media_type||'image',x.spin_frames||[],x.video_url||'',x.booking_enabled===true||x.booking_enabled===1,Number(x.stock)||0])}
+/* Photo sizes. The full photo goes to the shop catalogue (the host stores it); the published page itself only
+   carries a small copy, because every card photo is written into the page twice and the page has a size limit. */
+const PRODUCT_PHOTO_MAX=1600,PRODUCT_PHOTO_QUALITY=.85,PRODUCT_THUMB_MAX=720,PRODUCT_THUMB_QUALITY=.78;
+/* Pictures the owner uploads for the banner, categories and cards are written straight into the page. */
+const OWN_PHOTO_BUDGET=1500000;
+const imgThumbSrc=v=>{const k=imgRef(v);return k?(IMGS['t'+k]||IMGS[k]||''):(v||'')};
+function ownPhotoRefs(){
+ const out=[],add=v=>{const k=imgRef(v);if(k&&!out.includes(k))out.push(k)};
+ Object.values(SHOP.userImages||{}).forEach(add);
+ (SHOP.contentBlocks||[]).forEach(block=>{if(!block)return;add(block.image);(Array.isArray(block.images)?block.images:[]).forEach(add)});
+ return out;
+}
+function ownPhotoChars(except){return ownPhotoRefs().filter(key=>key!==except).reduce((total,key)=>total+(IMGS[key]||'').length,0)}
+async function litrusStoreOwnPhoto(file,max,quality,previous){
+ if(!file||!/^image\//.test(file.type))throw new Error('Please choose a picture file.');
+ const data=await shrinkImage(file,max,quality);
+ if(ownPhotoChars(imgRef(previous))+data.length>OWN_PHOTO_BUDGET)throw new Error('Your own pictures already fill the space a published shop has. Remove one, or choose a smaller picture.');
+ const id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+ IMGS[id]=data;
+ try{await idbPut('imgs',id,data)}catch(error){}
+ return 'idb:'+id;
+}
+/* A video link becomes either a plain video file or an embedded YouTube/Vimeo player; anything else is refused. */
+function litrusVideoEmbed(value){
+ const text=String(value||'').trim();
+ if(!/^https:\/\//i.test(text)&&!/^\/[^/]/.test(text))return null;
+ let url;try{url=new URL(text,'https://shop.invalid/')}catch(error){return null}
+ const host=url.hostname.replace(/^www\./,'').toLowerCase();
+ let id='';
+ if(host==='youtu.be')id=url.pathname.split('/')[1]||'';
+ else if(host==='youtube.com'||host==='m.youtube.com'||host==='youtube-nocookie.com'){
+  id=url.searchParams.get('v')||((url.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)||[])[1]||'');
+ }
+ if(id&&/^[A-Za-z0-9_-]{6,20}$/.test(id))return {kind:'embed',src:'https://www.youtube-nocookie.com/embed/'+id,label:'YouTube video'};
+ if(host==='vimeo.com'||host==='player.vimeo.com'){
+  const match=url.pathname.match(/(\d{5,12})/);
+  if(match)return {kind:'embed',src:'https://player.vimeo.com/video/'+match[1],label:'Vimeo video'};
+ }
+ if(/\.(mp4|webm|mov|m4v|ogv)$/i.test(url.pathname))return {kind:'file',src:text,label:'Video'};
+ return null;
+}
+function shopProds(){if(!SHOP.custom||!Array.isArray(SHOP.products))return PRODS;return SHOP.products.map((x,i)=>[x.name,x.price,'box',TONES[i%6],x.desc||'',x.cats||[],imgThumbSrc(x.img),String(x.craftId||slugify(x.name)+'-'+(i+1)),x.media_type||'image',x.spin_frames||[],x.video_url||'',x.booking_enabled===true||x.booking_enabled===1,Number(x.stock)||0])}
 const COPY=[
  ['Made for your everyday','Shoes and bags that go from the market to the weekend. Simple, tough, good looking.','Shop now'],
  ['Walk in style','Fresh pairs and carry-alls, picked for people who like to move.','See new arrivals'],
@@ -4453,7 +4502,7 @@ function rememberOwnerImages(root){
    return [...hero.querySelectorAll('.hero-main img')].some(function(image){return image.getAttribute('src')===src});
   });
   const isProductHeroImage=shopProds().some(function(product){return product&&product[6]===src});
-  if(src&&!isTemplateHero&&!isProductHeroImage&&!/^data:image\/svg\+xml/i.test(src)&&!/images\.unsplash\.com/i.test(src)&&src!==SHOP.autoImages[slot])SHOP.userImages[slot]=src;
+  if(src&&!isTemplateHero&&!isProductHeroImage&&!/^data:image\/svg\+xml/i.test(src)&&!/images\.unsplash\.com/i.test(src)&&src!==SHOP.autoImages[slot]&&!(SHOP.userImages[slot]&&imgSrc(SHOP.userImages[slot])===src))SHOP.userImages[slot]=src;
  });
 }
 function prepareNonProductImages(root){
@@ -4470,7 +4519,7 @@ function prepareNonProductImages(root){
   counts[role]=(counts[role]||0)+1;
   const slot=role+'-'+counts[role],src=img.getAttribute('src')||'';
   img.setAttribute('data-lpk-image-slot',slot);
-  if(SHOP.userImages[slot])img.setAttribute('src',SHOP.userImages[slot]);
+  if(SHOP.userImages[slot])img.setAttribute('src',imgSrc(SHOP.userImages[slot]));
   else if(SHOP.autoImages[slot])img.setAttribute('src',SHOP.autoImages[slot]);
   else if(!src||/^data:image\/svg\+xml/i.test(src)||/images\.unsplash\.com/i.test(src)||(role!=='hero'&&shopProds().some(function(p){return p&&p[6]===src})))img.setAttribute('data-lpk-empty-image','');
  });
@@ -5783,18 +5832,58 @@ function render(){
   {type:'story',title:SHOP.about?'A little about '+name:'Made for your everyday',text:SHOP.about||('A closer look at '+(SHOP.what||'the collection')+', thoughtfully brought together for '+name+'.'),image:'',button:'Browse the collection'}
  ];
  const contentBlocks=(Array.isArray(SHOP.contentBlocks)?SHOP.contentBlocks:[]).slice(0,8).map(block=>({
-  type:block&&block.type==='story'?'story':'promo',
+  type:['story','gallery','video'].includes(block&&block.type)?block.type:'promo',
   title:String(block&&block.title||'').trim(),
   text:String(block&&block.text||'').trim(),
   image:String(block&&block.image||'').trim(),
+  images:(Array.isArray(block&&block.images)?block.images:[]).map(value=>String(value||'').trim()).filter(Boolean).slice(0,8),
+  video:String(block&&block.video||'').trim(),
   button:String(block&&block.button||'').trim()
- })).filter(block=>block.title||block.text||block.image||block.button);
+ })).filter(block=>block.title||block.text||block.image||block.button||block.images.length||block.video);
  const homepageContent=contentBlocks.length?contentBlocks:defaultContentBlocks();
  const promoLayouts=['split','cinematic','glass','magazine','brutalist','gradient','ticket','neon','organic','collage'];
  const storyLayouts=['collage','dark','minimal','fashion','sunset','organic','tech','romance','mono','retro'];
  const promoLayout=promoLayouts.includes(SHOP.promoStyle)?SHOP.promoStyle:'split';
  const storyLayout=storyLayouts.includes(SHOP.storyStyle)?SHOP.storyStyle:'collage';
+ const makeMediaBlock=(block,index0)=>{
+  const isGallery=block.type==='gallery',section=document.createElement('section');
+  section.className='sole-content-block sec content-'+block.type;
+  const panel=document.createElement('div');panel.className='sole-content-panel';
+  if(block.title||block.text){
+   const copy=document.createElement('div');copy.className='sole-content-copy';
+   const eyebrow=document.createElement('p');eyebrow.className='sole-eyebrow';eyebrow.textContent=isGallery?'Gallery':'Watch';copy.append(eyebrow);
+   if(block.title){const title=document.createElement('h2');title.textContent=block.title;copy.append(title)}
+   if(block.text){const body=document.createElement('p');body.textContent=block.text;copy.append(body)}
+   panel.append(copy);
+  }
+  const allowed=/^(https?:\/\/|data:image\/|\/|\.\/|\.\.\/)/i;
+  if(isGallery){
+   const grid=document.createElement('div');grid.className='sole-gallery-grid';
+   let pictures=block.images.map(imgSrc).filter(value=>allowed.test(value));
+   if(!pictures.length)pictures=[0,1,2,3].map(offset=>photo(products[(index0+offset)%Math.max(1,products.length)]||products[0],index0+offset,false));
+   pictures.forEach(value=>{const figure=document.createElement('figure');const image=document.createElement('img');image.src=value;image.alt='';image.loading='lazy';image.decoding='async';figure.append(image);grid.append(figure)});
+   panel.append(grid);
+  }else{
+   const embed=litrusVideoEmbed(block.video);
+   if(embed){
+    const frame=document.createElement('div');frame.className='sole-video-frame';
+    if(embed.kind==='file'){
+     const video=document.createElement('video');video.src=embed.src;video.controls=true;video.preload='metadata';video.setAttribute('playsinline','');
+     const poster=imgSrc(block.image);if(allowed.test(poster))video.poster=poster;
+     video.setAttribute('aria-label',block.title||'Shop video');frame.append(video);
+    }else{
+     const player=document.createElement('iframe');player.src=embed.src;player.title=block.title||embed.label;player.loading='lazy';
+     player.setAttribute('allow','fullscreen; picture-in-picture');player.setAttribute('allowfullscreen','');player.setAttribute('referrerpolicy','strict-origin-when-cross-origin');
+     frame.append(player);
+    }
+    panel.append(frame);
+   }
+  }
+  if(!panel.children.length)section.hidden=true;
+  section.append(panel);return section
+ };
  const makeContentBlock=(block,index)=>{
+  if(block.type==='gallery'||block.type==='video')return makeMediaBlock(block,index);
   const isStory=block.type==='story',section=document.createElement('section');
   section.className='sole-content-block sec content-'+(isStory?'story story-'+storyLayout:'promo promo-'+promoLayout);
   const panel=document.createElement('div');panel.className='sole-content-panel';
@@ -5878,7 +5967,7 @@ function render(){
  if(typeof window.litrusPkgMixerChanged==='function')window.litrusPkgMixerChanged();
 }
 
-var SEC_LIST=[],SEC_PIN=[],SEC_EL={},SEC_ORDER=[],secBox=null,secEditing='';
+var SEC_LIST=[],SEC_PIN=[],SEC_EL={},SEC_ORDER=[],secBox=null,secFile=null,secUploadIndex=-1,secEditing='';
 function secKey(el,used){let k='';for(const c of el.classList){if(/^sole-/.test(c)&&c!=='sole-store'){k=c;break}}k=k||el.tagName.toLowerCase();let n=k,i=2;while(used.has(n))n=k+'-'+(i++);used.add(n);return n}
 function secLabel(el,key){const h=el.querySelector('h1,h2,h3');let t=h?h.textContent.replace(/\s+/g,' ').trim():'';if(!t)t=key.replace(/^sole-/,'').replace(/-/g,' ');return t.slice(0,28)}
 function secRerender(){if(typeof go==='function')go();else{render();sync();autosave()}}
@@ -5925,7 +6014,7 @@ function secBlocks(){if(!Array.isArray(SHOP.contentBlocks))SHOP.contentBlocks=[]
  return L}
 function secMax(){return typeof MAX_CONTENT_BLOCKS==='number'?MAX_CONTENT_BLOCKS:8}
 function secAdd(type){const L=secBlocks();if(L.length>=secMax()){alert('You can have up to '+secMax()+' promo/story sections.');return}
- L.push({type:type,title:type==='story'?'Our story':'New offer',text:'Write your message here.',image:'',button:type==='story'?'':'Shop now'});secRerender()}
+ L.push(type==='gallery'?{type:'gallery',title:'Gallery',text:'',image:'',images:[],button:''}:type==='video'?{type:'video',title:'Watch',text:'',image:'',video:'',button:''}:{type:type,title:type==='story'?'Our story':'New offer',text:'Write your message here.',image:'',button:type==='story'?'':'Shop now'});secRerender()}
 function secCopy(i){const L=secBlocks();if(L.length>=secMax()){alert('You can have up to '+secMax()+' promo/story sections.');return}
  if(!L[i])return;L.push(Object.assign({},L[i]));secRerender()}
 function leafHTML(k,esc,inp){const el=SEC_EL[k];if(!el)return'';const L=secLeaves(el);if(!L.length)return'<div style="opacity:.6;padding:4px 0">No text to edit here.</div>';
@@ -5936,7 +6025,7 @@ function drawSecPanel(){
  const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const btn='style="padding:2px 6px;margin-left:3px;cursor:pointer"',inp='style="width:100%;box-sizing:border-box;margin:2px 0 6px;padding:4px;font:13px sans-serif"';
  let h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>Sections</b><span><button data-a="reset" '+btn+'>Reset</button><button data-a="close" '+btn+'>x</button></span></div>';
- h+='<div style="margin-bottom:8px">Add: <button data-a="add" data-t="promo" '+btn+'>+ Promo banner</button><button data-a="add" data-t="story" '+btn+'>+ Story</button></div>';
+ h+='<div style="margin-bottom:8px">Add: <button data-a="add" data-t="promo" '+btn+'>+ Promo banner</button><button data-a="add" data-t="story" '+btn+'>+ Story</button><button data-a="add" data-t="gallery" '+btn+'>+ Gallery</button><button data-a="add" data-t="video" '+btn+'>+ Video</button></div>';
  vis.forEach((k,i)=>{const bi=idx[k],ek=esc(k);
   const copy=bi>=0?'<button data-a="copy" data-i="'+bi+'" '+btn+'>Copy</button>':'<button data-a="dup" data-k="'+ek+'" '+btn+'>Copy</button>';
   const del=bi>=0?'<button data-a="delblock" data-i="'+bi+'" data-k="'+ek+'" '+btn+'>Delete</button>':dup[k]?'<button data-a="deldup" data-k="'+ek+'" '+btn+'>Delete</button>':'<button data-a="hide" data-k="'+ek+'" '+btn+'>Hide</button>';
@@ -5944,9 +6033,9 @@ function drawSecPanel(){
    '<button data-a="up" data-k="'+ek+'" '+(i?'':'disabled ')+btn+'>&#9650;</button><button data-a="down" data-k="'+ek+'" '+(i<vis.length-1?'':'disabled ')+btn+'>&#9660;</button>'+del+'</div>';
   if(secEditing===k){
    if(bi>=0){const b=(SHOP.contentBlocks||[])[bi]||{};
-    h+='<div style="padding:4px 0 8px">Type<select data-f="type" data-i="'+bi+'" '+inp+'><option value="promo"'+(b.type!=='story'?' selected':'')+'>Promo banner</option><option value="story"'+(b.type==='story'?' selected':'')+'>Story</option></select>'+
+    h+='<div style="padding:4px 0 8px">Type<select data-f="type" data-i="'+bi+'" '+inp+'><option value="promo"'+(['story','gallery','video'].includes(b.type)?'':' selected')+'>Promo banner</option><option value="story"'+(b.type==='story'?' selected':'')+'>Story</option><option value="gallery"'+(b.type==='gallery'?' selected':'')+'>Gallery</option><option value="video"'+(b.type==='video'?' selected':'')+'>Video</option></select>'+
      'Headline<input data-f="title" data-i="'+bi+'" value="'+esc(b.title)+'" '+inp+'>Text<textarea data-f="text" data-i="'+bi+'" rows="3" '+inp+'>'+esc(b.text)+'</textarea>'+
-     'Button words<input data-f="button" data-i="'+bi+'" value="'+esc(b.button)+'" '+inp+'>Image link (optional)<input data-f="image" data-i="'+bi+'" value="'+esc(b.image)+'" '+inp+'></div>'}
+     'Button words<input data-f="button" data-i="'+bi+'" value="'+esc(b.button)+'" '+inp+'>'+(b.type==='video'?'Video link<input data-f="video" data-i="'+bi+'" value="'+esc(b.video)+'" '+inp+'>':'')+(b.type==='gallery'?'<div style="opacity:.7;padding:2px 0 6px">Add the gallery pictures in Shop settings, Homepage content.</div>':'Image link (optional)<input data-f="image" data-i="'+bi+'" value="'+esc(imgRef(b.image)?'':b.image)+'" placeholder="'+(imgRef(b.image)?'Using your uploaded picture':'')+'" '+inp+'><button data-a="upload" data-i="'+bi+'" '+btn+'>Upload picture</button>')+'</div>'}
    else h+=leafHTML(k,esc,inp)}
  });
  SEC_PIN.forEach(p=>{const ek=esc(p.key);h+='<div style="display:flex;align-items:center;padding:3px 0;border-top:1px solid #eee"><span style="flex:1;opacity:.75">'+p.label+' (fixed)</span><button data-a="edit" data-k="'+ek+'" '+btn+'>Edit</button></div>';if(secEditing===p.key)h+=leafHTML(p.key,esc,inp)});
@@ -5961,6 +6050,7 @@ function initSecUI(){
   b=document.createElement('button');b.id='secBtn';b.type='button';b.textContent='Sections';
   b.style.cssText='position:fixed;left:10px;bottom:10px;z-index:99998;padding:8px 14px;border-radius:20px;border:1px solid #bbb;background:#fff;color:#222;font:13px sans-serif;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.2)';
  }
+ secFile=document.createElement('input');secFile.type='file';secFile.accept='image/*';secFile.hidden=true;document.body.appendChild(secFile);
  secBox=document.createElement('div');secBox.id='litrus-sections-panel';secBox.setAttribute('role','dialog');secBox.setAttribute('aria-label','Storefront sections');secBox.style.cssText='display:none;position:fixed;left:10px;bottom:'+(integrated?'66px':'52px')+';z-index:99999;width:320px;max-width:calc(100vw - 20px);max-height:'+(integrated?'calc(100dvh - 84px)':'75vh')+';overflow:auto;background:#fff;color:#222;border:1px solid #ccc;border-radius:8px;padding:10px;font:13px sans-serif;box-shadow:0 4px 20px rgba(0,0,0,.25)';
  if(b)b.onclick=function(){secBox.style.display=secBox.style.display==='none'?'block':'none';if(secBox.style.display==='block')drawSecPanel()};
  secBox.onclick=function(e){const t=e.target.closest('button');if(!t||t.disabled)return;const a=t.dataset.a,k=t.dataset.k;
@@ -5968,7 +6058,9 @@ function initSecUI(){
   else if(a==='up')secMove(k,-1);else if(a==='down')secMove(k,1);else if(a==='hide')secHide(k);else if(a==='show')secShow(k);
   else if(a==='add')secAdd(t.dataset.t);else if(a==='copy')secCopy(+t.dataset.i);else if(a==='dup')secDup(k);
   else if(a==='deldup')secDelDup(k);else if(a==='delblock')secDelBlock(+t.dataset.i,k);
+  else if(a==='upload'){secUploadIndex=+t.dataset.i;secFile.click()}
   else if(a==='edit'){secEditing=secEditing===k?'':k;drawSecPanel()}};
+ secFile.addEventListener('change',async()=>{const file=secFile.files&&secFile.files[0],i=secUploadIndex;secFile.value='';const L=SHOP.contentBlocks;if(!file||!L||!L[i])return;try{L[i]=Object.assign({},L[i],{image:await litrusStoreOwnPhoto(file,900,.78,L[i].image)});secRerender()}catch(error){alert((error&&error.message)||'Could not load that picture.')}});
  secBox.oninput=function(e){const t=e.target;if(!t.dataset)return;
   if(t.dataset.lf!==undefined){const E=SHOP.secEdit,k=t.dataset.k;E.text=E.text||{};E.text[k]=E.text[k]||{};if(t.value==='')delete E.text[k][t.dataset.lf];else E.text[k][t.dataset.lf]=t.value;secRerender();return}
   if(!t.dataset.f)return;const L=SHOP.contentBlocks,i=+t.dataset.i;if(!L||!L[i])return;L[i]=Object.assign({},L[i],{[t.dataset.f]:t.value});secRerender()};
@@ -6669,7 +6761,7 @@ function markGeneratedDesignEdited(event){
 const pendingCraftImageRequests=new Map();
 const MAX_PRODUCTS=1000,MAX_CATEGORIES=1000;
 let prods=[{name:'Product one',price:'1,500',desc:'',img:'',ci:[0]},{name:'Product two',price:'2,400',desc:'',img:'',ci:[1]},{name:'Product three',price:'3,200',desc:'',img:'',ci:[2]}];
-let editingProductIndex=null,editingCategories=[],editingImage='',stagedEditImageId='';
+let editingProductIndex=null,editingCategories=[],editingImage='',editingOriginalImage='',stagedEditImageId='';
 /* Products the host sent with status "archived" are never shown or edited here; they ride along unchanged so a save can never read their absence as a deletion. */
 let hiddenCraftProducts=[];
 let clientKeySequence=0;
@@ -6700,7 +6792,7 @@ autosave=function(){
  };
  svT=setTimeout(async()=>{
   try{const r=getRecipe();r.name=SHOP.name;await idbPut('state','shop',r);
-   const used=new Set((SHOP.products||[]).map(x=>imgRef(x.img)).filter(Boolean));
+   const used=new Set();[...(SHOP.products||[]).flatMap(x=>[x.img,...(Array.isArray(x.images)?x.images:[]),...(Array.isArray(x.spin_frames)?x.spin_frames:[])])].forEach(value=>{const key=imgRef(value);if(key){used.add(key);used.add('t'+key)}});ownPhotoRefs().forEach(key=>used.add(key));
    const ks=await idbKeys('imgs');for(const k of ks)if(!used.has(k))await idbDel('imgs',k);
    setSaved('Auto-saved on this device at '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'.')}
   catch(e){setSaved('Auto-save is not available in this browser.')}},600)
@@ -6917,6 +7009,46 @@ function addCat(){
 g('wCatAdd').onclick=addCat;
 g('wCatNew').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCat()}});
 const MAX_CONTENT_BLOCKS=8,MAX_FAQS=12,MAX_TESTIMONIALS=6;
+/* Owner-uploaded pictures for the top banner, the offer banner and each category. They are stored the way product
+   photos are (on this device, as idb: references) and written into the published page. */
+let ownPhotoTarget=null;
+function drawOwnPhotos(){
+ const box=g('wOwnPhotos');if(!box)return;
+ if(!SHOP.userImages||typeof SHOP.userImages!=='object')SHOP.userImages={};
+ const slots=[['hero-1','Top banner (hero) picture',1280,.78],['banner-1','Offer banner picture',1000,.78]]
+  .concat((SHOP.cats||[]).slice(0,8).map((name,index)=>['category-'+(index+1),name+' category picture',480,.75]));
+ box.replaceChildren();
+ slots.forEach(([slot,label,max,quality])=>{
+  const row=document.createElement('article');row.className='catalog-content-card';row.dataset.ownPhotoSlot=slot;
+  const heading=document.createElement('h4');heading.textContent=label;row.append(heading);
+  const current=SHOP.userImages[slot],source=imgSrc(current);
+  if(source){const thumb=document.createElement('img');thumb.src=source;thumb.alt='';thumb.style.cssText='width:96px;height:64px;object-fit:cover;display:block;margin:0 0 6px';row.append(thumb)}
+  const message=document.createElement('p');message.className='hint';message.setAttribute('role','status');
+  const upload=document.createElement('button');upload.type='button';upload.className='ghost';upload.textContent=source?'Change picture':'Upload picture';
+  upload.onclick=()=>{ownPhotoTarget={slot,max,quality,message};g('wOwnPhotoFile').click()};
+  row.append(upload);
+  if(current){
+   const remove=document.createElement('button');remove.type='button';remove.className='ghost';remove.textContent='Remove picture';
+   remove.onclick=()=>{
+    delete SHOP.userImages[slot];
+    /* The next draw would otherwise copy the old picture back from the page. */
+    document.querySelectorAll('img[data-lpk-image-slot="'+slot+'"]').forEach(image=>image.removeAttribute('data-lpk-image-slot'));
+    drawOwnPhotos();go();
+   };
+   row.append(remove);
+  }
+  row.append(message);box.append(row);
+ });
+}
+if(g('wOwnPhotoFile'))g('wOwnPhotoFile').addEventListener('change',async()=>{
+ const input=g('wOwnPhotoFile'),file=input.files&&input.files[0],target=ownPhotoTarget;input.value='';
+ if(!file||!target)return;
+ target.message.textContent='Loading picture...';
+ try{
+  SHOP.userImages[target.slot]=await litrusStoreOwnPhoto(file,target.max,target.quality,SHOP.userImages[target.slot]);
+  drawOwnPhotos();go();
+ }catch(error){target.message.textContent=(error&&error.message)||'Could not load that picture.'}
+});
 function contentEditorChanged(){go()}
 function drawContentEditors(){
  const contentBox=g('wContentItems'),faqBox=g('wFaqItems');
@@ -6940,16 +7072,60 @@ function drawContentEditors(){
    field.addEventListener(tag==='select'?'change':'input',()=>{SHOP.contentBlocks[index]=Object.assign({},SHOP.contentBlocks[index]||{}, {[key]:field.value});contentEditorChanged()});
    label.append(field);card.append(label);return field
   };
+  const kind=['story','gallery','video'].includes(item&&item.type)?item.type:'promo';
+  const setBlock=changes=>{SHOP.contentBlocks[index]=Object.assign({},SHOP.contentBlocks[index]||{},changes)};
   const typeLabel=document.createElement('label');typeLabel.textContent='Card type';
-  const type=document.createElement('select');[['promo','Promo banner'],['story','Image + text story']].forEach(([value,text])=>type.add(new Option(text,value)));type.value=item&&item.type==='story'?'story':'promo';
-  type.addEventListener('change',()=>{SHOP.contentBlocks[index]=Object.assign({},SHOP.contentBlocks[index]||{}, {type:type.value});contentEditorChanged()});typeLabel.append(type);card.append(typeLabel);
+  const type=document.createElement('select');[['promo','Promo banner'],['story','Image + text story'],['gallery','Photo gallery'],['video','Video']].forEach(([value,text])=>type.add(new Option(text,value)));type.value=kind;
+  type.addEventListener('change',()=>{setBlock({type:type.value});drawContentEditors();contentEditorChanged()});typeLabel.append(type);card.append(typeLabel);
   addControl('Headline','input',item&&item.title,'title','e.g. Made for your everyday');
   addControl('Text','textarea',item&&item.text,'text','A short message for your customers');
-  addControl('Image URL (optional)','input',item&&item.image,'image','Paste an image link');
+  const status=document.createElement('p');status.className='hint';status.setAttribute('role','status');
+  const uploader=(labelText,multiple,onFiles)=>{
+   const file=document.createElement('input');file.type='file';file.accept='image/*';file.hidden=true;if(multiple)file.multiple=true;
+   const button=document.createElement('button');button.type='button';button.className='ghost';button.textContent=labelText;button.onclick=()=>file.click();
+   file.addEventListener('change',async()=>{const files=[...(file.files||[])];file.value='';if(!files.length)return;status.textContent='Loading picture...';try{await onFiles(files);drawContentEditors();contentEditorChanged()}catch(error){status.textContent=(error&&error.message)||'Could not load that picture.'}});
+   card.append(button,file);return button
+  };
+  if(kind==='gallery'){
+   const pictures=(Array.isArray(item&&item.images)?item.images:[]).slice(0,8);
+   const strip=document.createElement('div');strip.className='own-photo-strip';strip.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin:6px 0';
+   pictures.forEach((value,pictureIndex)=>{
+    const cell=document.createElement('span');cell.style.cssText='position:relative;display:inline-block';
+    const thumb=document.createElement('img');thumb.src=imgSrc(value);thumb.alt='';thumb.style.cssText='width:64px;height:64px;object-fit:cover;display:block';
+    const drop=document.createElement('button');drop.type='button';drop.className='ghost';drop.textContent='x';drop.setAttribute('aria-label','Remove gallery picture '+(pictureIndex+1));
+    drop.style.cssText='position:absolute;top:0;right:0;min-width:24px;min-height:24px;padding:0';
+    drop.onclick=()=>{setBlock({images:pictures.filter((entry,at)=>at!==pictureIndex)});drawContentEditors();contentEditorChanged()};
+    cell.append(thumb,drop);strip.append(cell);
+   });
+   card.append(strip);
+   if(pictures.length<8){
+    uploader('Add pictures',true,async files=>{
+     const next=pictures.slice();
+     for(const picture of files){if(next.length>=8)break;const ref=await litrusStoreOwnPhoto(picture,800,.75,'');next.push(ref);setBlock({images:next.slice()})}
+    });
+    const linkLabel=document.createElement('label');linkLabel.textContent='Or paste a picture link and press Enter';
+    const link=document.createElement('input');link.placeholder='https://...';
+    link.addEventListener('keydown',event=>{if(event.key!=='Enter')return;event.preventDefault();const text=link.value.trim();if(!/^https:\/\//i.test(text)){status.textContent='Paste a picture link that starts with https://';return}setBlock({images:pictures.concat(text).slice(0,8)});drawContentEditors();contentEditorChanged()});
+    linkLabel.append(link);card.append(linkLabel);
+   }
+   card.append(status);
+  }else{
+   if(kind==='video'){
+    const videoField=addControl('Video link','input',item&&item.video,'video','Paste a YouTube, Vimeo or .mp4 link');
+    const hint=document.createElement('p');hint.className='hint';hint.textContent='YouTube and Vimeo links, or a direct link to an .mp4 or .webm file, that starts with https://';card.append(hint);
+    videoField.addEventListener('input',()=>{hint.style.color=videoField.value.trim()&&!litrusVideoEmbed(videoField.value)?'#b42318':''});
+   }
+   const own=imgRef(item&&item.image);
+   addControl(kind==='video'?'Cover picture link (optional)':'Image URL (optional)','input',own?'':item&&item.image,'image',own?'Using the picture you uploaded':'Paste an image link');
+   uploader(own?'Change picture':'Upload picture',false,async files=>{setBlock({image:await litrusStoreOwnPhoto(files[0],kind==='video'?1000:900,.78,item&&item.image)})});
+   if(item&&item.image){const clear=document.createElement('button');clear.type='button';clear.className='ghost';clear.textContent='Remove picture';clear.onclick=()=>{setBlock({image:''});drawContentEditors();contentEditorChanged()};card.append(clear)}
+   card.append(status);
+  }
   addControl('Button words (optional)','input',item&&item.button,'button','Explore the collection');
   const remove=document.createElement('button');remove.type='button';remove.className='ghost content-remove';remove.textContent='Remove card';remove.onclick=()=>{SHOP.contentBlocks.splice(index,1);drawContentEditors();go()};card.append(remove);
   contentBox.append(card)
  });
+ drawOwnPhotos();
  g('wAddContent').disabled=SHOP.contentBlocks.length>=MAX_CONTENT_BLOCKS;
  g('wAddContent').onclick=()=>{if(SHOP.contentBlocks.length>=MAX_CONTENT_BLOCKS)return;SHOP.contentBlocks.push({type:'promo',title:'',text:'',image:'',button:''});drawContentEditors();go()};
  faqBox.replaceChildren();
@@ -7001,6 +7177,7 @@ g('wProductsPane').hidden=!products;g('wCategoriesPane').hidden=!categories;g('w
 g('wProductsTabBtn').setAttribute('aria-selected',products?'true':'false');
 g('wCategoriesTabBtn').setAttribute('aria-selected',categories?'true':'false');
 g('wContentTabBtn').setAttribute('aria-selected',content?'true':'false');
+if(content)drawOwnPhotos();
 }
 g('wProductsTabBtn').onclick=()=>showCatalogTab('products');
 g('wCategoriesTabBtn').onclick=()=>showCatalogTab('categories');
@@ -7111,7 +7288,7 @@ editingProductIndex=typeof index==='number'?index:null;const product=editingProd
 const itemName=SHOP.offerType==='services'?'service':'product';
 if(stagedEditImageId){delete IMGS[stagedEditImageId];idbDel('imgs',stagedEditImageId);stagedEditImageId=''}
 editingCategories=product?(product.ci||[]).slice():(SHOP.cats.length?[0]:[]);
-editingImage=product?product.img||'':'';
+editingImage=product?product.img||'':'';editingOriginalImage=editingImage;
 g('productEditorTitle').textContent=(product?'Edit ':'Add ')+itemName;g('editProdNameLabelText').textContent=itemName==='service'?'Service name':'Product name';g('editProdSave').textContent='Save '+itemName;g('editProdName').value=product?product.name:'';g('editProdPrice').value=product?product.price:'';g('editProdDesc').value=product?product.desc||'':'';
 g('editProdDuration').value=String(nearestServiceDuration(product&&product.duration_minutes));
 g('editProdImageUrl').value=(imgRef(editingImage)||/^data:image/i.test(editingImage))?'':editingImage;
@@ -7120,14 +7297,27 @@ g('editProdThumb').hidden=!imgSrc(editingImage);if(imgSrc(editingImage))g('editP
 g('editProdRemove').hidden=!editingImage;g('editProdUpload').textContent=imgRef(editingImage)?'Change photo':'Upload photo';
 g('editProdFile').value='';renderEditorGroups();g('productEditor').hidden=false;g('wAdd').style.display='none';g('editProdName').focus();
 }
+// The editor shows one photo (the main one). Removing or replacing it must change images[] too, because the
+// owner app treats images[] as the truth; a cutout that is swapped for a normal photo stops being a cutout.
+function litrusEditedPhotoFields(previous,original,edited){
+ const old=previous&&Array.isArray(previous.images)?previous.images.filter(Boolean):[];
+ const type=previous&&previous.media_type||'image';
+ if(edited===original){
+  if(!edited||old.length)return {img:edited};
+  return {img:edited,images:[edited]};
+ }
+ const rest=old.filter(item=>item!==original&&item!==edited);
+ const images=(edited?[edited,...rest]:rest).slice(0,8);
+ return {img:images[0]||'',images,media_type:type==='cutout'?'image':type};
+}
 g('wAdd').onclick=()=>{if(prods.length<MAX_PRODUCTS)showProductEditor(null)};
 g('editProdImageUrl').addEventListener('input',()=>{editingImage=g('editProdImageUrl').value.trim();const src=imgSrc(editingImage);g('editProdThumb').hidden=!src;if(src)g('editProdThumb').src=src;g('editProdRemove').hidden=!editingImage;g('editProdPhotoMsg').textContent=editingImage&&!src?'Enter a valid image link or upload a photo.':''});
 g('editProdUpload').onclick=()=>g('editProdFile').click();
 g('editProdFile').addEventListener('change',async()=>{const file=g('editProdFile').files&&g('editProdFile').files[0];g('editProdFile').value='';if(!file)return;if(!/^image\//.test(file.type)){g('editProdPhotoMsg').textContent='Please choose a picture file.';return}
-g('editProdPhotoMsg').textContent='Loading photo...';try{const data=await shrinkImage(file,900,.82),id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);if(stagedEditImageId){delete IMGS[stagedEditImageId];await idbDel('imgs',stagedEditImageId)}stagedEditImageId=id;IMGS[id]=data;editingImage='idb:'+id;try{await idbPut('imgs',id,data);g('editProdPhotoMsg').textContent='Saved on this device.'}catch(e){g('editProdPhotoMsg').textContent='Photo is showing, but this browser would not save it for next time.'}g('editProdImageUrl').value='';g('editProdThumb').src=data;g('editProdThumb').hidden=false;g('editProdRemove').hidden=false;g('editProdUpload').textContent='Change photo'}catch(e){g('editProdPhotoMsg').textContent=(e&&e.message)||'Could not load that photo.'}});
+g('editProdPhotoMsg').textContent='Loading photo...';try{const data=await shrinkImage(file,PRODUCT_PHOTO_MAX,PRODUCT_PHOTO_QUALITY),thumb=await shrinkImage(file,PRODUCT_THUMB_MAX,PRODUCT_THUMB_QUALITY),id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);if(stagedEditImageId){delete IMGS[stagedEditImageId];delete IMGS['t'+stagedEditImageId];await idbDel('imgs',stagedEditImageId);await idbDel('imgs','t'+stagedEditImageId)}stagedEditImageId=id;IMGS[id]=data;IMGS['t'+id]=thumb;editingImage='idb:'+id;try{await idbPut('imgs',id,data);await idbPut('imgs','t'+id,thumb);g('editProdPhotoMsg').textContent='Saved on this device.'}catch(e){g('editProdPhotoMsg').textContent='Photo is showing, but this browser would not save it for next time.'}g('editProdImageUrl').value='';g('editProdThumb').src=data;g('editProdThumb').hidden=false;g('editProdRemove').hidden=false;g('editProdUpload').textContent='Change photo'}catch(e){g('editProdPhotoMsg').textContent=(e&&e.message)||'Could not load that photo.'}});
 g('editProdRemove').onclick=()=>{if(stagedEditImageId){delete IMGS[stagedEditImageId];idbDel('imgs',stagedEditImageId);stagedEditImageId=''}editingImage='';g('editProdImageUrl').value='';g('editProdThumb').hidden=true;g('editProdRemove').hidden=true;g('editProdPhotoMsg').textContent='';g('editProdUpload').textContent='Upload photo'};
 g('editProdCancel').onclick=()=>{if(stagedEditImageId){delete IMGS[stagedEditImageId];idbDel('imgs',stagedEditImageId);stagedEditImageId=''}editingProductIndex=null;g('productEditor').hidden=true;g('editProdFile').value='';g('wAdd').style.display=prods.length>=MAX_PRODUCTS?'none':''};
-g('editProdSave').onclick=()=>{const name=g('editProdName').value.trim();if(!name){g('editProdMsg').textContent='Enter a '+(SHOP.offerType==='services'?'service':'product')+' name first.';g('editProdName').focus();return}const duration=Number(g('editProdDuration').value);if(SHOP.offerType==='services'&&(!Number.isSafeInteger(duration)||duration<15||duration>240||duration%15!==0)){g('editProdMsg').textContent='Enter a duration from 15 to 240 minutes in 15-minute increments.';g('editProdDuration').focus();return}const product={...(editingProductIndex===null?{clientKey:newClientKey()}:prods[editingProductIndex]),name,price:g('editProdPrice').value.trim(),desc:g('editProdDesc').value.trim(),img:editingImage,ci:editingCategories.slice(),...(SHOP.offerType==='services'?{duration_minutes:duration}:{})};if(editingProductIndex===null)prods.push(product);else prods[editingProductIndex]=product;stagedEditImageId='';editingProductIndex=null;g('productEditor').hidden=true;g('editProdFile').value='';drawProds();read();go()};
+g('editProdSave').onclick=()=>{const name=g('editProdName').value.trim();if(!name){g('editProdMsg').textContent='Enter a '+(SHOP.offerType==='services'?'service':'product')+' name first.';g('editProdName').focus();return}const duration=Number(g('editProdDuration').value);if(SHOP.offerType==='services'&&(!Number.isSafeInteger(duration)||duration<15||duration>240||duration%15!==0)){g('editProdMsg').textContent='Enter a duration from 15 to 240 minutes in 15-minute increments.';g('editProdDuration').focus();return}const product={...(editingProductIndex===null?{clientKey:newClientKey()}:prods[editingProductIndex]),name,price:g('editProdPrice').value.trim(),desc:g('editProdDesc').value.trim(),ci:editingCategories.slice(),...litrusEditedPhotoFields(editingProductIndex===null?null:prods[editingProductIndex],editingOriginalImage,editingImage),...(SHOP.offerType==='services'?{duration_minutes:duration}:{})};if(editingProductIndex===null)prods.push(product);else prods[editingProductIndex]=product;stagedEditImageId='';editingProductIndex=null;g('productEditor').hidden=true;g('editProdFile').value='';drawProds();read();go()};
 window.litrusSetCraftCatalog=function(payload){
  if(!payload||!Array.isArray(payload.categories)||!Array.isArray(payload.products)||
     payload.categories.length>MAX_CATEGORIES||payload.products.length>MAX_PRODUCTS){
@@ -7441,7 +7631,11 @@ function savedSiteHasStaticContent(){
  try{
   const parsed=new DOMParser().parseFromString(existingSitePreviewHtml,'text/html');
   parsed.querySelectorAll('script,style,noscript,template').forEach(node=>node.remove());
-  ok=(parsed.body?.textContent||'').replace(/s+/g,' ').trim().length>=120;
+  // A compact export is an empty container that its script fills, so without scripts it renders
+  // nothing at all. Anything with real words or a picture of its own is worth showing as saved.
+  const words=(parsed.body?.textContent||'').replace(/s+/g,' ').trim().length;
+  const pictures=parsed.body?.querySelectorAll('img[src],picture source[srcset],svg').length||0;
+  ok=words>=10||pictures>0;
  }catch(error){ok=false}
  savedSiteStaticCache={html:existingSitePreviewHtml,ok};
  return ok;

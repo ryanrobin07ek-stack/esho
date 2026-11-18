@@ -42,7 +42,7 @@
         desc: String(product.description || ""),
         category_id: product.category_id || null,
         cats: categoryNames.has(String(product.category_id)) ? [categoryNames.get(String(product.category_id))] : [],
-        img: images[0] || "",
+        img: images[0] || frames[0] || "",
         images,
         media_type: ["image", "cutout", "spin", "video"].includes(product.media_type) ? product.media_type : "image",
         spin_frames: frames,
@@ -149,6 +149,7 @@
         image.setAttribute("decoding", "async");
         image.src = product.img || fallbackProductImage;
       }
+      litrusDecorateCard(card, product, image);
       return card;
     };
     const cardTemplate = () => {
@@ -681,6 +682,98 @@
       button.dataset.go = "shop";
       button.setAttribute("aria-label", "Book a service");
       button.textContent = button.classList.contains("sp-cartbtn") ? "Book now" : "Book";
+    });
+  }
+
+  // Listing cards show the product's media without loading it: a badge for video and 360 spin, the
+  // cutout treatment for cutouts, and a hover (mouse only) preview that loads on demand for one card.
+  function litrusDecorateCard(card, product, image) {
+    ["data-media", "data-video-url", "data-card-spin"].forEach(name => card.removeAttribute(name));
+    card.querySelectorAll(".litrus-media-badge").forEach(badge => badge.remove());
+    const type = product.media_type;
+    const frames = Array.isArray(product.spin_frames) ? product.spin_frames : [];
+    const kind = type === "video" && product.video_url ? "video" : type === "spin" && frames.length > 1 ? "spin" : type === "cutout" ? "cutout" : "";
+    if (!kind) return;
+    card.dataset.media = kind;
+    if (kind === "cutout") {
+      if (image) {
+        image.classList.add("sp-cutout", "litrus-cutout");
+        image.style.objectFit = "contain";
+        image.style.mixBlendMode = "normal";
+        image.style.padding = "6%";
+        image.style.boxSizing = "border-box";
+      }
+      return;
+    }
+    if (kind === "video") card.dataset.videoUrl = product.video_url;
+    else {
+      // At most 12 evenly spread frames, and only fetched when someone hovers this card.
+      const step = Math.max(1, Math.ceil(frames.length / 12));
+      card.dataset.cardSpin = JSON.stringify(frames.filter((frame, index) => index % step === 0).slice(0, 12));
+    }
+    const holder = image && image.parentElement && image.parentElement !== card ? image.parentElement : card;
+    if (holder !== card && !holder.style.position) holder.style.position = "relative";
+    const badge = document.createElement("span");
+    badge.className = "litrus-media-badge";
+    badge.setAttribute("role", "img");
+    badge.setAttribute("aria-label", kind === "video" ? "Has a product video" : "Has a 360 degree view");
+    badge.textContent = kind === "video" ? "▶ Video" : "360°";
+    badge.style.cssText = "position:absolute;left:10px;top:46px;z-index:3;padding:4px 8px;border-radius:999px;" +
+      "background:rgba(0,0,0,.72);color:#fff;font:600 11px/1.2 system-ui,sans-serif;letter-spacing:.02em;pointer-events:none";
+    holder.append(badge);
+  }
+
+  function litrusInitCardPreview(root) {
+    let active = null;
+    const stop = () => {
+      if (!active) return;
+      active.cleanup();
+      active = null;
+    };
+    root.addEventListener("pointerover", event => {
+      if (event.pointerType && event.pointerType !== "mouse") return;
+      const card = event.target.closest && event.target.closest("[data-media][data-pid]");
+      if (!card || (active && active.card === card)) return;
+      stop();
+      const image = card.querySelector(".p-img-wrapper img,.p-image img,img");
+      if (!image) return;
+      if (card.dataset.media === "video" && card.dataset.videoUrl) {
+        const video = document.createElement("video");
+        video.src = card.dataset.videoUrl;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.setAttribute("playsinline", "");
+        video.setAttribute("aria-hidden", "true");
+        video.className = "litrus-card-preview";
+        video.style.cssText = "position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;pointer-events:none";
+        const holder = image.parentElement;
+        if (!holder) return;
+        holder.append(video);
+        const playing = video.play();
+        if (playing && playing.catch) playing.catch(() => {});
+        active = { card, cleanup: () => { video.pause(); video.removeAttribute("src"); video.load(); video.remove(); } };
+      } else if (card.dataset.media === "spin" && card.dataset.cardSpin) {
+        let frames = [];
+        try { frames = JSON.parse(card.dataset.cardSpin); } catch { return; }
+        if (!Array.isArray(frames) || frames.length < 2) return;
+        const original = image.src;
+        frames.forEach(frame => { const preload = new Image(); preload.src = frame; });
+        const move = pointer => {
+          const rect = image.getBoundingClientRect();
+          const ratio = rect.width ? Math.min(0.999, Math.max(0, (pointer.clientX - rect.left) / rect.width)) : 0;
+          image.src = frames[Math.floor(ratio * frames.length)];
+        };
+        const listener = pointer => move(pointer);
+        card.addEventListener("pointermove", listener);
+        active = { card, cleanup: () => { card.removeEventListener("pointermove", listener); image.src = original; } };
+      }
+    });
+    root.addEventListener("pointerout", event => {
+      if (!active) return;
+      const next = event.relatedTarget;
+      if (next && active.card.contains(next)) return;
+      stop();
     });
   }
 
@@ -2366,9 +2459,12 @@
       }
     });
     litrusInitLiveSpin(document);
+    litrusInitCardPreview(document);
   }
 
   global.litrusRefreshPublishedCatalog = litrusRefreshPublishedCatalog;
   global.litrusInitLiveSpin = litrusInitLiveSpin;
+  global.litrusDecorateCard = litrusDecorateCard;
+  global.litrusInitCardPreview = litrusInitCardPreview;
   global.litrusStartLiveStore = litrusStartLiveStore;
 })(window);

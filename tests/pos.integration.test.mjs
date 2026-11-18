@@ -903,7 +903,7 @@ test('product media saves locally before publishing and handles native gallery r
   assert.match(publishModal, /LOCAL_PRODUCT_MEDIA_PREFIX[\s\S]*?readLocalProductMedia[\s\S]*?uploadCatalogVideo/);
   assert.match(pageSource, /High detail — 36 frames, 720 px[\s\S]*?Balanced — 24 frames, 720 px[\s\S]*?Faster — 18 frames, 480 px/);
   assert.match(pageSource, /spinProfiles = \{[\s\S]*?high: \{ count: 36, width: 720 \}[\s\S]*?balanced: \{ count: 24, width: 720 \}[\s\S]*?fast: \{ count: 18, width: 480 \}[\s\S]*?\.\.\.spinProfile/);
-  assert.match(imageUpload, /new URL\(image\)[\s\S]*?isRrobinDomain[\s\S]*?mode: "cors"[\s\S]*?maxDimension: 800, maxBytes: 2_800_000/);
+  assert.match(imageUpload, /new URL\(image\)[\s\S]*?isRrobinDomain[\s\S]*?mode: "cors"[\s\S]*?maxDimension: 1600, maxBytes: 2_800_000/);
   assert.match(imageUpload, /crypto\.subtle\.digest\("SHA-256"[\s\S]*?ESHOP_CATALOG_MEDIA_UPLOADS_V1:\$\{tenant\.id\}[\s\S]*?cachedPublicUrl\.pathname\.startsWith\(`\/media\/\$\{tenant\.id\}\/`\)[\s\S]*?return cachedPublicUrl\.href/);
   assert.match(imageUpload, /compressImageFile[\s\S]*?\/api\/media[\s\S]*?method: "POST"[\s\S]*?publicUrl\.pathname\.startsWith\(`\/media\/\$\{tenant\.id\}\/`\)[\s\S]*?localStorage\.setItem\(cacheKey, JSON\.stringify\(uploadedMedia\)\)/);
   assert.match(publishModal, /async image => \{[\s\S]*?fallbackProductImageCount \+= 1[\s\S]*?keeping its original URL[\s\S]*?return image/);
@@ -974,7 +974,7 @@ test('product media saves locally before publishing and handles native gallery r
     }, 'token'),
     uploadedUrl
   );
-  assert.equal(compressionOptions.maxDimension, 800);
+  assert.equal(compressionOptions.maxDimension, 1600, 'catalogue photos stay sharp on a modern phone');
   assert.equal(compressionOptions.maxBytes, 2_800_000);
   assert.equal(requests[0].options.mode, 'cors');
   assert.equal(requests[0].options.credentials, 'omit');

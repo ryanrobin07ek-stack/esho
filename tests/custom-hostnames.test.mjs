@@ -34,7 +34,13 @@ function createDatabase(hostnameRows = []) {
                     ? { tenant_id: row.tenant_id }
                     : null;
                 }
-                return row ? { tenant_id: row.tenant_id } : null;
+                if (query.includes("hostname FROM custom_hostnames")) return null;
+                return row ? { tenant_id: row.tenant_id, status: row.status, ssl_status: row.ssl_status } : null;
+              }
+              if (query.includes("SELECT hostname FROM custom_hostnames")) {
+                const row = [...rows.values()].find(r => r.tenant_id === values[0] &&
+                  r.status === "active" && r.ssl_status === "active");
+                return row ? { hostname: row.hostname } : null;
               }
               throw new Error(`Unsupported first query: ${query}`);
             },
@@ -148,8 +154,10 @@ test("shop owner creates a custom subdomain and only active TLS mappings route t
     assert.equal(cloudflareCreateBody.ssl.method, "txt");
 
     const pending = await worker.fetch(new Request("https://shop.example.com/probe"), env);
-    assert.equal(pending.status, 200);
-    assert.equal(await pending.text(), "unmapped");
+    assert.equal(pending.status, 503);
+    assert.match(await pending.text(), /not ready yet/);
+    assert.equal(result.state, "pending");
+    assert.equal(result.retry, false);
 
     env.DB.rows.get("shop.example.com").status = "active";
     env.DB.rows.get("shop.example.com").ssl_status = "active";
@@ -228,5 +236,69 @@ test("shop owner can disconnect a custom hostname from Cloudflare", async () => 
     assert.equal(env.DB.rows.size, 0);
   } finally {
     globalThis.fetch = originalFetch;
+  }
+});
+
+
+test("custom hostnames: pending, failed, removed and unknown hosts never serve the platform shop", async () => {
+  const env = await createEnv([
+    { hostname: "pending.example.com", tenant_id: SHOP_ID, cloudflare_hostname_id: "a", status: "pending", ssl_status: "pending_validation" },
+    { hostname: "blocked.example.com", tenant_id: SHOP_ID, cloudflare_hostname_id: "b", status: "blocked", ssl_status: "pending_validation" },
+    { hostname: "live.example.com", tenant_id: SHOP_ID, cloudflare_hostname_id: "c", status: "active", ssl_status: "active" }
+  ]);
+  const pending = await worker.fetch(new Request("https://pending.example.com/"), env);
+  assert.equal(pending.status, 503);
+  assert.equal(pending.headers.get("Retry-After"), "300");
+  assert.match(pending.headers.get("X-Robots-Tag"), /noindex/);
+  assert.match(await pending.text(), /not ready yet/);
+  const blocked = await worker.fetch(new Request("https://blocked.example.com/api/catalog"), env);
+  assert.equal(blocked.status, 503);
+  const active = await worker.fetch(new Request("https://live.example.com/probe"), env);
+  assert.equal(active.status, 200);
+  assert.equal(await active.text(), SHOP_ID);
+  // Removing the domain makes it an unknown host, which must not become the main shop either.
+  env.DB.rows.delete("live.example.com");
+  const removed = await worker.fetch(new Request("https://live.example.com/"), env);
+  assert.equal(removed.status, 404);
+  assert.match(await removed.text(), /not connected to a shop/);
+  const unknown = await worker.fetch(new Request("https://never-added.example.net/sitemap.xml"), env);
+  assert.equal(unknown.status, 404);
+  assert.match(unknown.headers.get("X-Robots-Tag"), /noindex/);
+  // Even with custom domains unconfigured, an arbitrary host is not the platform shop.
+  const bare = await worker.fetch(new Request("https://stray.example.net/"), { ASSETS: env.ASSETS });
+  assert.equal(bare.status, 404);
+});
+
+test("custom-domain status returns a machine-readable state, reason and retry advice", async () => {
+  const cases = [
+    ["pending", "pending_validation", "pending", false, "wait"],
+    ["active", "active", "active", false, null],
+    ["active", "validation_timed_out", "failed", true, "remove_and_reconnect"],
+    ["blocked", "pending_validation", "failed", false, "contact_support"],
+    ["deleted", "deleted", "failed", true, "remove_and_reconnect"],
+    ["moved", "active", "failed", true, "remove_and_reconnect"],
+    ["pending_deletion", "pending_deletion", "failed", true, "remove_and_reconnect"],
+    ["active", "issuance_timed_out", "failed", true, "remove_and_reconnect"],
+    ["active_redeploying", "active", "pending", false, "wait"]
+  ];
+  for (const [status, ssl, state, retry, retryAction] of cases) {
+    const env = await createEnv([{
+      hostname: "shop.example.com", tenant_id: SHOP_ID, cloudflare_hostname_id: "cf-id",
+      status: "pending", ssl_status: "pending", validation_records: "[]"
+    }]);
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => Response.json({ success: true, result: { id: "cf-id", status, ssl: { status: ssl } } });
+    try {
+      const response = await worker.fetch(apiRequest("GET"), env);
+      const body = await response.json();
+      assert.equal(body.state, state, status + "/" + ssl);
+      assert.equal(body.retry, retry, status + "/" + ssl);
+      assert.equal(body.retry_action, retryAction, status + "/" + ssl);
+      assert.equal(typeof body.reason, "string");
+      assert.ok(body.reason.length > 10);
+      assert.equal(body.status, status);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   }
 });

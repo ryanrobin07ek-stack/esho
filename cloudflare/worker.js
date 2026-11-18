@@ -173,6 +173,27 @@ function tenantIdFromRequest(request) {
   return "main";
 }
 
+function hostNotReadyResponse(status, kind) {
+  const pending = kind === "not ready yet";
+  const title = pending ? "This shop is not ready yet" : kind === "not connected"
+    ? "This address is not connected to a shop" : "This shop is temporarily unavailable";
+  const body = pending
+    ? "The owner is still finishing setting up this web address. Please check back soon."
+    : kind === "not connected"
+      ? "No shop is connected to this web address. If you were sent a link, ask the seller for the right one."
+      : "Please try again in a few minutes.";
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${title}</title></head><body style="font-family:system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.25rem;text-align:center"><h1 style="font-size:1.4rem">${title}</h1><p>${body}</p></body></html>`;
+  return new Response(html, {
+    status,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Robots-Tag": "noindex, nofollow",
+      ...(status === 503 ? { "Retry-After": "300" } : {})
+    }
+  });
+}
+
 function normalizeCustomHostname(value) {
   if (typeof value !== "string") return "";
   const hostname = value.trim().toLowerCase().replace(/\.$/, "");
@@ -199,8 +220,55 @@ function customHostnameResponse(row, target) {
     hostname: row.hostname,
     status: row.status,
     ssl_status: row.ssl_status,
+    ...customHostnameState(row.status, row.ssl_status),
     validation_records: validationRecords,
     cname_target: target
+  };
+}
+
+// Collapses Cloudflare's many hostname/certificate statuses into one machine-readable state the app can show.
+// "active" matches exactly what the Worker routes (status and ssl_status both "active").
+function customHostnameState(status, sslStatus) {
+  const hostStatus = String(status || "pending");
+  const certStatus = String(sslStatus || "pending");
+  if (hostStatus === "active" && certStatus === "active") {
+    return { state: "active", reason: "Your domain is connected and serving your shop.", retry: false, retry_action: null };
+  }
+  if (hostStatus === "blocked" || hostStatus === "test_blocked") {
+    return {
+      state: "failed",
+      reason: "Cloudflare blocked this domain. It cannot be connected until the block is lifted by support.",
+      retry: false, retry_action: "contact_support"
+    };
+  }
+  if (hostStatus === "deleted" || hostStatus === "pending_deletion" || hostStatus === "moved" ||
+      hostStatus === "test_failed") {
+    return {
+      state: "failed",
+      reason: hostStatus === "moved"
+        ? "This domain was moved to another setup. Remove it here and connect it again."
+        : "This domain was removed or could not be set up. Remove it here and connect it again.",
+      retry: true, retry_action: "remove_and_reconnect"
+    };
+  }
+  if (certStatus.endsWith("_timed_out")) {
+    return {
+      state: "failed",
+      reason: "The security certificate could not be issued in time. Check your DNS records are correct, then remove the domain and connect it again.",
+      retry: true, retry_action: "remove_and_reconnect"
+    };
+  }
+  if (["deleted", "expired", "inactive", "pending_deletion", "pending_expiration", "deactivating"].includes(certStatus)) {
+    return {
+      state: "failed",
+      reason: "The security certificate for this domain is no longer valid. Remove the domain and connect it again.",
+      retry: true, retry_action: "remove_and_reconnect"
+    };
+  }
+  return {
+    state: "pending",
+    reason: "Waiting for your DNS records to be detected and the security certificate to be issued. This can take up to a day.",
+    retry: false, retry_action: "wait"
   };
 }
 
@@ -2648,10 +2716,35 @@ async function handlePublicMedia(request, env, tenantId, assetId) {
   }
   const match = assetId.match(/^(?:[a-f0-9-]{36}|[a-f0-9]{64})\.(webp|jpg|png|mp4|webm|mov)$/i);
   if (!match) return jsonResponse({ error: "Media not found." }, 404);
-  const object = await env.BUSINESS_ARCHIVE.get(`media/${tenantId}/${assetId}`);
+  const mediaKey = `media/${tenantId}/${assetId}`;
+  const rangeHeader = request.headers.get("Range");
+  // A Range request first looks up the size (cheap head) so it can be validated, then asks R2 for only that slice.
+  const meta = rangeHeader ? await env.BUSINESS_ARCHIVE.head(mediaKey) : null;
+  if (rangeHeader && !meta) return jsonResponse({ error: "Media not found." }, 404);
+  const range = rangeHeader ? parseByteRange(rangeHeader, meta.size) : null;
+  if (range === "unsatisfiable") {
+    return new Response(null, {
+      status: 416,
+      headers: {
+        "Content-Range": `bytes */${meta.size}`,
+        "Accept-Ranges": "bytes",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Expose-Headers": "Content-Range, Accept-Ranges, Content-Length",
+        "Cache-Control": "no-store"
+      }
+    });
+  }
+  const ifRange = request.headers.get("If-Range");
+  const useRange = range && (!ifRange || (meta.httpEtag && ifRange === meta.httpEtag));
+  const object = await env.BUSINESS_ARCHIVE.get(
+    mediaKey,
+    useRange ? { range: { offset: range.start, length: range.end - range.start + 1 } } : undefined
+  );
   if (!object) return jsonResponse({ error: "Media not found." }, 404);
   const headers = new Headers({
     "Access-Control-Allow-Origin": "*",
+    "Access-Control-Expose-Headers": "Content-Range, Accept-Ranges, Content-Length, ETag",
+    "Accept-Ranges": "bytes",
     "Cache-Control": "public, max-age=31536000, immutable",
     "Content-Type": object.httpMetadata?.contentType || ({
       webp: "image/webp",
@@ -2663,8 +2756,51 @@ async function handlePublicMedia(request, env, tenantId, assetId) {
     }[match[1].toLowerCase()]),
     "X-Content-Type-Options": "nosniff"
   });
-  if (request.method === "HEAD") return new Response(null, { headers });
+  const etag = object.httpEtag || meta?.httpEtag;
+  if (etag) headers.set("ETag", etag);
+  const ifNoneMatch = request.headers.get("If-None-Match");
+  if (etag && ifNoneMatch && ifNoneMatch.split(",").some(tag => {
+    const candidate = tag.trim().replace(/^W\//, "");
+    return candidate === "*" || candidate === etag.replace(/^W\//, "");
+  })) {
+    object.body?.cancel?.();
+    return new Response(null, { status: 304, headers });
+  }
+  const size = Number.isFinite(object.size) ? object.size : meta?.size;
+  if (useRange) {
+    headers.set("Content-Range", `bytes ${range.start}-${range.end}/${size}`);
+    headers.set("Content-Length", String(range.end - range.start + 1));
+    if (request.method === "HEAD") {
+      object.body?.cancel?.();
+      return new Response(null, { status: 206, headers });
+    }
+    return new Response(object.body, { status: 206, headers });
+  }
+  if (Number.isFinite(size)) headers.set("Content-Length", String(size));
+  if (request.method === "HEAD") {
+    object.body?.cancel?.();
+    return new Response(null, { headers });
+  }
   return new Response(object.body, { headers });
+}
+
+// Parses a single "bytes=start-end", "bytes=start-" or "bytes=-suffix" range. Returns {start,end} (inclusive),
+// "unsatisfiable" (answer 416), or null (header absent/malformed/multi-range: serve the whole object).
+function parseByteRange(header, size) {
+  const match = /^\s*bytes\s*=\s*(\d*)\s*-\s*(\d*)\s*$/i.exec(header || "");
+  if (!match || (match[1] === "" && match[2] === "")) return null;
+  if (!Number.isFinite(size)) return null;
+  if (match[1] === "") {
+    const suffix = Number(match[2]);
+    if (!Number.isSafeInteger(suffix)) return null;
+    if (suffix === 0 || size === 0) return "unsatisfiable";
+    return { start: Math.max(0, size - suffix), end: size - 1 };
+  }
+  const start = Number(match[1]);
+  const end = match[2] === "" ? size - 1 : Number(match[2]);
+  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || end < start && match[2] !== "") return null;
+  if (start >= size) return "unsatisfiable";
+  return { start, end: Math.min(end, size - 1) };
 }
 
 async function handlePublicThemeAsset(request, env, themeId, assetPath) {
@@ -8495,15 +8631,28 @@ export default {
       const hadMappedTenantMarker = url.searchParams.has("_mapped_tenant");
       url.searchParams.delete("_mapped_tenant");
       let mappedTenantId = "";
+      let customHostname = null;
       if (env.DB && env.CUSTOM_HOSTNAME_TARGET) {
-        const customHostname = await env.DB.prepare(
-          "SELECT tenant_id FROM custom_hostnames WHERE hostname=? AND status='active' AND ssl_status='active'"
-        ).bind(requestHostname).first();
-        if (customHostname?.tenant_id) {
-          url.searchParams.set("tenant", customHostname.tenant_id);
-          url.searchParams.set("_mapped_tenant", "1");
-          mappedTenantId = customHostname.tenant_id;
+        try {
+          customHostname = await env.DB.prepare(
+            "SELECT tenant_id, status, ssl_status FROM custom_hostnames WHERE hostname=?"
+          ).bind(requestHostname).first();
+        } catch (error) {
+          console.error("Custom-hostname lookup failed.", error);
+          return hostNotReadyResponse(503, "temporarily unavailable");
         }
+      }
+      if (customHostname?.tenant_id && customHostname.status === "active" &&
+          customHostname.ssl_status === "active") {
+        url.searchParams.set("tenant", customHostname.tenant_id);
+        url.searchParams.set("_mapped_tenant", "1");
+        mappedTenantId = customHostname.tenant_id;
+      } else if (customHostname?.tenant_id) {
+        // Known custom domain whose DNS/certificate is not finished: never fall through to the platform shop.
+        return hostNotReadyResponse(503, "not ready yet");
+      } else {
+        // Not a platform host and not a connected domain (never added, or removed): do not serve the main shop.
+        return hostNotReadyResponse(404, "not connected");
       }
       if (hadMappedTenantMarker || mappedTenantId) request = new Request(url, request);
     }
@@ -8752,7 +8901,19 @@ export default {
     if (request.method === "GET" && url.pathname === "/manifest.webmanifest") {
       return await handleStorefrontManifest(request, env, hostTenantId);
     }
-    const seoOrigin = canonicalOrigin(url, hostTenantId, DOMAIN_ROOT);
+    let seoOrigin = canonicalOrigin(url, hostTenantId, DOMAIN_ROOT);
+    if (request.method === "GET" && env.DB && hostTenantId !== "main" &&
+        requestHostname.endsWith(`.${DOMAIN_ROOT}`)) {
+      // The shop has an active custom domain: that is the canonical host, so the subdomain stops competing with it.
+      try {
+        const active = await env.DB.prepare(
+          "SELECT hostname FROM custom_hostnames WHERE tenant_id=? AND status='active' AND ssl_status='active'"
+        ).bind(hostTenantId).first();
+        if (active?.hostname) seoOrigin = `https://${active.hostname}`;
+      } catch (error) {
+        console.error("Canonical custom-hostname lookup failed.", error);
+      }
+    }
     let seoCatalog = null;
     let seoThemeId = "classic";
     let seoVerificationToken = "";
@@ -8781,7 +8942,7 @@ export default {
         ? storefrontCacheKey(
           request,
           catalogUpdatedAt,
-          verificationVersion,
+          seoOrigin === url.origin ? verificationVersion : `${verificationVersion}|canon:${new URL(seoOrigin).host}`,
           publishedThemePointer?.key || "none"
         )
         : null;

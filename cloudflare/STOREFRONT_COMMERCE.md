@@ -393,3 +393,50 @@ Account sign-in mints one owner token per shop, recorded in the tenant record (`
 ## Search
 
 Litrus Mixer routes with `#/p/<product id>`. The Worker serves real `/products/<slug>` URLs for Litrus shops, emits Product JSON-LD and canonical tags for them, lists them in `sitemap.xml` and bridges the path to the Litrus route in the browser. Categories and pages are not advertised for Litrus because it has no route for them.
+
+## Media ranges, custom-domain routing and state
+
+**Migrations: none.** This Worker needs no new migration; production (0001 to 0031) is enough. It can be deployed on its own.
+
+### Product video and `GET /media/<shop>/<file>`
+
+Media responses now support HTTP byte ranges (iPhone Safari will not play video without them, and no browser can seek without them).
+
+* Every response carries `Accept-Ranges: bytes` and an `ETag` (R2's), plus `Content-Length`. Without a `Range` header the answer is the same plain `200` as before, with the same `Cache-Control: public, max-age=31536000, immutable`.
+* `Range: bytes=0-1023`, `bytes=1024-` and `bytes=-500` (last 500 bytes) return `206 Partial Content` with `Content-Range: bytes <start>-<end>/<size>` and the slice's `Content-Length`. An end past the file is clamped. Only that slice is read from R2.
+* An unsatisfiable range (start at or past the end, `bytes=-0`, or any range on an empty file) returns `416` with `Content-Range: bytes */<size>`.
+* A malformed range, a reversed range (`5-2`) or several ranges at once is ignored and the whole file is returned with `200`.
+* `If-None-Match` matching the `ETag` returns `304`. `If-Range` with a stale validator returns the whole file with `200`. `HEAD` mirrors `GET` (including `206`) without a body.
+* Cross-origin pages can read `Content-Range`, `Accept-Ranges`, `Content-Length` and `ETag` (`Access-Control-Expose-Headers`).
+
+### Hosts that are not the platform
+
+A request to a host that is not `rrobin.co.ke`, `*.rrobin.co.ke`, `localhost` or `*.workers.dev` is looked up in `custom_hostnames` and never falls through to the platform (main) shop any more:
+
+| Host | Response |
+| --- | --- |
+| Custom domain with `status='active'` and `ssl_status='active'` | the shop, as before |
+| Custom domain known but not active (pending, blocked, timed out...) | `503` HTML page "This shop is not ready yet", `Retry-After: 300`, `Cache-Control: no-store`, `X-Robots-Tag: noindex, nofollow`, for every path including `/api/*` |
+| Removed or never-added host (and any host when custom domains are not configured) | `404` HTML page "This address is not connected to a shop", `no-store`, `noindex` |
+| The lookup itself fails | `503` "temporarily unavailable", `Retry-After: 300` |
+
+### `GET/POST /api/custom-hostnames` response shape
+
+Existing fields are unchanged (`hostname`, `status`, `ssl_status`, `validation_records`, `cname_target`). New fields on every response that carries a hostname:
+
+```json
+{
+  "state": "pending | active | failed",
+  "reason": "plain-English sentence the app can show as is",
+  "retry": false,
+  "retry_action": "wait | remove_and_reconnect | contact_support | null"
+}
+```
+
+* `active`: `status` and `ssl_status` are both `active` (exactly what the Worker routes). `retry_action` is `null`.
+* `failed`: `status` is `blocked`, `test_blocked`, `deleted`, `pending_deletion`, `moved` or `test_failed`, or `ssl_status` is any `*_timed_out`, `deleted`, `expired`, `inactive`, `pending_deletion`, `pending_expiration` or `deactivating`. `retry` is `true` with `retry_action: "remove_and_reconnect"` (DELETE the domain, then POST it again), except blocked domains: `retry: false`, `retry_action: "contact_support"`.
+* `pending`: everything else (including `active_redeploying`). `retry: false`, `retry_action: "wait"`; keep polling.
+
+### Canonical host when a shop has a custom domain
+
+When a shop has an active custom domain, its `<shop>.rrobin.co.ke` subdomain still serves (no redirect) but its canonical link, JSON-LD URLs, `sitemap.xml` URLs and the `Sitemap:` line in `robots.txt` all point at `https://<custom domain>`. A pending or failed domain does not change the subdomain's canonical. The storefront page cache key includes the canonical host, so cached subdomain pages refresh when the domain goes live.

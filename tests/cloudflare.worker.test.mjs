@@ -770,7 +770,7 @@ function createInventoryDatabase(catalog) {
 
 test('Cloudflare Worker no longer serves the retired builder storefront and says so plainly', async () => {
   let assetFetched = false;
-  const response = await worker.fetch(new Request('https://shop.example/'), {
+  const response = await worker.fetch(new Request('https://eshop-storefront.workers.dev/'), {
     DB: createDatabase(),
     ASSETS: {
       async fetch() {
@@ -951,7 +951,7 @@ test('Cloudflare Worker serves only the filled published theme at the shop root'
       }
     }
   };
-  const response = await worker.fetch(new Request('https://shop.example/products/green-tea'), env);
+  const response = await worker.fetch(new Request('https://eshop-storefront.workers.dev/products/green-tea'), env);
 
   assert.equal(response.status, 200);
   assert.equal(assetPath, key);
@@ -978,7 +978,7 @@ test('Cloudflare Worker serves only the filled published theme at the shop root'
   assert.match(html, /fonts\.googleapis\.com/);
   assert.doesNotMatch(html, /mobile_card_layout/);
   for (const path of ['/categories/owner-category', '/pages/about', '/search?q=tea', '/cart', '/checkout', '/account']) {
-    const page = await worker.fetch(new Request(`https://shop.example${path}`), env);
+    const page = await worker.fetch(new Request(`https://eshop-storefront.workers.dev${path}`), env);
     assert.equal(page.status, 200, `The published storefront should load directly at ${path}.`);
   }
 });
@@ -1070,7 +1070,7 @@ test('Cloudflare Worker upgrades existing Litrus exports to refresh their live c
     ASSETS: { async fetch() { throw new Error('A published Litrus store must be served from R2.'); } }
   };
 
-  const response = await worker.fetch(new Request('https://shop.example/'), env);
+  const response = await worker.fetch(new Request('https://eshop-storefront.workers.dev/'), env);
   const html = await response.text();
   assert.equal(response.status, 200);
   assert.match(html, /src="\/litrus-mixer\/live-catalog\.js"/);
@@ -1206,8 +1206,8 @@ test('Cloudflare Worker serves the browser POS app at /register and no longer ma
     }
   };
 
-  const response = await worker.fetch(new Request('https://shop.example/register'), env);
-  const storefront = await worker.fetch(new Request('https://shop.example/'), env);
+  const response = await worker.fetch(new Request('https://eshop-storefront.workers.dev/register'), env);
+  const storefront = await worker.fetch(new Request('https://eshop-storefront.workers.dev/'), env);
   const appHtml = await response.text();
   const storefrontHtml = await storefront.text();
 
@@ -2865,7 +2865,7 @@ test('catalog publishing is authenticated and stores only public fields and link
     id: 'main', name: 'Main shop', owner_token_hash: 'preserved-owner-hash',
     owner_token_hashes: ['preserved-owner-hash']
   }));
-  const unauthorized = await worker.fetch(new Request('https://shop.example/api/catalog', {
+  const unauthorized = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ products: [], categories: [] })
@@ -2974,7 +2974,7 @@ test('catalog publishing is authenticated and stores only public fields and link
       { id: 2, title: 'Draft', slug: 'draft', content: 'Not public yet', published: 0 }
     ]
   };
-  const published = await worker.fetch(new Request('https://shop.example/api/catalog?tenant=main', {
+  const published = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog?tenant=main', {
     method: 'PUT',
     headers: {
       'Authorization': 'Bearer test-token',
@@ -3049,7 +3049,7 @@ test('catalog publishing is authenticated and stores only public fields and link
   assert.equal(result.store.element_edits[4].text, 'Body-based theme edit');
   assert.deepEqual(result.pages.map(page => page.slug), ['about']);
 
-  const partialPublish = await worker.fetch(new Request('https://shop.example/api/catalog?tenant=main', {
+  const partialPublish = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog?tenant=main', {
     method: 'PATCH',
     headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
     body: JSON.stringify({ store: {
@@ -3179,12 +3179,12 @@ test('catalog publishing persists merchant-defined options and normalizes legacy
 
 test('catalog API provides CORS preflight and rejects oversized payloads', async () => {
   const env = { DB: createDatabase(), TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
-  const options = await worker.fetch(new Request('https://shop.example/api/catalog', { method: 'OPTIONS' }), env);
+  const options = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog', { method: 'OPTIONS' }), env);
   assert.equal(options.status, 204);
   assert.equal(options.headers.get('Access-Control-Allow-Origin'), '*');
   assert.match(options.headers.get('Access-Control-Allow-Methods'), /DELETE/);
 
-  const tooLarge = await worker.fetch(new Request('https://shop.example/api/catalog?tenant=main', {
+  const tooLarge = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog?tenant=main', {
     method: 'PUT',
     headers: {
       'Authorization': 'Bearer test-token',
@@ -6959,4 +6959,134 @@ test('a replayed settlement never deducts an option twice, and a republish does 
   restocked.products[0].variants[1].stock = 9;
   assert.equal((await publishCatalog(restocked)).status, 200);
   assert.equal(stockOf('v43'), 9, 'a new published number is the owner restocking');
+});
+
+function createRangeArchive(bytes, etag = '"etag-1"') {
+  const calls = [];
+  const asObject = (data, extra = {}) => ({
+    size: bytes.length, httpEtag: etag, httpMetadata: { contentType: 'video/mp4' },
+    body: new Blob([data]).stream(), ...extra
+  });
+  return {
+    calls,
+    async head(key) { calls.push({ op: 'head', key }); return asObject(null, { body: undefined }); },
+    async get(key, options) {
+      calls.push({ op: 'get', key, options });
+      if (options?.range) {
+        const { offset, length } = options.range;
+        return asObject(bytes.slice(offset, offset + length));
+      }
+      return asObject(bytes);
+    }
+  };
+}
+
+test('public media honours HTTP Range requests so video plays on iPhone and can be seeked', async () => {
+  const bytes = new Uint8Array(100).map((_, i) => i);
+  const asset = `${'a'.repeat(64)}.mp4`;
+  const url = `https://rrobin.co.ke/media/main/${asset}`;
+  let archive = createRangeArchive(bytes);
+  const get = (headers, method = 'GET') => worker.fetch(new Request(url, { method, headers }), { BUSINESS_ARCHIVE: archive });
+
+  const full = await get({});
+  assert.equal(full.status, 200);
+  assert.equal(full.headers.get('Accept-Ranges'), 'bytes');
+  assert.equal(full.headers.get('Content-Length'), '100');
+  assert.equal(full.headers.get('ETag'), '"etag-1"');
+  assert.match(full.headers.get('Cache-Control'), /immutable/);
+  assert.equal((await full.arrayBuffer()).byteLength, 100);
+  assert.deepEqual(archive.calls.map(call => call.op), ['get'], 'no Range header means no head lookup and no range option');
+  assert.equal(archive.calls[0].options, undefined);
+
+  // Safari probes with bytes=0-1 and expects a 206.
+  const probe = await get({ Range: 'bytes=0-1' });
+  assert.equal(probe.status, 206);
+  assert.equal(probe.headers.get('Content-Range'), 'bytes 0-1/100');
+  assert.equal(probe.headers.get('Content-Length'), '2');
+  assert.equal(probe.headers.get('Accept-Ranges'), 'bytes');
+  assert.deepEqual([...new Uint8Array(await probe.arrayBuffer())], [0, 1]);
+  assert.deepEqual(archive.calls.at(-1).options, { range: { offset: 0, length: 2 } }, 'R2 is asked for only the slice');
+
+  const open = await get({ Range: 'bytes=90-' });
+  assert.equal(open.status, 206);
+  assert.equal(open.headers.get('Content-Range'), 'bytes 90-99/100');
+  assert.equal((await open.arrayBuffer()).byteLength, 10);
+
+  const suffix = await get({ Range: 'bytes=-5' });
+  assert.equal(suffix.status, 206);
+  assert.equal(suffix.headers.get('Content-Range'), 'bytes 95-99/100');
+  assert.deepEqual([...new Uint8Array(await suffix.arrayBuffer())], [95, 96, 97, 98, 99]);
+
+  const clamped = await get({ Range: 'bytes=50-9999' });
+  assert.equal(clamped.status, 206);
+  assert.equal(clamped.headers.get('Content-Range'), 'bytes 50-99/100');
+
+  const bigSuffix = await get({ Range: 'bytes=-500' });
+  assert.equal(bigSuffix.headers.get('Content-Range'), 'bytes 0-99/100');
+
+  for (const bad of ['bytes=100-', 'bytes=500-600', 'bytes=-0']) {
+    const response = await get({ Range: bad });
+    assert.equal(response.status, 416, bad);
+    assert.equal(response.headers.get('Content-Range'), 'bytes */100', bad);
+  }
+  for (const ignored of ['bytes=5-2', 'bytes=0-1,5-6', 'items=0-1', 'bytes=-', 'garbage']) {
+    const response = await get({ Range: ignored });
+    assert.equal(response.status, 200, `${ignored} is ignored and the whole file is served`);
+  }
+
+  const headRange = await get({ Range: 'bytes=10-19' }, 'HEAD');
+  assert.equal(headRange.status, 206);
+  assert.equal(headRange.headers.get('Content-Length'), '10');
+  assert.equal((await headRange.arrayBuffer()).byteLength, 0);
+  const head = await get({}, 'HEAD');
+  assert.equal(head.status, 200);
+  assert.equal(head.headers.get('Accept-Ranges'), 'bytes');
+  assert.equal(head.headers.get('Content-Length'), '100');
+
+  // Conditional requests: unchanged files are 304, and a stale If-Range falls back to the whole file.
+  const notModified = await get({ 'If-None-Match': '"etag-1"' });
+  assert.equal(notModified.status, 304);
+  assert.equal(notModified.headers.get('ETag'), '"etag-1"');
+  const notModifiedRange = await get({ 'If-None-Match': '"etag-1"', Range: 'bytes=0-1' });
+  assert.equal(notModifiedRange.status, 304);
+  const staleIfRange = await get({ Range: 'bytes=0-1', 'If-Range': '"old"' });
+  assert.equal(staleIfRange.status, 200);
+  assert.equal((await staleIfRange.arrayBuffer()).byteLength, 100);
+  const freshIfRange = await get({ Range: 'bytes=0-1', 'If-Range': '"etag-1"' });
+  assert.equal(freshIfRange.status, 206);
+
+  archive = createRangeArchive(new Uint8Array(0));
+  const empty = await get({ Range: 'bytes=0-0' });
+  assert.equal(empty.status, 416);
+  assert.equal(empty.headers.get('Content-Range'), 'bytes */0');
+
+  archive = { async head() { return null; }, async get() { return null; } };
+  assert.equal((await get({ Range: 'bytes=0-1' })).status, 404);
+});
+
+test('a shop with an active custom domain points its subdomain canonical and sitemap at that domain', async () => {
+  const { db, env, TENANTS } = await createHardeningEnv({ extraEnv: { CUSTOM_HOSTNAME_TARGET: 'customers.rrobin.co.ke' } });
+  const fetchPath = (host, path) => worker.fetch(new Request(`https://${host}${path}`), env);
+
+  const before = await (await fetchPath('shop-a.rrobin.co.ke', '/sitemap.xml')).text();
+  assert.match(before, /<loc>https:\/\/shop-a\.rrobin\.co\.ke\/<\/loc>/);
+
+  db.run("INSERT INTO custom_hostnames (hostname,tenant_id,cloudflare_hostname_id,status,ssl_status,created_at,updated_at) VALUES ('www.shopa.example.com','shop-a','cfh-1','pending','pending_validation','now','now')");
+  const pending = await (await fetchPath('shop-a.rrobin.co.ke', '/sitemap.xml')).text();
+  assert.match(pending, /shop-a\.rrobin\.co\.ke/, 'a domain that is not active yet does not take over the canonical');
+
+  db.run("UPDATE custom_hostnames SET status='active', ssl_status='active'");
+  const sitemap = await fetchPath('shop-a.rrobin.co.ke', '/sitemap.xml');
+  assert.equal(sitemap.status, 200, 'the subdomain still serves (no redirect)');
+  const body = await sitemap.text();
+  assert.match(body, /<loc>https:\/\/www\.shopa\.example\.com\/<\/loc>/);
+  assert.doesNotMatch(body, /shop-a\.rrobin\.co\.ke/);
+  const robots = await (await fetchPath('shop-a.rrobin.co.ke', '/robots.txt')).text();
+  assert.match(robots, /Sitemap: https:\/\/www\.shopa\.example\.com\/sitemap\.xml/);
+
+  // The custom domain itself, and other shops, are unaffected.
+  const custom = await (await fetchPath('www.shopa.example.com', '/sitemap.xml')).text();
+  assert.match(custom, /<loc>https:\/\/www\.shopa\.example\.com\/<\/loc>/);
+  const other = await (await fetchPath('shop-b.rrobin.co.ke', '/sitemap.xml')).text();
+  assert.match(other, /<loc>https:\/\/shop-b\.rrobin\.co\.ke\/<\/loc>/);
 });

@@ -6,6 +6,11 @@ import {
   readProductTaxonomyFields
 } from './product-taxonomy.js';
 
+import {
+  DEFAULT_SERVICE_MINUTES, SERVICE_MAX_MINUTES, SERVICE_MIN_MINUTES, SERVICE_STEP_MINUTES,
+  deductsStock, isService, normalizeServiceDuration, serviceDuration
+} from './service-model.js';
+
 const NearbyBluetooth = registerPlugin('NearbyBluetooth');
 
 const PAYMENT_METHODS = ['Cash', 'Mobile money', 'Card', 'Bank', 'Other'];
@@ -231,6 +236,18 @@ const assertDate = (date, label = 'Date') => {
     throw new Error(`${label} must be a real calendar date in YYYY-MM-DD format.`);
   }
 };
+const durationLabel = (minutes) => {
+  const total = Number(minutes) || 0;
+  if (total < 60) return `${total} min`;
+  return total % 60 ? `${Math.floor(total / 60)} h ${total % 60} min` : `${total / 60} h`;
+};
+const serviceChoices = () => Array.from(
+  { length: (SERVICE_MAX_MINUTES - SERVICE_MIN_MINUTES) / SERVICE_STEP_MINUTES + 1 },
+  (_, index) => { const minutes = SERVICE_MIN_MINUTES + index * SERVICE_STEP_MINUTES; return [minutes, durationLabel(minutes)]; }
+);
+// An id that already starts with "PO-" must not be prefixed again.
+const purchaseLabel = (purchase) => String(purchase.reference || '').trim()
+  || `PO-${String(purchase.id || '').replace(/^PO-/i, '').slice(0, 8)}`;
 const assertTotals = (items, taxRate) => {
   if (!items.length) throw new Error('Add at least one item.');
   let subtotalCents = 0;
@@ -299,6 +316,8 @@ async function initializePosDatabase() {
       image_embedding BLOB,
       low_stock_threshold INTEGER NOT NULL DEFAULT 3 CHECK (low_stock_threshold >= 0),
       active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
+      duration_minutes INTEGER,
+      supplier_id TEXT,
       created_at TEXT NOT NULL
     );
     CREATE TABLE IF NOT EXISTS pos_settings (
@@ -435,7 +454,32 @@ async function initializePosDatabase() {
       tax_cents INTEGER NOT NULL,
       total_cents INTEGER NOT NULL,
       currency TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'unpaid',
+      paid_at TEXT,
+      sale_receipt TEXT,
       created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS pos_quotations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      quotation_number TEXT NOT NULL UNIQUE,
+      customer_name TEXT NOT NULL,
+      customer_contact TEXT NOT NULL DEFAULT '',
+      notes TEXT NOT NULL DEFAULT '',
+      subtotal_cents INTEGER NOT NULL,
+      tax_cents INTEGER NOT NULL,
+      total_cents INTEGER NOT NULL,
+      currency TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open',
+      invoice_id INTEGER,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS pos_quotation_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      quotation_id INTEGER NOT NULL REFERENCES pos_quotations(id) ON DELETE CASCADE,
+      product_id INTEGER,
+      name TEXT NOT NULL,
+      quantity INTEGER NOT NULL CHECK (quantity > 0),
+      unit_price_cents INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS pos_invoice_items (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -508,6 +552,22 @@ async function initializePosDatabase() {
   }
   if (!productColumns.some((column) => column.name === 'active')) {
     await run('ALTER TABLE pos_products ADD COLUMN active INTEGER NOT NULL DEFAULT 1');
+  }
+  if (!productColumns.some((column) => column.name === 'duration_minutes')) {
+    await run('ALTER TABLE pos_products ADD COLUMN duration_minutes INTEGER');
+  }
+  if (!productColumns.some((column) => column.name === 'supplier_id')) {
+    await run('ALTER TABLE pos_products ADD COLUMN supplier_id TEXT');
+  }
+  const invoiceColumns = await rows('PRAGMA table_info(pos_invoices)');
+  if (!invoiceColumns.some((column) => column.name === 'status')) {
+    await run("ALTER TABLE pos_invoices ADD COLUMN status TEXT NOT NULL DEFAULT 'unpaid'");
+  }
+  if (!invoiceColumns.some((column) => column.name === 'paid_at')) {
+    await run('ALTER TABLE pos_invoices ADD COLUMN paid_at TEXT');
+  }
+  if (!invoiceColumns.some((column) => column.name === 'sale_receipt')) {
+    await run('ALTER TABLE pos_invoices ADD COLUMN sale_receipt TEXT');
   }
   const saleColumns = await rows('PRAGMA table_info(pos_sales)');
   if (!saleColumns.some((column) => column.name === 'discount_cents')) {
@@ -613,7 +673,8 @@ async function listProducts() {
     p.taxonomy_attributes_json AS taxonomyAttributesJson,
     p.price_cents, p.buying_price_cents, p.stock_count AS stock, p.image_uri AS imageUri,
     hex(p.image_embedding) AS imageEmbeddingHex,
-    p.low_stock_threshold AS lowStockThreshold, p.active
+    p.low_stock_threshold AS lowStockThreshold, p.active,
+    p.duration_minutes AS durationMinutes, p.supplier_id AS supplierId
     FROM pos_products p LEFT JOIN pos_categories c ON c.id = p.category_id ORDER BY p.name COLLATE NOCASE`)
     .then((items) => items.map((item) => ({
       id: item.id, name: item.name, sku: item.sku || '', barcode: item.barcode || '',
@@ -625,7 +686,11 @@ async function listProducts() {
       price: fromCents(item.price_cents), buyingPrice: item.buying_price_cents == null ? null : fromCents(item.buying_price_cents),
       stock: item.stock, imageUri: item.imageUri, imageEmbedding: embeddingHexToInt8(item.imageEmbeddingHex || ''),
       lowStockThreshold: Number(item.lowStockThreshold) || 0,
-      active: item.active !== 0
+      active: item.active !== 0,
+      // The rule for what a service is lives in service-model.js; this only carries the stored duration.
+      durationMinutes: serviceDuration({ duration_minutes: item.durationMinutes }),
+      isService: isService({ duration_minutes: item.durationMinutes }),
+      supplierId: item.supplierId || ''
     })));
 }
 
@@ -653,7 +718,23 @@ async function saveProduct(data) {
   const categoryId = Number(data.categoryId);
   const priceCents = toCents(data.price);
   const buyingCents = String(data.buyingPrice ?? '').trim() === '' ? null : toCents(data.buyingPrice);
-  const stock = String(data.stock ?? '').trim() === '' ? null : Number(data.stock);
+  let stock = String(data.stock ?? '').trim() === '' ? null : Number(data.stock);
+  // A service is a product with a duration. It has nothing to count, so its stock is always untracked.
+  let durationMinutes = null;
+  let supplierId = data.supplierId === undefined ? undefined : String(data.supplierId || '').trim().slice(0, 120);
+  const mentionsService = Object.hasOwn(data, 'isService') || Object.hasOwn(data, 'durationMinutes');
+  if (mentionsService) {
+    const flag = Object.hasOwn(data, 'isService')
+      ? !(data.isService === false || data.isService === 0 || data.isService === '0' || data.isService === '' || data.isService == null)
+      : true;
+    if (flag) durationMinutes = normalizeServiceDuration(data.durationMinutes) || DEFAULT_SERVICE_MINUTES;
+  }
+  if ((!mentionsService || supplierId === undefined) && id > 0) {
+    const kept = (await rows('SELECT duration_minutes,supplier_id FROM pos_products WHERE id=?', [id]))[0];
+    if (!mentionsService) durationMinutes = kept?.duration_minutes || null;
+    if (supplierId === undefined) supplierId = kept?.supplier_id || '';
+  }
+  if (durationMinutes) stock = null;
   const lowStockThreshold = Number(data.lowStockThreshold ?? 3);
   const active = data.active === false || data.active === '0' ? 0 : 1;
   const hasTaxonomyCategory = Object.hasOwn(data, 'taxonomyCategoryId');
@@ -690,7 +771,8 @@ async function saveProduct(data) {
     : existingTaxonomy.taxonomy_attributes_json || '[]';
   const values = [name, categoryId, priceCents, buyingCents, stock, sku || null, barcode || null, expiryDate || null,
     String(data.imageUri || '').trim() || null,
-    lowStockThreshold, active, taxonomyCategoryId, taxonomyCustomCategory, taxonomyAttributesJson];
+    lowStockThreshold, active, taxonomyCategoryId, taxonomyCustomCategory, taxonomyAttributesJson,
+    durationMinutes, supplierId || null];
   const hasEmbedding = Object.hasOwn(data, 'imageEmbeddingHex');
   const embeddingHex = hasEmbedding ? String(data.imageEmbeddingHex || '') : '';
   if (hasEmbedding && embeddingHex && (!/^(?:[\da-f]{2}){128,4096}$/i.test(embeddingHex))) {
@@ -698,14 +780,14 @@ async function saveProduct(data) {
   }
   if (id > 0) {
     const embeddingUpdate = hasEmbedding ? `,image_embedding=${embeddingHex ? `X'${embeddingHex}'` : 'NULL'}` : '';
-    const result = await run(`UPDATE pos_products SET name=?,category_id=?,price_cents=?,buying_price_cents=?,stock_count=?,sku=?,barcode=?,expiry_date=?,image_uri=?,low_stock_threshold=?,active=?,taxonomy_category_id=?,taxonomy_custom_category=?,taxonomy_attributes_json=?${embeddingUpdate} WHERE id=?`, [...values, id]);
+    const result = await run(`UPDATE pos_products SET name=?,category_id=?,price_cents=?,buying_price_cents=?,stock_count=?,sku=?,barcode=?,expiry_date=?,image_uri=?,low_stock_threshold=?,active=?,taxonomy_category_id=?,taxonomy_custom_category=?,taxonomy_attributes_json=?,duration_minutes=?,supplier_id=?${embeddingUpdate} WHERE id=?`, [...values, id]);
     if (!result.changes?.changes) throw new Error('This product could not be found. Refresh and try again.');
     await recordSharedStockUpdate(sku, stock);
     return id;
   }
   const embeddingColumn = hasEmbedding ? ',image_embedding' : '';
   const embeddingValue = hasEmbedding ? `,${embeddingHex ? `X'${embeddingHex}'` : 'NULL'}` : '';
-  const result = await run(`INSERT INTO pos_products (name,category_id,price_cents,buying_price_cents,stock_count,sku,barcode,expiry_date,image_uri,low_stock_threshold,active,taxonomy_category_id,taxonomy_custom_category,taxonomy_attributes_json,created_at${embeddingColumn}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?${embeddingValue})`, [...values, nowIso()]);
+  const result = await run(`INSERT INTO pos_products (name,category_id,price_cents,buying_price_cents,stock_count,sku,barcode,expiry_date,image_uri,low_stock_threshold,active,taxonomy_category_id,taxonomy_custom_category,taxonomy_attributes_json,duration_minutes,supplier_id,created_at${embeddingColumn}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?${embeddingValue})`, [...values, nowIso()]);
   await recordSharedStockUpdate(sku, stock);
   return result.changes?.lastId;
 }
@@ -775,7 +857,7 @@ async function deleteProduct(id) {
   await run('DELETE FROM pos_products WHERE id = ?', [Number(id)]);
 }
 
-async function saveSale(items, { paymentMethod, paid, customerName, customerPhone, dueDate, allowOutOfStock, discount } = {}) {
+async function saveSale(items, { paymentMethod, paid, customerName, customerPhone, dueDate, allowOutOfStock, discount, mpesaRef } = {}) {
   const settings = await getSettings();
   const { subtotalCents } = assertTotals(items, settings.taxRate);
   const discountCents = toCents(discount || 0);
@@ -793,14 +875,27 @@ async function saveSale(items, { paymentMethod, paid, customerName, customerPhon
   if (date) assertDate(date, 'Credit due date');
   if (paid && date) throw new Error('A due date is only for an unpaid credit sale.');
   if (method && !PAYMENT_METHODS.includes(method)) throw new Error('Choose a valid payment method.');
+  // The optional M-Pesa confirmation code is kept on the payment, so a mobile-money sale can be matched to the statement.
+  const reference = method === 'Mobile money' ? String(mpesaRef || '').trim().toUpperCase() : '';
+  if (reference) {
+    if (!/^[A-Z0-9]{6,20}$/.test(reference)) throw new Error('The M-Pesa reference should be 6 to 20 letters and numbers, like QGH7XXXXXX.');
+    if (paid && (await rows('SELECT id FROM pos_sale_payments WHERE mpesa_ref=? LIMIT 1', [reference]))[0]) {
+      throw new Error('That M-Pesa reference is already recorded on another payment.');
+    }
+  }
   const quantityMap = new Map();
-  items.forEach((item) => quantityMap.set(Number(item.productId), (quantityMap.get(Number(item.productId)) || 0) + Number(item.quantity)));
+  // A line with no product (a custom quotation/invoice line) is sold but has no stock to look up or move.
+  items.forEach((item) => {
+    const productId = Number(item.productId);
+    if (productId > 0) quantityMap.set(productId, (quantityMap.get(productId) || 0) + Number(item.quantity));
+  });
   const productData = new Map();
+  const stockDeducted = (product) => deductsStock({ stock_count: product.stock_count, duration_minutes: product.duration_minutes });
   for (const [productId, requested] of quantityMap) {
-    const product = (await rows('SELECT id,name,sku,stock_count,buying_price_cents,active FROM pos_products WHERE id=?', [productId]))[0];
+    const product = (await rows('SELECT id,name,sku,stock_count,duration_minutes,buying_price_cents,active FROM pos_products WHERE id=?', [productId]))[0];
     if (!product) throw new Error('A product in this sale is no longer available.');
     if (product.active !== 1) throw new Error(`${product.name} is disabled and cannot be sold.`);
-    if (!allowOutOfStock && product.stock_count !== null && requested > product.stock_count) {
+    if (!allowOutOfStock && stockDeducted(product) && requested > product.stock_count) {
       throw new Error(`${product.name} has ${product.stock_count} in stock, ${requested} requested.`);
     }
     productData.set(productId, product);
@@ -821,21 +916,22 @@ async function saveSale(items, { paymentMethod, paid, customerName, customerPhon
     return stmt(`INSERT INTO pos_sale_items
       (sale_id,product_id,name,quantity,unit_price_cents,unit_cost_cents,unit_cost_captured)
       SELECT id,?,?,?,?,?,1 FROM pos_sales WHERE receipt_number=?`,
-    [item.productId, item.name, item.quantity, toCents(item.unitPrice),
-      product.buying_price_cents == null ? null : Number(product.buying_price_cents), receipt]);
+    [Number(item.productId) > 0 ? Number(item.productId) : null, item.name, item.quantity, toCents(item.unitPrice),
+      product?.buying_price_cents == null ? null : Number(product.buying_price_cents), receipt]);
   });
   const paymentStatement = isPaid && totalCents > 0
     ? [stmt(`INSERT INTO pos_sale_payments
       (sale_id,method,amount_cents,mpesa_ref,sender_name,sender_phone,created_at)
       SELECT id,?,?,?,?,?,? FROM pos_sales WHERE receipt_number=?`,
-    [method, totalCents, null, null, null, createdAt, receipt])]
+    [method, totalCents, reference || null, null, null, createdAt, receipt])]
     : [];
-  const stockStatements = [...quantityMap].map(([productId, quantity]) =>
+  const stockStatements = [...quantityMap].filter(([productId]) => stockDeducted(productData.get(productId))).map(([productId, quantity]) =>
     stmt('UPDATE pos_products SET stock_count=MAX(0,stock_count-?) WHERE id=? AND stock_count IS NOT NULL', [quantity, productId]));
   const connection = (await rows("SELECT value FROM pos_settings WHERE key='shared_tenant_id'"))[0]?.value;
   const sharedItems = new Map();
   if (connection) {
     for (const [productId, quantity] of quantityMap) {
+      if (!stockDeducted(productData.get(productId))) continue;
       const sku = String(productData.get(productId)?.sku || '').trim();
       if (sku) sharedItems.set(sku, (sharedItems.get(sku) || 0) + quantity);
     }
@@ -1109,10 +1205,10 @@ async function saveInvoice(data) {
   const id = Number(data.id || 0);
   const values = [customer, String(data.customerContact || '').trim(), dueDate,
     String(data.notes || '').trim(), subtotalCents, taxCents, totalCents, settings.currency];
-  const invoiceNumber = id
-    ? (await rows('SELECT invoice_number FROM pos_invoices WHERE id=?', [id]))[0]?.invoice_number
-    : numberTag('INV');
+  const existingInvoice = id ? (await rows('SELECT invoice_number,status FROM pos_invoices WHERE id=?', [id]))[0] : null;
+  const invoiceNumber = id ? existingInvoice?.invoice_number : numberTag('INV');
   if (!invoiceNumber) throw new Error('This invoice could not be found.');
+  if (existingInvoice?.status === 'paid') throw new Error('A paid invoice is already recorded as a sale and cannot be edited.');
   const statements = id
     ? [stmt(`UPDATE pos_invoices SET customer_name=?,customer_contact=?,due_date=?,notes=?,subtotal_cents=?,tax_cents=?,total_cents=?,currency=? WHERE id=?`, [...values, id]),
       stmt('DELETE FROM pos_invoice_items WHERE invoice_id=?', [id])]
@@ -1124,6 +1220,89 @@ async function saveInvoice(data) {
   const saved = (await rows('SELECT id FROM pos_invoices WHERE invoice_number=?', [invoiceNumber]))[0];
   if (!saved) throw new Error('Invoice was saved but could not be read back.');
   return saved.id;
+}
+
+// Paying an invoice records the settlement as an ordinary sale. A paid invoice then counts in Overview,
+// reports, the till and stock exactly like a till sale, and there is one revenue path, not two. An unpaid
+// invoice is only a promise, so it counts nowhere until it is paid.
+async function markInvoicePaid(invoiceId, method = 'Cash', { mpesaRef } = {}) {
+  const invoice = (await listInvoices()).find((item) => item.id === Number(invoiceId));
+  if (!invoice) throw new Error('This invoice could not be found.');
+  if (invoice.status === 'paid') throw new Error('This invoice is already paid.');
+  const knownProducts = new Set((await rows('SELECT id FROM pos_products')).map((row) => Number(row.id)));
+  const items = invoice.items.map((item) => ({
+    productId: knownProducts.has(Number(item.productId)) ? Number(item.productId) : 0,
+    name: item.name, quantity: item.quantity, unitPrice: item.unitPrice
+  }));
+  const contact = String(invoice.customer_contact || '').trim();
+  const hasPhone = /^[+\d][\d\s()+-]{5,20}$/.test(contact);
+  const sale = await saveSale(items, {
+    paymentMethod: method, paid: true, allowOutOfStock: true, mpesaRef,
+    customerName: hasPhone ? invoice.customer_name : '', customerPhone: hasPhone ? contact : ''
+  });
+  await run('UPDATE pos_sales SET customer_name=? WHERE id=?', [invoice.customer_name, sale.id]);
+  await run("UPDATE pos_invoices SET status='paid',paid_at=?,sale_receipt=? WHERE id=? AND status<>'paid'",
+    [nowIso(), sale.receiptNumber, invoice.id]);
+  return { ...sale, invoiceNumber: invoice.invoice_number, productIds: [...new Set(items.map((item) => item.productId).filter(Boolean))] };
+}
+
+async function listQuotations() {
+  const quotations = await rows('SELECT * FROM pos_quotations ORDER BY created_at DESC,id DESC');
+  const lines = await rows('SELECT quotation_id,product_id AS productId,name,quantity,unit_price_cents FROM pos_quotation_items ORDER BY quotation_id,id');
+  for (const quotation of quotations) {
+    quotation.subtotal = fromCents(quotation.subtotal_cents);
+    quotation.tax = fromCents(quotation.tax_cents);
+    quotation.total = fromCents(quotation.total_cents);
+    quotation.items = lines.filter((line) => line.quotation_id === quotation.id)
+      .map((line) => ({ productId: line.productId || 0, name: line.name, quantity: line.quantity, unitPrice: fromCents(line.unit_price_cents) }));
+  }
+  return quotations;
+}
+
+async function saveQuotation(data) {
+  const customer = String(data.customerName || '').trim();
+  if (!customer) throw new Error('Enter a customer name.');
+  const settings = await getSettings();
+  const items = data.items || [];
+  const { subtotalCents, taxCents, totalCents } = assertTotals(items, settings.taxRate);
+  const id = Number(data.id || 0);
+  const existing = id ? (await rows('SELECT quotation_number,status FROM pos_quotations WHERE id=?', [id]))[0] : null;
+  if (id && !existing) throw new Error('This quotation could not be found.');
+  if (existing?.status === 'converted') throw new Error('This quotation was already converted to an invoice and cannot be edited.');
+  const number = id ? existing.quotation_number : numberTag('QUO');
+  const values = [customer, String(data.customerContact || '').trim(), String(data.notes || '').trim(),
+    subtotalCents, taxCents, totalCents, settings.currency];
+  const head = id
+    ? [stmt('UPDATE pos_quotations SET customer_name=?,customer_contact=?,notes=?,subtotal_cents=?,tax_cents=?,total_cents=?,currency=? WHERE id=?', [...values, id]),
+      stmt('DELETE FROM pos_quotation_items WHERE quotation_id=?', [id])]
+    : [stmt(`INSERT INTO pos_quotations (quotation_number,customer_name,customer_contact,notes,subtotal_cents,tax_cents,total_cents,currency,created_at)
+      VALUES (?,?,?,?,?,?,?,?,?)`, [number, ...values, nowIso()])];
+  const lines = items.map((item) => stmt(`INSERT INTO pos_quotation_items (quotation_id,product_id,name,quantity,unit_price_cents)
+    SELECT id,?,?,?,? FROM pos_quotations WHERE quotation_number=?`,
+  [Number(item.productId) > 0 ? Number(item.productId) : null, item.name, item.quantity, toCents(item.unitPrice), number]));
+  await transaction([...head, ...lines]);
+  const saved = (await rows('SELECT id FROM pos_quotations WHERE quotation_number=?', [number]))[0];
+  if (!saved) throw new Error('The quotation was saved but could not be read back.');
+  return saved.id;
+}
+
+async function deleteQuotation(id) {
+  await transaction([
+    stmt('DELETE FROM pos_quotation_items WHERE quotation_id=?', [Number(id)]),
+    stmt('DELETE FROM pos_quotations WHERE id=?', [Number(id)])
+  ]);
+}
+
+async function convertQuotationToInvoice(id) {
+  const quotation = (await listQuotations()).find((item) => item.id === Number(id));
+  if (!quotation) throw new Error('This quotation could not be found.');
+  if (quotation.status === 'converted') throw new Error('This quotation was already converted to an invoice.');
+  const invoiceId = await saveInvoice({
+    customerName: quotation.customer_name, customerContact: quotation.customer_contact,
+    notes: quotation.notes, dueDate: '', items: quotation.items
+  });
+  await run("UPDATE pos_quotations SET status='converted',invoice_id=? WHERE id=?", [invoiceId, quotation.id]);
+  return invoiceId;
 }
 
 function parseInstance(row) {
@@ -1258,7 +1437,7 @@ async function instanceTotals(instance, currency) {
 export function createPosApp() {
   const state = { cart: [], invoiceItems: [], invoiceDraftId: null, search: '', category: '', expandedSale: 0, paymentMethod: '',
     sharedTenantId: '', pendingInventoryEvents: 0, inventorySyncError: '', discount: 0, discountDialogOpen: false, activeTicketId: '',
-    suppliers: [], purchases: [], tickets: [], cloudSales: [], cloudSyncError: '', cloudScopeId: 'local',
+    suppliers: [], purchases: [], tickets: [], cloudSales: [], quotations: [], cloudSyncError: '', cloudScopeId: 'local',
     nearbySyncStatus: '' };
   let initialized = false;
   let cloudSyncInProgress = false;
@@ -1503,7 +1682,7 @@ export function createPosApp() {
           ${product.imageUri ? `<img src="${escapeHtml(product.imageUri)}" alt="">` : '<span class="pos-product-placeholder">+</span>'}
           <strong>${escapeHtml(product.name)}</strong>
           <span>${money(product.price, state.settings.currency)}</span>
-          <small>${product.stock === null ? 'Stock not tracked' : `${product.stock} in stock`}</small>
+          <small>${product.isService ? `Service · ${durationLabel(product.durationMinutes)}` : product.stock === null ? 'Stock not tracked' : `${product.stock} in stock`}</small>
         </button>`).join('') || empty(state.search ? 'No matching products' : 'No products yet', 'Add items in Inventory to start selling.');
   }
 
@@ -1535,7 +1714,8 @@ export function createPosApp() {
           <svg class="pos-payment-logo" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg><span>Other</span>
         </button>
       </div>
-      ${state.paymentMethod === 'Mobile money' ? '<p class="pos-help">Confirm the payment with the mobile-money provider before completing this sale.</p>' : ''}
+      ${state.paymentMethod === 'Mobile money' ? `<p class="pos-help">Confirm the payment with the mobile-money provider before completing this sale.</p>
+        ${field('M-Pesa reference · optional', 'mpesaRef', '', { placeholder: 'e.g. QGH7XXXXXX' })}` : ''}
       <div class="pos-customer-fields">
         ${field('Name', 'customerName', '', { placeholder: 'Optional' })}
         ${field('Phone', 'customerPhone', '', { placeholder: 'Optional', type: 'tel' })}
@@ -1617,10 +1797,13 @@ export function createPosApp() {
         // The POS form owns the "categoryId" field above; the picker must not submit a second one.
         storeCategoryFieldName: ''
       })}
+      ${select('Item type · a service is sold by time and has no stock', 'isService', [[0, 'Product'], [1, 'Service']], item?.isService ? 1 : 0)}
+      <div data-service-duration ${item?.isService ? '' : 'hidden'}>${select('Duration', 'durationMinutes', serviceChoices(), item?.durationMinutes || DEFAULT_SERVICE_MINUTES)}</div>
       ${field('Selling price', 'price', item?.price ?? '', { type: 'number', min: '0', step: '0.01', required: true })}
       ${field('Expiry date · optional', 'expiryDate', item?.expiryDate || '', { type: 'date' })}
       ${field('Unit cost · optional', 'buyingPrice', item?.buyingPrice ?? '', { type: 'number', min: '0', step: '0.01' })}
-      ${field('Stock · blank means untracked', 'stock', item?.stock ?? '', { type: 'number', min: '0', step: '1' })}
+      <div data-product-stock-field ${item?.isService ? 'hidden' : ''}>${field('Stock · blank means untracked', 'stock', item?.stock ?? '', { type: 'number', min: '0', step: '1' })}</div>
+      ${state.suppliers.length ? select('Supplier · optional', 'supplierId', [['', 'No supplier'], ...state.suppliers.map((supplier) => [supplier.id, supplier.name])], item?.supplierId || '') : ''}
       ${field('Image URL · optional', 'imageUri', /^https?:\/\//i.test(item?.imageUri || '') ? item.imageUri : '', { placeholder: 'https://…' })}
       <input type="hidden" name="capturedProductImage" value="${/^data:image\//i.test(item?.imageUri || '') ? escapeHtml(item.imageUri) : ''}">
       <div class="pos-form-actions"><button type="button" class="btn-secondary" data-pos-action="take-product-photo">Take product photo</button></div>
@@ -1654,19 +1837,26 @@ export function createPosApp() {
         </details>`;
       }).join('')}
     </div>`;
+    const supplierLabel = (supplierId) => state.suppliers.find((supplier) => supplier.id === supplierId)?.name || '';
+    const stockText = (item, untracked, tracked = (count) => String(count)) => item.isService
+      ? `Service · ${durationLabel(item.durationMinutes)}` : item.stock === null ? untracked : tracked(item.stock);
+    const supplierFilter = params.get('supplier') || '';
+    const visibleProducts = state.products.filter((item) => !supplierFilter
+      || (supplierFilter === 'none' ? !item.supplierId : item.supplierId === supplierFilter));
     const productDetailsCards = (editPath, summaryMode = 'product', includeSync = false) => `<div class="pos-mobile-catalogue" aria-label="Products">
-      ${state.products.map((item) => `<details class="pos-catalogue-item">
+      ${visibleProducts.map((item) => `<details class="pos-catalogue-item">
         <summary>
           <strong>${escapeHtml(item.name)}</strong>
           <small>${summaryMode === 'inventory'
-            ? item.stock === null ? 'Not tracked' : `${item.stock} in stock`
+            ? stockText(item, 'Not tracked', (count) => `${count} in stock`)
             : money(item.price, state.settings.currency)}</small>
           <span class="pos-catalogue-chevron" aria-hidden="true"></span>
         </summary>
         <div class="pos-catalogue-item-details">
           <div class="pos-catalogue-detail-values">
             <div><small>SKU</small><strong>${escapeHtml(item.sku || '—')}</strong></div>
-            <div><small>Stock</small><strong>${item.stock === null ? 'Not tracked' : `${item.stock} on hand`}</strong></div>
+            <div><small>Stock</small><strong>${stockText(item, 'Not tracked', (count) => `${count} on hand`)}</strong></div>
+            <div><small>Supplier</small><strong>${escapeHtml(supplierLabel(item.supplierId) || 'Not set')}</strong></div>
             <div><small>Unit cost</small><strong>${item.buyingPrice == null ? 'Not recorded' : money(item.buyingPrice, state.settings.currency)}</strong></div>
             <div><small>Reorder at</small><strong>${item.lowStockThreshold}</strong></div>
             <div><small>Status</small><strong>${item.active ? 'Active' : 'Disabled'}</strong></div>
@@ -1684,11 +1874,12 @@ export function createPosApp() {
       return `<section class="pos-content">
         ${tabsTitle('Products', `${state.products.length} products`, `<a href="/pos/catalogue/products?new=1" data-route="/pos/catalogue/products?new=1" class="btn-primary">Add product</a>`)}
         ${params.get('edit') || params.get('new') === '1' ? card(`<h3>${product ? 'Edit product' : 'Add product'}</h3>${productForm(product)}`) : ''}
-        ${card(`<div class="pos-catalogue-desktop-list"><div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody>
-          ${state.products.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.categoryName)}</td><td>${money(item.price, state.settings.currency)}</td><td>${item.stock === null ? '—' : item.stock}</td><td class="pos-row-actions">
+        ${state.suppliers.length ? card(`<label class="pos-field"><span>Filter by supplier</span><select data-pos-supplier-filter aria-label="Filter products by supplier">${[['', 'All suppliers'], ['none', 'No supplier'], ...state.suppliers.map((supplier) => [supplier.id, supplier.name])].map(([value, label]) => `<option value="${escapeHtml(value)}" ${value === supplierFilter ? 'selected' : ''}>${escapeHtml(label)}</option>`).join('')}</select></label>`) : ''}
+        ${card(`<div class="pos-catalogue-desktop-list"><div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Supplier</th><th></th></tr></thead><tbody>
+          ${visibleProducts.map((item) => `<tr><td>${escapeHtml(item.name)}${item.isService ? ` ${statusTag('Service')}` : ''}</td><td>${escapeHtml(item.categoryName)}</td><td>${money(item.price, state.settings.currency)}</td><td>${stockText(item, '—')}</td><td>${escapeHtml(supplierLabel(item.supplierId) || '—')}</td><td class="pos-row-actions">
             ${iconLink(`/pos/catalogue/products?edit=${item.id}`, `Edit ${item.name}`)}
             ${iconButton('delete-product', item.id, `Delete ${item.name}`, deleteIcon)}
-          </td></tr>`).join('') || '<tr><td colspan="5">No products yet.</td></tr>'}
+          </td></tr>`).join('') || `<tr><td colspan="6">${state.products.length ? 'No products for this supplier.' : 'No products yet.'}</td></tr>`}
         </tbody></table></div></div>${productDetailsCards('/pos/catalogue/products')}`)}</section>`;
     }
     if (screen === '/catalogue/categories') {
@@ -1709,7 +1900,7 @@ export function createPosApp() {
             <div class="pos-form-actions">${button('Use POS stock for website', 'sync-shared-stock', 'data-source="pos"', true)}${button('Load website stock into POS', 'sync-shared-stock', 'data-source="website"', true)}</div>`
             : '<p class="pos-help">Create or select a website in Studio to connect inventory.</p>'}`)}
         ${card(`<div class="pos-catalogue-desktop-list"><div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Product</th><th>SKU</th><th>Category</th><th>On hand</th><th>Reorder at</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-          ${state.products.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.sku || '—')}</td><td>${escapeHtml(item.categoryName)}</td><td>${item.stock === null ? 'Not tracked' : item.stock}</td><td>${item.lowStockThreshold}</td><td>${item.active ? 'Active' : 'Disabled'}</td><td class="pos-row-actions">
+          ${state.products.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.sku || '—')}</td><td>${escapeHtml(item.categoryName)}</td><td>${stockText(item, 'Not tracked')}</td><td>${item.lowStockThreshold}</td><td>${item.active ? 'Active' : 'Disabled'}</td><td class="pos-row-actions">
             ${iconLink(`/pos/inventory?edit=${item.id}`, `Edit ${item.name}`)}
             ${iconButton('delete-product', item.id, `Delete ${item.name}`, deleteIcon)}
           </td></tr>`).join('') || '<tr><td colspan="7">No products yet.</td></tr>'}
@@ -1750,7 +1941,7 @@ export function createPosApp() {
               ${state.products.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${escapeHtml(item.sku || '—')}</td>
             <td>${escapeHtml(item.categoryName)}</td>
             <td>${money(item.price, state.settings.currency)}</td><td>${item.buyingPrice == null ? '—' : money(item.buyingPrice, state.settings.currency)}</td>
-            <td>${item.stock === null ? '—' : item.stock}</td><td>${item.lowStockThreshold}</td><td>${item.active ? 'Active' : 'Disabled'}</td><td class="pos-row-actions">
+            <td>${stockText(item, '—')}</td><td>${item.lowStockThreshold}</td><td>${item.active ? 'Active' : 'Disabled'}</td><td class="pos-row-actions">
               ${iconLink(`/pos/catalogue/products?edit=${item.id}`, `Edit ${item.name}`)}
               ${iconButton('delete-product', item.id, `Delete ${item.name}`, deleteIcon)}
               ${item.sku ? button('Sync details to active website draft', 'sync-product-details', `data-id="${item.id}"`, true) : ''}
@@ -1837,7 +2028,7 @@ export function createPosApp() {
         ${button('Delete', 'delete-supplier', `data-record-id="${escapeHtml(item.id)}"`, true)}
       </div>`).join('') || '<p class="pos-help">No suppliers yet. Add a supplier to start tracking purchases.</p>'}`)}
       ${card(`<h3>Purchase orders</h3>${state.purchases.map((item) => `<div class="pos-category-row">
-        <strong>${escapeHtml(item.reference || `PO-${item.id.slice(0, 8)}`)}<small>${escapeHtml(item.supplierName)} · ${item.items.length} line${item.items.length === 1 ? '' : 's'}</small></strong>
+        <strong>${escapeHtml(purchaseLabel(item))}<small>${escapeHtml(item.supplierName)} · ${item.items.length} line${item.items.length === 1 ? '' : 's'}</small></strong>
         <span>${escapeHtml(item.status)} · ${new Date(item.createdAt).toLocaleDateString()}</span>
         <span>${money(item.items.reduce((sum, line) => sum + line.quantity * line.unitCost, 0), state.settings.currency)}</span>
         ${item.status === 'ordered' ? button('Receive stock', 'receive-purchase', `data-record-id="${escapeHtml(item.id)}"`) : statusTag(item.status, item.status === 'received' ? 'is-good' : '')}
@@ -1888,7 +2079,7 @@ export function createPosApp() {
     return `<section class="pos-content">
       ${tabsTitle('Invoices', 'Create, edit, print and share customer invoices.',
         `<a href="/pos/invoices?new=1" data-route="/pos/invoices?new=1" class="btn-primary">New invoice</a>`)}
-      ${id || params.get('new') === '1' ? card(`<h3>${id ? 'Edit invoice' : 'New invoice'}</h3>
+      ${(id && invoice?.status !== 'paid') || params.get('new') === '1' ? card(`<h3>${id ? 'Edit invoice' : 'New invoice'}</h3>
         <form class="pos-form" data-pos-form="invoice">
           <input type="hidden" name="id" value="${id}">
           ${field('Customer name', 'customerName', invoice?.customer_name || '', { required: true })}
@@ -1909,9 +2100,12 @@ export function createPosApp() {
         <h4>Add a product</h4><div class="pos-product-picks">${state.products.filter((product) => product.active).map((product) => button(
           `${escapeHtml(product.name)} · ${money(product.price, state.settings.currency)}`, 'invoice-add', `data-id="${product.id}"`, true)).join('')}</div>`) : ''}
       ${state.invoices.map((item) => `<article class="pos-card pos-invoice-row">
-        <div><strong>${escapeHtml(item.invoice_number)}</strong><small>${escapeHtml(item.customer_name)} · ${new Date(item.created_at).toLocaleDateString()}</small></div>
+        <div><strong>${escapeHtml(item.invoice_number)}</strong><small>${escapeHtml(item.customer_name)} · ${new Date(item.created_at).toLocaleDateString()}${item.status === 'paid' && item.sale_receipt ? ` · receipt ${escapeHtml(item.sale_receipt)}` : ''}</small></div>
         <b>${money(item.total, item.currency)}</b>
-        <a href="/pos/invoices?edit=${item.id}" data-route="/pos/invoices?edit=${item.id}" class="btn-secondary">Edit</a>
+        ${statusTag(item.status === 'paid' ? 'Paid' : 'Unpaid', item.status === 'paid' ? 'is-good' : '')}
+        ${item.status === 'paid' ? '' : `<a href="/pos/invoices?edit=${item.id}" data-route="/pos/invoices?edit=${item.id}" class="btn-secondary">Edit</a>
+        <select data-invoice-pay-method aria-label="Payment method">${PAYMENT_METHODS.map((method) => `<option value="${method}">${method}</option>`).join('')}</select>
+        ${button('Mark paid', 'mark-invoice-paid', `data-id="${item.id}"`)}`}
         ${button('Print / PDF', 'print-invoice', `data-id="${item.id}"`, true)}
       </article>`).join('') || empty('No invoices yet', 'Create an invoice from the button above.')}
     </section>`;
@@ -1946,20 +2140,45 @@ export function createPosApp() {
   }
 
   function renderQuotations() {
-    return `<section class="pos-content">${tabsTitle('Quotations', 'Build a quotation from catalogue or custom items.')}
-      ${card(`<form class="pos-form" data-pos-form="quotation">
-        ${field('Customer name', 'customerName', '', { required: true })}
-        ${field('Contact · optional', 'customerContact', '')}
+    const params = new URLSearchParams(((window.location.hash || '').split('?')[1]) || '');
+    const editing = state.quotations.find((item) => item.id === Number(params.get('edit') || 0));
+    const lineFor = (product) => editing?.items.find((line) => line.productId === product.id);
+    const customLines = editing ? editing.items.filter((line) => !state.products.some((product) => product.id === line.productId)) : [];
+    const customSlots = Math.max(2, customLines.length);
+    const locked = editing?.status === 'converted';
+    return `<section class="pos-content">${tabsTitle('Quotations', 'Build a quotation from catalogue or custom items, save it, and convert it to an invoice.')}
+      ${card(`<h3>${editing ? 'Edit quotation' : 'New quotation'}</h3><form class="pos-form" data-pos-form="quotation">
+        <input type="hidden" name="id" value="${editing?.id || 0}">
+        ${field('Customer name', 'customerName', editing?.customer_name || '', { required: true })}
+        ${field('Contact · optional', 'customerContact', editing?.customer_contact || '')}
+        ${field('Notes · optional', 'notes', editing?.notes || '')}
         <h4>Catalogue products</h4>
         <div class="pos-product-picks pos-quote-product-grid">${state.products.map((product) => `<label class="pos-product-tile pos-quote-product">
-          <input type="checkbox" name="products" value="${product.id}" aria-label="Select ${escapeHtml(product.name)}">
+          <input type="checkbox" name="products" value="${product.id}" aria-label="Select ${escapeHtml(product.name)}" ${lineFor(product) ? 'checked' : ''}>
           ${product.imageUri ? `<img src="${escapeHtml(product.imageUri)}" alt="">` : '<span class="pos-product-placeholder">+</span>'}
           <strong>${escapeHtml(product.name)}</strong>
           <span>${money(product.price, state.settings.currency)}</span>
+          <input type="number" name="quantity_${product.id}" min="1" max="99999" step="1" value="${lineFor(product)?.quantity || 1}" aria-label="Quantity of ${escapeHtml(product.name)}">
         </label>`).join('') || '<p class="pos-help">No products in catalogue yet.</p>'}</div>
-        <h4>Custom item</h4>${field('Item name', 'customName', '')}${field('Price', 'customPrice', '', { type: 'number', min: '0', step: '0.01' })}
-        <button type="submit" class="btn-primary">Create / print quotation</button>
-      </form>`)}</section>`;
+        <h4>Custom items</h4>
+        ${Array.from({ length: customSlots }, (_, index) => `<div class="pos-cart-item">
+          ${field('Item name', `customName${index + 1}`, customLines[index]?.name || '')}
+          ${field('Qty', `customQty${index + 1}`, customLines[index]?.quantity || '', { type: 'number', min: '1', step: '1' })}
+          ${field('Price', `customPrice${index + 1}`, customLines[index]?.unitPrice ?? '', { type: 'number', min: '0', step: '0.01' })}
+        </div>`).join('')}
+        ${locked ? '<p class="pos-help">This quotation was converted to an invoice and can no longer be edited.</p>'
+          : `<div class="pos-form-actions"><button type="submit" class="btn-primary">Save quotation</button>
+            ${editing ? '<a href="/pos/orders/quotations" data-route="/pos/orders/quotations" class="btn-secondary">Cancel</a>' : ''}</div>`}
+      </form>`)}
+      ${card(`<h3>Saved quotations · ${state.quotations.length}</h3>${state.quotations.map((quotation) => `<div class="pos-category-row">
+        <strong>${escapeHtml(quotation.quotation_number)}<small>${escapeHtml(quotation.customer_name)} · ${new Date(quotation.created_at).toLocaleDateString()} · ${quotation.items.length} line${quotation.items.length === 1 ? '' : 's'}</small></strong>
+        <span>${statusTag(quotation.status === 'converted' ? 'Converted' : 'Open', quotation.status === 'converted' ? 'is-good' : '')}</span>
+        <b>${money(quotation.total, quotation.currency)}</b>
+        <a href="/pos/orders/quotations?edit=${quotation.id}" data-route="/pos/orders/quotations?edit=${quotation.id}" class="btn-secondary">${quotation.status === 'converted' ? 'View' : 'Edit'}</a>
+        ${quotation.status === 'converted' ? '' : button('Convert to invoice', 'convert-quotation', `data-id="${quotation.id}"`)}
+        ${button('Print / PDF', 'print-quotation', `data-id="${quotation.id}"`, true)}
+        ${button('Delete', 'delete-quotation', `data-id="${quotation.id}"`, true)}
+      </div>`).join('') || '<p class="pos-help">Saved quotations will appear here.</p>'}`)}</section>`;
   }
 
   function renderMore() {
@@ -2844,6 +3063,22 @@ export function createPosApp() {
     renderCurrent();
   }
 
+  // Re-rendering a form to show a changed line item must not throw away what was already typed in it.
+  function renderKeepingForm(formName) {
+    const typed = [...(document.querySelector?.(`form[data-pos-form="${formName}"]`)?.elements || [])]
+      .filter((element) => element.name && element.type !== 'hidden' && element.type !== 'file')
+      .map((element) => [element.name, element.type === 'checkbox' ? element.checked : element.value]);
+    renderCurrent();
+    const form = document.querySelector?.(`form[data-pos-form="${formName}"]`);
+    if (!form) return;
+    for (const [name, value] of typed) {
+      const element = form.elements[name];
+      if (!element || element.type === 'hidden') continue;
+      if (element.type === 'checkbox') element.checked = value;
+      else element.value = value;
+    }
+  }
+
   function renderCurrent() {
     const hash = window.location.hash || '#/pos';
     const path = hash.slice(1).split('?')[0] || '/pos';
@@ -2858,7 +3093,7 @@ export function createPosApp() {
 
   async function loadState() {
     const [products, categories, settings, sales, invoices, instances, expenses, cash, closes, payments,
-      sharedTenant, queuedEvents, queueError] = await Promise.all([
+      sharedTenant, queuedEvents, queueError, quotations] = await Promise.all([
       listProducts(), listCategories(), getSettings(), listSales(), listInvoices(), listInstances(),
       rows('SELECT * FROM pos_expenses ORDER BY expense_date DESC,id DESC'),
       rows('SELECT * FROM pos_cash_movements ORDER BY created_at DESC LIMIT 30'),
@@ -2867,7 +3102,8 @@ export function createPosApp() {
         JOIN pos_sales s ON s.id=p.sale_id WHERE p.status='confirmed'`),
       rows("SELECT value FROM pos_settings WHERE key='shared_tenant_id'"),
       rows("SELECT COUNT(*) AS count FROM pos_inventory_queue WHERE status!='synced'"),
-      rows("SELECT last_error FROM pos_inventory_queue WHERE last_error IS NOT NULL ORDER BY updated_at DESC LIMIT 1")
+      rows("SELECT last_error FROM pos_inventory_queue WHERE last_error IS NOT NULL ORDER BY updated_at DESC LIMIT 1"),
+      listQuotations()
     ]);
     state.products = products;
     state.categories = categories;
@@ -2881,6 +3117,7 @@ export function createPosApp() {
     ]);
     state.cloudSyncError = settings.cloudSyncError;
     state.invoices = invoices;
+    state.quotations = quotations;
     state.instances = instances;
     state.expenses = expenses;
     state.cashMovements = cash;
@@ -3182,12 +3419,18 @@ export function createPosApp() {
         payload.expiryDate || product?.expiryDate || null,
         String(payload.imageUri || '').slice(0, 200_000),
         Number(payload.lowStockThreshold) || 0, payload.active === false ? 0 : 1];
+      // Older payloads carry no service or supplier fields; they must not wipe what this device already knows.
+      const remoteDuration = payload.durationMinutes === undefined
+        ? product?.durationMinutes || null : normalizeServiceDuration(payload.durationMinutes) || null;
+      if (remoteDuration) values[4] = null;
+      const remoteSupplier = payload.supplierId === undefined ? product?.supplierId || null : String(payload.supplierId || '') || null;
+      values.push(remoteDuration, remoteSupplier);
       if (product) {
         await run(`UPDATE pos_products SET name=?,category_id=?,price_cents=?,buying_price_cents=?,stock_count=?,sku=?,barcode=?,expiry_date=?,image_uri=?,
-          low_stock_threshold=?,active=? WHERE id=?`, [...values, product.id]);
+          low_stock_threshold=?,active=?,duration_minutes=?,supplier_id=? WHERE id=?`, [...values, product.id]);
       } else {
         await run(`INSERT INTO pos_products (name,category_id,price_cents,buying_price_cents,stock_count,sku,barcode,expiry_date,image_uri,
-          low_stock_threshold,active,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`, [...values, nowIso()]);
+          low_stock_threshold,active,duration_minutes,supplier_id,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [...values, nowIso()]);
       }
       return;
     }
@@ -4780,6 +5023,9 @@ export function createPosApp() {
           return;
         case 'product': {
           Object.assign(data, readProductTaxonomyFields(form));
+          // Normalise the item type to an explicit flag.
+          data.isService = String(form.elements?.isService?.value) === '1' ? '1' : '0';
+          if (data.isService !== '1') delete data.durationMinutes;
           const requiredField = !String(data.name || '').trim()
             ? form.elements?.name
             : String(data.price ?? '').trim() === '' ? form.elements?.price : null;
@@ -4904,23 +5150,33 @@ export function createPosApp() {
         }
         case 'quotation': {
           const productIds = new Set(new FormData(form).getAll('products').map(Number));
-          const items = state.products.filter((product) => productIds.has(product.id))
-            .map((product) => ({ name: product.name, quantity: 1, unitPrice: product.price }));
-          const customName = String(data.customName || '').trim();
-          const customPrice = String(data.customPrice || '').trim();
-          if (customName || customPrice) {
-            const amount = Number(customPrice);
-            if (!customName || !Number.isFinite(amount) || amount < 0) {
-              throw new Error('Enter both a custom item name and a valid price.');
+          const items = [];
+          for (const product of state.products.filter((entry) => productIds.has(entry.id))) {
+            const quantity = Number(data[`quantity_${product.id}`] ?? 1);
+            if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99999) {
+              throw new Error(`Enter a whole-number quantity for ${product.name}.`);
             }
-            items.push({ name: customName, quantity: 1, unitPrice: amount });
+            items.push({ productId: product.id, name: product.name, quantity, unitPrice: product.price });
+          }
+          for (const key of Object.keys(data).filter((entry) => /^customName\d+$/.test(entry))) {
+            const slot = key.slice('customName'.length);
+            const customName = String(data[key] || '').trim();
+            const customPrice = String(data[`customPrice${slot}`] || '').trim();
+            const customQty = String(data[`customQty${slot}`] || '').trim();
+            if (!customName && !customPrice && !customQty) continue;
+            const amount = Number(customPrice);
+            const quantity = customQty === '' ? 1 : Number(customQty);
+            if (!customName || customPrice === '' || !Number.isFinite(amount) || amount < 0
+              || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99999) {
+              throw new Error('Enter a name, a valid price and a whole-number quantity for each custom item.');
+            }
+            items.push({ productId: 0, name: customName, quantity, unitPrice: amount });
           }
           if (!items.length) throw new Error('Choose a catalogue product or enter a custom item.');
-          const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
-          const customer = escapeHtml(String(data.customerName || '').trim());
-          const lines = items.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${money(item.unitPrice, state.settings.currency)}</td><td>${money(item.unitPrice * item.quantity, state.settings.currency)}</td></tr>`).join('');
-          printDocument(`Quotation · ${customer}`, `<h1>Craft · Quotation</h1><p>Prepared ${new Date().toLocaleDateString()}</p><p>Customer: ${customer}</p><p>${escapeHtml(String(data.customerContact || ''))}</p><table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${lines}</tbody></table><p class=\"total\">Quoted total · ${money(subtotal, state.settings.currency)}</p><p>Quotation only · not a tax invoice or completed sale.</p>`);
-          return;
+          await saveQuotation({ ...data, items });
+          window.location.hash = '#/pos/orders/quotations';
+          toast('Quotation saved.');
+          break;
         }
         case 'instance':
           await startInstance(data);
@@ -5663,6 +5919,12 @@ export function createPosApp() {
         const recordId = target.dataset.recordId || '';
         if (!recordId || !confirm('Delete this supplier? Existing purchase orders will keep their supplier details.')) return;
         await queueCloudRecord('supplier', recordId, { id: recordId }, true);
+        if (state.products.some((item) => item.supplierId === recordId)) {
+          await run('UPDATE pos_products SET supplier_id=NULL WHERE supplier_id=?', [recordId]);
+          for (const product of (await listProducts()).filter((item) => state.products.some((old) => old.id === item.id && old.supplierId === recordId))) {
+            await queueProduct(product);
+          }
+        }
         toast('Supplier deleted.');
         await refresh();
       } else if (action === 'receive-purchase') {
@@ -5834,10 +6096,48 @@ export function createPosApp() {
         const found = state.invoiceItems.find((item) => item.productId === id);
         if (found) found.quantity = Math.min(99999, found.quantity + 1);
         else state.invoiceItems.push({ productId: id, name: product.name, quantity: 1, unitPrice: product.price });
-        renderCurrent();
+        renderKeepingForm('invoice');
       } else if (action === 'invoice-remove') {
         state.invoiceItems.splice(Number(target.dataset.index), 1);
-        renderCurrent();
+        renderKeepingForm('invoice');
+      } else if (action === 'mark-invoice-paid') {
+        const method = target.closest('article')?.querySelector('[data-invoice-pay-method]')?.value || 'Cash';
+        let mpesaRef = '';
+        if (method === 'Mobile money') {
+          const entered = prompt('M-Pesa reference (optional)', '');
+          if (entered === null) return;
+          mpesaRef = entered;
+        }
+        const result = await markInvoicePaid(id, method, { mpesaRef });
+        try {
+          const savedSale = (await listSales()).find((item) => item.id === result.id);
+          if (savedSale) await queueCloudRecord('sale', savedSale.receipt_number, savedSale);
+          const productsAfter = await listProducts();
+          for (const productId of result.productIds) {
+            const product = productsAfter.find((item) => item.id === productId);
+            if (product) await queueProduct(product);
+          }
+          await syncInventorySales();
+        } catch (error) {
+          await refresh();
+          toast(`Invoice ${result.invoiceNumber} paid as receipt ${result.receiptNumber}, but sync failed: ${error instanceof Error ? error.message : 'unknown error'}`, true);
+          return;
+        }
+        toast(`Invoice ${result.invoiceNumber} marked paid · receipt ${result.receiptNumber}.`);
+        await refresh();
+      } else if (action === 'convert-quotation') {
+        const invoiceId = await convertQuotationToInvoice(id);
+        toast('Invoice created from the quotation.');
+        window.location.hash = `#/pos/orders/invoices?edit=${invoiceId}`;
+        await refresh();
+      } else if (action === 'delete-quotation') {
+        if (!confirm('Delete this quotation?')) return;
+        await deleteQuotation(id);
+        toast('Quotation deleted.');
+        await refresh();
+      } else if (action === 'print-quotation') {
+        const quotation = state.quotations.find((item) => item.id === id);
+        if (quotation) printDocument('Quotation', quotationHtml(quotation));
       } else if (action.startsWith('instance-')) {
         const operation = action.replace('instance-', '');
         if (operation === 'stop' && !confirm('Stop and save this business instance?')) return;
@@ -5945,6 +6245,16 @@ export function createPosApp() {
       ${receiptPaymentLine(sale)}`;
   }
 
+  function quotationHtml(quotation) {
+    return `<h1>Craft · Quotation</h1><p>${escapeHtml(quotation.quotation_number)} · Prepared ${new Date(quotation.created_at).toLocaleDateString()}</p>
+      <p>Customer: ${escapeHtml(quotation.customer_name)} ${escapeHtml(quotation.customer_contact)}</p>
+      <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${quotation.items.map((item) =>
+        `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${money(item.unitPrice, quotation.currency)}</td><td>${money(item.quantity * item.unitPrice, quotation.currency)}</td></tr>`).join('')}
+      </tbody></table><p>Subtotal ${money(quotation.subtotal, quotation.currency)} · Tax ${money(quotation.tax, quotation.currency)}</p>
+      <p class="total">Quoted total · ${money(quotation.total, quotation.currency)}</p><p>${escapeHtml(quotation.notes)}</p>
+      <p>Quotation only · not a tax invoice or completed sale.</p>`;
+  }
+
   function invoiceHtml(invoice) {
     return `<h1>Craft · Invoice</h1><p>${escapeHtml(invoice.invoice_number)} · ${new Date(invoice.created_at).toLocaleDateString()}</p>
       <p>Bill to: ${escapeHtml(invoice.customer_name)} ${escapeHtml(invoice.customer_contact)}</p>
@@ -5952,7 +6262,7 @@ export function createPosApp() {
       <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${invoice.items.map((item) =>
         `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${money(item.unitPrice, invoice.currency)}</td><td>${money(item.quantity * item.unitPrice, invoice.currency)}</td></tr>`).join('')}
       </tbody></table><p>Subtotal ${money(invoice.subtotal, invoice.currency)} · Tax ${money(invoice.tax, invoice.currency)}</p>
-      <p class="total">Amount due · ${money(invoice.total, invoice.currency)}</p><p>${escapeHtml(invoice.notes)}</p>`;
+      <p class="total">${invoice.status === 'paid' ? 'Paid' : 'Amount due'} · ${money(invoice.total, invoice.currency)}</p><p>${escapeHtml(invoice.notes)}</p>`;
   }
 
   function handleInput(event) {
@@ -5977,22 +6287,36 @@ export function createPosApp() {
         updateCartPanel();
       }
     }
-    const invoiceQuantity = event.target.closest('[data-invoice-qty]');
+    const serviceToggle = event.target.closest?.('select[name="isService"]');
+    if (serviceToggle) {
+      const productForm = serviceToggle.closest('form');
+      const durationBox = productForm?.querySelector('[data-service-duration]');
+      const stockBox = productForm?.querySelector('[data-product-stock-field]');
+      const asService = serviceToggle.value === '1';
+      if (durationBox) durationBox.hidden = !asService;
+      if (stockBox) stockBox.hidden = asService;
+      if (asService && productForm.elements.stock) productForm.elements.stock.value = '';
+    }
+    const supplierFilterSelect = event.type === 'change' ? event.target.closest?.('[data-pos-supplier-filter]') : null;
+    if (supplierFilterSelect) {
+      window.location.hash = `#/pos/catalogue/products${supplierFilterSelect.value ? `?supplier=${encodeURIComponent(supplierFilterSelect.value)}` : ''}`;
+    }
+    const invoiceQuantity = event.type === 'change' ? event.target.closest('[data-invoice-qty]') : null;
     if (invoiceQuantity) {
       const item = state.invoiceItems[Number(invoiceQuantity.dataset.invoiceQty)];
       const next = Number(invoiceQuantity.value);
       if (item && Number.isSafeInteger(next) && next > 0 && next <= 99999) {
         item.quantity = next;
-        renderCurrent();
+        renderKeepingForm('invoice');
       }
     }
-    const invoicePrice = event.target.closest('[data-invoice-price]');
+    const invoicePrice = event.type === 'change' ? event.target.closest('[data-invoice-price]') : null;
     if (invoicePrice) {
       const item = state.invoiceItems[Number(invoicePrice.dataset.invoicePrice)];
       const next = Number(invoicePrice.value);
       if (item && Number.isFinite(next) && next >= 0) {
         item.unitPrice = next;
-        renderCurrent();
+        renderKeepingForm('invoice');
       }
     }
   }
@@ -6064,7 +6388,8 @@ export function createPosApp() {
 
   return {
     init, render, refresh, recordSharedLocalSale, syncInventory: syncInventorySales,
-    saveSale, reverseSale,
+    saveSale, reverseSale, listInvoices, saveInvoice, markInvoicePaid,
+    listQuotations, saveQuotation, deleteQuotation, convertQuotationToInvoice,
     recordSharedStockUpdate, applyMainStoreAllocations, saveProduct, listProducts, listCategories, listSales, listExpenses, listInstances,
     getCloudSyncStatus, syncCloudNow, switchCloudSyncTenant, replaceWithCloudShop, disconnectCloudSync, stopNearbySync,
     getSettings, addCategory, createCategory, renameCategory, deleteCategory, deleteProduct, listBusinessRecords, findProductByCode, addScannedBarcode

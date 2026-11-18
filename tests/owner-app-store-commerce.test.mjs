@@ -146,7 +146,7 @@ const renderers = new Function(
   `return {${app.slice(renderStart, renderEnd)}
     formatMainShopMoney(amount, currency) { return \`\${currency} \${Number(amount).toFixed(2)}\`; }
   };`
-)({ escapeHTML });
+)({ escapeHTML, formatDateTime: value => (value ? new Date(value).toLocaleDateString('en-GB') : 'Date unavailable') });
 
 const workerOrder = (overrides = {}) => ({
   order_number: "ORD-TESTORDER0001",

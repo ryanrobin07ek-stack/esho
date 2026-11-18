@@ -2599,3 +2599,120 @@ test("Litrus manage page 'Back to the shop' really leaves the page instead of on
     booking.window.close();
   }
 });
+
+// ---------------------------------------------------------------------------
+// Rich media on cards, photo editing, owner pictures, gallery/video sections
+// ---------------------------------------------------------------------------
+test("Litrus listing cards show video, 360 and cutout products without loading their media", () => {
+  const dom = new JSDOM("", { url: "https://shop.example/", runScripts: "outside-only" });
+  const card = '<article data-pid=""><div class="p-img-wrapper"><img></div><h3 class="p-title"></h3><button class="p-btn" data-add="">Add</button></article>';
+  const data = {
+    shop: { key: "k", products: [] },
+    pages: { home: `<main class="sp-main"><section class="prods">${card}</section></main>`, shop: '<main class="sp-main"><section class="prods"></section></main>' },
+    shell: { head: "", foot: "", tail: "" }, templates: { productCard: card }
+  };
+  const frames = Array.from({ length: 36 }, (_, index) => `/f${index}.jpg`);
+  try {
+    dom.window.eval(runtime);
+    dom.window.litrusRefreshPublishedCatalog(data, {
+      categories: [], store: { name: "K", currency: "KES" },
+      products: [
+        { id: 1, name: "Plain", price: 1, images: ["/a.jpg"] },
+        { id: 2, name: "Clip", price: 1, images: ["/b.jpg"], media_type: "video", video_url: "https://cdn.example/c.mp4" },
+        { id: 3, name: "Turn", price: 1, images: ["/c.jpg"], media_type: "spin", spin_frames: frames },
+        { id: 4, name: "Cut", price: 1, images: ["/d.png"], media_type: "cutout" },
+        { id: 5, name: "Broken video", price: 1, images: ["/e.jpg"], media_type: "video", video_url: "" }
+      ]
+    });
+    const page = new dom.window.DOMParser().parseFromString(data.pages.home, "text/html");
+    const byId = id => page.querySelector(`[data-pid="${id}"]`);
+    assert.equal(byId(1).dataset.media, undefined);
+    assert.equal(byId(1).querySelector(".litrus-media-badge"), null);
+    assert.match(byId(2).querySelector(".litrus-media-badge").textContent, /Video/);
+    assert.equal(byId(2).querySelector("video"), null, "no video element is autoplayed or even created in the list");
+    assert.match(byId(3).querySelector(".litrus-media-badge").textContent, /360/);
+    const sampled = JSON.parse(byId(3).dataset.cardSpin);
+    assert.ok(sampled.length >= 2 && sampled.length <= 12, `only ${sampled.length} spin frames are offered per card`);
+    assert.equal(byId(3).querySelectorAll("img").length, 1, "frames are not loaded until hover");
+    assert.ok(byId(4).querySelector("img").classList.contains("litrus-cutout"));
+    assert.equal(byId(5).dataset.media, undefined, "a video product without a video link is a plain card");
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("Litrus card hover previews play one muted video and scrub spin frames, then restore the photo", () => {
+  const dom = new JSDOM('<div id="s"><article data-pid="2" data-media="video" data-video-url="https://cdn.example/c.mp4"><div><img src="/b.jpg"></div></article>' +
+    '<article data-pid="3" data-media="spin" data-card-spin=\'["/f0.jpg","/f1.jpg","/f2.jpg","/f3.jpg"]\'><div><img src="/c.jpg"></div></article></div>', { url: "https://shop.example/", runScripts: "outside-only" });
+  const { window } = dom;
+  try {
+    window.HTMLMediaElement.prototype.play = () => Promise.resolve();
+    window.HTMLMediaElement.prototype.pause = () => {};
+    window.HTMLMediaElement.prototype.load = () => {};
+    window.eval(runtime);
+    window.litrusInitCardPreview(window.document);
+    const over = (element, type, extra = {}) => element.dispatchEvent(new window.MouseEvent(type, { bubbles: true, ...extra }));
+    const videoCard = window.document.querySelector('[data-pid="2"]');
+    over(videoCard.querySelector("img"), "pointerover");
+    const preview = videoCard.querySelector("video");
+    assert.ok(preview && preview.muted && preview.loop, "hovering a video card previews it muted");
+    over(videoCard.querySelector("img"), "pointerout", { relatedTarget: window.document.body });
+    assert.equal(videoCard.querySelector("video"), null, "leaving removes the preview");
+    const spinCard = window.document.querySelector('[data-pid="3"]');
+    const image = spinCard.querySelector("img");
+    image.getBoundingClientRect = () => ({ left: 0, width: 100, top: 0, height: 100 });
+    over(image, "pointerover");
+    over(image, "pointermove", { clientX: 90 });
+    assert.match(image.getAttribute("src"), /f3\.jpg$/);
+    over(image, "pointerout", { relatedTarget: window.document.body });
+    assert.match(image.getAttribute("src"), /c\.jpg$/);
+  } finally {
+    window.close();
+  }
+});
+
+test("Litrus product editor removes and replaces the photo in images[] and clears a cutout", () => {
+  const start = editor.indexOf("function litrusEditedPhotoFields(");
+  const end = editor.indexOf("\ng('wAdd').onclick", start);
+  assert.ok(start >= 0 && end > start);
+  const fields = (previous, original, edited) => plain(runInNewContext(`${editor.slice(start, end)}\nlitrusEditedPhotoFields(${JSON.stringify(previous)},${JSON.stringify(original)},${JSON.stringify(edited)})`));
+  const cut = { images: ["a", "b"], media_type: "cutout" };
+  assert.deepEqual(fields(cut, "a", ""), { img: "b", images: ["b"], media_type: "image" }, "removing the main photo drops it from images[]");
+  assert.deepEqual(fields({ images: ["a"] }, "a", ""), { img: "", images: [], media_type: "image" });
+  assert.deepEqual(fields(cut, "a", "n"), { img: "n", images: ["n", "b"], media_type: "image" }, "replacing swaps the photo and clears the cutout");
+  assert.deepEqual(fields({ images: ["a"], media_type: "video" }, "a", "n"), { img: "n", images: ["n"], media_type: "video" });
+  assert.deepEqual(fields(cut, "a", "a"), { img: "a" }, "an untouched photo leaves images and media_type alone");
+  assert.deepEqual(fields(null, "", "n"), { img: "n", images: ["n"], media_type: "image" });
+});
+
+test("Litrus keeps a full-size product photo for the shop and a small copy for the page", () => {
+  assert.match(editor, /PRODUCT_PHOTO_MAX=1600/);
+  assert.match(editor, /shrinkImage\(file,PRODUCT_PHOTO_MAX,PRODUCT_PHOTO_QUALITY\)/);
+  assert.match(editor, /IMGS\['t'\+id\]=thumb/);
+  assert.match(editor, /imgThumbSrc\(x\.img\)/, "the baked page uses the small copy");
+  assert.match(editor, /image:imgSrc\(product\.img\)/, "the catalogue payload keeps the full photo");
+  assert.match(editor, /used\.add\('t'\+key\)/, "the on-device sweep keeps small copies");
+});
+
+test("Litrus video links become a safe player or are refused", () => {
+  const start = editor.indexOf("function litrusVideoEmbed(");
+  const end = editor.indexOf("\nfunction shopProds(", start);
+  assert.ok(start >= 0 && end > start);
+  const embed = value => plain(runInNewContext(`${editor.slice(start, end)}\nlitrusVideoEmbed(${JSON.stringify(value)})`, { URL }));
+  assert.equal(embed("https://www.youtube.com/watch?v=dQw4w9WgXcQ").src, "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+  assert.equal(embed("https://youtu.be/dQw4w9WgXcQ").src, "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+  assert.equal(embed("https://vimeo.com/123456789").src, "https://player.vimeo.com/video/123456789");
+  assert.deepEqual(embed("https://cdn.example/clip.mp4"), { kind: "file", src: "https://cdn.example/clip.mp4", label: "Video" });
+  for (const bad of ["javascript:alert(1)", "http://cdn.example/clip.mp4", "https://evil.example/page", "", "data:video/mp4;base64,AAAA"]) {
+    assert.equal(embed(bad), null, bad);
+  }
+});
+
+test("Litrus offers owner uploads for banner and card pictures and gallery and video sections", () => {
+  assert.match(editor, /id="wOwnPhotoFile"/);
+  assert.match(editor, /\['hero-1','Top banner \(hero\) picture'/);
+  assert.match(editor, /imgSrc\(SHOP\.userImages\[slot\]\)/, "uploaded pictures resolve when the page is drawn");
+  assert.match(editor, /\['gallery','Photo gallery'\],\['video','Video'\]/);
+  assert.match(editor, /content-gallery|'sole-content-block sec content-'\+block\.type/);
+  assert.match(editor, /OWN_PHOTO_BUDGET=1500000/, "owner pictures are capped so the page stays under the host limit");
+});
