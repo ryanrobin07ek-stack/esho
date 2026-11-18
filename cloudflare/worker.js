@@ -780,7 +780,7 @@ function cleanCatalog(input) {
   };
   const store = {
     name: cleanText(storeInput.name, 200),
-    offer_type: ["products", "services"].includes(storeInput.offer_type) ? storeInput.offer_type : "products",
+    offer_type: ["products", "services", "both"].includes(storeInput.offer_type) ? storeInput.offer_type : "products",
     title: cleanText(storeInput.title, 240),
     tagline: cleanText(storeInput.tagline, 500),
     description: cleanText(storeInput.description),
@@ -853,10 +853,21 @@ function cleanCatalog(input) {
     element_edits: elementEdits,
     section_layout: sectionLayout
   };
+  // A shop sells services when it says so, or when its catalogue contains one. Being a service is a
+  // property of the PRODUCT (it has a duration), so a salon can sell haircuts and shampoo side by side.
+  // Mirrors src/service-model.js, which the app, the builder and the storefront share.
+  const isServiceProduct = product => Number(product?.duration_minutes) > 0;
+  // An invalid duration is cleaned away to null above, so intent is read from what the owner sent:
+  // a product that declared any duration is meant to be a service, and is still rejected when the
+  // duration is not 15-240 in 15-minute steps rather than silently becoming an ordinary good.
+  const declaresService = product => product?.duration_minutes !== undefined &&
+    product?.duration_minutes !== null && product?.duration_minutes !== "";
+  const offersServices = ["services", "both"].includes(store.offer_type) ||
+    activeProducts.some(declaresService);
   if (store.service_close_time <= store.service_open_time) {
     throw new TypeError("Service closing time must be later than opening time.");
   }
-  if (store.offer_type === "services" && store.service_days.length === 0) {
+  if (offersServices && store.service_days.length === 0) {
     throw new TypeError("Select at least one open day for service appointments.");
   }
   try {
@@ -864,12 +875,12 @@ function cleanCatalog(input) {
   } catch {
     throw new TypeError("Service timezone must be a valid IANA timezone.");
   }
-  if (store.offer_type === "services" &&
-      products.some(product => !Number.isSafeInteger(product.duration_minutes))) {
+  if (products.some((product, index) => declaresService(activeProducts[index]) &&
+      !Number.isSafeInteger(product.duration_minutes))) {
     throw new TypeError("Every service needs a duration between 15 and 240 minutes in 15-minute increments.");
   }
-  if (store.offer_type === "services" && store.service_deposit_percent > 0 &&
-      (store.currency !== "KES" || products.some(product => product.price <= 0))) {
+  if (offersServices && store.service_deposit_percent > 0 &&
+      (store.currency !== "KES" || products.filter(isServiceProduct).some(product => product.price <= 0))) {
     throw new TypeError("Service deposits require positive KES prices for every service.");
   }
 
@@ -4184,7 +4195,7 @@ async function serviceCatalogProduct(env, tenantId, serviceId) {
   } catch {
     throw new Error("The published shop catalogue is invalid.");
   }
-  if (catalog?.store?.offer_type !== "services") {
+  if (!["services", "both"].includes(catalog?.store?.offer_type)) {
     return { error: appointmentError("This shop is not accepting service appointments.", 409, "service_unavailable") };
   }
   const product = (catalog.products || []).find(item => String(item.id) === String(serviceId));

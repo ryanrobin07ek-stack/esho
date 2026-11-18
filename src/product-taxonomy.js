@@ -62,6 +62,8 @@ export function createProductTaxonomyFields({
   customCategory = '',
   attributes = [],
   storeCategories = [],
+  // '' means the host form already has its own category select: the picker then renders one that is
+  // never submitted, so two selects can no longer collide under the same name and block every save.
   storeCategoryFieldName = 'categoryId',
   storeCategoryValue = ''
 } = {}) {
@@ -74,7 +76,8 @@ export function createProductTaxonomyFields({
     data-initial-custom-category="${escapeHtml(customCategory)}"
     data-initial-attributes="${escapeHtml(JSON.stringify(attributes))}">
     <div class="product-category-pill">
-      <label><select aria-label="Category" name="${escapeHtml(storeCategoryFieldName)}" data-store-category-select>
+      <label ${storeCategoryFieldName ? '' : 'hidden'}><select aria-label="Category" ${storeCategoryFieldName
+        ? `name="${escapeHtml(storeCategoryFieldName)}"` : ''} data-store-category-select>
         <option value="">Choose a category</option>${categoryOptions}
       </select></label>
       <button type="button" data-taxonomy-add-open>Add</button>

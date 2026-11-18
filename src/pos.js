@@ -1,4 +1,5 @@
 import { registerPlugin } from '@capacitor/core';
+import { isReversedSale } from './revenue-definition.js';
 import {
   bindProductTaxonomyFields,
   createProductTaxonomyFields,
@@ -864,6 +865,46 @@ async function saveSale(items, { paymentMethod, paid, customerName, customerPhon
   return { id: saved.id, receiptNumber: receipt, total: fromCents(totalCents), currency: settings.currency };
 }
 
+const REVERSAL_LABELS = {
+  refunded: 'Refunded', voided: 'Voided', cancelled: 'Cancelled', canceled: 'Cancelled', failed: 'Failed'
+};
+
+/** The word shown on a reversed sale, so the list never calls a refunded sale "Unpaid". */
+function reversalLabel(sale) {
+  return REVERSAL_LABELS[String(sale?.payment_status || '').toLowerCase()] || 'Reversed';
+}
+
+/**
+ * Takes back a recorded sale. 'refunded' is money returned to the customer; 'voided' is a sale that
+ * should never have been rung up. Both restore stock for tracked products (a service or any product
+ * with no stock number is left alone) and drop the sale out of every report, because
+ * isReversedSale() in revenue-definition.js reads payment_status.
+ *
+ * Shared stock is deliberately not adjusted here: the shop-wide mirror is corrected by its own sync,
+ * and a silent reverse-queue entry would be harder to explain than a visible difference.
+ */
+async function reverseSale(saleId, mode = 'refunded') {
+  const id = Number(saleId);
+  const status = mode === 'voided' ? 'voided' : 'refunded';
+  const sale = (await rows('SELECT id,payment_status FROM pos_sales WHERE id=?', [id]))[0];
+  if (!sale) throw new Error('That sale no longer exists.');
+  if (isReversedSale(sale)) throw new Error('That sale has already been reversed.');
+  const items = await rows('SELECT product_id,quantity FROM pos_sale_items WHERE sale_id=?', [id]);
+  const restock = new Map();
+  for (const item of items) {
+    if (item.product_id === null || item.product_id === undefined) continue;
+    const productId = Number(item.product_id);
+    restock.set(productId, (restock.get(productId) || 0) + Number(item.quantity));
+  }
+  await transaction([
+    stmt('UPDATE pos_sales SET payment_status=?,paid=0,amount_paid_cents=0 WHERE id=?', [status, id]),
+    ...[...restock].map(([productId, quantity]) =>
+      stmt('UPDATE pos_products SET stock_count=stock_count+? WHERE id=? AND stock_count IS NOT NULL',
+        [quantity, productId]))
+  ]);
+  return { status, restocked: restock.size };
+}
+
 async function recordSharedLocalSale(tenantId, eventId, items, updateMirrors = true) {
   const id = String(eventId || '').trim();
   if (!tenantId || !/^[a-zA-Z0-9_-]{1,120}$/.test(id) || !Array.isArray(items) || !items.length) {
@@ -1572,7 +1613,9 @@ export function createPosApp() {
       ${createProductTaxonomyFields({
         categoryId: item?.taxonomyCategoryId,
         customCategory: item?.taxonomyCustomCategory,
-        attributes: item?.taxonomyAttributes
+        attributes: item?.taxonomyAttributes,
+        // The POS form owns the "categoryId" field above; the picker must not submit a second one.
+        storeCategoryFieldName: ''
       })}
       ${field('Selling price', 'price', item?.price ?? '', { type: 'number', min: '0', step: '0.01', required: true })}
       ${field('Expiry date · optional', 'expiryDate', item?.expiryDate || '', { type: 'date' })}
@@ -1731,7 +1774,7 @@ export function createPosApp() {
       ${sales.map((sale) => `<article class="pos-card pos-record">
         <button type="button" class="pos-record-head" data-pos-action="toggle-sale" data-id="${sale.id}">
           <span><strong>${escapeHtml(sale.receipt_number)}</strong><small>${escapeHtml(sale.items.map((item) => item.name).slice(0, 2).join(', '))} · ${new Date(sale.created_at).toLocaleString()}</small></span>
-          <span><b>${money(sale.total, sale.currency)}</b>${statusTag(sale.paid ? 'Paid' : sale.payment_status === 'partial' ? 'Part-paid' : 'Unpaid', sale.paid ? 'is-good' : 'is-warning')}</span>
+          <span><b>${money(sale.total, sale.currency)}</b>${statusTag(isReversedSale(sale) ? reversalLabel(sale) : sale.paid ? 'Paid' : sale.payment_status === 'partial' ? 'Part-paid' : 'Unpaid', sale.paid ? 'is-good' : 'is-warning')}</span>
         </button>
         ${openId === sale.id ? `<div class="pos-record-details">
           <div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Item</th><th>Qty</th><th>Each</th><th>Total</th></tr></thead><tbody>
@@ -1740,7 +1783,8 @@ export function createPosApp() {
           <div class="pos-total-line"><span>Subtotal / discount / tax</span><b>${money(sale.subtotal, sale.currency)} / ${money(sale.discount, sale.currency)} / ${money(sale.tax, sale.currency)}</b></div>
           <div class="pos-total-line is-total"><span>Balance due</span><b>${money(Math.max(0, sale.total - sale.amountPaid), sale.currency)}</b></div>
           <p class="pos-help">Customer: ${escapeHtml(sale.customer_name || 'Not recorded')} · Method: ${escapeHtml(sale.payment_method || 'Not recorded')}</p>
-          ${!sale.paid ? `<form class="pos-inline-form" data-pos-form="payment">
+          ${isReversedSale(sale) ? `<p class="pos-help"><strong>${escapeHtml(reversalLabel(sale))}</strong> · stock was returned and this sale is left out of reports.</p>` : `<div class="pos-inline-actions"><button type="button" class="btn-secondary" data-pos-action="refund-sale" data-id="${sale.id}">Refund</button><button type="button" class="btn-secondary" data-pos-action="void-sale" data-id="${sale.id}">Void</button></div>`}
+          ${!sale.paid && !isReversedSale(sale) ? `<form class="pos-inline-form" data-pos-form="payment">
             <input type="hidden" name="saleId" value="${sale.id}">
             ${field('Amount', 'amount', (sale.total - sale.amountPaid).toFixed(2), { type: 'number', min: '0.01', step: '0.01', required: true })}
             ${select('Method', 'method', PAYMENT_METHODS.map((method) => [method, method]), sale.payment_method || 'Cash')}
@@ -1984,7 +2028,8 @@ export function createPosApp() {
       ? `${previousStart.getFullYear()}-${String(previousStart.getMonth() + 1).padStart(2, '0')}-${String(previousStart.getDate()).padStart(2, '0')}`
       : '';
     const inRange = (date) => !fromDate || localDateKey(date) >= fromDate;
-    const selectedSales = sales.filter((sale) => sale.currency === settings.currency && inRange(sale.created_at));
+    const selectedSales = sales.filter((sale) => sale.currency === settings.currency
+      && inRange(sale.created_at) && !isReversedSale(sale));
     const paidSales = selectedSales.filter((sale) => sale.paid);
     const recordedSales = selectedSales;
     const recordedSalesTotal = selectedSales.reduce((sum, sale) => sum + sale.total, 0);
@@ -2060,7 +2105,7 @@ export function createPosApp() {
     const categoryRows = [...categories.values()].sort((a, b) => b.revenue - a.revenue);
     const totalCategoryRevenue = categoryRows.reduce((sum, category) => sum + category.revenue, 0);
     const frequentPairs = [...basketPairs.values()].sort((a, b) => b.count - a.count).slice(0, 5);
-    const previousSales = periodDays ? sales.filter((sale) => sale.currency === settings.currency
+    const previousSales = periodDays ? sales.filter((sale) => sale.currency === settings.currency && !isReversedSale(sale)
       && localDateKey(sale.created_at) >= previousStartKey && localDateKey(sale.created_at) < fromDate) : [];
     const previousCategoryRevenue = new Map();
     previousSales.forEach((sale) => sale.items.forEach((item) => {
@@ -5469,6 +5514,17 @@ export function createPosApp() {
           return { captured: true };
         }, { allowProductLabel: true, productForm: form });
         return;
+      } else if (action === 'refund-sale' || action === 'void-sale') {
+        const voiding = action === 'void-sale';
+        if (!window.confirm(voiding
+          ? 'Void this sale? It leaves your reports and any tracked stock goes back.'
+          : 'Refund this sale? It leaves your reports and any tracked stock goes back.')) return;
+        const result = await reverseSale(id, voiding ? 'voided' : 'refunded');
+        await refresh();
+        toast(result.restocked
+          ? `Sale ${voiding ? 'voided' : 'refunded'} · stock returned for ${result.restocked} product${result.restocked === 1 ? '' : 's'}.`
+          : `Sale ${voiding ? 'voided' : 'refunded'}.`);
+        return;
       } else if (action === 'refresh-overview') {
         await refresh();
         toast('Overview refreshed from saved POS records.');
@@ -5864,13 +5920,29 @@ export function createPosApp() {
     popup.document.close();
   }
 
+  // The customer's copy must always show what the sale came to, how it was paid, and what is still
+  // owed. It used to print "Paid · 0.00" on a settled sale, because it showed the balance under a
+  // "Paid" label and never showed the total or the method at all.
+  function receiptPaymentLine(sale) {
+    const paidSoFar = Number(sale.amountPaid) || 0;
+    const balance = Math.max(0, Number(sale.total || 0) - paidSoFar);
+    const rawMethod = sale.payment_method && sale.payment_method !== 'Unknown' ? sale.payment_method : '';
+    const method = rawMethod ? ` · ${escapeHtml(rawMethod)}` : '';
+    if (sale.paid) return `<p>Paid in full${method}</p>`;
+    if (paidSoFar > 0) {
+      return `<p>Paid ${money(paidSoFar, sale.currency)}${method} · Balance due ${money(balance, sale.currency)}</p>`;
+    }
+    return `<p>Unpaid · Balance due ${money(balance, sale.currency)}${method}</p>`;
+  }
+
   function receiptHtml(sale) {
     return `<h1>Craft · Receipt</h1><p>${escapeHtml(sale.receipt_number)} · ${new Date(sale.created_at).toLocaleString()}</p>
       <p>${escapeHtml(sale.customer_name || '')} ${escapeHtml(sale.customer_phone || '')}</p>
       <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${sale.items.map((item) =>
         `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
       </tbody></table><p>Subtotal ${money(sale.subtotal, sale.currency)} · Discount ${money(sale.discount, sale.currency)} · Tax ${money(sale.tax, sale.currency)}</p>
-      <p class="total">${sale.paid ? 'Paid' : 'Balance'} · ${money(sale.total - sale.amountPaid, sale.currency)}</p>`;
+      <p class="total">Total · ${money(sale.total, sale.currency)}</p>
+      ${receiptPaymentLine(sale)}`;
   }
 
   function invoiceHtml(invoice) {
@@ -5992,6 +6064,7 @@ export function createPosApp() {
 
   return {
     init, render, refresh, recordSharedLocalSale, syncInventory: syncInventorySales,
+    saveSale, reverseSale,
     recordSharedStockUpdate, applyMainStoreAllocations, saveProduct, listProducts, listCategories, listSales, listExpenses, listInstances,
     getCloudSyncStatus, syncCloudNow, switchCloudSyncTenant, replaceWithCloudShop, disconnectCloudSync, stopNearbySync,
     getSettings, addCategory, createCategory, renameCategory, deleteCategory, deleteProduct, listBusinessRecords, findProductByCode, addScannedBarcode
