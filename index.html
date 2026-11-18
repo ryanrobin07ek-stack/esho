@@ -13144,7 +13144,11 @@ const StudioRenderers = {
     const productsBySku = new Map();
     const products = [];
     const addProduct = product => {
-      const sku = String(product.sku || "").trim();
+      // The SKU lives on the record, not on the {source, record, categoryName} wrapper. Reading it
+      // from the wrapper made every SKU empty, so a product sold in both places never matched itself:
+      // it listed twice, edits reached only one side, and Split shop showed "SKU required" on
+      // every row with its checkbox disabled.
+      const sku = String(product.record?.sku ?? product.sku ?? "").trim();
       const match = sku ? productsBySku.get(sku) : null;
       if (match) {
         match.sources.add(product.source);
