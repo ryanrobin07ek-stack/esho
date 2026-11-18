@@ -216,7 +216,10 @@ test('workspace screen navigation uses side drawers and loading placeholders use
     "Offline Main Store sales come directly from the local POS database.");
   const mainShopLoader = pageSource.match(/async loadMainShopWorkspace\(path\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  [a-zA-Z]/)?.[1];
   assert.match(mainShopLoader || "", /combinedSalesPaths[\s\S]*?listStorefrontOrders[\s\S]*?mergeStorefrontOrders/);
-  assert.match(pageSource, /Business orders and POS receipts[\s\S]*?businessOrderRows/);
+  // Counter sales, website orders and bookings are one list the owner can filter, instead of
+  // separate panels in separate shells that disagreed about the same day.
+  assert.match(pageSource, /renderUnifiedOrderList\(snapshot, sales, currency\)/);
+  assert.match(pageSource, /\["all", "All"\], \["counter", "Counter"\], \["website", "Website"\], \["booking", "Bookings"\]/);
   assert.match(pageSource, /Payment activity · all channels[\s\S]*?paymentActivityRows/);
   assert.match(pageSource, /const \[suppliers, purchaseOrders, tickets\] = await Promise\.all\([\s\S]*?listBusinessRecords\("supplier", tenantId\)[\s\S]*?listBusinessRecords\("purchase", tenantId\)[\s\S]*?listBusinessRecords\("ticket", tenantId\)/);
   assert.match(pageSource, /home-dashboard-skeleton[\s\S]*?home-data-card[\s\S]*?home-data-label home-skeleton-line[\s\S]*?home-data-value home-skeleton-line[\s\S]*?home-data-note home-skeleton-line[\s\S]*?home-attention-row[\s\S]*?home-recent-row/);

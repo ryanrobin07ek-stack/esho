@@ -3232,6 +3232,36 @@ body.craft-app-ui #app .website-wizard-go-builder:hover {
   text-decoration: none;
 }
 
+.store-order-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.store-order-filter {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--app-silver, #c7ccd2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .7);
+  font-size: .78rem;
+  font-weight: 600;
+  color: inherit;
+}
+
+.store-order-filter.is-active {
+  background: #171717;
+  border-color: #171717;
+  color: #fff;
+}
+
+[data-orders-panel][data-orders-filter-value="counter"] .store-order-entry:not([data-order-channel="counter"]),
+[data-orders-panel][data-orders-filter-value="website"] .store-order-entry:not([data-order-channel="website"]),
+[data-orders-panel][data-orders-filter-value="booking"] .store-order-entry:not([data-order-channel="booking"]) {
+  display: none;
+}
+
 .store-workspace-empty {
   padding: 24px 12px;
   border: 1px solid var(--border);
@@ -14536,6 +14566,54 @@ const StudioRenderers = {
     }
   },
 
+  // One Orders screen for the whole shop. The counter, the website and the booking diary used to be
+  // three separate lists in two different shells that disagreed about the same day's takings. The
+  // till keeps its own fast screens; this is where the owner sees everything together.
+  renderUnifiedOrderList(snapshot, sales, currency) {
+    const escape = AppUtils.escapeHTML;
+    const time = value => {
+      const parsed = Date.parse(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+    const entries = [];
+    for (const sale of sales || []) {
+      const counter = !/web/i.test(String(sale.channel || ""));
+      entries.push({
+        at: time(sale.date),
+        channel: counter ? "counter" : "website",
+        html: `<article class="studio-list-row studio-order-card"><div><strong>${escape(sale.reference)}</strong><span>${escape(sale.customerName || "Customer not recorded")} · ${escape(AppUtils.formatDateTime(sale.date))}</span><small>${escape(counter ? "Counter" : "Website")} · ${sale.itemCount} item${sale.itemCount === 1 ? "" : "s"}</small></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.total, currency)}</strong><span>${escape(sale.status || "recorded")}</span></div></article>`
+      });
+    }
+    for (const order of snapshot.remoteOrders || []) {
+      entries.push({ at: time(order.created_at), channel: "website", html: this.renderRemoteOrderRow(order, currency) });
+    }
+    for (const appointment of snapshot.remoteAppointments || []) {
+      entries.push({
+        at: time(appointment.starts_at || appointment.created_at),
+        channel: "booking",
+        html: this.renderServiceAppointmentRow(appointment)
+      });
+    }
+    entries.sort((first, second) => second.at - first.at);
+    const counts = {
+      all: entries.length,
+      counter: entries.filter(entry => entry.channel === "counter").length,
+      website: entries.filter(entry => entry.channel === "website").length,
+      booking: entries.filter(entry => entry.channel === "booking").length
+    };
+    const filters = [["all", "All"], ["counter", "Counter"], ["website", "Website"], ["booking", "Bookings"]];
+    const rows = entries.map(entry =>
+      `<div class="store-order-entry" data-order-channel="${entry.channel}">${entry.html}</div>`).join("")
+      || `<p class="store-workspace-empty">Nothing recorded yet. Counter sales, website orders and bookings all appear here.</p>`;
+    return `<article class="studio-panel" data-orders-panel data-orders-filter-value="all">
+      <div class="studio-panel-heading"><h2>Orders</h2><span>${counts.all} recorded</span></div>
+      <div class="store-order-filters" role="group" aria-label="Filter orders by where they came from">
+        ${filters.map(([key, label]) => `<button type="button" class="store-order-filter${key === "all" ? " is-active" : ""}" data-orders-filter="${key}" aria-pressed="${key === "all"}">${label} · ${counts[key]}</button>`).join("")}
+      </div>
+      ${rows}
+    </article>`;
+  },
+
   renderServiceAppointmentRow(appointment, nowMs = Date.now()) {
     const escape = AppUtils.escapeHTML;
     const id = escape(appointment.id);
@@ -15126,10 +15204,10 @@ const StudioRenderers = {
       const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
       const view = path === "/store/sales" ? "sales" : path === "/store/payments" ? "payments" : "orders";
       return `<section class="studio-workspace-section">
-        ${view === "orders" ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Business orders and POS receipts</h2><span>${sales.length} recorded</span></div>${businessOrderRows}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Online order management</h2><button type="button" class="btn-secondary studio-load-button" data-business-online-orders-load aria-label="Load online orders">Load</button></div>
-            <p class="studio-panel-note" data-online-orders-status>${snapshot.remoteOrdersError ? AppUtils.escapeHTML(snapshot.remoteOrdersError) : "Orders and payment status are stored privately for this shop."}</p>
-            ${this.renderOrderAttentionSummary(snapshot.remoteOrders)}${remoteOrderRows}</article>
+        ${view === "orders" ? `${this.renderUnifiedOrderList(snapshot, sales, currency)}
+          <article class="studio-panel"><div class="studio-panel-heading"><h2>Website orders and bookings</h2><button type="button" class="btn-secondary studio-load-button" data-business-online-orders-load aria-label="Load online orders">Load</button></div>
+            <p class="studio-panel-note" data-online-orders-status>${snapshot.remoteOrdersError ? AppUtils.escapeHTML(snapshot.remoteOrdersError) : "Load the latest website orders and bookings into the list above. They are stored privately for this shop."}</p>
+            ${this.renderOrderAttentionSummary(snapshot.remoteOrders)}</article>
           ${this.renderOwnerAlertsPanel(snapshot)}
           ${this.renderDiscountPanel(snapshot)}`
           : view === "sales" ? `<div class="studio-metric-grid">${metric("Order value", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency))}${metric("Paid orders", paidSales.length)}${metric("Unpaid orders", orders.filter(order => !["paid", "completed"].includes(String(order.status || "").toLowerCase())).length)}</div><article class="studio-panel"><div class="studio-panel-heading"><h2>Sales history</h2></div>${orderRows(orders)}</article>`
@@ -15706,6 +15784,19 @@ const StudioRenderers = {
         if (status) status.textContent = error instanceof Error ? error.message : "Could not load synced registers.";
         button.disabled = false;
       }
+    });
+    // Counter, website and booking rows live in one list; these just narrow it down.
+    container.querySelectorAll("[data-orders-filter]").forEach(button => {
+      button.addEventListener("click", () => {
+        const panel = button.closest("[data-orders-panel]");
+        if (!panel) return;
+        panel.dataset.ordersFilterValue = button.dataset.ordersFilter || "all";
+        panel.querySelectorAll("[data-orders-filter]").forEach(other => {
+          const active = other === button;
+          other.classList.toggle("is-active", active);
+          other.setAttribute("aria-pressed", String(active));
+        });
+      });
     });
     container.querySelector("[data-business-online-orders-load]")?.addEventListener("click", async event => {
       const button = event.currentTarget;
