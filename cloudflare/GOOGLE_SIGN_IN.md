@@ -21,7 +21,7 @@ Google sign-in is only for creating or accessing a Craft app account. It is sepa
    npx wrangler secret put GOOGLE_OAUTH_CLIENT_SECRET --config cloudflare/wrangler.jsonc
    ```
 
-7. Apply the account-identity migration and deploy:
+7. Apply the account-identity migration (`0017`; all migrations `0001` to `0030` must be applied in order, and `0025` to `0030` are not yet on production) and deploy. These are manual, owner-run steps:
 
    ```powershell
    npx wrangler d1 migrations apply eshop-catalog --remote --config cloudflare/wrangler.jsonc

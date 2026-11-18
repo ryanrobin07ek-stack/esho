@@ -15,14 +15,14 @@ const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, character =>
 // Archived products survive the Litrus builder's autosave
 // ---------------------------------------------------------------------------------------------
 
-const saveMethod = app.match(/async saveLitrusMixerCatalog\(input, isDraftEditor\) \{([\s\S]*?)\n  \},\n\n  openCloudflarePublishModal/)?.[1];
+const saveMethod = app.match(/async saveLitrusMixerCatalog\(input, isDraftEditor, expectedTenantId\) \{([\s\S]*?)\n  \},\n\n  openCloudflarePublishModal/)?.[1];
 
 function litrusSaveHarness({ live, cached }) {
   assert.ok(saveMethod, "saveLitrusMixerCatalog should be extractable.");
   const tenant = { id: "shop", name: "Test shop" };
   const tables = { products: live.products, inventory: live.inventory };
   const SQLiteEngine = { select: name => JSON.parse(JSON.stringify(tables[name] || [])) };
-  const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor) {${saveMethod}\n};`)(
+  const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor, expectedTenantId) {${saveMethod}\n};`)(
     SQLiteEngine,
     { ShopSQLite: { async flush() {} } }
   );
@@ -34,7 +34,8 @@ function litrusSaveHarness({ live, cached }) {
     setActiveTenantCatalog(_tenant, catalog) { saved = catalog; }
   };
   return {
-    run: input => save.call(controller, input, false).then(() => saved)
+    run: (input, expectedTenantId) => save.call(controller, input, false, expectedTenantId).then(() => saved),
+    wasSaved: () => saved !== null
   };
 }
 
@@ -78,6 +79,18 @@ test("Litrus autosave keeps archived products and their stock instead of deletin
   assert.equal(saved.products.length, 2);
   assert.deepEqual(saved.inventory.map(record => record.product_id).sort(), [1, 2],
     "Inventory of archived products is kept; inventory of deleted products is dropped.");
+});
+
+test("A Litrus save queued for one shop is refused once another shop is active", async () => {
+  const live = { products: [{ id: 1, name: "Shoe", price: 10, stock: 3, status: "active" }], inventory: [] };
+  const harness = litrusSaveHarness({ live, cached: { products: [], inventory: [] } });
+  await assert.rejects(
+    harness.run(builderCatalog([{ id: 1, name: "Shoe", price: 10, category_names: ["Shoes"] }]), "other-shop"),
+    /active shop changed/
+  );
+  assert.equal(harness.wasSaved(), false, "Nothing was written to the active shop.");
+  const saved = await harness.run(builderCatalog([{ id: 1, name: "Shoe", price: 10, category_names: ["Shoes"] }]), "shop");
+  assert.equal(saved.products.length, 1, "The shop the editor opened for is saved normally.");
 });
 
 test("A builder echo of an archived product does not duplicate or revive it", async () => {

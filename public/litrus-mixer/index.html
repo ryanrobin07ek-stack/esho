@@ -2794,7 +2794,8 @@ html #store .sole-store .sole-product-grid.sole-product-grid.shop-settings-grid:
 <fieldset id="wServiceSettings" hidden><legend>Appointment schedule &amp; deposits</legend>
  <p class="hint">Set the hours customers can request. Pending appointments reserve the chosen time while you review them.</p>
  <div class="service-days"><span>Open days</span><label><input type="checkbox" data-service-day="1" checked> Mon</label><label><input type="checkbox" data-service-day="2" checked> Tue</label><label><input type="checkbox" data-service-day="3" checked> Wed</label><label><input type="checkbox" data-service-day="4" checked> Thu</label><label><input type="checkbox" data-service-day="5" checked> Fri</label><label><input type="checkbox" data-service-day="6" checked> Sat</label><label><input type="checkbox" data-service-day="0"> Sun</label></div>
- <div class="service-settings-grid"><label>Opening time<input id="wServiceOpen" type="time" value="09:00" required></label><label>Closing time<input id="wServiceClose" type="time" value="17:00" required></label><label>Timezone<input id="wServiceTimezone" value="Africa/Nairobi" placeholder="Africa/Nairobi" required></label><label>Buffer between appointments<select id="wServiceBuffer"><option value="0">No buffer</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label><label>Deposit after approval (%)<input id="wServiceDeposit" type="number" min="0" max="100" step="1" value="0"></label></div>
+ <div class="service-settings-grid"><label>Opening time<input id="wServiceOpen" type="time" value="09:00" required></label><label>Closing time<input id="wServiceClose" type="time" value="17:00" required></label><label>Timezone<input id="wServiceTimezone" value="Africa/Nairobi" placeholder="Africa/Nairobi" required></label><label>Buffer between appointments<select id="wServiceBuffer"><option value="0">No buffer</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label><label>Deposit after approval (%)<input id="wServiceDeposit" type="number" min="0" max="100" step="1" value="0"></label><label>Bookings at the same time<input id="wServiceCapacity" type="number" min="1" max="20" step="1" value="1"></label><label>Cancel or move until (hours before)<input id="wServiceCutoff" type="number" min="0" max="168" step="1" value="2"></label><label>Times a customer can move a booking<input id="wServiceReschedules" type="number" min="0" max="10" step="1" value="2"></label></div>
+ <p class="hint">Bookings at the same time is how many customers you can serve at once, for example the number of staff. Customers cancel or move their own bookings with a private link; inside the cutoff they must contact you. You can always cancel or move a booking in Craft.</p>
  <p class="hint">A deposit is optional. Deposits require KES prices, a connected Paystack account in Craft, and the customer’s email.</p>
  <p id="wServiceError" class="hint" role="alert" hidden></p>
 </fieldset>
@@ -4386,7 +4387,7 @@ function layout(sec,nodes){
 cards.forEach((c,i)=>ps.add(new Option(pretty(c.id),i)));
 [['tiles','Tiles'],['circles','Circles'],['list','Text list']].forEach(([v,t])=>cs.add(new Option(t,v)));
 [['cols','Columns'],['big','Giant name'],['mini','Slim bar'],['news','Newsletter'],['stack','Centered stack'],['split','Split'],['band','Colour band']].forEach(([v,t])=>fs.add(new Option(t,v)));
-const SHOP={custom:false,name:'Kiko & Co',what:'shoes and bags',tagline:'Made for everyday',cur:'KES',nav:['Shoes','Bags','New','Sale'],cats:['Sneakers','Sandals','Boots','Totes','Backpacks','Wallets'],products:null,headline:'',sub:'',cta:'',email:'',phone:'',wa:'',about:'',addr:'',fee:'',free:'',bgfx:'',cc:null,settingsColors:null,bodyFont:'',productsPerRow:4,categoriesPosition:'after-hero',homeSections:{categories:true,products:true,promo:true,reviews:true},offerType:'',type:'',promo:'',serviceDays:[1,2,3,4,5,6],serviceOpenTime:'09:00',serviceCloseTime:'17:00',serviceTimezone:'Africa/Nairobi',serviceBufferMinutes:0,serviceDepositPercent:0,contentBlocks:[],faqs:[],promoStyle:'split',storyStyle:'collage',faqStyle:'minimal',reviewLines:[],testimonials:[],autoImages:{},userImages:{},photoCredits:[]};
+const SHOP={custom:false,name:'Kiko & Co',what:'shoes and bags',tagline:'Made for everyday',cur:'KES',nav:['Shoes','Bags','New','Sale'],cats:['Sneakers','Sandals','Boots','Totes','Backpacks','Wallets'],products:null,headline:'',sub:'',cta:'',email:'',phone:'',wa:'',about:'',addr:'',fee:'',free:'',bgfx:'',cc:null,settingsColors:null,bodyFont:'',productsPerRow:4,categoriesPosition:'after-hero',homeSections:{categories:true,products:true,promo:true,reviews:true},offerType:'',type:'',promo:'',serviceDays:[1,2,3,4,5,6],serviceOpenTime:'09:00',serviceCloseTime:'17:00',serviceTimezone:'Africa/Nairobi',serviceBufferMinutes:0,serviceDepositPercent:0,serviceCapacity:1,serviceCancelCutoffHours:2,serviceMaxReschedules:2,contentBlocks:[],faqs:[],promoStyle:'split',storyStyle:'collage',faqStyle:'minimal',reviewLines:[],testimonials:[],autoImages:{},userImages:{},photoCredits:[]};
 const TONES=['#e9d8c4','#cfe0d6','#d6d9ee','#eecfd3','#e8e0c8','#d0e0e8'];
 function shopCopy(){const w=SHOP.what||'great products';return [SHOP.headline||SHOP.tagline||('Welcome to '+SHOP.name),SHOP.sub||('Discover our '+w+', picked with care and ready to ship.'),SHOP.cta||'Shop now']}
 /* ===== IndexedDB: uploaded photos + autosaved shop ===== */
@@ -6757,6 +6758,7 @@ function read(){
  SHOP.serviceOpenTime=g('wServiceOpen').value||'09:00';SHOP.serviceCloseTime=g('wServiceClose').value||'17:00';
  SHOP.serviceTimezone=g('wServiceTimezone').value.trim()||'Africa/Nairobi';SHOP.serviceBufferMinutes=Number(g('wServiceBuffer').value)||0;
  SHOP.serviceDepositPercent=Number(g('wServiceDeposit').value)||0;
+ SHOP.serviceCapacity=serviceIntegerField('wServiceCapacity',1);SHOP.serviceCancelCutoffHours=serviceIntegerField('wServiceCutoff',2);SHOP.serviceMaxReschedules=serviceIntegerField('wServiceReschedules',2);
  showServiceProblems();
  const ok=prods.filter(p=>p.name.trim()); SHOP.products=ok.length?ok.map(p=>{const img=(p.img||'').trim();const images=Array.isArray(p.images)?p.images.filter(value=>value!==img):[];if(img)images.unshift(img);return {craftId:p.craftId||'',name:p.name.trim(),price:(p.price||'').trim(),desc:(p.desc||'').trim(),img,images:images.slice(0,8),media_type:p.media_type||'image',spin_frames:Array.isArray(p.spin_frames)?p.spin_frames.slice():[],video_url:p.video_url||'',booking_enabled:p.booking_enabled===true||p.booking_enabled===1,duration_minutes:SHOP.offerType==='services'?(Number(p.duration_minutes)||60):undefined,stock:Number(p.stock)||0,cats:(p.ci||[]).map(i=>SHOP.cats[i]).filter(Boolean)}}):(craftIntegrated?[]:null);
 }
@@ -6878,9 +6880,10 @@ window.wizFill=function(){
  [...document.querySelectorAll('[data-service-day]')].forEach(input=>{input.checked=(SHOP.serviceDays||[1,2,3,4,5,6]).includes(Number(input.dataset.serviceDay))});
  g('wServiceOpen').value=SHOP.serviceOpenTime||'09:00';g('wServiceClose').value=SHOP.serviceCloseTime||'17:00';g('wServiceTimezone').value=SHOP.serviceTimezone||'Africa/Nairobi';
  g('wServiceBuffer').value=String(SHOP.serviceBufferMinutes||0);g('wServiceDeposit').value=String(SHOP.serviceDepositPercent||0);
+ g('wServiceCapacity').value=String(SHOP.serviceCapacity??1);g('wServiceCutoff').value=String(SHOP.serviceCancelCutoffHours??2);g('wServiceReschedules').value=String(SHOP.serviceMaxReschedules??2);
  setCategoryNames(SHOP.cats||[]);if(Array.isArray(SHOP.products))prods=SHOP.products.map(p=>({...p,ci:(p.cats||[]).map(n=>SHOP.cats.indexOf(n)).filter(i=>i>=0)}));drawProds();drawContentEditors();
 };
-['wName','wWhat','wTag','wCur','wCats','wHead','wSub','wCta','wEmail','wPhone','wWa','wFee','wFree','wAddr','wAbout','wServiceOpen','wServiceClose','wServiceTimezone','wServiceBuffer','wServiceDeposit'].forEach(id=>g(id).addEventListener('input',()=>{read();go()}));
+['wName','wWhat','wTag','wCur','wCats','wHead','wSub','wCta','wEmail','wPhone','wWa','wFee','wFree','wAddr','wAbout','wServiceOpen','wServiceClose','wServiceTimezone','wServiceBuffer','wServiceDeposit','wServiceCapacity','wServiceCutoff','wServiceReschedules'].forEach(id=>g(id).addEventListener('input',()=>{read();go()}));
 document.querySelectorAll('[data-service-day]').forEach(input=>input.addEventListener('change',()=>{read();go()}));
 g('wOfferType').addEventListener('change',()=>{
  const previousType=g('wType').value||SHOP.type,previousDefault=SHOP_COPY[previousType]?.what;
@@ -7074,6 +7077,7 @@ if(!SHOP.cats.length){const empty=document.createElement('p');empty.className='h
 function nearestServiceDuration(value){const n=Number(value);if(!Number.isFinite(n)||n<=0)return 60;return Math.min(240,Math.max(15,Math.round(n/15)*15))}
 function serviceMinutes(value){const parts=String(value||'').split(':');return (Number(parts[0])||0)*60+(Number(parts[1])||0)}
 /* Mirrors what the Worker accepts when a services shop is published, so mistakes are caught while the owner can still fix them. */
+function serviceIntegerField(id,fallback){const raw=String(g(id).value).trim();return raw===''?fallback:Number(raw)}
 function serviceSettingsProblems(){
  if(SHOP.offerType!=='services')return [];
  const problems=[],open=serviceMinutes(SHOP.serviceOpenTime),close=serviceMinutes(SHOP.serviceCloseTime);
@@ -7084,6 +7088,10 @@ function serviceSettingsProblems(){
  if(!Number.isInteger(buffer)||buffer<0||buffer>60||buffer%15!==0)problems.push('Buffer between appointments must be 0, 15, 30, 45 or 60 minutes.');
  const deposit=Number(SHOP.serviceDepositPercent);
  if(!Number.isInteger(deposit)||deposit<0||deposit>100)problems.push('Deposit must be a whole percentage from 0 to 100.');
+ const capacity=Number(SHOP.serviceCapacity),cutoff=Number(SHOP.serviceCancelCutoffHours),moves=Number(SHOP.serviceMaxReschedules);
+ if(!Number.isInteger(capacity)||capacity<1||capacity>20)problems.push('Bookings at the same time must be a whole number from 1 to 20.');
+ if(!Number.isInteger(cutoff)||cutoff<0||cutoff>168)problems.push('The cancel or move cutoff must be 0 to 168 hours.');
+ if(!Number.isInteger(moves)||moves<0||moves>10)problems.push('Times a customer can move a booking must be 0 to 10.');
  const services=prods.filter(product=>product.name.trim());
  if(deposit>0){
   if(String(SHOP.cur||'').trim().toUpperCase()!=='KES')problems.push('Deposits are only available when prices are in KES.');
@@ -7156,6 +7164,8 @@ window.litrusSetCraftCatalog=function(payload){
  SHOP.serviceOpenTime=String(shop.service_open_time||'09:00');SHOP.serviceCloseTime=String(shop.service_close_time||'17:00');
  SHOP.serviceTimezone=String(shop.service_timezone||'Africa/Nairobi');SHOP.serviceBufferMinutes=Number(shop.service_buffer_minutes)||0;
  SHOP.serviceDepositPercent=Number(shop.service_deposit_percent)||0;
+ const intSetting=(value,min,max,fallback)=>{if(value===undefined||value===null||value===''||typeof value==='boolean')return fallback;const number=Number(value);return Number.isInteger(number)&&number>=min&&number<=max?number:fallback};
+ SHOP.serviceCapacity=intSetting(shop.service_capacity,1,20,1);SHOP.serviceCancelCutoffHours=intSetting(shop.service_cancel_cutoff_hours,0,168,2);SHOP.serviceMaxReschedules=intSetting(shop.service_max_reschedules,0,10,2);
  SHOP.tagline=String(shop.tagline||'');SHOP.email=String(shop.email||'');SHOP.phone=String(shop.phone||'');
  SHOP.wa=String(shop.whatsapp||'');SHOP.addr=String(shop.address||'');SHOP.fee=String(shop.delivery_fee||'');SHOP.free=String(shop.free_delivery_over||'');
  SHOP.cats=categories;SHOP.products=[];
@@ -7166,6 +7176,7 @@ window.litrusSetCraftCatalog=function(payload){
  [...document.querySelectorAll('[data-service-day]')].forEach(input=>{input.checked=SHOP.serviceDays.includes(Number(input.dataset.serviceDay))});
  g('wServiceOpen').value=SHOP.serviceOpenTime;g('wServiceClose').value=SHOP.serviceCloseTime;g('wServiceTimezone').value=SHOP.serviceTimezone;
  g('wServiceBuffer').value=String(SHOP.serviceBufferMinutes);g('wServiceDeposit').value=String(SHOP.serviceDepositPercent);
+ g('wServiceCapacity').value=String(SHOP.serviceCapacity);g('wServiceCutoff').value=String(SHOP.serviceCancelCutoffHours);g('wServiceReschedules').value=String(SHOP.serviceMaxReschedules);
  hiddenCraftProducts=payload.products.filter(product=>product&&product.status==='archived').map(product=>JSON.parse(JSON.stringify(product)));
  prods=payload.products.filter(product=>!(product&&product.status==='archived')).map(product=>{
   const names=Array.isArray(product.category_names)?product.category_names:[product.category_name||''];
@@ -7213,7 +7224,8 @@ window.litrusGetCraftPublishPayload=function(){
   shop:{name:SHOP.name,currency:SHOP.cur,offer_type:SHOP.offerType,tagline:SHOP.tagline,description:SHOP.what,email:SHOP.email,
    phone:SHOP.phone,whatsapp:SHOP.wa,address:SHOP.addr,delivery_fee:SHOP.fee,free_delivery_over:SHOP.free,about:SHOP.about,
    service_days:SHOP.serviceDays,service_open_time:SHOP.serviceOpenTime,service_close_time:SHOP.serviceCloseTime,
-   service_timezone:SHOP.serviceTimezone,service_buffer_minutes:SHOP.serviceBufferMinutes,service_deposit_percent:SHOP.serviceDepositPercent},
+   service_timezone:SHOP.serviceTimezone,service_buffer_minutes:SHOP.serviceBufferMinutes,service_deposit_percent:SHOP.serviceDepositPercent,
+   service_capacity:SHOP.serviceCapacity,service_cancel_cutoff_hours:SHOP.serviceCancelCutoffHours,service_max_reschedules:SHOP.serviceMaxReschedules},
   categories:SHOP.cats.map(name=>({name})),
   products:prods.filter(product=>product.name.trim()).map(product=>({
    id:product.craftId||'',

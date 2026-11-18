@@ -11,10 +11,12 @@ authority when this document and runtime behavior differ.
 Craft is a mobile-first web application packaged for Android with Capacitor.
 It brings together:
 
-- A customer-facing storefront with catalog, search, product/category pages,
-  cart, checkout, account, and custom content pages.
-- A merchant workspace for website setup, catalog management, orders,
-  customer tools, reports, payments, and shop configuration.
+- A website editor, Litrus Mixer (the only one), that produces a published
+  customer storefront with a catalog, cart, checkout, holds and, for service
+  shops, appointment requests.
+- A merchant workspace for website setup, catalog management, orders, manual
+  and Paystack payments, discount codes, bookings, owner alerts, reports and
+  shop configuration.
 - A point-of-sale (POS) register and local business record system.
 - Optional Cloudflare-backed publishing and services for multiple shops.
 
@@ -29,9 +31,9 @@ business synchronization.
 ```mermaid
 flowchart TD
   Owner[Merchant] --> UI[Craft UI: index.html]
-  Shopper[Customer] --> StoreUI[Storefront UI: index.html]
+  Shopper[Customer] --> StoreUI[Published Litrus storefront]
   UI --> Router[Hash router and renderers]
-  StoreUI --> Router
+  UI --> Litrus[Litrus Mixer editor iframe]
   Router --> Catalog[SQLiteEngine: website catalog and app records]
   Router --> POS[ShopPOS: relational POS engine]
   Catalog --> NativeDB[Capacitor SQLite on Android]
@@ -39,6 +41,7 @@ flowchart TD
   POS --> NativeDB
   POS --> BrowserDB
   UI --> Worker[Cloudflare Worker API]
+  Litrus --> UI
   StoreUI --> Worker
   Worker --> D1[(D1: catalog and business records)]
   Worker --> KV[(KV: tenants, credentials, pointers, sessions)]
@@ -51,17 +54,17 @@ flowchart TD
 
 | Area | Source |
 |---|---|
-| Main application, routes, storefront and merchant renderers, styles | `index.html` |
+| Main application, routes, merchant renderers, the Litrus iframe host and publish flow, styles | `index.html` |
 | Browser and native module startup | `src\bootstrap.js` |
 | Catalog/app-data SQLite adapter | `src\sqlite.js`, `src\sqlite-snapshot.js` |
 | POS database, screens, transactions, reports, scanning and sync | `src\pos.js` |
 | Business reporting workspace and filters | `src\business-lens.js` |
 | AI helper UI and local POS context preparation | `src\craft-ai.js` |
 | Push subscription client | `src\business-notifications.js`, `public\sw.js` |
-| Website theme definitions and appearance options | `src\theme-catalog.js`, `src\website-appearance-presets.js` |
-| Liquid theme renderer | `src\liquid-storefront-renderer.js` |
-| HTML-theme renderer bridge | `src\liquid-html-theme-renderer.js`, `public\liquid-html-theme-renderer.js` |
-| Theme editor/importer and storefront runtime | `public\liquid-themes\theme-studio.html`, `public\theme-importer.js`, `public\theme-catalog-adapter.js` |
+| Website editor (Litrus Mixer) and its picker entry | `public\litrus-mixer\index.html`, `src\theme-catalog.js` (one entry, `litrus-mixer`) |
+| Published storefront runtime (live catalog, cart, checkout, holds, bookings) | `public\litrus-mixer\live-catalog.js` |
+| Storefront SEO (tags, JSON-LD, sitemaps) | `cloudflare\seo.js` |
+| Smoke and boot checks | `scripts\boot-smoke.mjs`, `scripts\litrus-browser-smoke.mjs`, `scripts\lint-inline-script.mjs` |
 | Hosted API and storefront delivery | `cloudflare\worker.js` |
 | Hosted schema history | `cloudflare\migrations\` |
 | Cloudflare resource/route configuration | `cloudflare\wrangler.jsonc` |
@@ -90,10 +93,10 @@ screen HTML in `index.html`. POS screens are rendered by `ShopPOS` from
 `src\pos.js`. Styles are primarily in the app HTML and supplemented by
 module-specific stylesheets such as `src\browser-register.css`.
 
-The Craft visual-system class is applied to app-shell routes. The main
-Theme Studio editor route (`/account/web/site`) is deliberately excluded from
-that app-only style gate so app-shell styling does not become storefront
-editor styling.
+The Craft visual-system class is applied to app-shell routes. The website
+editor route (`/account/web/site`) is deliberately excluded from that
+app-only style gate so app-shell styling does not become storefront editor
+styling.
 
 ### Startup sequence
 
@@ -113,11 +116,12 @@ Android deep link declared in the manifest.
 
 ### Main screen families
 
-- **Storefront customer routes:** `/categories`, `/category/...`,
+- **Built-in storefront routes in the app:** `/categories`, `/category/...`,
   `/product/...`, `/search`, `/bag`, `/checkout`,
   `/checkout/confirmation`, `/favorites`, and `/pages/...`. The Craft app's
-  `/` route is its owner launchpad; published tenant websites are served at
-  their configured hostnames.
+  `/` route is its owner launchpad. A shop's customers do not use these: the
+  published tenant website is the Litrus storefront, served by the Worker at
+  the shop's hostname.
 - **Craft home and account:** `/`, `/account`, `/app-account`, and
   `/account/profile...`.
 - **Web Studio and shop management:** `/account/web/studio/...`,
@@ -125,11 +129,14 @@ Android deep link declared in the manifest.
   `/account/categories`, `/account/inventory`, `/account/tenants`,
   `/account/payments`, `/account/website...`, and `/account/web/pages`.
 - **Point of sale:** `/pos` and `/pos/...`.
-- **Website/theme editing:** `/account/web/studio/websites/...` and
-  `/account/web/site`; the new-site flow opens the Litrus Mixer editor.
+- **Website editing:** `/account/web/studio/websites/...` and
+  `/account/web/site`; both the new-site flow and the edit flow open the
+  Litrus Mixer editor in an iframe.
 
 Web Studio groups screens into Dashboard, Store, CRM, Websites, and Payments.
-Its Store tabs include products, categories, inventory, and orders/bookings.
+Its Store tabs include products, categories, inventory, and orders and
+bookings (online orders, manual payment recording, discount codes, owner alerts,
+service appointment requests, holds).
 The app also contains reporting screens for sales, visits, traffic,
 performance, product intelligence, customers, finance, and marketing.
 
@@ -214,7 +221,7 @@ propagates between both catalogs.
 | Account and shop identity | Cloudflare D1/KV | Used for sign-in and shop-scoped authorization. |
 | Published catalog and orders | Cloudflare D1 | Read publicly where the route allows; writes are action/auth dependent. |
 | Product media and filled published storefronts | Cloudflare R2 | Served through constrained Worker routes and tenant paths. |
-| Theme editor draft/export | Browser memory/iframe messaging, then saved app/theme state | Saved locally until catalog/theme publish. |
+| Litrus design (HTML and recipe) | Iframe messaging, then saved in the app's workspace settings (local SQLite) | Saved locally until Publish. |
 
 ## 5. POS, reporting and auxiliary frontend modules
 
@@ -273,14 +280,19 @@ implemented in `cloudflare\worker.js`:
 | API group | Main purpose |
 |---|---|
 | `/api/auth/...` | Auth configuration/session, account registration and login, recovery, logout, and Google OAuth start/callback/complete. |
-| `/api/tenants...` | Tenant/shop creation and administration, deletion, and owner-key provisioning. |
+| `/api/tenants...` | Tenant/shop creation and administration, deletion, usage, and owner-key provisioning. |
 | `/api/catalog` | Read or publish a tenant catalog, including owner-only/private catalog data. |
-| `/api/theme-publish`, `/api/media` | Publish filled storefront HTML and upload tenant media. |
-| `/api/orders` | Storefront order creation, owner reads/updates, and payment status integration. |
-| `/api/payments/paystack/...` | Bank/subaccount setup, account linking/default selection, payment initialization/verification, and webhook handling. |
-| `/api/product-interest`, `/api/product-holds` | Record product interest and hold/booking requests. |
+| `/api/theme-publish`, `/api/media` | Publish the filled Litrus storefront HTML; upload tenant media. |
+| `/api/images/search`, `/api/images/draft-search` | Image search for the editor (provider keys are optional). |
+| `/api/orders` | Storefront order creation (customer, rate limited, server-priced); owner list and status updates. |
+| `/api/store/orders/:order/payment` | Owner records a manual payment (cash, mobile money, bank, other). |
+| `/api/store/discounts`, `/api/discounts/validate` | Owner discount-code CRUD; customer preview of a code. |
+| `/api/store/notifications`, `.../read` | Owner alert feed (orders, bookings, holds, attention). |
+| `/api/payments/paystack/...` | Bank/subaccount setup, account linking/default selection, payment initialization/verification, and the signed webhook. |
+| `/api/service-appointments` (and `/availability`, `/payment`, `/manage`) | Service slots, customer appointment requests, owner actions (confirm, reject, cancel, reschedule, complete, no-show, deposit refunded), deposit payment status, and customer self-service by token (`/manage`: view, slots, cancel, reschedule). |
+| `/api/product-interest`, `/api/product-holds` | Record product interest and customer holds; owner hold management. |
 | `/api/newsletter/...` | Subscribe, confirm, unsubscribe, owner subscriber management, and campaign sending. |
-| `/api/analytics/visit` | Record and query website visit analytics. |
+| `/api/analytics/visit`, `/api/analytics/events` | Record and query visits; per-product event counters including funnel events. |
 | `/api/business/branches`, `/api/business/sync` | Save and retrieve branch/business snapshots. |
 | `/api/business/records` | POS record delta synchronization. |
 | `/api/nearby/pairing` | Temporary pairing relay used to establish a nearby device connection. |
@@ -288,6 +300,11 @@ implemented in `cloudflare\worker.js`:
 | `/api/push/...` | Push configuration, subscription lifecycle and broadcast. |
 | `/api/ai/assistant` | Server-side AI assistant request. |
 | `/api/custom-hostnames`, `/api/search-console/verification` | Custom-domain management and verification configuration. |
+| `/themes/<id>/<asset>` | Public non-HTML assets from R2 for retired themes; raw HTML is refused. `/theme-skeletons/*` returns 404. |
+
+Non-API routes: `/` (the official Craft homepage on the apex unless a main-shop storefront is published, otherwise the shop's storefront), `/robots.txt`, `/sitemap.xml`, `/sitemap-main.xml`, `/manifest.webmanifest`, `/shops`, and `/products/<slug>` for Litrus shops.
+
+The detailed request and response shapes for the commerce endpoints (orders, discounts, manual payments, notifications, holds, rate limits, settlement) are in `cloudflare/STOREFRONT_COMMERCE.md`, which is the contract.
 
 The route list describes implemented handlers, not a guarantee that every
 optional external service is configured in every environment.
@@ -316,62 +333,122 @@ document.
 
 ## 7. Storefront publishing and customer flow
 
-### Catalog and theme publishing
+### Catalog and Litrus publishing
 
 1. The merchant selects the active shop/tenant in Craft. Local drafts and
-   catalog edits are scoped to that tenant.
-2. Product/category and store fields are read from the app catalog. Images
-   are prepared locally; publishing uploads eligible files to the Worker
-   media endpoint and receives public tenant-scoped URLs.
-3. The app publishes the catalog to `/api/catalog`, using the corresponding
-   owner/shop authorization.
-4. For a selected standalone HTML theme, the app loads the theme source,
-   merges the shop catalog using the theme renderer/adapter, and sends the
-   filled storefront to `/api/theme-publish`.
-5. The Worker stores catalog state in D1 and published output in R2, with
-   KV metadata linking the chosen theme/output to the catalog revision.
-6. Requests to the tenant storefront resolve its catalog and published
-   output. The Worker checks that theme metadata matches the catalog version;
-   it does not knowingly serve stale output as if it were the latest
-   publish.
+   catalog edits are scoped to that tenant. A brand-new shop is a local draft
+   that makes no Cloudflare calls until final setup.
+2. Craft hosts the Litrus Mixer editor in an iframe
+   (`/litrus-mixer/index.html?craft=1`) and talks to it with `postMessage`
+   restricted to the same origin: Craft sends the catalog, store details,
+   saved recipe and theme colours; the editor sends back drafts, image
+   requests (proxied to `/api/images/search`), mode changes and the publish
+   request. The editor bakes the design into one self-contained HTML document
+   carrying `<meta name="eshop-filled-theme" content="litrus-mixer">`, which
+   Craft stores in its workspace settings together with the recipe.
+3. Publish uploads eligible images to `/api/media`, then `PUT /api/catalog`
+   (D1 `catalog_snapshots`; purchase cost is kept in a separate private
+   payload), then `POST /api/theme-publish` with the HTML and the catalog
+   version. A first publish does the same inside the new-shop setup and deletes
+   the half-created shop if it fails.
+4. The Worker validates the HTML (document, meta marker, no skeleton
+   placeholders, size limit), checks the catalog version still matches (409
+   otherwise) and that the catalog names the same theme, writes the page to R2
+   (`published-sites/<tenant>/litrus-mixer/<version>-<id>.html`) and records
+   the pointer in KV (`published-theme:<tenant>`).
+5. When a catalog is saved without a republish, the Worker advances the stored
+   page's version so the live catalog keeps flowing into it; visitors always
+   get the last published design with current catalog data injected.
+6. Requests to the tenant hostname resolve the pointer and R2 object, inject
+   catalog data, SEO tags and the `paystack_connected` flag, and cache the
+   page (at most an hour) by hostname and catalog version. Nothing published
+   gives a plain "This website is not available" 404.
 
-`src\theme-catalog.js` currently lists Litrus Mixer as the selectable theme.
-Other HTML/Liquid rendering and import code may remain for compatibility or
-older theme paths; a template being present in a renderer or Worker allowlist
-does not by itself mean it is offered in the active theme picker.
+`craft-main-storefront` is the Craft platform's own storefront for the main
+shop and is still an allowed theme ID in the Worker. The retired hosted themes
+(`LEGACY_THEME_IDS` in `worker.js`) cannot be published any more (`422`),
+but a shop that published one earlier keeps serving its stored HTML.
 
-The intended separation is that a theme contributes presentation, while the
-shop's catalog remains the source for product/category data. Actual mapping
-is implemented by the renderers/adapters and should be tested for each
-theme when those mappings change.
+The theme catalog contains only Litrus Mixer. Unused code from the retired
+engine may still exist (non-Litrus branches in `index.html`,
+`public/theme-*.js`, `public/theme-packages/`, `src/liquid-*.js`); do not
+treat it as live, and do not restore the removed themes.
 
 ### Storefront customer transactions
 
-The bundled storefront runtime in `public\craft-storefront-cloudflare.js`
-records eligible visits/product-interest and sends customer interactions to
-the Worker. The current customer flow may include a product hold request,
-newsletter subscription, order submission, and payment initialization.
-Checkout payment confirmation is determined by the payment verification and
-webhook path, not solely by a client-side success screen.
+`public/litrus-mixer/live-catalog.js` runs inside the published page. It
+re-reads the live catalog, and drives the customer flow:
 
-Where offline/local order queuing is enabled, pending orders are retained on
-the device and retried when connectivity returns. A published online order
-is a hosted storefront order; a POS sale is a separate local register
-transaction unless an explicit bridge/sync operation links them.
+- **Orders:** `POST /api/orders` with an idempotency key. The Worker prices
+  the order from the published catalog (variants, delivery fee, free-delivery
+  threshold, discount), checks stock and holds, and rate limits per IP. The
+  customer either pays with Paystack (`/api/payments/paystack/initialize`,
+  then `/verify`) or chooses a shop-settled order (`payment_method:
+  "manual"`, email optional), which the owner later marks paid.
+- **Settlement:** every payment path (manual, Paystack webhook, Paystack
+  verify) is idempotent: stock is deducted once, holds are released, and
+  problems such as short stock, payment after cancel or duplicate payment mark
+  the order `needs_attention` and create an owner alert instead of losing
+  money.
+- **Discounts:** `/api/discounts/validate` previews; the order endpoint
+  redeems atomically against `usage_limit`.
+- **Holds:** `/api/product-holds`, auto-approved with caps.
+- **Service appointments:** `/api/service-appointments/availability` lists 15
+  minute-aligned slots from the shop's days, hours, timezone and buffer;
+  `POST /api/service-appointments` creates a pending request that reserves
+  the slot for 24 hours; the owner confirms or rejects (a deposit creates a
+  Paystack link on confirm). A shop can allow several bookings at the same
+  time (capacity). The customer gets a manage token (stored only as a hash);
+  `POST /api/service-appointments/manage` lets them view, cancel or move the
+  booking until the shop's cutoff, up to a reschedule limit. Owners can also
+  cancel, reschedule and mark confirmed bookings completed or no-show once
+  they have started. Cancelling a paid booking only sets a refund-due flag;
+  the owner refunds in Paystack and marks it refunded. Worker defaults: capacity 1 (range 1-20), customers may cancel or move a booking until 2 hours before the start (0-168), at most 2 reschedules (0-10). These come from the shop's saved store settings (`service_capacity`, `service_cancel_cutoff_hours`, `service_max_reschedules`); no control for them was found in the owner app or the Litrus editor, so they stay at the defaults unless set another way.
+- **Analytics:** visits, product interest and funnel events (`checkout_start`,
+  `purchase`, `booking_submitted`).
+- **Owner alerts:** order, booking, hold and attention events are written to
+  `owner_notifications` and emailed best effort through Resend; they carry
+  references and a first name only.
+
+Payment confirmation is determined by the verification and webhook path, not
+by a client-side success screen. A published online order is a hosted order; a
+POS sale is a separate local register transaction unless an explicit
+bridge/sync operation links them. A daily cron (`scheduled()`) deletes old
+analytics, notifications, expired rate-limit counters and expired slots, and
+sends best-effort reminder emails for confirmed bookings starting within
+`SERVICE_REMINDER_WINDOW_HOURS` (default 36, at most 3 tries each; skipped
+when Resend is not configured). The two jobs fail independently.
 
 ## 8. Hosted schema and storage
 
 The D1 schema evolves through ordered SQL files in
-`cloudflare\migrations\`. The current migration set includes:
+`cloudflare\migrations\` (`0001` to `0030`). Files are applied in order and
+released files are never edited; the next new file is `0031`. By group:
 
-- Tenant catalog snapshots and private catalog fields.
-- Accounts, tenant/account links, Google identities, and recovery metadata.
-- Shared inventory, event-level stock deductions, and allocation records.
-- Business branches, push subscriptions, and POS change-log revisions.
-- Storefront visits, orders, payment state, product-interest and hold requests.
-- Paystack subaccounts and app-account defaults.
-- Nearby pairing relay state, newsletter subscriber/campaign data, and
-  custom hostnames.
+- `0001`-`0003`: tenant catalog snapshots and the private (owner-only) payload.
+- `0004`, `0016`, `0017`: accounts, account-to-shop links, recovery email,
+  Google identities.
+- `0005`, `0020`: shared inventory with stock-check triggers, and main-store
+  allocations.
+- `0006`, `0007`, `0011`, `0012`: business branches, push/newsletter
+  subscriptions, POS change log, storefront visits, nearby pairing relay.
+- `0008`, `0010`, `0018`, `0022`: storefront orders and payment state,
+  product interest and holds, daily event counters.
+- `0009`, `0013`-`0015`, `0024`: Paystack subaccounts, reuse, pending setup,
+  app-account defaults, live-account audit columns.
+- `0019`: newsletter subscribers and campaigns. `0021`: custom hostnames.
+- `0023`: service appointments and slot reservations.
+- `0025`-`0029` (**not yet applied to production**): rate-limit counters and
+  owner notifications (`0025`), manual payments and needs-attention flags
+  (`0026`), discount codes (`0027`), payment attempts and discount release
+  (`0028`), funnel events (`0029`).
+- `0030` (**not yet applied to production**): service booking management
+  (capacity, customer manage token, cancel/reschedule, completed and no-show,
+  deposit refund flags, reminder tracking); it rebuilds the appointment and
+  slot tables and keeps existing rows.
+
+Apply `0025`-`0030` with `npm run cf:d1:migrate:remote` before deploying the
+Worker code that needs them.
 
 Catalog snapshots use tenant identifiers and serialized payloads. More
 transaction-sensitive data—such as orders, payment status, inventory deltas,
@@ -401,11 +478,10 @@ resources have to be configured and available.
 
 ## 10. Build, run, deploy and test
 
-`vite.config.js` builds `index.html` into `www`; it conditionally adds
-`register.html` as another entry only if that file exists. The repository
-contains `src\browser-register.js` as a separate SQL.js-based browser-register
-client, but that module is not automatically a live route merely because the
-source file exists.
+`vite.config.js` builds `index.html` into `www`; it would add `register.html`
+as another entry only if that file existed. It does not exist: the standalone
+browser register page was removed, and `src\browser-register.js` is an unused
+leftover. `www` is also what the Worker serves as static assets.
 
 Common package scripts in `package.json`:
 
@@ -414,15 +490,22 @@ Common package scripts in `package.json`:
 | `npm run dev` | Start the Vite app for browser/live-reload development. |
 | `npm run build` | Produce the static app build in `www`. |
 | `npm run cap:sync` | Build and synchronize web assets/plugins to Capacitor platforms. |
-| `npm test` | Run the Node test files under `tests`. |
+| `npm test` | Run every Node test file under `tests`. |
+| `npm run lint:inline` | Lint the inline application script in `index.html`. |
+| `npm run test:boot` | Boot the production build (`www`) in headless Chromium; run `npm run build` first. |
+| `npm run test:litrus-browser` | Playwright smoke test of the Litrus Mixer editor and preview. |
 | `npm run test:pos` | Run POS-focused integration tests. |
 | `npm run test:cloudflare` | Run Worker/backend tests. |
 | `npm run cf:dev` | Build and run the Worker locally with Wrangler. |
-| `npm run cf:d1:migrate:local` / `npm run cf:d1:migrate:remote` | Apply D1 migrations locally or remotely. |
-| `npm run cf:deploy` | Build and deploy the configured Worker/assets. |
+| `npm run cf:d1:migrate:local` / `npm run cf:d1:migrate:remote` | Apply D1 migrations locally or to production. |
+| `npm run cf:deploy` | Build and deploy the configured Worker/assets to production. |
 
-`tests\` contains focused tests for POS flows, Worker routes and persistence,
-theme/catalog rendering, app integration, and other features. Test coverage
+Deploying is a manual, owner-run step: apply migrations first, then deploy. Nothing in the repository does it automatically, and automated agents must not. The checklist is in `README.md`.
+
+`tests\` contains focused tests for POS flows, Worker routes and persistence
+(`cloudflare.worker.test.mjs` runs the migrations on sql.js), Litrus storefront
+behaviour, owner commerce screens, SEO, and other features; a few older tests
+still cover retired theme code. Test coverage
 does not imply that every remote integration has been exercised against
 production services.
 
@@ -440,8 +523,11 @@ production services.
 - A successful local build verifies bundling, not Worker credentials,
   Cloudflare resources, custom DNS, payment provider configuration, or live
   customer behavior.
-- `APP_OVERVIEW.md`, `README.md`, and `PROJECT_LOG.md` contain useful
-  product/setup history, but include statements from earlier implementation
-  stages. For the present architecture, check the current source files and
-  tests listed in this document before relying on an older claim.
-
+- `PROJECT_LOG.md` and `ROADMAP.md` are history. `README.md`,
+  `APP_OVERVIEW.md`, `APP_GUIDE.md` and `cloudflare/STOREFRONT_COMMERCE.md`
+  were brought in line with the code at the end of round 2; if they disagree
+  with the code, the code wins.
+- Known limits: cancelling a paid order neither restocks nor refunds;
+  rate limits protect the database, not one shop's availability; Litrus shops
+  have real URLs only for the home page and products; tests use sql.js and
+  stubs, not real Paystack, Resend or Cloudflare.

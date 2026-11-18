@@ -1,6 +1,10 @@
+import { isPaidSale } from "./revenue-definition.js";
+
 const $ = (value) => window.AppUtils.escapeHTML(String(value ?? ""));
 const sum = (rows, pick) => rows.reduce((total, row) => total + (Number(pick(row)) || 0), 0);
-const paid = sale => sale.paid && !["refunded", "voided", "cancelled", "canceled", "failed"].includes(sale.status);
+// Revenue everywhere in this file = the total of sales for which this is true. The rule lives in
+// revenue-definition.js and is shared with the Craft AI helper, so reports and the AI agree.
+const paid = isPaidSale;
 const localDate = value => {
   const date = new Date(value);
   return Number.isFinite(date.getTime()) ? date : null;
@@ -101,7 +105,7 @@ function normalizeSnapshot(snapshot, context) {
       id: String(sale.id || sale.reference),
       channel: sale.channel === "Website" ? "web" : "pos",
       createdAt: sale.date,
-      paid: ["paid", "completed", "confirmed"].includes(sale.status) || Number(sale.collected) >= Number(sale.total),
+      paid: ["paid", "completed", "confirmed"].includes(sale.status) || (Number(sale.total) > 0 && Number(sale.collected) >= Number(sale.total)),
       paymentMethod: sale.paymentMethod || "other",
       customerId: sale.customerEmail || sale.customerPhone || "",
       customerName: sale.customerName || "",

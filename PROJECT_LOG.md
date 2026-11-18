@@ -1,5 +1,15 @@
 # E-Shop Atelier Project Log
 
+> History only. Entries below describe the app as it was on the dates given; several statements (no server sync, no payment integration, theme-based builder) are no longer true. For the current state read README.md, APP_ARCHITECTURE.md and cloudflare/STOREFRONT_COMMERCE.md.
+
+## 2026-11-18 — Litrus-only cleanup, commerce hardening, documents refreshed
+
+- Litrus Mixer is now the only website editor. The old themes, Theme Studio, `builder-storefront.html`, `register.html` and the live-websites flow were deleted on purpose. The Worker keeps serving shops that had already published a retired theme but refuses new publishes of them (`422`).
+- The Worker gained rate limits (D1 counters), manual payments, discount codes, owner notifications, payment attempts and funnel analytics (migrations `0025`-`0029`, not yet applied to production), plus a daily retention job. A later change (migration `0030`, also not applied) adds service booking capacity, customer cancel or reschedule by link, completed and no-show outcomes, deposit refund flags and booking reminder emails. Settlement is idempotent and flags problems (`needs_attention`) instead of losing payments.
+- The Litrus storefront gained delivery or pickup, a manual-or-Paystack checkout choice, discount preview, holds, and service appointment booking; the owner app gained order status and manual payment tools, discount code management, appointment and hold management, and an owner alerts panel.
+- Added `npm run test:boot` (production build boots in a browser) and `npm run test:litrus-browser`.
+- The README, overview, guide, architecture, roadmap and Cloudflare documents were rewritten from the code. Not verified in this pass: anything that needs a real device, real Paystack or Resend, or the production Cloudflare account.
+
 ## 2026-10-04 — Local POS integration
 
 - Replaced the launchpad's disabled POS placeholder with a complete POS workspace, styled with E-Shop typography, colors, and compact cards.

@@ -105,148 +105,6 @@ function createDatabase() {
   };
 }
 
-function createServiceAppointmentDatabase(catalog) {
-  const appointments = new Map();
-  const slots = new Map();
-  function statement(query, values) {
-    return {
-      query,
-      values,
-      async first() {
-        if (query.includes("FROM catalog_snapshots")) return { payload: JSON.stringify(catalog) };
-        if (query.includes("FROM storefront_service_appointments") && query.includes("idempotency_key=?")) {
-          return [...appointments.values()].find(row => row.tenant_id === values[0] && row.idempotency_key === values[1]) || null;
-        }
-        if (query.includes("FROM storefront_service_appointments") && query.includes("AND id=?")) {
-          return appointments.get(values[1])?.tenant_id === values[0] ? appointments.get(values[1]) : null;
-        }
-        if (query.includes("FROM storefront_service_appointments") && query.includes("payment_reference=?")) {
-          return [...appointments.values()].find(row => row.tenant_id === values[0] && row.payment_reference === values[1]) || null;
-        }
-        if (query.includes("FROM paystack_owner_defaults")) return null;
-        if (query.includes("FROM paystack_subaccounts")) {
-          return {
-            subaccount_code: "ACCT_test_service", status: "connected",
-            account_mode: "test", is_verified: 0
-          };
-        }
-        throw new Error(`Unsupported service appointment first query: ${query}`);
-      },
-      async all() {
-        if (query.includes("FROM storefront_appointment_slots")) {
-          return { results: [...slots.values()].filter(row => row.tenant_id === values[0] &&
-            row.slot_start >= values[1] && row.slot_start < values[2] && row.expires_at > values[3]) };
-        }
-        throw new Error(`Unsupported service appointment all query: ${query}`);
-      },
-      async run() {
-        if (query.includes("DELETE FROM storefront_appointment_slots")) {
-          let changes = 0;
-          for (const [key, row] of slots) {
-            if (row.tenant_id === values[0] && row.expires_at <= values[1]) {
-              slots.delete(key);
-              changes++;
-            }
-          }
-          return { success: true, meta: { changes } };
-        }
-        if (query.includes("INSERT INTO storefront_service_appointments")) {
-          const row = {
-            id: values[0], tenant_id: values[1], idempotency_key: values[2], service_id: values[3],
-            service_name: values[4], service_price_cents: values[5], currency: values[6],
-            duration_minutes: values[7], starts_at: values[8], ends_at: values[9],
-            slot_reserved_until: values[10], timezone: values[11], customer_name: values[12],
-            customer_email: values[13], customer_phone: values[14], status: "pending",
-            request_expires_at: values[15], deposit_percent: values[16], deposit_cents: values[17],
-            payment_status: "not_required", created_at: values[18], updated_at: values[19]
-          };
-          if ([...appointments.values()].some(item =>
-            item.tenant_id === row.tenant_id && item.idempotency_key === row.idempotency_key)) {
-            throw new Error("UNIQUE constraint failed: storefront_service_appointments.tenant_id, storefront_service_appointments.idempotency_key");
-          }
-          appointments.set(row.id, row);
-          return { success: true, meta: { changes: 1 } };
-        }
-        if (query.includes("INSERT INTO storefront_appointment_slots")) {
-          const row = { tenant_id: values[0], slot_start: values[1], appointment_id: values[2], expires_at: values[3] };
-          const key = `${row.tenant_id}:${row.slot_start}`;
-          if (slots.has(key)) throw new Error("UNIQUE constraint failed: storefront_appointment_slots.tenant_id, storefront_appointment_slots.slot_start");
-          slots.set(key, row);
-          return { success: true, meta: { changes: 1 } };
-        }
-        if (query.includes("UPDATE storefront_service_appointments")) {
-          const reserving = query.includes("SET status='confirming'");
-          const row = appointments.get(reserving ? values[4] : values[3]);
-          if (!row || row.tenant_id !== (reserving ? values[3] : values[2])) {
-            return { success: true, meta: { changes: 0 } };
-          }
-          if (reserving) {
-            if (row.status !== "pending" || row.request_expires_at <= values[5] || row.starts_at <= values[6]) {
-              return { success: true, meta: { changes: 0 } };
-            }
-            row.status = "confirming";
-            row.payment_status = "initializing";
-            row.payment_reference = values[0];
-            row.payment_subaccount_code = values[1];
-            row.payment_authorization_url = null;
-            row.updated_at = values[2];
-            return { success: true, meta: { changes: 1 } };
-          }
-          if (query.includes("SET status='confirmed'")) {
-            if (row.status !== "confirming" || row.payment_reference !== values[4]) return { success: true, meta: { changes: 0 } };
-            row.status = "confirmed";
-            row.payment_status = "pending";
-            row.payment_authorization_url = values[0];
-            row.updated_at = values[1];
-            return { success: true, meta: { changes: 1 } };
-          }
-          if (query.includes("SET payment_status=?")) {
-            if (row.payment_reference !== values[4] || row.payment_status === "paid") return { success: true, meta: { changes: 0 } };
-            row.payment_status = values[0];
-            if (values[0] === "failed") row.payment_subaccount_code = null;
-            row.updated_at = values[1];
-            return { success: true, meta: { changes: 1 } };
-          }
-        }
-        if (query.includes("UPDATE storefront_appointment_slots")) {
-          let changes = 0;
-          for (const row of slots.values()) {
-            if (row.tenant_id === values[1] && row.appointment_id === values[2] &&
-                appointments.get(row.appointment_id)?.status === "confirmed") {
-              row.expires_at = values[0];
-              changes++;
-            }
-          }
-          return { success: true, meta: { changes } };
-        }
-        throw new Error(`Unsupported service appointment run query: ${query}`);
-      }
-    };
-  }
-  return {
-    appointments,
-    slots,
-    prepare(query) {
-      return { bind(...values) { return statement(query, values); } };
-    },
-    async batch(statements) {
-      const previousAppointments = new Map([...appointments].map(([key, row]) => [key, { ...row }]));
-      const previousSlots = new Map([...slots].map(([key, row]) => [key, { ...row }]));
-      try {
-        const results = [];
-        for (const item of statements) results.push(await item.run());
-        return results;
-      } catch (error) {
-        appointments.clear();
-        previousAppointments.forEach((row, key) => appointments.set(key, row));
-        slots.clear();
-        previousSlots.forEach((row, key) => slots.set(key, row));
-        throw error;
-      }
-    }
-  };
-}
-
 function createStorefrontOrderDatabase() {
   const orders = new Map();
   const holds = new Map();
@@ -2739,120 +2597,6 @@ test('Paystack checkout uses the shop subaccount and verifies signed payments id
   }
 });
 
-test('service appointment requests expose slots and prevent duplicate or overlapping reservations', async () => {
-  const catalog = {
-    products: [{ id: 8, name: "Haircut", price: 2500, duration_minutes: 60 }],
-    categories: [],
-    store: {
-      name: "Studio", currency: "KES", offer_type: "services", service_timezone: "Africa/Nairobi",
-      service_open_time: "09:00", service_close_time: "17:00", service_days: [0, 1, 2, 3, 4, 5, 6],
-      service_buffer_minutes: 15, service_deposit_percent: 20
-    }
-  };
-  const DB = createServiceAppointmentDatabase(catalog);
-  const env = { DB, TENANTS: createTenantStore(), PUBLISH_TOKEN: "test-token", PAYSTACK_SECRET_KEY: "sk_test_service-secret" };
-  const privateList = await worker.fetch(new Request("https://rrobin.co.ke/api/service-appointments"), env);
-  assert.equal(privateList.status, 401);
-  const localDate = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Africa/Nairobi", year: "numeric", month: "2-digit", day: "2-digit"
-  }).formatToParts(new Date(Date.now() + 48 * 60 * 60 * 1000));
-  const dateParts = Object.fromEntries(localDate.filter(part => part.type !== "literal").map(part => [part.type, part.value]));
-  const date = `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
-  const availability = await worker.fetch(new Request(
-    `https://rrobin.co.ke/api/service-appointments/availability?service_id=8&date=${date}`
-  ), env);
-  assert.equal(availability.status, 200);
-  const slots = (await availability.json()).slots;
-  assert.ok(slots.length > 0);
-
-  const request = slot => worker.fetch(new Request("https://rrobin.co.ke/api/service-appointments", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      idempotency_key: "8a17bcb2-9ec7-4e8c-9c2c-0f129f34da91",
-      service_id: "8",
-      starts_at: slot,
-      customer_name: "Sam Customer",
-      customer_email: "sam@example.test",
-      customer_phone: "+254700000000"
-    })
-  }), env);
-  const created = await request(slots[0].starts_at);
-  assert.equal(created.status, 201);
-  const createdBody = await created.json();
-  assert.equal(createdBody.appointment.status, "pending");
-  const duplicate = await request(slots[0].starts_at);
-  assert.equal(duplicate.status, 200);
-  assert.equal((await duplicate.json()).duplicate, true);
-
-  const conflict = await worker.fetch(new Request("https://rrobin.co.ke/api/service-appointments", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      idempotency_key: "bc4e6f4a-28ad-4bfc-a91e-6daec0ed9d5a",
-      service_id: "8",
-      starts_at: slots[0].starts_at,
-      customer_name: "Another Customer",
-      customer_email: "other@example.test",
-      customer_phone: "+254711111111"
-    })
-  }), env);
-  assert.equal(conflict.status, 409);
-
-  const unavailable = await worker.fetch(new Request(
-    `https://rrobin.co.ke/api/service-appointments/availability?service_id=8&date=${date}`
-  ), env);
-  assert.ok(!(await unavailable.json()).slots.some(slot => slot.starts_at === slots[0].starts_at));
-
-  const appointmentId = createdBody.appointment.id;
-  const originalFetch = globalThis.fetch;
-  let reference = "";
-  globalThis.fetch = async (url, init) => {
-    assert.equal(String(url), "https://api.paystack.co/transaction/initialize");
-    const body = JSON.parse(init.body);
-    assert.equal(body.amount, 50000);
-    assert.equal(body.currency, "KES");
-    assert.equal(body.metadata.appointment_id, appointmentId);
-    reference = body.reference;
-    return new Response(JSON.stringify({
-      data: { authorization_url: "https://checkout.paystack.com/service-test", reference }
-    }), { status: 200 });
-  };
-  try {
-    const confirmed = await worker.fetch(new Request("https://rrobin.co.ke/api/service-appointments", {
-      method: "PATCH",
-      headers: { Authorization: "Bearer test-token", "Content-Type": "application/json" },
-      body: JSON.stringify({ id: appointmentId, action: "confirm" })
-    }), env);
-    assert.equal(confirmed.status, 200);
-    const appointment = (await confirmed.json()).appointment;
-    assert.equal(appointment.status, "confirmed");
-    assert.equal(appointment.payment_status, "pending");
-    assert.equal(appointment.payment_authorization_url, "https://checkout.paystack.com/service-test");
-    assert.equal(appointment.payment_reference, reference);
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
-  globalThis.fetch = async (url, init) => {
-    assert.equal(String(url), `https://api.paystack.co/transaction/verify/${reference}`);
-    return new Response(JSON.stringify({
-      data: {
-        reference, amount: 50000, currency: "KES", status: "success",
-        domain: "test", subaccount: { subaccount_code: "ACCT_test_service" }
-      }
-    }), { status: 200 });
-  };
-  try {
-    const verified = await worker.fetch(new Request(
-      `https://rrobin.co.ke/api/service-appointments/payment?reference=${reference}`
-    ), env);
-    assert.equal(verified.status, 200);
-    assert.equal((await verified.json()).appointment.payment_status, "paid");
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
-});
-
 test('storefront commerce migrations enforce tenant isolation and valid activity and hold states', async () => {
   const SQL = await initSqlJs({
     locateFile: (file) => fileURLToPath(new URL(`../node_modules/sql.js/dist/${file}`, import.meta.url))
@@ -4605,20 +4349,24 @@ async function createMigratedD1() {
         prepared.free();
       }
     },
-    async run() {
+    runSync() {
       db.run(sql, values);
       return { success: true, meta: { changes: db.getRowsModified() } };
+    },
+    async run() {
+      return this.runSync();
     }
   });
   const DB = {
     prepare(sql) {
       return { ...statement(sql), bind: (...values) => statement(sql, values) };
     },
+    // Like D1, a batch is one transaction that nothing can interleave with: every statement runs
+    // synchronously, and any failure rolls the whole batch back.
     async batch(statements) {
       db.run('BEGIN');
       try {
-        const results = [];
-        for (const item of statements) results.push(await item.run());
+        const results = statements.map(item => item.runSync());
         db.run('COMMIT');
         return results;
       } catch (error) {
@@ -6447,4 +6195,699 @@ test('order list and status changes accept the shop owner key or that shop accou
   }), env);
   assert.equal((await patch(await sessionFor('owner-shop-b'))).status, 401);
   assert.equal((await patch(await sessionFor('owner-shop-a'))).status, 200);
+});
+
+// ---------------------------------------------------------------------------
+// Service bookings: capacity, customer cancel/reschedule by token, owner actions, reminders.
+// Real SQLite (sql.js) with every migration applied; D1 batches are atomic like the real thing.
+// ---------------------------------------------------------------------------
+const SVC_HOST = 'https://eshop-storefront.workers.dev';
+const SVC_BASE_STORE = {
+  name: 'Studio', currency: 'KES', offer_type: 'services', service_timezone: 'Africa/Nairobi',
+  service_open_time: '09:00', service_close_time: '17:00', service_days: [0, 1, 2, 3, 4, 5, 6],
+  service_buffer_minutes: 15, service_deposit_percent: 0
+};
+const svcCatalog = (store = {}) => ({
+  products: [{ id: 8, name: 'Haircut', price: 2500, duration_minutes: 60 }, { id: 9, name: 'Trim', price: 1000, duration_minutes: 30 }],
+  categories: [],
+  store: { ...SVC_BASE_STORE, ...store }
+});
+const svcLocalDate = (daysAhead) => {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Nairobi', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date(Date.now() + daysAhead * 86_400_000)).filter(p => p.type !== 'literal').map(p => [p.type, p.value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+};
+let svcIp = 0;
+const svcFresh = () => `10.9.${Math.floor(svcIp / 250)}.${(svcIp++ % 250) + 1}`;
+const svcSlots = async (env, date, { tenant = 'shop-a', service = 8 } = {}) => {
+  const response = await worker.fetch(new Request(`${SVC_HOST}/api/service-appointments/availability?tenant=${tenant}&service_id=${service}&date=${date}`), env);
+  assert.equal(response.status, 200);
+  return response.json();
+};
+const svcBook = (env, startsAt, { tenant = 'shop-a', service = 8, ctx, email = 'sam@customer.example', name = 'Sam Customer', ip, extra = {} } = {}) =>
+  worker.fetch(new Request(`${SVC_HOST}/api/service-appointments?tenant=${tenant}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip || svcFresh() },
+    body: JSON.stringify({
+      idempotency_key: crypto.randomUUID(), service_id: service, starts_at: startsAt,
+      customer_name: name, customer_email: email, customer_phone: '+254700000111', ...extra
+    })
+  }), env, ctx);
+const svcManage = (env, token, body = {}, { tenant = 'shop-a', ip, ctx } = {}) =>
+  worker.fetch(new Request(`${SVC_HOST}/api/service-appointments/manage?tenant=${tenant}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip || svcFresh() },
+    body: JSON.stringify({ token, ...body })
+  }), env, ctx);
+const svcOwner = (env, key, body, { tenant = 'shop-a', ctx } = {}) =>
+  worker.fetch(new Request(`${SVC_HOST}/api/service-appointments?tenant=${tenant}`, {
+    method: 'PATCH', headers: ownerHeaders(key), body: JSON.stringify(body)
+  }), env, ctx);
+const svcList = (env, key, query = '', tenant = 'shop-a') =>
+  worker.fetch(new Request(`${SVC_HOST}/api/service-appointments?tenant=${tenant}${query.replace('?', '&')}`, { headers: key ? ownerHeaders(key) : {} }), env);
+const svcCreate = async (env, startsAt, options) => {
+  const response = await svcBook(env, startsAt, options);
+  assert.equal(response.status, 201, await response.clone().text());
+  return response.json();
+};
+
+test('capacity: a shop with two staff takes two bookings per slot, never three, even in parallel', async () => {
+  const { env, rows } = await createHardeningEnv({ catalog: svcCatalog({ service_capacity: 2 }) });
+  const date = svcLocalDate(2);
+  const first = await svcSlots(env, date);
+  assert.equal(first.capacity, 2);
+  assert.ok(first.slots.length > 0 && first.slots.every(slot => slot.remaining === 2));
+  const target = first.slots[2].starts_at; // 09:30 local
+
+  // Five customers race for the same slot: exactly two win.
+  const results = await Promise.all(Array.from({ length: 5 }, (_, index) => svcBook(env, target, { name: `Racer ${index}` })));
+  assert.deepEqual(results.map(response => response.status).sort(), [201, 201, 409, 409, 409]);
+  for (const response of results.filter(r => r.status === 409)) {
+    assert.equal((await response.json()).error_code, 'slot_unavailable');
+  }
+  const perBlock = rows('SELECT slot_start, COUNT(*) AS n, MAX(seat) AS top FROM storefront_appointment_slots GROUP BY slot_start');
+  assert.ok(perBlock.length > 0 && perBlock.every(block => block.n <= 2 && block.top <= 2));
+
+  // Availability reflects the full slot; a slot that ends before the full blocks is untouched.
+  const after = await svcSlots(env, date);
+  assert.equal(after.slots.some(slot => slot.starts_at === target), false);
+  assert.equal(after.slots.find(slot => slot.starts_at === first.slots[8].starts_at).remaining, 2);
+  // A booking overlapping a full block is refused as a whole, and leaves nothing behind.
+  const heldBefore = rows('SELECT COUNT(*) AS n FROM storefront_appointment_slots')[0].n;
+  assert.equal((await svcBook(env, first.slots[3].starts_at)).status, 409);
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_appointment_slots')[0].n, heldBefore);
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_service_appointments')[0].n, 2);
+});
+
+test('capacity defaults to one, and a lowered capacity never lets a block exceed it', async () => {
+  const { env, db, rows } = await createHardeningEnv({ catalog: svcCatalog({ service_capacity: 3 }) });
+  const date = svcLocalDate(2);
+  const slots = (await svcSlots(env, date)).slots;
+  for (let index = 0; index < 3; index++) await svcCreate(env, slots[0].starts_at);
+  // The owner lowers capacity to 2 and republishes while three bookings already exist.
+  db.run('UPDATE catalog_snapshots SET payload=? WHERE tenant_id=?', [JSON.stringify(svcCatalog({ service_capacity: 2 })), 'shop-a']);
+  assert.equal((await svcBook(env, slots[0].starts_at)).status, 409);
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_appointment_slots WHERE slot_start=?', [slots[0].starts_at])[0].n, 3);
+  // Out-of-range or non-integer settings fall back to a single seat.
+  for (const bad of [0, -1, 21, 1.5, 'many', null]) {
+    db.run('UPDATE catalog_snapshots SET payload=? WHERE tenant_id=?', [JSON.stringify(svcCatalog({ service_capacity: bad })), 'shop-a']);
+    assert.equal((await svcSlots(env, date)).capacity, 1, `capacity ${String(bad)}`);
+  }
+});
+
+test('customer cancel by token: unguessable, frees the slot, notifies the owner once', async () => {
+  const { env, rows } = await createHardeningEnv({ catalog: svcCatalog(), tenants: ['shop-a', 'shop-b'] });
+  const date = svcLocalDate(2);
+  const slot = (await svcSlots(env, date)).slots[0].starts_at;
+  const ctx = hardeningCtx();
+  const created = await svcCreate(env, slot, { ctx });
+  await ctx.settle();
+  const token = created.manage_token;
+  assert.match(token, /^[A-Za-z0-9_-]{43}$/);
+  assert.equal(JSON.stringify(created).includes('sam@customer.example'), false, 'create response has no contact details');
+  const stored = rows('SELECT cancel_token_hash FROM storefront_service_appointments')[0].cancel_token_hash;
+  assert.equal(stored, await sha256HexForTest(token), 'only a hash of the token is stored');
+
+  // Wrong, malformed, cross-shop tokens and the appointment id are all the same 404.
+  for (const bad of ['nope', `${token.slice(0, -1)}x`, 'a'.repeat(43), created.appointment.id]) {
+    const response = await svcManage(env, bad, { action: 'cancel' });
+    assert.equal(response.status, 404);
+    assert.equal((await response.json()).error_code, 'appointment_not_found');
+  }
+  assert.equal((await svcManage(env, token, { action: 'view' }, { tenant: 'shop-b' })).status, 404);
+  assert.equal(rows('SELECT status FROM storefront_service_appointments')[0].status, 'pending');
+
+  const view = await (await svcManage(env, token, { action: 'view' })).json();
+  assert.equal(view.appointment.status, 'pending');
+  assert.equal(view.appointment.can_cancel, true);
+  assert.equal(view.appointment.reschedules_remaining, 2);
+  const keys = Object.keys(view.appointment);
+  for (const forbidden of ['customer_email', 'customer_phone', 'customer_name', 'cancel_token_hash', 'payment_subaccount_code', 'payment_reference', 'tenant_id', 'idempotency_key', 'id']) {
+    assert.equal(keys.includes(forbidden), false, `${forbidden} is not customer-visible`);
+  }
+
+  // The slot is taken until the customer cancels.
+  assert.equal((await svcSlots(env, date)).slots.some(item => item.starts_at === slot), false);
+  const cancelCtx = hardeningCtx();
+  const cancelled = await svcManage(env, token, { action: 'cancel', reason: 'Plans changed' }, { ctx: cancelCtx });
+  assert.equal(cancelled.status, 200);
+  const body = await cancelled.json();
+  assert.equal(body.appointment.status, 'cancelled');
+  assert.equal(body.appointment.cancelled_by, 'you');
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_appointment_slots')[0].n, 0, 'every seat was released');
+  assert.equal((await svcSlots(env, date)).slots.some(item => item.starts_at === slot), true, 'capacity is free again');
+  const repeat = await svcManage(env, token, { action: 'cancel' }, { ctx: cancelCtx });
+  assert.equal(repeat.status, 200);
+  assert.equal((await repeat.json()).already_cancelled, true);
+  const moveCancelled = await svcManage(env, token, { action: 'reschedule', starts_at: slot });
+  assert.equal(moveCancelled.status, 409);
+  assert.equal((await moveCancelled.json()).error_code, 'not_changeable');
+
+  // The owner heard about it exactly once, with a first name only.
+  await cancelCtx.settle();
+  const notes = rows("SELECT * FROM owner_notifications WHERE kind='booking_cancelled'");
+  assert.equal(notes.length, 1);
+  assert.equal(notes[0].ref, created.appointment.id);
+  assert.match(notes[0].body, /^Sam cancelled Haircut/);
+  assert.equal(JSON.stringify(notes[0]).includes('customer.example'), false);
+});
+
+test('customer cancel and reschedule are refused inside the cutoff window; the owner may still cancel', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ catalog: svcCatalog({ service_cancel_cutoff_hours: 4 }) });
+  const slot = (await svcSlots(env, svcLocalDate(2))).slots[0].starts_at;
+  const { manage_token: token, appointment } = await svcCreate(env, slot);
+  const soon = new Date(Date.now() + 3 * 3_600_000).toISOString();
+  db.run('UPDATE storefront_service_appointments SET starts_at=? WHERE id=?', [soon, appointment.id]);
+  const view = (await (await svcManage(env, token, { action: 'view' })).json()).appointment;
+  assert.equal(view.can_cancel, false);
+  assert.equal(view.can_reschedule, false);
+  assert.equal(view.cancel_cutoff_hours, 4);
+  for (const action of [{ action: 'cancel' }, { action: 'reschedule', starts_at: slot }]) {
+    const response = await svcManage(env, token, action);
+    assert.equal(response.status, 409);
+    const body = await response.json();
+    assert.equal(body.error_code, 'cutoff_passed');
+    assert.ok(body.cancel_cutoff_at);
+  }
+  assert.equal(rows('SELECT status FROM storefront_service_appointments')[0].status, 'pending');
+  // Three hours out is fine under the default two-hour window.
+  db.run('UPDATE catalog_snapshots SET payload=? WHERE tenant_id=?', [JSON.stringify(svcCatalog()), 'shop-a']);
+  assert.equal((await (await svcManage(env, token, { action: 'view' })).json()).appointment.can_cancel, true);
+  db.run('UPDATE catalog_snapshots SET payload=? WHERE tenant_id=?', [JSON.stringify(svcCatalog({ service_cancel_cutoff_hours: 4 })), 'shop-a']);
+  // The owner can cancel anyway, and the reason is shown to the customer.
+  const ownerCancel = await svcOwner(env, tokens['shop-a'], { id: appointment.id, action: 'cancel', reason: 'Stylist is ill' });
+  assert.equal(ownerCancel.status, 200);
+  const cancelled = (await ownerCancel.json()).appointment;
+  assert.equal(cancelled.status, 'cancelled');
+  assert.equal(cancelled.cancelled_by, 'owner');
+  const afterwards = (await (await svcManage(env, token, { action: 'view' })).json()).appointment;
+  assert.equal(afterwards.cancelled_by, 'shop');
+  assert.equal(afterwards.cancel_reason, 'Stylist is ill');
+});
+
+test('a paid deposit is flagged for refund (never refunded by the Worker) and a late payment is flagged too', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({
+    catalog: svcCatalog({ service_deposit_percent: 20 }), extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_refund' }
+  });
+  const slot = (await svcSlots(env, svcLocalDate(2))).slots[0].starts_at;
+  const { manage_token: token, appointment } = await svcCreate(env, slot);
+  db.run("UPDATE storefront_service_appointments SET status='confirmed',payment_status='paid',payment_reference='ESHOP_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' WHERE id=?", [appointment.id]);
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new Error('the Worker must not call Paystack to refund'); };
+  try {
+    const ctx = hardeningCtx();
+    const cancelled = await svcManage(env, token, { action: 'cancel' }, { ctx });
+    assert.equal(cancelled.status, 200);
+    const view = (await cancelled.json()).appointment;
+    assert.equal(view.deposit_refund_due, true);
+    assert.equal(view.deposit_refunded, false);
+    await ctx.settle();
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  const flagged = rows('SELECT deposit_refund_due, payment_status FROM storefront_service_appointments')[0];
+  assert.equal(flagged.deposit_refund_due, 1);
+  assert.equal(flagged.payment_status, 'paid', 'the payment record is untouched');
+  assert.match(rows("SELECT body FROM owner_notifications WHERE kind='booking_cancelled'")[0].body, /refund it in Paystack/);
+  assert.equal((await (await svcList(env, tokens['shop-a'])).json()).counts.refunds_due, 1);
+  // The owner records the refund once they made it in Paystack.
+  const refunded = await svcOwner(env, tokens['shop-a'], { id: appointment.id, action: 'deposit_refunded' });
+  assert.equal(refunded.status, 200);
+  const done = (await refunded.json()).appointment;
+  assert.equal(done.deposit_refund_due, false);
+  assert.ok(done.deposit_refunded_at);
+  assert.equal((await svcOwner(env, tokens['shop-a'], { id: appointment.id, action: 'deposit_refunded' })).status, 200, 'repeat is idempotent');
+
+  // A deposit link paid after the booking was cancelled is flagged for refund and the owner is told.
+  const second = await svcCreate(env, (await svcSlots(env, svcLocalDate(3))).slots[0].starts_at);
+  const reference = `ESHOP_${'B'.repeat(32)}`;
+  db.run("UPDATE storefront_service_appointments SET status='cancelled',cancelled_by='customer',payment_status='pending',payment_reference=?,payment_subaccount_code='ACCT_x' WHERE id=?", [reference, second.appointment.id]);
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    data: { reference, amount: 50000, currency: 'KES', status: 'success', domain: 'test', subaccount: { subaccount_code: 'ACCT_x' } }
+  }), { status: 200 });
+  try {
+    const ctx = hardeningCtx();
+    const verified = await worker.fetch(new Request(`${SVC_HOST}/api/service-appointments/payment?tenant=shop-a&reference=${reference}`), env, ctx);
+    assert.equal(verified.status, 200);
+    await ctx.settle();
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  const late = rows('SELECT deposit_refund_due, payment_status FROM storefront_service_appointments WHERE id=?', [second.appointment.id])[0];
+  assert.deepEqual({ ...late }, { deposit_refund_due: 1, payment_status: 'paid' });
+  assert.equal(rows("SELECT * FROM owner_notifications WHERE kind='booking_refund'").length, 1);
+});
+
+test('reschedule by token is atomic: validates the slot, capacity, hours and the limit, and notifies the owner', async () => {
+  const { env, rows, tokens } = await createHardeningEnv({ catalog: svcCatalog() });
+  const dayOne = (await svcSlots(env, svcLocalDate(2))).slots;
+  const dayTwo = (await svcSlots(env, svcLocalDate(3))).slots;
+  const mine = await svcCreate(env, dayOne[0].starts_at);
+  await svcCreate(env, dayTwo[0].starts_at, { name: 'Other Person' });
+  const token = mine.manage_token;
+  const heldBefore = rows('SELECT slot_start FROM storefront_appointment_slots WHERE appointment_id=? ORDER BY slot_start', [mine.appointment.id]);
+  assert.ok(heldBefore.length >= 4);
+
+  // A slot another customer holds is refused and my booking is exactly as it was.
+  const clash = await svcManage(env, token, { action: 'reschedule', starts_at: dayTwo[0].starts_at });
+  assert.equal(clash.status, 409);
+  assert.equal((await clash.json()).error_code, 'slot_unavailable');
+  const unchanged = rows('SELECT starts_at, reschedule_count FROM storefront_service_appointments WHERE id=?', [mine.appointment.id])[0];
+  assert.deepEqual({ ...unchanged }, { starts_at: dayOne[0].starts_at, reschedule_count: 0 });
+  assert.deepEqual(rows('SELECT slot_start FROM storefront_appointment_slots WHERE appointment_id=? ORDER BY slot_start', [mine.appointment.id]), heldBefore);
+
+  // Outside opening hours, off the grid, the same time, and a past time are all refused.
+  for (const [startsAt, status, code] of [
+    [`${svcLocalDate(3)}T00:00:00.000Z`, 409, 'slot_unavailable'],
+    [dayTwo[2].starts_at.replace(/:00\.000Z$/, ':07.000Z'), 409, 'slot_unavailable'],
+    ['soon', 400, 'invalid_request'],
+    [dayOne[0].starts_at, 409, 'slot_unchanged'],
+    [new Date(Date.now() - 86_400_000).toISOString(), 409, 'slot_unavailable']
+  ]) {
+    const response = await svcManage(env, token, { action: 'reschedule', starts_at: startsAt });
+    assert.equal(response.status, status, startsAt);
+    assert.equal((await response.json()).error_code, code, startsAt);
+  }
+
+  // A move that overlaps my own current time works: my own seats do not block me.
+  const mySlots = await (await svcManage(env, token, { action: 'slots', date: svcLocalDate(2) })).json();
+  assert.ok(mySlots.slots.some(slot => slot.starts_at === dayOne[1].starts_at));
+  assert.equal((await svcSlots(env, svcLocalDate(2))).slots.some(slot => slot.starts_at === dayOne[1].starts_at), false, 'but the public list still shows it taken');
+  const ctx = hardeningCtx();
+  const moved = await svcManage(env, token, { action: 'reschedule', starts_at: dayOne[1].starts_at }, { ctx });
+  assert.equal(moved.status, 200);
+  const movedView = (await moved.json()).appointment;
+  assert.equal(movedView.starts_at, dayOne[1].starts_at);
+  assert.equal(movedView.reschedules_remaining, 1);
+  await ctx.settle();
+  const taken = rows('SELECT slot_start FROM storefront_appointment_slots WHERE appointment_id=? ORDER BY slot_start', [mine.appointment.id]);
+  assert.equal(taken[0].slot_start, dayOne[1].starts_at);
+  assert.equal(taken.length, heldBefore.length);
+  assert.match(rows("SELECT body FROM owner_notifications WHERE kind='booking_rescheduled'")[0].body, /^Sam moved Haircut to /);
+
+  // The second move uses the last allowed one; the third is refused, but the owner can still move it.
+  assert.equal((await svcManage(env, token, { action: 'reschedule', starts_at: dayOne[8].starts_at })).status, 200);
+  const limited = await svcManage(env, token, { action: 'reschedule', starts_at: dayOne[16].starts_at });
+  assert.equal(limited.status, 409);
+  assert.equal((await limited.json()).error_code, 'reschedule_limit');
+  assert.equal((await (await svcManage(env, token, { action: 'view' })).json()).appointment.can_reschedule, false);
+  const ownerMove = await svcOwner(env, tokens['shop-a'], { id: mine.appointment.id, action: 'reschedule', starts_at: dayOne[16].starts_at });
+  assert.equal(ownerMove.status, 200);
+  const ownerView = (await ownerMove.json()).appointment;
+  assert.equal(ownerView.starts_at, dayOne[16].starts_at);
+  assert.equal(ownerView.reschedule_count, 2, 'an owner move does not use up the customer limit');
+});
+
+test('parallel reschedules into the last seat cannot double-book it', async () => {
+  const { env, rows } = await createHardeningEnv({ catalog: svcCatalog() });
+  const slots = (await svcSlots(env, svcLocalDate(2))).slots;
+  const a = await svcCreate(env, slots[0].starts_at, { name: 'Alice' });
+  const b = await svcCreate(env, slots[8].starts_at, { name: 'Bella' });
+  const target = slots[16].starts_at;
+  const results = await Promise.all([a, b].map(item => svcManage(env, item.manage_token, { action: 'reschedule', starts_at: target })));
+  assert.deepEqual(results.map(response => response.status).sort(), [200, 409]);
+  assert.equal((await results.find(response => response.status === 409).json()).error_code, 'slot_unavailable');
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_appointment_slots WHERE slot_start=?', [target])[0].n, 1);
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_appointment_slots')[0].n, 5 * 2, 'two bookings of five blocks each; the loser kept its original time');
+});
+
+test('owner endpoints: authentication, filters, and every state transition with its error code', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({
+    catalog: svcCatalog(), tenants: ['shop-a', 'shop-b'], extraEnv: { PUBLISH_TOKEN: 'admin-key' }
+  });
+  const slots = (await svcSlots(env, svcLocalDate(2))).slots;
+  const one = await svcCreate(env, slots[0].starts_at, { name: 'One Customer' });
+  const two = await svcCreate(env, slots[8].starts_at, { name: 'Two Customer', service: 9 });
+  const three = await svcCreate(env, slots[16].starts_at, { name: 'Three Customer' });
+
+  assert.equal((await svcList(env, '')).status, 401);
+  assert.equal((await svcList(env, tokens['shop-b'])).status, 401, 'another shop key is refused');
+  assert.equal((await svcOwner(env, 'wrong', { id: one.appointment.id, action: 'confirm' })).status, 401);
+  assert.equal((await svcList(env, 'admin-key')).status, 200, 'admin is allowed');
+  const listed = await (await svcList(env, tokens['shop-a'])).json();
+  assert.equal(listed.appointments.length, 3);
+  assert.equal(listed.counts.pending, 3);
+  assert.equal((await (await svcList(env, tokens['shop-b'], '', 'shop-b')).json()).appointments.length, 0, 'other shops see nothing');
+  const first = listed.appointments.find(item => item.id === one.appointment.id);
+  assert.equal(first.customer_name, 'One Customer');
+  assert.equal(first.customer_email, 'sam@customer.example');
+  assert.equal('cancel_token_hash' in first, false);
+  assert.equal('payment_subaccount_code' in first, false);
+  assert.equal(first.reference, one.appointment.reference);
+
+  // Filters.
+  const upcoming = await (await svcList(env, tokens['shop-a'], '?view=upcoming&status=pending')).json();
+  assert.deepEqual(upcoming.appointments.map(item => item.starts_at), [slots[0].starts_at, slots[8].starts_at, slots[16].starts_at], 'upcoming is soonest first');
+  assert.equal((await (await svcList(env, tokens['shop-a'], '?view=past')).json()).appointments.length, 0);
+  assert.equal((await (await svcList(env, tokens['shop-a'], '?service_id=9')).json()).appointments.length, 1);
+  const paged = await (await svcList(env, tokens['shop-a'], '?limit=2&view=upcoming')).json();
+  assert.equal(paged.appointments.length, 2);
+  assert.equal(paged.has_more, true);
+  for (const bad of ['?view=sideways', '?status=sleeping', '?limit=0', '?limit=500', '?from=yesterday']) {
+    assert.equal((await svcList(env, tokens['shop-a'], bad)).status, 400, bad);
+  }
+
+  // Transitions.
+  const act = (id, action, extra = {}) => svcOwner(env, tokens['shop-a'], { id, action, ...extra });
+  assert.equal((await act('not-a-uuid', 'confirm')).status, 400);
+  assert.equal((await act(crypto.randomUUID(), 'confirm')).status, 404);
+  assert.equal((await act(one.appointment.id, 'explode')).status, 400);
+  const confirmed = await act(one.appointment.id, 'confirm');
+  assert.equal(confirmed.status, 200);
+  assert.equal((await confirmed.json()).appointment.status, 'confirmed');
+  const again = await act(one.appointment.id, 'confirm');
+  assert.equal(again.status, 409);
+  assert.equal((await again.json()).error_code, 'invalid_state');
+  const early = await act(one.appointment.id, 'complete');
+  assert.equal(early.status, 409);
+  assert.equal((await early.json()).error_code, 'not_started');
+  assert.equal((await act(two.appointment.id, 'complete')).status, 409, 'a pending booking cannot be completed');
+  const declined = await act(two.appointment.id, 'decline');
+  assert.equal(declined.status, 200);
+  assert.equal((await declined.json()).appointment.status, 'rejected');
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_appointment_slots WHERE appointment_id=?', [two.appointment.id])[0].n, 0, 'declining frees the seats');
+  assert.equal((await act(two.appointment.id, 'cancel')).status, 409, 'a declined booking cannot be cancelled');
+
+  // Past confirmed bookings can be marked completed or no-show; an outcome is final.
+  const past = new Date(Date.now() - 3 * 3_600_000).toISOString();
+  db.run('UPDATE storefront_service_appointments SET starts_at=? WHERE id=?', [past, one.appointment.id]);
+  const completed = await act(one.appointment.id, 'complete');
+  assert.equal(completed.status, 200);
+  assert.equal((await completed.json()).appointment.status, 'completed');
+  assert.equal((await act(one.appointment.id, 'no_show')).status, 409);
+  assert.equal((await act(one.appointment.id, 'cancel')).status, 409);
+  await act(three.appointment.id, 'confirm');
+  db.run('UPDATE storefront_service_appointments SET starts_at=? WHERE id=?', [past, three.appointment.id]);
+  const noShow = await act(three.appointment.id, 'no_show');
+  assert.equal(noShow.status, 200);
+  assert.equal((await noShow.json()).appointment.status, 'no_show');
+  const history = await (await svcList(env, tokens['shop-a'], '?view=past&status=completed,no_show')).json();
+  assert.equal(history.appointments.length, 2);
+  assert.equal((await (await svcList(env, tokens['shop-a'])).json()).counts.pending, 0);
+});
+
+test('owner reschedule and cancel keep capacity consistent and refuse bad times', async () => {
+  const { env, rows, tokens } = await createHardeningEnv({ catalog: svcCatalog() });
+  const slots = (await svcSlots(env, svcLocalDate(2))).slots;
+  const a = await svcCreate(env, slots[0].starts_at);
+  const b = await svcCreate(env, slots[8].starts_at);
+  const move = (id, startsAt) => svcOwner(env, tokens['shop-a'], { id, action: 'reschedule', starts_at: startsAt });
+  const blocked = await move(a.appointment.id, slots[9].starts_at);
+  assert.equal(blocked.status, 409);
+  assert.equal((await blocked.json()).error_code, 'slot_unavailable');
+  assert.equal((await move(a.appointment.id, 'soon')).status, 400);
+  assert.equal((await move(a.appointment.id, `${svcLocalDate(2)}T20:00:00.000Z`)).status, 409, 'after closing time');
+  assert.equal(rows('SELECT starts_at FROM storefront_service_appointments WHERE id=?', [a.appointment.id])[0].starts_at, slots[0].starts_at);
+  assert.equal((await move(a.appointment.id, slots[24].starts_at)).status, 200);
+  assert.equal((await svcOwner(env, tokens['shop-a'], { id: b.appointment.id, action: 'cancel' })).status, 200);
+  assert.equal((await svcSlots(env, svcLocalDate(2))).slots.some(slot => slot.starts_at === slots[8].starts_at), true);
+});
+
+test('booking emails: the customer gets a manage link, reminders go out once, and a missing email key never blocks anything', async () => {
+  const { env, db, rows } = await createHardeningEnv({
+    catalog: svcCatalog(), extraEnv: { RESEND_API_KEY: 're_test_key', EMAIL_FROM: 'Shop <no-reply@shop.example>' }
+  });
+  const originalFetch = globalThis.fetch;
+  const sent = [];
+  let failing = false;
+  globalThis.fetch = async (url, init) => {
+    assert.equal(String(url), 'https://api.resend.com/emails');
+    sent.push(JSON.parse(init.body));
+    return failing ? new Response('{}', { status: 500 }) : new Response('{"id":"x"}', { status: 200 });
+  };
+  try {
+    const slots = (await svcSlots(env, svcLocalDate(2))).slots;
+    const ctx = hardeningCtx();
+    const booked = await svcCreate(env, slots[0].starts_at, { ctx, email: 'Sam@Customer.Example' });
+    await ctx.settle();
+    const receipt = sent.find(item => /Booking request received/.test(item.subject));
+    assert.deepEqual(receipt.to, ['sam@customer.example']);
+    assert.ok(receipt.text.includes(`/#/booking/${booked.manage_token}`), 'the email carries the manage link');
+
+    // Reminders: only confirmed bookings starting inside the window, once.
+    const confirmedSoon = await svcCreate(env, slots[8].starts_at, { name: 'Soon Client', email: 'soon@customer.example' });
+    const pendingSoon = await svcCreate(env, slots[16].starts_at, { name: 'Pending Client', email: 'pending@customer.example' });
+    const farAway = await svcCreate(env, (await svcSlots(env, svcLocalDate(6))).slots[0].starts_at, { name: 'Far Client', email: 'far@customer.example' });
+    db.run("UPDATE storefront_service_appointments SET status='confirmed' WHERE id IN (?,?)", [confirmedSoon.appointment.id, farAway.appointment.id]);
+    db.run('UPDATE storefront_service_appointments SET starts_at=? WHERE id=?', [new Date(Date.now() + 10 * 3_600_000).toISOString(), confirmedSoon.appointment.id]);
+    sent.length = 0;
+    const scheduleCtx = hardeningCtx();
+    await worker.scheduled({ cron: '17 3 * * *' }, env, scheduleCtx);
+    await scheduleCtx.settle();
+    const reminders = sent.filter(item => /^Reminder:/.test(item.subject));
+    assert.equal(reminders.length, 1);
+    assert.deepEqual(reminders[0].to, ['soon@customer.example']);
+    assert.ok(rows('SELECT reminded_at FROM storefront_service_appointments WHERE id=?', [confirmedSoon.appointment.id])[0].reminded_at);
+    assert.equal(rows('SELECT reminded_at FROM storefront_service_appointments WHERE id=?', [pendingSoon.appointment.id])[0].reminded_at, null);
+    assert.equal(rows('SELECT reminded_at FROM storefront_service_appointments WHERE id=?', [farAway.appointment.id])[0].reminded_at, null);
+
+    // Idempotent: a second run (or two overlapping runs) sends nothing more.
+    sent.length = 0;
+    await Promise.all([worker.scheduled({}, env, hardeningCtx()), worker.scheduled({}, env, hardeningCtx())]);
+    assert.equal(sent.filter(item => /^Reminder:/.test(item.subject)).length, 0);
+
+    // A provider failure releases the claim for a later run, up to three attempts.
+    db.run('UPDATE storefront_service_appointments SET reminded_at=NULL,reminder_attempts=0 WHERE id=?', [confirmedSoon.appointment.id]);
+    failing = true;
+    for (let attempt = 1; attempt <= 4; attempt++) await worker.scheduled({}, env, hardeningCtx());
+    const row = rows('SELECT reminded_at, reminder_attempts FROM storefront_service_appointments WHERE id=?', [confirmedSoon.appointment.id])[0];
+    assert.equal(row.reminded_at, null);
+    assert.equal(row.reminder_attempts, 3, 'gives up after three tries');
+    failing = false;
+
+    // Moving a reminded booking re-arms its reminder.
+    db.run('UPDATE storefront_service_appointments SET reminded_at=?,reminder_attempts=1 WHERE id=?', [new Date().toISOString(), confirmedSoon.appointment.id]);
+    const tokenRow = rows('SELECT id FROM storefront_service_appointments WHERE id=?', [confirmedSoon.appointment.id])[0];
+    assert.ok(tokenRow);
+    const moved = await svcManage(env, confirmedSoon.manage_token, { action: 'reschedule', starts_at: (await svcSlots(env, svcLocalDate(4))).slots[10].starts_at });
+    assert.equal(moved.status, 200);
+    const rearmed = rows('SELECT reminded_at, reminder_attempts FROM storefront_service_appointments WHERE id=?', [confirmedSoon.appointment.id])[0];
+    assert.deepEqual({ ...rearmed }, { reminded_at: null, reminder_attempts: 0 });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+
+  // Without a Resend key nothing is sent, nothing is marked, and booking and the cron still work.
+  const bare = await createHardeningEnv({ catalog: svcCatalog() });
+  globalThis.fetch = async () => { throw new Error('no email may be attempted without a key'); };
+  try {
+    const slots = (await svcSlots(bare.env, svcLocalDate(2))).slots;
+    const booked = await svcCreate(bare.env, slots[0].starts_at);
+    bare.db.run("UPDATE storefront_service_appointments SET status='confirmed',starts_at=? WHERE id=?", [new Date(Date.now() + 5 * 3_600_000).toISOString(), booked.appointment.id]);
+    await worker.scheduled({}, bare.env, hardeningCtx());
+    assert.equal(bare.rows('SELECT reminded_at FROM storefront_service_appointments')[0].reminded_at, null);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('booking validation: idempotent replay carries no token, stale service length is refused, and errors carry codes', async () => {
+  const { env } = await createHardeningEnv({ catalog: svcCatalog() });
+  const slots = (await svcSlots(env, svcLocalDate(2))).slots;
+  const key = crypto.randomUUID();
+  const send = (extra = {}) => worker.fetch(new Request(`${SVC_HOST}/api/service-appointments?tenant=shop-a`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': svcFresh() },
+    body: JSON.stringify({
+      idempotency_key: key, service_id: 8, starts_at: slots[0].starts_at, customer_name: 'Sam',
+      customer_email: 'sam@customer.example', customer_phone: '+254700000111', ...extra
+    })
+  }), env);
+  const stale = await send({ duration_minutes: 45 });
+  assert.equal(stale.status, 409);
+  assert.equal((await stale.json()).error_code, 'service_changed');
+  assert.equal((await send({ duration_minutes: 60 })).status, 201);
+  const replay = await send();
+  assert.equal(replay.status, 200);
+  const replayBody = await replay.json();
+  assert.equal(replayBody.duplicate, true);
+  assert.equal('manage_token' in replayBody, false);
+  const invalid = await send({ customer_email: 'nope', idempotency_key: crypto.randomUUID() });
+  assert.equal(invalid.status, 400);
+  assert.equal((await invalid.json()).error_code, 'invalid_request');
+  const taken = await svcBook(env, slots[0].starts_at, { service: 9 });
+  assert.equal(taken.status, 409, 'a different service cannot take the only seat');
+  assert.equal((await taken.json()).error_code, 'slot_unavailable');
+});
+
+test('migration 0030 keeps existing appointments and slots (existing slots become seat 1)', async () => {
+  const SQL = await initSqlJs({ locateFile: file => fileURLToPath(new URL(`../node_modules/sql.js/dist/${file}`, import.meta.url)) });
+  const db = new SQL.Database();
+  const directory = new URL('../cloudflare/migrations/', import.meta.url);
+  const files = (await readdir(directory)).filter(name => name.endsWith('.sql')).sort();
+  assert.ok(files.includes('0030_service_booking_management.sql'));
+  for (const file of files.filter(name => name < '0030')) db.exec(await readFile(new URL(file, directory), 'utf8'));
+  db.run(
+    `INSERT INTO storefront_service_appointments
+     (id,tenant_id,idempotency_key,service_id,service_name,service_price_cents,currency,duration_minutes,starts_at,ends_at,
+      slot_reserved_until,timezone,customer_name,customer_email,customer_phone,status,request_expires_at,deposit_percent,
+      deposit_cents,payment_status,payment_reference,created_at,updated_at,payment_subaccount_code)
+     VALUES ('a-1','shop-a','k-1','8','Haircut',2500,'KES',60,'2030-01-01T09:00:00.000Z','2030-01-01T10:00:00.000Z',
+      '2030-01-01T10:15:00.000Z','Africa/Nairobi','Sam','sam@x.example','+254700000000','confirmed','2030-01-02T00:00:00.000Z',20,
+      500,'paid','ESHOP_KEEP','now','now','ACCT_keep')`
+  );
+  db.run("INSERT INTO storefront_appointment_slots (tenant_id,slot_start,appointment_id,expires_at) VALUES ('shop-a','2030-01-01T09:00:00.000Z','a-1','2030-01-01T10:15:00.000Z')");
+  for (const file of files.filter(name => name >= '0030')) db.exec(await readFile(new URL(file, directory), 'utf8'));
+  const appointment = db.exec("SELECT status,payment_reference,payment_subaccount_code,reschedule_count,deposit_refund_due,cancel_token_hash FROM storefront_service_appointments WHERE id='a-1'")[0].values[0];
+  assert.deepEqual(appointment, ['confirmed', 'ESHOP_KEEP', 'ACCT_keep', 0, 0, null]);
+  assert.deepEqual(db.exec('SELECT seat,appointment_id FROM storefront_appointment_slots')[0].values, [[1, 'a-1']]);
+  // The new statuses are accepted; unknown ones still are not.
+  db.run("UPDATE storefront_service_appointments SET status='no_show' WHERE id='a-1'");
+  assert.throws(() => db.run("UPDATE storefront_service_appointments SET status='bogus' WHERE id='a-1'"), /CHECK/);
+  // Seats are unique per block: a second row for the same seat is refused, another seat is fine.
+  assert.throws(() => db.run("INSERT INTO storefront_appointment_slots (tenant_id,slot_start,seat,appointment_id,expires_at) VALUES ('shop-a','2030-01-01T09:00:00.000Z',1,'a-2','later')"), /UNIQUE/);
+  db.run("INSERT INTO storefront_appointment_slots (tenant_id,slot_start,seat,appointment_id,expires_at) VALUES ('shop-a','2030-01-01T09:00:00.000Z',2,'a-2','later')");
+  db.close();
+});
+
+test('publishing a catalogue keeps the booking rules and falls back to safe defaults', async () => {
+  const env = { DB: createDatabase(), TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
+  const put = store => worker.fetch(new Request('https://rrobin.co.ke/api/catalog', {
+    method: 'PUT', headers: { Authorization: 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ categories: [], products: [{ id: 8, name: 'Haircut', price: 2500, duration_minutes: 45 }], store: { name: 'Studio', currency: 'KES', offer_type: 'services', ...store } })
+  }), env);
+  const read = async () => (await (await worker.fetch(new Request('https://rrobin.co.ke/api/catalog'), env)).json()).store;
+  assert.equal((await put({ service_capacity: 3, service_cancel_cutoff_hours: 6, service_max_reschedules: 1 })).status, 200);
+  const saved = await read();
+  assert.deepEqual([saved.service_capacity, saved.service_cancel_cutoff_hours, saved.service_max_reschedules], [3, 6, 1]);
+  assert.equal((await put({ service_capacity: 99, service_cancel_cutoff_hours: -1, service_max_reschedules: 'x' })).status, 200);
+  const defaults = await read();
+  assert.deepEqual([defaults.service_capacity, defaults.service_cancel_cutoff_hours, defaults.service_max_reschedules], [1, 2, 2]);
+  assert.equal((await put({ service_cancel_cutoff_hours: 0 })).status, 200);
+  assert.equal((await read()).service_cancel_cutoff_hours, 0, 'zero hours is a valid cutoff');
+});
+
+test('the manage endpoint is throttled per connection and rejects bad input without touching bookings', async () => {
+  const { env, rows } = await createHardeningEnv({ catalog: svcCatalog() });
+  const slot = (await svcSlots(env, svcLocalDate(2))).slots[0].starts_at;
+  const created = await svcCreate(env, slot);
+  const ip = '198.51.100.77';
+  const statuses = [];
+  for (let attempt = 0; attempt < 121; attempt++) {
+    statuses.push((await svcManage(env, 'x'.repeat(43), { action: 'cancel' }, { ip })).status);
+  }
+  assert.equal(statuses.filter(status => status === 404).length, 120);
+  assert.equal(statuses.at(-1), 429);
+  // Even the legitimate token is throttled from the same connection, and works from another one.
+  assert.equal((await svcManage(env, created.manage_token, { action: 'view' }, { ip })).status, 429);
+  assert.equal((await svcManage(env, created.manage_token, { action: 'view' })).status, 200);
+  const odd = await svcManage(env, created.manage_token, { action: 'explode' });
+  assert.equal(odd.status, 400);
+  assert.equal((await odd.json()).error_code, 'invalid_request');
+  const huge = await worker.fetch(new Request(`${SVC_HOST}/api/service-appointments/manage?tenant=shop-a`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': svcFresh() }, body: JSON.stringify({ token: 'x', pad: 'y'.repeat(4000) })
+  }), env);
+  assert.equal(huge.status, 413);
+  assert.equal((await worker.fetch(new Request(`${SVC_HOST}/api/service-appointments/manage?tenant=shop-a`), env)).status, 405);
+  assert.equal(rows('SELECT status FROM storefront_service_appointments')[0].status, 'pending');
+});
+
+// Wraps the database so `before` runs once, right before the first statement or batch whose first SQL matches.
+// It lets a test land a competing request in the gap between a handler's read and its write.
+function svcRaceEnv(env, pattern, before) {
+  let fired = false;
+  const fire = async sql => {
+    if (fired || !pattern.test(sql)) return;
+    fired = true;
+    await before();
+  };
+  const DB = {
+    prepare(sql) {
+      const prepared = env.DB.prepare(sql);
+      return {
+        bind: (...values) => {
+          const bound = prepared.bind(...values);
+          return Object.assign(Object.create(bound), {
+            sql, runSync: () => bound.runSync(), first: () => bound.first(), all: () => bound.all(),
+            run: async () => { await fire(sql); return bound.run(); }
+          });
+        }
+      };
+    },
+    async batch(statements) {
+      await fire(statements[0]?.sql || '');
+      return env.DB.batch(statements);
+    }
+  };
+  return { ...env, DB };
+}
+
+test('owner confirm that races with a reschedule never leaves seats expiring before the appointment', async () => {
+  const { env, rows, tokens } = await createHardeningEnv({ catalog: svcCatalog() });
+  const slots = (await svcSlots(env, svcLocalDate(2))).slots;
+  const early = slots[0].starts_at;
+  const late = slots[16].starts_at;
+  const { appointment, manage_token: token } = await svcCreate(env, early);
+  const racing = svcRaceEnv(env, /SET status='confirmed'/, async () => {
+    const moved = await svcManage(env, token, { action: 'reschedule', starts_at: late });
+    assert.equal(moved.status, 200);
+  });
+  const confirm = await svcOwner(racing, tokens['shop-a'], { id: appointment.id, action: 'confirm' });
+  assert.equal(confirm.status, 409, 'the confirm saw a different booking than the one it read');
+  assert.equal((await confirm.json()).error_code, 'appointment_changed');
+  const row = rows('SELECT status, starts_at, request_expires_at FROM storefront_service_appointments')[0];
+  assert.equal(row.status, 'pending');
+  assert.equal(row.starts_at, late);
+  for (const seat of rows('SELECT expires_at FROM storefront_appointment_slots')) {
+    assert.ok(seat.expires_at >= row.request_expires_at, 'seats of the moved booking still cover the pending hold');
+  }
+  // A fresh confirm now succeeds and every seat lasts until the (moved) appointment is over.
+  assert.equal((await svcOwner(env, tokens['shop-a'], { id: appointment.id, action: 'confirm' })).status, 200);
+  const confirmed = rows('SELECT slot_reserved_until FROM storefront_service_appointments')[0];
+  const seats = rows('SELECT expires_at FROM storefront_appointment_slots');
+  assert.ok(seats.length >= 4);
+  assert.ok(seats.every(seat => seat.expires_at === confirmed.slot_reserved_until), 'seat expiry comes from the booking row');
+  // The old early slot is free and the moved slot cannot be double-booked.
+  assert.equal((await svcBook(env, late)).status, 409);
+  assert.equal((await svcBook(env, early)).status, 201);
+});
+
+test('a deposit paid while the customer cancels is still flagged for refund (verify and webhook)', async () => {
+  const { env, db, rows } = await createHardeningEnv({
+    catalog: svcCatalog({ service_deposit_percent: 20 }), extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_racing' }
+  });
+  const dayOne = (await svcSlots(env, svcLocalDate(2))).slots;
+  const confirmedPending = async (slot, reference) => {
+    const created = await svcCreate(env, slot);
+    db.run("UPDATE storefront_service_appointments SET status='confirmed',payment_status='pending',payment_reference=?,payment_subaccount_code='ACCT_test1' WHERE id=?",
+      [reference, created.appointment.id]);
+    return created;
+  };
+  const state = id => ({ ...rows('SELECT status, payment_status, deposit_refund_due FROM storefront_service_appointments WHERE id=?', [id])[0] });
+  const originalFetch = globalThis.fetch;
+
+  // Verify path: the customer cancels after the verify handler read the booking, before it records the payment.
+  const referenceA = `ESHOP_${'C'.repeat(32)}`;
+  const a = await confirmedPending(dayOne[0].starts_at, referenceA);
+  const racingA = svcRaceEnv(env, /SET payment_status=\?,updated_at=\?/, async () => {
+    assert.equal((await svcManage(env, a.manage_token, { action: 'cancel' })).status, 200);
+  });
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    data: { reference: referenceA, amount: 50000, currency: 'KES', status: 'success', domain: 'test', subaccount: { subaccount_code: 'ACCT_test1' } }
+  }), { status: 200 });
+  try {
+    const ctx = hardeningCtx();
+    const verified = await worker.fetch(new Request(`${SVC_HOST}/api/service-appointments/payment?tenant=shop-a&reference=${referenceA}`), racingA, ctx);
+    assert.equal(verified.status, 200);
+    await ctx.settle();
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  assert.deepEqual(state(a.appointment.id), { status: 'cancelled', payment_status: 'paid', deposit_refund_due: 1 });
+  assert.equal(rows("SELECT * FROM owner_notifications WHERE kind='booking_refund' AND ref=?", [a.appointment.id]).length, 1);
+
+  // Webhook path: same race.
+  const referenceB = `ESHOP_${'D'.repeat(32)}`;
+  const b = await confirmedPending(dayOne[8].starts_at, referenceB);
+  const racingB = svcRaceEnv(env, /SET payment_status='paid'/, async () => {
+    assert.equal((await svcManage(env, b.manage_token, { action: 'cancel' })).status, 200);
+  });
+  const { body, signature } = await signedPaystackWebhook('sk_test_racing', referenceB, 50000);
+  const ctx = hardeningCtx();
+  const delivered = await worker.fetch(new Request(`${SVC_HOST}/api/payments/paystack/webhook`, {
+    method: 'POST', headers: { 'x-paystack-signature': signature }, body
+  }), racingB, ctx);
+  assert.equal(delivered.status, 200);
+  await ctx.settle();
+  assert.deepEqual(state(b.appointment.id), { status: 'cancelled', payment_status: 'paid', deposit_refund_due: 1 });
+  assert.equal(rows("SELECT * FROM owner_notifications WHERE kind='booking_refund' AND ref=?", [b.appointment.id]).length, 1);
 });

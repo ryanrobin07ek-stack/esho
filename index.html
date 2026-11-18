@@ -9357,6 +9357,10 @@ body.craft-app-ui #app .studio-order-meta {
   gap: 8px 14px;
 }
 
+body.craft-app-ui #app .studio-order-controls[hidden] {
+  display: none;
+}
+
 body.craft-app-ui #app .studio-order-controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -10080,6 +10084,17 @@ const SQLiteEngine = {
   async init(seedCategories, seedProducts, seedStore, seedPlans, seedAnalytics) {
     if (window.ShopSQLiteReady) await window.ShopSQLiteReady;
     const saved = await window.ShopSQLite.load();
+    // Never treat a database that already holds data as a fresh install. Android Auto Backup
+    // restores the SQLite database (backup_rules.xml includes only the "database" domain) but not
+    // WebView localStorage, so a restored catalogue arrives with the "empty catalogue" marker
+    // missing. The one-time sample-data reset below used to run in that case and wiped the
+    // restored products, categories and inventory.
+    const storage = {
+      get(key) { try { return window.localStorage.getItem(key); } catch { return null; } },
+      set(key, value) { try { window.localStorage.setItem(key, value); } catch { /* storage unavailable */ } }
+    };
+    const restoredExistingData = Boolean(saved);
+    this.loadedExistingData = restoredExistingData;
     if (saved) {
       this.db = saved;
       this.db.tables.pages = this.db.tables.pages || [];
@@ -10091,8 +10106,9 @@ const SQLiteEngine = {
     } else {
       this.seedInitial(seedCategories, seedProducts, seedStore, seedPlans, seedAnalytics);
     }
-    if (window.localStorage.getItem(this.emptyCatalogKey) === "1") {
-      if (window.localStorage.getItem(this.storeBrandKey) !== "1") {
+    if (restoredExistingData || storage.get(this.emptyCatalogKey) === "1") {
+      if (restoredExistingData) storage.set(this.emptyCatalogKey, "1");
+      if (storage.get(this.storeBrandKey) !== "1") {
         const store = this.getStore();
         if (store.name === "Craft Atelier") {
           this.updateStore({
@@ -10108,7 +10124,7 @@ const SQLiteEngine = {
           });
         }
       }
-      window.localStorage.setItem(this.storeBrandKey, "1");
+      storage.set(this.storeBrandKey, "1");
       return;
     }
 
@@ -10131,8 +10147,8 @@ const SQLiteEngine = {
       announcement_active: 0
     }));
     await window.ShopSQLite.save(this.db);
-    window.localStorage.setItem(this.emptyCatalogKey, "1");
-    window.localStorage.setItem(this.storeBrandKey, "1");
+    storage.set(this.emptyCatalogKey, "1");
+    storage.set(this.storeBrandKey, "1");
   },
   seedInitial(seedCategories, seedProducts, seedStore, seedPlans, seedAnalytics) {
     this.db = {
@@ -10337,38 +10353,9 @@ const SQLiteEngine = {
     return pages[0] || null;
   },
 
-  savePage(data) {
-    const slug = String(data.slug || "")
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9-]+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-    if (!slug) return { ok: false, error: "Choose a page URL." };
-    const conflict = this.getPages().some(page => page.slug === slug && Number(page.id) !== Number(data.id || 0));
-    if (conflict) return { ok: false, error: "That page URL is already in use." };
-
-    const pageData = {
-      title: String(data.title || "").trim(),
-      slug,
-      content: String(data.content || ""),
-      published: data.published ? 1 : 0,
-      updated_at: new Date().toISOString()
-    };
-    if (!pageData.title) return { ok: false, error: "Enter a page title." };
-    let pageId = Number(data.id) || 0;
-    if (data.id) {
-      this.update("pages", page => Number(page.id) === Number(data.id), page => ({ ...page, ...pageData }));
-    } else {
-      pageData.created_at = pageData.updated_at;
-      pageId = this.insert("pages", pageData).id;
-    }
-    return { ok: true, id: pageId, slug };
-  },
-
-  deletePage(id) {
-    return this.delete("pages", page => Number(page.id) === Number(id)) > 0;
-  },
+  // Pages are no longer authored in the app: the Litrus storefront does not render custom pages,
+  // so the Pages manager and its save/delete helpers were removed. Existing page records are kept
+  // and still travel with the published catalogue.
 
   // Cart operations
   getCart() {
@@ -10515,7 +10502,20 @@ const SQLiteEngine = {
   },
 
   async resetBuildYourWebDataOnce() {
-    if (window.localStorage.getItem(this.builderResetKey) === "1") return;
+    const storage = {
+      get(key) { try { return window.localStorage.getItem(key); } catch { return null; } },
+      set(key, value) { try { window.localStorage.setItem(key, value); } catch { /* storage unavailable */ } },
+      remove(key) { try { window.localStorage.removeItem(key); } catch { /* storage unavailable */ } }
+    };
+    if (storage.get(this.builderResetKey) === "1") return;
+    // Same rule as init(): a database that already held data (restored by Android Auto Backup,
+    // transferred to a new device, or opened where localStorage is blocked) is never a fresh
+    // install. Its marker is simply missing, so do not blank the shop name, contacts, hero
+    // slides or pages; just record that the reset is not needed.
+    if (this.loadedExistingData) {
+      storage.set(this.builderResetKey, "1");
+      return;
+    }
     this.db.tables.pages = [];
     this.db.tables.hero_slides = [];
     this.updateStore({
@@ -10531,8 +10531,8 @@ const SQLiteEngine = {
     });
     this.save();
     await window.ShopSQLite.flush();
-    window.localStorage.removeItem(this.storageKey);
-    window.localStorage.setItem(this.builderResetKey, "1");
+    storage.remove(this.storageKey);
+    storage.set(this.builderResetKey, "1");
   },
 
   // Studio CRUD for Products
@@ -10911,7 +10911,6 @@ const StoreRenderers = {
                   "/account/inventory": "Inventory",
                   "/account/settings": "Settings",
                   "/account/web": "Build Your Web",
-                  "/account/web/pages": "Website Pages",
                   "/account/plans": "Plans"
                 })[activePath] || "Studio"))}</span>
               </a>
@@ -12879,7 +12878,7 @@ const StudioRenderers = {
           { title: "Domains", route: domainsRoute, contentPath: domainsRoute },
           { title: "New web", route: "/account/web/studio/websites/webmaker", contentPath: "/account/web/studio/websites/webmaker" },
           { title: "Add", route: "/account/web/studio/websites/add", contentPath: "/account/web/studio/websites/add" },
-          { title: "Theme Studio", route: "/account/web/studio/websites/editor", contentPath: "/account/web/studio/websites/editor" }
+          { title: "Website editor", route: "/account/web/studio/websites/editor", contentPath: "/account/web/studio/websites/editor" }
         ]
       },
       {
@@ -13056,19 +13055,12 @@ const StudioRenderers = {
     }
     if (page.route === "/account/web/studio/websites/editor") {
       return `<section class="studio-workspace-section"><article class="studio-panel studio-feature-panel">
-        <span class="studio-workspace-kicker">WEBSITE DESIGN</span><h2>Theme Studio</h2>
-        <p>Edit your storefront design, layout, and content.</p>
-        <a class="btn-primary" href="/account/web/site?tenant=${encodeURIComponent(AppController.getActiveTenant().id)}" data-route="/account/web/site?tenant=${encodeURIComponent(AppController.getActiveTenant().id)}">Open Theme Studio</a>
+        <span class="studio-workspace-kicker">WEBSITE DESIGN</span><h2>Website editor</h2>
+        <p>Design your storefront in Litrus Mixer: sections, products, colours and publishing.</p>
+        <a class="btn-primary" href="/account/web/site?tenant=${encodeURIComponent(AppController.getActiveTenant().id)}" data-route="/account/web/site?tenant=${encodeURIComponent(AppController.getActiveTenant().id)}">Open Litrus Mixer</a>
       </article></section>`;
     }
-    const pages = SQLiteEngine.getPages().sort((a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")));
-    return `<section class="studio-workspace-section">
-      <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">WEBSITE CONTENT</span><h2>Page editor</h2></div><button type="button" class="btn-primary" id="btn-add-page">Add page</button></div>
-        <p class="studio-panel-note">Create pages for visitors. Published pages appear in your website navigation.</p>
-        ${pages.map(page => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(page.title)}</strong><span>/pages/${AppUtils.escapeHTML(page.slug)} · ${page.published ? "Published" : "Draft"}</span></div>${page.published ? `<a class="option-chip" href="/pages/${encodeURIComponent(page.slug)}" data-route="/pages/${encodeURIComponent(page.slug)}">View</a>` : ""}<button type="button" class="btn-secondary" data-action="edit-page" data-id="${page.id}">Edit</button><button type="button" class="btn-secondary" data-action="delete-page" data-id="${page.id}">Delete</button></article>`).join("") || `<p class="store-workspace-empty">No pages yet. Add a page to start building your website.</p>`}
-        <div id="page-modal-container"></div>
-      </article>
-    </section>`;
+    return `<p class="store-workspace-empty">This website screen is unavailable.</p>`;
   },
 
   renderWebStudioWorkspace(path) {
@@ -13248,7 +13240,7 @@ const StudioRenderers = {
         total,
         collected,
         subtotal: Number(sale.subtotal) || total,
-        discount: Math.max(0, (Number(sale.subtotal) || total) - total),
+        discount: Number(sale.discount) || 0,
         tax: Number(sale.tax) || 0,
         customerName: String(sale.customer_name || ""),
         customerPhone: String(sale.customer_phone || ""),
@@ -13988,7 +13980,10 @@ const StudioRenderers = {
   renderOwnerAlertsPanel(snapshot) {
     const escape = AppUtils.escapeHTML;
     const alerts = snapshot.remoteAlerts;
-    const rows = (alerts?.notifications || []).map(alert => `<article class="studio-list-row" data-owner-alert="${escape(alert.id)}"><div><strong>${escape(alert.title)}</strong><span>${escape(alert.body)}</span><small>${escape(alert.created_at || "")}</small></div><div class="studio-row-end"><span>${alert.read_at ? "" : "New"}</span></div></article>`).join("");
+    const rows = (alerts?.notifications || []).map(alert => {
+      const route = this.ownerAlertRoute(alert.kind);
+      return `<article class="studio-list-row" data-owner-alert="${escape(alert.id)}" data-owner-alert-kind="${escape(alert.kind || "")}"><div><strong>${escape(alert.title)}</strong><span>${escape(alert.body)}</span><small>${escape(this.ownerAlertKindLabel(alert.kind))} · ${escape(alert.created_at || "")}${route ? ` · <a href="${route}" data-route="${route}">Open appointments</a>` : ""}</small></div><div class="studio-row-end"><span>${alert.read_at ? "" : "New"}</span></div></article>`;
+    }).join("");
     const note = snapshot.remoteAlertsError
       ? escape(snapshot.remoteAlertsError)
       : alerts ? `${alerts.unread_count} unread alert${alerts.unread_count === 1 ? "" : "s"}.` : "New orders, booking requests, holds and payments that need attention appear here.";
@@ -14034,6 +14029,195 @@ const StudioRenderers = {
         <p role="status" aria-live="polite"></p>
       </form>
       ${rows || `<p class="store-workspace-empty">No discount codes loaded.</p>`}</article>`;
+  },
+
+  // ----- Owner appointments (service shops). Contract: cloudflare/STOREFRONT_COMMERCE.md "Service bookings". -----
+  serviceAppointmentFilters() {
+    // `query` is sent to GET /api/service-appointments; `clientFilter` narrows what the Worker cannot filter.
+    return [
+      { key: "upcoming", label: "Upcoming", query: { view: "upcoming", status: "pending,confirming,confirmed" } },
+      { key: "pending", label: "Waiting for your answer", query: { view: "upcoming", status: "pending" } },
+      { key: "past", label: "Past", query: { view: "past" } },
+      { key: "refunds", label: "Deposits to refund", query: { view: "all", status: "cancelled", limit: 200 }, clientFilter: appointment => appointment.deposit_refund_due === true },
+      { key: "cancelled", label: "Cancelled or declined", query: { view: "all", status: "cancelled,rejected" } },
+      { key: "all", label: "All", query: { view: "all" } }
+    ];
+  },
+
+  serviceAppointmentFilter(key) {
+    const filters = this.serviceAppointmentFilters();
+    return filters.find(filter => filter.key === key) || filters[0];
+  },
+
+  serviceAppointmentErrorText(error, fallback = "Could not update this appointment.") {
+    const code = error && typeof error === "object" ? String(error.code || "") : "";
+    const status = error && typeof error === "object" ? Number(error.status) || 0 : 0;
+    const messages = {
+      unauthorized: "Your sign-in for this shop has expired. Sign in again, then retry.",
+      appointment_not_found: "This appointment no longer exists. Reload the list.",
+      invalid_state: "This appointment cannot be changed that way any more. Reload the list to see its current status.",
+      not_started: "You can mark an appointment completed or no-show only after its start time.",
+      appointment_started: "This appointment has already started, so it can no longer be moved, declined or cancelled. Mark it completed or no-show instead.",
+      appointment_busy: "A deposit link is still being created for this appointment. Wait a moment, then try again.",
+      slot_unavailable: "That time is not available (outside opening hours, in the past, or fully booked). Choose another time.",
+      slot_unchanged: "That is already the time of this appointment. Choose a different time.",
+      appointment_changed: "The appointment was changed while you were working (for example the customer moved it). The list has been reloaded. Check it, then try again.",
+      deposit_unavailable: "A deposit link cannot be created yet. Finish Paystack setup for this shop (KES, with a ready payout account) or set the deposit to 0%, then confirm again.",
+      service_unavailable: "This service is no longer in your published catalogue.",
+      invalid_request: "The request was not accepted. Reload the list and try again.",
+      too_large: "The request was too large. Shorten the reason and try again.",
+      payment_provider_error: "Paystack did not return a payment link. The appointment is still waiting; try again in a moment.",
+      rate_limited: "Too many requests. Wait a minute, then try again.",
+      storage_unavailable: "The shop's booking storage is unavailable right now. Try again shortly."
+    };
+    if (messages[code]) return messages[code];
+    if (status === 401) return messages.unauthorized;
+    if (status === 429) return messages.rate_limited;
+    return (error instanceof Error && error.message) || fallback;
+  },
+
+  serviceAppointmentStatusLabel(appointment) {
+    if (appointment.expired === true) return "Expired";
+    return ({
+      pending: "Waiting for you", confirming: "Creating deposit link", confirmed: "Confirmed",
+      rejected: "Declined", cancelled: "Cancelled", completed: "Completed", no_show: "No-show"
+    })[appointment.status] || String(appointment.status || "pending");
+  },
+
+  serviceAppointmentLocalDate(isoTime, timeZone) {
+    try {
+      return new Date(isoTime).toLocaleDateString("en-CA", { timeZone: timeZone || undefined });
+    } catch {
+      return String(isoTime || "").slice(0, 10);
+    }
+  },
+
+  // Shop-local date (YYYY-MM-DD) and time (HH:MM) to a UTC ISO string, or "" when it cannot be resolved.
+  serviceAppointmentLocalToIso(date, time, timeZone) {
+    const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date || ""));
+    const t = /^(\d{2}):(\d{2})$/.exec(String(time || ""));
+    if (!d || !t) return "";
+    const wall = Date.UTC(Number(d[1]), Number(d[2]) - 1, Number(d[3]), Number(t[1]), Number(t[2]));
+    try {
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: timeZone || undefined, hourCycle: "h23",
+        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit"
+      });
+      const offsetAt = ms => {
+        const p = Object.fromEntries(formatter.formatToParts(new Date(ms)).filter(part => part.type !== "literal").map(part => [part.type, Number(part.value)]));
+        return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - ms;
+      };
+      let guess = wall - offsetAt(wall);
+      guess = wall - offsetAt(guess);
+      return guess + offsetAt(guess) === wall ? new Date(guess).toISOString() : "";
+    } catch {
+      return "";
+    }
+  },
+
+  renderServiceAppointmentRow(appointment, nowMs = Date.now()) {
+    const escape = AppUtils.escapeHTML;
+    const id = escape(appointment.id);
+    const startMs = new Date(appointment.starts_at).getTime();
+    const started = Number.isFinite(startMs) && startMs <= nowMs;
+    const expired = appointment.expired === true;
+    const live = !expired && !started && (appointment.status === "pending" || appointment.status === "confirmed");
+    const depositLink = appointment.payment_status !== "paid" && appointment.status === "confirmed" &&
+      typeof appointment.payment_authorization_url === "string" &&
+      /^https:\/\/checkout\.paystack\.com\//.test(appointment.payment_authorization_url)
+      ? appointment.payment_authorization_url : "";
+    const phone = String(appointment.customer_phone || "").replace(/\D/g, "");
+    const shareText = `Hi ${appointment.customer_name}, your ${appointment.service_name} appointment is confirmed. Please pay your deposit here: ${depositLink}`;
+    const whatsappLink = depositLink && phone ? `https://wa.me/${phone}?text=${encodeURIComponent(shareText)}` : "";
+    let appointmentTime = String(appointment.starts_at || "");
+    try {
+      appointmentTime = new Date(appointment.starts_at).toLocaleString(undefined, { timeZone: appointment.timezone || undefined });
+    } catch { /* keep the raw timestamp */ }
+    const depositCents = Number(appointment.deposit_cents) || 0;
+    const deposit = Number(appointment.deposit_percent) > 0
+      ? `${Number(appointment.deposit_percent)}% deposit (${this.formatMainShopMoney(depositCents / 100, appointment.currency)})`
+      : "No deposit";
+    const payment = ({ not_required: "not required", initializing: "being set up", pending: "waiting for the customer", paid: "paid", failed: "failed" })[appointment.payment_status] || String(appointment.payment_status || "");
+    const notes = [];
+    if (appointment.cancelled_by) {
+      notes.push(`Cancelled by ${appointment.cancelled_by === "customer" ? "the customer" : "you"}${appointment.cancel_reason ? `: ${appointment.cancel_reason}` : ""}`);
+    }
+    if (Number(appointment.reschedule_count) > 0) notes.push(`moved ${Number(appointment.reschedule_count)} time${Number(appointment.reschedule_count) === 1 ? "" : "s"} by the customer`);
+    if (appointment.deposit_refunded_at) notes.push(`deposit refunded ${String(appointment.deposit_refunded_at).slice(0, 10)}`);
+    const refundDue = appointment.deposit_refund_due === true;
+    const button = (action, label, kind = "btn-secondary") =>
+      `<button type="button" class="${kind}" data-service-appointment-action="${action}" data-appointment-id="${id}">${label}</button>`;
+    const actions = [];
+    if (appointment.status === "pending" && live) {
+      actions.push(button("confirm", Number(appointment.deposit_percent) > 0 ? "Confirm & create deposit link" : "Confirm appointment", "btn-primary"));
+      actions.push(button("reject", "Decline"));
+    }
+    if (live) {
+      actions.push(`<button type="button" class="btn-secondary" data-appointment-reschedule-toggle="${id}">Reschedule</button>`);
+      actions.push(button("cancel", "Cancel appointment"));
+    }
+    if (appointment.status === "confirmed" && started) {
+      actions.push(button("complete", "Mark completed", "btn-primary"));
+      actions.push(button("no_show", "Mark no-show"));
+    }
+    if (refundDue) actions.push(button("deposit_refunded", "Mark deposit refunded", "btn-primary"));
+    const reschedulePanel = live
+      ? `<div class="studio-order-controls" data-appointment-reschedule-panel="${id}" data-timezone="${escape(appointment.timezone || "")}" hidden>
+          <label>New date<input type="date" data-appointment-reschedule-date value="${escape(this.serviceAppointmentLocalDate(appointment.starts_at, appointment.timezone))}"></label>
+          <button type="button" class="btn-secondary" data-appointment-slots-load="${id}" data-service-id="${escape(appointment.service_id)}">Find free times</button>
+          <label>Free times<select data-appointment-reschedule-slot disabled><option value="">Find free times first</option></select></label>
+          <label>Or an exact time (shop time, 15-minute steps; use this to move it slightly, for example 15 minutes later)<input type="time" step="900" data-appointment-reschedule-time></label>
+          <button type="button" class="btn-primary" data-appointment-reschedule-confirm="${id}" disabled>Move appointment</button>
+        </div>
+        <div class="studio-order-controls" style="grid-template-columns:minmax(0,1fr)"><label>Reason if you cancel (optional, shown to the customer)<input data-appointment-cancel-reason maxlength="200" autocomplete="off"></label></div>`
+      : "";
+    return `<article class="studio-list-row studio-order-card" data-appointment-row="${id}" data-appointment-status="${escape(appointment.status)}"${refundDue ? " data-needs-attention" : ""}>
+      <div class="studio-order-header"><div><strong>${escape(appointment.service_name)} · ${escape(appointmentTime)}</strong><span>${escape(appointment.customer_name)} · ${escape(appointment.customer_email)} · ${escape(appointment.customer_phone)}</span></div><strong class="studio-order-total">${escape(this.serviceAppointmentStatusLabel(appointment))}</strong></div>
+      <div class="studio-order-meta"><span>${escape(appointment.duration_minutes)} min</span><span>${escape(deposit)}</span><span>Payment: ${escape(payment)}</span>${appointment.reference ? `<span>Ref ${escape(appointment.reference)}</span>` : ""}</div>
+      ${notes.length ? `<p class="studio-panel-note" data-appointment-notes>${escape(notes.join(" · "))}</p>` : ""}
+      ${refundDue ? `<p class="studio-panel-note" role="alert" data-appointment-refund-due><strong>Deposit to refund.</strong> The customer paid ${escape(this.formatMainShopMoney(depositCents / 100, appointment.currency))} for a cancelled appointment. Refund it in your Paystack dashboard, then mark it refunded here.</p>` : ""}
+      ${appointment.status === "confirming" ? `<p class="studio-panel-note">A deposit link is being created. Reload in a moment.</p>` : ""}
+      ${depositLink ? `<div class="studio-order-meta"><a href="${escape(depositLink)}" target="_blank" rel="noopener noreferrer">Open deposit link</a>${whatsappLink ? `<a href="${escape(whatsappLink)}" target="_blank" rel="noopener noreferrer">Share by WhatsApp</a>` : ""}</div>` : ""}
+      ${actions.length ? `<div class="studio-order-controls">${actions.join("")}</div>` : ""}
+      ${reschedulePanel}
+    </article>`;
+  },
+
+  renderServiceAppointmentsPanel(snapshot) {
+    const escape = AppUtils.escapeHTML;
+    const meta = snapshot.remoteAppointmentsMeta || {};
+    const filter = this.serviceAppointmentFilter(meta.filter);
+    const appointments = Array.isArray(snapshot.remoteAppointments) ? snapshot.remoteAppointments : [];
+    const counts = meta.counts || null;
+    const loaded = Array.isArray(snapshot.remoteAppointments);
+    const note = snapshot.remoteAppointmentsError
+      ? escape(snapshot.remoteAppointmentsError)
+      : loaded
+        ? `${appointments.length} appointment${appointments.length === 1 ? "" : "s"} shown${meta.hasMore ? " (more available)" : ""}.`
+        : "Customers choose a free time on your website; confirm, decline, move or cancel their requests here.";
+    const summary = counts
+      ? `<div class="studio-order-meta" data-appointment-counts><span>${Number(counts.pending) || 0} waiting for you</span><span>${Number(counts.upcoming_confirmed) || 0} confirmed ahead</span><span>${Number(counts.refunds_due) || 0} deposit${Number(counts.refunds_due) === 1 ? "" : "s"} to refund</span></div>`
+      : "";
+    const rows = appointments.map(appointment => this.renderServiceAppointmentRow(appointment)).join("")
+      || `<p class="store-workspace-empty">${loaded ? "No appointments match this filter." : "Load appointments from the live storefront."}</p>`;
+    return `<article class="studio-panel" data-appointments-panel><div class="studio-panel-heading"><h2>Service appointments</h2><button type="button" class="btn-secondary studio-load-button" data-online-appointments-load aria-label="Load appointments">Load</button></div>
+      <p class="studio-panel-note" data-online-appointments-status role="status" aria-live="polite">${note}</p>
+      ${summary}
+      <div class="studio-order-controls" style="grid-template-columns:minmax(0,1fr)"><label>Show<select data-appointments-filter>${this.serviceAppointmentFilters().map(item => `<option value="${item.key}"${item.key === filter.key ? " selected" : ""}>${escape(item.label)}</option>`).join("")}</select></label></div>
+      ${rows}
+      ${meta.hasMore ? `<button type="button" class="btn-secondary" data-appointments-more>Load more</button>` : ""}</article>`;
+  },
+
+  ownerAlertKindLabel(kind) {
+    return ({
+      order: "Order", booking: "Booking request", hold: "Hold request", attention: "Needs attention",
+      booking_cancelled: "Booking cancelled", booking_rescheduled: "Booking moved", booking_refund: "Deposit to refund"
+    })[kind] || "Alert";
+  },
+
+  ownerAlertRoute(kind) {
+    return ["booking", "booking_cancelled", "booking_rescheduled", "booking_refund"].includes(kind)
+      ? "/account/web/studio/store/bookings" : "";
   },
 
   renderMainShopContent(path, snapshot, skipBusinessLens = false) {
@@ -14097,9 +14281,10 @@ const StudioRenderers = {
     const weekStart = dayStart - 6 * 86400000;
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).getTime();
     const datedSales = webSales.map(sale => ({ ...sale, time: new Date(sale.date).getTime() })).filter(sale => Number.isFinite(sale.time));
-    const paidSales = datedSales.filter(sale => ["paid", "completed"].includes(sale.status));
+    // Revenue = paid, non-reversed sales (src/revenue-definition.js, shared with Business Lens and the AI helper).
+    const paidSales = datedSales.filter(sale => window.EshopRevenue.isPaidSale(sale));
     const salesIn = (from) => datedSales.filter(sale => sale.time >= from);
-    const revenueIn = (from) => salesIn(from).reduce((sum, sale) => sum + sale.total, 0);
+    const revenueIn = (from) => window.EshopRevenue.sumRevenue(salesIn(from));
     const visitsIn = (from) => webVisits.filter(visit => new Date(visit.created_at).getTime() >= from);
     const uniqueIn = (from) => new Set(visitsIn(from).map(visit => visit.visitor_id)).size;
     const metric = (label, value, note = "", route = "") => route
@@ -14118,27 +14303,6 @@ const StudioRenderers = {
       `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.channel)} · ${AppUtils.escapeHTML(sale.paymentMethod || "Method not recorded")} · ${AppUtils.escapeHTML(sale.date || "")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.collected, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status || "Awaiting payment")}</span></div></article>`
     ).join("");
       const remoteHolds = snapshot.remoteHolds || [];
-      const remoteAppointments = snapshot.remoteAppointments || [];
-      const remoteAppointmentRows = remoteAppointments.map(appointment => {
-        const expired = appointment.status === "pending" &&
-          (new Date(appointment.request_expires_at).getTime() <= Date.now() || new Date(appointment.starts_at).getTime() <= Date.now());
-        const status = expired ? "Expired" : String(appointment.status || "pending");
-        const depositLink = appointment.payment_status !== "paid" && typeof appointment.payment_authorization_url === "string" &&
-          /^https:\/\/checkout\.paystack\.com\//.test(appointment.payment_authorization_url)
-          ? appointment.payment_authorization_url : "";
-        const phone = String(appointment.customer_phone || "").replace(/\D/g, "");
-        const shareText = `Hi ${appointment.customer_name}, your ${appointment.service_name} appointment is confirmed. Please pay your deposit here: ${depositLink}`;
-        const whatsappLink = depositLink && phone
-          ? `https://wa.me/${phone}?text=${encodeURIComponent(shareText)}`
-          : "";
-        const actions = status === "pending"
-          ? `<button type="button" class="btn-primary" data-service-appointment-action="confirm" data-appointment-id="${AppUtils.escapeHTML(appointment.id)}">${Number(appointment.deposit_percent) > 0 ? "Confirm & create deposit link" : "Confirm appointment"}</button><button type="button" class="btn-secondary" data-service-appointment-action="reject" data-appointment-id="${AppUtils.escapeHTML(appointment.id)}">Decline</button>`
-          : "";
-        const appointmentTime = new Date(appointment.starts_at).toLocaleString(undefined, {
-          timeZone: appointment.timezone || undefined
-        });
-        return `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(appointment.service_name)} · ${AppUtils.escapeHTML(appointmentTime)}</strong><span>${AppUtils.escapeHTML(appointment.customer_name)} · ${AppUtils.escapeHTML(appointment.customer_email)} · ${AppUtils.escapeHTML(appointment.customer_phone)}</span><small>${AppUtils.escapeHTML(appointment.duration_minutes)} min · ${Number(appointment.deposit_percent) ? `${Number(appointment.deposit_percent)}% deposit (${this.formatMainShopMoney(Number(appointment.deposit_cents) / 100, appointment.currency)})` : "No deposit"} · Payment: ${AppUtils.escapeHTML(appointment.payment_status)}</small>${depositLink ? `<a href="${AppUtils.escapeHTML(depositLink)}" target="_blank" rel="noopener noreferrer">Open deposit link</a>${whatsappLink ? ` <a href="${AppUtils.escapeHTML(whatsappLink)}" target="_blank" rel="noopener noreferrer">Share by WhatsApp</a>` : ""}` : ""}</div><div class="studio-row-end"><span>${AppUtils.escapeHTML(status)}</span>${actions}</div></article>`;
-      }).join("") || `<p class="store-workspace-empty">${snapshot.remoteAppointments ? "No service appointment requests yet." : "Load requests from the live storefront."}</p>`;
       const remoteHoldRows = remoteHolds.map(hold => {
         const expired = hold.status === "approved" && new Date(hold.expires_at).getTime() <= Date.now();
         const status = expired ? "Expired" : String(hold.status || "pending");
@@ -14201,7 +14365,9 @@ const StudioRenderers = {
       if (page.route === "/account/web/studio/store/bookings") {
         const holdHours = Number(this.getWorkspaceSetting("max_hold_hours", 24));
         const activeProductCount = SQLiteEngine.select("products", product => product.status !== "archived").length;
+        const servicesShop = SQLiteEngine.getStore().offer_type === "services";
         return `<section class="studio-workspace-section">
+          ${servicesShop ? this.renderServiceAppointmentsPanel(snapshot) : ""}
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold settings</h2></div>
             <p class="studio-panel-note">Set the hold duration and manage product eligibility. Publish the storefront after changes.</p>
             <form class="store-workspace-form" data-studio-form="booking-settings"><label>Maximum hold duration (hours)<input name="maxHoldHours" type="number" min="1" max="720" step="1" value="${holdHours}" required></label><button type="submit" class="btn-primary">Save hold settings</button><p role="status"></p></form>
@@ -14219,10 +14385,7 @@ const StudioRenderers = {
               return `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(booking.product_name)} · ${booking.quantity}</strong><span>${AppUtils.escapeHTML(booking.customer_name)} · ${AppUtils.escapeHTML(booking.contact)} · Expires ${AppUtils.escapeHTML(booking.expires_at)}</span></div><div class="studio-row-end"><span>${expired ? "Expired" : AppUtils.escapeHTML(booking.status || "On hold")}</span>${!expired && booking.status !== "released" ? `<button type="button" class="btn-secondary" data-release-hold="${booking.id}">Release</button>` : ""}</div></article>`;
             }).join("") || `<p class="store-workspace-empty">No bookings or holds recorded yet.</p>`}
           </article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Service appointment requests</h2><button type="button" class="btn-secondary studio-load-button" data-online-appointments-load aria-label="Load appointments">Load</button></div>
-            <p class="studio-panel-note" data-online-appointments-status>${snapshot.remoteAppointmentsError ? AppUtils.escapeHTML(snapshot.remoteAppointmentsError) : snapshot.remoteAppointments ? `${remoteAppointments.length} service appointment${remoteAppointments.length === 1 ? "" : "s"} loaded.` : "Customers choose an available time; confirm or decline requests here. Deposit links are created after approval when enabled."}</p>
-            ${remoteAppointmentRows}
-          </article>
+          ${servicesShop ? "" : this.renderServiceAppointmentsPanel(snapshot)}
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold requests</h2><button type="button" class="btn-secondary studio-load-button" data-online-holds-load aria-label="Load hold requests">Load</button></div>
             <p class="studio-panel-note" data-online-holds-status>${snapshot.remoteHoldsError ? AppUtils.escapeHTML(snapshot.remoteHoldsError) : snapshot.remoteHolds ? `${remoteHolds.length} live hold${remoteHolds.length === 1 ? "" : "s"} loaded.` : "Customer holds reserve available website stock immediately until released or expired."}</p>
             ${remoteHoldRows}
@@ -14358,7 +14521,7 @@ const StudioRenderers = {
       const recentVisitEmpty = `<p class="store-workspace-empty">No visits yet.</p>`;
       return `
         <section class="studio-workspace-section">
-          <div class="studio-metric-grid studio-metric-grid-featured">${metric("Gross web revenue", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency), "", "/account/web/studio/store/orders")}${metric("Customer visits", storefrontVisitCount, "", "/account/web/studio/dashboard/visits")}${metric("Awaiting payments", awaiting.length, "", "/account/web/studio/store/orders")}</div>
+          <div class="studio-metric-grid studio-metric-grid-featured">${metric("Paid web revenue", this.formatMainShopMoney(window.EshopRevenue.sumRevenue(webSales), currency), "", "/account/web/studio/store/orders")}${metric("Customer visits", storefrontVisitCount, "", "/account/web/studio/dashboard/visits")}${metric("Awaiting payments", awaiting.length, "", "/account/web/studio/store/orders")}</div>
           <div class="studio-dashboard-grid">
             <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">RECENT ACTIVITY</span><h2 class="studio-overview-activity-title">Storefront visit history</h2></div><div class="studio-overview-activity-actions"><button type="button" class="studio-overview-load" data-business-cloud-analytics>Load</button><a href="/account/main-shop/visits" data-route="/account/main-shop/visits">View all</a></div></div>
               <p class="studio-panel-note" data-business-cloud-analytics-status role="status">${snapshot.remoteAnalyticsError
@@ -14419,7 +14582,7 @@ const StudioRenderers = {
             ${values.map((value, index) => `<span class="studio-performance-period"><small>${["Today", "This week", "This month"][index]}</small><strong>${AppUtils.escapeHTML(String(value))}</strong></span>`).join("")}
           </a>`).join("")}
         </div>
-        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Paid conversion</h2></div>${metric("Paid web orders", paidSales.length)}${metric("Web order value", this.formatMainShopMoney(paidSales.reduce((sum, sale) => sum + sale.total, 0), currency))}<p class="studio-panel-note">Conversion rate is not calculated until visits and paid orders can be joined using shared visitor attribution.</p></article>
+        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Paid conversion</h2></div>${metric("Paid web orders", paidSales.length)}${metric("Paid web order value", this.formatMainShopMoney(window.EshopRevenue.sumRevenue(paidSales), currency))}<p class="studio-panel-note">Conversion rate is not calculated until visits and paid orders can be joined using shared visitor attribution.</p></article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders awaiting payment</h2><a href="/store/orders" data-route="/store/orders">Open orders</a></div>${orderRows(pendingOrders)}</article></div>
         <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Checkouts without an order</h2></div><p class="studio-panel-note">Browser-local sessions that entered checkout and have no later order record.</p>${abandonedRows || `<p class="store-workspace-empty">No unfinished checkout sessions recorded.</p>`}</article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Product likes &amp; baskets</h2></div>${activityRows || `<p class="store-workspace-empty">Product activity will appear after visitors like or add items to their basket.</p>`}</article></div>
@@ -14491,22 +14654,6 @@ const StudioRenderers = {
             <button type="button" class="btn-secondary" data-remove-remote-subscriber="${AppUtils.escapeHTML(subscriber.id)}">Remove</button>
           </article>`).join("") || `<p class="store-workspace-empty">No storefront subscribers yet.</p>`}</article>
       </section>`;
-    }
-    if (path === "/account/website" || path === "/account/website/" || path === "/store/website") {
-      return `<section class="studio-workspace-section"><div class="studio-dashboard-grid">
-        <article class="studio-panel"><span class="studio-workspace-kicker">BUILD</span><h2>Web maker</h2><p class="studio-panel-note">Choose a theme and configure your storefront structure.</p><a class="btn-secondary" href="/account/website/maker" data-route="/account/website/maker">Open web maker</a></article>
-        </div><article class="studio-panel"><div class="studio-panel-heading"><h2>Website pages</h2><a href="/account/website/pages" data-route="/account/website/pages">Manage pages</a></div>${SQLiteEngine.getPages().map(page => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(page.title || page.name || "Untitled page")}</strong><span>${page.published ? "Published" : "Draft"}</span></article>`).join("") || `<p class="store-workspace-empty">No custom pages yet. Use Pages to create one.</p>`}</article></section>`;
-    }
-    if (path.startsWith("/account/website/")) {
-      const pageLinks = {
-        "/account/website/maker": { title: "Web maker", route: "/account/web", action: "Open web maker", copy: "Set up the look and structure of your shop."         },
-
-        "/account/website/editor": { title: "Theme Studio", route: "/account/web/site", action: "Open Theme Studio", copy: "Convert storefront HTML into editable Liquid sections." },
-        "/account/website/pages": { title: "Page editor", route: "/account/web/pages", action: "Edit pages", copy: "Create and edit named inline pages for the website." }
-      };
-      const item = pageLinks[path];
-      if (!item) return `<p class="store-workspace-empty">This website screen is unavailable.</p>`;
-      return `<section class="studio-workspace-section"><article class="studio-panel studio-feature-panel"><span class="studio-workspace-kicker">WEBSITE TOOL</span><h2>${item.title}</h2><p>${item.copy}</p><a class="btn-primary" href="${item.route}" data-route="${item.route}">${item.action}</a></article>${path.endsWith("/pages") ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Your pages</h2><a href="/account/web/pages" data-route="/account/web/pages">Open page manager</a></div>${SQLiteEngine.getPages().map(page => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(page.title || page.name || "Untitled page")}</strong><span>${AppUtils.escapeHTML(page.slug || "")}</span></div><span>${page.published ? "Published" : "Draft"}</span></article>`).join("") || `<p class="store-workspace-empty">No pages created yet.</p>`}</article>` : ""}</section>`;
     }
     if (path === "/account/payments") {
       const storeCurrency = String(SQLiteEngine.getStore().currency || "KES").toUpperCase();
@@ -14773,23 +14920,6 @@ const StudioRenderers = {
             </div>
           </details>
         `).join("") || `<p class="store-workspace-empty">No sales have been recorded in either channel yet.</p>`}</div></div>`;
-    }
-    if (path === "/store/website") {
-      return `
-        <section class="store-website-panel">
-          <h2>Customer-facing website</h2>
-          <p>Editing <strong>${AppUtils.escapeHTML(activeTenant.name)}</strong> · ${AppUtils.escapeHTML(activeTenant.hostname)}. Products added from this Store workspace are also saved to the website catalog.</p>
-          <div class="studio-nav-grid">
-            <a class="studio-card" href="/account/web" data-route="/account/web"><h3 class="studio-card-title">Build your website</h3><p class="studio-card-desc">Edit storefront pages and presentation.</p></a>
-          </div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
-            <a class="btn-secondary" href="/account/web/store" data-route="/account/web/store">Edit store details</a>
-            <button type="button" class="btn-primary" id="btn-publish-cloudflare">Deploy storefront to web</button>
-            <a class="btn-secondary" href="/account/products" data-route="/account/products">Manage website listings</a>
-          </div>
-          <p style="color:var(--text-muted);margin-top:12px;">Deployment publishes your website catalog and categories to the configured storefront service; adding or editing local data does not publish automatically.</p>
-          <div id="product-modal-container"></div>
-        </section>`;
     }
     return `<p class="store-workspace-empty">This business screen is unavailable.</p>`;
   },
@@ -15390,47 +15520,202 @@ const StudioRenderers = {
         button.disabled = false;
       }
     });
+    const appointmentStatusLine = () => container.querySelector("[data-online-appointments-status]");
+    // Fetches one page of appointments for a filter and redraws the panel. `append` adds the next page.
+    const loadAppointments = async (filterKey, { append = false, message = "" } = {}) => {
+      const filter = this.serviceAppointmentFilter(filterKey);
+      const previous = snapshot.remoteAppointmentsMeta || {};
+      const offset = append ? Number(previous.fetched) || 0 : 0;
+      const result = await window.EshopInventoryBridge.listServiceAppointments(
+        tenantId, { ...filter.query, ...(offset ? { offset } : {}) }
+      );
+      const fetched = Array.isArray(result.appointments) ? result.appointments : [];
+      const rows = filter.clientFilter ? fetched.filter(filter.clientFilter) : fetched;
+      const updatedSnapshot = {
+        ...snapshot,
+        remoteAppointments: append ? [...(snapshot.remoteAppointments || []), ...rows] : rows,
+        remoteAppointmentsMeta: {
+          filter: filter.key,
+          counts: result.counts || null,
+          hasMore: result.has_more === true,
+          fetched: offset + fetched.length
+        }
+      };
+      delete updatedSnapshot.remoteAppointmentsError;
+      rerenderWith(updatedSnapshot, "[data-online-appointments-status]", message);
+    };
     container.querySelector("[data-online-appointments-load]")?.addEventListener("click", async event => {
       const button = event.currentTarget;
-      const status = container.querySelector("[data-online-appointments-status]");
+      const status = appointmentStatusLine();
       button.disabled = true;
-      if (status) status.textContent = "Loading service appointment requests…";
+      if (status) status.textContent = "Loading service appointments…";
       try {
-        const result = await window.EshopInventoryBridge.listServiceAppointments(tenantId);
-        const updatedSnapshot = { ...snapshot, remoteAppointments: Array.isArray(result.appointments) ? result.appointments : [] };
-        delete updatedSnapshot.remoteAppointmentsError;
-        container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
-        this.bindBusinessCloudActions(container, path, updatedSnapshot, tenantId);
+        await loadAppointments((snapshot.remoteAppointmentsMeta || {}).filter);
       } catch (error) {
-        if (status) status.textContent = error instanceof Error ? error.message : "Could not load service appointments.";
+        if (status) status.textContent = this.serviceAppointmentErrorText(error, "Could not load service appointments.");
         button.disabled = false;
       }
     });
+    container.querySelector("[data-appointments-filter]")?.addEventListener("change", async event => {
+      const status = appointmentStatusLine();
+      if (status) status.textContent = "Loading service appointments…";
+      try {
+        await loadAppointments(event.currentTarget.value);
+      } catch (error) {
+        if (status) status.textContent = this.serviceAppointmentErrorText(error, "Could not load service appointments.");
+      }
+    });
+    container.querySelector("[data-appointments-more]")?.addEventListener("click", async event => {
+      const button = event.currentTarget;
+      const status = appointmentStatusLine();
+      button.disabled = true;
+      try {
+        await loadAppointments((snapshot.remoteAppointmentsMeta || {}).filter, { append: true });
+      } catch (error) {
+        if (status) status.textContent = this.serviceAppointmentErrorText(error, "Could not load more appointments.");
+        button.disabled = false;
+      }
+    });
+    // Sends one owner action, then reloads the current filter so rows, filters and counts match the Worker.
+    const runAppointmentAction = async (button, id, action, extra, successText) => {
+      const status = appointmentStatusLine();
+      const filterKey = (snapshot.remoteAppointmentsMeta || {}).filter;
+      button.disabled = true;
+      let result;
+      try {
+        result = await window.EshopInventoryBridge.updateServiceAppointment(tenantId, id, action, extra);
+      } catch (error) {
+        const text = this.serviceAppointmentErrorText(error);
+        if (error && error.code === "appointment_changed") {
+          try {
+            await loadAppointments(filterKey, { message: text });
+            return;
+          } catch { /* fall through and show the message on the current screen */ }
+        }
+        if (status) status.textContent = text;
+        button.disabled = false;
+        return;
+      }
+      const text = typeof successText === "function" ? successText(result.appointment || {}) : successText;
+      try {
+        await loadAppointments(filterKey, { message: text });
+      } catch {
+        // The change itself worked; show the updated row even though the refresh failed.
+        rerenderWith({
+          ...snapshot,
+          remoteAppointments: (snapshot.remoteAppointments || []).map(appointment =>
+            appointment.id === id && result.appointment ? result.appointment : appointment)
+        }, "[data-online-appointments-status]", `${text} (Reload to refresh the list.)`);
+      }
+    };
     container.querySelectorAll("[data-service-appointment-action]").forEach(button => {
       button.addEventListener("click", async () => {
         const id = button.dataset.appointmentId;
         const action = button.dataset.serviceAppointmentAction;
-        const status = container.querySelector("[data-online-appointments-status]");
+        const row = button.closest("[data-appointment-row]");
+        const extra = {};
+        if (action === "cancel") {
+          if (!window.confirm("Cancel this appointment? The customer is told by email. If they paid a deposit you will need to refund it yourself.")) return;
+          const reason = String(row?.querySelector("[data-appointment-cancel-reason]")?.value || "").trim();
+          if (reason) extra.reason = reason.slice(0, 200);
+        }
+        if (action === "reject" && !window.confirm("Decline this appointment request? The customer is told by email.")) return;
+        if (action === "no_show" && !window.confirm("Mark this customer as a no-show? Any deposit stays with you.")) return;
+        await runAppointmentAction(button, id, action, extra, appointment => ({
+          confirm: Number(appointment.deposit_percent) > 0
+            ? "Appointment confirmed. The customer was emailed the deposit link; you can also share it from here."
+            : "Appointment confirmed.",
+          reject: "Appointment declined.",
+          cancel: appointment.deposit_refund_due ? "Appointment cancelled. A deposit was paid: refund it in Paystack, then mark it refunded." : "Appointment cancelled.",
+          complete: "Appointment marked completed.",
+          no_show: "Appointment marked as a no-show.",
+          deposit_refunded: "Deposit marked as refunded."
+        })[action] || "Appointment updated.");
+      });
+    });
+    container.querySelectorAll("[data-appointment-reschedule-toggle]").forEach(button => {
+      button.addEventListener("click", () => {
+        const panel = container.querySelector(`[data-appointment-reschedule-panel="${CSS.escape(button.dataset.appointmentRescheduleToggle)}"]`);
+        if (panel) panel.hidden = !panel.hidden;
+      });
+    });
+    container.querySelectorAll("[data-appointment-slots-load]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const panel = button.closest("[data-appointment-reschedule-panel]");
+        const date = String(panel?.querySelector("[data-appointment-reschedule-date]")?.value || "");
+        const select = panel?.querySelector("[data-appointment-reschedule-slot]");
+        const confirmButton = panel?.querySelector("[data-appointment-reschedule-confirm]");
+        const status = appointmentStatusLine();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          if (status) status.textContent = "Choose the new date first.";
+          return;
+        }
         button.disabled = true;
+        if (status) status.textContent = "Looking for free times…";
         try {
-          const result = await window.EshopInventoryBridge.updateServiceAppointment(tenantId, id, action);
-          const updatedSnapshot = {
-            ...snapshot,
-            remoteAppointments: (snapshot.remoteAppointments || []).map(appointment =>
-              appointment.id === id ? result.appointment : appointment)
-          };
-          container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
-          const updatedStatus = container.querySelector("[data-online-appointments-status]");
-          if (updatedStatus) updatedStatus.textContent = action === "confirm"
-            ? Number(result.appointment?.deposit_percent) > 0
-              ? "Appointment confirmed. Share the generated deposit link with the customer."
-              : "Appointment confirmed."
-            : "Appointment declined.";
-          this.bindBusinessCloudActions(container, path, updatedSnapshot, tenantId);
+          const result = await window.EshopInventoryBridge.listServiceSlots(tenantId, button.dataset.serviceId, date);
+          const slots = Array.isArray(result.slots) ? result.slots : [];
+          if (select) {
+            select.innerHTML = "";
+            const placeholder = container.ownerDocument.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = slots.length ? "Choose a time" : "No free times that day";
+            select.appendChild(placeholder);
+            slots.forEach(slot => {
+              const option = container.ownerDocument.createElement("option");
+              option.value = String(slot.starts_at);
+              option.textContent = `${slot.label || slot.starts_at}${Number(result.capacity) > 1 && slot.remaining ? ` (${slot.remaining} left)` : ""}`;
+              select.appendChild(option);
+            });
+            select.disabled = !slots.length;
+          }
+          if (confirmButton) confirmButton.disabled = true;
+          if (status) status.textContent = slots.length
+            ? `${slots.length} free time${slots.length === 1 ? "" : "s"} on ${date}. Choose one, then move the appointment.`
+            : `No free times on ${date}. Try another date.`;
         } catch (error) {
-          if (status) status.textContent = error instanceof Error ? error.message : "Could not update this appointment.";
+          if (status) status.textContent = this.serviceAppointmentErrorText(error, "Could not load free times.");
+        } finally {
           button.disabled = false;
         }
+      });
+    });
+    container.querySelectorAll("[data-appointment-reschedule-slot]").forEach(select => {
+      select.addEventListener("change", () => {
+        const panel = select.closest("[data-appointment-reschedule-panel]");
+        const confirmButton = panel?.querySelector("[data-appointment-reschedule-confirm]");
+        if (confirmButton) confirmButton.disabled = !select.value && !panel.querySelector("[data-appointment-reschedule-time]")?.value;
+      });
+    });
+    container.querySelectorAll("[data-appointment-reschedule-time]").forEach(input => {
+      const sync = () => {
+        const panel = input.closest("[data-appointment-reschedule-panel]");
+        const confirmButton = panel?.querySelector("[data-appointment-reschedule-confirm]");
+        const slotSelect = panel?.querySelector("[data-appointment-reschedule-slot]");
+        if (confirmButton) confirmButton.disabled = !input.value && !slotSelect?.value;
+      };
+      input.addEventListener("input", sync);
+      input.addEventListener("change", sync);
+    });
+    container.querySelectorAll("[data-appointment-reschedule-confirm]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const panel = button.closest("[data-appointment-reschedule-panel]");
+        let startsAt = String(panel?.querySelector("[data-appointment-reschedule-slot]")?.value || "");
+        const exactTime = String(panel?.querySelector("[data-appointment-reschedule-time]")?.value || "");
+        if (exactTime) {
+          // The Worker's slot list also counts this booking's own seats, so it can never offer a time that
+          // overlaps the current one. An exact time is checked by the Worker itself (hours, grid, capacity).
+          const date = String(panel?.querySelector("[data-appointment-reschedule-date]")?.value || "");
+          startsAt = this.serviceAppointmentLocalToIso(date, exactTime, panel?.dataset.timezone);
+          if (!startsAt) {
+            const status = appointmentStatusLine();
+            if (status) status.textContent = "Choose a valid date and time first.";
+            return;
+          }
+        }
+        if (!startsAt) return;
+        await runAppointmentAction(button, button.dataset.appointmentRescheduleConfirm, "reschedule", { starts_at: startsAt },
+          "Appointment moved. The customer was emailed the new time.");
       });
     });
     container.querySelector("[data-online-holds-load]")?.addEventListener("click", async event => {
@@ -15745,7 +16030,7 @@ const StudioRenderers = {
         });
         remoteLoads.push({
           key: "remoteAppointments",
-          load: () => window.EshopInventoryBridge.listServiceAppointments(activeTenant.id)
+          load: () => window.EshopInventoryBridge.listServiceAppointments(activeTenant.id, this.serviceAppointmentFilter().query)
         });
       }
       if (/\/product-intelligence(?:\/|$)/.test(path)) {
@@ -15783,6 +16068,14 @@ const StudioRenderers = {
             : key === "remoteAllocations"
               ? (Array.isArray(result.value.allocations) ? result.value.allocations : [])
               : result.value;
+          if (key === "remoteAppointments") {
+            renderSnapshot.remoteAppointmentsMeta = {
+              filter: this.serviceAppointmentFilter().key,
+              counts: result.value.counts || null,
+              hasMore: result.value.has_more === true,
+              fetched: renderSnapshot.remoteAppointments.length
+            };
+          }
           if (key === "remoteProductAnalytics") {
             renderSnapshot.remoteProductAnalyticsUpdatedAt = new Date().toISOString();
           }
@@ -17738,7 +18031,7 @@ const StudioRenderers = {
         <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:var(--bg);color:var(--text-main);">
           <header class="builder-litrus-toolbar" aria-label="Shop builder controls">
             <button id="builder-litrus-publish" type="button">Publish</button>
-            <a id="builder-litrus-store-details" href="/account/web/store" data-route="/account/web/store">Store</a>
+            ${draftEditor ? "" : `<a id="builder-litrus-store-details" href="/account/web/store?tenant=${encodeURIComponent(tenant.id)}" data-route="/account/web/store?tenant=${encodeURIComponent(tenant.id)}">Store</a>`}
             <button id="builder-litrus-sections" type="button">Sections</button>
             <button id="builder-litrus-advanced" type="button">Advanced</button>
             <details class="builder-litrus-device-controls" id="builder-litrus-devices" hidden>
@@ -18254,42 +18547,6 @@ const StudioRenderers = {
 
   renderWeb() {
     return StudioRenderers.renderMainShopWorkspace("/account/web");
-  },
-
-  renderPagesManager() {
-    const pages = SQLiteEngine.getPages().sort((a, b) => String(b.updated_at || "").localeCompare(String(a.updated_at || "")));
-    AppUtils.updateSEO({
-      title: "Website Pages — Craft",
-      description: "Create and manage pages for your Craft website."
-    });
-    return `
-      ${StoreRenderers.renderNavbar("/account/web/pages")}
-      <main class="container management-module-main" style="padding:32px 0 64px; max-width:800px;">
-        <div class="studio-page-header">
-          <div>
-            <a href="/account/web" class="studio-back-link" data-route="/account/web" aria-label="Back to websites">&larr;</a>
-            <h1 class="section-heading" style="font-size:2rem;">Website Pages</h1>
-            <p style="color:var(--text-muted); font-size:0.875rem;">Create pages for visitors. Published pages appear in your website navigation.</p>
-          </div>
-          <button type="button" class="btn-primary" id="btn-add-page" style="height:42px; padding:0 16px;">+ Add Page</button>
-        </div>
-        <div class="product-list" style="padding:0 12px;">
-          ${pages.map(page => `
-            <div class="product-list-item" style="display:flex; align-items:center; gap:12px; padding:14px;">
-              <div style="min-width:0; flex:1;">
-                <strong style="display:block;">${AppUtils.escapeHTML(page.title)}</strong>
-                <small style="display:block; color:var(--text-muted);">/pages/${AppUtils.escapeHTML(page.slug)} · ${page.published ? "Published" : "Draft"}</small>
-              </div>
-              ${page.published ? `<a class="option-chip" href="/pages/${encodeURIComponent(page.slug)}" data-route="/pages/${encodeURIComponent(page.slug)}">View</a>` : ""}
-              <button type="button" class="option-chip" data-action="edit-page" data-id="${page.id}">Edit</button>
-              <button type="button" class="product-list-delete" data-action="delete-page" data-id="${page.id}" aria-label="Delete ${AppUtils.escapeHTML(page.title)}">Delete</button>
-            </div>
-          `).join("") || `<p style="padding:24px 12px; color:var(--text-muted);">No pages yet. Add a page to start building your website.</p>`}
-        </div>
-        <div id="page-modal-container"></div>
-      </main>
-      ${StoreRenderers.renderFooter()}
-    `;
   },
 
   renderPlans() {
@@ -19179,6 +19436,7 @@ const AppController = {
     if (!response.ok) {
       const error = new Error(result.error || `Cloudflare returned HTTP ${response.status}.`);
       error.status = response.status;
+      if (typeof result.error_code === "string") error.code = result.error_code;
       throw error;
     }
     return result;
@@ -19493,7 +19751,7 @@ const AppController = {
       const result = await owner.poll(tenantId);
       if (!result || this.getActiveTenant().id !== tenantId) return;
       result.fresh.slice(0, 3).forEach(alert =>
-        AppUtils.showToast(alert.title, alert.kind === "attention" ? "danger" : "success"));
+        AppUtils.showToast(alert.title, alert.kind === "attention" || alert.kind === "booking_refund" ? "danger" : "success"));
       if (result.fresh.length > 3) {
         AppUtils.showToast(`${result.fresh.length - 3} more new shop alerts.`);
       }
@@ -19647,7 +19905,7 @@ const AppController = {
       this.navigate("/", true);
       return;
     }
-    if (path === "/account/web/site" && params.get("new") !== "1" && params.has("tenant")) {
+    if ((path === "/account/web/site" && params.get("new") !== "1" || path === "/account/web/store") && params.has("tenant")) {
       const tenantId = params.get("tenant");
       const catalog = this.tenantCatalogs().find(item => item.tenant_id === tenantId);
       if (!catalog) {
@@ -19730,11 +19988,11 @@ const AppController = {
       html = StoreRenderers.renderFavorites();
     } else if (path === "/app-account") {
       html = StudioRenderers.renderAppAccount();
-    } else if (path === "/account" || path === "/account/main-shop" || path.startsWith("/account/main-shop/") || path === "/account/dashboard" || path.startsWith("/account/customers") || path.startsWith("/account/website") || path === "/account/payments") {
+    } else if (path === "/account" || path === "/account/main-shop" || path.startsWith("/account/main-shop/") || path === "/account/dashboard" || path.startsWith("/account/customers") || path === "/account/payments") {
       html = StudioRenderers.renderMainShopWorkspace(path);
     } else if (path === "/account/web" || path.startsWith("/account/web/studio/")) {
       html = StudioRenderers.renderMainShopWorkspace(path);
-    } else if (["/store/products", "/store/products/manage", "/store/manage/products", "/store/manage/categories", "/store/categories", "/store/inventory", "/store/split-shop", "/store/revenue", "/store/channels", "/store/sales", "/store/website", "/store/orders", "/store/bookings", "/store/payments"].includes(path)) {
+    } else if (["/store/products", "/store/products/manage", "/store/manage/products", "/store/manage/categories", "/store/categories", "/store/inventory", "/store/split-shop", "/store/revenue", "/store/channels", "/store/sales", "/store/orders", "/store/bookings", "/store/payments"].includes(path)) {
       html = StudioRenderers.renderMainShopWorkspace(path);
     } else if (path === "/account/profile" || path.startsWith("/account/profile/")) {
       html = StudioRenderers.renderProfileScreen(path);
@@ -19768,8 +20026,6 @@ const AppController = {
       html = StudioRenderers.renderSettings();
     } else if (path === "/account/web" || path.startsWith("/account/web/studio/")) {
       html = StudioRenderers.renderMainShopWorkspace(path);
-    } else if (path === "/account/web/pages") {
-      html = StudioRenderers.renderPagesManager();
     } else if (path === "/account/plans") {
       html = StudioRenderers.renderPlans();
     } else if (["/privacy", "/terms", "/cookies", "/about", "/contact", "/help", "/faq", "/shipping", "/returns"].includes(path)) {
@@ -19820,7 +20076,19 @@ const AppController = {
         tenantId: activeTenant.id,
         tenantName: activeTenant.name,
         token: connection.token,
-        origin: connection.origin
+        origin: connection.origin,
+        // Lets the AI helper see what a service shop sells instead of treating it as an empty stock room.
+        offerType: SQLiteEngine.getStore().offer_type === "services" ? "services" : "products",
+        // In a services shop every live catalogue product is a service. In a products shop none is:
+        // booking_enabled only means "customers may place a temporary hold on this item", not "this is a service".
+        listServices: () => (SQLiteEngine.getStore().offer_type === "services"
+          ? SQLiteEngine.select("products", product => product.status !== "archived" && product.active !== false && product.active !== 0)
+          : [])
+          .map(product => ({
+            name: product.name,
+            price: product.price ?? product.selling_price ?? 0,
+            duration_minutes: product.duration_minutes
+          }))
       });
     } catch (error) {
       console.warn("Craft AI could not be initialized for this screen.", error);
@@ -20518,19 +20786,20 @@ const AppController = {
       if (litrusFrame) {
         const isDraftEditor = params.get("new") === "1" && params.get("edit") === "1";
         const draftId = isDraftEditor ? StudioRenderers.websiteBuilderDraft().draft_id : "";
-        const litrusScope = isDraftEditor ? `draft:${draftId || "new"}` : `tenant:${this.getActiveTenant().id}`;
+        // The shop this editor session belongs to. Everything the editor sends is applied to this
+        // shop only, never to whichever shop happens to be active when the message arrives.
+        const openedTenantId = this.getActiveTenant().id;
+        const litrusScope = isDraftEditor ? `draft:${draftId || "new"}` : `tenant:${openedTenantId}`;
         const litrusRecipeKey = `litrus-mixer-recipe:${litrusScope}`;
         const litrusDesignKey = `liquid-html-theme-draft:litrus-mixer:${litrusScope}`;
         const savedLitrusRecipe = StudioRenderers.getWorkspaceSetting(litrusRecipeKey, null);
         const savedLitrusHtml = isDraftEditor ? "" : StudioRenderers.getWorkspaceSetting(litrusDesignKey, "");
         let litrusSaveQueue = Promise.resolve();
-        const validLitrusHtml = html => typeof html === "string" && html.length <= 3_000_000 &&
-          /^<!doctype\s+html>/i.test(html) &&
-          html.includes('<meta name="eshop-filled-theme" content="litrus-mixer">');
+        const validLitrusHtml = html => window.EshopLitrusHost.isValidHtml(html);
         const saveLitrusDesign = payload => {
           const save = litrusSaveQueue.then(async () => {
             if (!window.ShopSQLite) throw new Error("The app database is not ready.");
-            await this.saveLitrusMixerCatalog(payload, isDraftEditor);
+            await this.saveLitrusMixerCatalog(payload, isDraftEditor, openedTenantId);
             StudioRenderers.setWorkspaceSetting(litrusDesignKey, payload.html);
             if (payload.recipe?.litrus === "mixer-recipe" && payload.recipe.v === 1) {
               StudioRenderers.setWorkspaceSetting(litrusRecipeKey, payload.recipe);
@@ -20586,6 +20855,9 @@ const AppController = {
                   service_timezone: store.service_timezone || "Africa/Nairobi",
                   service_buffer_minutes: Number(store.service_buffer_minutes) || 0,
                   service_deposit_percent: Number(store.service_deposit_percent) || 0,
+                  service_capacity: Math.min(20, Math.max(1, Math.round(Number(store.service_capacity)) || 1)),
+                  service_cancel_cutoff_hours: store.service_cancel_cutoff_hours === undefined || store.service_cancel_cutoff_hours === "" || !Number.isFinite(Number(store.service_cancel_cutoff_hours)) ? 2 : Math.min(168, Math.max(0, Math.round(Number(store.service_cancel_cutoff_hours)))),
+                  service_max_reschedules: store.service_max_reschedules === undefined || store.service_max_reschedules === "" || !Number.isFinite(Number(store.service_max_reschedules)) ? 2 : Math.min(10, Math.max(0, Math.round(Number(store.service_max_reschedules)))),
                   tagline: store.tagline || "",
                   description: store.description || "",
                   email: store.email || "",
@@ -20608,9 +20880,15 @@ const AppController = {
         if (this.litrusMixerMessageHandler) {
           window.removeEventListener("message", this.litrusMixerMessageHandler);
         }
-        this.litrusMixerMessageHandler = async event => {
-          if (event.origin !== window.location.origin || event.source !== litrusFrame.contentWindow) return;
-          if (event.data?.type === "craft-litrus-ready") {
+        const litrusHost = window.EshopLitrusHost;
+        this.litrusMixerMessageHandler = litrusHost.createMessageHandler({
+          // Pinned when the editor opens: the handler refuses messages once another shop is active.
+          tenantId: openedTenantId,
+          isDraftEditor,
+          getActiveTenantId: () => this.getActiveTenant().id,
+          getFrameWindow: () => litrusFrame.contentWindow,
+          origin: window.location.origin,
+          sendTheme: () => {
             const appTheme = getComputedStyle(document.documentElement);
             const themeValue = (property, fallback) => appTheme.getPropertyValue(property).trim() || fallback;
             litrusFrame.contentWindow?.postMessage({
@@ -20625,12 +20903,19 @@ const AppController = {
                 accentText: themeValue("--accent-contrast", "#fff")
               }
             }, window.location.origin);
-            sendCatalog();
-            return;
-          }
-          if (event.data?.type === "craft-litrus-mode") {
+          },
+          sendCatalog,
+          saveDesign: saveLitrusDesign,
+          searchImages: ({ tenantId, isDraft, images }) => this.cloudflareRequest(
+            isDraft ? "/api/images/draft-search" : `/api/images/search?tenant=${encodeURIComponent(tenantId)}`,
+            { method: "POST", body: JSON.stringify({ images }) },
+            tenantId,
+            isDraft
+          ),
+          reply: (frameWindow, message) => frameWindow.postMessage(message, window.location.origin),
+          setMode: mode => {
             const devices = document.getElementById("builder-litrus-devices");
-            const previewing = event.data.mode === "preview";
+            const previewing = mode === "preview";
             const sections = document.getElementById("builder-litrus-sections");
             const advanced = document.getElementById("builder-litrus-advanced");
             if (sections) sections.hidden = previewing;
@@ -20639,79 +20924,11 @@ const AppController = {
               devices.hidden = !previewing;
               if (devices.hidden) devices.open = false;
             }
-            return;
-          }
-          if (event.data?.type === "craft-litrus-error") {
-            AppUtils.showToast(String(event.data.message || "Litrus Mixer could not load the shop catalog."), "danger");
-            return;
-          }
-          if (event.data?.type === "craft-litrus-image-request") {
-            const requestId = String(event.data.requestId || "");
-            const reply = (data) => litrusFrame.contentWindow?.postMessage({
-              type: "craft-litrus-image-response",
-              requestId,
-              ...data
-            }, window.location.origin);
-            if (!/^[a-zA-Z0-9_-]{1,80}$/.test(requestId) ||
-                !Array.isArray(event.data.images) || event.data.images.length > 20) {
-              reply({ error: "Invalid Craft image request." });
-              return;
-            }
-            try {
-              const tenantId = isDraftEditor ? "main" : this.getActiveTenant().id;
-              const imageSearchPath = isDraftEditor
-                ? "/api/images/draft-search"
-                : `/api/images/search?tenant=${encodeURIComponent(tenantId)}`;
-              const result = await this.cloudflareRequest(
-                imageSearchPath,
-                { method: "POST", body: JSON.stringify({ images: event.data.images }) },
-                tenantId,
-                isDraftEditor
-              );
-              reply({ images: result.images || [], errors: result.errors || [], error: result.error || "" });
-            } catch (error) {
-              reply({ error: error.message || "Could not load Craft images." });
-            }
-            return;
-          }
-          if (event.data?.type === "craft-litrus-draft") {
-            const requestId = String(event.data.requestId || "");
-            const reply = error => litrusFrame.contentWindow?.postMessage({
-              type: "craft-litrus-draft-saved",
-              requestId,
-              error: error ? String(error.message || error) : ""
-            }, window.location.origin);
-            if (!/^\d+-\d+$/.test(requestId) || !validLitrusHtml(event.data.html)) {
-              reply(new Error("Litrus Mixer returned an incomplete shop draft."));
-              return;
-            }
-            try {
-              await saveLitrusDesign(event.data);
-              reply(null);
-            } catch (error) {
-              console.error("Litrus Mixer draft could not be saved in Craft.", error);
-              reply(error);
-            }
-            return;
-          }
-          if (event.data?.type !== "craft-litrus-publish") return;
-          const html = event.data.html;
-          if (!validLitrusHtml(html)) {
-            AppUtils.showToast("Litrus Mixer returned an incomplete storefront.", "danger");
-            return;
-          }
-          try {
-            await saveLitrusDesign(event.data);
-            if (isDraftEditor) {
-              this.navigate("/account/web/site?new=1&finish=1&theme=litrus-mixer");
-            } else {
-              this.openCloudflarePublishModal(true);
-            }
-          } catch (error) {
-            console.error("Litrus Mixer changes could not be saved in Craft.", error);
-            AppUtils.showToast(error.message || "Could not save the Litrus Mixer design.", "danger");
-          }
-        };
+          },
+          toast: (message, type) => AppUtils.showToast(message, type),
+          finishDraft: () => this.navigate("/account/web/site?new=1&finish=1&theme=litrus-mixer"),
+          openPublish: () => this.openCloudflarePublishModal(true)
+        });
         window.addEventListener("message", this.litrusMixerMessageHandler);
         const publishButton = document.getElementById("builder-litrus-publish");
         const sectionsButton = document.getElementById("builder-litrus-sections");
@@ -22250,7 +22467,7 @@ const AppController = {
     // 6. Studio editor modals & inputs
     this.initStudioModals();
 
-    if (path === "/account" || path === "/account/main-shop" || path.startsWith("/account/main-shop/") || path === "/account/dashboard" || path.startsWith("/account/customers") || path.startsWith("/account/website") || path === "/account/payments" || path === "/account/web" || path.startsWith("/account/web/studio/") || path.startsWith("/store/")) {
+    if (path === "/account" || path === "/account/main-shop" || path.startsWith("/account/main-shop/") || path === "/account/dashboard" || path.startsWith("/account/customers") || path === "/account/payments" || path === "/account/web" || path.startsWith("/account/web/studio/") || path.startsWith("/store/")) {
       void StudioRenderers.loadMainShopWorkspace(path);
     }
 
@@ -22853,7 +23070,7 @@ const AppController = {
     return updated.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapedName}</title>`);
   },
 
-  async saveLitrusMixerCatalog(input, isDraftEditor) {
+  async saveLitrusMixerCatalog(input, isDraftEditor, expectedTenantId) {
     const data = input?.catalog;
     if (!data || !Array.isArray(data.categories) || !Array.isArray(data.products) ||
         data.categories.length > 1000 || data.products.length > 1000 ||
@@ -22861,6 +23078,10 @@ const AppController = {
       throw new Error("Litrus Mixer returned an invalid shop catalog.");
     }
     const tenant = this.getActiveTenant();
+    // The product tables belong to the active shop, so a save queued for another shop must not run.
+    if (expectedTenantId && tenant.id !== expectedTenantId) {
+      throw new Error("The active shop changed while the website editor was open, so nothing was saved. Reopen the website editor for the shop you want to edit.");
+    }
     const current = this.tenantCatalogs().find(item => item.tenant_id === tenant.id);
     if (!current) throw new Error("The current shop catalog is not available on this device.");
     // The live product store is newer than the cached tenant catalog (POS sales and
@@ -22970,7 +23191,10 @@ const AppController = {
       service_close_time: String(shop.service_close_time || "17:00"),
       service_timezone: String(shop.service_timezone || "Africa/Nairobi"),
       service_buffer_minutes: Number(shop.service_buffer_minutes) || 0,
-      service_deposit_percent: Number(shop.service_deposit_percent) || 0
+      service_deposit_percent: Number(shop.service_deposit_percent) || 0,
+      service_capacity: Math.min(20, Math.max(1, Math.round(Number(shop.service_capacity)) || 1)),
+      service_cancel_cutoff_hours: shop.service_cancel_cutoff_hours === undefined || shop.service_cancel_cutoff_hours === "" || !Number.isFinite(Number(shop.service_cancel_cutoff_hours)) ? 2 : Math.min(168, Math.max(0, Math.round(Number(shop.service_cancel_cutoff_hours)))),
+      service_max_reschedules: shop.service_max_reschedules === undefined || shop.service_max_reschedules === "" || !Number.isFinite(Number(shop.service_max_reschedules)) ? 2 : Math.min(10, Math.max(0, Math.round(Number(shop.service_max_reschedules))))
     };
     this.setActiveTenantCatalog(tenant, {
       ...current,
@@ -23467,85 +23691,6 @@ const AppController = {
 
   },
 
-  openPageModal(page) {
-    const modalContainer = document.getElementById("page-modal-container");
-    if (!modalContainer) return;
-    const isEdit = !!page;
-    modalContainer.innerHTML = `
-      <div class="modal-overlay active" id="page-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="page-editor-title">
-        <div class="modal-card">
-          <button class="modal-close-btn" id="page-modal-close" aria-label="Close">&times;</button>
-          <h2 class="product-editor-title" id="page-editor-title">${isEdit ? "Edit page" : "Add page"}</h2>
-          <form id="page-editor-form" class="product-editor-form" style="display:flex; flex-direction:column; gap:14px;">
-            <input type="hidden" name="id" value="${page ? page.id : ""}">
-            <div class="form-field">
-              <label class="form-label" for="page-title">Page title *</label>
-              <input id="page-title" type="text" name="title" class="form-input" required maxlength="80" value="${page ? AppUtils.escapeHTML(page.title) : ""}" placeholder="About us">
-            </div>
-            <div class="form-field">
-              <label class="form-label" for="page-slug">Page URL *</label>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <span aria-hidden="true">/pages/</span>
-                <input id="page-slug" type="text" name="slug" class="form-input" required maxlength="80" pattern="[A-Za-z0-9-]+" value="${page ? AppUtils.escapeHTML(page.slug) : ""}" placeholder="about-us">
-              </div>
-            </div>
-            <div class="form-field">
-              <label class="form-label" for="page-content">Page content</label>
-              <textarea id="page-content" name="content" class="form-input" maxlength="12000" style="min-height:220px; padding-top:10px;" placeholder="Write the information visitors should see.">${page ? AppUtils.escapeHTML(page.content || "") : ""}</textarea>
-              <small style="color:var(--text-muted);">Plain text only. Line breaks are shown on the published page.</small>
-            </div>
-            <label style="display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" name="published" ${!page || page.published ? "checked" : ""}>
-              <span>Publish this page in website navigation</span>
-            </label>
-            <div class="product-editor-actions" style="margin-top:8px;">
-              <button type="submit" class="btn-primary">${isEdit ? "Save Page" : "Create Page"}</button>
-              <button type="button" class="btn-secondary" id="page-modal-cancel">Cancel</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-    const close = () => { modalContainer.innerHTML = ""; };
-    document.getElementById("page-modal-close").onclick = close;
-    document.getElementById("page-modal-cancel").onclick = close;
-    document.getElementById("page-modal-overlay").onclick = event => {
-      if (event.target.id === "page-modal-overlay") close();
-    };
-    document.getElementById("page-editor-form").onsubmit = async event => {
-      event.preventDefault();
-      const data = new FormData(event.currentTarget);
-      const result = SQLiteEngine.savePage({
-        id: data.get("id") || undefined,
-        title: data.get("title"),
-        slug: data.get("slug"),
-        content: data.get("content"),
-        published: data.get("published") ? 1 : 0
-      });
-      if (!result.ok) {
-        AppUtils.showToast(result.error);
-        return;
-      }
-      close();
-      try {
-        if (!window.ShopSQLite) throw new Error("The app SQLite database is not ready.");
-        await window.ShopSQLite.flush();
-        AppUtils.showToast(isEdit ? "Page saved" : "Page created");
-        if (this.currentRoute().startsWith("/account/web/site")) {
-          this.navigate(`/account/web/site?tenant=${encodeURIComponent(this.getActiveTenant().id)}&page=${encodeURIComponent(result.slug)}`);
-        } else if (this.currentRoute() === "/account/web/studio/websites/page-editor") {
-          this.handleRoute(this.currentRoute(), false);
-        } else {
-          this.navigate("/account/web/pages");
-        }
-      } catch (error) {
-        console.error("Website page could not be saved.", error);
-        AppUtils.showToast(error.message || "Could not save website page.", "danger");
-      }
-    };
-    document.getElementById("page-title").focus();
-  },
-
   openCategoryModal(category) {
     const modalContainer = document.getElementById("category-modal-container");
     if (!modalContainer) return;
@@ -23831,43 +23976,7 @@ const AppController = {
   },
 
   bindEvents() {
-    window.addEventListener("shop:back", (event) => {
-      const categoryModal = document.getElementById("category-modal-overlay");
-      if (categoryModal) {
-        document.getElementById("category-modal-cancel")?.click();
-        return;
-      }
-
-      const modal = document.getElementById("prod-modal-overlay");
-      if (modal) {
-        document.getElementById("modal-btn-cancel")?.click();
-        return;
-      }
-
-      const drawer = document.getElementById("mobile-nav-drawer");
-      if (drawer && drawer.classList.contains("active")) {
-        drawer.classList.remove("active");
-        return;
-      }
-
-      const path = this.currentRoute().split("?")[0];
-      if (path === "/") return;
-
-      if (event.detail?.canGoBack) {
-        window.history.back();
-        return;
-      }
-
-      if (path.startsWith("/account/")) {
-        this.navigate("/account");
-      } else if (path.startsWith("/category/") && new URLSearchParams(this.currentRoute().split("?")[1] || "").get("studio") === "1") {
-        this.navigate("/account/categories");
-      } else if (path.startsWith("/product/") || path.startsWith("/category/") || ["/categories", "/favorites", "/bag", "/search"].includes(path)) {
-        this.navigate("/");
-      } else {
-        this.navigate("/");
-      }
-    });
+    // The Android back button is handled by src/back-button.js (installed from src/bootstrap.js).
 
     document.addEventListener("change", (e) => {
       const agreement = e.target.closest("#privacy-policy-agreement");
@@ -24182,17 +24291,6 @@ const AppController = {
         return;
       }
 
-      const editBuilderPage = e.target.closest("[data-edit-builder-page]");
-      if (editBuilderPage) {
-        const page = SQLiteEngine.getPages().find(item => item.slug === editBuilderPage.dataset.editBuilderPage);
-        if (!page) {
-          AppUtils.showToast("This page is no longer available.", "danger");
-          return;
-        }
-        this.openPageModal(page);
-        return;
-      }
-
       if (e.target.closest("#btn-add-website-category")) {
         this.openCategoryModal(null);
         return;
@@ -24221,33 +24319,6 @@ const AppController = {
 
       if (e.target.closest("#btn-add-category")) {
         this.openCategoryModal(null);
-        return;
-      }
-
-      if (e.target.closest("#btn-add-page")) {
-        this.openPageModal(null);
-        return;
-      }
-
-      const editPageBtn = e.target.closest("[data-action='edit-page']");
-      if (editPageBtn) {
-        const page = SQLiteEngine.getPages().find(item => Number(item.id) === Number(editPageBtn.getAttribute("data-id")));
-        if (page) this.openPageModal(page);
-        return;
-      }
-
-      const deletePageBtn = e.target.closest("[data-action='delete-page']");
-      if (deletePageBtn) {
-        const pageId = Number(deletePageBtn.getAttribute("data-id"));
-        const page = SQLiteEngine.getPages().find(item => Number(item.id) === pageId);
-        if (page && confirm(`Delete "${page.title}"?`)) {
-          SQLiteEngine.deletePage(pageId);
-          AppUtils.showToast("Page deleted");
-          const returnRoute = this.currentRoute() === "/account/web/studio/websites/page-editor"
-            ? this.currentRoute()
-            : "/account/web/pages";
-          this.handleRoute(returnRoute, false);
-        }
         return;
       }
 
@@ -24592,15 +24663,27 @@ window.EshopInventoryBridge = {
       { method: "PATCH", body: JSON.stringify({ id, action }) }, tenantId
     );
   },
-  listServiceAppointments(tenantId) {
+  listServiceAppointments(tenantId, filters = {}) {
+    // Optional Worker filters: from, to (appointment start window), limit (1-200), offset, view, status.
+    const extra = ["from", "to", "limit", "offset", "view", "status"]
+      .filter(key => filters && filters[key] !== undefined && filters[key] !== null && filters[key] !== "")
+      .map(key => `&${key}=${encodeURIComponent(filters[key])}`).join("");
     return AppController.cloudflareRequest(
-      `/api/service-appointments?tenant=${encodeURIComponent(tenantId)}`, {}, tenantId
+      `/api/service-appointments?tenant=${encodeURIComponent(tenantId)}${extra}`, {}, tenantId
     );
   },
-  updateServiceAppointment(tenantId, id, action) {
+  // extra: action fields such as { starts_at } (reschedule) or { reason } (cancel). id and action always win.
+  updateServiceAppointment(tenantId, id, action, extra = {}) {
     return AppController.cloudflareRequest(
       `/api/service-appointments?tenant=${encodeURIComponent(tenantId)}`,
-      { method: "PATCH", body: JSON.stringify({ id, action }) }, tenantId
+      { method: "PATCH", body: JSON.stringify({ ...extra, id, action }) }, tenantId
+    );
+  },
+  // Free start times for a service on one shop-local date (public Worker availability, no owner key needed).
+  listServiceSlots(tenantId, serviceId, date) {
+    return AppController.cloudflareRequest(
+      `/api/service-appointments/availability?tenant=${encodeURIComponent(tenantId)}&service_id=${encodeURIComponent(serviceId)}&date=${encodeURIComponent(date)}`,
+      {}, tenantId, true
     );
   },
   async fetchStorefrontAnalytics(tenantId, days = 30) {

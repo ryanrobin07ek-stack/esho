@@ -1,4 +1,5 @@
 import { CRAFT_AI_SCREEN_DIRECTORY } from "./craft-ai-screens.js";
+import { buildLocalAnalytics } from "./local-analytics.js";
 
 const sessions = new Map();
 let currentContext = null;
@@ -13,7 +14,7 @@ const screenTitles = [
   [/\/(?:account\/products|store\/products|pos\/products)/, "Products"],
   [/\/(?:store\/orders|pos\/sales)/, "Orders & sales"],
   [/\/(?:account\/tenants)/, "Shops & tenants"],
-  [/\/(?:account\/web|store\/website)/, "Website"],
+  [/\/account\/web/, "Website"],
   [/\/pos(?:\/|$)/, "Point of sale"]
 ];
 
@@ -75,21 +76,39 @@ function isEligibleScreen(path) {
     path !== "/account/web/site" && !path.startsWith("/account/profile");
 }
 
-function localDate(value) {
-  const parsed = Date.parse(value);
-  return Number.isFinite(parsed) ? parsed : null;
+const withTimeout = (promise, ms, message) => Promise.race([
+  Promise.resolve(promise),
+  new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms))
+]);
+
+// The Worker returns at most 200 appointments per page (newest first) and reports shop-wide counts.
+// Ask for everything dated in the last 30 days or later, follow has_more, and say when it was still cut short.
+const APPOINTMENT_PAGE_SIZE = 200;
+const APPOINTMENT_MAX_PAGES = 5;
+async function loadRecentAppointments(bridge, tenantId) {
+  const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const appointments = [];
+  let counts = null;
+  let truncated = false;
+  for (let page = 0; page < APPOINTMENT_MAX_PAGES; page += 1) {
+    const result = await bridge.listServiceAppointments(tenantId, {
+      from, limit: APPOINTMENT_PAGE_SIZE, offset: page * APPOINTMENT_PAGE_SIZE
+    });
+    if (!Array.isArray(result?.appointments)) {
+      if (page === 0) throw new Error("The appointment list was not returned.");
+      truncated = true;
+      break;
+    }
+    appointments.push(...result.appointments);
+    if (page === 0 && result.counts && typeof result.counts === "object") counts = result.counts;
+    if (!result.has_more) return { appointments, counts, truncated: false };
+    truncated = true;
+  }
+  return { appointments, counts, truncated };
 }
 
-function paidSale(sale) {
-  const excludedStatuses = new Set(["refunded", "voided", "cancelled", "canceled", "failed"]);
-  const paymentStatus = String(sale.payment_status || "").toLowerCase();
-  const saleStatus = String(sale.status || "").toLowerCase();
-  return Boolean(Number(sale.paid)) && !excludedStatuses.has(paymentStatus) &&
-    !excludedStatuses.has(saleStatus);
-}
-
-async function readLocalPosAnalytics(path) {
-  const supportsLocalPos = path.startsWith("/account") || path.startsWith("/pos") ||
+async function readLocalPosAnalytics(path, ctx = {}) {
+  const supportsLocalPos = path === "/" || path.startsWith("/account") || path.startsWith("/pos") ||
     path.startsWith("/store/");
   const shop = window.ShopPOS;
   if (!supportsLocalPos || !shop?.listSales || !shop?.listProducts || !shop?.listExpenses) return null;
@@ -104,106 +123,29 @@ async function readLocalPosAnalytics(path) {
     throw new Error("The local register returned incomplete analytics data.");
   }
 
-  const now = Date.now();
-  const currentStart = now - 30 * 24 * 60 * 60 * 1000;
-  const previousStart = now - 60 * 24 * 60 * 60 * 1000;
-  let paidSalesCurrent = 0;
-  let paidSalesPrevious = 0;
-  let revenueCurrent = 0;
-  let revenuePrevious = 0;
-  let grossProfitCurrent = 0;
-  let grossProfitPrevious = 0;
-  let costedLinesCurrent = 0;
-  let costedLinesPrevious = 0;
-  let expensesCurrent = 0;
-  let expensesPrevious = 0;
-  const productUnits = new Map();
-  const expenseCategories = new Map();
-
-  for (const sale of sales) {
-    const createdAt = localDate(sale.created_at);
-    if (createdAt === null || createdAt < previousStart) continue;
-    const inCurrentPeriod = createdAt >= currentStart;
-    if (paidSale(sale)) {
-      if (inCurrentPeriod) {
-        paidSalesCurrent += 1;
-        revenueCurrent += Number(sale.total) || Number(sale.total_cents || 0) / 100;
-      } else {
-        paidSalesPrevious += 1;
-        revenuePrevious += Number(sale.total) || Number(sale.total_cents || 0) / 100;
-      }
-      for (const item of Array.isArray(sale.items) ? sale.items : []) {
-        const name = String(item.name || "").trim().slice(0, 120);
-        const units = Number(item.quantity) || 0;
-        if (units > 0) {
-          const itemRevenue = Number(item.unitPrice || 0) * units;
-          const cost = Number(item.historicalUnitCost);
-          const hasCost = Number.isFinite(cost) && cost >= 0;
-          if (inCurrentPeriod) {
-            if (name) productUnits.set(name, (productUnits.get(name) || 0) + units);
-            if (hasCost) {
-              grossProfitCurrent += itemRevenue - cost * units;
-              costedLinesCurrent += 1;
-            }
-          } else if (hasCost) {
-            grossProfitPrevious += itemRevenue - cost * units;
-            costedLinesPrevious += 1;
-          }
-        }
-      }
+  // Service shops: the bookable services and the appointment requests are part of the picture.
+  // Appointments live on the storefront server, so a slow or failed load must never block the answer.
+  let services = [];
+  try {
+    services = typeof ctx.listServices === "function" ? ctx.listServices() || [] : [];
+  } catch (error) {
+    console.warn("Craft AI could not read the shop's services.", error);
+  }
+  const offerType = ctx.offerType === "services" ? "services" : "products";
+  let appointments = null;
+  let appointmentMeta = null;
+  const bridge = window.EshopInventoryBridge;
+  if ((offerType === "services" || services.length) && ctx.tenantId &&
+      typeof bridge?.listServiceAppointments === "function") {
+    try {
+      const loaded = await withTimeout(loadRecentAppointments(bridge, ctx.tenantId), 8000, "Appointments took too long to load.");
+      appointments = loaded.appointments;
+      appointmentMeta = { counts: loaded.counts, truncated: loaded.truncated };
+    } catch (error) {
+      console.warn("Craft AI could not load appointment requests.", error);
     }
   }
-
-  for (const expense of expenses) {
-    const createdAt = localDate(expense.date || expense.created_at || expense.createdAt);
-    if (createdAt === null || createdAt < previousStart) continue;
-    const amount = Number(expense.amount) || Number(expense.amount_cents || 0) / 100;
-    if (createdAt >= currentStart) {
-      expensesCurrent += amount;
-      const category = String(expense.category || "Other").trim().slice(0, 100) || "Other";
-      expenseCategories.set(category, (expenseCategories.get(category) || 0) + amount);
-    } else expensesPrevious += amount;
-  }
-
-  const activeProducts = products.filter(product => product.active !== false);
-  return {
-    currency: /^[A-Z]{3}$/.test(settings?.currency || "") ? settings.currency : "KES",
-    paid_sales_last_30_days: paidSalesCurrent,
-    paid_sales_previous_30_days: paidSalesPrevious,
-    paid_revenue_last_30_days: Number(revenueCurrent.toFixed(2)),
-    paid_revenue_previous_30_days: Number(revenuePrevious.toFixed(2)),
-    expenses_last_30_days: Number(expensesCurrent.toFixed(2)),
-    expenses_previous_30_days: Number(expensesPrevious.toFixed(2)),
-    low_stock_products: activeProducts.filter(product => Number(product.stock) > 0 &&
-      Number(product.stock) <= Number(product.lowStockThreshold ?? 3)).length,
-    out_of_stock_products: activeProducts.filter(product => Number(product.stock) <= 0).length,
-    product_count: activeProducts.length,
-    inactive_product_count: products.length - activeProducts.length,
-    inventory_units: activeProducts.reduce((total, product) => total + Math.max(0, Number(product.stock) || 0), 0),
-    estimated_gross_profit_last_30_days: Number(grossProfitCurrent.toFixed(2)),
-    estimated_gross_profit_previous_30_days: Number(grossProfitPrevious.toFixed(2)),
-    gross_profit_costed_line_items_last_30_days: costedLinesCurrent,
-    gross_profit_costed_line_items_previous_30_days: costedLinesPrevious,
-    top_products: [...productUnits.entries()]
-      .sort((left, right) => right[1] - left[1])
-      .slice(0, 10)
-      .map(([name, units]) => ({ name, units })),
-    inventory_products: activeProducts
-      .map(product => ({
-        name: String(product.name || "").trim().slice(0, 120),
-        category: String(product.categoryName || "Uncategorized").trim().slice(0, 100),
-        stock: Math.max(0, Number(product.stock) || 0),
-        price: Math.max(0, Number(product.price) || 0),
-        low_stock_threshold: Math.max(0, Number(product.lowStockThreshold ?? 3) || 0)
-      }))
-      .filter(product => product.name)
-      .sort((left, right) => left.stock - right.stock)
-      .slice(0, 30),
-    expense_categories_last_30_days: [...expenseCategories.entries()]
-      .sort((left, right) => right[1] - left[1])
-      .slice(0, 10)
-      .map(([category, amount]) => ({ category, amount: Number(amount.toFixed(2)) }))
-  };
+  return buildLocalAnalytics({ sales, products, expenses, settings, offerType, services, appointments, appointmentMeta });
 }
 
 function addStyles() {
@@ -361,7 +303,7 @@ function renderPanel() {
     const pending = appendMessage(output, "assistant", "Checking the latest shop metrics…");
     try {
       const body = { question, history: priorHistory, screen: ctx.path };
-      const localAnalytics = await readLocalPosAnalytics(ctx.path);
+      const localAnalytics = await readLocalPosAnalytics(ctx.path, ctx);
       if (localAnalytics) body.local_analytics = localAnalytics;
       const endpoint = new URL(`/api/ai/assistant?tenant=${encodeURIComponent(ctx.tenantId)}`, ctx.origin);
       const response = await fetch(endpoint, {
@@ -398,6 +340,7 @@ function escapeText(value) {
 }
 
 window.CraftAI = {
+  readLocalAnalytics: readLocalPosAnalytics,
   mount(context) {
     if (currentContext &&
         (currentContext.path !== context.path || currentContext.tenantId !== context.tenantId)) {

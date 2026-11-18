@@ -14,6 +14,12 @@ import { renderLiquidStorefront } from './liquid-storefront-renderer.js';
 import './theme-web-editor.js';
 import { WEBSITE_FONTS, WEBSITE_COLOR_THEMES, WEBSITE_COLOR_FILTERS, WEBSITE_DESIGN_THEMES, WEBSITE_DESIGN_PRESETS, WEBSITE_CARD_SHAPES } from './website-appearance-presets.js';
 import './business-notifications.js';
+import { createAppBackHandler, installBackButton } from './back-button.js';
+import { createLitrusHostMessageHandler, isValidLitrusHtml } from './litrus-host.js';
+import * as RevenueDefinition from './revenue-definition.js';
+import { withStartupTimeout } from './startup-timeout.js';
+window.EshopRevenue = RevenueDefinition;
+window.EshopLitrusHost = { createMessageHandler: createLitrusHostMessageHandler, isValidHtml: isValidLitrusHtml };
 window.EshopWebsiteThemeCatalog = WEBSITE_THEME_CATALOG;
 window.EshopProductTaxonomy = ProductTaxonomy;
 window.EshopProductVariants = ProductVariants;
@@ -100,9 +106,9 @@ if (Capacitor.isNativePlatform()) {
 // The inline app controller can start on DOMContentLoaded while this module is
 // still awaiting native SQLite setup. Publish the startup promise so the app
 // waits for the bridge before reading or seeding its database.
-window.ShopSQLiteReady = initializeSQLite();
+window.ShopSQLiteReady = withStartupTimeout(initializeSQLite(), 'Starting the local database');
 window.ShopPOS = createPosApp();
-window.ShopPOSReady = window.ShopSQLiteReady.then(() => window.ShopPOS.init());
+window.ShopPOSReady = window.ShopSQLiteReady.then(() => withStartupTimeout(window.ShopPOS.init(), 'Starting the POS engine'));
 if (Capacitor.isNativePlatform()) {
   document.body.classList.add('native-app-shell');
   let handledGoogleCallback = '';
@@ -132,9 +138,10 @@ if (Capacitor.isNativePlatform()) {
   // Do not use top-level await in this module: in the production bundle it
   // stalls module evaluation behind chunks that jeep-sqlite itself needs, and
   // the web app never starts.
-  App.addListener('backButton', event => {
-    window.dispatchEvent(new CustomEvent('shop:back', { detail: event }));
-  }).catch(error => console.error('Could not register the back button listener.', error));
+  // Registering a backButton listener replaces Android's default (leave the app), so the handler
+  // owns the whole behaviour: close the top overlay, go up a screen, exit on a second press from
+  // home. installBackButton does nothing on the web build.
+  installBackButton({ App, Capacitor, handler: createAppBackHandler({ App }) });
   App.addListener('appUrlOpen', ({ url }) => {
     void handleGoogleAuthUrl(url);
   }).catch(error => console.error('Could not register the app URL listener.', error));

@@ -78,6 +78,12 @@
         store.offer_type === "products" ? "products" : String(data.shop.offerType || ""),
       serviceTimezone: String(store.service_timezone || "Africa/Nairobi"),
       serviceDepositPercent: Number(store.service_deposit_percent) || 0,
+      // Mirrors the Worker: a missing or invalid value means the default of 2 hours.
+      serviceCancelCutoffHours: (() => {
+        const hours = Number(store.service_cancel_cutoff_hours);
+        return store.service_cancel_cutoff_hours !== null && store.service_cancel_cutoff_hours !== "" &&
+          Number.isInteger(hours) && hours >= 0 && hours <= 168 ? hours : 2;
+      })(),
       // The Worker publishes the shop's real Paystack connection as store.paystack_connected. An absent
       // flag (an older Worker) is "unknown" (null), which keeps the original behaviour: Paystack offered,
       // email required. Only an explicit 0/false hides Paystack and makes the email optional.
@@ -276,7 +282,7 @@
           const heading = document.createElement("h2");
           heading.textContent = "Book this service";
           const note = document.createElement("p");
-          note.textContent = `${product.duration_minutes} minutes · Times use ${data.shop.serviceTimezone}. ${serviceDepositText(data, product)}. The shop will confirm your request before anything is booked.`;
+          note.textContent = `${product.duration_minutes} minutes · Times use ${data.shop.serviceTimezone}. ${serviceDepositText(data, product)}. The shop will confirm your request before anything is booked. ${serviceCutoffText(data)}`;
           const dateLabel = document.createElement("label");
           dateLabel.textContent = "Choose a date";
           const date = document.createElement("input");
@@ -873,6 +879,14 @@
       : `${percent}% deposit after approval`;
   }
 
+  function serviceCutoffText(data) {
+    const hours = Number(data.shop.serviceCancelCutoffHours);
+    if (!Number.isFinite(hours)) return "";
+    return hours > 0
+      ? `You can cancel or move your booking online until ${hours} hour${hours === 1 ? "" : "s"} before it starts.`
+      : "You can cancel or move your booking online until it starts.";
+  }
+
   function serviceReference(appointment) {
     const explicit = String(appointment?.reference || "").trim();
     if (explicit) return explicit.slice(0, 40);
@@ -945,7 +959,18 @@
       // was confirmed, so it points the customer to the shop instead of promising a confirmation.
       const requestedAt = Date.parse(request.requested_at);
       const stale = Number.isFinite(requestedAt) && Date.now() - requestedAt > SERVICE_REQUEST_WAIT_MS;
-      item.textContent = `${request.service_name || "Service"} · ${formatServiceTime(request.starts_at, request.timezone || data.shop.serviceTimezone)} · Reference ${request.reference || serviceReference(request)} · ${stale ? "Requested over a day ago: contact the shop if you have not heard back" : "Waiting for the shop to confirm"}`;
+      const manageToken = SERVICE_TOKEN_PATTERN.test(String(request.manage_token || "")) ? request.manage_token : "";
+      if (manageToken) {
+        // The saved link is the truth: the page cannot know here whether the shop has confirmed.
+        item.append(`${request.service_name || "Service"} · ${formatServiceTime(request.starts_at, request.timezone || data.shop.serviceTimezone)} · Reference ${request.reference || serviceReference(request)} · `);
+        const manage = document.createElement("a");
+        manage.href = serviceManageHref(manageToken);
+        manage.dataset.serviceManageLink = "";
+        manage.textContent = "View status, change or cancel";
+        item.append(manage);
+      } else {
+        item.textContent = `${request.service_name || "Service"} · ${formatServiceTime(request.starts_at, request.timezone || data.shop.serviceTimezone)} · Reference ${request.reference || serviceReference(request)} · ${stale ? "Requested over a day ago: contact the shop if you have not heard back" : "Waiting for the shop to confirm"}`;
+      }
       list.append(item);
     });
     section.append(heading, list);
@@ -1017,12 +1042,7 @@
       empty.value = "";
       empty.textContent = available.length ? "Choose a time" : "No available times for this date";
       slots.append(empty);
-      available.forEach(slot => {
-        const option = document.createElement("option");
-        option.value = slot.starts_at;
-        option.textContent = slot.label;
-        slots.append(option);
-      });
+      available.forEach(slot => slots.append(serviceSlotOption(slot, result.capacity)));
       slots.disabled = !available.length;
       say(available.length
         ? notice
@@ -1033,7 +1053,7 @@
       empty.value = "";
       empty.textContent = "Could not load times";
       slots.append(empty);
-      say(friendlyRequestError(error, "Could not load available times."));
+      say(serviceErrorMessage(error, "Could not load available times."));
     } finally {
       button.disabled = false;
       slots.removeAttribute("aria-busy");
@@ -1085,6 +1105,17 @@
       const deposit = document.createElement("p");
       deposit.textContent = `${serviceDepositText(data, product)}. The shop sends you the payment link once they approve.`;
       panel.append(deposit);
+    }
+    if (SERVICE_TOKEN_PATTERN.test(String(sent.token || ""))) {
+      const manage = document.createElement("p");
+      manage.append("Save this link: it lets you view your booking's status, move it or cancel it. ");
+      const link = document.createElement("a");
+      link.className = "sp-btn";
+      link.href = serviceManageHref(sent.token);
+      link.dataset.serviceManageLink = "";
+      link.textContent = "Manage this booking";
+      manage.append(link);
+      panel.append(manage);
     }
     appendShopContact(panel, data, reference);
     const another = document.createElement("button");
@@ -1184,7 +1215,8 @@
       delete form.dataset.idempotencyKey;
       delete form.dataset.requestSignature;
       resetServiceSlots(form);
-      showServiceConfirmation(form, data, appointment, { startsAt });
+      const manageToken = SERVICE_TOKEN_PATTERN.test(String(result.manage_token || "")) ? result.manage_token : "";
+      showServiceConfirmation(form, data, appointment, { startsAt, token: manageToken });
       say(`Your request was sent to ${data.shop.name}. It is pending shop approval; we will contact you by email or phone.`);
       if (appointment.id) {
         saveServiceRequest({
@@ -1194,13 +1226,14 @@
           service_name: String(appointment.service_name || product?.name || ""),
           starts_at: String(appointment.starts_at || startsAt),
           timezone,
-          requested_at: new Date().toISOString()
+          requested_at: new Date().toISOString(),
+          ...(manageToken ? { manage_token: manageToken } : {})
         });
         renderServiceRequestList(form, data);
       }
       if (result.duplicate !== true) trackStorefrontEvent(data, payload.service_id, "booking_submitted");
     } catch (error) {
-      const message = friendlyRequestError(error, "Could not send this appointment request.");
+      const message = serviceErrorMessage(error, "Could not send this appointment request.");
       say(message);
       if (error && error.status === 409) {
         // The slot was taken (or closed) while the customer filled in the form: refresh the list.
@@ -1525,6 +1558,7 @@
     const back = document.createElement("a");
     back.className = "sp-btn ghost";
     back.href = "/#/";
+    back.addEventListener("click", goBackToShop);
     back.textContent = "Back to the shop";
     content.append(back);
     section.append(content);
@@ -1743,8 +1777,21 @@
     const back = document.createElement("a");
     back.className = "sp-btn";
     back.href = "/#/";
+    back.addEventListener("click", goBackToShop);
     back.textContent = "Continue shopping";
     root.append(back);
+  }
+
+  // These pages are rendered once at load and nothing listens for hashchange, so a plain "/#/" link
+  // would only change the address bar. Set the route and reload so the shop itself opens.
+  function goBackToShop(event) {
+    event.preventDefault();
+    try {
+      location.hash = "/";
+    } catch {
+      /* the reload below still opens the shop */
+    }
+    location.reload();
   }
 
   async function requestProductHold(form, data) {
@@ -1817,6 +1864,299 @@
     }
   }
 
+  // ---- customer self-service (manage link) --------------------------------------------------
+
+  const SERVICE_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+
+  // Plain-language text for every error_code the booking endpoints return. cutoff_passed keeps the
+  // Worker's own sentence because it names the exact number of hours.
+  const SERVICE_ERROR_MESSAGES = {
+    slot_unavailable: "That time is no longer available. Pick another time from the list.",
+    service_changed: "This service was updated. Reload the page and choose a time again.",
+    service_unavailable: "This service cannot be booked right now.",
+    shop_not_found: "This shop could not be found.",
+    invalid_request: "Check the details you entered and try again.",
+    rate_limited: "Too many requests from this connection. Wait a little and try again.",
+    too_large: "That request was too large. Shorten your details and try again.",
+    storage_unavailable: "Booking is temporarily unavailable. Try again later.",
+    appointment_not_found: "This booking link is not valid. Use the link from your confirmation.",
+    not_changeable: "This booking can no longer be changed online.",
+    appointment_busy: "The shop is still setting up this booking. Try again in a moment.",
+    appointment_started: "This appointment has already started.",
+    appointment_changed: "This booking just changed. Reload the page to see where it stands.",
+    slot_unchanged: "That is your current time. Choose a different one.",
+    reschedule_limit: "This booking cannot be moved again online. Contact the shop."
+  };
+
+  function serviceErrorMessage(error, fallback) {
+    const mapped = error && typeof error.code === "string" ? SERVICE_ERROR_MESSAGES[error.code] : "";
+    return mapped || friendlyRequestError(error, fallback);
+  }
+
+  function serviceManageHref(token) {
+    return `#/booking/${token}`;
+  }
+
+  function removeStoredServiceRequestByToken(token) {
+    const list = readLocalJson(serviceRequestsKey(), []);
+    if (!Array.isArray(list)) return;
+    writeLocalJson(serviceRequestsKey(), list.filter(item => !item || item.manage_token !== token));
+  }
+
+  function serviceStatusText(appointment) {
+    if (appointment.status === "pending") {
+      return appointment.expired
+        ? "The shop did not reply to this request in time. Contact the shop or request another time."
+        : "Waiting for the shop to confirm. Nothing is booked until they do.";
+    }
+    if (appointment.status === "confirming") return "The shop is confirming this booking.";
+    if (appointment.status === "confirmed") return "Confirmed by the shop";
+    if (appointment.status === "rejected") return "The shop could not take this request";
+    if (appointment.status === "cancelled") {
+      return appointment.cancelled_by === "shop" ? "Cancelled by the shop" : "Cancelled";
+    }
+    if (appointment.status === "completed") return "Completed";
+    if (appointment.status === "no_show") return "Marked as missed by the shop";
+    return String(appointment.status || "");
+  }
+
+  function renderServiceManagePage(root, data, token) {
+    const section = document.createElement("main");
+    section.className = "sp sp-main";
+    const content = document.createElement("div");
+    content.className = "sp-wrap sp-done sp-service-manage";
+    const heading = document.createElement("h1");
+    heading.textContent = "Your booking";
+    const details = document.createElement("ul");
+    const message = document.createElement("p");
+    message.setAttribute("role", "status");
+    message.textContent = "Loading your booking…";
+    const actions = document.createElement("div");
+    actions.className = "sp-service-manage-actions";
+    const back = document.createElement("a");
+    back.className = "sp-btn ghost";
+    back.href = "/#/";
+    back.addEventListener("click", goBackToShop);
+    back.textContent = "Back to the shop";
+    content.append(heading, details, message, actions, back);
+    section.append(content);
+    root.replaceChildren(section);
+    const say = text => {
+      message.textContent = text;
+    };
+
+    async function call(payload) {
+      return postStorefrontJson("/api/service-appointments/manage", { token, ...payload }, "Request failed");
+    }
+
+    function draw(appointment, notice = "") {
+      details.replaceChildren();
+      actions.replaceChildren();
+      const timezone = appointment.timezone || data.shop.serviceTimezone;
+      const rows = [
+        ["Service", appointment.service_name || "Your service"],
+        ["When", formatServiceTime(appointment.starts_at, timezone)],
+        ["Status", serviceStatusText(appointment)],
+        ["Reference", appointment.reference || ""]
+      ];
+      const deposit = Number(appointment.deposit_cents) || 0;
+      if (deposit > 0) {
+        const amount = formatShopMoney(data, deposit / 100);
+        const paid = appointment.payment_status === "paid";
+        rows.push(["Deposit", appointment.deposit_refunded
+          ? `${amount} paid and refunded by the shop`
+          : appointment.deposit_refund_due
+            ? `${amount} paid; the shop has been asked to refund it`
+            : paid ? `${amount} paid` : `${amount} due once the shop confirms`]);
+      }
+      rows.forEach(([label, text]) => {
+        if (!text) return;
+        const item = document.createElement("li");
+        item.textContent = `${label}: ${text}`;
+        details.append(item);
+      });
+      if (appointment.status === "cancelled" && appointment.cancel_reason && appointment.cancelled_by === "shop") {
+        const reason = document.createElement("li");
+        reason.textContent = `Reason: ${appointment.cancel_reason}`;
+        details.append(reason);
+      }
+      say(notice);
+      let paymentLink = null;
+      try {
+        const url = new URL(String(appointment.payment_authorization_url || ""));
+        if (url.protocol === "https:" && url.hostname === "checkout.paystack.com") paymentLink = url;
+      } catch {
+        paymentLink = null;
+      }
+      if (paymentLink) {
+        const pay = document.createElement("a");
+        pay.className = "sp-btn";
+        pay.href = paymentLink.href;
+        pay.textContent = "Pay deposit";
+        actions.append(pay);
+      }
+      const live = (appointment.status === "pending" && !appointment.expired) || appointment.status === "confirmed";
+      const future = Date.parse(appointment.starts_at) > Date.now();
+      if (appointment.can_cancel) {
+        drawCancel(appointment);
+        if (appointment.can_reschedule) drawReschedule(appointment);
+        else if (live) {
+          const limit = document.createElement("p");
+          limit.textContent = "This booking cannot be moved online again. Contact the shop to change it.";
+          actions.append(limit);
+        }
+      } else if (live && future) {
+        const closed = document.createElement("p");
+        const hours = Number(appointment.cancel_cutoff_hours);
+        closed.textContent = Number.isFinite(hours) && hours > 0
+          ? `Changes online close ${hours} hour${hours === 1 ? "" : "s"} before the start.`
+          : "This booking can no longer be changed online.";
+        actions.append(closed);
+        appendShopContact(actions, data, appointment.reference || "");
+      } else if (appointment.status !== "cancelled" || appointment.cancelled_by === "shop") {
+        appendShopContact(actions, data, appointment.reference || "");
+      }
+      if (appointment.status === "cancelled") removeStoredServiceRequestByToken(token);
+    }
+
+    function drawCancel(appointment) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "sp-btn ghost";
+      button.textContent = "Cancel this booking";
+      const paid = appointment.payment_status === "paid" && Number(appointment.deposit_cents) > 0;
+      let armed = false;
+      button.addEventListener("click", async () => {
+        if (!armed) {
+          armed = true;
+          button.textContent = paid
+            ? "Tap again to cancel. The shop will be asked to refund your deposit."
+            : "Tap again to confirm cancelling";
+          return;
+        }
+        button.disabled = true;
+        say("Cancelling…");
+        try {
+          const result = await call({ action: "cancel" });
+          draw(result.appointment, "Your booking was cancelled. The shop has been told.");
+        } catch (error) {
+          button.disabled = false;
+          armed = false;
+          button.textContent = "Cancel this booking";
+          say(serviceErrorMessage(error, "Could not cancel this booking."));
+        }
+      });
+      actions.append(button);
+    }
+
+    function drawReschedule(appointment) {
+      const form = document.createElement("form");
+      form.className = "sp-hold-form";
+      const title = document.createElement("h2");
+      title.textContent = "Move to another time";
+      const note = document.createElement("p");
+      const remaining = Number(appointment.reschedules_remaining) || 0;
+      note.textContent = `You can move this booking ${remaining} more time${remaining === 1 ? "" : "s"}. Times use ${timezoneLabel(appointment)}.`;
+      const dateLabel = document.createElement("label");
+      dateLabel.textContent = "Choose a date";
+      const date = document.createElement("input");
+      date.type = "date";
+      date.required = true;
+      date.min = shopTodayDate(appointment.timezone || data.shop.serviceTimezone);
+      dateLabel.append(date);
+      const slotLabel = document.createElement("label");
+      slotLabel.textContent = "Available time";
+      const slots = document.createElement("select");
+      slots.required = true;
+      slots.disabled = true;
+      const first = document.createElement("option");
+      first.value = "";
+      first.textContent = "Choose a date first";
+      slots.append(first);
+      slotLabel.append(slots);
+      const submit = document.createElement("button");
+      submit.type = "submit";
+      submit.className = "sp-btn";
+      submit.textContent = "Move booking";
+      form.append(title, note, dateLabel, slotLabel, submit);
+      actions.append(form);
+
+      async function loadSlots(notice = "") {
+        if (!date.value) return;
+        const requested = date.value;
+        slots.disabled = true;
+        slots.replaceChildren();
+        const loading = document.createElement("option");
+        loading.value = "";
+        loading.textContent = "Loading available times…";
+        slots.append(loading);
+        try {
+          const result = await call({ action: "slots", date: requested });
+          if (date.value !== requested) return;
+          const available = (Array.isArray(result.slots) ? result.slots : []).filter(slot =>
+            slot && typeof slot.starts_at === "string" && Date.parse(slot.starts_at) > Date.now() &&
+            slot.starts_at !== appointment.starts_at);
+          slots.replaceChildren();
+          const empty = document.createElement("option");
+          empty.value = "";
+          empty.textContent = available.length ? "Choose a time" : "No available times for this date";
+          slots.append(empty);
+          available.forEach(slot => slots.append(serviceSlotOption(slot, result.capacity)));
+          slots.disabled = !available.length;
+          say(available.length ? notice : "No times are available on this date. Try another date.");
+        } catch (error) {
+          slots.replaceChildren();
+          const failed = document.createElement("option");
+          failed.value = "";
+          failed.textContent = "Could not load times";
+          slots.append(failed);
+          say(serviceErrorMessage(error, "Could not load available times."));
+        }
+      }
+      date.addEventListener("change", () => void loadSlots());
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        if (!slots.value) {
+          say("Choose a date, then pick one of the available times.");
+          return;
+        }
+        submit.disabled = true;
+        say("Moving your booking…");
+        try {
+          const result = await call({ action: "reschedule", starts_at: slots.value });
+          draw(result.appointment, "Your booking was moved. The shop has been told.");
+        } catch (error) {
+          submit.disabled = false;
+          const failure = serviceErrorMessage(error, "Could not move this booking.");
+          say(failure);
+          if (error && (error.code === "slot_unavailable" || error.status === 409)) void loadSlots(failure);
+        }
+      });
+    }
+
+    function timezoneLabel(appointment) {
+      return appointment.timezone || data.shop.serviceTimezone;
+    }
+
+    call({ action: "view" }).then(result => draw(result.appointment)).catch(error => {
+      details.replaceChildren();
+      actions.replaceChildren();
+      say(serviceErrorMessage(error, "Could not load this booking."));
+      if (error && error.code === "appointment_not_found") removeStoredServiceRequestByToken(token);
+    });
+  }
+
+  function serviceSlotOption(slot, capacity) {
+    const option = document.createElement("option");
+    option.value = slot.starts_at;
+    const remaining = Number(slot.remaining);
+    // Spots left are only mentioned for shops that can take several bookings at once.
+    option.textContent = Number(capacity) > 1 && Number.isFinite(remaining) && remaining > 0
+      ? `${slot.label} · ${remaining} spot${remaining === 1 ? "" : "s"} left`
+      : String(slot.label || "");
+    return option;
+  }
+
   async function verifyServiceDepositReturn(root) {
     const section = document.createElement("main");
     section.className = "sp sp-main";
@@ -1830,6 +2170,7 @@
     const back = document.createElement("a");
     back.className = "sp-btn ghost";
     back.href = "/#/";
+    back.addEventListener("click", goBackToShop);
     back.textContent = "Back to the shop";
     content.append(heading, status, back);
     section.append(content);
@@ -1870,9 +2211,22 @@
       void verifyServiceDepositReturn(root);
       return;
     }
+    const manageRoute = location.hash.match(/^#\/booking\/([A-Za-z0-9_-]{43})$/);
+    if (manageRoute) {
+      renderServiceManagePage(root, data, manageRoute[1]);
+      return;
+    }
     const trackEvent = (productId, type, count = 1) => trackStorefrontEvent(data, productId, type, count);
     root.addEventListener("click", event => {
       const target = event.target instanceof Element ? event.target : null;
+      const manageLink = target?.closest("[data-service-manage-link]");
+      if (manageLink) {
+        // The manage page is rendered at load (like the payment return), so open it with a reload.
+        event.preventDefault();
+        location.hash = String(manageLink.getAttribute("href") || "").replace(/^#/, "");
+        location.reload();
+        return;
+      }
       const availabilityButton = target?.closest("[data-service-load-slots]");
       if (availabilityButton) {
         event.preventDefault();

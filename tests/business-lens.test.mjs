@@ -25,7 +25,7 @@ test("Main Store screens use the compact Craft header and back navigation", asyn
 test("Web dashboard and CRM KPI groups feature one full-width metric above two smaller metrics", async () => {
   const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
   for (const label of [
-    'metric("Gross web revenue"',
+    'metric("Paid web revenue"',
     'metric("Visits"',
     'metric("Total visits"',
     'metric("Customer visits"',
@@ -44,7 +44,7 @@ test("Web dashboard and CRM KPI groups feature one full-width metric above two s
   assert.match(source, /\.studio-metric-grid-featured \.studio-data-card\s*\{\s*min-height:\s*58px;[^}]*padding:\s*8px 10px;/);
   assert.match(source, /\.studio-metric-grid-featured > :first-child\s*\{\s*grid-column:\s*1 \/ -1;\s*min-height:\s*68px;/);
   assert.match(source, /const metric = \(label, value, note = "", route = ""\) => route[\s\S]*?href="\$\{route\}" data-route="\$\{route\}"/);
-  assert.match(source, /metric\("Gross web revenue"[\s\S]*?"", "\/account\/web\/studio\/store\/orders"\)/);
+  assert.match(source, /metric\("Paid web revenue"[\s\S]*?"", "\/account\/web\/studio\/store\/orders"\)/);
   assert.match(source, /metric\("Awaiting payments", awaiting\.length, "", "\/account\/web\/studio\/store\/orders"\)/);
   assert.doesNotMatch(source, /"Orders not marked paid"|"From website orders"|"Anonymous browser IDs"|"Aggregate Cloudflare count"/);
 });

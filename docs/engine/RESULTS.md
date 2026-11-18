@@ -1,3 +1,5 @@
+> Retired: historical measurements from the old hosted-theme fill prototype. The theme engine was removed on purpose; Litrus Mixer is the only website editor. See `THEME-ENGINE-HANDOFF.md`.
+
 # Theme mapping test results (products only) - round 2
 
 Method: the theme's product data in the ORIGINAL HTML is replaced with 3 fake shop products, the page is

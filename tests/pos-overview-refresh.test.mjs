@@ -77,7 +77,7 @@ test('POS overview refreshes saved sales and includes unpaid receipts in the rec
     const overview = root.innerHTML;
     assert.match(overview, /Sales recorded/);
     assert.match(overview, /KES\s*150\.00/);
-    assert.match(overview, /Revenue<\/small><strong>KES\s*150\.00/);
+    assert.match(overview, /Net sales<\/small><strong>KES\s*150\.00/);
     assert.match(overview, /Credit<\/small><strong>KES\s*50\.00/);
     assert.match(overview, /2 receipts · includes unpaid sales/);
     assert.match(overview, /class="pos-card pos-period-comparison-card"/);

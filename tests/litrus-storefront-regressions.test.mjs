@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile as readFileRaw } from "node:fs/promises";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
-import { JSDOM } from "jsdom";
+import { JSDOM, VirtualConsole } from "jsdom";
 
 const readFile = async (path, options) => {
   const contents = await readFileRaw(path, options);
@@ -1672,6 +1672,299 @@ test("Litrus service deposit return explains paid, failed and unconfirmed paymen
 });
 
 // ---------------------------------------------------------------------------
+// Service booking: manage link, capacity-aware slots, friendly errors
+// ---------------------------------------------------------------------------
+const MANAGE_TOKEN = "Tk3_-".repeat(8) + "Tk3";
+const manageFixture = (overrides = {}) => ({
+  reference: "AB12CD34", service_id: "42", service_name: "Deep tissue massage", starts_at: slotTime,
+  ends_at: slotTime, timezone: "Africa/Nairobi", duration_minutes: 45, status: "pending", expired: false,
+  payment_status: "not_required", currency: "KES", price_cents: 250000, deposit_cents: 0,
+  payment_authorization_url: null, cancelled_by: null, cancel_reason: null, deposit_refund_due: false,
+  deposit_refunded: false, can_cancel: true, can_reschedule: true, cancel_cutoff_at: slotTime,
+  cancel_cutoff_hours: 2, reschedules_used: 0, reschedules_remaining: 2, max_reschedules: 2, ...overrides
+});
+
+function mountManagePage({ handler, token = MANAGE_TOKEN, shop = {}, seed = null, virtualConsole }) {
+  const dom = new JSDOM('<div id="store"></div>', { url: `https://shop.example/#/booking/${token}`, runScripts: "outside-only", virtualConsole });
+  const { window } = dom;
+  const requests = [];
+  window.__ESHOP_THEME_CATALOG__ = {
+    categories: [], products: [{ id: 42, name: "Deep tissue massage", price: 2500, images: [], duration_minutes: 45 }],
+    store: { name: "Calm Studio", currency: "KES", offer_type: "services", service_timezone: "Africa/Nairobi", ...shop }
+  };
+  window.SPD = { shop: { key: "calm", products: [] }, pages: {}, shell: {}, templates: {} };
+  if (seed) window.localStorage.setItem("eshop-appointments:shop.example", JSON.stringify(seed));
+  window.fetch = async (url, options) => {
+    const body = options?.body ? JSON.parse(options.body) : null;
+    requests.push({ url: String(url), method: options?.method || "GET", body });
+    return handler(body, String(url));
+  };
+  window.eval(runtime);
+  window.litrusStartLiveStore(window.SPD);
+  return { window, requests, root: window.document.getElementById("store"), text: () => window.document.getElementById("store").textContent };
+}
+
+test("Litrus booking confirmation links to the manage page and saves the token for this device", async () => {
+  const booking = mountServiceBooking({
+    handler: () => response(201, {
+      appointment: { id: "ab12cd34-0000-4000-8000-000000000001", service_name: "Deep tissue massage", starts_at: slotTime, status: "pending" },
+      manage_token: MANAGE_TOKEN
+    })
+  });
+  try {
+    assert.match(booking.form.textContent, /cancel or move your booking online until 2 hours before/);
+    booking.fill();
+    const time = booking.form.elements.namedItem("starts_at");
+    const option = booking.window.document.createElement("option");
+    option.value = slotTime;
+    time.append(option);
+    time.value = slotTime;
+    await booking.submit();
+    const link = booking.form.querySelector(".sp-service-booking-confirmation a[data-service-manage-link]");
+    assert.ok(link, "the confirmation offers a manage link");
+    assert.equal(link.getAttribute("href"), `#/booking/${MANAGE_TOKEN}`);
+    const saved = JSON.parse(booking.window.localStorage.getItem("eshop-appointments:shop.example"));
+    assert.equal(saved[0].manage_token, MANAGE_TOKEN);
+    const listed = booking.form.parentNode.querySelector("[data-litrus-service-requests]");
+    assert.equal(listed.querySelector("a[data-service-manage-link]").getAttribute("href"), `#/booking/${MANAGE_TOKEN}`);
+    assert.doesNotMatch(listed.textContent, /Waiting for the shop to confirm/, "a saved link replaces the guess about status");
+    assert.equal(booking.form.querySelector(".sp-buy, [data-act='addqty']"), null, "service sites never offer Add to bag");
+  } finally {
+    booking.window.close();
+  }
+});
+
+test("Litrus booking ignores a malformed manage token instead of building a broken link", async () => {
+  const booking = mountServiceBooking({
+    handler: () => response(201, { appointment: { id: "ab12cd34-0000-4000-8000-000000000001", service_name: "Massage", starts_at: slotTime, status: "pending" }, manage_token: "short" })
+  });
+  try {
+    booking.fill();
+    const time = booking.form.elements.namedItem("starts_at");
+    const option = booking.window.document.createElement("option");
+    option.value = slotTime;
+    time.append(option);
+    time.value = slotTime;
+    await booking.submit();
+    assert.equal(booking.form.querySelector("a[data-service-manage-link]"), null);
+    assert.equal(JSON.parse(booking.window.localStorage.getItem("eshop-appointments:shop.example"))[0].manage_token, undefined);
+  } finally {
+    booking.window.close();
+  }
+});
+
+test("Litrus booking slot list shows spots left only for shops with more than one seat", async () => {
+  for (const [capacity, expected] of [[3, ["10:00 AM · 2 spots left", "10:15 AM · 1 spot left"]], [1, ["10:00 AM", "10:15 AM"]]]) {
+    const booking = mountServiceBooking({
+      handler: () => response(200, { capacity, slots: [
+        { starts_at: slotTime, label: "10:00 AM", remaining: capacity === 3 ? 2 : 1 },
+        { starts_at: slotTime.replace("T07:00", "T07:15"), label: "10:15 AM", remaining: 1 }
+      ] })
+    });
+    try {
+      await booking.chooseDate(futureDate);
+      const labels = [...booking.form.elements.namedItem("starts_at").options].map(item => item.textContent).slice(1);
+      assert.deepEqual(labels, expected);
+    } finally {
+      booking.window.close();
+    }
+  }
+});
+
+test("Litrus booking turns every error_code into a plain sentence and never shows a raw code", async () => {
+  const codes = [
+    [409, "slot_unavailable", /no longer available/], [409, "service_changed", /updated/], [429, "rate_limited", /Too many/],
+    [400, "invalid_request", /Check the details/], [409, "service_unavailable", /cannot be booked/], [503, "storage_unavailable", /temporarily unavailable/]
+  ];
+  for (const [status, code, expected] of codes) {
+    const booking = mountServiceBooking({
+      handler: (url, options) => options?.method === "POST"
+        ? response(status, { error: "RAW SERVER TEXT", error_code: code })
+        : response(200, { slots: [] })
+    });
+    try {
+      booking.fill();
+      booking.form.elements.namedItem("date").value = futureDate;
+      const time = booking.form.elements.namedItem("starts_at");
+      const option = booking.window.document.createElement("option");
+      option.value = slotTime;
+      time.append(option);
+      time.value = slotTime;
+      await booking.submit();
+      await pause(5);
+      assert.match(booking.status().textContent, expected, code);
+      assert.doesNotMatch(booking.status().textContent, /RAW SERVER TEXT|_/, code);
+    } finally {
+      booking.window.close();
+    }
+  }
+});
+
+test("Litrus manage page shows the booking, lets the customer move it and then cancel it", async () => {
+  let current = manageFixture();
+  const booking = mountManagePage({
+    seed: [{ id: "x", manage_token: MANAGE_TOKEN, starts_at: slotTime, service_name: "Deep tissue massage" }],
+    handler: body => {
+      if (body.action === "view") return response(200, { appointment: current });
+      if (body.action === "slots") return response(200, { date: body.date, capacity: 2, slots: [
+        { starts_at: current.starts_at, label: "10:00 AM", remaining: 2 },
+        { starts_at: "2030-02-02T08:00:00.000Z", label: "11:00 AM", remaining: 2 }
+      ] });
+      if (body.action === "reschedule") {
+        current = manageFixture({ starts_at: body.starts_at, reschedules_used: 1, reschedules_remaining: 1 });
+        return response(200, { appointment: current });
+      }
+      if (body.action === "cancel") {
+        current = manageFixture({ status: "cancelled", cancelled_by: "you", can_cancel: false, can_reschedule: false });
+        return response(200, { appointment: current });
+      }
+      return response(400, {});
+    }
+  });
+  try {
+    await pause(10);
+    assert.equal(booking.requests[0].url, "/api/service-appointments/manage");
+    assert.deepEqual(booking.requests[0].body, { token: MANAGE_TOKEN, action: "view" });
+    assert.match(booking.text(), /Your booking/);
+    assert.match(booking.text(), /Deep tissue massage/);
+    assert.match(booking.text(), /Waiting for the shop to confirm/);
+    assert.match(booking.text(), /move this booking 2 more times/);
+    assert.doesNotMatch(booking.text(), /Add to bag/);
+
+    const date = booking.root.querySelector('input[type="date"]');
+    date.value = "2030-02-02";
+    date.dispatchEvent(new booking.window.Event("change", { bubbles: true }));
+    await pause(10);
+    assert.deepEqual(booking.requests.at(-1).body, { token: MANAGE_TOKEN, action: "slots", date: "2030-02-02" });
+    const select = booking.root.querySelector("select");
+    const options = [...select.options].map(item => item.textContent);
+    assert.deepEqual(options, ["Choose a time", "11:00 AM · 2 spots left"], "the current time is not offered as a move target");
+    select.value = "2030-02-02T08:00:00.000Z";
+    booking.root.querySelector("form").dispatchEvent(new booking.window.Event("submit", { bubbles: true, cancelable: true }));
+    await pause(10);
+    assert.deepEqual(booking.requests.at(-1).body, { token: MANAGE_TOKEN, action: "reschedule", starts_at: "2030-02-02T08:00:00.000Z" });
+    assert.match(booking.text(), /Your booking was moved/);
+    assert.match(booking.text(), /move this booking 1 more time\./);
+
+    const cancel = [...booking.root.querySelectorAll("button")].find(item => /Cancel this booking/.test(item.textContent));
+    cancel.click();
+    assert.equal(booking.requests.at(-1).body.action, "reschedule", "the first tap only asks for confirmation");
+    assert.match(cancel.textContent, /Tap again/);
+    cancel.click();
+    await pause(10);
+    assert.equal(booking.requests.at(-1).body.action, "cancel");
+    assert.match(booking.text(), /Cancelled/);
+    assert.match(booking.text(), /Your booking was cancelled/);
+    assert.equal([...booking.root.querySelectorAll("button")].some(item => /Cancel this booking/.test(item.textContent)), false);
+    assert.equal(JSON.parse(booking.window.localStorage.getItem("eshop-appointments:shop.example")).length, 0, "a cancelled booking leaves the device list");
+  } finally {
+    booking.window.close();
+  }
+});
+
+test("Litrus manage page explains the cutoff, refunds and unknown links without inventing anything", async () => {
+  const closed = mountManagePage({
+    shop: { phone: "+254 700 111222" },
+    handler: () => response(200, { appointment: manageFixture({ status: "confirmed", can_cancel: false, can_reschedule: false, cancel_cutoff_hours: 2 }) })
+  });
+  try {
+    await pause(10);
+    assert.match(closed.text(), /Changes online close 2 hours before the start/);
+    assert.match(closed.text(), /Confirmed by the shop/);
+    assert.equal([...closed.root.querySelectorAll("button")].length, 0, "no cancel button inside the cutoff");
+    assert.ok(closed.root.querySelector('a[href="tel:+254700111222"]'), "the shop's contact details are offered instead");
+  } finally {
+    closed.window.close();
+  }
+  const refund = mountManagePage({
+    handler: () => response(200, { appointment: manageFixture({
+      status: "cancelled", cancelled_by: "shop", cancel_reason: "Stylist is ill", can_cancel: false, can_reschedule: false,
+      payment_status: "paid", deposit_cents: 50000, deposit_refund_due: true
+    }) })
+  });
+  try {
+    await pause(10);
+    assert.match(refund.text(), /Cancelled by the shop/);
+    assert.match(refund.text(), /Reason: Stylist is ill/);
+    assert.match(refund.text(), /KES 500 paid; the shop has been asked to refund it/);
+  } finally {
+    refund.window.close();
+  }
+  const pay = mountManagePage({
+    handler: () => response(200, { appointment: manageFixture({
+      status: "confirmed", payment_status: "pending", deposit_cents: 50000, payment_authorization_url: "https://checkout.paystack.com/abc"
+    }) })
+  });
+  try {
+    await pause(10);
+    assert.equal(pay.root.querySelector('a[href="https://checkout.paystack.com/abc"]').textContent, "Pay deposit");
+  } finally {
+    pay.window.close();
+  }
+  const unknown = mountManagePage({
+    seed: [{ id: "x", manage_token: MANAGE_TOKEN, starts_at: slotTime }],
+    handler: () => response(404, { error: "x", error_code: "appointment_not_found" })
+  });
+  try {
+    await pause(10);
+    assert.match(unknown.text(), /booking link is not valid/);
+    assert.equal(JSON.parse(unknown.window.localStorage.getItem("eshop-appointments:shop.example")).length, 0);
+  } finally {
+    unknown.window.close();
+  }
+});
+
+test("Litrus manage page surfaces a rejected move with the Worker's reason and refreshes the times", async () => {
+  const booking = mountManagePage({
+    handler: body => {
+      if (body.action === "view") return response(200, { appointment: manageFixture() });
+      if (body.action === "slots") return response(200, { capacity: 1, slots: [{ starts_at: "2030-02-02T08:00:00.000Z", label: "11:00 AM", remaining: 1 }] });
+      return response(409, { error: "x", error_code: "slot_unavailable" });
+    }
+  });
+  try {
+    await pause(10);
+    const date = booking.root.querySelector('input[type="date"]');
+    date.value = "2030-02-02";
+    date.dispatchEvent(new booking.window.Event("change", { bubbles: true }));
+    await pause(10);
+    booking.root.querySelector("select").value = "2030-02-02T08:00:00.000Z";
+    booking.root.querySelector("form").dispatchEvent(new booking.window.Event("submit", { bubbles: true, cancelable: true }));
+    await pause(20);
+    assert.match(booking.text(), /no longer available/);
+    assert.deepEqual(booking.requests.map(request => request.body.action), ["view", "slots", "reschedule", "slots"]);
+  } finally {
+    booking.window.close();
+  }
+});
+
+test("Litrus builder validates the capacity, cutoff and reschedule settings before publishing", () => {
+  const start = editor.indexOf("function serviceMinutes(value){");
+  const end = editor.indexOf("function showServiceProblems(){");
+  assert.ok(start >= 0 && end > start);
+  const body = editor.slice(start, end);
+  const base = { offerType: "services", serviceDays: [1], serviceOpenTime: "09:00", serviceCloseTime: "17:00", serviceTimezone: "Africa/Nairobi",
+    serviceBufferMinutes: 0, serviceDepositPercent: 0, cur: "KES", serviceCapacity: 2, serviceCancelCutoffHours: 2, serviceMaxReschedules: 2 };
+  const problemsFor = (overrides, fields = {}) => Array.from(runInNewContext(`${body}\nserviceSettingsProblems()`, {
+    SHOP: { ...base, ...overrides }, prods: [{ name: "Cut", price: "100", duration_minutes: 60 }],
+    g: id => ({ value: fields[id] ?? "" }), Intl, Number, String, Array, Math
+  }));
+  assert.deepEqual(problemsFor({}), []);
+  assert.match(problemsFor({ serviceCapacity: 0 }).join(" "), /Bookings at the same time/);
+  assert.match(problemsFor({ serviceCapacity: 21 }).join(" "), /Bookings at the same time/);
+  assert.match(problemsFor({ serviceCapacity: 1.5 }).join(" "), /Bookings at the same time/);
+  assert.match(problemsFor({ serviceCancelCutoffHours: -1 }).join(" "), /cutoff/);
+  assert.match(problemsFor({ serviceCancelCutoffHours: 169 }).join(" "), /cutoff/);
+  assert.deepEqual(problemsFor({ serviceCancelCutoffHours: 0 }), [], "zero hours (until it starts) is valid");
+  assert.match(problemsFor({ serviceMaxReschedules: 11 }).join(" "), /move a booking/);
+  assert.deepEqual(problemsFor({ serviceMaxReschedules: 0 }), [], "zero moves is valid");
+  const parse = (raw, fallback) => runInNewContext(`${body}\nserviceIntegerField("f", ${fallback})`, { g: () => ({ value: raw }), String, Number });
+  assert.equal(parse("", 2), 2, "a blank field takes its default");
+  assert.equal(parse("0", 2), 0, "zero is kept, not replaced by the default");
+  assert.equal(parse("3", 1), 3);
+});
+
+// ---------------------------------------------------------------------------
 // No invented social proof, accessibility quick wins
 // ---------------------------------------------------------------------------
 function loadReviewBuilder(testimonials) {
@@ -2283,4 +2576,26 @@ test("Litrus keeps published HTML under the host limit when product photos are s
   assert.ok(!fitted.includes(photo(39)), "the last product photo is dropped first");
   assert.match(fitted, /data:image\/gif;base64,/);
   assert.match(editor, /litrusFitPublishedHtml\(exportShop\(\)\)\.replace\(/, "the published payload goes through the size fit");
+});
+
+test("Litrus manage page 'Back to the shop' really leaves the page instead of only changing the address bar", async () => {
+  // This route renders once and nothing listens for hashchange, so the link must reload (jsdom reports a reload as a navigation it does not implement).
+  const navigations = [];
+  const virtualConsole = new VirtualConsole();
+  virtualConsole.on("jsdomError", error => {
+    if (/navigation/i.test(String(error?.message))) navigations.push(error.message);
+  });
+  const booking = mountManagePage({ virtualConsole, handler: () => response(200, { appointment: manageFixture() }) });
+  try {
+    await pause(10);
+    const back = [...booking.root.querySelectorAll("a")].find(item => /Back to the shop/.test(item.textContent));
+    assert.ok(back, "the manage page offers a way back");
+    const click = new booking.window.MouseEvent("click", { bubbles: true, cancelable: true });
+    back.dispatchEvent(click);
+    assert.equal(click.defaultPrevented, true, "the plain fragment navigation is replaced");
+    assert.equal(booking.window.location.hash, "#/", "the shop route is set");
+    assert.ok(navigations.length >= 1, "the page reloads so the shop actually renders");
+  } finally {
+    booking.window.close();
+  }
 });

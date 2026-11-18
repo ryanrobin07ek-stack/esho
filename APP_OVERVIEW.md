@@ -4,8 +4,8 @@
 
 Craft gives a business owner three practical tools in one place:
 
-1. **Build a website** where customers can learn about the business and browse
-   its products.
+1. **Build a website** where customers can learn about the business, browse
+   its products or services, and order or book.
 2. **Make in-person sales** with a point-of-sale (POS) register.
 3. **Understand the business better** with reports and an AI helper that can
    explain the information available in Craft.
@@ -21,24 +21,84 @@ owner has ready.
 
 ## 1. Build a website for your business
 
-The Web Builder helps an owner create a customer-facing shop website from the
-app. Start a shop, choose an available storefront design, add the shop name and
-details, and add products, categories, photos, and pages. Preview the result
-before publishing it.
+The Web Builder helps an owner create a customer-facing website from the app.
+It uses one editor, **Litrus Mixer**; there is no theme gallery. The owner
+starts a shop, says whether it offers **products** or **services**, adds the
+shop name and details, chooses a look and style, and adds products (or
+services), categories, photos and a few content blocks such as promo cards and
+FAQs. The owner previews the result on phone, tablet and laptop sizes before
+publishing it.
 
-Each shop has its own website address. A published website can show the
-business's information and product catalogue, and customers can browse its
-products and place an order through the available website checkout. Owners can
-edit the site's appearance and content in Craft rather than editing HTML.
+Each shop has its own website address (`<shop>.rrobin.co.ke`), and an owner
+can connect a custom hostname. Owners edit the site in Craft rather than
+editing HTML.
 
-**Publishing is what updates the public website.** Saving a product or changing
-a page on the device does not by itself publish that change. Review the preview,
-then use the publish action when the changes are ready for customers.
+**Publishing is what updates the public website.** Saving a product or
+changing the design on the device does not by itself publish that change.
+Review the preview, then use **Publish** when the changes are ready for
+customers. Publishing sends the design, the product catalogue and the product
+photos to Craft's website service. If a catalogue change is saved but not yet
+republished, customers keep seeing the last published page.
 
-The website can also provide owner-facing information such as visits, product
-interest, and orders when the site is published and connected to the required
-services. These reports reflect the activity that the website can actually
-record; an empty report may simply mean that no activity has been recorded yet.
+### Selling products online
+
+A published shop has a cart and checkout. The customer enters their name,
+contact details and (for delivery) an address, and can choose delivery or
+pickup. The owner can set a delivery fee and a free-delivery threshold. The
+website service works out the prices, stock and any discount itself; nothing the
+customer's browser sends about prices is trusted.
+
+The customer can **pay online with Paystack** (when the owner has connected a
+Paystack account) or **place the order and pay the shop directly** (for example
+cash or mobile money). For shop-settled orders the customer's email is
+optional. The owner then records the payment in the Orders screen (cash,
+mobile money, bank or other, with an optional reference such as an M-Pesa
+code). An order counts as paid only when the owner records it or when Paystack
+confirms it.
+
+Customers can also **reserve** an item for a limited time (a "hold"). Holds are
+approved automatically (with small limits per visitor), and the owner can
+release or reject them. The shop can offer **discount codes**
+(percent or fixed amount, with an optional minimum spend, dates and usage
+limit). Owners create and switch off codes in the app.
+
+### Services and bookings
+
+A shop that offers services shows an appointment picker instead of a cart. The
+owner sets open days, opening and closing hours, a time buffer and an
+optional deposit percentage. A customer picks an available time and sends a
+**request**; that time is held for the customer while the owner decides (up to
+24 hours). The owner **confirms or declines** the request in Craft. If a
+deposit is required, confirming it creates a Paystack payment link for the
+deposit; the booking is not a paid booking until that payment is confirmed.
+Deposits need KES prices, a connected Paystack account and the customer's
+email.
+
+After requesting, the customer sees a link (it also arrives by email when the
+shop has email set up) to view the booking, move it to another time, or cancel
+it, until a cutoff before the start (2 hours by default). A shop can also take
+several bookings at the same time. Once a confirmed appointment has started,
+the owner can mark it completed or no-show. If a customer cancels after paying
+a deposit, the app only flags the deposit as due: the owner refunds it in
+Paystack. Confirmed customers get a reminder email about a day before (sent by
+a daily job, so the timing is approximate). Today the owner app offers confirm
+and decline buttons; the other owner actions exist on the server but were not
+found as buttons in the app, and the capacity and cutoff settings have no
+controls yet.
+
+### What the owner sees
+
+The Orders screen shows web orders, payment status and any order
+that **needs attention** (for example money received but stock ran short, a
+payment after a cancellation, or a duplicate payment). The website can also
+provide visits, product interest and funnel counts (checkout started,
+purchases, booking requests) when it is published and connected to the
+required services. These reports reflect the activity that the website can
+actually record; an empty report may simply mean that no activity has been
+recorded yet. Owners can also be emailed when an order, booking request or
+hold comes in, if the service has email configured and the account has a
+recovery email; the same alerts appear in an alerts list on the Orders screen and under
+CRM > Notifications. The Bookings screen shows appointment requests and holds.
 
 ## 2. Take sales with the POS
 
@@ -93,14 +153,16 @@ for professional advice.
 ## A simple way to get started
 
 1. **Create or sign in to your Craft account.**
-2. **Open Web Builder** and create a shop website. Choose a design and enter
-   your shop details.
-3. **Add products and categories.** Use clear descriptions, current prices,
-   stock information, and good photos.
+2. **Open Web Builder** and create a shop website. Choose products or
+   services and enter your shop details.
+3. **Add products (or services) and categories.** Use clear descriptions,
+   current prices, stock information, and good photos.
 4. **Preview your website**, fix anything that needs attention, and publish it
    when you are ready.
-5. **Open POS** to record in-person sales, expenses, and stock activity.
-6. **Review the reports** as you build up reliable records. Ask the AI helper
+5. **Connect Paystack** under Payments if you want to take card or mobile
+   payments online; otherwise customers can order and pay you directly.
+6. **Open POS** to record in-person sales, expenses, and stock activity.
+7. **Review the reports** as you build up reliable records. Ask the AI helper
    to explain a screen when it is available.
 
 Owners can also create separate shops under the same app account. A shop's
@@ -110,13 +172,14 @@ website and web catalogue remain separate from other shops.
 
 Some online features need their own setup:
 
-- **Website payments:** online card payments use Paystack when the owner
-  connects and configures an approved Paystack account. This integration
-  currently requires Kenyan shillings (KES). An order should only be treated
-  as paid after the payment provider confirms payment.
-- **Email newsletters and campaigns:** sending requires a working email
-  service. Subscribers must confirm their email address before receiving
-  campaigns.
+- **Website payments:** online payments use Paystack when the owner connects
+  and configures an approved Paystack account. This integration currently
+  requires Kenyan shillings (KES). An order should only be treated as paid
+  after the payment provider confirms payment or the owner records the payment
+  themselves. Manual payments are recorded in full only.
+- **Email:** order, booking and hold alerts to the owner, newsletters and
+  campaigns, and account recovery need a working email service. Newsletter
+  subscribers must confirm their email address before receiving campaigns.
 - **Website activity:** orders, visits, and product-interest reports depend on
   the published website and its connected services being available.
 - **AI assistance:** answers are available only when the AI service is
@@ -125,13 +188,23 @@ Some online features need their own setup:
 Craft does not automatically activate a payment account, send email, or
 guarantee business results.
 
+## Good to know
+
+- Cancelling an order that was already paid does **not** put the stock back and
+  does **not** refund the customer. The owner does both by hand.
+- The website's protection against floods of requests limits how fast one
+  connection can order or book. It cannot guarantee that a shop stays fast
+  under a large coordinated attack.
+- Real web addresses and search-engine entries exist for a shop's home page and
+  product pages. Categories and extra pages do not have their own addresses.
+
 ## Where information is stored
 
 Website editing and POS work can be done on the device. POS records normally
 remain in the device's local database unless the owner chooses a supported sync
 option. Publishing sends the selected website catalogue, shop information,
-and required product images to the website service so customers can see them.
-Each shop has its own website data.
+the finished website and required product images to the website service so
+customers can see them. Each shop has its own website data.
 
 Because POS and website products are separate, owners should decide how they
 want to keep names, prices, and stock aligned. Protect the device and only share

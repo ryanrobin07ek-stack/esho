@@ -376,7 +376,7 @@ test('POS sales and received purchases queue refreshed product stock for cloud s
   assert.match(productQueue, /if \(!product\.sku\)[\s\S]*createSku\(\)[\s\S]*UPDATE pos_products SET sku=/);
   assert.doesNotMatch(productQueue, /This product needs a SKU before it can sync/);
   assert.match(posSource, /async function seedCloudCatalogueForTenant\(tenantId\)[\s\S]*cloud_catalogue_seeded:\$\{tenantId\}[\s\S]*seedCatalogueSync\(\)/);
-  assert.match(posSource, /async function syncCloudBusinessRecords\(\)[\s\S]*await seedCloudCatalogueForTenant\(tenantId\)/);
+  assert.match(posSource, /async function syncCloudBusinessRecords\([^)]*\)[\s\S]*await seedCloudCatalogueForTenant\(tenantId\)/);
   assert.match(posSource, /let pageCursor = cursor;[\s\S]*latestChanges = new Map\(\)[\s\S]*const previous = latestChanges\.get\(key\)/);
   assert.match(posSource, /while \(pageCursor < latestRevision && pageLength === 500 && pagesRead < 20\)/);
   assert.match(posSource, /Cloud sync returned an invalid change list/);
@@ -863,7 +863,7 @@ test('app account includes email recovery and sends verified reset codes to the 
 
 test('existing website editor routes stay pinned to the selected tenant', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const routeTenantSelection = pageSource.match(/if \(path === "\/account\/web\/site" && params\.get\("new"\) !== "1" && params\.has\("tenant"\)\) \{([\s\S]*?)\n    \}\n    if \(path === "\/account\/web\/site" && params\.get\("new"\) === "1"\)/)?.[1];
+  const routeTenantSelection = pageSource.match(/if \(\(path === "\/account\/web\/site" && params\.get\("new"\) !== "1" \|\| path === "\/account\/web\/store"\) && params\.has\("tenant"\)\) \{([\s\S]*?)\n    \}\n    if \(path === "\/account\/web\/site" && params\.get\("new"\) === "1"\)/)?.[1];
   const editHandler = pageSource.match(/const editWebsite = e\.target\.closest\("\[data-edit-website\]"\);([\s\S]*?)\n      }\n\n      const editStore/)?.[1];
   assert.ok(routeTenantSelection, 'Opening an editor URL should resolve its explicit website tenant.');
   assert.match(routeTenantSelection, /tenantCatalogs\(\)\.find\(item => item\.tenant_id === tenantId\)/);
@@ -1208,7 +1208,8 @@ test('new-website workspace keeps Store import and web-product actions without r
   const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
   const websitesNavigation = pageSource.match(/title: "Websites",([\s\S]*?)\n      \},\n      \{\n        title: "Payments"/)?.[1];
   assert.ok(websitesNavigation, 'Websites tabs should have a bounded navigation entry.');
-  assert.match(websitesNavigation, /title: "New web", route: "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?title: "Add"[\s\S]*?title: "Theme Studio"/);
+  assert.match(websitesNavigation, /title: "New web", route: "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?title: "Add"[\s\S]*?title: "Website editor"/);
+  assert.doesNotMatch(pageSource, /Theme Studio/, 'The website editor is Litrus Mixer; no screen should still be called Theme Studio.');
   assert.match(pageSource, /website-management-new" href="\/account\/web\/studio\/websites\/webmaker" data-start-new-website>\+ New web/);
   assert.match(pageSource, /renderNewWebsiteProducts\(\)[\s\S]*?id="website-wizard-load-store">Add from Store[\s\S]*?id="website-wizard-create-product">Add web product[\s\S]*?id="website-wizard-product-form"[\s\S]*?id="website-wizard-store-picker"/);
   assert.match(pageSource, /const litrusBuilderRoute = "\/account\/web\/site\?new=1&edit=1&theme=litrus-mixer";[\s\S]*?id="website-wizard-go-builder"[\s\S]*?Go to web builder[\s\S]*?Choose products from Store/);
@@ -1261,10 +1262,10 @@ test('new Litrus draft image search omits shop auth and keeps image data local u
   const cloudflareRequestStart = pageSource.indexOf('async cloudflareRequest(path');
   const cloudflareRequestEnd = pageSource.indexOf('\n  async loadTenantCatalog', cloudflareRequestStart);
   const cloudflareRequest = pageSource.slice(cloudflareRequestStart, cloudflareRequestEnd);
-  const imageRequestStart = pageSource.indexOf('if (event.data?.type === "craft-litrus-image-request")');
-  const imageRequestEnd = pageSource.indexOf('if (event.data?.type === "craft-litrus-draft")', imageRequestStart);
+  const imageRequestStart = pageSource.indexOf('searchImages: ({ tenantId, isDraft, images }) =>');
+  const imageRequestEnd = pageSource.indexOf('reply: (frameWindow, message)', imageRequestStart);
   const imageRequestHandler = pageSource.slice(imageRequestStart, imageRequestEnd);
-  const saveStart = pageSource.indexOf('async saveLitrusMixerCatalog(input, isDraftEditor) {');
+  const saveStart = pageSource.indexOf('async saveLitrusMixerCatalog(input, isDraftEditor, expectedTenantId) {');
   const saveEnd = pageSource.indexOf('\n  openCloudflarePublishModal(', saveStart);
   const saveLitrusCatalog = pageSource.slice(saveStart, saveEnd);
   const designSaveStart = pageSource.indexOf('const saveLitrusDesign = payload =>');
@@ -1276,11 +1277,11 @@ test('new Litrus draft image search omits shop auth and keeps image data local u
   assert.ok(designSaveStart >= 0 && designSaveEnd > designSaveStart);
   assert.match(cloudflareRequest, /pathUrl\.pathname === "\/api\/images\/draft-search"/);
   assert.match(cloudflareRequest, /const token = draftLitrusImageRequest \? "" : credentialOverride \|\| connection\.token/);
-  assert.match(imageRequestHandler, /isDraftEditor\s*\?\s*"\/api\/images\/draft-search"/);
-  assert.match(imageRequestHandler, /tenantId,\s*isDraftEditor/);
+  assert.match(imageRequestHandler, /isDraft\s*\?\s*"\/api\/images\/draft-search"/);
+  assert.match(imageRequestHandler, /tenantId,\s*isDraft\s*\)/);
   assert.match(saveLitrusCatalog, /images: images\.slice\(0, 8\)/);
   assert.match(saveLitrusCatalog, /this\.setActiveTenantCatalog\(tenant,/);
-  assert.match(designSave, /await this\.saveLitrusMixerCatalog\(payload, isDraftEditor\)/);
+  assert.match(designSave, /await this\.saveLitrusMixerCatalog\(payload, isDraftEditor, openedTenantId\)/);
   assert.match(designSave, /await window\.ShopSQLite\.flush\(\)/);
 });
 
@@ -1843,7 +1844,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(overviewMarkup, /aria-label="Overview sections menu"[\s\S]*?class="workspace-sidebar-link is-active" aria-current="page">Summary<\/a>/);
     assert.doesNotMatch(overviewMarkup, /Business overview|Manage expenses|Store performance/);
     assert.match(overviewMarkup, /class="pos-overview-card"[^>]*aria-label="Business totals"/);
-    assert.match(overviewMarkup, /<small>Revenue<\/small>/);
+    assert.match(overviewMarkup, /<small>Net sales<\/small>/);
     assert.match(overviewMarkup, /<small>Profit<\/small>/);
     assert.match(overviewMarkup, /<small>Operating profit<\/small>/);
     assert.match(overviewMarkup, /<small>Credit<\/small>/);
@@ -1954,7 +1955,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /data-business-export="transactions"/);
     assert.match(pageSource, /window\.ShopPOS\.listExpenses \? window\.ShopPOS\.listExpenses\(\)/);
     assert.match(pageSource, /window\.ShopPOS\.listInstances \? window\.ShopPOS\.listInstances\(\)/);
-    assert.match(pageSource, /if \(path === "\/account" \|\| path === "\/account\/main-shop" \|\| path === "\/account\/main-shop\/" \|\| path === "\/account\/dashboard"\)[\s\S]*?Gross web revenue[\s\S]*?Customer visits[\s\S]*?Awaiting payments[\s\S]*?What’s moving/);
+    assert.match(pageSource, /if \(path === "\/account" \|\| path === "\/account\/main-shop" \|\| path === "\/account\/main-shop\/" \|\| path === "\/account\/dashboard"\)[\s\S]*?Paid web revenue[\s\S]*?Customer visits[\s\S]*?Awaiting payments[\s\S]*?What’s moving/);
     assert.doesNotMatch(pageSource, /studio-hamburger/);
     assert.match(pageSource, /\.workspace-sidebar\s*\{[^}]*position:\s*fixed[^}]*right:\s*0[^}]*bottom:\s*0[^}]*width:\s*min\(86vw,\s*360px\)/);
     assert.doesNotMatch(pageSource, /class="studio-workspace-top-nav"|class="studio-nested-nav"/);
@@ -1970,7 +1971,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /if \(path === "\/store\/products"\)[\s\S]*?Add from Store[\s\S]*?Add web product[\s\S]*?webProducts\.map/);
     assert.match(pageSource, /if \(path === "\/store\/inventory"\)[\s\S]*?Website stock is managed independently[\s\S]*?webProducts\.map/);
     assert.match(pageSource, /getMainShopSnapshot\(\)[\s\S]*?window\.ShopPOS\.listProducts\(\)[\s\S]*?window\.ShopPOS\.listCategories\(\)[\s\S]*?window\.ShopPOS\.listSales\(\)[\s\S]*?SQLiteEngine\.select\("orders"\)/);
-    assert.match(pageSource, /path === "\/store\/website"[\s\S]*?Deploy storefront to web/);
+    assert.doesNotMatch(pageSource, /path === "\/store\/website"|Deploy storefront to web/, 'The unreachable /store/website screen was removed.');
     assert.match(pageSource, /generateProductSku\(\)[\s\S]*?ESHOP-\$\{Array\.from\(bytes/);
     assert.doesNotMatch(pageSource, /name="sku" value="\$\{AppUtils\.escapeHTML\(product \? product\.sku : `ESHOP-\$\{Date\.now\(\)\}`\)\}"/);
     assert.match(pageSource, /\.home-screen-main\s*\{[^}]*width:\s*100%[^}]*max-width:\s*860px/);
@@ -2021,7 +2022,8 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /Cloudflare verification failed[\s\S]*?allowed hostnames, including localhost for Android/);
     assert.match(pageSource, /\.native-app-shell \.profile-page-back,[\s\S]*?\.native-app-shell \.studio-back-link,[\s\S]*?display:\s*none !important/);
     assert.match(bootstrapSource, /Capacitor\.isNativePlatform\(\)[\s\S]*?native-app-shell[\s\S]*?backButton/);
-    assert.match(pageSource, /if \(event\.detail\?\.canGoBack\) \{\s*window\.history\.back\(\);/);
+    assert.match(bootstrapSource, /installBackButton\(\{ App, Capacitor, handler: createAppBackHandler\(\{ App \}\) \}\)/,
+      'The Android back button is wired through src/back-button.js (behaviour is covered in tests/back-button.test.mjs).');
     assert.match(pageSource, /renderAccount\(\)\s*\{[\s\S]*?route: "\/account\/web"[\s\S]*?Management<\/h1>/);
     const managementModules = pageSource.match(/renderAccount\(\)\s*\{\s*const modules = \[([\s\S]*?)\n    \];/)?.[1];
     assert.ok(managementModules, "Management module ordering should be explicitly defined.");
@@ -2077,7 +2079,8 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /title: "Overview"[\s\S]*?title: "Visits"[\s\S]*?title: "Traffic"[\s\S]*?title: "Performance"[\s\S]*?title: "Product intelligence"/);
     assert.match(pageSource, /title: "Products"[\s\S]*?title: "Categories"[\s\S]*?title: "Inventory"[\s\S]*?title: "Orders"[\s\S]*?title: "Bookings"/);
     assert.match(pageSource, /title: "Customers"[\s\S]*?title: "Points"[\s\S]*?title: "Subscribers"[\s\S]*?title: "Notifications"/);
-    assert.match(pageSource, /title: "Web maker"[\s\S]*?title: "Theme Studio"[\s\S]*?title: "Page editor"/);
+    assert.doesNotMatch(pageSource, /"\/account\/website\/(?:maker|editor|pages)"|Page editor|renderPagesManager|openPageModal/,
+      'The unreachable website tool and Pages screens were removed.');
     assert.match(pageSource, /aria-label="Web Studio sections"[\s\S]*?sections\.map\(section =>/);
     assert.match(pageSource, /<header class="studio-workspace-heading">[\s\S]*?class="studio-workspace-back" href="\/" data-route="\/" data-home-screen aria-label="Back to Craft home"[\s\S]*?class="studio-workspace-tab-title">\$\{AppUtils\.escapeHTML\(page\.title\)\}<\/h1>/);
     assert.doesNotMatch(pageSource, /<span class="studio-workspace-kicker">CRAFT<\/span><h1>Web Studio<\/h1>/);
@@ -2221,11 +2224,8 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(sqliteSource, /'store','categories','products','pages'/);
     assert.match(sqliteSource, /ESHOP_BUILD_YOUR_WEB_RESET_ORIGINAL_HTML_V1/);
     assert.match(pageSource, /getPages\(publishedOnly = false\)/);
-    assert.match(pageSource, /savePage\(data\)/);
-    assert.match(pageSource, /deletePage\(id\)/);
-    assert.doesNotMatch(pageSource, /href="\/account\/web\/pages" class="btn-secondary" data-route="\/account\/web\/pages">Manage Pages/);
-    assert.match(pageSource, /id="page-editor-form"/);
-    assert.match(pageSource, /path === "\/account\/web\/pages"[\s\S]*?renderPagesManager\(\)/);
+    assert.doesNotMatch(pageSource, /savePage\(data\)|deletePage\(id\)|id="page-editor-form"|path === "\/account\/web\/pages"/,
+      'Nothing can create or edit custom pages any more, so their editor, routes and helpers are gone.');
     assert.match(pageSource, /path\.startsWith\("\/pages\/"\)[\s\S]*?renderCustomPage\(slug\)/);
     assert.match(pageSource, /SQLiteEngine\.getPages\(true\)/);
     assert.match(pageSource, /AppUtils\.escapeHTML\(page\.content \|\| ""\)\.replace/);

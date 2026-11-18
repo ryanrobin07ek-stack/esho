@@ -211,7 +211,7 @@ async function updateSyncBanner() {
       useShop.disabled = true;
       useShop.textContent = 'Loading this shop’s POS…';
       setBrowserDataStatus(`Downloading ${cloudConnection.tenant} POS records. Do not close this page…`);
-      const result = await window.ShopPOS.replaceWithCloudShop(cloudConnection.tenant);
+      const result = await window.ShopPOS.replaceWithCloudShop(cloudConnection.tenant, { confirmed: true });
       setBrowserDataStatus(`This browser now uses ${cloudConnection.tenant}. Imported ${result.imported} shop record(s); cloud sync is on.`);
       await updateSyncBanner();
     } catch (error) {

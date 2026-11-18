@@ -7,7 +7,7 @@ This guide maps the app's active user-facing screens, actions, and workflows. It
 Craft is a storefront and small-business management application available as a web app and an Android app. Its main areas are:
 
 - **Home**: launch the Web Studio, POS, and main-store workspace.
-- **Web Studio**: manage shop catalogs and settings, edit a storefront design, and publish shop sites.
+- **Web Studio**: manage shop catalogs and settings, edit a storefront design with Litrus Mixer (the only website editor), publish shop sites, and run orders, payments, discount codes and bookings.
 - **POS**: record in-person sales, manage stock, customers, orders, expenses, and reports.
 - **Customer storefront**: browse a shop, search products, view categories and product details, use a bag, and check out.
 
@@ -22,7 +22,7 @@ The app's route controller is in `index.html`; POS is implemented primarily in `
 | Web Studio | `/account/web` and `/account/web/studio/...` | Dashboard, Store, CRM, Websites, and Payments workspaces. |
 | Main Store | `/account/main-shop`, `/store/...` | Manage the main shop catalog, inventory, orders, and business views. |
 | New website | `/account/web/studio/websites/webmaker` | Add existing Store products or create website-only products, then open the Litrus builder. |
-| Website editor | `/account/web/site?...` | Edit, preview, and publish a new or existing Litrus storefront. |
+| Website editor | `/account/web/site?...` | Edit, preview, and publish a new or existing Litrus Mixer storefront. This is the only website editor. |
 | Website/store settings | `/account/web/store`, `/account/store` | Update customer-facing store details and related store information. |
 | Web profile | `/account/profile/...` | Manage profile sections, accounts, websites, and custom domains. |
 | POS | `/pos` and `/pos/...` | Counter sales, inventory, customer records, orders, and business management. |
@@ -36,9 +36,9 @@ Routes can have additional query parameters (for example search, sort, price ran
 | Menu | Screens | Main functions |
 |---|---|---|
 | Dashboard | Overview, Visits, Traffic, Performance, Product intelligence | Review store activity and metrics; apply date/range filters where offered. |
-| Store | Products, Categories, Inventory, Orders, Bookings | Manage the web catalog and stock; review customer orders and booking/hold requests. |
+| Store | Products, Categories, Inventory, Orders, Bookings | Manage the web catalog and stock; review online orders, record manual payments, manage discount codes and owner alerts (Orders); review service appointment requests and holds (Bookings). |
 | CRM | Customers, Points, Subscribers, Notifications | Review customer activity and loyalty points, manage newsletter subscribers, and access notification tools. |
-| Websites | Websites, Domains, New web, Add, Theme Studio | Select/manage sites, connect a subdomain, set up a new site, choose its products, and edit its storefront. |
+| Websites | Websites, Domains, New web, Add | Select/manage sites, connect a subdomain, set up a new site, choose its products, and edit its storefront in Litrus Mixer. |
 | Payments | Payments | Configure or review supported website payment-account settings. |
 
 The **Main Store** workspace has direct Store routes such as `/store/products`,
@@ -172,9 +172,11 @@ The tenant/shop manager switches which shop's catalog and store data are being e
 - **Store details:** `/account/web/store` and `/account/store` edit store name/tagline/description and contact details.
 - **Website/shop settings:** found in the Web Studio workspace and profile website settings.
 
-Custom pages are distinct from the theme's product/category content. The theme should not replace or rewrite catalog data.
+Custom pages are stored with the shop catalog, separate from product and category data. Litrus Mixer has no route for them, so a Litrus storefront does not show or index these pages (it routes only the home page and product pages).
 
-## Theme selection, Theme Studio, and publishing
+## Website editor (Litrus Mixer) and publishing
+
+Litrus Mixer is the only website editor. The old themes, Theme Studio, the standalone builder storefront and the browser register page were retired and must not be restored (see `THEME-ENGINE-HANDOFF.md`). `src/theme-catalog.js` lists a single entry, `litrus-mixer`.
 
 ### New website setup
 
@@ -185,38 +187,42 @@ Custom pages are distinct from the theme's product/category content. The theme s
 The **New web** workflow lets an owner add products from the Store catalog or
 create products specifically for the website, review the website categories,
 and then select **Go to web builder**. The builder opens the Litrus Mixer
-editor for the website draft. The draft is separate from the published site
-until the owner completes the setup and publishes it.
+editor in an iframe for the website draft. A new shop's draft stays on the
+device: the app blocks Cloudflare requests for it until the owner finishes setup
+(the one exception is the editor's image search). On finishing, the app creates the
+shop, publishes its catalog and publishes the Litrus design in one go; if a step
+fails before the storefront is published, the half-created shop is deleted again.
 
-### Current website editor: Litrus Mixer
+### The editor
 
-`src/theme-catalog.js` currently lists **Litrus Mixer** as the selectable
-theme. Other HTML/Liquid theme engines or archived theme files in the
-repository are implementation/legacy assets; they are not additional active
-choices in this picker.
-
-The embedded Litrus editor has these main steps:
+Craft's toolbar above the editor has **Publish**, **Store** (store details), **Sections**,
+**Advanced**, and, in preview, a device picker (Fit, Phone, Tablet, Laptop). The
+editor's steps, as labelled inside Craft, are:
 
 | Step | What it does |
 |---|---|
-| Shop | Set the shop name, products/services type, category/type, description, slogan, currency, contact, and delivery details. |
-| Content | Edit homepage Promo cards and FAQs. Product and category management stays in Craft's Store/POS tools, so it is not duplicated here. |
-| Style | Choose a visual style and adjust the available storefront presentation controls. |
-| Review | Preview the storefront and use the available save/publish actions. |
-| Settings | Open shop appearance and homepage settings. The Settings tab also returns to the builder when the panel is open. |
+| Shop | Shop name, whether it offers products or services, description, slogan, currency, contact and delivery details. For services: open days, opening and closing time, buffer and deposit percentage. |
+| Content | Homepage promo cards and FAQs. Products and categories are managed in Craft's Store tools, not here. (The standalone editor, opened outside Craft, labels this step Products or Services.) |
+| Style | "Choose a look": pick a style and adjust presentation controls. |
+| Review | "Review storefront": preview, save or publish the storefront. |
+| Settings | Appearance and homepage settings. |
+
+The standalone editor uses different labels for some steps (Your shop, Products or Services, Style with a "Pick a feeling" heading, Finish with a copyable recipe, and Shop settings).
 
 The **Edit/Preview** switch changes between editor controls and the live
-storefront preview. Preview controls can change the page being viewed and the
-device size. Edits to the website draft do not automatically publish a public
-site.
+preview. A recipe is saved with the shop so the design can be rebuilt. Edits to the draft do not change the public site until the owner publishes.
 
-### Publishing
+### How publishing works
 
-Publishing validates the filled storefront and sends the selected shop's catalog/site output through the Cloudflare Worker. Published storefronts serve the validated, shop-filled result rather than exposing the raw editor template. Product media is uploaded to the configured R2 media area when the publishing configuration supports it.
+1. The editor produces one self-contained HTML document (marked with `<meta name="eshop-filled-theme" content="litrus-mixer">`) and a recipe. Craft saves both locally.
+2. **Publish** (existing shop) uploads new product photos to `POST /api/media`, writes the catalog with `PUT /api/catalog` (D1 `catalog_snapshots`), and sends the HTML with `POST /api/theme-publish`, including the catalog version it was built for.
+3. The Worker rejects incomplete HTML, a missing catalog version, a catalog that changed in the meantime (`409`), or a theme that no longer matches the catalog. Otherwise it stores the page in R2 (`published-sites/<shop>/litrus-mixer/...`) and points KV (`published-theme:<shop>`) at it. Retired theme IDs get `422`.
+4. Visitors to the shop's hostname receive that stored page with the live catalog injected, plus SEO tags. If the catalog is saved ahead of the republish, the last published page keeps being served. If nothing was ever published, visitors see a plain "This website is not available" page.
 
 **Payment limitation:** a storefront preview or publish button is not a
 payment processor. Online payments require the shop's supported payment
-configuration and server-side provider confirmation.
+configuration and server-side provider confirmation. See
+`cloudflare/STOREFRONT_COMMERCE.md` for the exact rules.
 
 ## Customer-facing storefront
 
@@ -227,19 +233,24 @@ app is the owner launchpad; it is not the public storefront root. Owners use
 the website preview and website-management screens to inspect a site before
 publishing it.
 
-### Shopping screens
+### How a customer shops on a published shop
 
-- **Categories:** `/categories` lists available categories.
-- **Category:** `/category/<slug>` displays a category's products, with sort and optional price/stock filters.
-- **Product:** `/product/<slug>` shows product details and images.
-- **Search:** `/search` searches the shop catalog.
-- **Favorites:** `/favorites` lists saved/favorite products.
-- **Bag:** `/bag` displays items selected for purchase.
-- **Checkout:** `/checkout` collects checkout/order information through the configured storefront flow.
-- **Order confirmation:** `/checkout/confirmation` displays the result of an order/checkout flow.
-- **Custom page:** `/pages/<slug>` displays a published custom page.
+A published shop is the Litrus storefront: a single-page site that routes the
+home page and products (`#/p/<product id>`, which the Worker also serves as
+`/products/<slug>` for search engines). It has no separate category, favourites or
+custom-page routes. The `/categories`, `/category/...`, `/product/...`, `/search`,
+`/bag`, `/checkout` and `/pages/...` routes in the quick screen map come from the
+Craft app's built-in renderers; a published shop's visitors get the Litrus storefront.
 
-The customer storefront and the app's local management screens share shop data through the application catalog. Whether an online payment is completed depends on the configured provider and the actual checkout integration; a theme preview by itself cannot charge a customer.
+On a published shop customers can:
+
+- Browse products (with options such as size and colour) and see prices and stock.
+- Add to the cart and check out: name, contact, delivery or pickup, and an address for delivery. A discount code can be previewed before ordering.
+- **Pay with Paystack** (the shop has a ready Paystack account; KES only) or **place the order and pay the shop directly**. The email is optional only for the second option.
+- **Hold** an item for a limited time (small per-visitor limits).
+- For service shops, pick a date and an available time and **request an appointment** (name, email and phone are needed). The customer gets a private link (`#/booking/<token>` on the shop's address) to view the booking, move it or cancel it until the shop's cutoff (default 2 hours before), within a reschedule limit (default 2).
+
+The Worker re-prices every order from the published catalog, deducts stock when payment is recorded, and releases holds and discounts. An online payment is completed only when Paystack confirms it; a preview or success screen alone is not enough.
 
 ## POS (point of sale)
 
@@ -312,11 +323,19 @@ POS is locally stored and designed to remain usable offline. Optional sync featu
 
 The dedicated M-Pesa workspace and notification listener are not part of the active app. Their UI and listener source are retained under `archive/mpesa-ui/` and `archive/mpesa-notification-listener/` for reference only. Legacy POS database columns for mobile-money references remain to preserve existing records; new sales use the generic **Mobile money** method and are recorded manually.
 
-## Store payments and online orders
+## Online orders, payments, discounts and bookings (owner side)
 
-The Web Studio has payment settings for supported website checkout and displays online order/payment records where that integration is enabled. Account-level payment configuration and shop catalog publishing are separate steps. POS payment recording and website checkout are also separate flows.
+These are in Web Studio, Store, **Orders** and **Bookings** (`/account/web/studio/store/orders` and `.../bookings`; also `/store/orders`, `/store/bookings`).
 
-Selecting mobile money in POS records the sale based on the operator's manual verification.
+- **Orders:** online orders with status (pending, confirmed, processing, ready, fulfilled, cancelled) and payment status. Orders that need attention are called out (money received but stock short, payment after cancel, duplicate payment, unmatched payment).
+- **Record a payment:** for an order the shop settles itself, choose cash, mobile money, bank or other, with an optional reference. Only full payments are recorded. Already-paid orders are not charged or deducted twice.
+- **Cancel:** cancelling releases holds and gives the discount use back. It does not restock a paid order and does not refund; do both manually.
+- **Discount codes:** create, switch on/off and delete percent or fixed codes with minimum spend, start/end dates and a usage limit (the Orders screen hosts this panel).
+- **Owner alerts:** a list on the Orders screen and under CRM > Notifications of new orders, booking requests, holds and attention events (`GET /api/store/notifications`), also emailed to the account's recovery email when email is configured.
+- **Bookings:** service appointment requests (confirm or decline; confirming a request with a deposit creates a Paystack link), plus hold settings and hold requests (approve, reject or release). The server also supports owner cancel, reschedule, completed, no-show and deposit-refunded actions, capacity (several bookings per time), and daily reminder emails, but the app shows only confirm and decline today. A cancelled paid booking only flags the deposit as refund due; refund it in Paystack. The Bookings screen has no alerts panel.
+- **Payments:** the Payments tab connects a Paystack account for the app account; website checkout currently needs KES.
+
+POS payment recording and website checkout are separate flows. Selecting mobile money in POS records the sale based on the operator's manual verification.
 
 ## Data, storage, and connected services
 
@@ -338,7 +357,12 @@ npm install
 npm run dev
 npm run build
 npm test
+npm run lint:inline
+npm run test:boot
+npm run test:litrus-browser
 ```
+
+`npm test` runs every `tests/*.test.mjs` file. `lint:inline` lints the inline script in `index.html`. `test:boot` (run `npm run build` first) starts the production build in Playwright Chromium and checks that the app boots. `test:litrus-browser` is a Playwright smoke test of the Litrus Mixer editor and preview. For a single area, run `node --test tests/<file>.test.mjs` (for example `tests/cloudflare.worker.test.mjs`).
 
 Android sync/build workflow:
 
@@ -348,29 +372,32 @@ Set-Location android
 .\gradlew.bat assembleDebug
 ```
 
-The debug APK is written under `android/app/build/outputs/apk/debug/`. Installation requires Android SDK/ADB and a connected or authorized Android device.
+The debug APK is written under `android/app/build/outputs/apk/debug/`. Installation requires Android SDK/ADB and a connected or authorized Android device. Deploying the Worker (`npm run cf:d1:migrate:remote`, then `npm run cf:deploy`) is a manual, owner-run step; see the deploy checklist in `README.md`.
 
 ## Source map for maintainers
 
 | Code | Responsibility |
 |---|---|
 | `index.html` | Main route controller, app workspace screens, profile/web settings, and storefront route dispatch. |
-| `src/bootstrap.js` | Initializes SQLite, POS, theme runtime globals, and Capacitor app services. |
+| `src/bootstrap.js` | Initializes SQLite, POS, shared globals (some leftover theme-runtime globals remain), and Capacitor app services. |
 | `src/sqlite.js` | SQLite database setup and browser/native persistence bridge. |
 | `src/pos.js` | POS screens, checkout, inventory, orders, invoices, suppliers, reports, settings, and sync workflows. |
 | `archive/mpesa-ui/` | Archived dedicated M-Pesa workspace snapshot and tools; not compiled into the active app. |
 | `archive/mpesa-notification-listener/` | Archived Android listener and JavaScript bridge; not compiled into the active app. |
-| `src/theme-catalog.js` | Selectable storefront theme catalog; currently Litrus Mixer. |
-| `public/litrus-mixer/index.html` | Litrus editor, embedded editor flow, preview and shop-content controls. |
+| `src/theme-catalog.js` | The theme list; contains only Litrus Mixer. |
+| `public/litrus-mixer/index.html` | Litrus Mixer editor, embedded Craft flow, preview and shop-content controls. |
+| `public/litrus-mixer/live-catalog.js` | Runtime of a published Litrus storefront: live catalog, cart, checkout, holds, bookings. |
 | `src/product-taxonomy.js`, `src/product-variants.js` | Product category attributes and product option/variant fields. |
 | `src/product-cutout.js`, `src/product-vision.js` | Native product-media processing and image-assisted tools where supported. |
-| `public/theme-importer.js`, `public/theme-skeleton-engine.js`, Liquid theme modules | Additional theme rendering/import compatibility code; not necessarily active picker choices. |
-| `cloudflare/worker.js` | Cloudflare API, authentication/account/shop endpoints, publishing, storefront delivery, and related services. |
-| `tests/` | Automated coverage for POS, archived M-Pesa tools, themes, accounts, domains, analytics, and Worker behavior. |
+| `cloudflare/worker.js` | Cloudflare API, authentication/account/shop endpoints, publishing, storefront delivery, orders, payments, discounts, bookings, and related services. |
+| `cloudflare/migrations/` | D1 schema files `0001` to `0030` (`0025`-`0030` not yet applied to production). |
+| `tests/` | Automated coverage for POS, archived M-Pesa tools, Litrus storefront behaviour, accounts, domains, analytics, and Worker behavior (some older tests still cover retired theme code). |
 
 ## Known boundaries
 
-- Theme previews and demo content are not a substitute for a real shop catalog; published catalog content should come from the selected shop's records.
+- Published catalog content comes from the selected shop's records, not from editor sample content.
 - A storefront preview or publish action does not itself process a payment; online checkout requires supported provider configuration.
+- Cancelling a paid order neither restocks nor refunds. Rate limits slow abusive traffic but cannot guarantee a shop's availability.
+- Dead code from the retired theme engine remains in places (for example non-Litrus branches in `index.html`, `public/theme-*.js`, `src/liquid-*.js`); it is not reachable from the picker or publish path.
 - Analytics and business warnings depend on the completeness and correctness of saved data.
 - Optional Cloudflare publishing, custom domains, online payments, and cloud sync require their respective accounts, credentials, DNS, and service configuration.

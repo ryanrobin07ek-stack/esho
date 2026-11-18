@@ -175,6 +175,53 @@ const rows = async (sql, values = []) => (await window.ShopSQLite.query(sql, val
 const run = (sql, values = []) => window.ShopSQLite.run(sql, values);
 const transaction = (statements) => window.ShopSQLite.executeSet(statements, true);
 const stmt = (statement, values = []) => ({ statement, values });
+
+// Reversible bulk rewrites. Anything that replaces many rows at once (replacing the browser POS
+// with a shop's cloud records, restoring an inventory backup) first copies the affected tables
+// inside SQLite (blobs and all), then rolls back from the copy if the rewrite fails part-way.
+// The copies are only dropped once the rewrite has fully succeeded, so a crash or reload during
+// the rewrite is also undone by recoverInterruptedBulkChange() the next time the POS starts.
+const SAFETY_COPY_PREFIX = 'pos_safety_';
+// Parents before children, so a copy can be re-inserted in this order and deleted in reverse.
+export const POS_SAFETY_COPY_TABLES = [
+  'pos_settings', 'pos_cloud_outbox', 'pos_business_records', 'pos_categories', 'pos_products', 'pos_expenses',
+  'pos_instances', 'pos_till_closes', 'pos_cash_movements', 'pos_sales', 'pos_sale_payments', 'pos_sale_items',
+  'pos_invoices', 'pos_invoice_items', 'pos_inventory_queue', 'shared_inventory', 'shared_inventory_events',
+  'shared_inventory_event_items'
+];
+const orderedSafetyTables = (tables) => POS_SAFETY_COPY_TABLES.filter((table) => tables.includes(table));
+async function createSafetyCopy(tables) {
+  await transaction(orderedSafetyTables(tables).flatMap((table) => [
+    stmt(`DROP TABLE IF EXISTS ${SAFETY_COPY_PREFIX}${table}`),
+    stmt(`CREATE TABLE ${SAFETY_COPY_PREFIX}${table} AS SELECT * FROM ${table}`)
+  ]));
+}
+async function dropSafetyCopy(tables) {
+  await transaction(orderedSafetyTables(tables).map((table) => stmt(`DROP TABLE IF EXISTS ${SAFETY_COPY_PREFIX}${table}`)));
+}
+function safetyCopyDropStatements(tables) {
+  return orderedSafetyTables(tables).map((table) => stmt(`DROP TABLE IF EXISTS ${SAFETY_COPY_PREFIX}${table}`));
+}
+async function restoreSafetyCopy(tables) {
+  const ordered = orderedSafetyTables(tables);
+  const statements = [...ordered].reverse().map((table) => stmt(`DELETE FROM ${table}`));
+  for (const table of ordered) {
+    const columns = (await rows(`PRAGMA table_info(${SAFETY_COPY_PREFIX}${table})`)).map((column) => column.name);
+    if (!columns.length) throw new Error(`The safety copy of ${table} is missing; it cannot be restored.`);
+    const list = columns.map((column) => `"${column}"`).join(',');
+    statements.push(stmt(`INSERT INTO ${table} (${list}) SELECT ${list} FROM ${SAFETY_COPY_PREFIX}${table}`));
+  }
+  statements.push(...safetyCopyDropStatements(ordered));
+  await transaction(statements);
+}
+export async function recoverInterruptedBulkChange() {
+  const copies = (await rows("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'pos!_safety!_%' ESCAPE '!'"))
+    .map((row) => String(row.name).slice(SAFETY_COPY_PREFIX.length));
+  const tables = orderedSafetyTables(copies);
+  if (!tables.length) return false;
+  await restoreSafetyCopy(tables);
+  return true;
+}
 const assertDate = (date, label = 'Date') => {
   const parts = /^\d{4}-(\d{2})-(\d{2})$/.exec(date);
   const parsed = parts ? new Date(Number(date.slice(0, 4)), Number(parts[1]) - 1, Number(parts[2])) : new Date(Number.NaN);
@@ -427,6 +474,11 @@ async function initializePosDatabase() {
     CREATE UNIQUE INDEX IF NOT EXISTS pos_one_open_instance
       ON pos_instances((1)) WHERE status IN ('scheduled', 'active', 'paused');
   `);
+  // A reload or crash in the middle of a bulk rewrite leaves safety copies behind: undo the
+  // half-finished rewrite before anything reads or migrates the tables.
+  if (await recoverInterruptedBulkChange()) {
+    console.warn('An interrupted POS data rewrite was rolled back from its safety copy.');
+  }
   const productColumns = await rows('PRAGMA table_info(pos_products)');
   if (!productColumns.some((column) => column.name === 'sku')) {
     await run('ALTER TABLE pos_products ADD COLUMN sku TEXT');
@@ -870,6 +922,8 @@ async function listSales() {
     sale.subtotal = fromCents(sale.subtotal_cents);
     sale.tax = fromCents(sale.tax_cents);
     sale.discount = fromCents(sale.discount_cents);
+    // Net sales: what was sold after discounts, before tax. The receipt still shows the gross subtotal.
+    sale.netSales = Math.max(0, sale.subtotal - sale.discount);
     sale.total = fromCents(sale.total_cents);
     sale.amountPaid = fromCents(sale.amount_paid_cents);
     sale.items = itemsBySale.get(String(sale.id)) || [];
@@ -1937,7 +1991,7 @@ export function createPosApp() {
     const selectedExpenses = expenses.filter((expense) => expense.currency === settings.currency && inRange(expense.expense_date));
     const selectedPayments = payments.filter((payment) => payment.currency === settings.currency && inRange(payment.created_at));
     const paymentRevenue = selectedPayments.reduce((sum, payment) => sum + fromCents(payment.amount_cents), 0);
-    const revenue = recordedSales.reduce((sum, sale) => sum + sale.subtotal, 0);
+    const revenue = recordedSales.reduce((sum, sale) => sum + (sale.netSales ?? sale.subtotal), 0);
     const taxCollected = recordedSales.reduce((sum, sale) => sum + sale.tax, 0);
     const grossReceipts = recordedSales.reduce((sum, sale) => sum + sale.total, 0);
     const currentMonth = new Date();
@@ -1948,7 +2002,7 @@ export function createPosApp() {
     const monthRevenue = sales.filter((sale) => sale.currency === settings.currency
       && localDateKey(sale.created_at) >= monthStartKey
       && localDateKey(sale.created_at) < `${nextMonthStart.getFullYear()}-${String(nextMonthStart.getMonth() + 1).padStart(2, '0')}-01`)
-      .reduce((sum, sale) => sum + sale.subtotal, 0);
+      .reduce((sum, sale) => sum + (sale.netSales ?? sale.subtotal), 0);
     const monthlyGoal = settings.monthlyRevenueGoal == null || settings.monthlyRevenueGoalCurrency !== settings.currency
       ? null : fromCents(settings.monthlyRevenueGoal);
     const staleGoalCurrency = monthlyGoal === null && settings.monthlyRevenueGoal != null
@@ -2038,14 +2092,14 @@ export function createPosApp() {
       const day = Number.isFinite(date.getTime())
         ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
         : localDateKey(sale.created_at);
-      daily[day] = (daily[day] || 0) + sale.subtotal;
+      daily[day] = (daily[day] || 0) + (sale.netSales ?? sale.subtotal);
     });
     const previousPayments = periodDays ? payments.filter((payment) => payment.currency === settings.currency
       && localDateKey(payment.created_at) >= previousStartKey
       && localDateKey(payment.created_at) < fromDate) : [];
     const previousExpenses = periodDays ? expenses.filter((expense) => expense.currency === settings.currency
       && expense.expense_date >= previousStartKey && expense.expense_date < fromDate) : [];
-    const previousRevenue = previousSales.reduce((sum, sale) => sum + sale.subtotal, 0);
+    const previousRevenue = previousSales.reduce((sum, sale) => sum + (sale.netSales ?? sale.subtotal), 0);
     const previousPaymentRevenue = previousPayments.reduce((sum, payment) => sum + fromCents(payment.amount_cents), 0);
     const previousExpenseTotal = previousExpenses.reduce((sum, expense) => sum + fromCents(expense.amount_cents), 0);
     const previousByMethod = {};
@@ -2064,7 +2118,7 @@ export function createPosApp() {
     recordedSales.forEach((sale) => {
       const date = new Date(sale.created_at);
       if (!Number.isFinite(date.getTime())) return;
-      const amount = sale.subtotal;
+      const amount = (sale.netSales ?? sale.subtotal);
       weekdayTotals[date.getDay()] += amount;
       hourTotals[date.getHours()] += amount;
       weekdayCounts[date.getDay()] += 1;
@@ -2117,7 +2171,7 @@ export function createPosApp() {
         if (!phone) return;
         const customer = customersByPhone.get(phone) || { name: sale.customer_name, orders: 0, spend: 0, firstSale: '', lastSale: '' };
         customer.orders += 1;
-        customer.spend += sale.subtotal;
+        customer.spend += (sale.netSales ?? sale.subtotal);
         customer.firstSale = !customer.firstSale || sale.created_at < customer.firstSale ? sale.created_at : customer.firstSale;
         customer.lastSale = sale.created_at > customer.lastSale ? sale.created_at : customer.lastSale;
         customersByPhone.set(phone, customer);
@@ -2152,7 +2206,7 @@ export function createPosApp() {
     const operatingProfitByDate = {};
     recordedSales.forEach((sale) => {
       const key = localDateKey(sale.created_at);
-      operatingProfitByDate[key] = (operatingProfitByDate[key] || 0) + sale.subtotal - sale.items.reduce((sum, item) =>
+      operatingProfitByDate[key] = (operatingProfitByDate[key] || 0) + (sale.netSales ?? sale.subtotal) - sale.items.reduce((sum, item) =>
         sum + (item.historicalUnitCost == null ? 0 : item.historicalUnitCost * item.quantity), 0);
     });
     selectedExpenses.forEach((expense) => {
@@ -2239,7 +2293,7 @@ export function createPosApp() {
             ? 7 : lastDay - 21;
           return total + segmentDays;
         }, 0);
-        const amount = matches.reduce((sum, { sale }) => sum + sale.subtotal, 0);
+        const amount = matches.reduce((sum, { sale }) => sum + (sale.netSales ?? sale.subtotal), 0);
         return { label: segment.label, amount, days: calendarDays, activeMonths,
           averagePerCalendarDay: calendarDays ? amount / calendarDays : 0 };
       }).filter((segment) => segment.activeMonths >= 2);
@@ -2330,7 +2384,7 @@ export function createPosApp() {
         const date = new Date(sale.created_at);
         if (!Number.isFinite(date.getTime()) || (date.getFullYear() === currentMonth.getFullYear() && date.getMonth() === currentMonth.getMonth())) return;
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        totals.set(key, (totals.get(key) || 0) + sale.subtotal);
+        totals.set(key, (totals.get(key) || 0) + (sale.netSales ?? sale.subtotal));
       });
       return [...totals.entries()].sort((a, b) => b[1] - a[1]);
     })();
@@ -2342,18 +2396,18 @@ export function createPosApp() {
       panel = `<section class="pos-overview-card" aria-label="Business totals">
         <div class="pos-overview-metrics">
           ${overviewMetric('Sales recorded', money(recordedSalesTotal, settings.currency), `${selectedSales.length} receipts · includes unpaid sales`)}
-          ${overviewMetric('Revenue', money(revenue, settings.currency), `Before tax · ${recordedSales.length} recorded sales`)}
+          ${overviewMetric('Net sales', money(revenue, settings.currency), `Before tax, after discounts · ${recordedSales.length} recorded sales`)}
           ${overviewMetric('Profit', money(revenue - cogs, settings.currency), `Sale-time costs cover ${costCoverage.toFixed(0)}% of units`)}
           ${overviewMetric('Operating profit', money(revenue - cogs - operatingExpenses, settings.currency), `${money(operatingExpenses, settings.currency)} expenses · recorded costs only`)}
           ${overviewMetric('Credit', money(credit, settings.currency), 'All unpaid balances')}
         </div>
       </section>
-      ${card(`<h3>Recent revenue</h3>${renderRevenueChart(revenueSeries, settings.currency)}`, 'pos-revenue-card')}
+      ${card(`<h3>Recent net sales</h3>${renderRevenueChart(revenueSeries, settings.currency)}`, 'pos-revenue-card')}
       ${card(`<h3>Period comparison</h3>
         <div class="pos-insight-row"><strong>Net sales · before tax</strong><span>${money(revenue, settings.currency)} · ${changeLabel(revenue, previousRevenue)}</span></div>
         <div class="pos-insight-row"><strong>Recorded expenses</strong><span>${money(operatingExpenses, settings.currency)} · ${changeLabel(operatingExpenses, previousExpenseTotal)}</span></div>`, 'pos-period-comparison-card')}
       ${card(`<h3>Top products</h3>${topProductRows || '<p class="pos-help">Product rankings appear after sales are recorded.</p>'}`)}
-      ${paceEstimate === null ? '' : card(`<h3>Revenue pace estimate</h3><strong>${money(paceEstimate, settings.currency)}</strong><p class="pos-help">Estimated next 7 days from average daily net sales before tax over the last 7 days. A simple pace estimate, not a guarantee.</p>`)}
+      ${paceEstimate === null ? '' : card(`<h3>Net sales pace estimate</h3><strong>${money(paceEstimate, settings.currency)}</strong><p class="pos-help">Estimated next 7 days from average daily net sales before tax over the last 7 days. A simple pace estimate, not a guarantee.</p>`)}
       ${card(`<h3>Quick insights</h3><div class="pos-insights">
         <p>${selectedSales.length ? `${selectedSales.length} sales recorded for this period.` : 'No sales recorded for this period.'}</p>
         <p>${lowStock.length ? `${lowStock.length} products need stock attention.` : 'No low-stock alerts.'}</p>
@@ -2371,7 +2425,7 @@ export function createPosApp() {
     } else if (tab === 'Profit') {
       panel = `<div class="pos-metrics">${metric('Net sales · before tax', money(revenue, settings.currency), `${recordedSales.length} recorded sales`)}
         ${metric('Cost of goods', money(cogs, settings.currency), 'Historical unit costs')}
-        ${metric('Gross profit', money(revenue - cogs, settings.currency), 'Revenue less cost of goods')}
+        ${metric('Gross profit', money(revenue - cogs, settings.currency), 'Net sales less cost of goods')}
         ${metric('Operating profit', money(revenue - cogs - operatingExpenses, settings.currency), 'After recorded expenses')}</div>
         ${card(`<h3>Profit and loss</h3>
           <div class="pos-total-line"><span>Net sales · before tax</span><b>${money(revenue, settings.currency)}</b></div>
@@ -3141,7 +3195,7 @@ export function createPosApp() {
       Number(change.revision) || 0, change.changed_at || nowIso()]);
   }
 
-  async function syncCloudBusinessRecords() {
+  async function syncCloudBusinessRecords({ allowMassDelete = false } = {}) {
     if (cloudSyncInProgress || navigator.onLine === false || !state.settings?.cloudSyncEnabled) return;
     const tenantId = state.settings.cloudSyncTenantId;
     const bridge = window.EshopInventoryBridge;
@@ -3192,6 +3246,16 @@ export function createPosApp() {
         pagesRead++;
       } while (pageCursor < latestRevision && pageLength === 500 && pagesRead < 20);
 
+      // Background sync must never silently empty the catalogue. If other registers' deletions would
+      // remove most of the products stored here, stop and ask the owner (manual "Save and sync now").
+      if (!allowMassDelete) {
+        const localSkus = new Set((await listProducts()).map((product) => product.sku));
+        const doomed = [...latestChanges.values()].filter((change) => change.device_id !== deviceId
+          && change.entity === 'product' && change.deleted && localSkus.has(change.payload?.sku)).length;
+        if (doomed >= 5 && doomed * 2 > localSkus.size) {
+          throw Object.assign(new Error(`Cloud sync paused: another register deleted ${doomed} of this device’s ${localSkus.size} products. Nothing was removed here. Check the other register, then use “Save and sync now” to confirm.`), { code: 'MASS_DELETE' });
+        }
+      }
       for (const change of latestChanges.values()) {
         if (change.device_id === deviceId) continue;
         if (!['supplier', 'purchase', 'ticket', 'sale', 'product', 'category', 'expense', 'setting'].includes(change.entity)
@@ -3248,8 +3312,8 @@ export function createPosApp() {
     return { enabled: settings.cloudSyncEnabled, tenant: tenantId, pending, lastSync, error: settings.cloudSyncError };
   }
 
-  async function syncCloudNow() {
-    await syncCloudBusinessRecords();
+  async function syncCloudNow(options) {
+    await syncCloudBusinessRecords(options);
     if (state.cloudSyncError) throw new Error(state.cloudSyncError);
     await refresh();
   }
@@ -3284,7 +3348,15 @@ export function createPosApp() {
     await refresh();
   }
 
-  async function replaceWithCloudShop(tenantId) {
+  // Replaces everything in this browser's POS with the shop's cloud records. It is destructive, so:
+  // the caller must pass { confirmed: true } after the owner agreed; an empty cloud shop never
+  // replaces a populated local catalogue unless { allowEmptyCatalogue: true } is also passed; and
+  // the whole rewrite is reversible - the old tables are copied first and restored if any step
+  // fails (or the page reloads mid-way), so a failed replace can never leave a wiped catalogue.
+  async function replaceWithCloudShop(tenantId, { confirmed = false, allowEmptyCatalogue = false } = {}) {
+    if (confirmed !== true) {
+      throw new Error('Replacing this browser’s POS data needs explicit confirmation. Browser data has not been changed.');
+    }
     if (!/^[a-z0-9-]{1,80}$/.test(tenantId)
       || typeof window.EshopInventoryBridge?.syncPosRecords !== 'function'
       || window.EshopInventoryBridge.activeWebsiteId?.() !== tenantId) {
@@ -3326,10 +3398,19 @@ export function createPosApp() {
       const priority = (entity) => entity === 'category' ? 0 : entity === 'product' ? 1 : 2;
       return priority(left.entity) - priority(right.entity) || Number(left.revision) - Number(right.revision);
     });
+    const incomingProducts = orderedChanges.filter((change) => change.entity === 'product' && !change.deleted).length;
+    const localProducts = Number((await rows('SELECT COUNT(*) AS count FROM pos_products'))[0]?.count || 0);
+    if (!incomingProducts && localProducts && !allowEmptyCatalogue) {
+      throw new Error(`This shop has no POS products in the cloud, so replacing would erase ${localProducts} product${localProducts === 1 ? '' : 's'} stored in this browser. Browser data has not been changed. Enable cloud sync from the phone that holds the catalogue first.`);
+    }
+    const previousScope = state.cloudScopeId;
     clearTimeout(cloudSyncTimer);
     cloudSyncInProgress = true;
     state.cloudSyncError = '';
+    let safetyCopyReady = false;
     try {
+      await createSafetyCopy(POS_SAFETY_COPY_TABLES);
+      safetyCopyReady = true;
       await transaction([
         stmt('DELETE FROM shared_inventory_event_items', []),
         stmt('DELETE FROM shared_inventory_events', []),
@@ -3365,19 +3446,33 @@ export function createPosApp() {
         [tenantId, change.entity, change.record_id, JSON.stringify(change.payload),
           change.deleted ? 1 : 0, Number(change.revision), change.changed_at || nowIso()]);
       }
+      // The new data and the removal of the safety copy commit together.
       await transaction([
         stmt("INSERT OR REPLACE INTO pos_settings (key,value) VALUES (?,?)", [`cloud_sync_cursor:${tenantId}`, String(cursor)]),
         stmt("INSERT OR REPLACE INTO pos_settings (key,value) VALUES (?,?)", [`cloud_sync_last_sync:${tenantId}`, nowIso()]),
-        stmt("DELETE FROM pos_settings WHERE key='cloud_sync_error'", [])
+        stmt("DELETE FROM pos_settings WHERE key='cloud_sync_error'", []),
+        ...safetyCopyDropStatements(POS_SAFETY_COPY_TABLES)
       ]);
+      safetyCopyReady = false;
       state.settings = await getSettings();
       await refresh();
       return { imported: orderedChanges.length };
     } catch (error) {
-      state.cloudSyncError = error instanceof Error ? error.message : 'Could not replace browser POS data from the shop.';
+      let message = error instanceof Error ? error.message : 'Could not replace browser POS data from the shop.';
+      if (safetyCopyReady) {
+        try {
+          await restoreSafetyCopy(POS_SAFETY_COPY_TABLES);
+          state.cloudScopeId = previousScope;
+          state.settings = await getSettings();
+          message += ' Your previous browser data was restored.';
+        } catch (restoreError) {
+          message += ` Your previous data is kept in a safety copy and will be restored when the POS next starts (${restoreError instanceof Error ? restoreError.message : 'restore failed'}).`;
+        }
+      }
+      state.cloudSyncError = message;
       await run("INSERT OR REPLACE INTO pos_settings (key,value) VALUES ('cloud_sync_error',?)", [state.cloudSyncError]);
       await refresh();
-      throw error;
+      throw error instanceof Error ? Object.assign(error, { message }) : new Error(message);
     } finally {
       cloudSyncInProgress = false;
       window.EshopInventoryBridge?.onPosSyncStatusChanged?.();
@@ -4220,7 +4315,9 @@ export function createPosApp() {
     element._timer = setTimeout(() => element.classList.remove('is-visible'), 2600);
   }
 
-  async function restoreInventoryFile(file) {
+  // Restoring an inventory backup overwrites the price, stock and visibility of every product it
+  // matches, so it is split into read (validate only), plan (what would change) and apply (atomic).
+  async function readInventoryBackup(file) {
     let backup;
     try {
       backup = JSON.parse(await file.text());
@@ -4243,28 +4340,111 @@ export function createPosApp() {
       && (product.image == null || (typeof product.image.mimeType === 'string' && /^image\/[A-Za-z0-9.+-]+$/.test(product.image.mimeType)
         && typeof product.image.base64 === 'string' && /^[A-Za-z0-9+/]*={0,2}$/.test(product.image.base64))));
     if (!validCategories || !validProducts) throw new Error('The backup contains invalid inventory details.');
-    const normalize = (name) => name.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
-    const categoryIds = new Map((await listCategories()).map((category) => [normalize(category.name), category.id]));
-    for (const name of [...backup.categories, ...backup.products.map((item) => item.categoryName)]) {
-      if (categoryIds.has(normalize(name))) continue;
-      await addCategory(name.trim());
-      (await listCategories()).forEach((category) => categoryIds.set(normalize(category.name), category.id));
-    }
-    let products = await listProducts();
+    return backup;
+  }
+
+  const normalizeBackupName = (name) => name.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+
+  // What a restore writes for the details a backup may not carry. A backup never blanks something the
+  // shop has now: photos are exported only when they are embedded (data:) images, so a linked
+  // https image, a cost price, a barcode or an expiry date that is missing from the backup stays as it is.
+  function restoredDetails(existing, item) {
+    return {
+      imageUri: item.image ? `data:${item.image.mimeType};base64,${item.image.base64}` : (existing?.imageUri || null),
+      buyingPrice: item.buyingPrice ?? existing?.buyingPrice ?? null,
+      barcode: item.barcode || existing?.barcode || '',
+      expiryDate: item.expiryDate || existing?.expiryDate || '',
+      lowStockThreshold: item.lowStockThreshold ?? existing?.lowStockThreshold ?? 3
+    };
+  }
+
+  // Human-readable list of everything a restore would change on an existing product.
+  function restoreChanges(existing, item) {
+    const next = restoredDetails(existing, item);
+    const changes = [];
+    if ((existing.stock ?? null) !== (item.stock ?? null)) changes.push('stock');
+    if (Number(existing.price) !== Number(item.price)) changes.push('price');
+    if (Boolean(existing.active) !== (item.active !== false)) changes.push('visibility');
+    if ((existing.imageUri || null) !== next.imageUri) changes.push('photo');
+    if ((existing.buyingPrice ?? null) !== next.buyingPrice) changes.push('buying price');
+    if ((existing.barcode || '') !== next.barcode) changes.push('barcode');
+    if ((existing.expiryDate || '') !== next.expiryDate) changes.push('expiry date');
+    if (Number(existing.lowStockThreshold ?? 3) !== Number(next.lowStockThreshold)) changes.push('reorder level');
+    return changes;
+  }
+
+  async function planInventoryRestore(backup) {
+    const categoryIds = new Map((await listCategories()).map((category) => [normalizeBackupName(category.name), category.id]));
+    const products = await listProducts();
+    const created = [];
+    const overwritten = [];
     for (const item of backup.products) {
-      const categoryId = categoryIds.get(normalize(item.categoryName));
-      if (!categoryId) throw new Error(`Could not restore category "${item.categoryName}".`);
+      const categoryId = categoryIds.get(normalizeBackupName(item.categoryName));
       const existing = products.find((product) => item.sku
         ? product.sku === item.sku
-        : product.categoryId === categoryId && normalize(product.name) === normalize(item.name));
-      const imageUri = item.image ? `data:${item.image.mimeType};base64,${item.image.base64}` : null;
-      await saveProduct({
-        id: existing?.id || 0, name: item.name.trim(), categoryId, price: item.price,
-        buyingPrice: item.buyingPrice, stock: item.stock, sku: item.sku || existing?.sku || '',
-        barcode: item.barcode ?? existing?.barcode ?? '', expiryDate: item.expiryDate ?? existing?.expiryDate ?? '', imageUri,
-        lowStockThreshold: item.lowStockThreshold ?? existing?.lowStockThreshold ?? 3, active: item.active !== false
-      });
-      products = await listProducts();
+        : categoryId !== undefined && product.categoryId === categoryId && normalizeBackupName(product.name) === normalizeBackupName(item.name));
+      if (!existing) {
+        created.push(item);
+        continue;
+      }
+      const changes = restoreChanges(existing, item);
+      if (changes.length) overwritten.push({ item, existing, changes, stockChanged: changes.includes('stock') });
+    }
+    const overwrittenFields = [...new Set(overwritten.flatMap((entry) => entry.changes))];
+    const date = backup.createdAt ? String(backup.createdAt).slice(0, 10) : 'an unknown date';
+    const stockChanges = overwritten.filter((entry) => entry.stockChanged);
+    const lines = stockChanges.slice(0, 5)
+      .map((entry) => `• ${entry.existing.name}: stock ${entry.existing.stock ?? 'not tracked'} → ${entry.item.stock ?? 'not tracked'}`);
+    const message = `Restore ${backup.products.length} product${backup.products.length === 1 ? '' : 's'} from the backup made on ${date}?\n\n`
+      + `${created.length} new product${created.length === 1 ? '' : 's'} will be added. `
+      + `${overwritten.length} existing product${overwritten.length === 1 ? '' : 's'} will be overwritten with the backup’s ${overwrittenFields.length ? overwrittenFields.join(', ') : 'price, stock and visibility'}`
+      + `${overwritten.length ? ', which may be older than what you have now' : ''}.`
+      + `${lines.length ? `\n\n${lines.join('\n')}${stockChanges.length > lines.length ? '\n• …' : ''}` : ''}`
+      + '\n\nProducts that are not in the backup are kept. The restore is all-or-nothing: if anything fails, nothing is changed.';
+    return { created, overwritten, message };
+  }
+
+  async function applyInventoryRestore(backup) {
+    const tables = ['pos_categories', 'pos_products'];
+    await createSafetyCopy(tables);
+    let restoredIds;
+    try {
+      const categoryIds = new Map((await listCategories()).map((category) => [normalizeBackupName(category.name), category.id]));
+      for (const name of [...backup.categories, ...backup.products.map((item) => item.categoryName)]) {
+        if (categoryIds.has(normalizeBackupName(name))) continue;
+        await addCategory(name.trim());
+        (await listCategories()).forEach((category) => categoryIds.set(normalizeBackupName(category.name), category.id));
+      }
+      let products = await listProducts();
+      restoredIds = [];
+      for (const item of backup.products) {
+        const categoryId = categoryIds.get(normalizeBackupName(item.categoryName));
+        if (!categoryId) throw new Error(`Could not restore category "${item.categoryName}".`);
+        const existing = products.find((product) => item.sku
+          ? product.sku === item.sku
+          : product.categoryId === categoryId && normalizeBackupName(product.name) === normalizeBackupName(item.name));
+        const details = restoredDetails(existing, item);
+        restoredIds.push(await saveProduct({
+          id: existing?.id || 0, name: item.name.trim(), categoryId, price: item.price,
+          buyingPrice: details.buyingPrice, stock: item.stock, sku: item.sku || existing?.sku || '',
+          barcode: details.barcode, expiryDate: details.expiryDate, imageUri: details.imageUri,
+          lowStockThreshold: details.lowStockThreshold, active: item.active !== false
+        }));
+        products = await listProducts();
+      }
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'The restore failed.';
+      try {
+        await restoreSafetyCopy(tables);
+      } catch {
+        throw new Error(`${reason} Your previous catalogue is kept in a safety copy and will be restored when the POS next starts.`);
+      }
+      throw new Error(`${reason} Nothing was changed.`);
+    }
+    await dropSafetyCopy(tables);
+    const restored = new Set(restoredIds);
+    for (const product of (await listProducts()).filter((entry) => restored.has(entry.id))) {
+      await queueProduct(product);
     }
     return backup.products.length;
   }
@@ -4377,9 +4557,18 @@ export function createPosApp() {
     const input = event.target.closest('[data-pos-import], [data-pos-csv-import]');
     if (!input || !input.files?.[0]) return;
     try {
-      const count = input.matches('[data-pos-csv-import]')
-        ? await importInventoryCsv(input.files[0])
-        : await restoreInventoryFile(input.files[0]);
+      let count;
+      if (input.matches('[data-pos-csv-import]')) {
+        count = await importInventoryCsv(input.files[0]);
+      } else {
+        const backup = await readInventoryBackup(input.files[0]);
+        const plan = await planInventoryRestore(backup);
+        if (!confirm(plan.message)) {
+          toast('Restore cancelled. Nothing was changed.');
+          return;
+        }
+        count = await applyInventoryRestore(backup);
+      }
       if (count) {
         toast(`${count} product${count === 1 ? '' : 's'} imported.`);
         await refresh();
@@ -5508,7 +5697,13 @@ export function createPosApp() {
         await stopNearbySync();
         await refresh();
       } else if (action === 'sync-cloud-now') {
-        await syncCloudBusinessRecords();
+        try {
+          await syncCloudBusinessRecords();
+        } catch (error) {
+          if (error?.code !== 'MASS_DELETE') throw error;
+          if (!confirm(`${error.message}\n\nApply those deletions on this device?`)) return;
+          await syncCloudBusinessRecords({ allowMassDelete: true });
+        }
         if (state.cloudSyncError) toast(`Cloud save and sync failed: ${state.cloudSyncError}`, true);
         else toast('Cloud save and sync complete.');
         await refresh();

@@ -356,14 +356,14 @@ test("Litrus shop rename accepts indented Roles5 storefront exports", async () =
 
 test("Litrus catalog saves and restores every product category", async () => {
   const app = await read("../index.html");
-  const method = app.match(/async saveLitrusMixerCatalog\(input, isDraftEditor\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  openCloudflarePublishModal/)?.[1];
+  const method = app.match(/async saveLitrusMixerCatalog\(input, isDraftEditor, expectedTenantId\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  openCloudflarePublishModal/)?.[1];
   const designSave = app.match(/const saveLitrusDesign = payload => \{([\s\S]*?)\r?\n        \};/)?.[1];
   assert.ok(method);
   assert.ok(designSave);
   assert.match(designSave, /await this\.saveLitrusMixerCatalog[\s\S]*?await window\.ShopSQLite\.flush\(\)/);
   let savedCatalog;
   let flushCount = 0;
-  const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor) {${method}\n};`)(
+  const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor, expectedTenantId) {${method}\n};`)(
     {},
     { ShopSQLite: { async flush() { flushCount += 1; } } }
   );
@@ -404,7 +404,7 @@ test("Litrus catalog saves and restores every product category", async () => {
 test("Litrus catalog round-trips service settings and booking details", async () => {
   const app = await read("../index.html");
   const mixer = await read("../public/litrus-mixer/index.html");
-  const method = app.match(/async saveLitrusMixerCatalog\(input, isDraftEditor\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  openCloudflarePublishModal/)?.[1];
+  const method = app.match(/async saveLitrusMixerCatalog\(input, isDraftEditor, expectedTenantId\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  openCloudflarePublishModal/)?.[1];
   const sendCatalog = app.match(/const sendCatalog = \(\) => \{([\s\S]*?)\r?\n        \};/)?.[1];
   const hydrateCatalog = mixer.match(/window\.litrusSetCraftCatalog=function\(payload\)\{([\s\S]*?)\r?\n\};/)?.[1];
   const payloadBuilder = mixer.match(/window\.litrusGetCraftPublishPayload=function\(\)\{([\s\S]*?)\r?\n\};/)?.[1];
@@ -420,7 +420,7 @@ test("Litrus catalog round-trips service settings and booking details", async ()
   assert.match(payloadBuilder, /offer_type:SHOP\.offerType/);
 
   let savedCatalog;
-  const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor) {${method}\n};`)(
+  const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor, expectedTenantId) {${method}\n};`)(
     {},
     { ShopSQLite: { async flush() {} } }
   );
@@ -489,7 +489,7 @@ test("Craft Litrus reload restores saved design without overwriting it on hydrat
   assert.ok(recipeBuilder);
   assert.ok(payloadBuilder);
   assert.match(designSave, /setWorkspaceSetting\(litrusRecipeKey, payload\.recipe\)/);
-  assert.match(app, /const litrusScope = isDraftEditor \? `draft:\$\{draftId \|\| "new"\}` : `tenant:\$\{this\.getActiveTenant\(\)\.id\}`/);
+  assert.match(app, /const openedTenantId = this\.getActiveTenant\(\)\.id;\s*const litrusScope = isDraftEditor \? `draft:\$\{draftId \|\| "new"\}` : `tenant:\$\{openedTenantId\}`/);
   assert.match(app, /getWorkspaceSetting\(litrusRecipeKey, null\)/);
   assert.match(app, /liquid-html-theme-draft:litrus-mixer:tenant:\$\{tenant\.id\}/);
   assert.match(app, /litrus-mixer-recipe:tenant:\$\{result\.tenant\.id\}/);

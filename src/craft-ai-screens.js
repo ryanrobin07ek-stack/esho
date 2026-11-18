@@ -30,7 +30,7 @@ export const CRAFT_AI_SCREEN_DIRECTORY = [
     id: "web-studio",
     title: "Build Your Web",
     route: "/account/web",
-    purpose: "Manage website products, store details, pages, analytics, customers, and payments."
+    purpose: "Manage website products, store details, analytics, customers, and payments."
   },
   {
     id: "web-products",
@@ -44,7 +44,7 @@ export const CRAFT_AI_SCREEN_DIRECTORY = [
     title: "Web Studio overview",
     route: "/account/web/studio/dashboard/overview",
     purpose: "Website revenue, customer visits, awaiting payments, storefront visit history, and products gaining momentum.",
-    overviewLabels: ["Gross web revenue", "Customer visits", "Awaiting payments", "Storefront visit history", "What’s moving"]
+    overviewLabels: ["Paid web revenue", "Customer visits", "Awaiting payments", "Storefront visit history", "What’s moving"]
   },
   {
     id: "web-visits",
@@ -131,10 +131,10 @@ export const CRAFT_AI_SCREEN_DIRECTORY = [
     purpose: "Start building a new website."
   },
   {
-    id: "theme-studio",
-    title: "Theme Studio",
+    id: "website-editor",
+    title: "Website editor",
     route: "/account/web/studio/websites/editor",
-    purpose: "Edit and save the storefront theme and page sections."
+    purpose: "Open Litrus Mixer, the website editor, to design the storefront's sections, products, colours and publishing."
   },
   {
     id: "web-payments",
@@ -147,12 +147,6 @@ export const CRAFT_AI_SCREEN_DIRECTORY = [
     title: "Web Store details",
     route: "/account/web/store",
     purpose: "Edit store details and publish the storefront."
-  },
-  {
-    id: "website-pages",
-    title: "Website Pages",
-    route: "/account/web/pages",
-    purpose: "Create and edit named pages for the website."
   },
   {
     id: "inventory",
@@ -201,7 +195,7 @@ export const CRAFT_AI_SCREEN_DIRECTORY = [
     title: "POS overview",
     route: "/pos/overview",
     purpose: "Review POS sales, revenue, profit estimates, stock, payments, and reports.",
-    overviewLabels: ["Summary", "Revenue", "Profit", "Products", "Stock", "Payments", "Reports", "Sales recorded", "Operating profit", "Credit", "Recent revenue", "Period comparison", "Quick insights", "Monthly net-sales goal"]
+    overviewLabels: ["Summary", "Revenue", "Profit", "Products", "Stock", "Payments", "Reports", "Sales recorded", "Net sales", "Operating profit", "Credit", "Recent net sales", "Period comparison", "Quick insights", "Monthly net-sales goal"]
   },
   {
     id: "pos-products",
