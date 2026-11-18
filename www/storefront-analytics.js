@@ -4,7 +4,12 @@
   if (window.__ESHOP_STOREFRONT_EVENT_RUNTIME__) return;
   window.__ESHOP_STOREFRONT_EVENT_RUNTIME__ = true;
 
-  const allowedTypes = new Set(["view", "wishlist_add", "cart_add"]);
+  // Original event names the Worker has always accepted.
+  const legacyTypes = new Set(["view", "wishlist_add", "cart_add"]);
+  // Funnel events. A Worker that has not been updated to accept them answers 400,
+  // so they are sent in their own batches and dropped (never retried forever) on rejection.
+  const funnelTypes = new Set(["checkout_start", "purchase", "booking_submitted"]);
+  const allowedTypes = new Set([...legacyTypes, ...funnelTypes]);
   const params = new URLSearchParams(location.search);
   const tenantKey = params.get("tenant") || location.hostname;
   const storageKey = `eshop:storefront-events:v1:${tenantKey}`;
@@ -86,8 +91,13 @@
     try {
       const batches = [];
       const items = [...pending.values()];
-      for (let index = 0; index < items.length; index += 50) {
-        batches.push(items.slice(index, index + 50));
+      for (const group of [
+        items.filter(item => legacyTypes.has(item.type)),
+        items.filter(item => funnelTypes.has(item.type))
+      ]) {
+        for (let index = 0; index < group.length; index += 50) {
+          batches.push(group.slice(index, index + 50));
+        }
       }
       for (const batch of batches) {
         const body = JSON.stringify({ items: batch });
@@ -102,7 +112,15 @@
           body,
           keepalive: true
         });
-        if (!response.ok) throw new Error(`Analytics batch failed (${response.status}).`);
+        if (!response.ok) {
+          // The same payload will be rejected every time, so drop it instead of blocking the queue.
+          if ([400, 413, 422].includes(response.status)) {
+            console.warn(`Storefront analytics batch was rejected (${response.status}) and was dropped.`);
+            removeSent(batch);
+            continue;
+          }
+          throw new Error(`Analytics batch failed (${response.status}).`);
+        }
         removeSent(batch);
       }
     } catch (error) {

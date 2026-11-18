@@ -117,8 +117,13 @@ async function checkProducts(page, label, key) {
       const values = [luminance(foreground), luminance(background)].sort((a, b) => b - a);
       return (values[0] + 0.05) / (values[1] + 0.05) < 4.5;
     }).length;
+    // A generated shop must never show invented social proof or trust claims (owner-entered
+    // testimonials are the only allowed source, and the default sample has none).
+    const claimPattern = /\u2605|\bfree returns\b|\beasy returns\b|\b\d[\d,.]*\+?\s+(?:reviews|happy customers|orders)\b|\bverified (?:buyer|review)\b|\bsarah johnson\b/i;
+    const unverifiedClaims = (store.textContent.match(new RegExp(claimPattern.source, 'gi')) || []).slice(0, 5);
     return {
-      products, categories: categories.size, visibleCategories: visibleCategories.size, contrastFailures
+      products, categories: categories.size, visibleCategories: visibleCategories.size, contrastFailures,
+      unverifiedClaims
     };
     });
   };
@@ -132,6 +137,9 @@ async function checkProducts(page, label, key) {
   tested.categoryVisibilityChecks += 2;
   await page.locator('[data-preview-device="fit"]').click();
   tested[key] += 1;
+  if (desktop.unverifiedClaims.length || tablet.unverifiedClaims.length) {
+    failures.push(`${label}: preview shows invented reviews or trust claims: ${[...desktop.unverifiedClaims, ...tablet.unverifiedClaims].join(', ')}`);
+  }
   if (!desktop.products) failures.push(`${label} (desktop): all product cards are hidden`);
   if (!tablet.products) failures.push(`${label} (tablet): all product cards are hidden`);
   if (desktop.categories < 4 || desktop.visibleCategories < desktop.categories) {

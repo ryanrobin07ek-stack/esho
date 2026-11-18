@@ -1130,7 +1130,7 @@ test("storefront analytics sends funnel events separately and drops batches the 
 // ---------------------------------------------------------------------------
 // Service booking customer path
 // ---------------------------------------------------------------------------
-function mountServiceBooking({ handler, deposit = 0, shop = {} } = {}) {
+function mountServiceBooking({ handler, deposit = 0, shop = {}, beforeStart = null } = {}) {
   const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/", runScripts: "outside-only" });
   const { window } = dom;
   const requests = [];
@@ -1163,6 +1163,7 @@ function mountServiceBooking({ handler, deposit = 0, shop = {} } = {}) {
     options.after(window.document.getElementById("store"), "p/42");
     return {};
   };
+  if (beforeStart) beforeStart(window);
   window.eval(runtime);
   window.litrusStartLiveStore(window.SPD);
   events.length = 0; // the page view from rendering the service page is not part of these checks
@@ -1548,6 +1549,215 @@ test("Litrus published product cards lazy-load images and name their add buttons
     assert.equal(image.getAttribute("loading"), "lazy");
     assert.equal(image.getAttribute("decoding"), "async");
     assert.equal(page.querySelector("button").getAttribute("aria-label"), "Add to bag: Canvas Tote");
+  } finally {
+    dom.window.close();
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Request keys, duplicate-order guards and honest generated copy
+// ---------------------------------------------------------------------------
+const UUID_V4 = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+const plainSneaker = { id: 42, name: "City Sneaker", price: 2500, images: [], stock: 9 };
+
+test("Litrus checkout builds a valid order key in browsers without crypto.randomUUID", async () => {
+  const harness = mountCheckout({
+    cart: [{ id: "42", q: 1 }],
+    products: [plainSneaker],
+    handler: () => orderResponse({ order: { subtotal: 2500, total: 2500 } })
+  });
+  try {
+    Object.defineProperty(harness.window.crypto, "randomUUID", { configurable: true, value: undefined });
+    await harness.submit();
+    assert.equal(harness.requests.length, 1, "the order must still be sent");
+    assert.match(harness.requests[0].body.idempotency_key, UUID_V4);
+    assert.match(harness.root.textContent, /ORD-0123456789ABCDEF/);
+  } finally {
+    harness.window.close();
+  }
+
+  // Without any secure random source the customer is told, rather than the page failing silently.
+  const unsupported = mountCheckout({ cart: [{ id: "42", q: 1 }], products: [plainSneaker], handler: () => orderResponse() });
+  try {
+    Object.defineProperty(unsupported.window, "crypto", { configurable: true, value: {} });
+    await unsupported.submit();
+    assert.equal(unsupported.requests.length, 0);
+    assert.match(unsupported.form.querySelector(".sp-err").textContent, /Secure requests are not supported/);
+  } finally {
+    unsupported.window.close();
+  }
+});
+
+test("Litrus checkout retries a code the shop did not apply without creating a second order", async () => {
+  const harness = mountCheckout({
+    cart: [{ id: "42", q: 1 }],
+    products: [plainSneaker],
+    handler: () => orderResponse({ order: { subtotal: 2500, total: 2500 } })
+  });
+  try {
+    const field = harness.form.elements.namedItem("discount_code");
+    field.value = "NOPE10";
+    await harness.submit();
+    assert.equal(harness.requests.length, 1);
+    assert.match(harness.form.querySelector(".sp-err").textContent, /could not be applied/);
+
+    field.value = "";
+    await harness.submit();
+    assert.equal(harness.requests.length, 2);
+    assert.equal(harness.requests[1].body.idempotency_key, harness.requests[0].body.idempotency_key,
+      "the same key lets the Worker return the order it already saved");
+    assert.ok(!("discount_code" in harness.requests[1].body));
+    assert.match(harness.root.textContent, /ORD-0123456789ABCDEF/);
+  } finally {
+    harness.window.close();
+  }
+
+  // A different code is a different request and must get a new key.
+  const changed = mountCheckout({
+    cart: [{ id: "42", q: 1 }],
+    products: [plainSneaker],
+    handler: () => orderResponse({ order: { subtotal: 2500, total: 2500 } })
+  });
+  try {
+    const field = changed.form.elements.namedItem("discount_code");
+    field.value = "FIRST10";
+    await changed.submit();
+    field.value = "SECOND10";
+    await changed.submit();
+    assert.notEqual(changed.requests[1].body.idempotency_key, changed.requests[0].body.idempotency_key);
+    assert.equal(changed.requests[1].body.discount_code, "SECOND10");
+  } finally {
+    changed.window.close();
+  }
+});
+
+test("Litrus product reservations reuse one key until the shop confirms them, without crypto.randomUUID", async () => {
+  const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/", runScripts: "outside-only" });
+  const { window } = dom;
+  const requests = [];
+  let failNext = true;
+  window.__ESHOP_THEME_CATALOG__ = {
+    categories: [], store: { name: "Example", currency: "KES" },
+    products: [{ id: 42, name: "City Sneaker", price: 2500, images: [], stock: 4, booking_enabled: true }]
+  };
+  window.fetch = async (url, options) => {
+    requests.push(JSON.parse(options.body));
+    if (failNext) {
+      failNext = false;
+      throw new TypeError("Failed to fetch");
+    }
+    return response(201, { hold: { id: HOLD_ID, product_id: "42", quantity: 1, expires_at: "2030-01-01T12:00:00.000Z" } });
+  };
+  window.SPD = {
+    shop: { key: "example", products: [] },
+    pages: {
+      home: '<main class="sp-main"><section class="prods"></section></main>',
+      shop: '<main class="sp-main"><section class="prods"></section></main>',
+      "p/template": '<main class="sp-main"><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p><div class="sp-buy"></div></div></div></main>'
+    },
+    shell: { head: "", foot: "", tail: "" },
+    templates: { productCard: '<article data-pid=""></article>' }
+  };
+  window.SPRT = options => {
+    window.document.getElementById("store").innerHTML = options.page("p/42");
+    return {};
+  };
+  Object.defineProperty(window.crypto, "randomUUID", { configurable: true, value: undefined });
+  try {
+    window.eval(runtime);
+    window.litrusStartLiveStore(window.SPD);
+    const form = window.document.querySelector("[data-litrus-product-hold-form]");
+    const submit = async () => {
+      form.elements.quantity.value = "1";
+      form.elements.customer_name.value = "Sam Shop";
+      form.elements.contact.value = "sam@example.test";
+      form.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+      await pause(5);
+    };
+    await submit();
+    assert.match(form.querySelector(".sp-hold-status").textContent, /Failed to fetch|Could not/);
+    await submit();
+    assert.equal(requests.length, 2);
+    assert.match(requests[0].idempotency_key, UUID_V4);
+    assert.equal(requests[1].idempotency_key, requests[0].idempotency_key,
+      "a retry after a dropped connection must not reserve the stock twice");
+    assert.match(form.querySelector(".sp-hold-status").textContent, /Held 1 City Sneaker/);
+    await submit();
+    assert.notEqual(requests[2].idempotency_key, requests[0].idempotency_key,
+      "a new reservation after a confirmed one gets its own key");
+  } finally {
+    window.close();
+  }
+});
+
+test("Litrus service booking list stops promising a confirmation once a request is a day old", () => {
+  const future = new Date(Date.now() + 5 * 86_400_000).toISOString();
+  const booking = mountServiceBooking({
+    handler: () => response(200, {}),
+    beforeStart: window => window.localStorage.setItem("eshop-appointments:shop.example", JSON.stringify([
+      { id: "fresh-1", reference: "FRESH001", service_name: "Massage", starts_at: future, timezone: "Africa/Nairobi", requested_at: new Date(Date.now() - 3_600_000).toISOString() },
+      { id: "old-1", reference: "OLD00002", service_name: "Facial", starts_at: future, timezone: "Africa/Nairobi", requested_at: new Date(Date.now() - 30 * 3_600_000).toISOString() }
+    ]))
+  });
+  try {
+    const items = [...booking.form.parentNode.querySelectorAll("[data-litrus-service-requests] li")].map(item => item.textContent);
+    assert.equal(items.length, 2);
+    const fresh = items.find(text => /FRESH001/.test(text));
+    const old = items.find(text => /OLD00002/.test(text));
+    assert.match(fresh, /Waiting for the shop to confirm/);
+    assert.match(old, /Requested over a day ago: contact the shop if you have not heard back/);
+    assert.doesNotMatch(old, /Waiting for the shop to confirm/);
+  } finally {
+    booking.window.close();
+  }
+});
+
+test("Litrus generated pages never invent delivery, returns, payment or item-count claims", () => {
+  for (const invented of [
+    "Delivery is free.",
+    "We deliver to your door and you can also pick up your order.",
+    "we will put it right",
+    "You can pay with mobile money, cash on delivery or pickup, or by a payment link we send you.",
+    "e.textContent='24 items'"
+  ]) {
+    assert.ok(!editor.includes(invented), `the builder must not publish "${invented}"`);
+  }
+  // Category tiles that show a count use the real number of products in that category.
+  assert.match(editor, /total=shopProds\(\)\.filter\(x=>\(x\[5\]\|\|\[\]\)\.includes\(categoryName\)\)\.length/);
+  // Coarse pointers (phones) get 44px targets for the header navigation and the bag button.
+  assert.match(editor, /@media\(pointer:coarse\)\{\.sp-nav a,\.sp-cartbtn\{min-height:44px/);
+});
+
+test("Litrus product page loads its main photo first and keeps thumbnails lazy and sized", () => {
+  const dom = new JSDOM("", { url: "https://shop.example/", runScripts: "outside-only" });
+  const data = {
+    shop: { key: "example", products: [] },
+    pages: {
+      home: '<main class="sp-main"><section class="prods"></section></main>',
+      shop: '<main class="sp-main"><section class="prods"></section></main>',
+      "p/template": '<main class="sp-main"><div class="sp-top"><h1></h1></div><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p><div class="sp-buy"><button data-act="addqty">Add to bag</button></div></div></div></main>'
+    },
+    shell: { head: "", foot: "", tail: "" },
+    templates: { productCard: '<article data-pid=""></article>' }
+  };
+  try {
+    dom.window.eval(runtime);
+    dom.window.litrusRefreshPublishedCatalog(data, {
+      categories: [], store: { name: "Example", currency: "KES" },
+      products: [{ id: 7, name: "Canvas Tote", price: 900, images: ["/tote.jpg", "/tote-side.jpg"] }]
+    });
+    const detail = new dom.window.DOMParser().parseFromString(data.pages["p/7"], "text/html");
+    const main = detail.querySelector(".sp-gallery > img");
+    assert.equal(main.getAttribute("fetchpriority"), "high");
+    assert.notEqual(main.getAttribute("loading"), "lazy", "the main photo is never lazy-loaded");
+    const thumbnails = [...detail.querySelectorAll(".sp-gallery-thumbs img")];
+    assert.equal(thumbnails.length, 2);
+    for (const thumbnail of thumbnails) {
+      assert.equal(thumbnail.getAttribute("loading"), "lazy");
+      assert.equal(thumbnail.getAttribute("width"), "64");
+      assert.equal(thumbnail.getAttribute("height"), "64");
+      assert.equal(thumbnail.hasAttribute("fetchpriority"), false);
+    }
   } finally {
     dom.window.close();
   }

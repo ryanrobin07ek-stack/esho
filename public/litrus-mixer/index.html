@@ -1824,6 +1824,7 @@ body.adv #advSide{display:block;position:sticky;top:0;height:100vh;overflow:auto
 .sp-logo{font-family:var(--font-ov,var(--font-head,inherit));font-weight:700;font-size:1.45rem;text-decoration:none;margin-right:auto;cursor:pointer;letter-spacing:var(--head-spacing,0)}
 .sp-nav{display:flex;gap:6px 22px;flex-wrap:wrap;font-size:.93rem}
 .sp-nav a,.sp-cartbtn{text-decoration:none;opacity:.78;cursor:pointer;transition:opacity .2s}
+@media(pointer:coarse){.sp-nav a,.sp-cartbtn{min-height:44px;display:inline-flex;align-items:center}}
 .sp-nav a:hover,.sp-cartbtn:hover{opacity:1}
 .sp-cartbtn{font-weight:600;opacity:1;display:inline-flex;gap:8px;align-items:center}
 .sp-cartbtn b,.sp-float b{background:var(--sp-btn);color:var(--sp-btnt);border-radius:99px;min-width:20px;height:20px;padding:0 6px;font-size:.72rem;display:inline-flex;align-items:center;justify-content:center}
@@ -4507,7 +4508,8 @@ function realPart(kind,id,fallback,name){
   const C=SHOP.cats.concat(SHOP.cats);let c=0;
   box.querySelectorAll('[class*=card]').forEach(card=>{
    const lv=leaves(card);let first=true;
-   lv.forEach(e=>{if(first){e.textContent=C[c%C.length];first=false}else e.textContent='24 items'});c++;
+   const categoryName=C[c%C.length],total=shopProds().filter(x=>(x[5]||[]).includes(categoryName)).length;
+   lv.forEach(e=>{if(first){e.textContent=categoryName;first=false}else e.textContent=total+(total==1?' item':' items')});c++;
   });
   box.querySelectorAll('h2').forEach(e=>{e.innerHTML='Shop by<br>category'});
   box.querySelectorAll('p[class*=sub]').forEach(e=>e.textContent=SHOP.tagline);
@@ -4721,7 +4723,7 @@ function infoBody(k){
   const rows=[];if(d.wa)rows.push('<li><b>WhatsApp</b><a href="#" data-act="contactsend" class="sp-inlink">Message us</a></li>');if(ph)rows.push('<li><b>Phone</b>'+ph+'</li>');if(em)rows.push('<li><b>Email</b>'+em+'</li>');if(SHOP.addr)rows.push('<li><b>Find us</b>'+escH(SHOP.addr)+'</li>');
   return topHTML('Contact us','Send the shop a message or use the details below.')+'<div class="sp-wrap sp-cogrid"><div class="sp-prose">'+(rows.length?'<ul class="sp-contact">'+rows.join('')+'</ul>':'<p>Add your phone, email or WhatsApp number in the shop details and they will show here.</p>')+'</div><div class="sp-form"><h2>Send us a message</h2><label>Your name<input name="cn" autocomplete="name"></label><label>Message<textarea name="cm" rows="4"></textarea></label><button type="button" class="sp-btn" data-act="contactsend">Send message</button></div></div>';
  }
- if(k=='delivery')return topHTML('Delivery & returns')+body('<h2>Delivery</h2><p>We deliver to your door and you can also pick up your order.</p><ul><li>'+(d.fee>0?'Delivery fee: <b>'+cur+d.fee.toLocaleString('en-US')+'</b>.':'Delivery is free.')+'</li>'+(d.free>0?'<li>Orders over <b>'+cur+d.free.toLocaleString('en-US')+'</b> get free delivery.</li>':'')+'<li>We confirm every order by message before we send it.</li>'+(SHOP.addr?'<li>Pick up from: '+escH(SHOP.addr)+'.</li>':'')+'</ul><h2>Returns</h2><p>If something arrives damaged or is not what you ordered, message us as soon as you can with your order number and a photo, and we will put it right.</p><h2>Payment</h2><p>You can pay with mobile money, cash on delivery or pickup, or by a payment link we send you.</p>');
+ if(k=='delivery')return topHTML('Delivery & returns')+body('<h2>Delivery</h2><ul><li>'+(d.fee>0?'Delivery fee: <b>'+cur+d.fee.toLocaleString('en-US')+'</b>.':'Delivery details are agreed with the shop when you order.')+'</li>'+(d.free>0?'<li>Orders over <b>'+cur+d.free.toLocaleString('en-US')+'</b> get free delivery.</li>':'')+'<li>We confirm every order by message before we send it.</li>'+(SHOP.addr?'<li>Pick up from: '+escH(SHOP.addr)+'.</li>':'')+'</ul><h2>Problems with an order</h2><p>If something arrives damaged or is not what you ordered, message us as soon as you can with your order number and a photo.</p><h2>Payment</h2><p>The payment options available are shown at checkout.</p>');
  if(k=='privacy')return topHTML('Privacy policy')+body('<p>This page explains what '+n+' does with your information.</p><h2>What we collect</h2><p>Only what you give us when you order or write to us: your name, phone number, delivery address and, if you choose, your email.</p><h2>How we use it</h2><p>To prepare, deliver and confirm your order and to answer your messages. Your cart is saved on your own device so it is there when you come back. We do not collect card details on this website.</p><h2>Sharing</h2><p>We do not sell your information. We only share what a delivery needs.</p><h2>Your choices</h2><p>You can ask us to delete your details at any time'+(em||ph?' by contacting us at '+(em||ph):'')+'.</p>');
  if(k=='terms')return topHTML('Terms of service')+body('<p>By ordering from '+n+' you agree to these terms.</p><h2>Orders</h2><p>An order is confirmed only when we message you to confirm it. We may contact you if an item is out of stock.</p><h2>Prices</h2><p>Prices are shown in '+escH(SHOP.cur||'the shop currency')+' and may change without notice. The price you see when we confirm your order is the price you pay.</p><h2>Delivery and returns</h2><p>Please read our <a href="#" data-go="page/delivery">delivery and returns</a> page.</p><h2>Contact</h2><p>Questions? <a href="#" data-go="page/contact">Contact us</a>.</p>');
  return null;

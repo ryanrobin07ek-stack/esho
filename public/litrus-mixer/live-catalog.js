@@ -354,6 +354,9 @@
           const image = document.createElement("img");
           image.src = productImages[0];
           image.alt = product.name;
+          // The main photo is the largest thing on the page: load it first and never lazily.
+          image.setAttribute("fetchpriority", "high");
+          image.setAttribute("decoding", "async");
           if (product.media_type === "cutout") image.className = "sp-cutout";
           gallery.append(image);
         }
@@ -844,6 +847,7 @@
     return String(appointment?.id || "").replace(/[^a-z0-9]/gi, "").slice(0, 8).toUpperCase();
   }
 
+  const SERVICE_REQUEST_WAIT_MS = 24 * 60 * 60 * 1000;
   const serviceRequestsKey = () => `eshop-appointments:${location.host}`;
   const SERVICE_PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{6,22}$/;
   const SERVICE_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -905,7 +909,11 @@
     const list = document.createElement("ul");
     requests.slice().reverse().forEach(request => {
       const item = document.createElement("li");
-      item.textContent = `${request.service_name || "Service"} · ${formatServiceTime(request.starts_at, request.timezone || data.shop.serviceTimezone)} · Reference ${request.reference || serviceReference(request)} · Waiting for the shop to confirm`;
+      // The shop only sees a request for a limited time. After a day the page cannot tell whether it
+      // was confirmed, so it points the customer to the shop instead of promising a confirmation.
+      const requestedAt = Date.parse(request.requested_at);
+      const stale = Number.isFinite(requestedAt) && Date.now() - requestedAt > SERVICE_REQUEST_WAIT_MS;
+      item.textContent = `${request.service_name || "Service"} · ${formatServiceTime(request.starts_at, request.timezone || data.shop.serviceTimezone)} · Reference ${request.reference || serviceReference(request)} · ${stale ? "Requested over a day ago: contact the shop if you have not heard back" : "Waiting for the shop to confirm"}`;
       list.append(item);
     });
     section.append(heading, list);
@@ -924,11 +932,13 @@
     slots.append(empty);
   }
 
-  function serviceAppointmentRequestKey() {
+  // Older Android WebViews and non-secure pages have no crypto.randomUUID, so every request key
+  // (booking, order, reservation) is built the same way and falls back to getRandomValues.
+  function newRequestKey() {
     const cryptoApi = global.crypto;
     if (typeof cryptoApi?.randomUUID === "function") return cryptoApi.randomUUID();
     if (typeof cryptoApi?.getRandomValues !== "function") {
-      throw new Error("Secure booking requests are not supported by this browser. Update your browser or contact the shop.");
+      throw new Error("Secure requests are not supported by this browser. Update your browser or contact the shop.");
     }
     const bytes = cryptoApi.getRandomValues(new Uint8Array(16));
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
@@ -1113,7 +1123,7 @@
       const signature = JSON.stringify(payload);
       if (form.dataset.requestSignature !== signature || !form.dataset.idempotencyKey) {
         form.dataset.requestSignature = signature;
-        form.dataset.idempotencyKey = serviceAppointmentRequestKey();
+        form.dataset.idempotencyKey = newRequestKey();
       }
       const result = await postStorefrontJson("/api/service-appointments", {
         idempotency_key: form.dataset.idempotencyKey,
@@ -1441,10 +1451,21 @@
     }
     const holdIds = matchingHoldIds(data, new Set(lines.map(line => canonicalProductId(data, line.id) || String(line.id))), customer);
     if (error) error.textContent = "";
-    const signature = JSON.stringify({ items, customer, delivery, discountCode, holdIds });
-    if (form.dataset.cartSignature !== signature || !form.dataset.idempotencyKey) {
+    let requestKey;
+    try {
+      requestKey = newRequestKey();
+    } catch (caught) {
+      if (error) error.textContent = caught instanceof Error ? caught.message : "Your order could not be sent.";
+      return;
+    }
+    // The key follows what is being bought. Clearing a code the shop could not apply keeps the key,
+    // so the retry returns the order already saved instead of creating a second full-price order.
+    const signature = JSON.stringify({ items, customer, delivery, holdIds });
+    const codeChanged = discountCode !== "" && discountCode !== (form.dataset.keyDiscountCode || "");
+    if (form.dataset.cartSignature !== signature || !form.dataset.idempotencyKey || codeChanged) {
       form.dataset.cartSignature = signature;
-      form.dataset.idempotencyKey = crypto.randomUUID();
+      form.dataset.idempotencyKey = requestKey;
+      form.dataset.keyDiscountCode = discountCode;
     }
     if (submit) submit.disabled = true;
     try {
@@ -1473,8 +1494,9 @@
         // let the Worker check ordinary stock instead.
         removeStoredHolds(holdIds);
         delete payload.hold_ids;
-        form.dataset.idempotencyKey = crypto.randomUUID();
-        form.dataset.cartSignature = JSON.stringify({ items, customer, delivery, discountCode, holdIds: [] });
+        form.dataset.idempotencyKey = newRequestKey();
+        form.dataset.cartSignature = JSON.stringify({ items, customer, delivery, holdIds: [] });
+        form.dataset.keyDiscountCode = discountCode;
         payload.idempotency_key = form.dataset.idempotencyKey;
         created = await postStorefrontJson("/api/orders", payload);
       }
@@ -1578,21 +1600,30 @@
     if (submit) submit.disabled = true;
     if (status) status.textContent = "Reserving the requested quantity…";
     try {
+      const request = {
+        product_id: String(product.id),
+        quantity: Number(fields.get("quantity")) || 1,
+        customer_name: fields.get("customer_name"),
+        contact: fields.get("contact")
+      };
+      // One key per reservation: retrying after a dropped connection returns the hold the Worker
+      // already made instead of reserving the stock a second time.
+      const signature = JSON.stringify(request);
+      if (form.dataset.holdSignature !== signature || !form.dataset.holdKey) {
+        form.dataset.holdSignature = signature;
+        form.dataset.holdKey = newRequestKey();
+      }
       const response = await fetch("/api/product-holds", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idempotency_key: crypto.randomUUID(),
-          product_id: String(product.id),
-          quantity: Number(fields.get("quantity")) || 1,
-          customer_name: fields.get("customer_name"),
-          contact: fields.get("contact")
-        })
+        body: JSON.stringify({ idempotency_key: form.dataset.holdKey, ...request })
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Could not hold this product.");
       const hold = result.hold;
       if (!hold?.id || !hold?.expires_at) throw new Error("The shop did not confirm this product hold.");
+      delete form.dataset.holdKey;
+      delete form.dataset.holdSignature;
       const key = `eshop-holds:${location.host}`;
       let holds = [];
       try {

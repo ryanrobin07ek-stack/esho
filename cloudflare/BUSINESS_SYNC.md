@@ -17,7 +17,7 @@ Storefront visits can be sent anonymously to `POST /api/analytics/visit`; the ow
 To provision a Cloudflare environment:
 
 1. Create the archive bucket: `npx wrangler r2 bucket create eshop-business-archive`
-2. Apply the D1 schema, including migrations `0007_pos_sync_analytics.sql` through `0010_storefront_order_payments.sql`: `npm run cf:d1:migrate:remote`
+2. Apply the D1 schema, including migrations `0007_pos_sync_analytics.sql` through `0027_discount_codes.sql` (rate limits and owner notifications, manual payments and needs-attention flags, and discount codes are `0025`-`0027`): `npm run cf:d1:migrate:remote`
 3. Generate a VAPID key pair locally with Node:
 
    ```sh
@@ -30,5 +30,7 @@ To provision a Cloudflare environment:
 7. Deploy the Worker and assets: `npm run cf:deploy`
 
 Push is Web Push for supported HTTPS browsers. Visitors must separately grant notification permission; newsletter sign-up alone does not opt them into push. Broadcasts require the shop owner key and VAPID configuration. Expired subscriptions are removed, and send counts (not subscription endpoints) are archived in R2. Capacitor webviews that do not implement `PushManager` will report that push is unsupported.
+
+`POST /api/inventory/sale` (the register's shared-stock sale sync) requires the shop owner key, the owner's account session or the admin key; anonymous sales are rejected. Owner alerts, manual payments, discount codes, rate limits, shop deletion and data retention are described in `cloudflare/STOREFRONT_COMMERCE.md`. The `push_subscriptions` table is the customer-facing newsletter list and is never used for owner alerts.
 
 If any provisioning step is skipped, the relevant API returns a configuration error; the local business data remains available.

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import initSqlJs from 'sql.js';
@@ -902,13 +902,13 @@ function createInventoryDatabase(catalog) {
   };
 }
 
-test('Cloudflare Worker serves the shared HTML in storefront mode', async () => {
-  let assetPath;
+test('Cloudflare Worker no longer serves the retired builder storefront and says so plainly', async () => {
+  let assetFetched = false;
   const response = await worker.fetch(new Request('https://shop.example/'), {
     DB: createDatabase(),
     ASSETS: {
-      async fetch(request) {
-        assetPath = new URL(request.url).pathname;
+      async fetch() {
+        assetFetched = true;
         return new Response('<div id="app"></div>', {
           headers: { 'Content-Type': 'text/html; charset=utf-8' }
         });
@@ -916,9 +916,12 @@ test('Cloudflare Worker serves the shared HTML in storefront mode', async () => 
     }
   });
 
-  assert.equal(response.status, 200);
-  assert.equal(assetPath, '/builder-storefront');
-  assert.match(await response.text(), /__ESHOP_CLOUDFLARE_STOREFRONT__ = true/);
+  assert.equal(response.status, 404);
+  assert.equal(assetFetched, false);
+  assert.equal(response.headers.get('Content-Type'), 'text/html; charset=utf-8');
+  const body = await response.text();
+  assert.match(body, /This website is not available/);
+  assert.doesNotMatch(body, /__ESHOP_CLOUDFLARE_STOREFRONT__/);
 });
 
 test('unpublished tenant storefronts never fall back to the shared seeded catalog', async () => {
@@ -1323,7 +1326,7 @@ test('published storefront HTML cache changes on theme-only republish', async ()
   }
 });
 
-test('Cloudflare Worker serves the browser POS app at /register without replacing the storefront root', async () => {
+test('Cloudflare Worker serves the browser POS app at /register and no longer maps storefront paths to builder-storefront', async () => {
   const assetPaths = [];
   const env = {
     DB: createDatabase(),
@@ -1343,11 +1346,11 @@ test('Cloudflare Worker serves the browser POS app at /register without replacin
   const storefrontHtml = await storefront.text();
 
   assert.equal(response.status, 200);
-  assert.equal(assetPaths[0], '/register');
-  assert.equal(assetPaths[1], '/builder-storefront');
+  assert.deepEqual(assetPaths, ['/register']);
   assert.match(appHtml, /<div id="app"><\/div>/);
   assert.doesNotMatch(appHtml, /__ESHOP_CLOUDFLARE_STOREFRONT__/);
-  assert.match(storefrontHtml, /__ESHOP_CLOUDFLARE_STOREFRONT__ = true/);
+  assert.equal(storefront.status, 404);
+  assert.match(storefrontHtml, /This website is not available/);
 });
 
 test('shared inventory links by SKU and applies web sales once with stock checks', async () => {
@@ -1377,11 +1380,14 @@ test('shared inventory links by SKU and applies web sales once with stock checks
   }), env);
   assert.equal(connected.status, 200);
 
-  const checkout = async (eventId, quantity) => worker.fetch(new Request('https://rrobin.co.ke/api/inventory/sale', {
+  const checkout = async (eventId, quantity, authorization = `Bearer ${ownerToken}`) => worker.fetch(new Request('https://rrobin.co.ke/api/inventory/sale', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(authorization ? { Authorization: authorization } : {}) },
     body: JSON.stringify({ event_id: eventId, items: [{ sku: 'RUN-1', quantity }] })
   }), env);
+  // Anonymous callers must never be able to deduct (or zero) a shop's shared stock.
+  assert.equal((await checkout('ANON-ZERO-1', 8, '')).status, 401);
+  assert.equal((await checkout('ANON-ZERO-2', 8, 'Bearer not-the-owner-key')).status, 401);
   assert.equal((await checkout('WEB-ORDER-1', 3)).status, 200);
   const retry = await checkout('WEB-ORDER-1', 3);
   assert.equal(retry.status, 200);
@@ -1789,7 +1795,18 @@ test('live POS changes sync through tenant-authorized D1 and visit analytics ret
     ] })
   }), env);
   assert.equal(eventBatch.status, 202);
-  assert.equal((await eventBatch.json()).accepted, 3);
+  // 'tote-1' is a theme alias of catalogue product 7: events are stored under the canonical id.
+  assert.deepEqual(await eventBatch.json(), { ok: true, accepted: 3, ignored: 0 });
+  const unknownProductBatch = await worker.fetch(new Request(eventAnalyticsUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items: [
+      { product_id: 'does-not-exist-1', type: 'view', n: 5 },
+      { product_id: 'a'.repeat(80), type: 'cart_add', n: 1 }
+    ] })
+  }), env);
+  assert.equal(unknownProductBatch.status, 202);
+  assert.deepEqual(await unknownProductBatch.json(), { ok: true, accepted: 0, ignored: 2 });
   const otherTenantBatch = await worker.fetch(new Request(
     'https://eshop-storefront.workers.dev/api/analytics/events?tenant=another-shop',
     {
@@ -1818,8 +1835,7 @@ test('live POS changes sync through tenant-authorized D1 and visit analytics ret
   assert.equal(eventAnalytics.status, 200);
   const eventReport = await eventAnalytics.json();
   assert.deepEqual(eventReport.product_activity, [
-    { product_id: 'tote-1', views: 3, wishlist_adds: 0, cart_adds: 0, bookings: 0 },
-    { product_id: '7', views: 0, wishlist_adds: 2, cart_adds: 3, bookings: 0 }
+    { product_id: '7', views: 3, wishlist_adds: 2, cart_adds: 3, bookings: 0 }
   ]);
   const unauthenticatedAnalytics = await worker.fetch(new Request(
     'https://eshop-storefront.workers.dev/api/analytics/visit?tenant=main&days=30'
@@ -3940,7 +3956,9 @@ test('tenant records and product catalogs are isolated by wildcard subdomain', a
     headers: { Authorization: `Bearer ${createdShop.owner_token}` }
   }), env);
   assert.equal(deleted.status, 200);
-  assert.deepEqual(await deleted.json(), { ok: true, deleted_tenant_id: 'new-shop' });
+  const deletedBody = await deleted.json();
+  assert.equal(deletedBody.ok, true);
+  assert.equal(deletedBody.deleted_tenant_id, 'new-shop');
   const deletedDomain = await worker.fetch(new Request('https://new-shop.rrobin.co.ke/'), env);
   assert.equal(deletedDomain.status, 404);
 });
@@ -4541,4 +4559,1252 @@ test('newsletter migration enforces tenant-scoped subscriber and token uniquenes
   } finally {
     db.close();
   }
+});
+
+// ---------------------------------------------------------------------------
+// Worker hardening: real SQLite (sql.js) with every migration applied, behind a D1-shaped adapter.
+// ---------------------------------------------------------------------------
+async function createMigratedD1() {
+  const SQL = await initSqlJs({
+    locateFile: (file) => fileURLToPath(new URL(`../node_modules/sql.js/dist/${file}`, import.meta.url))
+  });
+  const db = new SQL.Database();
+  db.exec('PRAGMA foreign_keys = ON');
+  const directory = new URL('../cloudflare/migrations/', import.meta.url);
+  for (const file of (await readdir(directory)).filter(name => name.endsWith('.sql')).sort()) {
+    db.exec(await readFile(new URL(file, directory), 'utf8'));
+  }
+  const statement = (sql, values = []) => ({
+    sql,
+    values,
+    async first() {
+      const prepared = db.prepare(sql);
+      try {
+        prepared.bind(values);
+        return prepared.step() ? prepared.getAsObject() : null;
+      } finally {
+        prepared.free();
+      }
+    },
+    async all() {
+      const prepared = db.prepare(sql);
+      try {
+        prepared.bind(values);
+        const results = [];
+        while (prepared.step()) results.push(prepared.getAsObject());
+        return { results };
+      } finally {
+        prepared.free();
+      }
+    },
+    async run() {
+      db.run(sql, values);
+      return { success: true, meta: { changes: db.getRowsModified() } };
+    }
+  });
+  const DB = {
+    prepare(sql) {
+      return { ...statement(sql), bind: (...values) => statement(sql, values) };
+    },
+    async batch(statements) {
+      db.run('BEGIN');
+      try {
+        const results = [];
+        for (const item of statements) results.push(await item.run());
+        db.run('COMMIT');
+        return results;
+      } catch (error) {
+        db.run('ROLLBACK');
+        throw error;
+      }
+    }
+  };
+  const rows = (sql, values = []) => {
+    const result = db.exec(sql, values);
+    if (!result.length) return [];
+    const [{ columns, values: data }] = result;
+    return data.map(row => Object.fromEntries(columns.map((column, index) => [column, row[index]])));
+  };
+  return { db, DB, rows };
+}
+
+const HARDENING_STORE = {
+  currency: 'KES', hold_duration_hours: 24, name: 'Hardening Shop', delivery_fee: 0
+};
+
+async function createHardeningEnv(options = {}) {
+  const { db, DB, rows } = await createMigratedD1();
+  const TENANTS = createTenantStore();
+  const tokens = {};
+  const catalog = options.catalog || {
+    products: [
+      { id: 7, name: 'Canvas Tote', sku: 'TOTE-7', price: 12.5, stock: 100, booking_enabled: true },
+      { id: 8, name: 'Enamel Mug', sku: 'MUG-8', price: 5, stock: 3 },
+      { id: 9, name: 'Poster', sku: 'POSTER-9', price: 20, stock: 10, booking_enabled: true }
+    ],
+    categories: [],
+    store: HARDENING_STORE
+  };
+  for (const tenantId of options.tenants || ['shop-a', 'shop-b']) {
+    tokens[tenantId] = `owner-key-for-${tenantId}`;
+    const ownerUsername = `owner-${tenantId}`;
+    await TENANTS.put(`tenant:${tenantId}`, JSON.stringify({
+      id: tenantId, name: tenantId, owner_username: ownerUsername,
+      owner_token_hash: await sha256HexForTest(tokens[tenantId]),
+      owner_token_hashes: [await sha256HexForTest(tokens[tenantId])]
+    }));
+    db.run(
+      'INSERT INTO catalog_snapshots (tenant_id,payload,admin_payload,updated_at) VALUES (?,?,?,?)',
+      [tenantId, JSON.stringify(catalog), JSON.stringify(catalog), '2026-01-01T00:00:00.000Z']
+    );
+    db.run('INSERT INTO accounts (username,password_salt,password_hash,email,created_at) VALUES (?,?,?,?,?)',
+      [ownerUsername, 'salt', 'hash', `${ownerUsername}@owner.example`, 'now']);
+    db.run('INSERT INTO account_tenants (username,tenant_id) VALUES (?,?)', [ownerUsername, tenantId]);
+  }
+  return { db, DB, rows, TENANTS, tokens, env: { DB, TENANTS, ...(options.extraEnv || {}) } };
+}
+
+function hardeningCtx() {
+  const tasks = [];
+  return { tasks, waitUntil(task) { tasks.push(task); }, async settle() { await Promise.all(tasks); } };
+}
+
+function orderRequest(tenantId, items, extra = {}, { ip = '203.0.113.5', key = crypto.randomUUID() } = {}) {
+  return new Request(`https://eshop-storefront.workers.dev/api/orders?tenant=${tenantId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip },
+    body: JSON.stringify({
+      idempotency_key: key,
+      customer_name: 'Jamie Customer',
+      customer_email: 'jamie@customer.example',
+      customer_phone: '0712345678',
+      shipping_address: '1 Private Road',
+      delivery_method: 'delivery',
+      items,
+      ...extra
+    })
+  });
+}
+
+const ownerHeaders = token => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+
+test('hardening harness: every migration applies and the atomic rate limiter is race-safe', async () => {
+  const { env, rows } = await createHardeningEnv();
+  const tables = rows("SELECT name FROM sqlite_master WHERE type='table'").map(row => row.name);
+  for (const name of ['rate_limit_counters', 'owner_notifications', 'discount_codes', 'storefront_orders']) {
+    assert.ok(tables.includes(name), `${name} should exist`);
+  }
+  const orderColumns = rows('PRAGMA table_info(storefront_orders)').map(row => row.name);
+  for (const name of ['payment_method', 'manual_payment_reference', 'needs_attention', 'attention_reason', 'discount_code']) {
+    assert.ok(orderColumns.includes(name), `${name} column should exist`);
+  }
+  // 25 concurrent orders from one IP: exactly the per-IP limit succeeds, the rest are throttled.
+  const responses = await Promise.all(Array.from({ length: 25 }, () =>
+    worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }]), env)));
+  const statuses = responses.map(response => response.status);
+  assert.equal(statuses.filter(status => status === 201).length, 20);
+  assert.equal(statuses.filter(status => status === 429).length, 5);
+  assert.ok(responses.find(response => response.status === 429).headers.get('Retry-After'));
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_orders')[0].n, 20);
+  // A different connection is unaffected, and so is a different shop from the same IP.
+  assert.equal((await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { ip: '198.51.100.9' }), env)).status, 201);
+  assert.equal((await worker.fetch(orderRequest('shop-b', [{ product_id: 7, quantity: 1 }]), env)).status, 201);
+  // The window really expires: age the counter and the same IP can order again.
+  env.DB.prepare('UPDATE rate_limit_counters SET window_start = window_start - 3600').run();
+  assert.equal((await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }]), env)).status, 201);
+});
+
+test('rate limits fall back to KV when the D1 counter table is unavailable and fail open without storage', async () => {
+  const kvOnly = {
+    DB: createStorefrontOrderDatabase(),
+    TENANTS: createTenantStore()
+  };
+  const ok = [];
+  for (let index = 0; index < 22; index += 1) {
+    ok.push((await worker.fetch(orderRequest('main', [{ product_id: 7, quantity: 1 }]), kvOnly)).status);
+  }
+  assert.equal(ok.filter(status => status === 201).length, 20);
+  assert.deepEqual(ok.slice(20), [429, 429]);
+
+  const noCounters = { DB: createStorefrontOrderDatabase() };
+  for (let index = 0; index < 25; index += 1) {
+    assert.equal((await worker.fetch(orderRequest('main', [{ product_id: 7, quantity: 1 }]), noCounters)).status, 201);
+  }
+});
+
+test('anonymous holds are capped per request, per connection and per product share of stock', async () => {
+  const catalog = {
+    products: [{ id: 7, name: 'Canvas Tote', sku: 'TOTE-7', price: 12.5, stock: 10, booking_enabled: true }],
+    categories: [],
+    store: HARDENING_STORE
+  };
+  const { env, rows } = await createHardeningEnv({ catalog });
+  const hold = (quantity, ip, key = crypto.randomUUID()) => worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/product-holds?tenant=shop-a',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip },
+      body: JSON.stringify({
+        idempotency_key: key, product_id: 7, quantity, customer_name: 'Hold Visitor', contact: 'visitor@example.test'
+      })
+    }
+  ), env);
+  // One request cannot take more than the per-hold maximum.
+  const tooMany = await hold(6, '203.0.113.1');
+  assert.equal(tooMany.status, 409);
+  assert.match((await tooMany.json()).error, /limited to 5 items/);
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_hold_requests')[0].n, 0);
+  // One connection can only keep three active holds.
+  assert.equal((await hold(1, '203.0.113.1')).status, 201);
+  assert.equal((await hold(1, '203.0.113.1')).status, 201);
+  assert.equal((await hold(1, '203.0.113.1')).status, 201);
+  const fourth = await hold(1, '203.0.113.1');
+  assert.equal(fourth.status, 429);
+  assert.match((await fourth.json()).error, /maximum number of active holds/);
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_hold_requests')[0].n, 3);
+  // Many visitors together still cannot hold more than 75% of the stock (7 of 10): 3 held so far.
+  assert.equal((await hold(4, '198.51.100.1')).status, 201);
+  const overShare = await hold(1, '198.51.100.2');
+  assert.equal(overShare.status, 409);
+  assert.equal(rows("SELECT COALESCE(SUM(quantity),0) AS n FROM storefront_hold_requests WHERE status='approved'")[0].n, 7);
+});
+
+test('payment initialization is rate limited per connection before any Paystack work', async () => {
+  const { env } = await createHardeningEnv({ extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_rate_limit' } });
+  const initialize = ip => worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/payments/paystack/initialize?tenant=shop-a',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip },
+      body: JSON.stringify({ order_number: 'ORD-DOESNOTEXIST01' })
+    }
+  ), env);
+  for (let index = 0; index < 10; index += 1) assert.equal((await initialize('203.0.113.77')).status, 404);
+  const throttled = await initialize('203.0.113.77');
+  assert.equal(throttled.status, 429);
+  assert.equal((await initialize('203.0.113.78')).status, 404);
+});
+
+test('inventory sales need the shop owner; keys, sessions and shops stay isolated', async () => {
+  const DB = createInventoryDatabase({ products: [{ id: 1, name: 'Runner', sku: 'RUN-1', stock: 8 }], categories: [], store: {} });
+  const TENANTS = createTenantStore();
+  for (const tenantId of ['shop-a', 'shop-b']) {
+    await TENANTS.put(`tenant:${tenantId}`, JSON.stringify({
+      id: tenantId, owner_token_hash: await sha256HexForTest(`key-${tenantId}`)
+    }));
+  }
+  const env = { DB, TENANTS, PUBLISH_TOKEN: 'admin-token' };
+  const sale = (tenantId, authorization) => worker.fetch(new Request(
+    `https://eshop-storefront.workers.dev/api/inventory/sale?tenant=${tenantId}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(authorization ? { Authorization: authorization } : {}) },
+      body: JSON.stringify({ event_id: `evt-${Math.random().toString(16).slice(2)}`, items: [{ sku: 'RUN-1', quantity: 1 }] })
+    }
+  ), env);
+  assert.equal((await sale('shop-a', '')).status, 401);
+  assert.equal((await sale('shop-a', 'Bearer key-shop-b')).status, 401, "another shop's key is not accepted");
+  assert.equal((await sale('shop-a', 'Bearer made-up')).status, 401);
+  // Seed stock through the owner-only connect route, then sell with the owner key.
+  const connected = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/inventory/connect?tenant=shop-a', {
+    method: 'POST', headers: ownerHeaders('key-shop-a'),
+    body: JSON.stringify({ mode: 'replace', items: [{ sku: 'RUN-1', stock: 8 }] })
+  }), env);
+  assert.equal(connected.status, 200);
+  assert.equal((await sale('shop-a', 'Bearer key-shop-a')).status, 200);
+  assert.equal((await sale('shop-a', 'Bearer admin-token')).status, 200, 'the admin key may also write sales');
+});
+
+function stubFetch(handler) {
+  const original = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (input, init = {}) => {
+    const url = String(input);
+    calls.push({ url, init });
+    const handled = await handler(url, init);
+    return handled === undefined ? original(input, init) : handled;
+  };
+  return { calls, restore() { globalThis.fetch = original; } };
+}
+
+test('owner is notified of new orders and holds with minimal PII, and delivery never blocks the customer', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({
+    extraEnv: { RESEND_API_KEY: 're_test_key', EMAIL_FROM: 'Craft <noreply@example.com>' }
+  });
+  let resendStatus = 200;
+  const stub = stubFetch(async url => {
+    if (url === 'https://api.resend.com/emails') return resendStatus === 'throw'
+      ? Promise.reject(new Error('network down'))
+      : new Response('{}', { status: resendStatus, headers: { 'Content-Type': 'application/json' } });
+    return undefined;
+  });
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    // A customer push subscription must never receive owner alerts.
+    db.run(
+      'INSERT INTO push_subscriptions (tenant_id,endpoint_hash,endpoint,p256dh,auth,created_at) VALUES (?,?,?,?,?,?)',
+      ['shop-a', 'hash', 'https://fcm.googleapis.com/fcm/send/customer', 'p', 'a', 'now']
+    );
+    const ctx = hardeningCtx();
+    const placed = await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 2 }]), env, ctx);
+    assert.equal(placed.status, 201);
+    const order = (await placed.json()).order;
+    await ctx.settle();
+    const notes = rows("SELECT * FROM owner_notifications WHERE tenant_id='shop-a'");
+    assert.equal(notes.length, 1);
+    assert.equal(notes[0].kind, 'order');
+    assert.equal(notes[0].ref, order.order_number);
+    assert.match(notes[0].body, /Jamie placed order ORD-[A-Z0-9]+: 2 items, KES 25\.00/);
+    const serialized = JSON.stringify(notes);
+    for (const pii of ['jamie@customer.example', '0712345678', '1 Private Road', 'Customer']) {
+      assert.equal(serialized.includes(pii), false, `${pii} must not be stored in the outbox`);
+    }
+    const emails = stub.calls.filter(call => call.url === 'https://api.resend.com/emails');
+    assert.equal(emails.length, 1);
+    const email = JSON.parse(emails[0].init.body);
+    assert.deepEqual(email.to, ['owner-shop-a@owner.example']);
+    assert.equal(email.from, 'Craft <noreply@example.com>');
+    for (const pii of ['jamie@customer.example', '0712345678', '1 Private Road']) {
+      assert.equal(`${email.subject} ${email.text}`.includes(pii), false);
+    }
+    assert.equal(stub.calls.some(call => call.url.includes('fcm.googleapis.com')), false);
+    assert.equal(rows("SELECT COUNT(*) AS n FROM owner_notifications WHERE tenant_id='shop-b'")[0].n, 0);
+
+    // Duplicate (idempotent) submissions do not notify twice.
+    const key = crypto.randomUUID();
+    const dupCtx = hardeningCtx();
+    await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { key }), env, dupCtx);
+    await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { key }), env, dupCtx);
+    await dupCtx.settle();
+    assert.equal(rows("SELECT COUNT(*) AS n FROM owner_notifications WHERE kind='order'")[0].n, 2);
+
+    const holdCtx = hardeningCtx();
+    const hold = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/product-holds?tenant=shop-a', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.50' },
+      body: JSON.stringify({
+        idempotency_key: crypto.randomUUID(), product_id: 9, quantity: 2,
+        customer_name: 'Pat Visitor', contact: 'pat@visitor.example'
+      })
+    }), env, holdCtx);
+    assert.equal(hold.status, 201);
+    await holdCtx.settle();
+    const holdNote = rows("SELECT * FROM owner_notifications WHERE kind='hold'")[0];
+    assert.match(holdNote.body, /Pat reserved 2 x Poster/);
+    assert.equal(JSON.stringify(holdNote).includes('pat@visitor.example'), false);
+
+    // Failures never reach the customer: Resend 500, network error, unmigrated outbox, no ctx at all.
+    resendStatus = 500;
+    assert.equal((await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { ip: '198.51.100.1' }), env, hardeningCtx())).status, 201);
+    resendStatus = 'throw';
+    assert.equal((await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { ip: '198.51.100.2' }), env, hardeningCtx())).status, 201);
+    assert.equal((await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { ip: '198.51.100.3' }), env)).status, 201);
+    db.run('DROP TABLE owner_notifications');
+    const noTableCtx = hardeningCtx();
+    assert.equal((await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { ip: '198.51.100.4' }), env, noTableCtx)).status, 201);
+    await noTableCtx.settle();
+  } finally {
+    console.error = originalError;
+    stub.restore();
+  }
+
+  // Without any notification bindings the order flow is a quiet no-op.
+  const bare = await createHardeningEnv();
+  const bareStub = stubFetch(async () => undefined);
+  try {
+    const bareCtx = hardeningCtx();
+    assert.equal((await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }]), bare.env, bareCtx)).status, 201);
+    await bareCtx.settle();
+    assert.equal(bareStub.calls.some(call => call.url.includes('resend.com')), false);
+    assert.equal(bare.rows("SELECT COUNT(*) AS n FROM owner_notifications")[0].n, 1, 'the outbox still records it for the app');
+  } finally {
+    bareStub.restore();
+  }
+  assert.ok(tokens['shop-a']);
+});
+
+test('owner notification feed is owner-only, tenant scoped and supports marking items read', async () => {
+  const { env, tokens } = await createHardeningEnv();
+  const ctx = hardeningCtx();
+  await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }]), env, ctx);
+  await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { ip: '198.51.100.9' }), env, ctx);
+  await ctx.settle();
+  const url = tenant => `https://eshop-storefront.workers.dev/api/store/notifications?tenant=${tenant}`;
+  assert.equal((await worker.fetch(new Request(url('shop-a')), env)).status, 401);
+  assert.equal((await worker.fetch(new Request(url('shop-a'), { headers: ownerHeaders(tokens['shop-b']) }), env)).status, 401);
+  const listed = await worker.fetch(new Request(url('shop-a'), { headers: ownerHeaders(tokens['shop-a']) }), env);
+  assert.equal(listed.status, 200);
+  const feed = await listed.json();
+  assert.equal(feed.notifications.length, 2);
+  assert.equal(feed.unread_count, 2);
+  assert.deepEqual(Object.keys(feed.notifications[0]).sort(), ['body', 'created_at', 'id', 'kind', 'read_at', 'ref', 'title']);
+  const otherFeed = await (await worker.fetch(new Request(url('shop-b'), { headers: ownerHeaders(tokens['shop-b']) }), env)).json();
+  assert.equal(otherFeed.notifications.length, 0);
+  const markOne = await worker.fetch(new Request(`${url('shop-a').replace('notifications', 'notifications/read')}`, {
+    method: 'POST', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ ids: [feed.notifications[0].id] })
+  }), env);
+  assert.equal(markOne.status, 200);
+  assert.equal((await (await worker.fetch(new Request(url('shop-a'), { headers: ownerHeaders(tokens['shop-a']) }), env)).json()).unread_count, 1);
+  const crossTenantRead = await worker.fetch(new Request(`${url('shop-b').replace('notifications', 'notifications/read')}`, {
+    method: 'POST', headers: ownerHeaders(tokens['shop-b']), body: JSON.stringify({ all: true })
+  }), env);
+  assert.equal(crossTenantRead.status, 200);
+  assert.equal((await (await worker.fetch(new Request(url('shop-a'), { headers: ownerHeaders(tokens['shop-a']) }), env)).json()).unread_count, 1);
+  await worker.fetch(new Request(`${url('shop-a').replace('notifications', 'notifications/read')}`, {
+    method: 'POST', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ all: true })
+  }), env);
+  assert.equal((await (await worker.fetch(new Request(url('shop-a'), { headers: ownerHeaders(tokens['shop-a']) }), env)).json()).unread_count, 0);
+});
+
+const SERVICE_CATALOG = {
+  products: [{ id: 8, name: 'Haircut', price: 2500, duration_minutes: 60 }],
+  categories: [],
+  store: {
+    name: 'Studio', currency: 'KES', offer_type: 'services', service_timezone: 'Africa/Nairobi',
+    service_open_time: '09:00', service_close_time: '17:00', service_days: [0, 1, 2, 3, 4, 5, 6],
+    service_buffer_minutes: 15, service_deposit_percent: 20
+  }
+};
+
+test('booking requests notify the owner and a stuck confirmation can be recovered and declined', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ catalog: SERVICE_CATALOG, extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_services' } });
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Africa/Nairobi', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date(Date.now() + 48 * 60 * 60 * 1000)).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
+  const availability = await worker.fetch(new Request(
+    `https://eshop-storefront.workers.dev/api/service-appointments/availability?tenant=shop-a&service_id=8&date=${parts.year}-${parts.month}-${parts.day}`
+  ), env);
+  const slot = (await availability.json()).slots[0];
+  const ctx = hardeningCtx();
+  const created = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/service-appointments?tenant=shop-a', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.60' },
+    body: JSON.stringify({
+      idempotency_key: crypto.randomUUID(), service_id: 8, starts_at: slot.starts_at,
+      customer_name: 'Wanjiru Client', customer_email: 'wanjiru@client.example', customer_phone: '0722000111'
+    })
+  }), env, ctx);
+  assert.equal(created.status, 201);
+  const appointmentId = (await created.json()).appointment.id;
+  await ctx.settle();
+  const note = rows("SELECT * FROM owner_notifications WHERE kind='booking'")[0];
+  assert.equal(note.ref, appointmentId);
+  assert.match(note.body, /Wanjiru asked to book Haircut/);
+  for (const pii of ['wanjiru@client.example', '0722000111']) assert.equal(JSON.stringify(note).includes(pii), false);
+
+  // A confirmation that died after reserving the deposit would otherwise leave it stuck forever.
+  const decline = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/service-appointments?tenant=shop-a', {
+    method: 'PATCH', headers: ownerHeaders(tokens['shop-a']),
+    body: JSON.stringify({ id: appointmentId, action: 'reject' })
+  }), env);
+  db.run("UPDATE storefront_service_appointments SET status='confirming',payment_status='initializing',payment_reference='ESHOP_STUCK',updated_at=? WHERE id=?",
+    [new Date().toISOString(), appointmentId]);
+  assert.equal((await decline()).status, 409, 'a confirmation that just started is still in flight');
+  db.run("UPDATE storefront_service_appointments SET updated_at=? WHERE id=?",
+    [new Date(Date.now() - 30 * 60 * 1000).toISOString(), appointmentId]);
+  const recovered = await decline();
+  assert.equal(recovered.status, 200);
+  assert.equal((await recovered.json()).appointment.status, 'rejected');
+  assert.equal(rows('SELECT payment_reference FROM storefront_service_appointments WHERE id=?', [appointmentId])[0].payment_reference, null);
+});
+
+async function placeHardeningOrder(env, tenantId, items, extra = {}, options = {}) {
+  const response = await worker.fetch(orderRequest(tenantId, items, extra, { ip: `10.0.0.${Math.floor(Math.random() * 250) + 1}`, ...options }), env);
+  assert.equal(response.status, 201, await response.clone().text());
+  return (await response.json()).order;
+}
+
+const allocateMug = (db, tenantId, webStock) => db.run(
+  `INSERT INTO main_store_inventory
+   (tenant_id,sku,product_id,product_name,source_channel,pos_enabled,web_enabled,master_stock,pos_stock,web_stock,reserved_stock,updated_at)
+   VALUES (?,?,?,?,?,0,1,?,0,?,0,'now')`,
+  [tenantId, 'MUG-8', '8', 'Enamel Mug', 'web', webStock, webStock]
+);
+
+test('owners can record cash, M-Pesa and bank payments: idempotent, tenant scoped, stock deducted once', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv();
+  allocateMug(db, 'shop-a', 3);
+  allocateMug(db, 'shop-b', 3);
+  const order = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 2 }]);
+  assert.equal(order.total, 10);
+  const pay = (tenantId, orderNumber, body, token, ctx) => worker.fetch(new Request(
+    `https://eshop-storefront.workers.dev/api/store/orders/${orderNumber}/payment?tenant=${tenantId}`,
+    { method: 'POST', headers: token ? ownerHeaders(token) : { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+  ), env, ctx);
+  const webStock = tenantId => rows("SELECT web_stock FROM main_store_inventory WHERE tenant_id=? AND sku='MUG-8'", [tenantId])[0].web_stock;
+
+  assert.equal((await pay('shop-a', order.order_number, { method: 'cash' })).status, 401);
+  assert.equal((await pay('shop-a', order.order_number, { method: 'cash' }, tokens['shop-b'])).status, 401, "another shop's key");
+  assert.equal((await pay('shop-b', order.order_number, { method: 'cash' }, tokens['shop-b'])).status, 404, "another shop's order number");
+  assert.equal((await pay('shop-a', order.order_number, { method: 'barter' }, tokens['shop-a'])).status, 400);
+  assert.equal((await pay('shop-a', 'ORD-MISSING0001', { method: 'cash' }, tokens['shop-a'])).status, 404);
+  const partial = await pay('shop-a', order.order_number, { method: 'cash', amount_cents: 500 }, tokens['shop-a']);
+  assert.equal(partial.status, 400);
+  assert.equal((await partial.json()).expected_amount_cents, 1000);
+  assert.equal(webStock('shop-a'), 3);
+
+  const paid = await pay('shop-a', order.order_number, { method: 'mobile_money', reference: 'QJK12345XY', amount_cents: 1000 }, tokens['shop-a']);
+  assert.equal(paid.status, 200);
+  const paidBody = await paid.json();
+  assert.equal(paidBody.duplicate, false);
+  assert.equal(paidBody.needs_attention, false);
+  assert.equal(paidBody.order.payment_status, 'paid');
+  assert.equal(paidBody.order.payment_method, 'mobile_money');
+  const row = rows('SELECT * FROM storefront_orders WHERE order_number=?', [order.order_number])[0];
+  assert.equal(row.payment_status, 'paid');
+  assert.equal(row.manual_payment_reference, 'QJK12345XY');
+  assert.ok(row.paid_at);
+  assert.equal(webStock('shop-a'), 1, 'stock is deducted through the same deduction path');
+  assert.equal(webStock('shop-b'), 3, 'other shops are untouched');
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_inventory_deductions')[0].n, 1);
+
+  const again = await pay('shop-a', order.order_number, { method: 'cash' }, tokens['shop-a']);
+  assert.equal(again.status, 200);
+  const againBody = await again.json();
+  assert.equal(againBody.duplicate, true);
+  assert.equal(againBody.order.payment_method, 'mobile_money', 'the first recorded method wins');
+  assert.equal(webStock('shop-a'), 1, 'a repeat never deducts again');
+
+  // A double-tap on a fresh order deducts exactly once even when both requests race.
+  const racing = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 1 }]);
+  const racers = await Promise.all([
+    pay('shop-a', racing.order_number, { method: 'cash' }, tokens['shop-a']),
+    pay('shop-a', racing.order_number, { method: 'cash' }, tokens['shop-a'])
+  ]);
+  assert.deepEqual(racers.map(response => response.status), [200, 200]);
+  assert.equal(webStock('shop-a'), 0);
+
+  const cancelled = await placeHardeningOrder(env, 'shop-a', [{ product_id: 7, quantity: 1 }]);
+  await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=shop-a', {
+    method: 'PATCH', headers: ownerHeaders(tokens['shop-a']),
+    body: JSON.stringify({ order_number: cancelled.order_number, status: 'cancelled' })
+  }), env);
+  assert.equal((await pay('shop-a', cancelled.order_number, { method: 'cash' }, tokens['shop-a'])).status, 409);
+});
+
+test('settlement never loses money when stock ran out: paid orders are flagged needs_attention', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({
+    extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_settlement', RESEND_API_KEY: 're_test_key', EMAIL_FROM: 'Craft <noreply@example.com>' }
+  });
+  allocateMug(db, 'shop-a', 3);
+  const first = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 2 }]);
+  const second = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 2 }]);
+  const third = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 2 }]);
+  const stub = stubFetch(async url => (url === 'https://api.resend.com/emails' ? Response.json({ id: 'e' }) : undefined));
+  try {
+    const manual = (orderNumber, ctx) => worker.fetch(new Request(
+      `https://eshop-storefront.workers.dev/api/store/orders/${orderNumber}/payment?tenant=shop-a`,
+      { method: 'POST', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ method: 'cash' }) }
+    ), env, ctx);
+    assert.equal((await manual(first.order_number)).status, 200);
+    // Only one mug is left, so the second order cannot be deducted in full.
+    const ctx = hardeningCtx();
+    const short = await manual(second.order_number, ctx);
+    assert.equal(short.status, 200);
+    const shortBody = await short.json();
+    assert.equal(shortBody.needs_attention, true);
+    assert.equal(shortBody.order.payment_status, 'paid');
+    assert.equal(shortBody.order.needs_attention, true);
+    assert.equal(shortBody.order.attention_reason, 'insufficient_stock:MUG-8');
+    await ctx.settle();
+    assert.equal(rows('SELECT web_stock FROM main_store_inventory')[0].web_stock, 1, 'stock was not driven negative');
+    assert.equal(rows("SELECT COUNT(*) AS n FROM storefront_inventory_deductions WHERE order_number=?", [second.order_number])[0].n, 0);
+    assert.equal(rows("SELECT COUNT(*) AS n FROM owner_notifications WHERE kind='attention'")[0].n, 1);
+    assert.equal(rows("SELECT needs_attention FROM storefront_orders WHERE order_number=?", [first.order_number])[0].needs_attention, 0);
+
+    // The same protection applies to a Paystack webhook, which previously aborted and retried forever.
+    db.run("UPDATE storefront_orders SET payment_reference='ESHOP_00000000000000000000000000000001',payment_subaccount_code='ACCT_test1',payment_status='pending' WHERE order_number=?",
+      [third.order_number]);
+    const body = JSON.stringify({
+      event: 'charge.success',
+      data: {
+        reference: 'ESHOP_00000000000000000000000000000001', amount: 1000, currency: 'KES', status: 'success',
+        domain: 'test', subaccount: { subaccount_code: 'ACCT_test1' }
+      }
+    });
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('sk_test_settlement'),
+      { name: 'HMAC', hash: 'SHA-512' }, false, ['sign']);
+    const signature = [...new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(body)))]
+      .map(byte => byte.toString(16).padStart(2, '0')).join('');
+    const webhook = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/payments/paystack/webhook', {
+      method: 'POST', headers: { 'x-paystack-signature': signature }, body
+    }), env, hardeningCtx());
+    const delivered = await webhook();
+    assert.equal(delivered.status, 200);
+    assert.equal((await delivered.json()).payment_status, 'paid');
+    const settled = rows('SELECT * FROM storefront_orders WHERE order_number=?', [third.order_number])[0];
+    assert.equal(settled.payment_status, 'paid');
+    assert.equal(settled.needs_attention, 1);
+    assert.equal(settled.attention_reason, 'insufficient_stock:MUG-8');
+    assert.equal((await webhook()).status, 200, 'webhook retries are harmless');
+    assert.equal(rows('SELECT web_stock FROM main_store_inventory')[0].web_stock, 1);
+  } finally {
+    stub.restore();
+  }
+});
+
+test('stale in-flight payment and setup states recover instead of blocking forever', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_stale' } });
+  db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at) VALUES ('shop-a','ACCT_stale1','connected','Bank','1234','test',0,'now','now')");
+  const order = await placeHardeningOrder(env, 'shop-a', [{ product_id: 7, quantity: 1 }]);
+  const stub = stubFetch(async (url, init) => {
+    if (url === 'https://api.paystack.co/transaction/initialize') {
+      const payload = JSON.parse(init.body);
+      return Response.json({ data: { authorization_url: 'https://checkout.paystack.com/stale-ok', reference: payload.reference } });
+    }
+    if (url === 'https://api.paystack.co/subaccount') {
+      return Response.json({ status: true, data: { subaccount_code: 'ACCT_fresh1', domain: 'test', settlement_bank: '001', account_number: '0123456789', active: true } });
+    }
+    return undefined;
+  });
+  try {
+    const initialize = ip => worker.fetch(new Request(
+      'https://eshop-storefront.workers.dev/api/payments/paystack/initialize?tenant=shop-a',
+      { method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip }, body: JSON.stringify({ order_number: order.order_number }) }
+    ), env);
+    db.run("UPDATE storefront_orders SET payment_status='initializing',payment_reference='ESHOP_OLD',updated_at=? WHERE order_number=?",
+      [new Date().toISOString(), order.order_number]);
+    const inFlight = await initialize('203.0.113.1');
+    assert.equal(inFlight.status, 409);
+    db.run('UPDATE storefront_orders SET updated_at=? WHERE order_number=?',
+      [new Date(Date.now() - 20 * 60 * 1000).toISOString(), order.order_number]);
+    const recovered = await initialize('203.0.113.1');
+    assert.equal(recovered.status, 200);
+    const result = await recovered.json();
+    assert.equal(result.authorization_url, 'https://checkout.paystack.com/stale-ok');
+    const saved = rows('SELECT payment_status,payment_reference FROM storefront_orders WHERE order_number=?', [order.order_number])[0];
+    assert.equal(saved.payment_status, 'pending');
+    assert.notEqual(saved.payment_reference, 'ESHOP_OLD');
+
+    // A Paystack setup lock left behind by a crashed request.
+    db.run("DELETE FROM paystack_subaccounts WHERE tenant_id='shop-a'");
+    db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,created_at,updated_at) VALUES ('shop-a',NULL,'setup_in_progress','','',?,?)",
+      [new Date().toISOString(), new Date().toISOString()]);
+    const setup = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/payments/paystack/subaccount?tenant=shop-a', {
+      method: 'POST', headers: ownerHeaders(tokens['shop-a']),
+      body: JSON.stringify({
+        business_name: 'Shop A', primary_contact_name: 'Owner', primary_contact_email: 'owner@example.test',
+        primary_contact_phone: '0711000000', settlement_bank: '001', account_number: '0123456789'
+      })
+    }), env);
+    assert.equal((await setup()).status, 409, 'a fresh lock is respected');
+    db.run("UPDATE paystack_subaccounts SET updated_at=? WHERE tenant_id='shop-a'", [new Date(Date.now() - 30 * 60 * 1000).toISOString()]);
+    const retried = await setup();
+    assert.equal(retried.status, 200, await retried.clone().text());
+    assert.equal(rows("SELECT subaccount_code FROM paystack_subaccounts WHERE tenant_id='shop-a'")[0].subaccount_code, 'ACCT_fresh1');
+  } finally {
+    stub.restore();
+  }
+});
+
+test('owner tokens from sign-in are capped, revoked on logout and on password reset, never the shop key', async () => {
+  const env = {
+    DB: createDatabase(),
+    TENANTS: createTenantStore(),
+    TURNSTILE_SITE_KEY: 'test-site-key',
+    TURNSTILE_SECRET_KEY: 'test-turnstile-secret',
+    RESEND_API_KEY: 'test-resend-key',
+    EMAIL_FROM: 'Craft <noreply@example.com>'
+  };
+  const password = 'correct-horse-battery-staple';
+  const registered = await registerTestAccount(env, 'token-owner', password);
+  const created = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants', {
+    method: 'PUT', headers: ownerHeaders(registered.session_token),
+    body: JSON.stringify({ id: 'token-shop', name: 'Token Shop' })
+  }), env);
+  assert.equal(created.status, 201);
+  const shopKey = (await created.json()).owner_token;
+
+  let loginCount = 0;
+  const login = async (pass = password) => {
+    loginCount += 1;
+    const response = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': `192.0.2.${loginCount}` },
+      body: JSON.stringify({ username: 'token-owner', password: pass })
+    }), env);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    return { session: body.session_token, owner: body.tenants[0].owner_token };
+  };
+  const ownerStatus = token => worker.fetch(new Request('https://token-shop.rrobin.co.ke/api/catalog?private=1', {
+    headers: { Authorization: `Bearer ${token}` }
+  }), env).then(response => response.status);
+  const tenantRecord = async () => JSON.parse((await env.TENANTS.get('tenant:token-shop')) || '{}');
+
+  // Logout revokes only that session's owner token.
+  const phone = await login();
+  const tablet = await login();
+  assert.equal(await ownerStatus(phone.owner), 200);
+  assert.equal(await ownerStatus(tablet.owner), 200);
+  const loggedOut = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/auth/logout', {
+    method: 'POST', headers: { Authorization: `Bearer ${phone.session}` }
+  }), env);
+  assert.equal(loggedOut.status, 200);
+  assert.equal(await ownerStatus(phone.owner), 401, 'logout revokes the owner token it minted');
+  assert.equal(await ownerStatus(tablet.owner), 200, 'other signed-in devices keep working');
+  assert.equal(await ownerStatus(shopKey), 200, 'the shop key itself is never revoked by logout');
+
+  // The per-shop cap drops the oldest tokens only once it is exceeded.
+  const minted = [tablet.owner];
+  for (let index = 0; index < 22; index += 1) minted.push((await login()).owner);
+  assert.equal(await ownerStatus(minted[0]), 401, 'oldest token rotated out past the cap');
+  assert.equal(await ownerStatus(minted[2]), 401);
+  assert.equal(await ownerStatus(minted.at(-1)), 200);
+  assert.equal(await ownerStatus(minted.at(-20)), 200);
+  assert.equal((await tenantRecord()).owner_login_tokens.length, 20);
+
+  // Legacy tenants that accumulated unbounded hashes are trimmed on the next sign-in.
+  const record = await tenantRecord();
+  record.owner_token_hashes = [record.owner_token_hash, ...Array.from({ length: 150 }, (_, index) => `legacy-hash-${index}`)];
+  await env.TENANTS.put('tenant:token-shop', JSON.stringify(record));
+  const afterTrim = await login();
+  const trimmed = await tenantRecord();
+  assert.ok(trimmed.owner_token_hashes.length <= 21);
+  assert.equal(trimmed.owner_token_hashes[0], record.owner_token_hash);
+  assert.equal(await ownerStatus(afterTrim.owner), 200);
+  assert.equal(await ownerStatus(shopKey), 200);
+
+  // Password reset revokes every sign-in token (and any unattributable legacy ones), not the shop key.
+  const stub = stubFetch(async (url, init) => {
+    if (url === 'https://api.resend.com/emails') {
+      stub.code = JSON.parse(init.body).text.match(/\b\d{6}\b/)?.[0] || '';
+      return Response.json({ id: 'mail' });
+    }
+    return undefined;
+  });
+  try {
+    const postAuth = (action, body) => worker.fetch(new Request(`https://eshop-storefront.workers.dev/api/auth/${action}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    }), env);
+    assert.equal((await postAuth('request-reset-code', { email: 'token-owner@example.com' })).status, 200);
+    const verified = await postAuth('verify-reset-code', { email: 'token-owner@example.com', code: stub.code });
+    const { reset_token: resetToken } = await verified.json();
+    const newPassword = 'a-brand-new-correct-horse-staple';
+    assert.equal((await postAuth('reset-password', { reset_token: resetToken, password: newPassword })).status, 200);
+    assert.equal(await ownerStatus(afterTrim.owner), 401);
+    assert.equal(await ownerStatus(minted.at(-1)), 401);
+    assert.equal(await ownerStatus(shopKey), 200, 'the original shop key survives a password reset');
+    const afterReset = (await tenantRecord());
+    assert.deepEqual(afterReset.owner_login_tokens, []);
+    assert.deepEqual(afterReset.owner_token_hashes, [afterReset.owner_token_hash]);
+    const fresh = await login(newPassword);
+    assert.equal(await ownerStatus(fresh.owner), 200);
+  } finally {
+    stub.restore();
+  }
+});
+
+function createArchiveBucket(initial = {}) {
+  const objects = new Map(Object.entries(initial).map(([key, value]) => [key, typeof value === 'string' ? { body: value } : value]));
+  return {
+    objects,
+    async get(key) {
+      const object = objects.get(key);
+      return object ? {
+        body: new Response(object.body).body,
+        customMetadata: object.customMetadata || {},
+        httpMetadata: object.httpMetadata || {}
+      } : null;
+    },
+    async head(key) {
+      const object = objects.get(key);
+      return object ? { customMetadata: object.customMetadata || {} } : null;
+    },
+    async put(key, body, options = {}) {
+      objects.set(key, { body: typeof body === 'string' ? body : body, customMetadata: options.customMetadata, httpMetadata: options.httpMetadata });
+    },
+    async delete(keys) {
+      for (const key of Array.isArray(keys) ? keys : [keys]) objects.delete(key);
+    },
+    async list({ prefix = '', limit = 1000 } = {}) {
+      const keys = [...objects.keys()].filter(key => key.startsWith(prefix)).sort();
+      const page = keys.slice(0, limit);
+      return {
+        objects: page.map(key => ({ key, size: String(objects.get(key).body).length })),
+        truncated: keys.length > page.length
+      };
+    }
+  };
+}
+
+test('deleting a shop erases its data, releases its hostname and reserves the address', async () => {
+  const BUSINESS_ARCHIVE = createArchiveBucket({
+    'media/shop-a/logo': 'a', 'media/shop-b/logo': 'b',
+    'published-sites/shop-a/litrus-mixer/v1.html': '<html></html>', 'published-sites/shop-b/litrus-mixer/v1.html': '<html></html>',
+    'business/shop-a/main/snapshot.json': '{}', 'business/shop-b/main/snapshot.json': '{}',
+    'push/shop-a/1.json': '{}', 'push/shop-b/1.json': '{}'
+  });
+  const { env, db, rows, TENANTS, tokens } = await createHardeningEnv({
+    tenants: ['shop-a', 'shop-b'],
+    extraEnv: { BUSINESS_ARCHIVE, CLOUDFLARE_ZONE_ID: 'zone-1', CLOUDFLARE_API_TOKEN: 'cf-token', CUSTOM_HOSTNAME_TARGET: 'customers.example.test' }
+  });
+  for (const tenantId of ['shop-a', 'shop-b']) {
+    await placeHardeningOrder(env, tenantId, [{ product_id: 7, quantity: 1 }]);
+    db.run("INSERT INTO storefront_hold_requests (id,tenant_id,idempotency_key,product_id,product_name,quantity,customer_name,contact,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+      [crypto.randomUUID(), tenantId, crypto.randomUUID(), '7', 'Tote', 1, 'Visitor', 'v@example.test', 'pending', 'now', 'now']);
+    db.run("INSERT INTO storefront_visits (id,tenant_id,visitor_hash,path,device,created_at) VALUES (?,?,?,?,?,?)", [crypto.randomUUID(), tenantId, 'h', '/', 'mobile', 'now']);
+    db.run("INSERT INTO storefront_event_daily (tenant_id,day,product_id,event_type,n) VALUES (?,?,?,?,?)", [tenantId, '2026-01-01', '7', 'view', 3]);
+    db.run("INSERT INTO newsletter_subscribers (id,tenant_id,email,status,unsubscribe_token,consented_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)",
+      [crypto.randomUUID(), tenantId, 'reader@example.test', 'subscribed', `tok-${tenantId}`, 'now', 'now', 'now']);
+    db.run("INSERT INTO push_subscriptions (tenant_id,endpoint_hash,endpoint,p256dh,auth,created_at) VALUES (?,?,?,?,?,?)", [tenantId, 'h', 'https://fcm.googleapis.com/x', 'p', 'a', 'now']);
+    db.run("INSERT INTO inventory_stock (tenant_id,sku,stock,updated_at) VALUES (?,?,?,?)", [tenantId, 'TOTE-7', 5, 'now']);
+    db.run("INSERT INTO discount_codes (tenant_id,code,type,value,created_at,updated_at) VALUES (?,?,?,?,?,?)", [tenantId, 'SAVE', 'percent', 10, 'now', 'now']);
+    db.run("INSERT INTO owner_notifications (id,tenant_id,kind,title,body,created_at) VALUES (?,?,?,?,?,?)", [crypto.randomUUID(), tenantId, 'order', 't', 'b', 'now']);
+    db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
+      [tenantId, `ACCT_${tenantId.replace('-', '')}`, 'connected', 'KCB Bank', '6789', 'test', 0, 'now', 'now']);
+    db.run("INSERT INTO paystack_owner_defaults (owner_username,source_tenant_id,created_at,updated_at) VALUES (?,?,?,?)", [`owner-${tenantId}`, tenantId, 'now', 'now']);
+    await TENANTS.put(`published-theme:${tenantId}`, '{}');
+    await TENANTS.put(`google-site-verification:${tenantId}`, '{}');
+  }
+  db.run("INSERT INTO custom_hostnames (hostname,tenant_id,cloudflare_hostname_id,status,ssl_status,created_at,updated_at) VALUES ('shop.example.org','shop-a','cfh-1','active','active','now','now')");
+  const stub = stubFetch(async (url, init) => {
+    if (url.startsWith('https://api.cloudflare.com/client/v4/zones/zone-1/custom_hostnames/')) {
+      return Response.json({ success: true, result: { id: 'cfh-1' } });
+    }
+    return undefined;
+  });
+  try {
+    const anonymous = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants/shop-a', { method: 'DELETE' }), env);
+    assert.equal(anonymous.status, 401);
+    const wrongKey = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants/shop-a', {
+      method: 'DELETE', headers: ownerHeaders(tokens['shop-b'])
+    }), env);
+    assert.equal(wrongKey.status, 401);
+
+    const deleted = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants/shop-a', {
+      method: 'DELETE', headers: ownerHeaders(tokens['shop-a'])
+    }), env);
+    assert.equal(deleted.status, 200);
+    const report = await deleted.json();
+    assert.equal(report.ok, true);
+    assert.equal(report.custom_hostname_released, true);
+    assert.deepEqual(report.failed_tables, []);
+    assert.equal(report.paystack_subaccount, 'removed');
+    assert.equal(report.r2_objects_deleted, 4);
+    const releases = stub.calls.filter(call => call.init.method === 'DELETE');
+    assert.equal(releases.length, 1);
+    assert.match(releases[0].url, /custom_hostnames\/cfh-1$/);
+    assert.equal(new Headers(releases[0].init.headers).get('Authorization'), 'Bearer cf-token');
+  } finally {
+    stub.restore();
+  }
+
+  for (const table of [
+    'storefront_orders', 'storefront_hold_requests', 'storefront_visits', 'storefront_event_daily',
+    'newsletter_subscribers', 'push_subscriptions', 'inventory_stock', 'discount_codes', 'owner_notifications',
+    'paystack_subaccounts', 'paystack_owner_defaults', 'catalog_snapshots', 'account_tenants', 'custom_hostnames'
+  ]) {
+    const column = table === 'paystack_owner_defaults' ? 'source_tenant_id' : 'tenant_id';
+    assert.equal(rows(`SELECT COUNT(*) AS n FROM ${table} WHERE ${column}='shop-a'`)[0].n, 0, `${table} for the deleted shop is gone`);
+  }
+  for (const table of ['storefront_orders', 'storefront_hold_requests', 'newsletter_subscribers', 'paystack_subaccounts', 'catalog_snapshots']) {
+    assert.equal(rows(`SELECT COUNT(*) AS n FROM ${table} WHERE tenant_id='shop-b'`)[0].n, 1, `${table} for other shops is untouched`);
+  }
+  assert.deepEqual([...BUSINESS_ARCHIVE.objects.keys()].sort(), [
+    'business/shop-b/main/snapshot.json', 'media/shop-b/logo',
+    'published-sites/shop-b/litrus-mixer/v1.html', 'push/shop-b/1.json'
+  ]);
+  assert.equal(await TENANTS.get('tenant:shop-a'), null);
+  assert.equal(await TENANTS.get('published-theme:shop-a'), null);
+  assert.equal(await TENANTS.get('google-site-verification:shop-a'), null);
+  assert.ok(await TENANTS.get('tenant:shop-b'));
+  assert.ok(await TENANTS.get('published-theme:shop-b'));
+
+  // The freed address is reserved: only the previous owner may claim it again.
+  const sessionFor = async username => {
+    const token = `session-${username}`;
+    await TENANTS.put(`session:${await sha256HexForTest(token)}`, JSON.stringify({ username }));
+    return token;
+  };
+  const claim = async username => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants', {
+    method: 'PUT', headers: ownerHeaders(await sessionFor(username)),
+    body: JSON.stringify({ id: 'shop-a', name: 'Shop A again' })
+  }), env);
+  const stranger = await claim('owner-shop-b');
+  assert.equal(stranger.status, 409);
+  assert.match((await stranger.json()).error, /reserved/);
+  assert.equal(await TENANTS.get('tenant:shop-a'), null);
+  assert.equal((await claim('owner-shop-a')).status, 201);
+});
+
+test('deleting a shop keeps a Paystack account that is still the owner default for other shops, and survives hostname failures', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({
+    tenants: ['multi-1', 'multi-2'],
+    extraEnv: { CLOUDFLARE_ZONE_ID: 'zone-1', CLOUDFLARE_API_TOKEN: 'cf-token', CUSTOM_HOSTNAME_TARGET: 'customers.example.test' }
+  });
+  db.run("UPDATE account_tenants SET username='owner-multi-1' WHERE tenant_id='multi-2'");
+  db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at) VALUES ('multi-1','ACCT_multi1','connected','KCB Bank','6789','test',0,'now','now')");
+  db.run("INSERT INTO paystack_owner_defaults (owner_username,source_tenant_id,created_at,updated_at) VALUES ('owner-multi-1','multi-1','now','now')");
+  db.run("INSERT INTO custom_hostnames (hostname,tenant_id,cloudflare_hostname_id,status,ssl_status,created_at,updated_at) VALUES ('multi.example.org','multi-1','cfh-9','active','active','now','now')");
+  const stub = stubFetch(async url => url.includes('api.cloudflare.com') ? new Response('{}', { status: 500 }) : undefined);
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    const deleted = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants/multi-1', {
+      method: 'DELETE', headers: ownerHeaders(tokens['multi-1'])
+    }), env);
+    assert.equal(deleted.status, 200);
+    const report = await deleted.json();
+    assert.equal(report.custom_hostname_released, false, 'a Cloudflare failure is reported, not hidden');
+    assert.equal(report.paystack_subaccount, 'retained_as_owner_default');
+  } finally {
+    console.error = originalError;
+    stub.restore();
+  }
+  assert.equal(rows("SELECT bank_name FROM paystack_subaccounts WHERE tenant_id='multi-1'")[0].bank_name, '');
+  assert.equal(rows("SELECT COUNT(*) AS n FROM paystack_owner_defaults WHERE source_tenant_id='multi-1'")[0].n, 1);
+  assert.equal(rows("SELECT COUNT(*) AS n FROM custom_hostnames WHERE tenant_id='multi-1'")[0].n, 0, 'the local route is dropped even if Cloudflare release failed');
+});
+
+const LITRUS_HTML = '<!doctype html><html><head><title>Litrus</title></head><body><div id="store"></div><script>window.LITRUS_LIVE_CATALOG_VERSION=1;</script></body></html>';
+const LITRUS_CATALOG = {
+  products: [
+    { id: 7, slug: 'canvas-tote', name: 'Canvas Tote', price: 12.5, stock: 5, description: 'A sturdy everyday tote.', images: ['/media/shop-a/tote.jpg'], category_id: 1 },
+    { id: 8, slug: 'enamel-mug', name: 'Enamel Mug', price: 5, stock: 0, category_id: 1 }
+  ],
+  categories: [{ id: 1, slug: 'bags', name: 'Bags' }],
+  pages: [{ slug: 'about', title: 'About us', content: 'We make things.', published: true }],
+  store: { name: 'Litrus Shop', currency: 'KES', website_theme_id: 'litrus-mixer', description: 'Handmade goods in Nairobi.' }
+};
+const PUBLISHED_VERSION = '2026-01-01T00:00:00.000Z';
+
+async function createStorefrontHardeningEnv({ catalog = LITRUS_CATALOG, publish = { themeId: 'litrus-mixer' } } = {}) {
+  const BUSINESS_ARCHIVE = createArchiveBucket();
+  const harness = await createHardeningEnv({ catalog, tenants: ['shop-a'], extraEnv: { BUSINESS_ARCHIVE } });
+  const publishTheme = async (themeId, html = LITRUS_HTML, version = PUBLISHED_VERSION) => {
+    const key = `published-sites/shop-a/${themeId}/v-${version.replace(/\D/g, '')}.html`;
+    BUSINESS_ARCHIVE.objects.set(key, {
+      body: html, customMetadata: { themeId, catalogUpdatedAt: version }, httpMetadata: { contentType: 'text/html; charset=utf-8' }
+    });
+    await harness.TENANTS.put('published-theme:shop-a', JSON.stringify({ key, themeId, catalogUpdatedAt: version }));
+    const tenant = JSON.parse(await harness.TENANTS.get('tenant:shop-a'));
+    await harness.TENANTS.put('tenant:shop-a', JSON.stringify({ ...tenant, catalog_updated_at: version }));
+    return key;
+  };
+  if (publish) await publishTheme(publish.themeId);
+  return { ...harness, BUSINESS_ARCHIVE, publishTheme };
+}
+
+const storefrontGet = (env, path) => worker.fetch(new Request(`https://shop-a.rrobin.co.ke${path}`), env);
+
+test('Litrus product pages are crawlable: real URLs, Product JSON-LD, sitemap entries and a hash bridge', async () => {
+  const { env } = await createStorefrontHardeningEnv();
+  const product = await storefrontGet(env, '/products/canvas-tote');
+  assert.equal(product.status, 200);
+  const html = await product.text();
+  const jsonLd = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match => JSON.parse(match[1]));
+  const productSchema = jsonLd.find(entry => entry['@type'] === 'Product');
+  assert.equal(productSchema.name, 'Canvas Tote');
+  assert.equal(productSchema.offers.price, '12.50');
+  assert.equal(productSchema.offers.priceCurrency, 'KES');
+  assert.equal(productSchema.offers.availability, 'https://schema.org/InStock');
+  assert.equal(productSchema.offers.url, 'https://shop-a.rrobin.co.ke/products/canvas-tote');
+  assert.match(html, /<link rel="canonical" href="https:\/\/shop-a\.rrobin\.co\.ke\/products\/canvas-tote">/);
+  assert.match(html, /<meta name="robots" content="index,follow/);
+  // The Litrus runtime is hash routed (#/p/<id>); the page opens the right product for visitors.
+  assert.match(html, /history\.replaceState\(null,"",location\.pathname\+location\.search\+"#\/p\/7"\)/);
+  assert.match(html, /<noscript>[\s\S]*Canvas Tote[\s\S]*<\/noscript>/);
+
+  const outOfStock = await (await storefrontGet(env, '/products/enamel-mug')).text();
+  assert.match(outOfStock, /schema\.org\/OutOfStock/);
+  assert.equal((await storefrontGet(env, '/products/does-not-exist')).status, 404);
+
+  // Categories and pages have no Litrus route, so they are not advertised and never claim their own URL.
+  const category = await storefrontGet(env, '/categories/bags');
+  assert.equal(category.status, 200);
+  const categoryHtml = await category.text();
+  assert.doesNotMatch(categoryHtml, /"@type":"Product"/);
+  assert.match(categoryHtml, /<link rel="canonical" href="https:\/\/shop-a\.rrobin\.co\.ke\/">/);
+
+  const sitemap = await (await storefrontGet(env, '/sitemap.xml')).text();
+  assert.match(sitemap, /<loc>https:\/\/shop-a\.rrobin\.co\.ke\/<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/shop-a\.rrobin\.co\.ke\/products\/canvas-tote<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/shop-a\.rrobin\.co\.ke\/products\/enamel-mug<\/loc>/);
+  assert.doesNotMatch(sitemap, /\/categories\/|\/pages\//);
+});
+
+test('seo helpers route Litrus by product only while other themes keep their behaviour', async () => {
+  const { buildSitemap, buildSeo, isPathRouted } = await import('../cloudflare/seo.js');
+  assert.equal(isPathRouted('litrus-mixer'), true);
+  assert.equal(isPathRouted('litrus-mixer', 'product'), true);
+  assert.equal(isPathRouted('litrus-mixer', 'category'), false);
+  assert.equal(isPathRouted('classic', 'category'), true);
+  assert.equal(isPathRouted('elora-linen'), false);
+  const origin = 'https://shop.example.test';
+  const classic = buildSitemap(LITRUS_CATALOG, origin, 'classic');
+  assert.match(classic, /\/categories\/bags/);
+  assert.match(classic, /\/pages\/about/);
+  assert.doesNotMatch(buildSitemap(LITRUS_CATALOG, origin, 'elora-linen'), /\/products\//);
+  const seo = buildSeo({ catalog: LITRUS_CATALOG, pathname: '/products/canvas-tote', origin, themeId: 'litrus-mixer' });
+  assert.equal(seo.kind, 'product');
+  assert.equal(seo.path, '/products/canvas-tote');
+  assert.equal(seo.jsonLd[0]['@type'], 'Product');
+  const asCategory = buildSeo({ catalog: LITRUS_CATALOG, pathname: '/categories/bags', origin, themeId: 'litrus-mixer' });
+  assert.equal(asCategory.path, '/');
+  assert.equal(asCategory.jsonLd[0]['@type'], 'Store');
+});
+
+test('a shop keeps serving its last published storefront while the catalogue is ahead of it', async () => {
+  const { env, db, BUSINESS_ARCHIVE, TENANTS } = await createStorefrontHardeningEnv();
+  const fresh = await storefrontGet(env, '/');
+  assert.equal(fresh.status, 200);
+  const [key] = [...BUSINESS_ARCHIVE.objects.keys()];
+  const publishedMetadata = BUSINESS_ARCHIVE.objects.get(key).customMetadata.catalogUpdatedAt;
+
+  // The owner saves a new catalogue (price change) but has not republished the theme yet.
+  const updated = { ...LITRUS_CATALOG, products: [{ ...LITRUS_CATALOG.products[0], price: 15 }, LITRUS_CATALOG.products[1]] };
+  db.run('UPDATE catalog_snapshots SET payload=?,admin_payload=?,updated_at=? WHERE tenant_id=?',
+    [JSON.stringify(updated), JSON.stringify(updated), '2026-02-01T00:00:00.000Z', 'shop-a']);
+  // handleCatalog records the new version on the tenant record when it saves the catalogue.
+  const tenantRecord = JSON.parse(await TENANTS.get('tenant:shop-a'));
+  await TENANTS.put('tenant:shop-a', JSON.stringify({ ...tenantRecord, catalog_updated_at: '2026-02-01T00:00:00.000Z' }));
+  const during = await storefrontGet(env, '/');
+  assert.equal(during.status, 200, 'previously a 503 until the republish finished');
+  const body = await during.text();
+  assert.match(body, /"price":15/, 'the live catalogue data is injected into the last published storefront');
+  assert.match(body, /LITRUS_LIVE_CATALOG_VERSION/);
+  assert.equal(BUSINESS_ARCHIVE.objects.get(key).customMetadata.catalogUpdatedAt, publishedMetadata,
+    'the stored published version is not overwritten while stale');
+  assert.equal((await storefrontGet(env, '/products/canvas-tote')).status, 200);
+});
+
+test('retired and unknown themes keep serving stored HTML, never publish anew, and otherwise show a clear 404', async () => {
+  // Legacy shops published before the hosted themes were removed keep working.
+  const legacyCatalog = { ...LITRUS_CATALOG, store: { ...LITRUS_CATALOG.store, website_theme_id: 'elora-linen' } };
+  const legacy = await createStorefrontHardeningEnv({ catalog: legacyCatalog, publish: null });
+  await legacy.publishTheme('elora-linen', '<!doctype html><html><head><title>Elora</title></head><body><main id="legacy-elora">Legacy</main></body></html>');
+  const legacyPage = await storefrontGet(legacy.env, '/');
+  assert.equal(legacyPage.status, 200);
+  assert.match(await legacyPage.text(), /legacy-elora/);
+
+  // The catalogue names a theme that no longer exists: serve the last published storefront instead of an error.
+  const unknownCatalog = { ...LITRUS_CATALOG, store: { ...LITRUS_CATALOG.store, website_theme_id: 'deleted-theme-xyz' } };
+  const unknownWithPointer = await createStorefrontHardeningEnv({ catalog: unknownCatalog });
+  const unknownPage = await storefrontGet(unknownWithPointer.env, '/');
+  assert.equal(unknownPage.status, 200);
+  assert.match(await unknownPage.text(), /LITRUS_LIVE_CATALOG_VERSION/);
+
+  // Nothing published at all: a clear HTML 404 rather than a bare 404/503.
+  const unpublished = await createStorefrontHardeningEnv({ catalog: unknownCatalog, publish: null });
+  const missing = await storefrontGet(unpublished.env, '/');
+  assert.equal(missing.status, 404);
+  assert.equal(missing.headers.get('Content-Type'), 'text/html; charset=utf-8');
+  assert.match(await missing.text(), /This website is not available/);
+
+  // New publishes are limited to the active themes; theme skeleton routes are gone.
+  const { env, tokens } = unpublished;
+  const publish = themeId => worker.fetch(new Request('https://shop-a.rrobin.co.ke/api/theme-publish', {
+    method: 'POST', headers: ownerHeaders(tokens['shop-a']),
+    body: JSON.stringify({ theme_id: themeId, html: '<!doctype html>', catalog_updated_at: PUBLISHED_VERSION })
+  }), env);
+  assert.equal((await publish('elora-linen')).status, 422);
+  assert.equal((await publish('aurex-electronics')).status, 422);
+  assert.notEqual((await publish('litrus-mixer')).status, 422, 'Litrus Mixer can still publish');
+  const skeleton = await worker.fetch(new Request('https://shop-a.rrobin.co.ke/theme-skeletons/litrus-mixer/index.html', {
+    headers: { 'X-Eshop-Theme-Internal': 'preview' }
+  }), env);
+  assert.equal(skeleton.status, 404);
+  const builder = await worker.fetch(new Request('https://shop-a.rrobin.co.ke/builder-storefront.html'), {
+    ...env, ASSETS: { async fetch() { return new Response('retired', { status: 404 }); } }
+  });
+  assert.equal(builder.status, 404);
+});
+
+test('scheduled retention prunes old analytics, notifications and counters but keeps recent rows', async () => {
+  const wranglerConfig = JSON.parse(await readFile(new URL('../cloudflare/wrangler.jsonc', import.meta.url), 'utf8'));
+  assert.ok(Array.isArray(wranglerConfig.triggers?.crons) && wranglerConfig.triggers.crons.length === 1);
+  const { env, db, rows } = await createHardeningEnv();
+  const today = new Date().toISOString();
+  const old = new Date(Date.now() - 500 * 86_400_000).toISOString();
+  db.run("INSERT INTO storefront_event_daily (tenant_id,day,product_id,event_type,n) VALUES ('shop-a',?,'7','view',1),('shop-a',?,'7','view',1)", [old.slice(0, 10), today.slice(0, 10)]);
+  db.run("INSERT INTO storefront_visits (id,tenant_id,visitor_hash,path,device,created_at) VALUES ('old','shop-a','h','/','mobile',?),('new','shop-a','h','/','mobile',?)", [old, today]);
+  db.run("INSERT INTO owner_notifications (id,tenant_id,kind,title,body,created_at) VALUES ('old','shop-a','order','t','b',?),('new','shop-a','order','t','b',?)",
+    [new Date(Date.now() - 120 * 86_400_000).toISOString(), today]);
+  db.run("INSERT INTO rate_limit_counters (key,window_start,count) VALUES ('stale',1000,5),('live',?,1)", [Math.floor(Date.now() / 1000)]);
+  const ctx = hardeningCtx();
+  const logs = [];
+  const originalLog = console.log;
+  console.log = (...args) => logs.push(args.join(' '));
+  try {
+    await worker.scheduled({ cron: '17 3 * * *' }, env, ctx);
+    await ctx.settle();
+  } finally {
+    console.log = originalLog;
+  }
+  assert.deepEqual(rows('SELECT day FROM storefront_event_daily').map(row => row.day), [today.slice(0, 10)]);
+  assert.deepEqual(rows('SELECT id FROM storefront_visits').map(row => row.id), ['new']);
+  assert.deepEqual(rows('SELECT id FROM owner_notifications').map(row => row.id), ['new']);
+  assert.deepEqual(rows('SELECT key FROM rate_limit_counters').map(row => row.key), ['live']);
+  assert.ok(logs.some(line => line.includes('Retention cleanup finished')));
+  // A missing table (unmigrated environment) is reported, not thrown.
+  db.run('DROP TABLE owner_notifications');
+  await worker.scheduled({}, env, hardeningCtx());
+});
+
+const DISCOUNT_CATALOG = {
+  products: [
+    { id: 7, name: 'Canvas Tote', sku: 'TOTE-7', price: 12.5, stock: 100 },
+    { id: 8, name: 'Enamel Mug', sku: 'MUG-8', price: 5, stock: 100 }
+  ],
+  categories: [],
+  store: { currency: 'KES', name: 'Discount Shop', delivery_fee: 100, free_delivery_over: 0 }
+};
+
+test('owners manage discount codes: validation, tenant scoping and CRUD', async () => {
+  const { env, rows, tokens } = await createHardeningEnv({ catalog: DISCOUNT_CATALOG });
+  const call = (tenantId, method, body, token = tokens[tenantId], search = '') => worker.fetch(new Request(
+    `https://eshop-storefront.workers.dev/api/store/discounts?tenant=${tenantId}${search}`,
+    { method, headers: token ? ownerHeaders(token) : { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) }
+  ), env);
+  assert.equal((await call('shop-a', 'GET', null, '')).status, 401);
+  assert.equal((await call('shop-a', 'GET', null, tokens['shop-b'])).status, 401);
+  assert.equal((await call('shop-a', 'POST', { code: 'SAVE10', type: 'percent', value: 10 }, '')).status, 401);
+
+  for (const [bad, message] of [
+    [{ code: 'a', type: 'percent', value: 10 }, 'valid code'],
+    [{ code: 'bad code!', type: 'percent', value: 10 }, 'valid code'],
+    [{ code: 'BIG', type: 'percent', value: 101 }, 'percent'],
+    [{ code: 'ZERO', type: 'percent', value: 0 }, 'percent'],
+    [{ code: 'FIXED', type: 'fixed', value: 0 }, 'fixed'],
+    [{ code: 'FRAC', type: 'fixed', value: 12.5 }, 'fixed'],
+    [{ code: 'KIND', type: 'bogus', value: 10 }, 'type'],
+    [{ code: 'MIN', type: 'percent', value: 10, min_order_cents: -1 }, 'min_order'],
+    [{ code: 'LIMIT', type: 'percent', value: 10, usage_limit: 0 }, 'usage_limit'],
+    [{ code: 'DATES', type: 'percent', value: 10, starts_at: '2030-01-02T00:00:00Z', ends_at: '2030-01-01T00:00:00Z' }, 'ends_at'],
+    [{ code: 'WHEN', type: 'percent', value: 10, starts_at: 'tomorrow-ish' }, 'ISO']
+  ]) {
+    const response = await call('shop-a', 'POST', bad);
+    assert.equal(response.status, 400, JSON.stringify(bad));
+    if (message !== 'valid code') assert.ok((await response.json()).error);
+  }
+  const created = await call('shop-a', 'POST', {
+    code: 'save10', type: 'percent', value: 10, min_order_cents: 1000, usage_limit: 5,
+    starts_at: '2020-01-01T00:00:00Z', ends_at: '2099-01-01T00:00:00Z'
+  });
+  assert.equal(created.status, 201);
+  const discount = (await created.json()).discount;
+  assert.deepEqual(discount, {
+    code: 'SAVE10', type: 'percent', value: 10, min_order_cents: 1000,
+    starts_at: '2020-01-01T00:00:00.000Z', ends_at: '2099-01-01T00:00:00.000Z',
+    usage_limit: 5, used_count: 0, active: true, created_at: discount.created_at, updated_at: discount.updated_at
+  });
+  assert.equal((await call('shop-a', 'POST', { code: 'SAVE10', type: 'fixed', value: 100 })).status, 409);
+  assert.equal((await call('shop-b', 'POST', { code: 'SAVE10', type: 'fixed', value: 100 })).status, 201, 'codes are per shop');
+
+  assert.deepEqual((await (await call('shop-a', 'GET')).json()).discounts.map(item => [item.code, item.type]), [['SAVE10', 'percent']]);
+  const patched = await call('shop-a', 'PATCH', { code: 'SAVE10', active: false, usage_limit: null, value: 15 });
+  assert.equal(patched.status, 200);
+  const patchedBody = (await patched.json()).discount;
+  assert.equal(patchedBody.active, false);
+  assert.equal(patchedBody.usage_limit, null);
+  assert.equal(patchedBody.value, 15);
+  assert.equal(patchedBody.min_order_cents, 1000, 'unspecified fields are preserved');
+  assert.equal((await call('shop-a', 'PATCH', { code: 'NOPE', active: true })).status, 404);
+  assert.equal((await call('shop-b', 'PATCH', { code: 'SAVE10', value: 99 })).status, 200);
+  assert.equal(rows("SELECT value FROM discount_codes WHERE tenant_id='shop-a'")[0].value, 15, "shop B cannot change shop A's code");
+  assert.equal((await call('shop-a', 'DELETE', null, tokens['shop-a'], '&code=save10')).status, 200);
+  assert.equal((await call('shop-a', 'DELETE', null, tokens['shop-a'], '&code=SAVE10')).status, 404);
+  assert.equal(rows("SELECT COUNT(*) AS n FROM discount_codes WHERE tenant_id='shop-b'")[0].n, 1);
+});
+
+test('discount codes are validated and re-priced on the server when an order is placed', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ catalog: DISCOUNT_CATALOG });
+  const addCode = (tenantId, fields) => {
+    const row = { type: 'percent', value: 10, min_order_cents: 0, starts_at: null, ends_at: null, usage_limit: null, active: 1, ...fields };
+    db.run('INSERT INTO discount_codes (tenant_id,code,type,value,min_order_cents,starts_at,ends_at,usage_limit,used_count,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,0,?,?,?)',
+      [tenantId, row.code, row.type, row.value, row.min_order_cents, row.starts_at, row.ends_at, row.usage_limit, row.active, 'now', 'now']);
+  };
+  addCode('shop-a', { code: 'SAVE10', value: 10 });
+  addCode('shop-a', { code: 'THIRD', value: 33 });
+  addCode('shop-a', { code: 'FIVEBOB', type: 'fixed', value: 500 });
+  addCode('shop-a', { code: 'HUGE', type: 'fixed', value: 100_000 });
+  addCode('shop-a', { code: 'BIGSPEND', value: 50, min_order_cents: 100_000 });
+  addCode('shop-a', { code: 'EXPIRED', value: 50, ends_at: '2020-01-01T00:00:00.000Z' });
+  addCode('shop-a', { code: 'SOON', value: 50, starts_at: '2099-01-01T00:00:00.000Z' });
+  addCode('shop-a', { code: 'OFF', value: 50, active: 0 });
+  addCode('shop-a', { code: 'ONCE', value: 10, usage_limit: 1 });
+  addCode('shop-b', { code: 'OTHERSHOP', value: 90 });
+  const tote = [{ product_id: 7, quantity: 2 }]; // 2500 cents + 10000 cents delivery
+  const place = (items, extra, options) => worker.fetch(orderRequest('shop-a', items, extra, { ip: `10.1.0.${Math.floor(Math.random() * 250) + 1}`, ...options }), env);
+
+  const plain = await (await place(tote, {})).json();
+  assert.equal(plain.order.discount, 0);
+  assert.equal(plain.order.discount_code, null);
+  assert.equal(plain.order.total, 125);
+  // Client-supplied totals and discounts are never trusted.
+  const tampered = await (await place(tote, { discount: 999, discount_cents: 99_900, total: 1, subtotal: 1 })).json();
+  assert.equal(tampered.order.discount, 0);
+  assert.equal(tampered.order.total, 125);
+
+  const percent = await place(tote, { discount_code: ' save10 ' });
+  assert.equal(percent.status, 201);
+  const percentOrder = (await percent.json()).order;
+  assert.equal(percentOrder.discount_code, 'SAVE10');
+  assert.equal(percentOrder.discount, 2.5);
+  assert.equal(percentOrder.total, 122.5, 'shipping is not discounted');
+  const stored = rows('SELECT discount_cents,total_cents,discount_code FROM storefront_orders WHERE order_number=?', [percentOrder.order_number])[0];
+  assert.deepEqual(stored, { discount_cents: 250, total_cents: 12250, discount_code: 'SAVE10' });
+  assert.equal(rows("SELECT used_count FROM discount_codes WHERE tenant_id='shop-a' AND code='SAVE10'")[0].used_count, 1);
+
+  // Money stays in whole cents: 33% of 2500 rounds down to 825.
+  assert.equal((await (await place(tote, { discount_code: 'THIRD' })).json()).order.discount, 8.25);
+  assert.equal((await (await place(tote, { discount_code: 'FIVEBOB' })).json()).order.discount, 5);
+  const huge = (await (await place([{ product_id: 8, quantity: 1 }], { discount_code: 'HUGE' })).json()).order;
+  assert.equal(huge.discount, 5, 'a fixed discount never exceeds the item subtotal');
+  assert.equal(huge.total, 100, 'only shipping remains');
+
+  for (const code of ['BIGSPEND', 'EXPIRED', 'SOON', 'OFF', 'OTHERSHOP', 'MISSING', 'bad code!']) {
+    const rejected = await place(tote, { discount_code: code });
+    assert.equal(rejected.status, 409, code);
+    const body = await rejected.json();
+    assert.equal(body.error_code, 'discount_invalid');
+  }
+  assert.equal(rows("SELECT COUNT(*) AS n FROM storefront_orders WHERE discount_code IS NOT NULL AND discount_code NOT IN ('SAVE10','THIRD','FIVEBOB','HUGE')")[0].n, 0);
+
+  // Usage limits: replays of the same order do not redeem twice, and cancelling gives the use back.
+  const key = crypto.randomUUID();
+  const onceFirst = await place(tote, { discount_code: 'ONCE' }, { key });
+  assert.equal(onceFirst.status, 201);
+  const onceReplay = await place(tote, { discount_code: 'ONCE' }, { key });
+  assert.equal(onceReplay.status, 200);
+  assert.equal((await onceReplay.json()).duplicate, true);
+  assert.equal(rows("SELECT used_count FROM discount_codes WHERE tenant_id='shop-a' AND code='ONCE'")[0].used_count, 1);
+  const exhausted = await place(tote, { discount_code: 'ONCE' });
+  assert.equal(exhausted.status, 409);
+  assert.match((await exhausted.json()).error, /usage limit/);
+  const onceOrder = (await onceFirst.json()).order;
+  const cancel = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=shop-a', {
+    method: 'PATCH', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ order_number: onceOrder.order_number, status: 'cancelled' })
+  }), env);
+  assert.equal((await cancel()).status, 200);
+  assert.equal(rows("SELECT used_count FROM discount_codes WHERE tenant_id='shop-a' AND code='ONCE'")[0].used_count, 0);
+  assert.equal((await cancel()).status, 200);
+  assert.equal(rows("SELECT used_count FROM discount_codes WHERE tenant_id='shop-a' AND code='ONCE'")[0].used_count, 0, 'cancelling twice gives it back once');
+  assert.equal((await place(tote, { discount_code: 'ONCE' })).status, 201);
+
+  // Concurrent checkouts cannot exceed the limit.
+  addCode('shop-a', { code: 'THREE', usage_limit: 3 });
+  const raced = await Promise.all(Array.from({ length: 8 }, () => place(tote, { discount_code: 'THREE' })));
+  assert.equal(raced.filter(response => response.status === 201).length, 3);
+  assert.equal(rows("SELECT used_count FROM discount_codes WHERE tenant_id='shop-a' AND code='THREE'")[0].used_count, 3);
+});
+
+test('discount validation previews a cart without redeeming and is rate limited', async () => {
+  const { env, db, rows } = await createHardeningEnv({ catalog: DISCOUNT_CATALOG });
+  db.run("INSERT INTO discount_codes (tenant_id,code,type,value,min_order_cents,used_count,active,created_at,updated_at) VALUES ('shop-a','SAVE10','percent',10,1000,0,1,'now','now')");
+  const validate = (body, ip = '203.0.113.9', tenant = 'shop-a') => worker.fetch(new Request(
+    `https://eshop-storefront.workers.dev/api/discounts/validate?tenant=${tenant}`,
+    { method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip }, body: JSON.stringify(body) }
+  ), env);
+  const ok = await (await validate({ code: 'save10', items: [{ product_id: 7, quantity: 2 }] })).json();
+  assert.deepEqual(ok, { valid: true, code: 'SAVE10', type: 'percent', subtotal_cents: 2500, discount_cents: 250, discount: 2.5 });
+  const belowMinimum = await (await validate({ code: 'SAVE10', items: [{ product_id: 8, quantity: 1 }] })).json();
+  assert.equal(belowMinimum.valid, false);
+  assert.equal((await (await validate({ code: 'SAVE10', items: [{ product_id: 7, quantity: 2 }] }, '203.0.113.9', 'shop-b')).json()).valid, false);
+  assert.equal(rows("SELECT used_count FROM discount_codes WHERE code='SAVE10'")[0].used_count, 0, 'validation never redeems');
+  for (let index = 0; index < 28; index += 1) await validate({ code: 'NOPE', items: [{ product_id: 7, quantity: 1 }] });
+  const throttled = await validate({ code: 'NOPE', items: [{ product_id: 7, quantity: 1 }] });
+  assert.equal(throttled.status, 429);
 });

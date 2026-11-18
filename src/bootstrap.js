@@ -129,30 +129,32 @@ if (Capacitor.isNativePlatform()) {
     });
     window.location.hash = `/app-account?${params}`;
   };
-  await App.addListener('backButton', event => {
+  // Do not use top-level await in this module: in the production bundle it
+  // stalls module evaluation behind chunks that jeep-sqlite itself needs, and
+  // the web app never starts.
+  App.addListener('backButton', event => {
     window.dispatchEvent(new CustomEvent('shop:back', { detail: event }));
-  });
-  await App.addListener('appUrlOpen', ({ url }) => {
+  }).catch(error => console.error('Could not register the back button listener.', error));
+  App.addListener('appUrlOpen', ({ url }) => {
     void handleGoogleAuthUrl(url);
-  });
-  try {
-    const launch = await App.getLaunchUrl();
-    if (launch?.url) await handleGoogleAuthUrl(launch.url);
-  } catch (error) {
-    console.error('Could not check whether Craft was launched from Google sign-in.', error);
-  }
+  }).catch(error => console.error('Could not register the app URL listener.', error));
+  App.getLaunchUrl()
+    .then(launch => (launch?.url ? handleGoogleAuthUrl(launch.url) : undefined))
+    .catch(error => {
+      console.error('Could not check whether Craft was launched from Google sign-in.', error);
+    });
 }
-try {
-  await window.ShopPOSReady;
-} catch (e) {
+window.ShopPOSReady.catch(e => {
   console.error('SQLite startup failed', e);
   const box = document.createElement('div');
   box.setAttribute('role', 'alert');
   box.textContent = 'The local database or POS engine could not start. Reload or check the browser console.';
   box.style.cssText = 'position:fixed;z-index:9999;inset:0 0 auto;padding:14px;background:#fee2e2;color:#7f1d1d;text-align:center';
   document.body.appendChild(box);
-}
+});
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  await navigator.serviceWorker.register('/sw.js');
+  navigator.serviceWorker.register('/sw.js').catch(error => {
+    console.warn('Service worker registration failed.', error);
+  });
 }

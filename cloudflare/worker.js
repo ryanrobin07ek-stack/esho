@@ -20,10 +20,13 @@ const MAX_RECORDS = 1000;
 const TENANT_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9_.-]{2,31}$/;
 const RESERVED_TENANT_IDS = new Set(["www", "api", "admin", "assets", "main"]);
-const FILLED_THEME_IDS = new Set([
-  "litrus-mixer",
+// Themes that can still be published. Litrus Mixer is the only website editor; craft-main-storefront
+// is the Craft platform's own storefront (main shop).
+const ACTIVE_THEME_IDS = new Set(["litrus-mixer", "craft-main-storefront"]);
+// Retired hosted themes. Shops published before they were removed keep serving their stored HTML
+// (and catalogue edits keep advancing it), but nothing can publish them any more.
+const LEGACY_THEME_IDS = new Set([
   "elora-linen",
-  "craft-main-storefront",
   "aviya-luxury",
   "stepz-footwear",
   "cira-atelier-event-architecture-management",
@@ -34,6 +37,7 @@ const FILLED_THEME_IDS = new Set([
   "etalon-premium-fashion-apparel",
   "aurex-electronics"
 ]);
+const FILLED_THEME_IDS = new Set([...ACTIVE_THEME_IDS, ...LEGACY_THEME_IDS]);
 const DOMAIN_ROOT = "rrobin.co.ke";
 const PASSWORD_ITERATIONS = 100_000;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
@@ -59,6 +63,31 @@ const AI_ASSISTANT_CACHE_TTL_SECONDS = 60 * 60 * 24;
 const AI_ASSISTANT_ANALYTICS_CACHE_TTL_SECONDS = 5 * 60;
 const AI_ASSISTANT_MAX_REQUEST_BYTES = 20_000;
 const AI_ASSISTANT_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
+// Public write-endpoint throttles (per client IP unless noted). Counters live in D1 when the
+// rate_limit_counters table exists (atomic) and fall back to a best-effort KV counter.
+const ORDER_IP_LIMIT = { limit: 20, windowSeconds: 10 * 60 };
+const ORDER_SHOP_LIMIT = { limit: 300, windowSeconds: 60 * 60 };
+const HOLD_IP_LIMIT = { limit: 12, windowSeconds: 10 * 60 };
+const PAYMENT_INIT_IP_LIMIT = { limit: 10, windowSeconds: 10 * 60 };
+const DISCOUNT_VALIDATE_IP_LIMIT = { limit: 30, windowSeconds: 10 * 60 };
+const ANALYTICS_EVENT_IP_LIMIT = { limit: 120, windowSeconds: 10 * 60 };
+// Anonymous hold auto-approval caps: one visitor must not be able to lock a shop's stock.
+const MAX_ANON_HOLD_QUANTITY = 5;
+const MAX_ANON_ACTIVE_HOLDS_PER_IP = 3;
+const MAX_ANON_HOLD_STOCK_SHARE = 0.75;
+// Stale in-flight state recovery.
+const PAYMENT_INITIALIZING_STALE_MS = 10 * 60 * 1000;
+const PAYSTACK_SETUP_STALE_MS = 5 * 60 * 1000;
+// Owner session tokens minted per tenant by account sign-in (oldest are dropped past the cap).
+const MAX_OWNER_LOGIN_TOKENS = 20;
+const MAX_LEGACY_OWNER_TOKENS = 20;
+// A deleted shop address cannot be claimed by a different account for this long.
+const TENANT_TOMBSTONE_TTL_SECONDS = 60 * 60 * 24 * 90;
+const OWNER_EMAIL_HOURLY_LIMIT = 20;
+const ANALYTICS_RETENTION_DAYS = 400;
+const NOTIFICATION_RETENTION_DAYS = 90;
+const MANUAL_PAYMENT_METHODS = new Set(["cash", "mobile_money", "bank", "other"]);
+const DISCOUNT_CODE_PATTERN = /^[A-Z0-9][A-Z0-9_-]{1,31}$/;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1083,6 +1112,132 @@ async function limitAuthRequests(request, env, action, limit, expirationTtl) {
   return true;
 }
 
+// Atomic fixed-window counter for public write endpoints. Returns true while the caller is
+// within the limit. D1 (rate_limit_counters) is race-safe; when that table is unavailable it
+// degrades to a best-effort KV counter, and with no storage at all it fails open so storage
+// problems never take the storefront down.
+async function consumeRateLimit(env, scope, identity, { limit, windowSeconds }) {
+  const key = `${scope}:${identity}`;
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const expiredBefore = nowSeconds - windowSeconds;
+  if (env.DB) {
+    try {
+      const row = await env.DB.prepare(
+        `INSERT INTO rate_limit_counters (key, window_start, count) VALUES (?, ?, 1)
+         ON CONFLICT(key) DO UPDATE SET
+           count = CASE WHEN window_start <= ? THEN 1 ELSE count + 1 END,
+           window_start = CASE WHEN window_start <= ? THEN ? ELSE window_start END
+         RETURNING count`
+      ).bind(key, nowSeconds, expiredBefore, expiredBefore, nowSeconds).first();
+      if (row && Number.isFinite(Number(row.count))) return Number(row.count) <= limit;
+    } catch {
+      // Table not migrated yet or D1 unavailable: use the KV fallback below.
+    }
+  }
+  if (env.TENANTS) {
+    try {
+      const kvKey = `rate:${key}`;
+      const current = Number(await env.TENANTS.get(kvKey) || 0);
+      if (current >= limit) return false;
+      await env.TENANTS.put(kvKey, String(current + 1), { expirationTtl: Math.max(60, windowSeconds) });
+    } catch {
+      // Fail open.
+    }
+  }
+  return true;
+}
+
+async function clientIpHash(request) {
+  return sha256Hex(request.headers.get("CF-Connecting-IP") || "unknown");
+}
+
+async function limitPublicWrite(request, env, tenantId, scope, rule) {
+  return consumeRateLimit(env, `${scope}:${tenantId}`, await clientIpHash(request), rule);
+}
+
+// Owner/admin check for tenant-scoped owner endpoints (owner key, owner account session, or admin key).
+async function authorizeShopOwnerOrAdmin(request, env, tenantId) {
+  const isOwner = tenantId === "main"
+    ? await authorizeMainOwner(request, env)
+    : await authorizeTenantOwner(request, env, tenantId) || await authorizeTenantAccount(request, env, tenantId);
+  return Boolean(isOwner) || await authorizeAdmin(request, env);
+}
+
+function notificationFirstName(value) {
+  return cleanText(value, 80).trim().split(/\s+/)[0].slice(0, 40);
+}
+
+async function shopOwnerEmail(env, tenantId) {
+  if (!env.DB) return "";
+  let username = "";
+  if (env.TENANTS && tenantId !== "main") {
+    username = (await env.TENANTS.get(`tenant:${tenantId}`, "json"))?.owner_username || "";
+  }
+  if (!username) {
+    username = (await env.DB.prepare(
+      "SELECT username FROM account_tenants WHERE tenant_id = ?"
+    ).bind(tenantId).first())?.username || "";
+  }
+  if (!username) return "";
+  const account = await env.DB.prepare("SELECT email FROM accounts WHERE username = ?").bind(username).first();
+  const email = normalizeEmail(account?.email);
+  return EMAIL_PATTERN.test(email) ? email : "";
+}
+
+// Best-effort owner alert: always recorded in the owner_notifications outbox (the Craft app
+// polls GET /api/store/notifications) and emailed through Resend when configured. Events carry
+// order/booking references and a first name only. The shop push_subscriptions table is a
+// customer-facing newsletter list, so it is intentionally never used for owner alerts.
+async function deliverOwnerNotification(env, tenantId, event) {
+  const createdAt = new Date().toISOString();
+  if (env.DB) {
+    try {
+      await env.DB.prepare(
+        `INSERT INTO owner_notifications (id, tenant_id, kind, ref, title, body, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ).bind(crypto.randomUUID(), tenantId, event.kind, event.ref || "", event.title, event.body, createdAt).run();
+    } catch (error) {
+      console.error("Owner notification could not be recorded.", error?.message || error);
+    }
+  }
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) return;
+  try {
+    const email = await shopOwnerEmail(env, tenantId);
+    if (!email) return;
+    if (!await consumeRateLimit(env, "owner-email", tenantId, { limit: OWNER_EMAIL_HOURLY_LIMIT, windowSeconds: 3600 })) return;
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: env.EMAIL_FROM,
+        to: [email],
+        subject: event.title,
+        text: `${event.body}\n\nOpen the Craft app to review it.`
+      })
+    });
+    if (!response.ok) console.error("Owner notification email failed.", response.status);
+  } catch (error) {
+    console.error("Owner notification email failed.", error?.message || error);
+  }
+}
+
+// Never blocks or fails the customer request: runs under ctx.waitUntil and swallows errors.
+function notifyShopOwner(env, ctx, tenantId, buildEvent) {
+  const task = (async () => {
+    try {
+      await deliverOwnerNotification(env, tenantId, buildEvent());
+    } catch (error) {
+      console.error("Owner notification failed.", error?.message || error);
+    }
+  })();
+  if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(task);
+  return task;
+}
+
+function formatMoneyCents(cents, currency) {
+  return `${currency || "KES"} ${(Number(cents) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 async function accountSession(request, env) {
   if (!env.TENANTS) return null;
   const authorization = request.headers.get("Authorization") || "";
@@ -1544,9 +1699,10 @@ async function createAccountSessionResponse(env, username, fallbackEmail = "") {
   ).bind(username).first();
   if (!account) return jsonResponse({ error: "Craft could not load this account." }, 500);
   const sessionToken = generateTenantSecret();
+  const sessionHash = await sha256Hex(sessionToken);
   const passwordVersion = await env.TENANTS.get(`password-version:${username}`) || "";
   await env.TENANTS.put(
-    `session:${await sha256Hex(sessionToken)}`,
+    `session:${sessionHash}`,
     JSON.stringify({ username: account.username, password_version: passwordVersion }),
     { expirationTtl: SESSION_TTL_SECONDS }
   );
@@ -1559,7 +1715,7 @@ async function createAccountSessionResponse(env, username, fallbackEmail = "") {
     if (!tenant) continue;
     const ownerToken = generateTenantSecret();
     const tokenHash = await sha256Hex(ownerToken);
-    tenant.owner_token_hashes = [...new Set([...(tenant.owner_token_hashes || []), tenant.owner_token_hash, tokenHash].filter(Boolean))];
+    recordOwnerLoginToken(tenant, tokenHash, account.username, sessionHash, new Date().toISOString());
     await env.TENANTS.put(`tenant:${tenant.id}`, JSON.stringify(tenant));
     ownedTenants.push({
       id: tenant.id,
@@ -1708,6 +1864,12 @@ async function resetAccountPassword(env, input) {
   }
   await env.TENANTS.put(`password-version:${username}`, generateTenantSecret());
   await env.TENANTS.delete(resetTokenKey);
+  // Sessions die via password-version; also revoke the owner tokens those sessions minted.
+  try {
+    await revokeOwnerLoginTokens(env, username, { all: true });
+  } catch (error) {
+    console.error("Owner token revocation after password reset failed.", error?.message || error);
+  }
   return jsonResponse({ ok: true, message: "Your password has been reset. Sign in with your new password." });
 }
 
@@ -1762,9 +1924,56 @@ async function authorizeTenantOwnerToken(env, tenantId, supplied) {
   const tenant = await env.TENANTS.get(`tenant:${tenantId}`, "json");
   if (!tenant || typeof tenant.owner_token_hash !== "string") return false;
   const suppliedHash = await sha256Hex(supplied);
-  return [tenant.owner_token_hash, ...(Array.isArray(tenant.owner_token_hashes) ? tenant.owner_token_hashes : [])]
-    .filter(Boolean)
+  return [
+    tenant.owner_token_hash,
+    ...(Array.isArray(tenant.owner_token_hashes) ? tenant.owner_token_hashes : []),
+    ...(Array.isArray(tenant.owner_login_tokens) ? tenant.owner_login_tokens.map(entry => entry?.hash) : [])
+  ]
+    .filter(expected => typeof expected === "string" && expected)
     .some(expected => constantTimeEqual(suppliedHash, expected));
+}
+
+// Account sign-in mints a per-tenant owner token and records which session/user it belongs to so
+// logout and password reset can revoke it. Entries beyond the cap drop oldest-first. The shop's
+// original key (owner_token_hash) is never touched here.
+function recordOwnerLoginToken(tenant, tokenHash, username, sessionHash, nowIso) {
+  const login = [...(Array.isArray(tenant.owner_login_tokens) ? tenant.owner_login_tokens : []), {
+    hash: tokenHash, username, session: sessionHash, created_at: nowIso
+  }];
+  tenant.owner_login_tokens = login.slice(-MAX_OWNER_LOGIN_TOKENS);
+  // Older builds appended every login token to owner_token_hashes without a bound.
+  const legacy = (Array.isArray(tenant.owner_token_hashes) ? tenant.owner_token_hashes : [])
+    .filter(hash => hash && hash !== tenant.owner_token_hash);
+  tenant.owner_token_hashes = [
+    ...(tenant.owner_token_hash ? [tenant.owner_token_hash] : []),
+    ...legacy.slice(-MAX_LEGACY_OWNER_TOKENS)
+  ];
+}
+
+// Revoke owner tokens minted by sign-in for one account: a single session (logout) or all of
+// them plus unattributable legacy tokens (password reset). Returns how many tenants changed.
+async function revokeOwnerLoginTokens(env, username, { sessionHash = "", all = false } = {}) {
+  if (!env.DB || !env.TENANTS || !username) return 0;
+  const owned = await env.DB.prepare(
+    "SELECT tenant_id FROM account_tenants WHERE username = ? ORDER BY tenant_id"
+  ).bind(username).all();
+  let changed = 0;
+  for (const row of owned.results || []) {
+    const key = `tenant:${row.tenant_id}`;
+    const tenant = await env.TENANTS.get(key, "json");
+    if (!tenant) continue;
+    const before = JSON.stringify([tenant.owner_login_tokens, tenant.owner_token_hashes]);
+    tenant.owner_login_tokens = (Array.isArray(tenant.owner_login_tokens) ? tenant.owner_login_tokens : [])
+      .filter(entry => all ? entry?.username !== username : entry?.session !== sessionHash);
+    if (all) {
+      tenant.owner_token_hashes = tenant.owner_token_hash ? [tenant.owner_token_hash] : [];
+    }
+    if (JSON.stringify([tenant.owner_login_tokens, tenant.owner_token_hashes]) !== before) {
+      await env.TENANTS.put(key, JSON.stringify(tenant));
+      changed++;
+    }
+  }
+  return changed;
 }
 
 async function authorizeTenantAccount(request, env, tenantId) {
@@ -2446,44 +2655,6 @@ async function handlePublicThemeAsset(request, env, themeId, assetPath) {
   return new Response(object.body, { headers });
 }
 
-async function handleInternalThemeSkeleton(request, env, themeId, assetPath) {
-  if (request.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
-  }
-  if (request.method !== "GET" && request.method !== "HEAD") {
-    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, HEAD, OPTIONS" });
-  }
-  if (request.headers.get("X-Eshop-Theme-Internal") !== "preview" ||
-      request.headers.get("Sec-Fetch-Dest") === "document") {
-    return jsonResponse({ error: "Theme templates are internal editor assets." }, 404);
-  }
-  if (!FILLED_THEME_IDS.has(themeId) || !env.ASSETS) {
-    return jsonResponse({ error: "Theme template not found." }, 404);
-  }
-  let decodedPath;
-  try {
-    decodedPath = assetPath.split("/").map(segment => decodeURIComponent(segment)).join("/");
-  } catch {
-    return jsonResponse({ error: "Theme template not found." }, 404);
-  }
-  if (!["index.html", "schema-v2.json"].includes(decodedPath)) {
-    return jsonResponse({ error: "Theme template not found." }, 404);
-  }
-  const assetUrl = new URL(`/theme-skeletons/${themeId}/${decodedPath}`, request.url);
-  const assetResponse = await env.ASSETS.fetch(new Request(assetUrl, { method: request.method }));
-  if (!assetResponse.ok) return jsonResponse({ error: "Theme template not found." }, 404);
-  const headers = new Headers(assetResponse.headers);
-  headers.set("Cache-Control", "private, no-store");
-  headers.set("Content-Type", decodedPath.endsWith(".json")
-    ? "application/json; charset=utf-8"
-    : "text/html; charset=utf-8");
-  headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("Vary", "X-Eshop-Theme-Internal");
-  Object.entries(corsHeaders).forEach(([name, value]) => headers.set(name, value));
-  if (request.method === "HEAD") return new Response(null, { headers });
-  return new Response(assetResponse.body, { headers });
-}
-
 async function handleThemePublish(request, env, tenantId) {
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
@@ -2510,7 +2681,7 @@ async function handleThemePublish(request, env, tenantId) {
     return jsonResponse({ error: "Request body must be valid JSON." }, 400);
   }
   const themeId = input?.theme_id;
-  if (!FILLED_THEME_IDS.has(themeId)) {
+  if (!ACTIVE_THEME_IDS.has(themeId)) {
     return jsonResponse({
       error: `Theme "${cleanText(themeId, 80)}" has no verified shop-data mapping and cannot be published.`
     }, 422);
@@ -2719,13 +2890,78 @@ function storefrontOrderResponse(row) {
     shipping: Number(row.shipping_cents) / 100,
     total: Number(row.total_cents) / 100,
     payment_status: row.payment_status || "unpaid",
+    payment_method: row.payment_method || (row.payment_status === "paid" && row.payment_reference ? "paystack" : null),
+    discount_code: row.discount_code || null,
+    needs_attention: Number(row.needs_attention || 0) === 1,
+    attention_reason: row.attention_reason || null,
     items: JSON.parse(row.items_json).map(({ hold_ids, ...item }) => item),
     created_at: row.created_at,
     updated_at: row.updated_at
   };
 }
 
-async function handleStorefrontOrders(request, env, tenantId) {
+function normalizeDiscountCode(value) {
+  const code = typeof value === "string" ? value.trim().toUpperCase() : "";
+  return DISCOUNT_CODE_PATTERN.test(code) ? code : "";
+}
+
+function discountCodeResponse(row) {
+  return {
+    code: row.code,
+    type: row.type,
+    value: Number(row.value),
+    min_order_cents: Number(row.min_order_cents || 0),
+    starts_at: row.starts_at || null,
+    ends_at: row.ends_at || null,
+    usage_limit: row.usage_limit === null || row.usage_limit === undefined ? null : Number(row.usage_limit),
+    used_count: Number(row.used_count || 0),
+    active: Number(row.active) === 1,
+    created_at: row.created_at,
+    updated_at: row.updated_at
+  };
+}
+
+// Server-side discount evaluation against a subtotal in integer cents. Percent discounts round
+// down; fixed discounts never exceed the subtotal. Shipping is never discounted.
+function evaluateDiscountCode(row, subtotalCents, nowIso) {
+  if (!row || Number(row.active) !== 1) return { error: "That discount code is not valid." };
+  if (row.starts_at && row.starts_at > nowIso) return { error: "That discount code is not active yet." };
+  if (row.ends_at && row.ends_at <= nowIso) return { error: "That discount code has expired." };
+  if (row.usage_limit !== null && row.usage_limit !== undefined &&
+      Number(row.used_count || 0) >= Number(row.usage_limit)) {
+    return { error: "That discount code has reached its usage limit." };
+  }
+  if (subtotalCents < Number(row.min_order_cents || 0)) {
+    return { error: "This order does not meet the minimum spend for that discount code." };
+  }
+  const value = Number(row.value);
+  const discountCents = row.type === "percent"
+    ? Math.floor(subtotalCents * value / 100)
+    : Math.min(value, subtotalCents);
+  if (!Number.isSafeInteger(discountCents) || discountCents < 1) {
+    return { error: "That discount code does not apply to this order." };
+  }
+  return { discountCents };
+}
+
+async function loadDiscountCode(env, tenantId, code) {
+  try {
+    return await env.DB.prepare(
+      "SELECT * FROM discount_codes WHERE tenant_id=? AND code=?"
+    ).bind(tenantId, code).first();
+  } catch (error) {
+    console.error("Discount code lookup failed.", error?.message || error);
+    return null;
+  }
+}
+
+async function releaseDiscountUsage(env, tenantId, code) {
+  await env.DB.prepare(
+    "UPDATE discount_codes SET used_count=CASE WHEN used_count>0 THEN used_count-1 ELSE 0 END WHERE tenant_id=? AND code=?"
+  ).bind(tenantId, code).run();
+}
+
+async function handleStorefrontOrders(request, env, tenantId, ctx) {
   if (!env.DB) return jsonResponse({ error: "Order storage is not configured." }, 503);
   const isOwner = tenantId === "main"
     ? await authorizeMainOwner(request, env)
@@ -2756,6 +2992,9 @@ async function handleStorefrontOrders(request, env, tenantId) {
       return jsonResponse({ error: "Choose a valid order and fulfillment status." }, 400);
     }
     const updatedAt = new Date().toISOString();
+    const previous = await env.DB.prepare(
+      "SELECT status FROM storefront_orders WHERE tenant_id=? AND order_number=?"
+    ).bind(tenantId, orderNumber).first();
     const result = await env.DB.prepare(
       "UPDATE storefront_orders SET status=?,updated_at=? WHERE tenant_id=? AND order_number=?"
     ).bind(status, updatedAt, tenantId, orderNumber).run();
@@ -2763,6 +3002,9 @@ async function handleStorefrontOrders(request, env, tenantId) {
     const order = await env.DB.prepare(
       "SELECT * FROM storefront_orders WHERE tenant_id=? AND order_number=?"
     ).bind(tenantId, orderNumber).first();
+    if (status === "cancelled" && order.discount_code && previous?.status !== "cancelled") {
+      await releaseDiscountUsage(env, tenantId, order.discount_code);
+    }
     if (status === "cancelled") {
       const items = JSON.parse(order.items_json || "[]");
       for (const holdId of items.flatMap(item => Array.isArray(item.hold_ids) ? item.hold_ids : [])) {
@@ -2775,6 +3017,10 @@ async function handleStorefrontOrders(request, env, tenantId) {
   }
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, PATCH, OPTIONS" });
+  }
+  if (!await limitPublicWrite(request, env, tenantId, "order-ip", ORDER_IP_LIMIT) ||
+      !await consumeRateLimit(env, "order-shop", tenantId, ORDER_SHOP_LIMIT)) {
+    return jsonResponse({ error: "Too many orders from this connection. Try again shortly." }, 429, { "Retry-After": "60" });
   }
   const raw = await request.text();
   if (new TextEncoder().encode(raw).byteLength > 65_536) {
@@ -2894,7 +3140,19 @@ async function handleStorefrontOrders(request, env, tenantId) {
       hold_ids: holdIdsByProduct.get(String(product.id)) || []
     });
   }
-  const discountCents = 0;
+  let discountCents = 0;
+  let discountCode = "";
+  const requestedDiscountCode = input?.discount_code;
+  if (requestedDiscountCode !== undefined && requestedDiscountCode !== null &&
+      String(requestedDiscountCode).trim() !== "") {
+    const code = normalizeDiscountCode(requestedDiscountCode);
+    const evaluation = code
+      ? evaluateDiscountCode(await loadDiscountCode(env, tenantId, code), subtotalCents, now)
+      : { error: "That discount code is not valid." };
+    if (evaluation.error) return jsonResponse({ error: evaluation.error, error_code: "discount_invalid" }, 409);
+    discountCents = evaluation.discountCents;
+    discountCode = code;
+  }
   const deliveryFeeCents = Math.round(Number(catalog.store?.delivery_fee) * 100);
   const freeDeliveryCents = Math.round(Number(catalog.store?.free_delivery_over) * 100);
   const shippingCents = deliveryMethod === "delivery" &&
@@ -2907,19 +3165,56 @@ async function handleStorefrontOrders(request, env, tenantId) {
   const currency = /^[A-Z]{3}$/.test(catalog.store?.currency || "") ? catalog.store.currency : "KES";
   const createdAt = new Date().toISOString();
   const orderNumber = `ORD-${crypto.randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase()}`;
-  const statement = env.DB.prepare(
-    `INSERT OR IGNORE INTO storefront_orders
-     (tenant_id,order_number,idempotency_key,status,customer_name,customer_email,customer_phone,
-      shipping_address,city,postal_code,country,currency,subtotal_cents,discount_cents,shipping_cents,
-      total_cents,items_json,created_at,updated_at)
-     VALUES (?,?,?,'pending',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
-  ).bind(tenantId, orderNumber, idempotencyKey, customerName, customerEmail, customerPhone,
+  if (discountCode) {
+    // Reserve one redemption atomically so concurrent checkouts cannot exceed usage_limit.
+    const reserved = await env.DB.prepare(
+      `UPDATE discount_codes SET used_count=used_count+1,updated_at=?
+       WHERE tenant_id=? AND code=? AND active=1 AND (usage_limit IS NULL OR used_count<usage_limit)`
+    ).bind(createdAt, tenantId, discountCode).run();
+    if (!Number(reserved.meta?.changes || 0)) {
+      return jsonResponse({ error: "That discount code has reached its usage limit.", error_code: "discount_invalid" }, 409);
+    }
+  }
+  const orderValues = [tenantId, orderNumber, idempotencyKey, customerName, customerEmail, customerPhone,
     address, city, postalCode, country, currency, subtotalCents, discountCents, shippingCents,
-    totalCents, JSON.stringify(normalizedItems), createdAt, createdAt);
-  await statement.run();
-  const saved = await env.DB.prepare(
-    "SELECT * FROM storefront_orders WHERE tenant_id=? AND idempotency_key=?"
-  ).bind(tenantId, idempotencyKey).first();
+    totalCents, JSON.stringify(normalizedItems), createdAt, createdAt];
+  const statement = discountCode
+    ? env.DB.prepare(
+      `INSERT OR IGNORE INTO storefront_orders
+       (tenant_id,order_number,idempotency_key,status,customer_name,customer_email,customer_phone,
+        shipping_address,city,postal_code,country,currency,subtotal_cents,discount_cents,shipping_cents,
+        total_cents,items_json,created_at,updated_at,discount_code)
+       VALUES (?,?,?,'pending',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    ).bind(...orderValues, discountCode)
+    : env.DB.prepare(
+      `INSERT OR IGNORE INTO storefront_orders
+       (tenant_id,order_number,idempotency_key,status,customer_name,customer_email,customer_phone,
+        shipping_address,city,postal_code,country,currency,subtotal_cents,discount_cents,shipping_cents,
+        total_cents,items_json,created_at,updated_at)
+       VALUES (?,?,?,'pending',?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+    ).bind(...orderValues);
+  let saved;
+  try {
+    await statement.run();
+    saved = await env.DB.prepare(
+      "SELECT * FROM storefront_orders WHERE tenant_id=? AND idempotency_key=?"
+    ).bind(tenantId, idempotencyKey).first();
+  } catch (error) {
+    if (discountCode) await releaseDiscountUsage(env, tenantId, discountCode).catch(() => {});
+    throw error;
+  }
+  if (saved && saved.order_number !== orderNumber) {
+    // A concurrent request with the same idempotency key won the insert; give the redemption back.
+    if (discountCode) await releaseDiscountUsage(env, tenantId, discountCode).catch(() => {});
+    return jsonResponse({ order: storefrontOrderResponse(saved), duplicate: true }, 200);
+  }
+  const itemCount = normalizedItems.reduce((sum, item) => sum + item.quantity, 0);
+  notifyShopOwner(env, ctx, tenantId, () => ({
+    kind: "order",
+    ref: orderNumber,
+    title: `New order ${orderNumber}`,
+    body: `${notificationFirstName(customerName)} placed order ${orderNumber}: ${itemCount} item${itemCount === 1 ? "" : "s"}, ${formatMoneyCents(totalCents, currency)}${discountCode ? ` (code ${discountCode})` : ""}.`
+  }));
   return jsonResponse({ order: storefrontOrderResponse(saved) }, 201);
 }
 
@@ -3259,7 +3554,7 @@ async function handleNewsletter(request, env, tenantId, action) {
   return jsonResponse({ error: "Not found." }, 404);
 }
 
-async function handleStorefrontHoldRequests(request, env, tenantId) {
+async function handleStorefrontHoldRequests(request, env, tenantId, ctx) {
   if (!env.DB) return jsonResponse({ error: "Product hold storage is not configured." }, 503);
   const isOwner = tenantId === "main"
     ? await authorizeMainOwner(request, env)
@@ -3352,6 +3647,9 @@ async function handleStorefrontHoldRequests(request, env, tenantId) {
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, PATCH, OPTIONS" });
   }
+  if (!await limitPublicWrite(request, env, tenantId, "hold-ip", HOLD_IP_LIMIT)) {
+    return jsonResponse({ error: "Too many hold requests from this connection. Try again shortly." }, 429, { "Retry-After": "60" });
+  }
   const raw = await request.text();
   if (new TextEncoder().encode(raw).byteLength > 4096) {
     return jsonResponse({ error: "Hold request is too large." }, 413);
@@ -3398,11 +3696,25 @@ async function handleStorefrontHoldRequests(request, env, tenantId) {
   if (!Number.isSafeInteger(stock) || stock < quantity) {
     return jsonResponse({ error: "The requested quantity is not available in this shop's published catalogue." }, 409);
   }
+  // Holds are auto-approved for anonymous visitors, so bound what any one request, one
+  // connection, and all holds together can lock away from other customers.
+  if (quantity > MAX_ANON_HOLD_QUANTITY) {
+    return jsonResponse({ error: `Holds are limited to ${MAX_ANON_HOLD_QUANTITY} items per request. Place an order for larger quantities.` }, 409);
+  }
+  const holdStockCap = Math.max(1, Math.floor(stock * MAX_ANON_HOLD_STOCK_SHARE));
+  if (quantity > holdStockCap) {
+    return jsonResponse({ error: "That quantity is more than this shop allows to be held. Place an order instead." }, 409);
+  }
   const now = new Date().toISOString();
   const holdHours = Number.isSafeInteger(Number(catalog.store?.hold_duration_hours)) &&
     Number(catalog.store.hold_duration_hours) >= 1 && Number(catalog.store.hold_duration_hours) <= 720
     ? Number(catalog.store.hold_duration_hours)
     : 24;
+  if (!await consumeRateLimit(env, `hold-active:${tenantId}`, await clientIpHash(request), {
+    limit: MAX_ANON_ACTIVE_HOLDS_PER_IP, windowSeconds: holdHours * 60 * 60
+  })) {
+    return jsonResponse({ error: "You already have the maximum number of active holds with this shop. Complete or release one first." }, 429);
+  }
   const expiresAt = new Date(Date.now() + holdHours * 60 * 60 * 1000).toISOString();
   const id = crypto.randomUUID();
   await env.DB.batch([
@@ -3416,7 +3728,7 @@ async function handleStorefrontHoldRequests(request, env, tenantId) {
          WHERE active.tenant_id=? AND active.product_id=? AND active.status='approved' AND active.expires_at>?
        ),0))<=?`
     ).bind(id, tenantId, idempotencyKey, String(product.id), cleanText(product.name, 240), quantity,
-      customerName, contact, now, now, now, expiresAt, quantity, tenantId, String(product.id), now, stock),
+      customerName, contact, now, now, now, expiresAt, quantity, tenantId, String(product.id), now, holdStockCap),
     env.DB.prepare(
       `INSERT INTO storefront_event_daily (tenant_id,day,product_id,event_type,n)
        SELECT ?,?,?, 'booking',1
@@ -3429,6 +3741,14 @@ async function handleStorefrontHoldRequests(request, env, tenantId) {
   ).bind(tenantId, idempotencyKey).first();
   if (!saved) {
     return jsonResponse({ error: "There is not enough unreserved stock to hold this quantity." }, 409);
+  }
+  if (saved.id === id) {
+    notifyShopOwner(env, ctx, tenantId, () => ({
+      kind: "hold",
+      ref: id,
+      title: `New hold: ${cleanText(product.name, 80)}`,
+      body: `${notificationFirstName(customerName)} reserved ${quantity} x ${cleanText(product.name, 80)} until ${expiresAt.slice(0, 16).replace("T", " ")} UTC.`
+    }));
   }
   return jsonResponse({ hold: saved }, saved?.id === id ? 201 : 200, { "Cache-Control": "private, no-store" });
 }
@@ -3553,13 +3873,7 @@ async function serviceCatalogProduct(env, tenantId, serviceId) {
 }
 
 async function limitServiceAppointmentRequests(request, env, tenantId) {
-  if (!env.TENANTS) return true;
-  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-  const key = `service-appointment-limit:${tenantId}:${await sha256Hex(ip)}`;
-  const current = Number(await env.TENANTS.get(key) || 0);
-  if (current >= 10) return false;
-  await env.TENANTS.put(key, String(current + 1), { expirationTtl: 3600 });
-  return true;
+  return limitPublicWrite(request, env, tenantId, "service-appointment", { limit: 10, windowSeconds: 3600 });
 }
 
 async function handleServiceAvailability(request, env, tenantId) {
@@ -3665,7 +3979,7 @@ async function verifyServiceAppointmentPayment(env, tenantId, reference) {
   });
 }
 
-async function handleServiceAppointments(request, env, tenantId, action = "appointments") {
+async function handleServiceAppointments(request, env, tenantId, action = "appointments", ctx) {
   if (!env.DB) return jsonResponse({ error: "Appointment storage is not configured." }, 503);
   if (action === "availability") return await handleServiceAvailability(request, env, tenantId);
   if (action === "payment") {
@@ -3702,6 +4016,21 @@ async function handleServiceAppointments(request, env, tenantId, action = "appoi
     ).bind(tenantId, id).first();
     if (!appointment) return jsonResponse({ error: "Appointment not found." }, 404);
     const now = new Date().toISOString();
+    if (appointment.status === "confirming" && appointment.payment_status === "initializing" &&
+        Date.parse(appointment.updated_at) <= Date.now() - PAYMENT_INITIALIZING_STALE_MS) {
+      // A previous confirmation died between reserving the deposit and reaching Paystack:
+      // return the request to the pending queue so the owner can retry or decline it.
+      const recovered = await env.DB.prepare(
+        `UPDATE storefront_service_appointments
+         SET status='pending',payment_status='failed',payment_reference=NULL,payment_subaccount_code=NULL,
+             payment_authorization_url=NULL,updated_at=?
+         WHERE tenant_id=? AND id=? AND status='confirming' AND payment_status='initializing' AND updated_at=?`
+      ).bind(now, tenantId, id, appointment.updated_at).run();
+      if (Number(recovered.meta?.changes || 0)) {
+        appointment.status = "pending";
+        appointment.payment_status = "failed";
+      }
+    }
     if (appointment.status !== "pending" || appointment.request_expires_at <= now || appointment.starts_at <= now) {
       return jsonResponse({ error: "Only active pending appointment requests can be updated." }, 409);
     }
@@ -3910,6 +4239,12 @@ async function handleServiceAppointments(request, env, tenantId, action = "appoi
     }
     throw error;
   }
+  notifyShopOwner(env, ctx, tenantId, () => ({
+    kind: "booking",
+    ref: appointmentId,
+    title: `New booking request: ${cleanText(product.name, 80)}`,
+    body: `${notificationFirstName(customerName)} asked to book ${cleanText(product.name, 80)} for ${start.toISOString().slice(0, 16).replace("T", " ")} UTC.`
+  }));
   return jsonResponse({
     appointment: { id: appointmentId, service_name: cleanText(product.name, 240), starts_at: start.toISOString(), status: "pending" }
   }, 201, { "Cache-Control": "private, no-store" });
@@ -4217,12 +4552,19 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
     }
   }
 
-  const existing = await env.DB.prepare(
+  let existing = await env.DB.prepare(
     `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at
      FROM paystack_subaccounts WHERE tenant_id=?`
   ).bind(tenantId).first();
   if (existing?.status === "setup_in_progress") {
-    return jsonResponse({ error: "Paystack setup is already in progress for this shop." }, 409);
+    if (Date.parse(existing.updated_at) > Date.now() - PAYSTACK_SETUP_STALE_MS) {
+      return jsonResponse({ error: "Paystack setup is already in progress for this shop." }, 409);
+    }
+    // The setup that took this lock died before releasing it; clear it so the owner can retry.
+    await env.DB.prepare(
+      "DELETE FROM paystack_subaccounts WHERE tenant_id=? AND status='setup_in_progress' AND subaccount_code IS NULL"
+    ).bind(tenantId).run();
+    existing = null;
   }
   const existingForMode = existing?.account_mode === mode ? existing : null;
   const lockTime = new Date().toISOString();
@@ -4337,66 +4679,120 @@ function paystackAppointmentCallbackUrl(tenantId, reference) {
   return callback.toString();
 }
 
-async function updateOrderPayment(env, order, paymentStatus, paidAt = null) {
+function parseOrderItemsForSettlement(order) {
+  let items;
+  try {
+    items = JSON.parse(order.items_json || "[]");
+  } catch {
+    throw new Error("The saved order items are invalid; inventory was not changed.");
+  }
+  if (!Array.isArray(items)) throw new Error("The saved order items are invalid; inventory was not changed.");
+  const quantitiesBySku = new Map();
+  const holdIds = new Set();
+  for (const item of items) {
+    const sku = cleanText(item?.sku, 120).trim();
+    const productId = String(item?.product_id || "").slice(0, 80);
+    const quantity = Number(item?.quantity);
+    if (Array.isArray(item?.hold_ids)) item.hold_ids.forEach(id => {
+      if (typeof id === "string" && /^[a-f0-9-]{36}$/i.test(id)) holdIds.add(id);
+    });
+    if (!sku || !productId || !Number.isSafeInteger(quantity) || quantity < 1) continue;
+    const current = quantitiesBySku.get(sku) || { productId, quantity: 0 };
+    current.quantity += quantity;
+    quantitiesBySku.set(sku, current);
+  }
+  return { quantitiesBySku, holdIds };
+}
+
+// Idempotent per (order, sku): a repeat settlement never re-deducts or trips the stock trigger.
+function orderDeductionStatement(env, order, sku, item) {
+  return env.DB.prepare(
+    `INSERT OR IGNORE INTO storefront_inventory_deductions
+     (tenant_id,order_number,product_id,sku,quantity,created_at)
+     SELECT ?,?,?,?,?,? WHERE NOT EXISTS (
+       SELECT 1 FROM storefront_inventory_deductions WHERE tenant_id=? AND order_number=? AND sku=?)`
+  ).bind(order.tenant_id, order.order_number, item.productId, sku, item.quantity, new Date().toISOString(),
+    order.tenant_id, order.order_number, sku);
+}
+
+function isInsufficientStockError(error) {
+  return /insufficient_|pos_channel_not_allocated/.test(String(error?.message || ""));
+}
+
+// Records a payment as received. Money received is never lost: when the stock trigger refuses the
+// deduction (stock sold elsewhere since checkout) the order is still marked paid, deductible
+// lines are still deducted, and the order is flagged needs_attention for the owner.
+// `manual` ({ method, reference }) settles an owner-recorded payment instead of a Paystack one.
+async function updateOrderPayment(env, order, paymentStatus, paidAt = null, manual = null) {
   const updatedAt = new Date().toISOString();
-  if (paymentStatus === "paid") {
-    let items;
-    try {
-      items = JSON.parse(order.items_json || "[]");
-    } catch {
-      throw new Error("The saved order items are invalid; inventory was not changed.");
-    }
-    if (!Array.isArray(items)) throw new Error("The saved order items are invalid; inventory was not changed.");
-    const quantitiesBySku = new Map();
-    const holdIds = new Set();
-    for (const item of items) {
-      const sku = cleanText(item?.sku, 120).trim();
-      const productId = String(item?.product_id || "").slice(0, 80);
-      const quantity = Number(item?.quantity);
-      if (Array.isArray(item?.hold_ids)) item.hold_ids.forEach(id => {
-        if (typeof id === "string" && /^[a-f0-9-]{36}$/i.test(id)) holdIds.add(id);
-      });
-      if (!sku || !productId || !Number.isSafeInteger(quantity) || quantity < 1) continue;
-      const current = quantitiesBySku.get(sku) || { productId, quantity: 0 };
-      current.quantity += quantity;
-      quantitiesBySku.set(sku, current);
-    }
-    const statements = [];
-    for (const holdId of holdIds) {
-      statements.push(env.DB.prepare(
-        "UPDATE storefront_hold_requests SET status='released',released_at=?,updated_at=? WHERE tenant_id=? AND id=? AND status='approved'"
-      ).bind(updatedAt, updatedAt, order.tenant_id, holdId));
-    }
-    for (const [sku, item] of quantitiesBySku) {
-      const allocation = await env.DB.prepare(
-        "SELECT web_enabled FROM main_store_inventory WHERE tenant_id=? AND sku=?"
-      ).bind(order.tenant_id, sku).first();
-      if (!allocation) continue;
-      statements.push(env.DB.prepare(
-        `INSERT OR IGNORE INTO storefront_inventory_deductions
-         (tenant_id,order_number,product_id,sku,quantity,created_at) VALUES (?,?,?,?,?,?)`
-      ).bind(order.tenant_id, order.order_number, item.productId, sku, item.quantity, new Date().toISOString()));
-    }
-    statements.push(env.DB.prepare(
+  if (paymentStatus !== "paid") {
+    await env.DB.prepare(
       `UPDATE storefront_orders
        SET payment_status=?,paid_at=COALESCE(?,paid_at),updated_at=?
        WHERE tenant_id=? AND order_number=? AND payment_reference=? AND payment_status!='paid'`
-    ).bind(paymentStatus, paidAt, updatedAt, order.tenant_id, order.order_number, order.payment_reference));
-    await env.DB.batch(statements);
-    return;
+    ).bind(paymentStatus, paidAt, updatedAt, order.tenant_id, order.order_number, order.payment_reference).run();
+    return { settled: false, needsAttention: false, attentionReason: null };
   }
-  await env.DB.prepare(
-    `UPDATE storefront_orders
-     SET payment_status=?,paid_at=COALESCE(?,paid_at),updated_at=?
-     WHERE tenant_id=? AND order_number=? AND payment_reference=? AND payment_status!='paid'`
-  ).bind(paymentStatus, paidAt, updatedAt, order.tenant_id, order.order_number, order.payment_reference).run();
-  if (paymentStatus === "paid") {
-    for (const holdId of items.flatMap(item => Array.isArray(item.hold_ids) ? item.hold_ids : [])) {
-      await env.DB.prepare(
-        "UPDATE storefront_hold_requests SET status='released',released_at=?,updated_at=? WHERE tenant_id=? AND id=? AND status='approved'"
-      ).bind(updatedAt, updatedAt, order.tenant_id, holdId).run();
+  const { quantitiesBySku, holdIds } = parseOrderItemsForSettlement(order);
+  const holdStatements = [...holdIds].map(holdId => env.DB.prepare(
+    "UPDATE storefront_hold_requests SET status='released',released_at=?,updated_at=? WHERE tenant_id=? AND id=? AND status='approved'"
+  ).bind(updatedAt, updatedAt, order.tenant_id, holdId));
+  const deductions = [];
+  for (const [sku, item] of quantitiesBySku) {
+    const allocation = await env.DB.prepare(
+      "SELECT web_enabled FROM main_store_inventory WHERE tenant_id=? AND sku=?"
+    ).bind(order.tenant_id, sku).first();
+    if (allocation) deductions.push({ sku, statement: orderDeductionStatement(env, order, sku, item) });
+  }
+  const paidUpdate = (needsAttention, reason) => manual
+    ? env.DB.prepare(
+      `UPDATE storefront_orders
+       SET payment_status='paid',paid_at=COALESCE(?,paid_at),payment_method=?,manual_payment_reference=?,
+           needs_attention=?,attention_reason=?,updated_at=?
+       WHERE tenant_id=? AND order_number=? AND payment_status!='paid'`
+    ).bind(paidAt, manual.method, manual.reference || null, needsAttention ? 1 : 0, reason,
+      updatedAt, order.tenant_id, order.order_number)
+    : needsAttention
+      ? env.DB.prepare(
+        `UPDATE storefront_orders
+         SET payment_status='paid',paid_at=COALESCE(?,paid_at),needs_attention=1,attention_reason=?,updated_at=?
+         WHERE tenant_id=? AND order_number=? AND payment_reference=? AND payment_status!='paid'`
+      ).bind(paidAt, reason, updatedAt, order.tenant_id, order.order_number, order.payment_reference)
+      : env.DB.prepare(
+        `UPDATE storefront_orders
+         SET payment_status=?,paid_at=COALESCE(?,paid_at),updated_at=?
+         WHERE tenant_id=? AND order_number=? AND payment_reference=? AND payment_status!='paid'`
+      ).bind("paid", paidAt, updatedAt, order.tenant_id, order.order_number, order.payment_reference);
+  try {
+    await env.DB.batch([...holdStatements, ...deductions.map(item => item.statement), paidUpdate(false, null)]);
+    return { settled: true, needsAttention: false, attentionReason: null };
+  } catch (error) {
+    if (!deductions.length || !isInsufficientStockError(error)) throw error;
+  }
+  // Stock is short: the batch rolled back as a whole. Release the order's own holds first (they would
+  // otherwise count against it), deduct what still can be, then record the payment and flag the order.
+  if (holdStatements.length) await env.DB.batch(holdStatements);
+  const failedSkus = [];
+  for (const { sku, statement } of deductions) {
+    try {
+      await statement.run();
+    } catch (error) {
+      if (!isInsufficientStockError(error)) throw error;
+      failedSkus.push(sku);
     }
   }
+  const reason = failedSkus.length ? `insufficient_stock:${failedSkus.join(",")}`.slice(0, 300) : null;
+  await env.DB.batch([paidUpdate(failedSkus.length > 0, reason)]);
+  return { settled: true, needsAttention: failedSkus.length > 0, attentionReason: reason };
+}
+
+function notifyOrderNeedsAttention(env, ctx, order, settlement) {
+  notifyShopOwner(env, ctx, order.tenant_id, () => ({
+    kind: "attention",
+    ref: order.order_number,
+    title: `Payment received, stock short: ${order.order_number}`,
+    body: `Order ${order.order_number} was paid but some items are out of stock (${settlement.attentionReason || "stock"}). Contact the customer or restock.`
+  }));
 }
 
 function transactionMatchesOrder(transaction, order) {
@@ -4412,7 +4808,7 @@ function transactionMatchesSubaccount(transaction, subaccountCode, mode) {
   return mode === "live" ? actualCode === subaccountCode : !actualCode || actualCode === subaccountCode;
 }
 
-async function handlePaystackPayment(request, env, tenantId, action) {
+async function handlePaystackPayment(request, env, tenantId, action, ctx) {
   if (!env.DB) return jsonResponse({ error: "Payment storage is not configured." }, 503);
   if (!env.PAYSTACK_SECRET_KEY) return jsonResponse({ error: "Paystack is not configured on this server." }, 503);
   const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
@@ -4420,6 +4816,9 @@ async function handlePaystackPayment(request, env, tenantId, action) {
 
   if (action === "initialize") {
     if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+    if (!await limitPublicWrite(request, env, tenantId, "payment-init-ip", PAYMENT_INIT_IP_LIMIT)) {
+      return jsonResponse({ error: "Too many payment attempts from this connection. Try again shortly." }, 429, { "Retry-After": "60" });
+    }
     const raw = await request.text();
     if (new TextEncoder().encode(raw).byteLength > 8_192) {
       return jsonResponse({ error: "Payment request exceeds the 8 KB limit." }, 413);
@@ -4450,7 +4849,9 @@ async function handlePaystackPayment(request, env, tenantId, action) {
         authorization_url: order.payment_authorization_url
       });
     }
-    if (order.payment_status === "initializing") {
+    const initializingIsStale = order.payment_status === "initializing" &&
+      !(Date.parse(order.updated_at) > Date.now() - PAYMENT_INITIALIZING_STALE_MS);
+    if (order.payment_status === "initializing" && !initializingIsStale) {
       return jsonResponse({ error: "Payment setup is already in progress for this order." }, 409);
     }
     const subaccount = await getEffectivePaystackSubaccount(env, tenantId);
@@ -4466,8 +4867,10 @@ async function handlePaystackPayment(request, env, tenantId, action) {
     const reserved = await env.DB.prepare(
       `UPDATE storefront_orders SET payment_reference=?,payment_subaccount_code=?,payment_status='initializing',
          payment_authorization_url=NULL,paid_at=NULL,updated_at=?
-       WHERE tenant_id=? AND order_number=? AND payment_status IN ('unpaid','failed')`
-    ).bind(reference, subaccount.subaccount_code, new Date().toISOString(), tenantId, orderNumber).run();
+       WHERE tenant_id=? AND order_number=?
+         AND (payment_status IN ('unpaid','failed') OR (payment_status='initializing' AND updated_at<=?))`
+    ).bind(reference, subaccount.subaccount_code, new Date().toISOString(), tenantId, orderNumber,
+      new Date(Date.now() - PAYMENT_INITIALIZING_STALE_MS).toISOString()).run();
     if (!Number(reserved.meta?.changes || 0)) {
       return jsonResponse({ error: "Could not reserve payment setup for this order. Retry once." }, 409);
     }
@@ -4568,7 +4971,8 @@ async function handlePaystackPayment(request, env, tenantId, action) {
     const paymentStatus = transaction.status === "success" ? "paid"
       : ["failed", "abandoned"].includes(transaction.status) ? "failed" : "pending";
     const paidAt = paymentStatus === "paid" ? new Date().toISOString() : null;
-    await updateOrderPayment(env, order, paymentStatus, paidAt);
+    const settlement = await updateOrderPayment(env, order, paymentStatus, paidAt);
+    if (settlement.needsAttention) notifyOrderNeedsAttention(env, ctx, order, settlement);
     return jsonResponse({
       tenant_id: tenantId,
       order: storefrontOrderResponse({ ...order, payment_status: paymentStatus, paid_at: paidAt }),
@@ -4580,7 +4984,7 @@ async function handlePaystackPayment(request, env, tenantId, action) {
   return jsonResponse({ error: "Unsupported payment action." }, 404);
 }
 
-async function handlePaystackWebhook(request, env) {
+async function handlePaystackWebhook(request, env, ctx) {
   if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
   if (!env.DB || !env.PAYSTACK_SECRET_KEY) return jsonResponse({ error: "Paystack webhook is not configured." }, 503);
   const raw = await request.text();
@@ -4631,7 +5035,8 @@ async function handlePaystackWebhook(request, env) {
     return jsonResponse({ error: "Payment does not match the expected order amount and currency." }, 409);
   }
   if (order.payment_status !== "paid") {
-    await updateOrderPayment(env, order, "paid", new Date().toISOString());
+    const settlement = await updateOrderPayment(env, order, "paid", new Date().toISOString());
+    if (settlement.needsAttention) notifyOrderNeedsAttention(env, ctx, order, settlement);
   }
   return jsonResponse({ ok: true, payment_status: "paid", order_number: order.order_number });
 }
@@ -4709,6 +5114,11 @@ async function handleInventory(request, env, tenantId, action) {
 
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+  }
+  // Shared-stock sales are written by the owner's POS register (EshopInventoryBridge sends the
+  // shop key or account session). Never accept them anonymously: they can zero a shop's stock.
+  if (!await authorizeShopOwnerOrAdmin(request, env, tenantId)) {
+    return jsonResponse({ error: "Shop owner authorization required." }, 401);
   }
   let input;
   try {
@@ -4889,6 +5299,10 @@ async function handleTenants(request, env) {
   if (!account) return jsonResponse({ error: "Sign in to an account to create a shop." }, 401);
   if (await env.TENANTS.get(`tenant:${id}`)) {
     return jsonResponse({ error: "That shop address is already in use." }, 409);
+  }
+  const tombstone = await env.TENANTS.get(tombstoneKey(id), "json");
+  if (tombstone && tombstone.owner_username !== account.username) {
+    return jsonResponse({ error: "That shop address was recently removed and is reserved. Choose another address." }, 409);
   }
   if (env.DEV_SKIP_SHOP_CREATE_LIMIT !== "true" &&
       !await limitAuthRequests(request, env, "shop-create", 5, 3600)) {
@@ -5377,6 +5791,9 @@ async function handleStorefrontEventAnalytics(request, env, tenantId) {
     return jsonResponse({ error: "Shop not found." }, 404);
   }
   if (request.method === "POST") {
+    if (!await limitPublicWrite(request, env, tenantId, "analytics-events-ip", ANALYTICS_EVENT_IP_LIMIT)) {
+      return jsonResponse({ error: "Too many analytics events from this connection." }, 429, { "Retry-After": "60" });
+    }
     const raw = await request.text();
     if (new TextEncoder().encode(raw).byteLength > 16_384) {
       return jsonResponse({ error: "Analytics payload is too large." }, 413);
@@ -5406,14 +5823,38 @@ async function handleStorefrontEventAnalytics(request, env, tenantId) {
       if (total > 500) return jsonResponse({ error: "An analytics item exceeds the count limit." }, 400);
       coalesced.set(key, { productId, eventType, n: total });
     }
+    // Only products that exist in this shop's published catalogue are recorded (under their canonical
+    // id), so anonymous visitors cannot grow the table with arbitrary ids. Unknown ids are ignored.
+    const catalogRow = await env.DB.prepare(
+      "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
+    ).bind(tenantId).first();
+    const known = new Map();
+    let ignored = coalesced.size;
+    if (catalogRow?.payload) {
+      ignored = 0;
+      const catalog = JSON.parse(catalogRow.payload);
+      const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at || "");
+      for (const item of coalesced.values()) {
+        const product = await resolveProduct(item.productId);
+        if (!product) {
+          ignored++;
+          continue;
+        }
+        const canonicalId = String(product.id);
+        const key = `${canonicalId} ${item.eventType}`;
+        known.set(key, { productId: canonicalId, eventType: item.eventType, n: Math.min(500, (known.get(key)?.n || 0) + item.n) });
+      }
+    }
     const day = new Date().toISOString().slice(0, 10);
-    const statements = [...coalesced.values()].map(item => env.DB.prepare(
+    const statements = [...known.values()].map(item => env.DB.prepare(
       `INSERT INTO storefront_event_daily (tenant_id,day,product_id,event_type,n)
        VALUES (?,?,?,?,?)
        ON CONFLICT(tenant_id,day,product_id,event_type) DO UPDATE SET n=n+excluded.n`
     ).bind(tenantId, day, item.productId, item.eventType, item.n));
-    await env.DB.batch(statements);
-    return jsonResponse({ ok: true, accepted: statements.length }, 202, { "Cache-Control": "no-store" });
+    if (statements.length) await env.DB.batch(statements);
+    return jsonResponse({
+      ok: true, accepted: statements.length, ignored
+    }, 202, { "Cache-Control": "no-store" });
   }
   if (request.method === "GET") {
     const isOwner = tenantId === "main"
@@ -6078,6 +6519,260 @@ async function handlePush(request, env, tenantId, action) {
   });
 }
 
+// POST /api/store/orders/:order_number/payment (owner): record cash / M-Pesa / bank / other payment.
+async function handleOrderManualPayment(request, env, tenantId, orderNumber, ctx) {
+  if (!env.DB) return jsonResponse({ error: "Order storage is not configured." }, 503);
+  if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+  if (!await authorizeShopOwnerOrAdmin(request, env, tenantId)) {
+    return jsonResponse({ error: "Shop owner authorization required." }, 401);
+  }
+  let input;
+  try {
+    const raw = await request.text();
+    if (new TextEncoder().encode(raw).byteLength > 4096) {
+      return jsonResponse({ error: "Payment record is too large." }, 413);
+    }
+    input = raw.trim() ? JSON.parse(raw) : {};
+  } catch {
+    return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+  }
+  const method = typeof input?.method === "string" ? input.method.trim() : "";
+  if (!MANUAL_PAYMENT_METHODS.has(method)) {
+    return jsonResponse({ error: "Payment method must be cash, mobile_money, bank or other." }, 400);
+  }
+  const reference = cleanText(input?.reference, 120).trim();
+  const order = await env.DB.prepare(
+    "SELECT * FROM storefront_orders WHERE tenant_id=? AND order_number=?"
+  ).bind(tenantId, orderNumber).first();
+  if (!order) return jsonResponse({ error: "Order not found." }, 404);
+  const totalCents = Number(order.total_cents);
+  if (input?.amount_cents !== undefined && input.amount_cents !== null &&
+      (!Number.isSafeInteger(input.amount_cents) || input.amount_cents !== totalCents)) {
+    return jsonResponse({
+      error: "Only full payments can be recorded. Leave amount_cents out or send the exact order total.",
+      expected_amount_cents: totalCents
+    }, 400);
+  }
+  if (order.payment_status === "paid") {
+    return jsonResponse({ ok: true, duplicate: true, order: storefrontOrderResponse(order) });
+  }
+  if (order.status === "cancelled") {
+    return jsonResponse({ error: "This order has been cancelled." }, 409);
+  }
+  const settlement = await updateOrderPayment(env, order, "paid", new Date().toISOString(), { method, reference });
+  const updated = await env.DB.prepare(
+    "SELECT * FROM storefront_orders WHERE tenant_id=? AND order_number=?"
+  ).bind(tenantId, orderNumber).first();
+  if (settlement.needsAttention) notifyOrderNeedsAttention(env, ctx, order, settlement);
+  return jsonResponse({
+    ok: true,
+    duplicate: false,
+    needs_attention: settlement.needsAttention,
+    order: storefrontOrderResponse(updated || order)
+  });
+}
+
+function parseDiscountTimestamp(value) {
+  if (value === undefined || value === null || value === "") return { value: null };
+  const parsed = typeof value === "string" ? new Date(value) : null;
+  if (!parsed || !Number.isFinite(parsed.getTime())) return { error: true };
+  return { value: parsed.toISOString() };
+}
+
+// Validates the owner-supplied fields of a discount code; `base` supplies defaults for PATCH.
+function parseDiscountFields(input, base = {}) {
+  const type = input.type === undefined ? base.type : input.type;
+  const value = input.value === undefined ? Number(base.value) : input.value;
+  if (!["percent", "fixed"].includes(type)) return { error: "Discount type must be percent or fixed." };
+  if (!Number.isSafeInteger(value) || value < 1 || (type === "percent" ? value > 100 : value > 100_000_000)) {
+    return { error: type === "percent"
+      ? "A percent discount must be a whole number from 1 to 100."
+      : "A fixed discount must be a whole number of cents (minor units) greater than zero." };
+  }
+  const minOrder = input.min_order_cents === undefined ? Number(base.min_order_cents || 0) : input.min_order_cents;
+  if (!Number.isSafeInteger(minOrder) || minOrder < 0) return { error: "min_order_cents must be a whole number of cents, 0 or more." };
+  const starts = parseDiscountTimestamp(input.starts_at === undefined ? base.starts_at : input.starts_at);
+  const ends = parseDiscountTimestamp(input.ends_at === undefined ? base.ends_at : input.ends_at);
+  if (starts.error || ends.error) return { error: "starts_at and ends_at must be ISO 8601 date-times." };
+  if (starts.value && ends.value && ends.value <= starts.value) return { error: "ends_at must be after starts_at." };
+  const limitInput = input.usage_limit === undefined ? base.usage_limit : input.usage_limit;
+  const usageLimit = limitInput === null || limitInput === undefined ? null : limitInput;
+  if (usageLimit !== null && (!Number.isSafeInteger(usageLimit) || usageLimit < 1)) {
+    return { error: "usage_limit must be a whole number of at least 1, or null for unlimited." };
+  }
+  const activeInput = input.active === undefined ? (base.active === undefined ? true : Number(base.active) === 1) : input.active;
+  if (typeof activeInput !== "boolean") return { error: "active must be true or false." };
+  return { fields: { type, value, minOrder, startsAt: starts.value, endsAt: ends.value, usageLimit, active: activeInput ? 1 : 0 } };
+}
+
+// /api/store/discounts (owner): GET list, POST create, PATCH update by code, DELETE by ?code=.
+async function handleDiscountCodes(request, env, tenantId) {
+  if (!env.DB) return jsonResponse({ error: "Discount storage is not configured." }, 503);
+  if (!["GET", "POST", "PATCH", "DELETE"].includes(request.method)) {
+    return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, PATCH, DELETE, OPTIONS" });
+  }
+  if (!await authorizeShopOwnerOrAdmin(request, env, tenantId)) {
+    return jsonResponse({ error: "Shop owner authorization required." }, 401);
+  }
+  const noStore = { "Cache-Control": "private, no-store" };
+  if (request.method === "GET") {
+    const listed = await env.DB.prepare(
+      "SELECT * FROM discount_codes WHERE tenant_id=? ORDER BY created_at DESC LIMIT 200"
+    ).bind(tenantId).all();
+    return jsonResponse({ discounts: (listed.results || []).map(discountCodeResponse) }, 200, noStore);
+  }
+  let input = {};
+  if (request.method !== "DELETE") {
+    try {
+      const raw = await request.text();
+      if (new TextEncoder().encode(raw).byteLength > 4096) return jsonResponse({ error: "Discount request is too large." }, 413);
+      input = JSON.parse(raw);
+    } catch {
+      return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+    }
+    if (!input || typeof input !== "object" || Array.isArray(input)) {
+      return jsonResponse({ error: "Request body must be a JSON object." }, 400);
+    }
+  }
+  const code = normalizeDiscountCode(request.method === "DELETE"
+    ? new URL(request.url).searchParams.get("code") : input.code);
+  if (!code) {
+    return jsonResponse({ error: "Discount codes use 2-32 letters, numbers, hyphens or underscores." }, 400);
+  }
+  const now = new Date().toISOString();
+  if (request.method === "DELETE") {
+    const removed = await env.DB.prepare(
+      "DELETE FROM discount_codes WHERE tenant_id=? AND code=?"
+    ).bind(tenantId, code).run();
+    if (!Number(removed.meta?.changes || 0)) return jsonResponse({ error: "Discount code not found." }, 404);
+    return jsonResponse({ ok: true, deleted: code }, 200, noStore);
+  }
+  if (request.method === "POST") {
+    const parsed = parseDiscountFields(input);
+    if (parsed.error) return jsonResponse({ error: parsed.error }, 400);
+    const count = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM discount_codes WHERE tenant_id=?"
+    ).bind(tenantId).first();
+    if (Number(count?.n || 0) >= 200) return jsonResponse({ error: "A shop can have up to 200 discount codes." }, 409);
+    const f = parsed.fields;
+    const inserted = await env.DB.prepare(
+      `INSERT OR IGNORE INTO discount_codes
+       (tenant_id,code,type,value,min_order_cents,starts_at,ends_at,usage_limit,used_count,active,created_at,updated_at)
+       VALUES (?,?,?,?,?,?,?,?,0,?,?,?)`
+    ).bind(tenantId, code, f.type, f.value, f.minOrder, f.startsAt, f.endsAt, f.usageLimit, f.active, now, now).run();
+    if (!Number(inserted.meta?.changes || 0)) return jsonResponse({ error: "That discount code already exists." }, 409);
+    const row = await loadDiscountCode(env, tenantId, code);
+    return jsonResponse({ discount: discountCodeResponse(row) }, 201, noStore);
+  }
+  const existing = await loadDiscountCode(env, tenantId, code);
+  if (!existing) return jsonResponse({ error: "Discount code not found." }, 404);
+  const parsed = parseDiscountFields(input, existing);
+  if (parsed.error) return jsonResponse({ error: parsed.error }, 400);
+  const f = parsed.fields;
+  await env.DB.prepare(
+    `UPDATE discount_codes SET type=?,value=?,min_order_cents=?,starts_at=?,ends_at=?,usage_limit=?,active=?,updated_at=?
+     WHERE tenant_id=? AND code=?`
+  ).bind(f.type, f.value, f.minOrder, f.startsAt, f.endsAt, f.usageLimit, f.active, now, tenantId, code).run();
+  return jsonResponse({ discount: discountCodeResponse(await loadDiscountCode(env, tenantId, code)) }, 200, noStore);
+}
+
+// POST /api/discounts/validate (public): preview a code against a cart without redeeming it.
+async function handleDiscountValidate(request, env, tenantId) {
+  if (!env.DB) return jsonResponse({ error: "Discount storage is not configured." }, 503);
+  if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+  if (!await limitPublicWrite(request, env, tenantId, "discount-validate-ip", DISCOUNT_VALIDATE_IP_LIMIT)) {
+    return jsonResponse({ error: "Too many discount checks. Try again shortly." }, 429, { "Retry-After": "60" });
+  }
+  let input;
+  try {
+    const raw = await request.text();
+    if (new TextEncoder().encode(raw).byteLength > 16_384) return jsonResponse({ error: "Request is too large." }, 413);
+    input = JSON.parse(raw);
+  } catch {
+    return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+  }
+  const code = normalizeDiscountCode(input?.code);
+  if (!code || !Array.isArray(input?.items) || !input.items.length || input.items.length > 50) {
+    return jsonResponse({ valid: false, error: "Enter a discount code and send the cart items." }, 200, { "Cache-Control": "no-store" });
+  }
+  const catalogRow = await env.DB.prepare(
+    "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id=?"
+  ).bind(tenantId).first();
+  if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
+  const catalog = JSON.parse(catalogRow.payload);
+  const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
+  let subtotalCents = 0;
+  for (const requested of input.items) {
+    const product = await resolveProduct(requested?.product_id);
+    const quantity = Number(requested?.quantity);
+    const priceCents = Math.round(Number(product?.price) * 100);
+    if (!product || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99 ||
+        !Number.isSafeInteger(priceCents) || priceCents < 0) {
+      return jsonResponse({ valid: false, error: "An item is unavailable or has an invalid quantity." }, 200, { "Cache-Control": "no-store" });
+    }
+    subtotalCents += priceCents * quantity;
+  }
+  const row = await loadDiscountCode(env, tenantId, code);
+  const evaluation = evaluateDiscountCode(row, subtotalCents, new Date().toISOString());
+  if (evaluation.error) return jsonResponse({ valid: false, error: evaluation.error }, 200, { "Cache-Control": "no-store" });
+  return jsonResponse({
+    valid: true,
+    code,
+    type: row.type,
+    subtotal_cents: subtotalCents,
+    discount_cents: evaluation.discountCents,
+    discount: evaluation.discountCents / 100
+  }, 200, { "Cache-Control": "no-store" });
+}
+
+// GET /api/store/notifications and POST /api/store/notifications/read (owner).
+async function handleOwnerNotifications(request, env, tenantId, action) {
+  if (!env.DB) return jsonResponse({ error: "Notification storage is not configured." }, 503);
+  if (!await authorizeShopOwnerOrAdmin(request, env, tenantId)) {
+    return jsonResponse({ error: "Shop owner authorization required." }, 401);
+  }
+  const noStore = { "Cache-Control": "private, no-store" };
+  if (action === "read") {
+    if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+    let input;
+    try {
+      input = await request.json();
+    } catch {
+      return jsonResponse({ error: "Request body must be valid JSON." }, 400);
+    }
+    const readAt = new Date().toISOString();
+    if (input?.all === true) {
+      await env.DB.prepare(
+        "UPDATE owner_notifications SET read_at=? WHERE tenant_id=? AND read_at IS NULL"
+      ).bind(readAt, tenantId).run();
+      return jsonResponse({ ok: true }, 200, noStore);
+    }
+    const ids = Array.isArray(input?.ids) ? input.ids : [];
+    if (!ids.length || ids.length > 100 || ids.some(id => typeof id !== "string" || !/^[a-f0-9-]{36}$/i.test(id))) {
+      return jsonResponse({ error: "Send up to 100 notification ids, or all: true." }, 400);
+    }
+    await env.DB.batch(ids.map(id => env.DB.prepare(
+      "UPDATE owner_notifications SET read_at=? WHERE tenant_id=? AND id=? AND read_at IS NULL"
+    ).bind(readAt, tenantId, id)));
+    return jsonResponse({ ok: true }, 200, noStore);
+  }
+  if (request.method !== "GET") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, OPTIONS" });
+  const params = new URL(request.url).searchParams;
+  const limit = Math.min(100, Math.max(1, Number(params.get("limit")) || 50));
+  const since = params.get("since") || "";
+  const listed = await env.DB.prepare(
+    `SELECT id, kind, ref, title, body, created_at, read_at FROM owner_notifications
+     WHERE tenant_id=? AND created_at>? ORDER BY created_at DESC LIMIT ?`
+  ).bind(tenantId, /^\d{4}-\d{2}-\d{2}T/.test(since) ? since : "", limit).all();
+  const unread = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM owner_notifications WHERE tenant_id=? AND read_at IS NULL"
+  ).bind(tenantId).first();
+  return jsonResponse({
+    notifications: listed.results || [],
+    unread_count: Number(unread?.n || 0)
+  }, 200, noStore);
+}
+
 async function deleteTenant(request, env, tenantId) {
   if (!env.TENANTS || !env.DB) return jsonResponse({ error: "Tenant storage is not configured." }, 503);
   if (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId)) {
@@ -6089,10 +6784,118 @@ async function deleteTenant(request, env, tenantId) {
   if (!await authorizeTenantOwner(request, env, tenantId) && !await authorizeAdmin(request, env)) {
     return jsonResponse({ error: "Shop owner authorization required to delete this website." }, 401);
   }
-  await env.DB.prepare("DELETE FROM catalog_snapshots WHERE tenant_id = ?").bind(tenantId).run();
-  await env.DB.prepare("DELETE FROM account_tenants WHERE tenant_id = ?").bind(tenantId).run();
+  const ownerUsername = tenant.owner_username || (await env.DB.prepare(
+    "SELECT username FROM account_tenants WHERE tenant_id = ?"
+  ).bind(tenantId).first())?.username || "";
+  // Reserve the address first: if a later step fails the shop can be deleted again (the tenant
+  // record, which carries the owner keys, is removed last) and nobody else can claim the id.
+  await env.TENANTS.put(tombstoneKey(tenantId), JSON.stringify({
+    deleted_at: new Date().toISOString(), owner_username: ownerUsername
+  }), { expirationTtl: TENANT_TOMBSTONE_TTL_SECONDS });
+
+  const report = { custom_hostname_released: true, failed_tables: [], paystack_subaccount: "removed", r2_objects_deleted: 0 };
+  try {
+    const hostname = await env.DB.prepare(
+      "SELECT hostname, cloudflare_hostname_id FROM custom_hostnames WHERE tenant_id=?"
+    ).bind(tenantId).first();
+    if (hostname) {
+      report.custom_hostname_released = false;
+      if (env.CLOUDFLARE_ZONE_ID && env.CLOUDFLARE_API_TOKEN) {
+        const response = await fetch(
+          `https://api.cloudflare.com/client/v4/zones/${encodeURIComponent(env.CLOUDFLARE_ZONE_ID)}/custom_hostnames/${encodeURIComponent(hostname.cloudflare_hostname_id)}`,
+          { method: "DELETE", headers: { Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}` } }
+        );
+        report.custom_hostname_released = response.ok || response.status === 404;
+      }
+    }
+  } catch (error) {
+    report.custom_hostname_released = false;
+    console.error("Custom hostname release failed during shop deletion.", error?.message || error);
+  }
+
+  // The owner's default Paystack account may point at this shop's subaccount row. Drop that pointer
+  // only when it serves no other shop of theirs; otherwise keep the row (minus the bank name).
+  try {
+    const defaults = await env.DB.prepare(
+      "SELECT owner_username FROM paystack_owner_defaults WHERE source_tenant_id = ?"
+    ).bind(tenantId).all();
+    let stillReferenced = false;
+    for (const row of defaults.results || []) {
+      const others = await env.DB.prepare(
+        "SELECT COUNT(*) AS n FROM account_tenants WHERE username = ? AND tenant_id != ?"
+      ).bind(row.owner_username, tenantId).first();
+      if (Number(others?.n || 0) > 0) {
+        stillReferenced = true;
+      } else {
+        await env.DB.prepare("DELETE FROM paystack_owner_defaults WHERE owner_username = ? AND source_tenant_id = ?")
+          .bind(row.owner_username, tenantId).run();
+      }
+    }
+    if (stillReferenced) {
+      report.paystack_subaccount = "retained_as_owner_default";
+      await env.DB.prepare("UPDATE paystack_subaccounts SET bank_name = '' WHERE tenant_id = ?").bind(tenantId).run();
+    } else {
+      await env.DB.prepare("DELETE FROM paystack_subaccounts WHERE tenant_id = ?").bind(tenantId).run();
+    }
+  } catch (error) {
+    report.paystack_subaccount = "failed";
+    report.failed_tables.push("paystack_subaccounts");
+    console.error("Paystack subaccount cleanup failed during shop deletion.", error?.message || error);
+  }
+
+  // Child rows before parents so foreign keys (event items -> events/stock) stay satisfied.
+  for (const table of [
+    "inventory_event_items", "inventory_events", "inventory_stock", "main_store_inventory",
+    "storefront_inventory_deductions", "storefront_orders", "storefront_hold_requests",
+    "storefront_product_interest", "storefront_service_appointments", "storefront_appointment_slots",
+    "storefront_event_daily", "storefront_visits", "push_subscriptions", "newsletter_subscribers",
+    "business_branches", "pos_sync_changes", "nearby_pairings", "discount_codes", "owner_notifications",
+    "custom_hostnames", "catalog_snapshots", "account_tenants"
+  ]) {
+    try {
+      await env.DB.prepare(`DELETE FROM ${table} WHERE tenant_id = ?`).bind(tenantId).run();
+    } catch (error) {
+      if (/no such table/i.test(String(error?.message || ""))) continue;
+      report.failed_tables.push(table);
+      console.error(`Shop deletion could not clear ${table}.`, error?.message || error);
+    }
+  }
+
+  if (env.BUSINESS_ARCHIVE) {
+    for (const folder of ["media", "published-sites", "business", "push"]) {
+      try {
+        for (let page = 0; page < 200; page++) {
+          const listed = await env.BUSINESS_ARCHIVE.list({ prefix: `${folder}/${tenantId}/`, limit: 1000 });
+          const keys = (listed.objects || []).map(object => object.key);
+          if (keys.length) {
+            await env.BUSINESS_ARCHIVE.delete(keys);
+            report.r2_objects_deleted += keys.length;
+          }
+          if (!listed.truncated || !keys.length) break;
+        }
+      } catch (error) {
+        report.failed_tables.push(`r2:${folder}`);
+        console.error(`Shop deletion could not clear R2 ${folder}.`, error?.message || error);
+      }
+    }
+  }
+
+  for (const key of [
+    `published-theme:${tenantId}`, `published-product-aliases:${tenantId}`,
+    searchConsoleVerificationKey(tenantId), `craft-ai:data:v1:${tenantId}`
+  ]) {
+    try {
+      await env.TENANTS.delete(key);
+    } catch (error) {
+      console.error("Shop deletion could not clear a KV key.", error?.message || error);
+    }
+  }
   await env.TENANTS.delete(tenantKey);
-  return jsonResponse({ ok: true, deleted_tenant_id: tenantId });
+  return jsonResponse({ ok: true, deleted_tenant_id: tenantId, ...report });
+}
+
+function tombstoneKey(tenantId) {
+  return `tenant-tombstone:${tenantId}`;
 }
 
 async function getTenantUsage(request, env, tenantId) {
@@ -6359,6 +7162,61 @@ function addPublishedThemeCatalog(html, catalog, includeAdapter) {
   return upgraded;
 }
 
+// Deletes at most `batchSize` rows per pass (rowid subquery) so a large backlog never blocks D1.
+async function pruneRows(env, table, condition, bindings, batchSize = 5000, maxPasses = 20) {
+  let removed = 0;
+  for (let pass = 0; pass < maxPasses; pass++) {
+    const result = await env.DB.prepare(
+      `DELETE FROM ${table} WHERE rowid IN (SELECT rowid FROM ${table} WHERE ${condition} LIMIT ${batchSize})`
+    ).bind(...bindings).run();
+    const changes = Number(result.meta?.changes || 0);
+    removed += changes;
+    if (changes < batchSize) break;
+  }
+  return removed;
+}
+
+// Retention for tables that only ever grow from anonymous traffic.
+async function runRetentionCleanup(env) {
+  const report = {};
+  if (!env.DB) return report;
+  const now = Date.now();
+  const analyticsCutoff = new Date(now - ANALYTICS_RETENTION_DAYS * 86_400_000).toISOString();
+  const notificationCutoff = new Date(now - NOTIFICATION_RETENTION_DAYS * 86_400_000).toISOString();
+  const tasks = [
+    ["storefront_event_daily", "day < ?", [analyticsCutoff.slice(0, 10)]],
+    ["storefront_visits", "created_at < ?", [analyticsCutoff]],
+    ["storefront_product_interest", "updated_at < ?", [analyticsCutoff]],
+    ["owner_notifications", "created_at < ?", [notificationCutoff]],
+    ["rate_limit_counters", "window_start < ?", [Math.floor(now / 1000) - 2 * 86_400]],
+    ["storefront_appointment_slots", "expires_at <= ?", [new Date(now).toISOString()]]
+  ];
+  for (const [table, condition, bindings] of tasks) {
+    try {
+      report[table] = await pruneRows(env, table, condition, bindings);
+    } catch (error) {
+      report[table] = `failed: ${String(error?.message || error).slice(0, 120)}`;
+    }
+  }
+  return report;
+}
+
+function storefrontUnavailablePage(status, heading, message) {
+  const escape = value => String(value).replace(/[&<>"']/g, character =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+  return new Response(
+    `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${escape(heading)}</title><main><h1>${escape(heading)}</h1><p>${escape(message)}</p></main></html>`,
+    {
+      status,
+      headers: {
+        "Cache-Control": "no-store",
+        "Content-Type": "text/html; charset=utf-8",
+        "X-Content-Type-Options": "nosniff"
+      }
+    }
+  );
+}
+
 async function hasPublishedCraftStorefront(env, tenantId) {
   if (!env.TENANTS || !env.BUSINESS_ARCHIVE) return false;
   const [tenant, publishedTheme] = await Promise.all([
@@ -6377,7 +7235,7 @@ async function hasPublishedCraftStorefront(env, tenantId) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     let url = new URL(request.url);
     const requestHostname = url.hostname.toLowerCase();
     const isWorkerPlatformHostname = requestHostname === "localhost" ||
@@ -6401,11 +7259,8 @@ export default {
       }
       if (hadMappedTenantMarker || mappedTenantId) request = new Request(url, request);
     }
-    const skeletonMatch = url.pathname.match(/^\/theme-skeletons\/([a-z0-9-]{1,64})\/(.+)$/i);
-    if (skeletonMatch) {
-      return await handleInternalThemeSkeleton(request, env, skeletonMatch[1].toLowerCase(), skeletonMatch[2]);
-    }
     if (url.pathname.startsWith("/theme-skeletons/")) {
+      // Hosted theme skeletons were retired with Theme Studio; Litrus Mixer is the only website editor.
       return jsonResponse({ error: "Theme template not found." }, 404);
     }
     const themeMatch = url.pathname.match(/^\/themes\/([a-z0-9-]{1,64})\/(.+)$/i);
@@ -6439,7 +7294,18 @@ export default {
         if (url.pathname === "/api/auth/logout" && request.method === "POST") {
           const authorization = request.headers.get("Authorization") || "";
           const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
-          if (token && env.TENANTS) await env.TENANTS.delete(`session:${await sha256Hex(token)}`);
+          if (token && env.TENANTS) {
+            const sessionHash = await sha256Hex(token);
+            const session = await env.TENANTS.get(`session:${sessionHash}`, "json");
+            await env.TENANTS.delete(`session:${sessionHash}`);
+            if (session?.username) {
+              try {
+                await revokeOwnerLoginTokens(env, session.username, { sessionHash });
+              } catch (error) {
+                console.error("Owner token revocation on logout failed.", error?.message || error);
+              }
+            }
+          }
           return jsonResponse({ ok: true });
         }
         if (url.pathname === "/api/catalog") {
@@ -6474,7 +7340,7 @@ export default {
         if (url.pathname === "/api/orders") {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
-          return await handleStorefrontOrders(request, env, tenantId);
+          return await handleStorefrontOrders(request, env, tenantId, ctx);
         }
         if (url.pathname === "/api/product-interest") {
           const tenantId = tenantIdFromRequest(request, env);
@@ -6484,13 +7350,32 @@ export default {
         if (url.pathname === "/api/product-holds") {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
-          return await handleStorefrontHoldRequests(request, env, tenantId);
+          return await handleStorefrontHoldRequests(request, env, tenantId, ctx);
+        }
+        const storeMatch = url.pathname.match(/^\/api\/store\/(notifications|discounts)(?:\/(read))?$/);
+        if (storeMatch && (storeMatch[2] ? storeMatch[1] === "notifications" : true)) {
+          const tenantId = tenantIdFromRequest(request, env);
+          if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
+          return storeMatch[1] === "discounts"
+            ? await handleDiscountCodes(request, env, tenantId)
+            : await handleOwnerNotifications(request, env, tenantId, storeMatch[2] || "list");
+        }
+        const manualPaymentMatch = url.pathname.match(/^\/api\/store\/orders\/(ORD-[A-Z0-9-]{8,80})\/payment$/);
+        if (manualPaymentMatch) {
+          const tenantId = tenantIdFromRequest(request, env);
+          if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
+          return await handleOrderManualPayment(request, env, tenantId, manualPaymentMatch[1], ctx);
+        }
+        if (url.pathname === "/api/discounts/validate") {
+          const tenantId = tenantIdFromRequest(request, env);
+          if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
+          return await handleDiscountValidate(request, env, tenantId);
         }
         const serviceAppointmentsMatch = url.pathname.match(/^\/api\/service-appointments(?:\/(availability|payment))?$/);
         if (serviceAppointmentsMatch) {
           const tenantId = tenantIdFromRequest(request, env);
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
-          return await handleServiceAppointments(request, env, tenantId, serviceAppointmentsMatch[1] || "appointments");
+          return await handleServiceAppointments(request, env, tenantId, serviceAppointmentsMatch[1] || "appointments", ctx);
         }
         if (url.pathname === "/api/inventory/allocations") {
           const tenantId = tenantIdFromRequest(request, env);
@@ -6498,7 +7383,7 @@ export default {
           return await handleMainStoreAllocations(request, env, tenantId);
         }
         if (url.pathname === "/api/payments/paystack/webhook") {
-          return await handlePaystackWebhook(request, env);
+          return await handlePaystackWebhook(request, env, ctx);
         }
         const paystackMatch = url.pathname.match(/^\/api\/payments\/paystack\/(banks|subaccount|link|default|initialize|verify)$/);
         if (paystackMatch) {
@@ -6506,7 +7391,7 @@ export default {
           if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
           return ["banks", "subaccount", "link", "default"].includes(paystackMatch[1])
             ? await handlePaystackSetup(request, env, tenantId, paystackMatch[1])
-            : await handlePaystackPayment(request, env, tenantId, paystackMatch[1]);
+            : await handlePaystackPayment(request, env, tenantId, paystackMatch[1], ctx);
         }
         const businessSyncMatch = url.pathname.match(/^\/api\/business\/(sync|branches)$/);
         if (businessSyncMatch) {
@@ -6605,8 +7490,7 @@ export default {
       return new Response(response.body, { status: 200, headers });
     }
     if (request.method === "GET" && isMainDomainHost &&
-        (isStorefrontDocumentPath(url.pathname) ||
-          ["/builder-storefront.html", "/builder-storefront"].includes(url.pathname)) &&
+        isStorefrontDocumentPath(url.pathname) &&
         !(url.pathname === "/" && mainCraftStorefrontPublished)) {
       return new Response("This old main storefront has been retired.", {
         status: 404,
@@ -6629,9 +7513,7 @@ export default {
           (hostTenantId === "main" && url.pathname === "/sitemap-main.xml"))) {
       return await handleSeoFile(env, hostTenantId, url.pathname, seoOrigin);
     }
-    const isStorefrontRequest = request.method === "GET" &&
-      (isStorefrontDocumentPath(url.pathname) ||
-        ["/builder-storefront.html", "/builder-storefront"].includes(url.pathname));
+    const isStorefrontRequest = request.method === "GET" && isStorefrontDocumentPath(url.pathname);
     if (request.method === "GET" && hostTenantId === "main" &&
         (url.pathname === "/shops" || url.pathname === "/shops/")) {
       return await handleShopsPage(env, seoOrigin);
@@ -6703,31 +7585,39 @@ export default {
           }
         }
         const catalog = JSON.parse(snapshot.payload);
-        const themeId = catalog.store?.website_theme_id;
+        let themeId = catalog.store?.website_theme_id;
         seoCatalog = catalog;
         seoThemeId = themeId || "classic";
         if (themeId && themeId !== "classic") {
-          if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(themeId) || !FILLED_THEME_IDS.has(themeId)) {
-            return new Response("The published theme selection is invalid.", {
-              status: 503,
-              headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
-            });
-          }
+          const requestedThemeKnown = /^[a-z0-9][a-z0-9-]{0,63}$/.test(themeId) && FILLED_THEME_IDS.has(themeId);
           const publishedTheme = publishedThemePointer ||
             await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
-          if (!publishedTheme ||
-              publishedTheme.themeId !== themeId ||
-              publishedTheme.catalogUpdatedAt !== snapshot.updated_at ||
-              !publishedTheme.key?.startsWith(`published-sites/${hostTenantId}/${themeId}/`)) {
-            return new Response("This theme has not been filled and published for the current shop catalog.", {
-              status: 503,
-              headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
-            });
+          const pointerUsable = Boolean(publishedTheme && typeof publishedTheme.key === "string" &&
+            FILLED_THEME_IDS.has(publishedTheme.themeId) &&
+            publishedTheme.key.startsWith(`published-sites/${hostTenantId}/${publishedTheme.themeId}/`));
+          // A shop keeps serving its last published storefront while the catalogue is ahead of it (between
+          // the catalogue save and the republish) and when its catalogue names a retired or unknown theme.
+          let stalePublish = false;
+          if (!(requestedThemeKnown && pointerUsable && publishedTheme.themeId === themeId &&
+                publishedTheme.catalogUpdatedAt === snapshot.updated_at)) {
+            if (pointerUsable) {
+              stalePublish = true;
+              themeId = publishedTheme.themeId;
+              seoThemeId = themeId;
+            } else if (!requestedThemeKnown) {
+              return storefrontUnavailablePage(404, "This website is not available",
+                "Its theme has been retired. Ask the shop owner to republish the website from Craft.");
+            } else {
+              return new Response("This theme has not been filled and published for the current shop catalog.", {
+                status: 503,
+                headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
+              });
+            }
           }
           const theme = publishedObjectForRequest ||
             await env.BUSINESS_ARCHIVE.get(publishedTheme.key);
           if (!theme || theme.customMetadata?.themeId !== themeId ||
-              theme.customMetadata?.catalogUpdatedAt !== snapshot.updated_at) {
+              theme.customMetadata?.catalogUpdatedAt !== (stalePublish ? publishedTheme.catalogUpdatedAt : snapshot.updated_at)) {
             return new Response("The filled storefront is unavailable.", {
               status: 503,
               headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
@@ -6758,13 +7648,15 @@ export default {
                 return asset.text();
               }
             });
-            await env.BUSINESS_ARCHIVE.put(publishedTheme.key, html, {
-              httpMetadata: {
-                contentType: "text/html; charset=utf-8",
-                cacheControl: "public, max-age=60"
-              },
-              customMetadata: { themeId, catalogUpdatedAt: snapshot.updated_at }
-            });
+            if (!stalePublish) {
+              await env.BUSINESS_ARCHIVE.put(publishedTheme.key, html, {
+                httpMetadata: {
+                  contentType: "text/html; charset=utf-8",
+                  cacheControl: "public, max-age=60"
+                },
+                customMetadata: { themeId, catalogUpdatedAt: snapshot.updated_at }
+              });
+            }
             isLiquidTheme = true;
           }
           if (themeId === "craft-main-storefront" && !isLiquidTheme) {
@@ -6829,7 +7721,7 @@ export default {
           }
           const hasEmbeddedCatalog = Boolean(publishedThemeCatalog(html));
           html = addPublishedThemeCatalog(html, catalog, !isLiquidTheme);
-          if (!hasEmbeddedCatalog) {
+          if (!hasEmbeddedCatalog && !stalePublish) {
             await env.BUSINESS_ARCHIVE.put(publishedTheme.key, html, {
               httpMetadata: {
                 contentType: "text/html; charset=utf-8",
@@ -6884,47 +7776,23 @@ export default {
         }
       );
     }
-    const isStorefrontPath = isStorefrontDocumentPath(url.pathname) ||
-      ["/builder-storefront.html", "/builder-storefront"].includes(url.pathname);
+    if (isStorefrontRequest) {
+      // Nothing is published for this address and the retired builder storefront no longer exists,
+      // so say so plainly instead of returning an empty asset 404.
+      return storefrontUnavailablePage(404, "This website is not available",
+        "It has not been published with Litrus Mixer yet. Ask the shop owner to publish it from Craft.");
+    }
     const isBrowserRegisterPath = url.pathname === "/register" || url.pathname === "/register/";
-    const assetPath = isStorefrontPath ? "/builder-storefront"
-      : isBrowserRegisterPath ? "/register" : url.pathname;
-    const assetUrl = new URL(assetPath + url.search, url.origin);
-    const assetRequest = new Request(assetUrl, request);
-    const response = await env.ASSETS.fetch(assetRequest);
-    if (!isStorefrontPath) return response;
-    const html = await response.text();
-    if (!response.ok) {
-      return new Response(html, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers
-      });
-    }
-    if (seoCatalog && isStorefrontDocumentPath(url.pathname)) {
-      const seo = buildSeo({ catalog: seoCatalog, pathname: url.pathname, origin: seoOrigin, themeId: seoThemeId });
-      const headers = new Headers(response.headers);
-      headers.delete("Content-Length");
-      headers.delete("ETag");
-      return new Response(
-        injectSeo(addCloudflareMode(html, hostTenantId !== "main"), {
-          seo,
-          catalog: seoCatalog,
-          origin: seoOrigin,
-          themeId: seoThemeId,
-          verificationToken: seoVerificationToken,
-          poweredBy: hostTenantId === "main" ? null : {
-            name: "E-Shop",
-            url: `https://${DOMAIN_ROOT}/shops`
-          }
-        }),
-        { status: seo.status, headers }
-      );
-    }
-    return new Response(addCloudflareMode(html, hostTenantId !== "main"), {
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers
-    });
+    const assetPath = isBrowserRegisterPath ? "/register" : url.pathname;
+    return await env.ASSETS.fetch(new Request(new URL(assetPath + url.search, url.origin), request));
+  },
+
+  // Daily cron (see wrangler.jsonc "triggers"): prune unbounded analytics and expired counters.
+  async scheduled(controller, env, ctx) {
+    const task = runRetentionCleanup(env)
+      .then(report => console.log("Retention cleanup finished.", JSON.stringify(report)))
+      .catch(error => console.error("Retention cleanup failed.", error?.message || error));
+    if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(task);
+    return task;
   }
 };

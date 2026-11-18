@@ -10,7 +10,10 @@ const LIST_LIMIT = 60;
 // Themes whose runtime understands real paths (/products/slug). Every other
 // theme routes with #/hash, which search engines ignore, so for those we only
 // advertise the homepage instead of publishing URLs that would show the home page.
-const PATH_ROUTED_THEMES = new Set(["classic", "craft-main-storefront"]);
+// Litrus Mixer routes with #/p/<id>; the worker bridges /products/<slug> to that
+// route (see hashBridge), so only its product pages get real URLs.
+const PATH_ROUTED_THEMES = new Set(["classic", "craft-main-storefront", "litrus-mixer"]);
+const PATH_ROUTED_KINDS = { "litrus-mixer": new Set(["home", "private", "product"]) };
 
 // Zero-config schema.org type per theme, so merchants never pick one.
 const THEME_BUSINESS_TYPE = {
@@ -29,8 +32,12 @@ const BUSINESS_TYPES = new Set([
 
 const NOINDEX_PATHS = /^\/(?:search|wishlist|cart|checkout|account)$/;
 
-export function isPathRouted(themeId) {
-  return PATH_ROUTED_THEMES.has(themeId || "classic");
+// `kind` narrows the answer to one page type for themes that only route some of them.
+export function isPathRouted(themeId, kind = "") {
+  const theme = themeId || "classic";
+  if (!PATH_ROUTED_THEMES.has(theme)) return false;
+  const kinds = PATH_ROUTED_KINDS[theme];
+  return !kinds || !kind || kinds.has(kind);
 }
 
 export function escapeHtml(value) {
@@ -158,7 +165,6 @@ export function buildSeo({ catalog, pathname, origin, themeId }) {
   const store = catalog.store || {};
   const shop = store.name || "Online Store";
   const resolved = resolvePage(catalog, pathname);
-  const pathRouted = isPathRouted(themeId);
   const hidden = Boolean(store.hide_from_search);
 
   const seo = {
@@ -195,7 +201,7 @@ export function buildSeo({ catalog, pathname, origin, themeId }) {
   }
   // A hash-routed theme renders the homepage for every path, so describe it as the homepage
   // rather than publishing duplicate pages.
-  const servesHome = !pathRouted && !["home", "private"].includes(resolved.kind);
+  const servesHome = !isPathRouted(themeId, resolved.kind) && !["home", "private"].includes(resolved.kind);
 
   if (resolved.kind === "home" || servesHome) {
     seo.jsonLd.push(businessSchema(store, themeId, origin, storeImage));
@@ -283,11 +289,19 @@ function noscriptBody(seo, catalog, origin) {
 // Classic storefront routes with #/hash. Bridge real paths to those routes so
 // /products/red-shoe renders the product (and keeps the clean URL as canonical).
 function hashBridge(seo, themeId) {
-  if ((themeId || "classic") !== "classic" || !seo.entity || seo.status !== 200) return "";
-  const target = { product: "/product/", category: "/category/", page: "/pages/" }[seo.kind];
-  if (!target) return "";
-  const slug = seo.kind === "page" ? seo.entity.slug : (seo.entity.slug || seo.entity.id);
-  const route = `#${target}${encodeURIComponent(slug)}`;
+  const theme = themeId || "classic";
+  if (!seo.entity || seo.status !== 200) return "";
+  let route = "";
+  if (theme === "classic") {
+    const target = { product: "/product/", category: "/category/", page: "/pages/" }[seo.kind];
+    if (!target) return "";
+    const slug = seo.kind === "page" ? seo.entity.slug : (seo.entity.slug || seo.entity.id);
+    route = `#${target}${encodeURIComponent(slug)}`;
+  } else if (theme === "litrus-mixer" && seo.kind === "product") {
+    // Litrus products are keyed by catalogue id in its #/p/<id> route, not by slug.
+    route = `#/p/${encodeURIComponent(String(seo.entity.id))}`;
+  }
+  if (!route) return "";
   return `<script>if(!location.hash){history.replaceState(null,"",location.pathname+location.search+${JSON.stringify(route).replace(/</g, "\\u003c")})}</script>`;
 }
 
@@ -352,9 +366,13 @@ function xmlUrl(loc, lastmod) {
 
 export function buildSitemap(catalog, origin, themeId, extraPaths = []) {
   const urls = [xmlUrl(`${origin}/`), ...extraPaths.map(path => xmlUrl(`${origin}${path}`))];
-  if (isPathRouted(themeId)) {
+  if (isPathRouted(themeId, "category")) {
     for (const c of catalog.categories || []) urls.push(xmlUrl(`${origin}${entityPath("categories", c)}`));
+  }
+  if (isPathRouted(themeId, "product")) {
     for (const p of catalog.products || []) urls.push(xmlUrl(`${origin}${entityPath("products", p)}`));
+  }
+  if (isPathRouted(themeId, "page")) {
     for (const page of catalog.pages || []) {
       const date = /^\d{4}-\d{2}-\d{2}/.test(page.updated_at || "") ? page.updated_at.slice(0, 10) : "";
       urls.push(xmlUrl(`${origin}/pages/${encodeURIComponent(page.slug)}`, date));
