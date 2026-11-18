@@ -4,6 +4,7 @@ import test from "node:test";
 import { runInNewContext } from "node:vm";
 import { JSDOM, VirtualConsole } from "jsdom";
 import { WEBSITE_THEME_CATALOG } from "../src/theme-catalog.js";
+import * as ServiceModel from "../src/service-model.js";
 
 const read = async path => (await readFile(new URL(path, import.meta.url), "utf8")).replace(/\r\n/g, "\n");
 
@@ -365,7 +366,7 @@ test("Litrus catalog saves and restores every product category", async () => {
   let flushCount = 0;
   const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor, expectedTenantId) {${method}\n};`)(
     {},
-    { ShopSQLite: { async flush() { flushCount += 1; } } }
+    { ShopSQLite: { async flush() { flushCount += 1; } }, EshopServiceModel: ServiceModel }
   );
   const tenant = { id: "shop", name: "Test shop" };
   const current = {
@@ -412,8 +413,17 @@ test("Litrus catalog round-trips service settings and booking details", async ()
   assert.ok(sendCatalog);
   assert.ok(hydrateCatalog);
   assert.ok(payloadBuilder);
-  assert.match(sendCatalog, /offer_type:\s*store\.offer_type/);
-  assert.match(sendCatalog, /duration_minutes:\s*Number\(product\.duration_minutes\)/);
+  // The builder is told what the catalogue actually holds, so a shop selling goods and time
+  // keeps both instead of being flattened to whichever one the shop setting named.
+  assert.ok(
+    sendCatalog.includes("offer_type: window.EshopServiceModel.offerTypeForCatalogue(products, store.offer_type)"),
+    "the builder must be told the catalogue's real mix of goods and services"
+  );
+  // Only a service carries a duration now; every product used to be sent as an hour-long booking.
+  assert.ok(
+    sendCatalog.includes("duration_minutes: window.EshopServiceModel.serviceDuration(product) || null"),
+    "the builder must get the duration the owner chose, or none at all"
+  );
   assert.match(hydrateCatalog, /duration_minutes:Number\(product\.duration_minutes\)\|\|60/);
   assert.match(hydrateCatalog, /if\(isNewShopDraft&&\(!hasRecipe\|\|replaceGeneratedRecipe\)\)\{[\s\S]*?autosave\(\)/);
   assert.equal((hydrateCatalog.match(/\bautosave\(\)/g) || []).length, 1);
@@ -422,7 +432,7 @@ test("Litrus catalog round-trips service settings and booking details", async ()
   let savedCatalog;
   const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor, expectedTenantId) {${method}\n};`)(
     {},
-    { ShopSQLite: { async flush() {} } }
+    { ShopSQLite: { async flush() {} }, EshopServiceModel: ServiceModel }
   );
   const tenant = { id: "service-shop", name: "Repair studio" };
   const current = {

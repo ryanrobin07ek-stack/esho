@@ -5,6 +5,11 @@ import {
   createProductTaxonomyFields,
   readProductTaxonomyFields
 } from './product-taxonomy.js';
+import {
+  bindProductVariantFields,
+  createProductVariantFields,
+  readProductVariantFields
+} from './product-variants.js';
 
 import {
   DEFAULT_SERVICE_MINUTES, SERVICE_MAX_MINUTES, SERVICE_MIN_MINUTES, SERVICE_STEP_MINUTES,
@@ -313,6 +318,7 @@ async function initializePosDatabase() {
       taxonomy_category_id TEXT,
       taxonomy_custom_category TEXT,
       taxonomy_attributes_json TEXT NOT NULL DEFAULT '[]',
+      variants_json TEXT NOT NULL DEFAULT '[]',
       image_embedding BLOB,
       low_stock_threshold INTEGER NOT NULL DEFAULT 3 CHECK (low_stock_threshold >= 0),
       active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
@@ -415,7 +421,9 @@ async function initializePosDatabase() {
       quantity INTEGER NOT NULL CHECK (quantity > 0),
       unit_price_cents INTEGER NOT NULL,
       unit_cost_cents INTEGER,
-      unit_cost_captured INTEGER NOT NULL DEFAULT 0
+      unit_cost_captured INTEGER NOT NULL DEFAULT 0,
+      variant_id TEXT,
+      variant_label TEXT
     );
     CREATE TABLE IF NOT EXISTS pos_sale_payments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -559,6 +567,16 @@ async function initializePosDatabase() {
   if (!productColumns.some((column) => column.name === 'supplier_id')) {
     await run('ALTER TABLE pos_products ADD COLUMN supplier_id TEXT');
   }
+  if (!productColumns.some((column) => column.name === 'variants_json')) {
+    await run("ALTER TABLE pos_products ADD COLUMN variants_json TEXT NOT NULL DEFAULT '[]'");
+  }
+  const saleItemColumns = await rows('PRAGMA table_info(pos_sale_items)');
+  if (!saleItemColumns.some((column) => column.name === 'variant_id')) {
+    await run('ALTER TABLE pos_sale_items ADD COLUMN variant_id TEXT');
+  }
+  if (!saleItemColumns.some((column) => column.name === 'variant_label')) {
+    await run('ALTER TABLE pos_sale_items ADD COLUMN variant_label TEXT');
+  }
   const invoiceColumns = await rows('PRAGMA table_info(pos_invoices)');
   if (!invoiceColumns.some((column) => column.name === 'status')) {
     await run("ALTER TABLE pos_invoices ADD COLUMN status TEXT NOT NULL DEFAULT 'unpaid'");
@@ -667,10 +685,48 @@ async function saveSettings(taxRate, currency) {
   ]);
 }
 
+// The till sells the same options the website does. readProductVariantFields() already produces
+// this shape, so a product saved on either side is read correctly by the other.
+function normalizePosVariants(value) {
+  const list = Array.isArray(value) ? value : [];
+  if (list.length > 100) throw new Error('A product can have up to 100 option combinations.');
+  const seen = new Set();
+  return list.map((variant) => {
+    const option1Value = String(variant?.option1_value ?? variant?.size ?? '').trim().slice(0, 80);
+    const option2Value = String(variant?.option2_value ?? variant?.color ?? '').trim().slice(0, 80);
+    const label = [option1Value, option2Value].filter(Boolean).join(' / ');
+    if (!label) throw new Error('Each product option needs a value.');
+    if (seen.has(label.toLowerCase())) throw new Error(`${label} is listed twice.`);
+    seen.add(label.toLowerCase());
+    const rawPrice = variant?.price;
+    const price = rawPrice === null || rawPrice === undefined || rawPrice === '' ? null : Number(rawPrice);
+    const rawStock = variant?.stock;
+    const stock = rawStock === null || rawStock === undefined || rawStock === '' ? 0 : Number(rawStock);
+    if (price !== null && (!Number.isFinite(price) || price < 0)) throw new Error(`Enter a valid price for ${label}.`);
+    if (!Number.isSafeInteger(stock) || stock < 0) throw new Error(`Enter a whole-number stock quantity for ${label}.`);
+    return {
+      id: String(variant?.id || JSON.stringify([option1Value, option2Value])),
+      option1_name: String(variant?.option1_name || '').slice(0, 80),
+      option1_value: option1Value,
+      option2_name: String(variant?.option2_name || '').slice(0, 80),
+      option2_value: option2Value,
+      label,
+      price,
+      stock
+    };
+  });
+}
+
+/** The price this variant sells for, falling back to the product price when it has none of its own. */
+function variantPrice(product, variant) {
+  if (!variant) return Number(product?.price) || 0;
+  return variant.price === null || variant.price === undefined ? Number(product?.price) || 0 : Number(variant.price);
+}
+
 async function listProducts() {
   return rows(`SELECT p.id, p.name, p.sku, p.barcode, p.expiry_date AS expiryDate, p.category_id AS categoryId, c.name AS categoryName,
     p.taxonomy_category_id AS taxonomyCategoryId, p.taxonomy_custom_category AS taxonomyCustomCategory,
-    p.taxonomy_attributes_json AS taxonomyAttributesJson,
+    p.taxonomy_attributes_json AS taxonomyAttributesJson, p.variants_json AS variantsJson,
     p.price_cents, p.buying_price_cents, p.stock_count AS stock, p.image_uri AS imageUri,
     hex(p.image_embedding) AS imageEmbeddingHex,
     p.low_stock_threshold AS lowStockThreshold, p.active,
@@ -683,6 +739,7 @@ async function listProducts() {
       taxonomyCategoryId: item.taxonomyCategoryId || '',
       taxonomyCustomCategory: item.taxonomyCustomCategory || '',
       taxonomyAttributes: JSON.parse(item.taxonomyAttributesJson || '[]'),
+      variants: JSON.parse(item.variantsJson || '[]'),
       price: fromCents(item.price_cents), buyingPrice: item.buying_price_cents == null ? null : fromCents(item.buying_price_cents),
       stock: item.stock, imageUri: item.imageUri, imageEmbedding: embeddingHexToInt8(item.imageEmbeddingHex || ''),
       lowStockThreshold: Number(item.lowStockThreshold) || 0,
@@ -769,9 +826,19 @@ async function saveProduct(data) {
   const taxonomyAttributesJson = hasTaxonomyAttributes
     ? JSON.stringify(Array.isArray(data.taxonomyAttributes) ? data.taxonomyAttributes : [])
     : existingTaxonomy.taxonomy_attributes_json || '[]';
+  const mentionsVariants = Object.hasOwn(data, 'variants');
+  let variants = mentionsVariants ? normalizePosVariants(data.variants) : [];
+  if (!mentionsVariants && id > 0) {
+    variants = JSON.parse((await rows('SELECT variants_json FROM pos_products WHERE id=?', [id]))[0]?.variants_json || '[]');
+  }
+  // Time is not sold in sizes, and a sized product counts its stock per size.
+  if (durationMinutes) variants = [];
+  if (variants.length) stock = variants.reduce((total, variant) => total + variant.stock, 0);
+  if (variants.length && (!Number.isSafeInteger(stock) || stock < 0)) throw new Error('Total option stock is too large.');
+  const variantsJson = JSON.stringify(variants);
   const values = [name, categoryId, priceCents, buyingCents, stock, sku || null, barcode || null, expiryDate || null,
     String(data.imageUri || '').trim() || null,
-    lowStockThreshold, active, taxonomyCategoryId, taxonomyCustomCategory, taxonomyAttributesJson,
+    lowStockThreshold, active, taxonomyCategoryId, taxonomyCustomCategory, taxonomyAttributesJson, variantsJson,
     durationMinutes, supplierId || null];
   const hasEmbedding = Object.hasOwn(data, 'imageEmbeddingHex');
   const embeddingHex = hasEmbedding ? String(data.imageEmbeddingHex || '') : '';
@@ -780,14 +847,14 @@ async function saveProduct(data) {
   }
   if (id > 0) {
     const embeddingUpdate = hasEmbedding ? `,image_embedding=${embeddingHex ? `X'${embeddingHex}'` : 'NULL'}` : '';
-    const result = await run(`UPDATE pos_products SET name=?,category_id=?,price_cents=?,buying_price_cents=?,stock_count=?,sku=?,barcode=?,expiry_date=?,image_uri=?,low_stock_threshold=?,active=?,taxonomy_category_id=?,taxonomy_custom_category=?,taxonomy_attributes_json=?,duration_minutes=?,supplier_id=?${embeddingUpdate} WHERE id=?`, [...values, id]);
+    const result = await run(`UPDATE pos_products SET name=?,category_id=?,price_cents=?,buying_price_cents=?,stock_count=?,sku=?,barcode=?,expiry_date=?,image_uri=?,low_stock_threshold=?,active=?,taxonomy_category_id=?,taxonomy_custom_category=?,taxonomy_attributes_json=?,variants_json=?,duration_minutes=?,supplier_id=?${embeddingUpdate} WHERE id=?`, [...values, id]);
     if (!result.changes?.changes) throw new Error('This product could not be found. Refresh and try again.');
     await recordSharedStockUpdate(sku, stock);
     return id;
   }
   const embeddingColumn = hasEmbedding ? ',image_embedding' : '';
   const embeddingValue = hasEmbedding ? `,${embeddingHex ? `X'${embeddingHex}'` : 'NULL'}` : '';
-  const result = await run(`INSERT INTO pos_products (name,category_id,price_cents,buying_price_cents,stock_count,sku,barcode,expiry_date,image_uri,low_stock_threshold,active,taxonomy_category_id,taxonomy_custom_category,taxonomy_attributes_json,duration_minutes,supplier_id,created_at${embeddingColumn}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?${embeddingValue})`, [...values, nowIso()]);
+  const result = await run(`INSERT INTO pos_products (name,category_id,price_cents,buying_price_cents,stock_count,sku,barcode,expiry_date,image_uri,low_stock_threshold,active,taxonomy_category_id,taxonomy_custom_category,taxonomy_attributes_json,variants_json,duration_minutes,supplier_id,created_at${embeddingColumn}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?${embeddingValue})`, [...values, nowIso()]);
   await recordSharedStockUpdate(sku, stock);
   return result.changes?.lastId;
 }
@@ -889,10 +956,22 @@ async function saveSale(items, { paymentMethod, paid, customerName, customerPhon
     const productId = Number(item.productId);
     if (productId > 0) quantityMap.set(productId, (quantityMap.get(productId) || 0) + Number(item.quantity));
   });
+  // A sized product is counted twice: once for the product total, once for the option sold, so
+  // selling the last medium cannot be covered by stock that only exists in small.
+  const variantQuantities = new Map();
+  items.forEach((item) => {
+    const productId = Number(item.productId);
+    const variantId = String(item.variantId || '').trim();
+    if (productId <= 0 || !variantId) return;
+    const key = `${productId}|${variantId}`;
+    const current = variantQuantities.get(key) || { productId, variantId, quantity: 0 };
+    current.quantity += Number(item.quantity);
+    variantQuantities.set(key, current);
+  });
   const productData = new Map();
   const stockDeducted = (product) => deductsStock({ stock_count: product.stock_count, duration_minutes: product.duration_minutes });
   for (const [productId, requested] of quantityMap) {
-    const product = (await rows('SELECT id,name,sku,stock_count,duration_minutes,buying_price_cents,active FROM pos_products WHERE id=?', [productId]))[0];
+    const product = (await rows('SELECT id,name,sku,stock_count,duration_minutes,buying_price_cents,active,variants_json FROM pos_products WHERE id=?', [productId]))[0];
     if (!product) throw new Error('A product in this sale is no longer available.');
     if (product.active !== 1) throw new Error(`${product.name} is disabled and cannot be sold.`);
     if (!allowOutOfStock && stockDeducted(product) && requested > product.stock_count) {
@@ -900,6 +979,20 @@ async function saveSale(items, { paymentMethod, paid, customerName, customerPhon
     }
     productData.set(productId, product);
   }
+  const variantStock = new Map();
+  for (const { productId, variantId, quantity } of variantQuantities.values()) {
+    const product = productData.get(productId);
+    const variants = variantStock.get(productId) || JSON.parse(product.variants_json || '[]');
+    variantStock.set(productId, variants);
+    const variant = variants.find((row) => String(row.id) === variantId);
+    if (!variant) throw new Error(`An option sold for ${product.name} is no longer available.`);
+    if (!allowOutOfStock && Number(variant.stock) < quantity) {
+      throw new Error(`${product.name} ${variant.label} has ${variant.stock} in stock, ${quantity} requested.`);
+    }
+    variant.stock = Math.max(0, Number(variant.stock) - quantity);
+  }
+  const variantStatements = [...variantStock].map(([productId, variants]) =>
+    stmt('UPDATE pos_products SET variants_json=? WHERE id=?', [JSON.stringify(variants), productId]));
   const awaitingMobilePayment = method === 'Mobile money' && !paid;
   const isPaid = Boolean(paid) && !awaitingMobilePayment;
   const createdAt = nowIso();
@@ -914,10 +1007,11 @@ async function saveSale(items, { paymentMethod, paid, customerName, customerPhon
   const itemStatements = items.map((item) => {
     const product = productData.get(Number(item.productId));
     return stmt(`INSERT INTO pos_sale_items
-      (sale_id,product_id,name,quantity,unit_price_cents,unit_cost_cents,unit_cost_captured)
-      SELECT id,?,?,?,?,?,1 FROM pos_sales WHERE receipt_number=?`,
+      (sale_id,product_id,name,quantity,unit_price_cents,unit_cost_cents,unit_cost_captured,variant_id,variant_label)
+      SELECT id,?,?,?,?,?,1,?,? FROM pos_sales WHERE receipt_number=?`,
     [Number(item.productId) > 0 ? Number(item.productId) : null, item.name, item.quantity, toCents(item.unitPrice),
-      product?.buying_price_cents == null ? null : Number(product.buying_price_cents), receipt]);
+      product?.buying_price_cents == null ? null : Number(product.buying_price_cents),
+      String(item.variantId || '').trim() || null, String(item.variantLabel || '').trim() || null, receipt]);
   });
   const paymentStatement = isPaid && totalCents > 0
     ? [stmt(`INSERT INTO pos_sale_payments
@@ -948,7 +1042,7 @@ async function saveSale(items, { paymentMethod, paid, customerName, customerPhon
       [receipt, connection, JSON.stringify([...sharedItems].map(([sku, quantity]) => ({ sku, quantity }))), createdAt])
     ]
     : [];
-  await transaction([...statements, ...itemStatements, ...paymentStatement, ...stockStatements, ...queueStatement]);
+  await transaction([...statements, ...itemStatements, ...paymentStatement, ...stockStatements, ...variantStatements, ...queueStatement]);
   if (connection && sharedItems.size) {
     const updated = await Promise.all([...sharedItems.keys()].map(async (sku) => ({
       sku,
@@ -985,18 +1079,36 @@ async function reverseSale(saleId, mode = 'refunded') {
   const sale = (await rows('SELECT id,payment_status FROM pos_sales WHERE id=?', [id]))[0];
   if (!sale) throw new Error('That sale no longer exists.');
   if (isReversedSale(sale)) throw new Error('That sale has already been reversed.');
-  const items = await rows('SELECT product_id,quantity FROM pos_sale_items WHERE sale_id=?', [id]);
+  const items = await rows('SELECT product_id,quantity,variant_id FROM pos_sale_items WHERE sale_id=?', [id]);
   const restock = new Map();
+  const variantRestock = new Map();
   for (const item of items) {
     if (item.product_id === null || item.product_id === undefined) continue;
     const productId = Number(item.product_id);
     restock.set(productId, (restock.get(productId) || 0) + Number(item.quantity));
+    const variantId = String(item.variant_id || '').trim();
+    if (!variantId) continue;
+    // The refunded shirt goes back in the size it left in, not onto the pile.
+    const key = `${productId}|${variantId}`;
+    const current = variantRestock.get(key) || { productId, variantId, quantity: 0 };
+    current.quantity += Number(item.quantity);
+    variantRestock.set(key, current);
+  }
+  const restoredVariants = new Map();
+  for (const { productId, variantId, quantity } of variantRestock.values()) {
+    const variants = restoredVariants.get(productId)
+      || JSON.parse((await rows('SELECT variants_json FROM pos_products WHERE id=?', [productId]))[0]?.variants_json || '[]');
+    restoredVariants.set(productId, variants);
+    const variant = variants.find((row) => String(row.id) === variantId);
+    if (variant) variant.stock = Number(variant.stock) + quantity;
   }
   await transaction([
     stmt('UPDATE pos_sales SET payment_status=?,paid=0,amount_paid_cents=0 WHERE id=?', [status, id]),
     ...[...restock].map(([productId, quantity]) =>
       stmt('UPDATE pos_products SET stock_count=stock_count+? WHERE id=? AND stock_count IS NOT NULL',
-        [quantity, productId]))
+        [quantity, productId])),
+    ...[...restoredVariants].map(([productId, variants]) =>
+      stmt('UPDATE pos_products SET variants_json=? WHERE id=?', [JSON.stringify(variants), productId]))
   ]);
   return { status, restocked: restock.size };
 }
@@ -1040,7 +1152,8 @@ async function recordSharedLocalSale(tenantId, eventId, items, updateMirrors = t
 
 async function listSales() {
   const sales = await rows('SELECT * FROM pos_sales ORDER BY created_at DESC, id DESC');
-  const items = await rows(`SELECT sale_id,product_id AS productId,name,quantity,unit_price_cents,unit_cost_cents
+  const items = await rows(`SELECT sale_id,product_id AS productId,name,quantity,unit_price_cents,unit_cost_cents,
+    variant_id AS variantId, variant_label AS variantLabel
     FROM pos_sale_items WHERE sale_id IN (SELECT id FROM pos_sales) ORDER BY sale_id,id`);
   const itemsBySale = new Map();
   for (const item of items) {
@@ -1049,6 +1162,8 @@ async function listSales() {
     saleItems.push({
       productId: item.productId || 0,
       name: item.name,
+      variantId: item.variantId || '',
+      variantLabel: item.variantLabel || '',
       quantity: item.quantity,
       unitPrice: fromCents(item.unit_price_cents),
       historicalUnitCost: item.unit_cost_cents == null ? null : fromCents(item.unit_cost_cents)
@@ -1437,6 +1552,7 @@ async function instanceTotals(instance, currency) {
 export function createPosApp() {
   const state = { cart: [], invoiceItems: [], invoiceDraftId: null, search: '', category: '', expandedSale: 0, paymentMethod: '',
     sharedTenantId: '', pendingInventoryEvents: 0, inventorySyncError: '', discount: 0, discountDialogOpen: false, activeTicketId: '',
+    variantPickerProductId: 0,
     suppliers: [], purchases: [], tickets: [], cloudSales: [], quotations: [], cloudSyncError: '', cloudScopeId: 'local',
     nearbySyncStatus: '' };
   let initialized = false;
@@ -1646,13 +1762,14 @@ export function createPosApp() {
       <div class="pos-cart-heading"><strong>Receipt</strong><span>${state.cart.length} item${state.cart.length === 1 ? '' : 's'}</span></div>
       ${state.cart.length ? `<div class="pos-cart-items">${state.cart.map((item) => `
         <div class="pos-cart-item">
-          <strong>${escapeHtml(item.name)}</strong>
-          <button type="button" class="pos-quantity-button" data-pos-action="cart-minus" data-id="${item.productId}" aria-label="Decrease">−</button>
-          <input type="number" min="1" max="99999" value="${item.quantity}" aria-label="Quantity" data-pos-quantity="${item.productId}">
-          <button type="button" class="pos-quantity-button" data-pos-action="cart-plus" data-id="${item.productId}" aria-label="Increase">+</button>
+          <strong>${escapeHtml(item.name)}${item.variantLabel ? ` · ${escapeHtml(item.variantLabel)}` : ''}</strong>
+          <button type="button" class="pos-quantity-button" data-pos-action="cart-minus" data-line="${escapeHtml(cartLineKey(item))}" aria-label="Decrease">−</button>
+          <input type="number" min="1" max="99999" value="${item.quantity}" aria-label="Quantity" data-pos-quantity="${escapeHtml(cartLineKey(item))}">
+          <button type="button" class="pos-quantity-button" data-pos-action="cart-plus" data-line="${escapeHtml(cartLineKey(item))}" aria-label="Increase">+</button>
         </div>`).join('')}</div>` : empty('Your sale is empty', 'Tap a product to add it here.')}
       ${renderCartFooter()}
       ${renderDiscountModalMarkup()}
+      ${renderVariantModalMarkup()}
     </section>`;
   }
 
@@ -1675,6 +1792,51 @@ export function createPosApp() {
     }
   }
 
+  const cartLineKey = (item) => `${item.productId}|${item.variantId || ''}`;
+
+  function addProductToCart(product, variant) {
+    const variantId = variant ? String(variant.id) : '';
+    const existing = state.cart.find((item) => item.productId === product.id
+      && String(item.variantId || '') === variantId);
+    if (existing) {
+      existing.quantity = Math.min(99999, existing.quantity + 1);
+    } else {
+      state.cart.push({
+        productId: product.id,
+        name: product.name,
+        quantity: 1,
+        unitPrice: variantPrice(product, variant),
+        variantId,
+        variantLabel: variant ? variant.label : ''
+      });
+    }
+    updateCartPanel();
+  }
+
+  function renderVariantModalMarkup() {
+    const product = state.products.find((item) => item.id === state.variantPickerProductId);
+    if (!product || !product.variants?.length) return '';
+    return `<div class="pos-discount-modal">
+      <button class="pos-discount-backdrop" type="button" data-pos-action="close-variant" aria-label="Close options"></button>
+      <section class="pos-discount-dialog" role="dialog" aria-modal="true" aria-labelledby="pos-variant-title">
+        <h3 id="pos-variant-title">${escapeHtml(product.name)}</h3>
+        <p>Choose the option being sold.</p>
+        <div class="pos-variant-options">
+          ${product.variants.map((variant) => {
+            const soldOut = Number(variant.stock) <= 0;
+            return `<button type="button" class="btn-secondary" data-pos-action="pick-variant" data-id="${product.id}"
+              data-variant="${escapeHtml(variant.id)}" ${soldOut ? 'disabled' : ''}>
+              <strong>${escapeHtml(variant.label)}</strong>
+              <span>${money(variantPrice(product, variant), state.settings.currency)}</span>
+              <small>${soldOut ? 'Sold out' : `${variant.stock} left`}</small>
+            </button>`;
+          }).join('')}
+        </div>
+        <div class="pos-discount-actions"><button class="btn-secondary" type="button" data-pos-action="close-variant">Cancel</button></div>
+      </section>
+    </div>`;
+  }
+
   function renderProductTiles() {
     return state.products.filter((product) => product.active && (!state.category || String(product.categoryId) === state.category)
       && product.name.toLocaleLowerCase().includes(state.search.toLocaleLowerCase())).map((product) => `
@@ -1682,7 +1844,9 @@ export function createPosApp() {
           ${product.imageUri ? `<img src="${escapeHtml(product.imageUri)}" alt="">` : '<span class="pos-product-placeholder">+</span>'}
           <strong>${escapeHtml(product.name)}</strong>
           <span>${money(product.price, state.settings.currency)}</span>
-          <small>${product.isService ? `Service · ${durationLabel(product.durationMinutes)}` : product.stock === null ? 'Stock not tracked' : `${product.stock} in stock`}</small>
+          <small>${product.isService ? `Service · ${durationLabel(product.durationMinutes)}`
+            : product.variants?.length ? `${product.variants.length} options · ${product.stock} in stock`
+            : product.stock === null ? 'Stock not tracked' : `${product.stock} in stock`}</small>
         </button>`).join('') || empty(state.search ? 'No matching products' : 'No products yet', 'Add items in Inventory to start selling.');
   }
 
@@ -1803,6 +1967,11 @@ export function createPosApp() {
       ${field('Expiry date · optional', 'expiryDate', item?.expiryDate || '', { type: 'date' })}
       ${field('Unit cost · optional', 'buyingPrice', item?.buyingPrice ?? '', { type: 'number', min: '0', step: '0.01' })}
       <div data-product-stock-field ${item?.isService ? 'hidden' : ''}>${field('Stock · blank means untracked', 'stock', item?.stock ?? '', { type: 'number', min: '0', step: '1' })}</div>
+      <div data-product-variants-field ${item?.isService ? 'hidden' : ''}>${createProductVariantFields({
+        variants: item?.variants || [],
+        option1Name: item?.variants?.[0]?.option1_name || '',
+        option2Name: item?.variants?.[0]?.option2_name || ''
+      })}</div>
       ${state.suppliers.length ? select('Supplier · optional', 'supplierId', [['', 'No supplier'], ...state.suppliers.map((supplier) => [supplier.id, supplier.name])], item?.supplierId || '') : ''}
       ${field('Image URL · optional', 'imageUri', /^https?:\/\//i.test(item?.imageUri || '') ? item.imageUri : '', { placeholder: 'https://…' })}
       <input type="hidden" name="capturedProductImage" value="${/^data:image\//i.test(item?.imageUri || '') ? escapeHtml(item.imageUri) : ''}">
@@ -1969,7 +2138,7 @@ export function createPosApp() {
         </button>
         ${openId === sale.id ? `<div class="pos-record-details">
           <div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Item</th><th>Qty</th><th>Each</th><th>Total</th></tr></thead><tbody>
-          ${sale.items.map((item) => `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
+          ${sale.items.map((item) => `<tr><td>${escapeHtml(item.name)}${item.variantLabel ? ` · ${escapeHtml(item.variantLabel)}` : ''}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
           </tbody></table></div>
           <div class="pos-total-line"><span>Subtotal / discount / tax</span><b>${money(sale.subtotal, sale.currency)} / ${money(sale.discount, sale.currency)} / ${money(sale.tax, sale.currency)}</b></div>
           <div class="pos-total-line is-total"><span>Balance due</span><b>${money(Math.max(0, sale.total - sale.amountPaid), sale.currency)}</b></div>
@@ -3088,6 +3257,8 @@ export function createPosApp() {
     if (app) {
       app.innerHTML = render(path, params);
       bindProductTaxonomyFields(app);
+      const variantFields = app.querySelector?.('[data-product-variant-fields]');
+      if (variantFields) bindProductVariantFields(variantFields);
     }
   }
 
@@ -5026,6 +5197,11 @@ export function createPosApp() {
           // Normalise the item type to an explicit flag.
           data.isService = String(form.elements?.isService?.value) === '1' ? '1' : '0';
           if (data.isService !== '1') delete data.durationMinutes;
+          // Options are read from the same editor the website form uses. A service has none.
+          const variantFields = form.querySelector('[data-product-variant-fields]');
+          data.variants = data.isService === '1' || !variantFields
+            ? []
+            : readProductVariantFields(variantFields).variants;
           const requiredField = !String(data.name || '').trim()
             ? form.elements?.name
             : String(data.price ?? '').trim() === '' ? form.elements?.price : null;
@@ -6037,13 +6213,27 @@ export function createPosApp() {
       } else if (action === 'add-cart') {
         const product = state.products.find((item) => item.id === id);
         if (!product || !product.active) throw new Error('This product is no longer available.');
-        const existing = state.cart.find((item) => item.productId === id);
-        if (existing) existing.quantity = Math.min(99999, existing.quantity + 1);
-        else state.cart.push({ productId: id, name: product.name, quantity: 1, unitPrice: product.price });
+        if (product.variants?.length) {
+          state.variantPickerProductId = id;
+          updateCartPanel();
+          return;
+        }
+        addProductToCart(product, null);
+      } else if (action === 'pick-variant') {
+        const product = state.products.find((item) => item.id === id);
+        if (!product || !product.active) throw new Error('This product is no longer available.');
+        const variant = (product.variants || []).find((row) => String(row.id) === String(target.dataset.variant));
+        if (!variant) throw new Error('That option is no longer available.');
+        addProductToCart(product, variant);
+        state.variantPickerProductId = 0;
+        updateCartPanel();
+      } else if (action === 'close-variant') {
+        state.variantPickerProductId = 0;
         updateCartPanel();
       } else if (action === 'cart-plus' || action === 'cart-minus') {
+        const line = target.dataset.line;
         state.cart = state.cart.flatMap((item) => {
-          if (item.productId !== id) return [item];
+          if (cartLineKey(item) !== line) return [item];
           const quantity = item.quantity + (action === 'cart-plus' ? 1 : -1);
           return quantity > 0 ? [{ ...item, quantity }] : [];
         });
@@ -6239,7 +6429,7 @@ export function createPosApp() {
     return `<h1>Craft · Receipt</h1><p>${escapeHtml(sale.receipt_number)} · ${new Date(sale.created_at).toLocaleString()}</p>
       <p>${escapeHtml(sale.customer_name || '')} ${escapeHtml(sale.customer_phone || '')}</p>
       <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${sale.items.map((item) =>
-        `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
+        `<tr><td>${escapeHtml(item.name)}${item.variantLabel ? ` · ${escapeHtml(item.variantLabel)}` : ''}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
       </tbody></table><p>Subtotal ${money(sale.subtotal, sale.currency)} · Discount ${money(sale.discount, sale.currency)} · Tax ${money(sale.tax, sale.currency)}</p>
       <p class="total">Total · ${money(sale.total, sale.currency)}</p>
       ${receiptPaymentLine(sale)}`;
@@ -6280,7 +6470,7 @@ export function createPosApp() {
     }
     const quantity = event.type === 'change' ? event.target.closest('[data-pos-quantity]') : null;
     if (quantity) {
-      const item = state.cart.find((row) => row.productId === Number(quantity.dataset.posQuantity));
+      const item = state.cart.find((row) => cartLineKey(row) === quantity.dataset.posQuantity);
       const next = Number(quantity.value);
       if (item && Number.isSafeInteger(next) && next > 0 && next <= 99999) {
         item.quantity = next;
@@ -6292,9 +6482,12 @@ export function createPosApp() {
       const productForm = serviceToggle.closest('form');
       const durationBox = productForm?.querySelector('[data-service-duration]');
       const stockBox = productForm?.querySelector('[data-product-stock-field]');
+      const variantsBox = productForm?.querySelector('[data-product-variants-field]');
       const asService = serviceToggle.value === '1';
       if (durationBox) durationBox.hidden = !asService;
       if (stockBox) stockBox.hidden = asService;
+      // Time is not sold in sizes.
+      if (variantsBox) variantsBox.hidden = asService;
       if (asService && productForm.elements.stock) productForm.elements.stock.value = '';
     }
     const supplierFilterSelect = event.type === 'change' ? event.target.closest?.('[data-pos-supplier-filter]') : null;

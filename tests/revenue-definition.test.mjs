@@ -4,6 +4,7 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import { buildLocalAnalytics } from '../src/local-analytics.js';
 import { isPaidSale, isReversedSale, saleDiscount, saleOutstanding, saleRevenue, sumRevenue } from '../src/revenue-definition.js';
+import * as ServiceModel from '../src/service-model.js';
 
 const NOW = Date.parse('2026-06-30T12:00:00.000Z');
 const daysAgo = days => new Date(NOW - days * 86400000).toISOString();
@@ -269,24 +270,32 @@ test('the AI helper pages through appointments from the last 30 days and reports
   }
 });
 
-test('the Craft AI services list follows the shop type, not the product hold flag', async () => {
+test('the Craft AI services list follows the product, not the shop type', async () => {
   const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const start = app.indexOf('        listServices: () => (SQLiteEngine.getStore().offer_type === "services"');
-  assert.ok(start > 0, 'listServices should be defined from the shop offer type.');
-  const end = app.indexOf('\n      });', start);
+  const start = app.indexOf('        listServices: () => SQLiteEngine');
+  assert.ok(start > 0, 'listServices should be defined from the catalogue.');
+  const end = app.indexOf(String.fromCharCode(10) + '      });', start);
   const source = app.slice(start, end).trim().replace(/^listServices: /, '');
-  const build = new Function('SQLiteEngine', `return (${source});`);
+  const build = (engine, serviceModel) => new Function('SQLiteEngine', 'window', `return (${source});`)(engine, {
+    EshopServiceModel: serviceModel
+  });
   const products = [
     { name: 'Haircut', price: 500, duration_minutes: 45, status: 'published', booking_enabled: 0 },
-    { name: 'Old service', price: 100, status: 'archived' },
-    { name: 'Hidden', price: 100, active: 0 },
+    { name: 'Old service', price: 100, duration_minutes: 30, status: 'archived' },
+    { name: 'Hidden', price: 100, duration_minutes: 30, active: 0 },
     { name: 'Hold shoe', price: 900, status: 'published', booking_enabled: 1 }
   ];
   const engine = offerType => ({
     getStore: () => ({ offer_type: offerType }),
     select: (_table, predicate) => products.filter(predicate)
   });
-  assert.deepEqual(build(engine('services'))().map(item => item.name), ['Haircut', 'Hold shoe'],
-    'every live product in a services shop is a service, hold-enabled or not');
-  assert.deepEqual(build(engine('products'))(), [], 'hold-enabled physical products are not services');
+  // A service is whichever item carries a duration. Asking the shop setting hid every service in a
+  // shop that also sells goods, and called every shoe in a salon a service.
+  for (const offerType of ['services', 'products', 'both']) {
+    assert.deepEqual(build(engine(offerType), ServiceModel)().map(item => item.name), ['Haircut'],
+      `the haircut is the only service, whatever a ${offerType} shop is set to`);
+  }
+  assert.equal(build(engine('services'), ServiceModel)()[0].duration_minutes, 45);
+  assert.equal(build(engine('products'), ServiceModel)().length, 1,
+    'a hold-enabled shoe is still not a service');
 });

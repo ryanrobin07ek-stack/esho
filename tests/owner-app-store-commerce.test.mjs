@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile as readFileRaw } from "node:fs/promises";
 import test from "node:test";
 import { JSDOM } from "jsdom";
+import * as ServiceModel from "../src/service-model.js";
 
 const readFile = async (path, options) => {
   const contents = await readFileRaw(path, options);
@@ -24,7 +25,7 @@ function litrusSaveHarness({ live, cached }) {
   const SQLiteEngine = { select: name => JSON.parse(JSON.stringify(tables[name] || [])) };
   const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor, expectedTenantId) {${saveMethod}\n};`)(
     SQLiteEngine,
-    { ShopSQLite: { async flush() {} } }
+    { ShopSQLite: { async flush() {} }, EshopServiceModel: ServiceModel }
   );
   const current = { tenant_id: tenant.id, categories: [{ id: 1, name: "Shoes" }], store: {}, ...cached };
   let saved = null;
@@ -126,7 +127,7 @@ test("Archived products are not sent to Litrus and publishing skips them", () =>
     },
     {}, false,
     { contentWindow: { postMessage: message => messages.push(message) } },
-    { location: { origin: "https://app.test" } },
+    { location: { origin: "https://app.test" }, EshopServiceModel: ServiceModel },
     null, () => false, "", { showToast() {} }
   );
   assert.deepEqual(messages[0].catalog.products.map(product => product.id), [1]);
@@ -225,6 +226,7 @@ function bindHarness({ bridge, snapshot, html = "" }) {
   const { window } = dom;
   window.confirm = () => true;
   window.EshopInventoryBridge = bridge;
+  window.EshopServiceModel = ServiceModel;
   const container = window.document.getElementById("c");
   const calls = [];
   const factory = new Function(

@@ -9,6 +9,7 @@ import test from "node:test";
 import initSqlJs from "sql.js";
 import { JSDOM } from "jsdom";
 import worker from "../cloudflare/worker.js";
+import * as ServiceModel from "../src/service-model.js";
 
 const readFile = async (path, options) => {
   const contents = await readFileRaw(path, options);
@@ -185,6 +186,7 @@ function mountScreen(env, { wrapFetch, confirm = () => true } = {}) {
   const { window } = dom;
   window.confirm = confirm;
   window.EshopInventoryBridge = bridge;
+  window.EshopServiceModel = ServiceModel;
   const container = window.document.getElementById("c");
   const regionFactory = new Function(
     "AppUtils", "AppController", "SQLiteEngine", "window", "document", "CSS", "FormData", "console",
@@ -713,7 +715,7 @@ test("The builder's capacity, cancellation cutoff and reschedule limit survive t
   const run = async shop => {
     const tenant = { id: "shop", name: "Test shop" };
     const save = new Function("SQLiteEngine", "window", `return async function (input, isDraftEditor, expectedTenantId) {${saveMethod}\n};`)(
-      { select: () => [] }, { ShopSQLite: { async flush() {} } }
+      { select: () => [] }, { ShopSQLite: { async flush() {} }, EshopServiceModel: ServiceModel }
     );
     let saved = null;
     await save.call({
@@ -743,7 +745,7 @@ test("The builder's capacity, cancellation cutoff and reschedule limit survive t
       getCategories: () => [], select: () => []
     },
     {}, false, { contentWindow: { postMessage: message => messages.push(message) } },
-    { location: { origin: "https://app.test" } }, null, () => false, "", { showToast() {} }
+    { location: { origin: "https://app.test" }, EshopServiceModel: ServiceModel }, null, () => false, "", { showToast() {} }
   );
   const shop = messages[0].catalog.shop;
   assert.deepEqual([shop.service_capacity, shop.service_cancel_cutoff_hours, shop.service_max_reschedules], [4, 0, 1]);

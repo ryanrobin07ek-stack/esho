@@ -12623,6 +12623,22 @@ const WEBSITE_THEME_BUSINESS_GROUPS = {
   "Food & Drinks": ["freshbox-gourmet"]
 };
 
+// The till and the web form offer the same durations, from the one shared service definition.
+function webServiceDurationOptions(selected) {
+  const model = window.EshopServiceModel;
+  const step = model?.SERVICE_STEP_MINUTES || 15;
+  const min = model?.SERVICE_MIN_MINUTES || 15;
+  const max = model?.SERVICE_MAX_MINUTES || 240;
+  const chosen = Number(selected) || model?.DEFAULT_SERVICE_MINUTES || 60;
+  const options = [];
+  for (let minutes = min; minutes <= max; minutes += step) {
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    const label = hours && rest ? `${hours} hr ${rest} min` : hours ? `${hours} hr` : `${minutes} min`;
+    options.push(`<option value="${minutes}" ${minutes === chosen ? "selected" : ""}>${label}</option>`);
+  }
+  return options.join("");
+}
 const StudioRenderers = {
   mainShopSnapshotCache: null,
 
@@ -14826,7 +14842,10 @@ const StudioRenderers = {
       if (page.route === "/account/web/studio/store/bookings") {
         const holdHours = Number(this.getWorkspaceSetting("max_hold_hours", 24));
         const activeProductCount = SQLiteEngine.select("products", product => product.status !== "archived").length;
-        const servicesShop = SQLiteEngine.getStore().offer_type === "services";
+        // A salon that also sells shampoo still takes bookings, so this follows the catalogue.
+        const servicesShop = window.EshopServiceModel.sellsServices(
+          window.EshopServiceModel.offerTypeForCatalogue(SQLiteEngine.select("products", product => product.status !== "archived"), SQLiteEngine.getStore().offer_type)
+        );
         return `<section class="studio-workspace-section">
           ${servicesShop ? this.renderServiceAppointmentsPanel(snapshot) : ""}
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold settings</h2></div>
@@ -15247,7 +15266,11 @@ const StudioRenderers = {
             <div class="web-product-media-preview" data-web-product-media-preview hidden></div>
             <p class="studio-panel-note" data-web-product-media-status role="status" aria-live="polite">Add product photos or choose another media type.</p>
           </div>
-          <label>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label>
+          <div class="studio-form-grid">
+            <label>Item type<select name="itemType" data-web-product-item-type><option value="product">Product</option><option value="service">Service</option></select></label>
+            <label data-web-product-duration hidden>How long it takes<select name="durationMinutes">${webServiceDurationOptions()}</select></label>
+          </div>
+          <label data-web-product-stock>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label>
           <div class="web-product-variants" data-web-product-variants></div>
           <label class="web-product-hold"><input type="checkbox" name="booking_enabled"><span>Allow customer holds</span></label>
           <button type="button" class="btn-secondary" data-web-product-cancel hidden>Cancel edit</button>
@@ -17208,6 +17231,19 @@ const StudioRenderers = {
           }
           setMediaStatus("Existing media will be kept unless you choose replacement media.");
         };
+        // A service is a property of the product: the form says so per item, not per shop.
+        const applyWebItemType = () => {
+          const typeField = webProductForm.querySelector("[data-web-product-item-type]");
+          const durationField = webProductForm.querySelector("[data-web-product-duration]");
+          const stockField = webProductForm.querySelector("[data-web-product-stock]");
+          const stockInput = stockField?.querySelector('[name="stock"]');
+          const isService = typeField?.value === "service";
+          if (durationField) durationField.hidden = !isService;
+          if (stockField) stockField.hidden = isService;
+          // A hidden required field would refuse the save with nothing on screen to fix.
+          if (stockInput) stockInput.required = !isService;
+        };
+        webProductForm.querySelector("[data-web-product-item-type]")?.addEventListener("change", applyWebItemType);
         const setEditingProduct = product => {
           webProductForm.reset();
           webProductForm.querySelector('[name="productId"]').value = String(product.id);
@@ -17219,6 +17255,10 @@ const StudioRenderers = {
           webProductForm.querySelector('[name="costPrice"]').value = product.cost_price ?? "";
           webProductForm.querySelector('[name="stock"]').value = product.stock ?? 0;
           webProductForm.querySelector('[name="booking_enabled"]').checked = Boolean(product.booking_enabled);
+          const savedMinutes = window.EshopServiceModel.serviceDuration(product);
+          webProductForm.querySelector("[data-web-product-item-type]").value = savedMinutes ? "service" : "product";
+          if (savedMinutes) webProductForm.querySelector('[name="durationMinutes"]').value = String(savedMinutes);
+          applyWebItemType();
           bindProductDetails(product);
           const mediaMode = product.media_type === "spin" ? "3d"
             : ["video", "cutout"].includes(product.media_type) ? product.media_type : "keep";
@@ -17235,6 +17275,7 @@ const StudioRenderers = {
           webProductForm.querySelector("[data-web-product-cancel]").hidden = true;
           bindProductDetails(null);
           updateMediaMode("keep");
+          applyWebItemType();
         };
         currentContent.querySelectorAll("[data-edit-web-product]").forEach(button => {
           button.addEventListener("click", () => {
@@ -17345,9 +17386,16 @@ const StudioRenderers = {
               const stock = Number(data.get("stock"));
               const categoryId = Number(data.get("categoryId"));
               const taxonomy = window.EshopProductTaxonomy.readProductTaxonomyFields(form);
+              // A service is sold as time, so it carries a duration and counts no stock.
+              const sellsTime = String(data.get("itemType") || "product") === "service";
+              const durationMinutes = sellsTime
+                ? window.EshopServiceModel.normalizeServiceDuration(data.get("durationMinutes")) ||
+                  window.EshopServiceModel.DEFAULT_SERVICE_MINUTES
+                : 0;
+              if (sellsTime && !durationMinutes) throw new Error("Choose how long this service takes.");
               if (!name || !Number.isFinite(price) || price < 0 ||
                 (costPrice !== null && (!Number.isFinite(costPrice) || costPrice < 0)) ||
-                !Number.isSafeInteger(stock) || stock < 0 ||
+                (!sellsTime && (!Number.isSafeInteger(stock) || stock < 0)) ||
                 !Number.isSafeInteger(categoryId) ||
                 !SQLiteEngine.getCategories().some(category => Number(category.id) === categoryId)) {
                 throw new Error("Enter a product name, category, valid prices, and whole-number stock quantity.");
@@ -17412,7 +17460,10 @@ const StudioRenderers = {
               }
               SQLiteEngine.saveProduct({
                 ...(existingProduct ? { id: existingProduct.id, sku: existingProduct.sku } : {}),
-                name, category_id: categoryId, price, stock: productVariants.stock ?? stock,
+                name, category_id: categoryId,
+                price,
+                stock: sellsTime ? null : productVariants.stock ?? stock,
+                duration_minutes: sellsTime ? durationMinutes : null,
                 cost_price: costPrice ?? 0,
                 taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
                 taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
@@ -20600,12 +20651,12 @@ const AppController = {
         token: connection.token,
         origin: connection.origin,
         // Lets the AI helper see what a service shop sells instead of treating it as an empty stock room.
-        offerType: SQLiteEngine.getStore().offer_type === "services" ? "services" : "products",
-        // In a services shop every live catalogue product is a service. In a products shop none is:
-        // booking_enabled only means "customers may place a temporary hold on this item", not "this is a service".
-        listServices: () => (SQLiteEngine.getStore().offer_type === "services"
-          ? SQLiteEngine.select("products", product => product.status !== "archived" && product.active !== false && product.active !== 0)
-          : [])
+        offerType: window.EshopServiceModel.offerTypeForCatalogue(SQLiteEngine.select("products", product => product.status !== "archived"), SQLiteEngine.getStore().offer_type),
+        // A service is whichever item carries a duration, whatever the shop is set to. Asking the
+        // shop setting hid every service in a shop that also sells goods.
+        listServices: () => SQLiteEngine
+          .select("products", product => product.status !== "archived" && product.active !== false && product.active !== 0)
+          .filter(product => window.EshopServiceModel.isService(product))
           .map(product => ({
             name: product.name,
             price: product.price ?? product.selling_price ?? 0,
@@ -21397,7 +21448,9 @@ const AppController = {
                   spin_frames: Array.isArray(product.spin_frames) ? product.spin_frames : [],
                   video_url: product.video_url || "",
                   booking_enabled: product.booking_enabled === true || product.booking_enabled === 1,
-                  duration_minutes: Number(product.duration_minutes) || 60,
+                  // Only a service carries a duration. Defaulting every product to an hour made
+                  // the builder treat the whole catalogue as bookable time.
+                  duration_minutes: window.EshopServiceModel.serviceDuration(product) || null,
                   category_names: categories
                     .filter(category => productCategoryIds.some(id => String(category.id) === String(id)))
                     .map(category => category.name)
@@ -21414,7 +21467,7 @@ const AppController = {
                   is_new_shop_draft: isDraftEditor,
                   draft_id: draft?.draft_id || "",
                   currency: store.currency || "KES",
-                  offer_type: store.offer_type === "services" ? "services" : "products",
+                  offer_type: window.EshopServiceModel.offerTypeForCatalogue(products, store.offer_type),
                   service_days: Array.isArray(store.service_days) ? store.service_days : [1, 2, 3, 4, 5, 6],
                   service_open_time: store.service_open_time || "09:00",
                   service_close_time: store.service_close_time || "17:00",
@@ -23762,7 +23815,8 @@ const AppController = {
       delivery_fee: Number(shop.delivery_fee) || 0,
       free_delivery_over: Number(shop.free_delivery_over) || 0,
       about: String(shop.about || "").slice(0, 4000),
-      offer_type: shop.offer_type === "services" ? "services" : "products",
+      // Saving from the builder must not flatten a shop that sells goods and time side by side.
+      offer_type: window.EshopServiceModel.offerTypeForCatalogue(products, shop.offer_type),
       service_days: Array.isArray(shop.service_days) ? shop.service_days.map(Number) : [1, 2, 3, 4, 5, 6],
       service_open_time: String(shop.service_open_time || "09:00"),
       service_close_time: String(shop.service_close_time || "17:00"),
