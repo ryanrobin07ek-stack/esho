@@ -110,7 +110,17 @@
       const title = card.querySelector(".p-title");
       if (title) title.textContent = product.name;
       const price = card.querySelector(".p-price");
-      if (price) price.textContent = (data.shop.cur ? `${data.shop.cur} ` : "") + product.price.toLocaleString("en-US");
+      if (price) {
+        // A shirt priced 1,000 to 1,500 used to read "KES 1,000" on every card, because the card
+        // only ever showed the base price. Browsing now shows the lowest it can actually be bought for.
+        const base = Number(product.price) || 0;
+        const offered = (product.variants || [])
+          .map(variant => (variant && variant.price != null ? Number(variant.price) : base))
+          .filter(amount => Number.isFinite(amount) && amount > 0);
+        const asMoney = amount => (data.shop.cur ? data.shop.cur + " " : "") + amount.toLocaleString("en-US");
+        const varies = offered.length > 1 && Math.min(...offered) !== Math.max(...offered);
+        price.textContent = varies ? "from " + asMoney(Math.min(...offered)) : asMoney(base);
+      }
       const description = card.querySelector(".p-desc");
       if (description) description.textContent = product.desc;
       card.dataset.price = String(product.price);
@@ -426,7 +436,13 @@
           values.forEach(value => {
             const option = document.createElement("option");
             option.value = value;
-            option.textContent = value;
+            // Say a size is gone before the customer picks it, instead of greying the button after.
+            const matching = variants.filter(variant => String((name === "size"
+              ? variant.option1_value ?? variant.size
+              : variant.option2_value ?? variant.color) ?? "") === value);
+            const soldOut = matching.length > 0 && matching.every(variant => Number(variant.stock) <= 0);
+            option.textContent = soldOut ? value + " \u00b7 sold out" : value;
+            option.disabled = soldOut;
             select.append(option);
           });
           label.append(select);
@@ -437,6 +453,36 @@
           button.disabled = true;
           button.dataset.variantRequired = "true";
         });
+      }
+      // What the product is made of, in the customer's words. These were collected by the owner and
+      // published, then only ever used to build filter dropdowns, so a shopper never saw them.
+      const specs = (product.taxonomy_attributes || [])
+        .filter(attribute => attribute && attribute.attributeName && attribute.value);
+      if (specs.length) {
+        const info = page.querySelector(".sp-info") || buyArea?.parentElement;
+        if (info) {
+          const details = document.createElement("div");
+          details.className = "sp-specs";
+          details.dataset.productSpecs = product.id;
+          details.style.cssText = "display:grid;gap:6px;margin:18px 0";
+          const heading = document.createElement("h3");
+          heading.textContent = "Details";
+          heading.style.cssText = "margin:0;font-size:.95rem";
+          details.append(heading);
+          const list = document.createElement("dl");
+          list.style.cssText = "display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-size:.86rem";
+          specs.slice(0, 20).forEach(attribute => {
+            const term = document.createElement("dt");
+            term.textContent = attribute.attributeName;
+            term.style.cssText = "opacity:.65";
+            const value = document.createElement("dd");
+            value.textContent = attribute.value;
+            value.style.cssText = "margin:0";
+            list.append(term, value);
+          });
+          details.append(list);
+          info.append(details);
+        }
       }
       fillProducts(page.querySelector(".prods"), related.filter(item => item.id !== product.id).slice(0, 4));
       return page.innerHTML;

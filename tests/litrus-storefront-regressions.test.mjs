@@ -2716,3 +2716,73 @@ test("Litrus offers owner uploads for banner and card pictures and gallery and v
   assert.match(editor, /content-gallery|'sole-content-block sec content-'\+block\.type/);
   assert.match(editor, /OWN_PHOTO_BUDGET=1500000/, "owner pictures are capped so the page stays under the host limit");
 });
+
+test("a published product shows its details, its sold-out sizes and a browse price that reflects them", () => {
+  const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/", runScripts: "outside-only" });
+  const { window } = dom;
+  const data = {
+    shop: { key: "attr-shop", cur: "KES", products: [] },
+    pages: {
+      home: '<main class="sp-main"><section class="prods"></section></main>',
+      shop: '<main class="sp-main"><div class="sp-top"><h1></h1><p></p></div><section class="prods"></section></main>',
+      "p/template": '<main class="sp-main"><div class="sp-top"><h1></h1></div><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p><div class="sp-buy"><button data-act="addqty">Add to cart</button></div></div></div></main>'
+    },
+    templates: { productCard: '<article data-pid=""><h3 class="p-title"></h3><div class="p-price"></div><button class="p-btn" data-act="addqty">Add to bag</button></article>' }
+  };
+  const catalog = {
+    categories: [{ id: 1, name: "Shirts", slug: "shirts" }],
+    store: { name: "Attr Shop", currency: "KES", offer_type: "products" },
+    products: [{
+      id: 1, name: "Poplin Shirt", slug: "poplin-shirt", price: 1000, stock: 7, category_id: 1,
+      images: [], description: "A shirt.",
+      option1_name: "Size", option2_name: "Colour",
+      sizes: ["S", "M", "L"], colors: ["Red"],
+      variants: [
+        { id: "vS", option1_value: "S", option2_value: "Red", size: "S", color: "Red", price: 1000, stock: 4 },
+        { id: "vM", option1_value: "M", option2_value: "Red", size: "M", color: "Red", price: 1200, stock: 3 },
+        { id: "vL", option1_value: "L", option2_value: "Red", size: "L", color: "Red", price: 1500, stock: 0 }
+      ],
+      taxonomy_attributes: [
+        { attributeName: "Fabric", value: "Cotton poplin" },
+        { attributeName: "Neckline", value: "Classic collar" }
+      ]
+    }]
+  };
+  window.__ESHOP_THEME_CATALOG__ = catalog;
+  window.__ESHOP_TRACK_STOREFRONT_EVENT__ = () => {};
+  let pageFor = () => "";
+  window.SPRT = options => {
+    pageFor = options.page;
+    window.document.getElementById("store").innerHTML = options.page("shop");
+    return { go(route) { window.document.getElementById("store").innerHTML = options.page(route); } };
+  };
+  try {
+    window.eval(runtime);
+    window.litrusStartLiveStore(data);
+
+    // Browsing shows what the shirt can actually be bought for, not only its base price.
+    const card = window.document.querySelector(".prods .p-price");
+    assert.equal(card.textContent, "from KES 1,000");
+
+    const parser = new window.DOMParser();
+    const productPage = parser.parseFromString(pageFor("p/1"), "text/html");
+
+    // The owner's own details reach the customer instead of only feeding filter dropdowns.
+    const specs = productPage.querySelector(".sp-specs");
+    assert.ok(specs, "the product page carries a details block");
+    assert.match(specs.textContent, /Fabric/);
+    assert.match(specs.textContent, /Cotton poplin/);
+    assert.match(specs.textContent, /Classic collar/);
+
+    // A size with nothing left says so before it is chosen.
+    const sizes = [...productPage.querySelectorAll('[data-variant-option="size"] option')];
+    const large = sizes.find(option => option.value === "L");
+    assert.match(large.textContent, /sold out/);
+    assert.equal(large.disabled, true);
+    const medium = sizes.find(option => option.value === "M");
+    assert.equal(medium.textContent, "M");
+    assert.equal(medium.disabled, false);
+  } finally {
+    window.close();
+  }
+});
