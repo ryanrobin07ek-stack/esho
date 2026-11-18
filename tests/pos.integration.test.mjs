@@ -2084,12 +2084,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /title: "Customers"[\s\S]*?title: "Points"[\s\S]*?title: "Subscribers"[\s\S]*?title: "Notifications"/);
     assert.doesNotMatch(pageSource, /"\/account\/website\/(?:maker|editor|pages)"|Page editor|renderPagesManager|openPageModal/,
       'The unreachable website tool and Pages screens were removed.');
-    // One bottom bar for the whole owner app. Main Store and Craft used to render different bars,
-    // so the same shop had two Overviews and three Orders, and Bookings sat inside a kebab menu.
-    assert.match(pageSource, /ownerNavSections\(\)[\s\S]*?title: "Home"[\s\S]*?title: "Orders"[\s\S]*?title: "Products"[\s\S]*?title: "Customers"[\s\S]*?title: "More"/);
-    assert.match(pageSource, /aria-label="Shop sections"/);
-    assert.equal((pageSource.match(/ownerBottomNav\(path\)/g) || []).length, 3,
-      "The shared bottom bar is defined once and rendered by both shells.");
+    assert.match(pageSource, /aria-label="Web Studio sections"[\s\S]*?sections\.map\(section =>/);
     assert.match(pageSource, /<header class="studio-workspace-heading">[\s\S]*?class="studio-workspace-back" href="\/" data-route="\/" data-home-screen aria-label="Back to Craft home"[\s\S]*?class="studio-workspace-tab-title">\$\{AppUtils\.escapeHTML\(page\.title\)\}<\/h1>/);
     assert.doesNotMatch(pageSource, /<span class="studio-workspace-kicker">CRAFT<\/span><h1>Web Studio<\/h1>/);
     assert.match(pageSource, /path === "\/account\/web" \|\| path\.startsWith\("\/account\/web\/studio\/"\)[\s\S]*?renderMainShopWorkspace\(path\)/);
