@@ -284,6 +284,22 @@ button {
   gap: 0;
 }
 
+/* Shown in the shell header whenever no Craft account is signed in. Every cloud-backed screen
+   (orders, alerts, discounts, visits, publishing) refuses without one, and the only sign-in form
+   used to be hidden behind the home-screen avatar, so those screens looked broken with no way out. */
+.studio-workspace-header-actions .studio-signin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
 .studio-module-navbar .studio-profile-btn {
   width: 38px;
   height: 38px;
@@ -9908,7 +9924,7 @@ body.craft-app-ui #app .launchpad-link {
   </style>
   <meta name="theme-color" content="#F5FAFF">
   <link rel="manifest" href="/manifest.webmanifest">
-  <script type="module" crossorigin src="/assets/app-CxD8XY99.js"></script>
+  <script type="module" crossorigin src="/assets/app-3mFtdxhE.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/app-qKGfSach.css">
 </head>
 <body>
@@ -10802,6 +10818,17 @@ const AppUtils = {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
     });
+  },
+
+  // Every cloud-backed screen refuses without a Craft account session, so the shell can offer the
+  // way in instead of printing an error the owner cannot act on.
+  craftAccountSignedIn() {
+    try {
+      return Boolean(window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1")
+        && window.localStorage.getItem("ESHOP_ACCOUNT_USERNAME_V1"));
+    } catch {
+      return false;
+    }
   },
 
   showToast(message, type = "success") {
@@ -12762,6 +12789,8 @@ const StudioRenderers = {
           <a class="studio-workspace-back" href="/" data-route="/" data-home-screen aria-label="Back to Craft home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg></a>
           <h1 class="studio-workspace-tab-title">${AppUtils.escapeHTML(page.title)}</h1>
           <div class="studio-workspace-header-actions">
+            ${AppUtils.craftAccountSignedIn() ? "" : `<a href="/app-account" data-route="/app-account"
+              class="btn-primary studio-signin-btn" title="Sign in to load orders, alerts and publishing">Sign in</a>`}
             ${showBusinessFilters ? `<button type="button" class="studio-preview-link bl-filter-toggle" data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"/></svg>
             </button>` : ""}
@@ -13084,6 +13113,8 @@ const StudioRenderers = {
           <a class="studio-workspace-back" href="/" data-route="/" data-home-screen aria-label="Back to Craft home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg></a>
           <h1 class="studio-workspace-tab-title">${AppUtils.escapeHTML(page.title)}</h1>
           <div class="studio-workspace-header-actions">
+            ${AppUtils.craftAccountSignedIn() ? "" : `<a href="/app-account" data-route="/app-account"
+              class="btn-primary studio-signin-btn" title="Sign in to load orders, alerts and publishing">Sign in</a>`}
             ${showAnalyticsFilter ? `<button type="button" class="studio-analytics-filter-toggle" data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.5 7.5v5l-3 1.5v-6.5L4 5z"/></svg></button>` : ""}
             ${this.renderWorkspaceSidebar(`${page.section.title} screens`, page.section.tabs, page.route)}
           </div>
@@ -16400,7 +16431,7 @@ const StudioRenderers = {
             colors: product?.colors || [],
             variants: product?.variants || []
           });
-          window.EshopProductVariants.bindProductVariantFields(variantsHost);
+          window.EshopProductVariants.bindProductVariantFields(variantsHost.firstElementChild || variantsHost);
         };
         bindProductDetails(null);
         const mediaStatus = webProductForm.querySelector("[data-web-product-media-status]");
@@ -16995,7 +17026,7 @@ const StudioRenderers = {
               if (!Number.isSafeInteger(hours) || hours < 1 || hours > 720) throw new Error("Hold duration must be between 1 and 720 hours.");
               this.setWorkspaceSetting("max_hold_hours", hours);
               await window.ShopSQLite.flush();
-              this.cacheActiveTenantCatalog();
+              AppController.cacheActiveTenantCatalog();
             } else if (kind === "booking-create") {
               const product = SQLiteEngine.getProductById(Number(data.get("productId")));
               const quantity = Number(data.get("quantity"));
@@ -19409,8 +19440,8 @@ const AppController = {
     const token = draftLitrusImageRequest ? "" : credentialOverride || connection.token;
     const { origin } = connection;
     if (!token && !anonymous) throw new Error(tenantId === "main"
-      ? "Sign in to the Craft account that owns the main website."
-      : "Sign in to the Craft account that owns this shop.");
+      ? "Sign in to the Craft account that owns the main website. Tap Sign in at the top of the screen."
+      : "Sign in to the Craft account that owns this shop. Tap Sign in at the top of the screen.");
     let response;
     try {
       response = await fetch(new URL(path, origin), {
@@ -20308,7 +20339,7 @@ const AppController = {
           colors: product?.colors || [],
           variants: product?.variants || []
         });
-        window.EshopProductVariants.bindProductVariantFields(variantsHost);
+        window.EshopProductVariants.bindProductVariantFields(variantsHost.firstElementChild || variantsHost);
       };
       const renderDraftProducts = () => {
         const allProducts = StudioRenderers.websiteBuilderDraft().products;
@@ -20455,6 +20486,7 @@ const AppController = {
           editingProduct = StudioRenderers.websiteBuilderDraft().products.find(item =>
             String(item.id) === editButton.dataset.editWizardProduct);
           if (!editingProduct) return;
+          productForm.hidden = false;
           productForm.elements.id.value = String(editingProduct.id);
           productForm.elements.name.value = editingProduct.name || "";
           productForm.elements.price.value = String(editingProduct.price ?? "");
