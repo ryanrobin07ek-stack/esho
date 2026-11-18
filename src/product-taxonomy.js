@@ -76,10 +76,9 @@ export function createProductTaxonomyFields({
     data-initial-custom-category="${escapeHtml(customCategory)}"
     data-initial-attributes="${escapeHtml(JSON.stringify(attributes))}">
     <div class="product-category-pill">
-      <label ${storeCategoryFieldName ? '' : 'hidden'}><select aria-label="Category" ${storeCategoryFieldName
-        ? `name="${escapeHtml(storeCategoryFieldName)}"` : ''} data-store-category-select>
+      ${storeCategoryFieldName ? `<label><select aria-label="Category" name="${escapeHtml(storeCategoryFieldName)}" data-store-category-select>
         <option value="">Choose a category</option>${categoryOptions}
-      </select></label>
+      </select></label>` : ''}
       <button type="button" data-taxonomy-add-open>Add</button>
     </div>
     <div class="product-taxonomy-add-panel" data-taxonomy-add-panel hidden>
