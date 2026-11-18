@@ -279,6 +279,69 @@ try {
   }
   await draftPage.close();
 
+  // Host contract: archived products ride along unchanged, nothing is invented for ids the builder
+  // was not given, and a compact export stays small however many products the shop has.
+  const contractPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+  contractPage.on('pageerror', error => pageErrors.push(`contract: ${error.message}`));
+  await contractPage.goto(`http://127.0.0.1:${server.address().port}/litrus-mixer/index.html?craft=1`, {
+    waitUntil: 'domcontentloaded'
+  });
+  const contract = await contractPage.evaluate(() => {
+    const categories = ['Shoes', 'Bags'].map((name, index) => ({ id: index + 1, name }));
+    const products = Array.from({ length: 60 }, (_, index) => ({
+      id: index + 1, name: `Contract product ${index + 1}`, price: 100 + index,
+      description: 'A realistic description. '.repeat(10), category_names: [categories[index % 2].name],
+      images: [`https://cdn.example.com/p${index + 1}.jpg`]
+    }));
+    const archived = { id: 900, name: 'Retired lamp', price: 12, status: 'archived', sku: 'LAMP-1', stock: 3 };
+    window.litrusSetCraftCatalog({
+      shop: { name: 'Contract shop', currency: 'KES', is_new_shop_draft: false },
+      categories, products: [...products, archived]
+    });
+    const payload = window.litrusGetCraftPublishPayload({ strict: true });
+    return {
+      ids: payload.catalog.products.map(product => String(product.id)),
+      archived: payload.catalog.products.find(product => String(product.id) === '900'),
+      statuses: payload.catalog.products.filter(product => product.status).map(product => String(product.id)),
+      htmlBytes: payload.html.length,
+      retiredInHtml: /Retired lamp/.test(payload.html),
+      serviceCard: /Add to bag/.test(payload.html) && false
+    };
+  });
+  if (contract.ids.length !== 61 || contract.ids[60] !== '900' ||
+      JSON.stringify(contract.archived) !== JSON.stringify({ id: 900, name: 'Retired lamp', price: 12, status: 'archived', sku: 'LAMP-1', stock: 3 }) ||
+      contract.statuses.join() !== '900') {
+    failures.push(`builder payload dropped or changed an archived product: ${JSON.stringify(contract)}`);
+  }
+  if (contract.retiredInHtml) failures.push('an archived product leaked into the published storefront');
+  if (contract.htmlBytes > 800_000) {
+    failures.push(`published storefront for 60 products is ${contract.htmlBytes} bytes; per-product pages are being baked in again`);
+  }
+  const serviceCheck = await contractPage.evaluate(() => {
+    const categories = [{ id: 1, name: 'Haircuts' }];
+    const products = [{ id: 5, name: 'Cut', price: 500, duration_minutes: 45, category_names: ['Haircuts'], images: [] }];
+    window.litrusSetCraftCatalog({
+      shop: { name: 'Salon', currency: 'KES', offer_type: 'services', service_open_time: '17:00', service_close_time: '09:00' },
+      categories, products
+    });
+    let strictError = '';
+    try { window.litrusGetCraftPublishPayload({ strict: true }); } catch (error) { strictError = String(error.message || error); }
+    const autosavePayload = window.litrusGetCraftPublishPayload();
+    return {
+      strictError,
+      autosaveStillWorks: Array.isArray(autosavePayload.catalog.products),
+      duration: autosavePayload.catalog.products[0].duration_minutes,
+      durationOptions: [...document.querySelectorAll('#editProdDuration option')].map(option => option.value).join(),
+      problemShown: !document.getElementById('wServiceError').hidden
+    };
+  });
+  if (!/Closing time must be later than opening time/.test(serviceCheck.strictError) || !serviceCheck.autosaveStillWorks ||
+      serviceCheck.duration !== 45 || !serviceCheck.problemShown ||
+      serviceCheck.durationOptions !== Array.from({ length: 16 }, (_, index) => (index + 1) * 15).join()) {
+    failures.push(`service schedule validation or duration control misbehaved: ${JSON.stringify(serviceCheck)}`);
+  }
+  await contractPage.close();
+
   await page.locator('#wName').fill('Litrus Browser Smoke Shop');
   await page.locator('#wOfferType').selectOption('products');
   await page.locator('#wType').selectOption('shoes');
@@ -364,7 +427,7 @@ try {
         hasCatalog: Array.isArray(payload?.catalog?.products),
         // A shop without owner-entered testimonials must publish no invented reviews or trust claims.
         fabricatedSocialProof: typeof payload?.html === 'string' &&
-          /Amina W\.|Brian O\.|Faith K\.|Real reviews from real people|Verified buyer|Free returns|2,000\+ orders|4\.8 \/ 5 rating|\(142 reviews\)/.test(payload.html)
+          /Amina W\.|Brian O\.|Faith K\.|Real reviews from real people|Verified buyer|Free returns|2,000\+ orders|4\.8 \/ 5 rating|\(142 reviews\)|Fast delivery|Easy returns|Secure payment/.test(payload.html)
       };
     } catch (error) {
       return { error: error instanceof Error ? error.message : String(error) };

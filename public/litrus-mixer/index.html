@@ -2796,6 +2796,7 @@ html #store .sole-store .sole-product-grid.sole-product-grid.shop-settings-grid:
  <div class="service-days"><span>Open days</span><label><input type="checkbox" data-service-day="1" checked> Mon</label><label><input type="checkbox" data-service-day="2" checked> Tue</label><label><input type="checkbox" data-service-day="3" checked> Wed</label><label><input type="checkbox" data-service-day="4" checked> Thu</label><label><input type="checkbox" data-service-day="5" checked> Fri</label><label><input type="checkbox" data-service-day="6" checked> Sat</label><label><input type="checkbox" data-service-day="0"> Sun</label></div>
  <div class="service-settings-grid"><label>Opening time<input id="wServiceOpen" type="time" value="09:00" required></label><label>Closing time<input id="wServiceClose" type="time" value="17:00" required></label><label>Timezone<input id="wServiceTimezone" value="Africa/Nairobi" placeholder="Africa/Nairobi" required></label><label>Buffer between appointments<select id="wServiceBuffer"><option value="0">No buffer</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label><label>Deposit after approval (%)<input id="wServiceDeposit" type="number" min="0" max="100" step="1" value="0"></label></div>
  <p class="hint">A deposit is optional. Deposits require KES prices, a connected Paystack account in Craft, and the customer’s email.</p>
+ <p id="wServiceError" class="hint" role="alert" hidden></p>
 </fieldset>
 <label><span id="wTypeQuestion">Type of shop</span><select id="wType"><option value="">Choose products or services first</option></select></label>
 <label><span id="wWhatQuestion">What do you sell?</span><input id="wWhat" placeholder="e.g. handmade candles and soaps" autocomplete="off"></label>
@@ -2817,7 +2818,7 @@ html #store .sole-store .sole-product-grid.sole-product-grid.shop-settings-grid:
 <section class="wz-sec" data-step="2" hidden><h2 id="wCatalogHeading">Products &amp; categories</h2><p class="hint">Set up what you sell. Your changes appear in the storefront preview.</p>
 <div class="catalog-tabs" role="tablist" aria-label="Catalog screens"><button type="button" id="wProductsTabBtn" role="tab" aria-controls="wProductsPane" aria-selected="true">Products</button><button type="button" id="wCategoriesTabBtn" role="tab" aria-controls="wCategoriesPane" aria-selected="false">Categories</button><button type="button" id="wContentTabBtn" role="tab" aria-controls="wContentPane" aria-selected="false">Promos &amp; FAQs</button></div>
 <div class="catalog-pane" id="wProductsPane" role="tabpanel" aria-labelledby="wProductsTabBtn"><div class="catalog-head"><h3><span id="wProductsHeading">Your products</span> <span id="wProdsCount" class="catalog-count"></span></h3><button type="button" class="ghost" id="wAdd">+ Add a product</button></div><p class="hint" id="wProductsHint">Add products, photos, and the categories each one belongs to.</p>
-<div class="product-editor" id="productEditor" role="dialog" aria-modal="true" aria-labelledby="productEditorTitle" hidden><h3 id="productEditorTitle">Add product</h3><label id="editProdNameLabel"><span id="editProdNameLabelText">Product name</span><input id="editProdName" placeholder="e.g. Everyday sneakers" autocomplete="off"></label><label>Price<input id="editProdPrice" inputmode="decimal" placeholder="e.g. 4,500"></label><label id="editProdDurationWrap" hidden>Appointment duration (minutes)<input id="editProdDuration" type="number" min="15" max="240" step="15" value="60"></label><label>Short description<textarea id="editProdDesc" rows="3" placeholder="What should customers know?"></textarea></label><label>Photo link (optional)<input id="editProdImageUrl" placeholder="Paste an image link"></label><div class="ph"><img id="editProdThumb" class="thumb" alt="" hidden><button type="button" class="ghost" id="editProdUpload">Upload photo</button><button type="button" class="ghost" id="editProdRemove" hidden>Remove photo</button><input type="file" id="editProdFile" accept="image/*" hidden><span id="editProdPhotoMsg" class="phmsg hint" role="status"></span></div><div><b>Categories</b><div id="editProdGroups" class="pc"></div></div><p id="editProdMsg" class="hint" role="status"></p><div class="row"><button type="button" id="editProdSave">Save product</button><button type="button" class="ghost" id="editProdCancel">Cancel</button></div></div><div id="wProds"></div></div>
+<div class="product-editor" id="productEditor" role="dialog" aria-modal="true" aria-labelledby="productEditorTitle" hidden><h3 id="productEditorTitle">Add product</h3><label id="editProdNameLabel"><span id="editProdNameLabelText">Product name</span><input id="editProdName" placeholder="e.g. Everyday sneakers" autocomplete="off"></label><label>Price<input id="editProdPrice" inputmode="decimal" placeholder="e.g. 4,500"></label><label id="editProdDurationWrap" hidden>Appointment duration<select id="editProdDuration"><option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60" selected>1 hr</option><option value="75">1 hr 15 min</option><option value="90">1 hr 30 min</option><option value="105">1 hr 45 min</option><option value="120">2 hrs</option><option value="135">2 hrs 15 min</option><option value="150">2 hrs 30 min</option><option value="165">2 hrs 45 min</option><option value="180">3 hrs</option><option value="195">3 hrs 15 min</option><option value="210">3 hrs 30 min</option><option value="225">3 hrs 45 min</option><option value="240">4 hrs</option></select></label><label>Short description<textarea id="editProdDesc" rows="3" placeholder="What should customers know?"></textarea></label><label>Photo link (optional)<input id="editProdImageUrl" placeholder="Paste an image link"></label><div class="ph"><img id="editProdThumb" class="thumb" alt="" hidden><button type="button" class="ghost" id="editProdUpload">Upload photo</button><button type="button" class="ghost" id="editProdRemove" hidden>Remove photo</button><input type="file" id="editProdFile" accept="image/*" hidden><span id="editProdPhotoMsg" class="phmsg hint" role="status"></span></div><div><b>Categories</b><div id="editProdGroups" class="pc"></div></div><p id="editProdMsg" class="hint" role="status"></p><div class="row"><button type="button" id="editProdSave">Save product</button><button type="button" class="ghost" id="editProdCancel">Cancel</button></div></div><div id="wProds"></div></div>
 <div class="catalog-pane" id="wCategoriesPane" role="tabpanel" aria-labelledby="wCategoriesTabBtn" hidden><h3>Your categories <span id="wCatCount" class="catalog-count"></span></h3><p class="hint" id="wCategoriesHint">Use clear groups such as Sneakers, Sandals, or New arrivals. Products can belong to more than one category.</p><div class="catadd"><input id="wCatNew" placeholder="Category name" autocomplete="off" aria-label="New category name"><button type="button" id="wCatAdd">Add category</button></div><div id="wCatChips" class="catchips"></div></div>
 <div class="catalog-pane" id="wContentPane" role="tabpanel" aria-labelledby="wContentTabBtn" hidden><h3>Homepage content</h3><p class="hint">Add promo banners or image-and-text stories between shorter product groups. If this list is empty, starter content is shown automatically.</p>
 <div id="wContentScreenNav" class="catalog-tabs" role="tablist" aria-label="Homepage content screens" hidden><button type="button" id="wPromoScreenTab" role="tab" aria-controls="wPromoScreen" aria-selected="true">Promo</button><button type="button" id="wFaqScreenTab" role="tab" aria-controls="wFaqScreen" aria-selected="false">FAQs</button></div>
@@ -3701,11 +3702,11 @@ if(window.innerWidth>1100&&!document.documentElement.classList.contains('craft-i
           'layout-n-playful': h => `<div class="hero-main"><h1>${h.content.headline}</h1><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a><div class="pl-r"><div class="im">${IM(h)}</div><div class="im">${IM(h)}</div><div class="im">${IM(h)}</div></div></div>`,
           'layout-n-bigcards': h => `<div class="hero-main"><div class="gn-f gn-l"><h1>${h.content.headline}</h1><p>${h.content.sub}</p></div><div class="gn-img">${IM(h)}</div><div class="gn-f gn-r"><a href="#" class="hero-btn">${h.content.btn}</a></div></div>`,
           'layout-n-search': h => `<div class="hero-main"><h1>${h.content.headline}</h1><p>${h.content.sub}</p><div class="sr-bar"><div><small>Type</small>All</div><div><small>Size</small>Any</div><div><small>Price</small>Any</div><a href="#" class="hero-btn">${h.content.btn}</a></div><div class="sr-img">${IM(h)}</div></div>`,
-          'layout-n-duo': h => `<div class="hero-main"><div><h1>${h.content.headline}</h1><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a></div><div class="du-k"><div class="du-c du-1"><b>01</b><div class="im">${IM(h)}</div><small>Best seller</small></div><div class="du-c du-2"><b>02</b><div class="im">${IM(h)}</div><small>New arrival</small></div></div></div>`,
+          'layout-n-duo': h => `<div class="hero-main"><div><h1>${h.content.headline}</h1><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a></div><div class="du-k"><div class="du-c du-1"><b>01</b><div class="im">${IM(h)}</div><small>Featured</small></div><div class="du-c du-2"><b>02</b><div class="im">${IM(h)}</div><small>Browse</small></div></div></div>`,
           'layout-n-street': h => `<div class="st-mq">&#9889; Free delivery &#9889; New drops weekly &#9889; Free delivery &#9889; New drops weekly &#9889; Free delivery</div><div class="hero-main"><div class="st-i st-l">${IM(h)}</div><div class="st-c"><h1>${h.content.headline}</h1><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a></div><div class="st-i st-r">${IM(h)}</div></div>`,
           'layout-n-panels': h => `<div class="hero-main"><div class="pn-l">${IM(h)}<h1>${h.content.headline}</h1></div><div class="pn-r"><div class="im">${IM(h)}</div><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a></div></div>`,
           'layout-n-bigname': h => `<div class="hero-main"><div class="bg-s"><h1>${h.content.headline}</h1><p>${h.content.sub}</p><div><a href="#" class="hero-btn">${h.content.btn}</a></div></div><div class="bg-i">${IM(h)}</div></div>`,
-          'layout-n-stats': h => `<div class="hero-main"><div><h1>${h.content.headline}</h1><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a><div class="sx"><div>Fast delivery</div><div>Easy returns</div><div>Secure payment</div></div></div><div class="sx-i">${IM(h)}</div></div>`,
+          'layout-n-stats': h => `<div class="hero-main"><div><h1>${h.content.headline}</h1><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a><div class="sx"><div>Browse the collection</div><div>Order online</div><div>Ask us anything</div></div></div><div class="sx-i">${IM(h)}</div></div>`,
           'layout-n-lumen': h => `<div class="hero-main"><div class="lm-bg">${IM(h)}</div><div class="lm-copy"><h1>${h.content.headline}</h1><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a></div><article class="lm-card"><div class="im"><img src="${h.imageDetail||h.image}" alt=""></div><strong>Picked for your everyday</strong><small>Explore the latest collection</small></article><div class="lm-bottom"><span>Thoughtful design</span><span>Made to move</span><span>Easy everyday style</span></div></div>`,
           'layout-n-renovift': h => `<div class="hero-main"><div class="rv-bg">${IM(h)}</div><article class="rv-card"><h1>${h.content.headline}</h1><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a><div class="rv-proof"><div class="rv-categories"><span>New arrivals</span><span>Everyday</span></div><span>Explore the collection</span></div></article></div>`,
           'layout-n-artmask': h => `<div class="hero-main"><div class="am-copy"><span class="am-label">The collection</span><h1>${h.content.headline}</h1><p>${h.content.sub}</p><a href="#" class="hero-btn">${h.content.btn}</a></div><div class="am-art"><div class="am-circle"></div><div class="am-image">${IM(h)}</div></div></div>`,
@@ -4218,7 +4219,7 @@ function gsCard(p){
  const L=p.layout;let h;
  if(L=='style-14')h='<div class="p-img-wrap">'+b+im+'</div><div class="p-info"><h3 class="p-title">'+p.name+'</h3><div class="p-progress-wrap"><div class="p-progress-bar"><div class="p-progress-fill"></div></div><div class="p-progress-text"><span>75% sold</span><span>Only 6 left</span></div></div><div class="p-price" style="margin-bottom:15px">$0</div><button class="p-btn">Add to cart</button></div>';
  else if(L=='style-15')h='<div class="p-img-wrap">'+b+im+'</div><div class="p-info"><h3 class="p-title">'+p.name+'</h3><div class="p-countdown"><div class="p-countdown-box"><span>02</span><small>Days</small></div><div class="p-countdown-box"><span>14</span><small>Hrs</small></div><div class="p-countdown-box"><span>59</span><small>Mins</small></div></div><div class="p-price" style="margin-bottom:15px">$0</div><button class="p-btn">Bid now</button></div>';
- else if(L=='style-16')h='<div class="p-img-wrap">'+im+'</div><div class="p-info"><div class="p-rating">\u2605\u2605\u2605\u2605\u2605 <span>(142 reviews)</span></div><h3 class="p-title">'+p.name+'</h3><p class="p-desc">'+p.desc+'</p><div class="p-price" style="margin-bottom:15px">$0</div><button class="p-btn">Add to cart</button></div>';
+ else if(L=='style-16')h='<div class="p-img-wrap">'+im+'</div><div class="p-info"><h3 class="p-title">'+p.name+'</h3><p class="p-desc">'+p.desc+'</p><div class="p-price" style="margin-bottom:15px">$0</div><button class="p-btn">Add to cart</button></div>';
  else if(L=='style-23')h='<div class="p-img-wrap"><div class="p-play-btn"></div>'+im+'</div><div class="p-info"><h3 class="p-title">'+p.name+'</h3><p class="p-desc">'+p.desc+'</p><div class="p-price" style="margin-bottom:15px">$0</div><button class="p-btn">Quick look</button></div>';
  else h='<div class="p-img-wrap">'+b+im+'</div><div class="p-info"><h3 class="p-title">'+p.name+'</h3><p class="p-desc">'+p.desc+'</p><div class="p-price">$0</div>'+(L!='style-24'?'<button class="p-btn" style="margin-top:20px">Add to cart</button>':'')+'</div>';
  c.innerHTML=h;return c;
@@ -4746,7 +4747,8 @@ function pageBody(r){
 }
 function fullHTML(r){const b=pageBody(r);if(b==null)return null;return headHTML()+'<main class="sp sp-main'+(CTX.template==='footwear'?' sole-page-main':'')+'" data-route="'+escH(r)+'">'+b+'</main>'+CTX.footEl.outerHTML+tailHTML()}
 function shellObj(){const w=CTX.wrap;return {cls:w.className,style:w.getAttribute('style')||'',head:headHTML(),foot:CTX.footEl.outerHTML,tail:tailHTML()}}
-function staticRoutes(){const t=shopProds();return ['home','shop',...catList().map(c=>'c/'+c.slug),...t.map(x=>'p/'+x[7]),'page/about','page/contact','page/delivery','page/privacy','page/terms','404']}
+/* compact: the published storefront rebuilds every category and product page from the live catalogue (live-catalog.js), so it only needs one product page as a layout template. */
+function staticRoutes(compact){const t=shopProds();return ['home','shop',...(compact?[]:catList().map(c=>'c/'+c.slug)),...(compact?t.slice(0,1):t).map(x=>'p/'+x[7]),'page/about','page/contact','page/delivery','page/privacy','page/terms','404']}
 function routeFor(t){
  t=String(t||'').replace(/\s+/g,' ').replace(/^\s*0?\d{1,2}\s+(?=\D)/,'').replace(/\s*[\u2192>\u203a\u00bb]+\s*$/,'').trim();if(!t)return null;
  const c=catList().find(c=>c.name.toLowerCase()==t.toLowerCase());if(c)return 'c/'+c.slug;
@@ -4910,12 +4912,23 @@ function litrusFooter(){
  document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-top]');if(b){e.preventDefault();scrollTo({top:0,behavior:'smooth'})}});
 }
 litrusFooter();
+/* The host refuses published HTML over 3,000,000 characters. Photos kept on the phone are data: URIs and are baked into the page once per use, so a few dozen of them overflow it. A published shop takes every product photo from the live catalogue at load, so when the page is too big the product photos are swapped, last product first, for a blank pixel until it fits. Shops whose photos are web addresses never reach this. */
+function litrusFitPublishedHtml(html){
+ const budget=2400000,blank='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+ if(html.length<=budget)return html;
+ const uris=[];
+ (CTX.data.products||[]).forEach(p=>[p.img,...(Array.isArray(p.spin_frames)?p.spin_frames:[])].forEach(value=>{if(typeof value==='string'&&/^data:image\//i.test(value)&&!uris.includes(value))uris.push(value)}));
+ for(let i=uris.length-1;i>=0&&html.length>budget;i--)html=html.split(uris[i]).join(blank);
+ return html;
+}
 function exportShop(){
  const keep=CUR,pages={};let shell=null;
  const fx=CTX.fxHome;
- staticRoutes().forEach(r=>{
+ staticRoutes(true).forEach(r=>{
   RT.draw(r);const w=$('store').firstElementChild.cloneNode(true);
-  w.querySelectorAll('.sp-toast').forEach(e=>e.remove());
+  w.querySelectorAll('.sp-toast,.svc-book').forEach(e=>e.remove());
+  /* The shop page is only the list layout; the live catalogue fills it with every product at load time. */
+  if(r==='shop')w.querySelectorAll('.sp-main .prods [data-pid]').forEach((card,index)=>{if(index>=2)card.remove()});
   pages[r]=w.innerHTML;
   if(!shell&&r=='shop'){const mn=w.querySelector('main.sp-main');const head=[],foot=[];let seen=false,tail='';
    [...w.children].forEach(c=>{if(c===mn){seen=true;return}if(c.classList.contains('sp-float')){tail=c.outerHTML;return}(seen?foot:head).push(c.outerHTML)});
@@ -6656,6 +6669,10 @@ const pendingCraftImageRequests=new Map();
 const MAX_PRODUCTS=1000,MAX_CATEGORIES=1000;
 let prods=[{name:'Product one',price:'1,500',desc:'',img:'',ci:[0]},{name:'Product two',price:'2,400',desc:'',img:'',ci:[1]},{name:'Product three',price:'3,200',desc:'',img:'',ci:[2]}];
 let editingProductIndex=null,editingCategories=[],editingImage='',stagedEditImageId='';
+/* Products the host sent with status "archived" are never shown or edited here; they ride along unchanged so a save can never read their absence as a deletion. */
+let hiddenCraftProducts=[];
+let clientKeySequence=0;
+function newClientKey(){clientKeySequence+=1;return 'new-'+Date.now().toString(36)+'-'+clientKeySequence}
 let tm,svT,craftSaveTimer=null,craftSaveSequence=0,latestCraftSaveRequest='';
 function getCategoryNames(){
  const raw=g('wCats').value;
@@ -6740,6 +6757,7 @@ function read(){
  SHOP.serviceOpenTime=g('wServiceOpen').value||'09:00';SHOP.serviceCloseTime=g('wServiceClose').value||'17:00';
  SHOP.serviceTimezone=g('wServiceTimezone').value.trim()||'Africa/Nairobi';SHOP.serviceBufferMinutes=Number(g('wServiceBuffer').value)||0;
  SHOP.serviceDepositPercent=Number(g('wServiceDeposit').value)||0;
+ showServiceProblems();
  const ok=prods.filter(p=>p.name.trim()); SHOP.products=ok.length?ok.map(p=>{const img=(p.img||'').trim();const images=Array.isArray(p.images)?p.images.filter(value=>value!==img):[];if(img)images.unshift(img);return {craftId:p.craftId||'',name:p.name.trim(),price:(p.price||'').trim(),desc:(p.desc||'').trim(),img,images:images.slice(0,8),media_type:p.media_type||'image',spin_frames:Array.isArray(p.spin_frames)?p.spin_frames.slice():[],video_url:p.video_url||'',booking_enabled:p.booking_enabled===true||p.booking_enabled===1,duration_minutes:SHOP.offerType==='services'?(Number(p.duration_minutes)||60):undefined,stock:Number(p.stock)||0,cats:(p.ci||[]).map(i=>SHOP.cats[i]).filter(Boolean)}}):(craftIntegrated?[]:null);
 }
 function fillShopWords(){
@@ -7053,6 +7071,33 @@ const box=g('editProdGroups');if(!box)return;box.replaceChildren();
 SHOP.cats.forEach((name,index)=>{const button=document.createElement('button');button.type='button';button.className=editingCategories.includes(index)?'on':'';button.textContent=name;button.setAttribute('aria-pressed',editingCategories.includes(index)?'true':'false');button.onclick=()=>{editingCategories=editingCategories.includes(index)?editingCategories.filter(k=>k!==index):editingCategories.concat(index);renderEditorGroups()};box.append(button)});
 if(!SHOP.cats.length){const empty=document.createElement('p');empty.className='hint';empty.textContent='Add a category first, or save this product without one.';box.append(empty)}
 }
+function nearestServiceDuration(value){const n=Number(value);if(!Number.isFinite(n)||n<=0)return 60;return Math.min(240,Math.max(15,Math.round(n/15)*15))}
+function serviceMinutes(value){const parts=String(value||'').split(':');return (Number(parts[0])||0)*60+(Number(parts[1])||0)}
+/* Mirrors what the Worker accepts when a services shop is published, so mistakes are caught while the owner can still fix them. */
+function serviceSettingsProblems(){
+ if(SHOP.offerType!=='services')return [];
+ const problems=[],open=serviceMinutes(SHOP.serviceOpenTime),close=serviceMinutes(SHOP.serviceCloseTime);
+ if(!Array.isArray(SHOP.serviceDays)||!SHOP.serviceDays.length)problems.push('Choose at least one open day.');
+ if(!(close>open))problems.push('Closing time must be later than opening time.');
+ try{new Intl.DateTimeFormat('en',{timeZone:SHOP.serviceTimezone})}catch(e){problems.push('Timezone must be a valid name such as Africa/Nairobi.')}
+ const buffer=Number(SHOP.serviceBufferMinutes);
+ if(!Number.isInteger(buffer)||buffer<0||buffer>60||buffer%15!==0)problems.push('Buffer between appointments must be 0, 15, 30, 45 or 60 minutes.');
+ const deposit=Number(SHOP.serviceDepositPercent);
+ if(!Number.isInteger(deposit)||deposit<0||deposit>100)problems.push('Deposit must be a whole percentage from 0 to 100.');
+ const services=prods.filter(product=>product.name.trim());
+ if(deposit>0){
+  if(String(SHOP.cur||'').trim().toUpperCase()!=='KES')problems.push('Deposits are only available when prices are in KES.');
+  else if(services.some(product=>!(Number(String(product.price||'').replace(/,/g,''))>0)))problems.push('Give every service a price above zero before asking for a deposit.');
+ }
+ services.forEach(product=>{
+  const minutes=Number(product.duration_minutes)||60;
+  const label=product.name.trim();
+  if(!Number.isInteger(minutes)||minutes<15||minutes>240||minutes%15!==0)problems.push(label+': duration must be 15 to 240 minutes in 15-minute steps.');
+  else if(close>open&&minutes+(buffer||0)>close-open)problems.push(label+' ('+minutes+' min) does not fit between your opening and closing times.');
+ });
+ return problems;
+}
+function showServiceProblems(){const box=g('wServiceError');if(!box)return [];const problems=serviceSettingsProblems();box.textContent=problems.join(' ');box.hidden=!problems.length;return problems}
 function showProductEditor(index){
 editingProductIndex=typeof index==='number'?index:null;const product=editingProductIndex===null?null:prods[editingProductIndex];
 const itemName=SHOP.offerType==='services'?'service':'product';
@@ -7060,7 +7105,7 @@ if(stagedEditImageId){delete IMGS[stagedEditImageId];idbDel('imgs',stagedEditIma
 editingCategories=product?(product.ci||[]).slice():(SHOP.cats.length?[0]:[]);
 editingImage=product?product.img||'':'';
 g('productEditorTitle').textContent=(product?'Edit ':'Add ')+itemName;g('editProdNameLabelText').textContent=itemName==='service'?'Service name':'Product name';g('editProdSave').textContent='Save '+itemName;g('editProdName').value=product?product.name:'';g('editProdPrice').value=product?product.price:'';g('editProdDesc').value=product?product.desc||'':'';
-g('editProdDuration').value=String(product&&product.duration_minutes||60);
+g('editProdDuration').value=String(nearestServiceDuration(product&&product.duration_minutes));
 g('editProdImageUrl').value=(imgRef(editingImage)||/^data:image/i.test(editingImage))?'':editingImage;
 g('editProdMsg').textContent='';g('editProdPhotoMsg').textContent='';
 g('editProdThumb').hidden=!imgSrc(editingImage);if(imgSrc(editingImage))g('editProdThumb').src=imgSrc(editingImage);
@@ -7074,7 +7119,7 @@ g('editProdFile').addEventListener('change',async()=>{const file=g('editProdFile
 g('editProdPhotoMsg').textContent='Loading photo...';try{const data=await shrinkImage(file,900,.82),id='i'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);if(stagedEditImageId){delete IMGS[stagedEditImageId];await idbDel('imgs',stagedEditImageId)}stagedEditImageId=id;IMGS[id]=data;editingImage='idb:'+id;try{await idbPut('imgs',id,data);g('editProdPhotoMsg').textContent='Saved on this device.'}catch(e){g('editProdPhotoMsg').textContent='Photo is showing, but this browser would not save it for next time.'}g('editProdImageUrl').value='';g('editProdThumb').src=data;g('editProdThumb').hidden=false;g('editProdRemove').hidden=false;g('editProdUpload').textContent='Change photo'}catch(e){g('editProdPhotoMsg').textContent=(e&&e.message)||'Could not load that photo.'}});
 g('editProdRemove').onclick=()=>{if(stagedEditImageId){delete IMGS[stagedEditImageId];idbDel('imgs',stagedEditImageId);stagedEditImageId=''}editingImage='';g('editProdImageUrl').value='';g('editProdThumb').hidden=true;g('editProdRemove').hidden=true;g('editProdPhotoMsg').textContent='';g('editProdUpload').textContent='Upload photo'};
 g('editProdCancel').onclick=()=>{if(stagedEditImageId){delete IMGS[stagedEditImageId];idbDel('imgs',stagedEditImageId);stagedEditImageId=''}editingProductIndex=null;g('productEditor').hidden=true;g('editProdFile').value='';g('wAdd').style.display=prods.length>=MAX_PRODUCTS?'none':''};
-g('editProdSave').onclick=()=>{const name=g('editProdName').value.trim();if(!name){g('editProdMsg').textContent='Enter a '+(SHOP.offerType==='services'?'service':'product')+' name first.';g('editProdName').focus();return}const duration=Number(g('editProdDuration').value);if(SHOP.offerType==='services'&&(!Number.isSafeInteger(duration)||duration<15||duration>240||duration%15!==0)){g('editProdMsg').textContent='Enter a duration from 15 to 240 minutes in 15-minute increments.';g('editProdDuration').focus();return}const product={...(editingProductIndex===null?{}:prods[editingProductIndex]),name,price:g('editProdPrice').value.trim(),desc:g('editProdDesc').value.trim(),img:editingImage,ci:editingCategories.slice(),...(SHOP.offerType==='services'?{duration_minutes:duration}:{})};if(editingProductIndex===null)prods.push(product);else prods[editingProductIndex]=product;stagedEditImageId='';editingProductIndex=null;g('productEditor').hidden=true;g('editProdFile').value='';drawProds();read();go()};
+g('editProdSave').onclick=()=>{const name=g('editProdName').value.trim();if(!name){g('editProdMsg').textContent='Enter a '+(SHOP.offerType==='services'?'service':'product')+' name first.';g('editProdName').focus();return}const duration=Number(g('editProdDuration').value);if(SHOP.offerType==='services'&&(!Number.isSafeInteger(duration)||duration<15||duration>240||duration%15!==0)){g('editProdMsg').textContent='Enter a duration from 15 to 240 minutes in 15-minute increments.';g('editProdDuration').focus();return}const product={...(editingProductIndex===null?{clientKey:newClientKey()}:prods[editingProductIndex]),name,price:g('editProdPrice').value.trim(),desc:g('editProdDesc').value.trim(),img:editingImage,ci:editingCategories.slice(),...(SHOP.offerType==='services'?{duration_minutes:duration}:{})};if(editingProductIndex===null)prods.push(product);else prods[editingProductIndex]=product;stagedEditImageId='';editingProductIndex=null;g('productEditor').hidden=true;g('editProdFile').value='';drawProds();read();go()};
 window.litrusSetCraftCatalog=function(payload){
  if(!payload||!Array.isArray(payload.categories)||!Array.isArray(payload.products)||
     payload.categories.length>MAX_CATEGORIES||payload.products.length>MAX_PRODUCTS){
@@ -7121,10 +7166,12 @@ window.litrusSetCraftCatalog=function(payload){
  [...document.querySelectorAll('[data-service-day]')].forEach(input=>{input.checked=SHOP.serviceDays.includes(Number(input.dataset.serviceDay))});
  g('wServiceOpen').value=SHOP.serviceOpenTime;g('wServiceClose').value=SHOP.serviceCloseTime;g('wServiceTimezone').value=SHOP.serviceTimezone;
  g('wServiceBuffer').value=String(SHOP.serviceBufferMinutes);g('wServiceDeposit').value=String(SHOP.serviceDepositPercent);
- prods=payload.products.map(product=>{
+ hiddenCraftProducts=payload.products.filter(product=>product&&product.status==='archived').map(product=>JSON.parse(JSON.stringify(product)));
+ prods=payload.products.filter(product=>!(product&&product.status==='archived')).map(product=>{
   const names=Array.isArray(product.category_names)?product.category_names:[product.category_name||''];
   return {
    craftId:product.id==null?'':String(product.id),
+   status:typeof product.status==='string'&&product.status?product.status:undefined,
    name:String(product.name||'Unnamed product').slice(0,120),
    price:String(product.price==null?'':product.price),
    desc:String(product.description||'').slice(0,2000),
@@ -7157,7 +7204,10 @@ window.litrusSetCraftCatalog=function(payload){
  return {products:prods.length,categories:SHOP.cats.length};
 };
 window.litrusGetCraftPublishPayload=function(){
- read();render();sync();
+ const options=arguments[0];
+ read();
+ if(options&&options.strict){const problems=serviceSettingsProblems();if(problems.length)throw new Error('Fix the appointment settings before publishing: '+problems.join(' '))}
+ render();sync();
  const recipe=getCraftDesignRecipe();
  const catalog={
   shop:{name:SHOP.name,currency:SHOP.cur,offer_type:SHOP.offerType,tagline:SHOP.tagline,description:SHOP.what,email:SHOP.email,
@@ -7166,7 +7216,10 @@ window.litrusGetCraftPublishPayload=function(){
    service_timezone:SHOP.serviceTimezone,service_buffer_minutes:SHOP.serviceBufferMinutes,service_deposit_percent:SHOP.serviceDepositPercent},
   categories:SHOP.cats.map(name=>({name})),
   products:prods.filter(product=>product.name.trim()).map(product=>({
-   id:product.craftId||'',name:product.name.trim(),price:Number(String(product.price||'').replace(/,/g,''))||0,
+   id:product.craftId||'',
+   ...(product.craftId?{}:{client_key:product.clientKey||(product.clientKey=newClientKey())}),
+   ...(typeof product.status==='string'&&product.status?{status:product.status}:{}),
+   name:product.name.trim(),price:Number(String(product.price||'').replace(/,/g,''))||0,
    description:String(product.desc||''),image:imgSrc(product.img),
    images:(Array.isArray(product.images)?product.images:[]).map(imgSrc).filter(Boolean).slice(0,8),
    media_type:['image','cutout','spin','video'].includes(product.media_type)?product.media_type:'image',
@@ -7176,10 +7229,10 @@ window.litrusGetCraftPublishPayload=function(){
    ...(SHOP.offerType==='services'?{duration_minutes:Number(product.duration_minutes)||60}:{}),
    stock:Number(product.stock)||0,
    category_names:(product.ci||[]).map(index=>SHOP.cats[index]).filter(Boolean)
-  }))
+  })).concat(hiddenCraftProducts.map(product=>JSON.parse(JSON.stringify(product))))
  };
  const marker='<meta name="eshop-filled-theme" content="litrus-mixer">';
- const html=exportShop().replace(/<\/head>/i,marker+'</head>');
+ const html=litrusFitPublishedHtml(exportShop()).replace(/<\/head>/i,marker+'</head>');
  if(!/^<!doctype\s+html>/i.test(html)||!html.includes(marker))throw new Error('Litrus could not build a complete storefront.');
  return {html,catalog,recipe};
 };
@@ -7217,7 +7270,7 @@ if(craftIntegrated&&window.parent!==window){
   catch(error){window.parent.postMessage({type:'craft-litrus-error',message:String(error.message||error)},location.origin)}
  });
  publishButton.onclick=()=>{
-  try{window.parent.postMessage({type:'craft-litrus-publish',...window.litrusGetCraftPublishPayload()},location.origin)}
+  try{window.parent.postMessage({type:'craft-litrus-publish',...window.litrusGetCraftPublishPayload({strict:true})},location.origin)}
   catch(error){const status=g('wWarn');status.textContent=String(error.message||error)}
  };
  window.parent.postMessage({type:'craft-litrus-ready',version:1},location.origin);
@@ -7504,69 +7557,30 @@ function durOf(id,name){
 }
 function fmtDur(m){m=+m||60;if(m<60)return m+' min';var h=Math.floor(m/60),r=m%60;return h+' hr'+(h>1?'s':'')+(r?' '+r+' min':'')}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function toMin(t){var p=String(t||'').split(':');return (+p[0]||0)*60+(+p[1]||0)}
-function lab(m){var h=Math.floor(m/60),mm=m%60,ap=h>=12?'pm':'am';h=h%12||12;return h+':'+(mm<10?'0':'')+mm+' '+ap}
-function pad(n){return n<10?'0'+n:''+n}
-function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 function goTo(route){
  var w=document.querySelector('#store');if(!w)return;
  var a=document.createElement('a');a.href='#';a.setAttribute('data-go',route);a.style.display='none';
  (w.firstElementChild||w).appendChild(a);a.click();a.remove();
 }
-function slotsFor(dateStr,dur){
- var open=toMin(SHOP.serviceOpenTime||'09:00'),close=toMin(SHOP.serviceCloseTime||'17:00'),buf=+SHOP.serviceBufferMinutes||0,step=Math.max(15,dur+buf),out=[];
- var now=new Date(),isToday=dateStr===ymd(now),nowM=now.getHours()*60+now.getMinutes();
- for(var m=open;m+dur<=close;m+=step){if(isToday&&m<=nowM)continue;out.push(m)}
- return out;
-}
-function buildForm(id,name,price,dur){
- var f=document.createElement('form');f.className='svc-book';f.noValidate=true;
+/* The builder preview never pretends to take a booking: this block only describes what customers get on the live site. */
+function buildPreview(id,name,price,dur){
+ var f=document.createElement('div');f.className='svc-book svc-preview';
  f.setAttribute('data-sid',id);f.setAttribute('data-sname',name);f.setAttribute('data-sprice',price);f.setAttribute('data-sdur',dur);
- var today=new Date(),max=new Date();max.setDate(max.getDate()+90);
- var dep=+SHOP.serviceDepositPercent||0;
- f.innerHTML='<h2>Book this service</h2><div class="svc-row"><label>Date<input type="date" name="date" min="'+ymd(today)+'" max="'+ymd(max)+'" required></label><label>Time<select name="time" required disabled><option value="">Pick a date first</option></select></label></div><p class="svc-hint" role="status"></p><label>Your name<input name="name" autocomplete="name" required></label><label>Phone or email<input name="contact" autocomplete="email tel" required></label><label>Notes (optional)<textarea name="note" rows="2" placeholder="Anything we should know?"></textarea></label><button type="submit" class="sp-btn svc-submit">Request booking</button><p class="svc-fine">'+esc('Sent as a request. '+(SHOP.name||'We')+' will confirm your time.'+(dep>0?' A '+dep+'% deposit is due after approval.':''))+'</p>';
+ var names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],days=(SHOP.serviceDays&&SHOP.serviceDays.length)?SHOP.serviceDays:[1,2,3,4,5,6];
+ var open=SHOP.serviceOpenTime||'09:00',close=SHOP.serviceCloseTime||'17:00',dep=+SHOP.serviceDepositPercent||0;
+ f.innerHTML='<h2>Book this service</h2><p class="svc-hint">'+esc(fmtDur(dur)+' · '+days.slice().sort().map(function(d){return names[d]}).join(', ')+' · '+open+' to '+close+' ('+(SHOP.serviceTimezone||'Africa/Nairobi')+')')+'</p><p class="svc-fine">'+esc('On your live website customers choose a real date and time and send a booking request that you approve.'+(dep>0?' A '+dep+'% deposit is due after you approve.':'')+' This preview cannot take bookings.')+'</p>';
  return f;
-}
-function wireForm(f){
- if(!f||f.__svcWired)return;f.__svcWired=1;
- var doc=f.ownerDocument,id=f.getAttribute('data-sid'),name=f.getAttribute('data-sname'),price=f.getAttribute('data-sprice'),dur=+f.getAttribute('data-sdur')||60;
- var d=f.elements.date,t=f.elements.time,hint=f.querySelector('.svc-hint');
- d.addEventListener('change',function(){
-  t.innerHTML='';hint.textContent='';
-  if(!d.value){t.disabled=true;t.innerHTML='<option value="">Pick a date first</option>';return}
-  var wd=new Date(d.value+'T00:00:00').getDay(),days=(SHOP.serviceDays&&SHOP.serviceDays.length)?SHOP.serviceDays:[1,2,3,4,5,6];
-  if(days.indexOf(wd)<0){t.disabled=true;t.innerHTML='<option value="">Closed that day</option>';hint.textContent='We are closed on that day. Please pick another date.';return}
-  var s=slotsFor(d.value,dur);
-  if(!s.length){t.disabled=true;t.innerHTML='<option value="">No times left</option>';hint.textContent='No times left that day. Try another date.';return}
-  t.disabled=false;t.innerHTML='<option value="">Choose a time</option>'+s.map(function(m){return '<option value="'+pad(Math.floor(m/60))+':'+pad(m%60)+'">'+lab(m)+'</option>'}).join('');
-  hint.textContent='Times in '+(SHOP.serviceTimezone||'local time')+'.';
- });
- f.addEventListener('submit',function(e){
-  e.preventDefault();e.stopPropagation();
-  var v={date:d.value,time:t.value,name:f.elements.name.value.trim(),contact:f.elements.contact.value.trim(),note:f.elements.note.value.trim()};
-  var ok=/@/.test(v.contact)||v.contact.replace(/\D/g,'').length>=7;
-  if(!v.date||!v.time){hint.textContent='Choose a date and a time.';return}
-  if(!v.name){hint.textContent='Enter your name.';f.elements.name.focus();return}
-  if(!ok){hint.textContent='Enter a phone number or an email we can reach you on.';f.elements.contact.focus();return}
-  var detail={service_id:id,service_name:name,duration_minutes:dur,price:price,currency:SHOP.cur||'',date:v.date,time:v.time,timezone:SHOP.serviceTimezone||'',customer_name:v.name,contact:v.contact,note:v.note};
-  try{document.dispatchEvent(new CustomEvent('litrus:appointment-request',{detail:detail}))}catch(x){}
-  var box=doc.createElement('div');box.className='svc-done';box.setAttribute('role','status');
-  var wa=(typeof waNum==='function')?waNum():'',msg='Hi, I would like to book '+name+' on '+v.date+' at '+v.time+'. Name: '+v.name+'.';
-  box.innerHTML='<strong>\u2713 Request sent</strong><span>'+esc(name)+' on '+esc(v.date)+' at '+esc(lab(toMin(v.time)))+'. '+esc(SHOP.name||'We')+' will confirm your time shortly.</span>'+(wa?'<a class="sp-btn ghost svc-wa" href="https://wa.me/'+wa+'?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">Message us on WhatsApp</a>':'');
-  f.replaceWith(box);
- });
 }
 function convertPDP(root){
  var info=root.querySelector('.sp-pdp .sp-info');
- if(!info||info.querySelector('.svc-book,.svc-done'))return;
+ if(!info||info.querySelector('.svc-book'))return;
  var pidEl=info.querySelector('[data-pid]'),id=pidEl?pidEl.getAttribute('data-pid'):'';
  var h=root.querySelector('.sp-top h1'),name=h?h.textContent.trim():'',priceEl=info.querySelector('.sp-price');
  var price=priceEl?priceEl.textContent.replace(/^[A-Za-z]{2,4}\s/,'').trim():'',dur=durOf(id,name);
  ['.sp-buy','[data-act="buynow"]','.sp-hold-form','ul.sp-points'].forEach(function(s){info.querySelectorAll(s).forEach(function(n){n.remove()})});
  if(priceEl&&!priceEl.querySelector('.svc-dur'))priceEl.insertAdjacentHTML('beforeend',' <span class="svc-dur">\u00B7 '+fmtDur(dur)+'</span>');
- var anchor=info.querySelector('.sp-desc')||priceEl||info.lastElementChild,f=buildForm(id,name,price,dur);
+ var anchor=info.querySelector('.sp-desc')||priceEl||info.lastElementChild,f=buildPreview(id,name,price,dur);
  if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(f,anchor.nextSibling);else info.appendChild(f);
- wireForm(f);
 }
 var busy=false,lastSvc=false,mo=null;
 function apply(){
@@ -7624,7 +7638,6 @@ function onOffer(){setTimeout(function(){try{swapStarters();read();render()}catc
 function init(){
  var sel=document.getElementById('wOfferType');if(sel)sel.addEventListener('change',onOffer);
  start();apply();relabelMixer();
- try{previewFrame.addEventListener('load',function(){var dc=previewFrame.contentDocument;if(dc)dc.querySelectorAll('form.svc-book').forEach(wireForm)})}catch(e){console.warn('svc frame',e)}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -11945,18 +11958,9 @@ document.addEventListener('DOMContentLoaded',function(){
 <style id="svc-style">
 .svc-book{margin:22px 0 6px;padding:18px;border:1px solid rgba(127,127,127,.35);border-radius:12px;display:grid;gap:12px;text-align:left}
 .svc-book h2{margin:0;font-size:1.15rem}
-.svc-book label{display:grid;gap:5px;font-size:.82rem;font-weight:600}
-.svc-book input,.svc-book select,.svc-book textarea{font:inherit;width:100%;padding:10px 12px;border:1px solid rgba(127,127,127,.45);border-radius:8px;background:transparent;color:inherit;box-sizing:border-box}
-.svc-book select option{color:#111}
-.svc-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .svc-hint{margin:0;font-size:.8rem;opacity:.8;min-height:1em}
 .svc-fine{margin:0;font-size:.75rem;opacity:.7}
 .svc-dur{font-size:.78em;font-weight:500;opacity:.75;white-space:nowrap}
-.svc-meta{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px;font-size:.85rem;opacity:.85}
-.svc-done{padding:18px;border:1px solid rgba(127,127,127,.35);border-radius:12px;display:grid;gap:8px}
-.svc-done strong{font-size:1.05rem}
-.svc-wa{display:inline-block;margin-top:4px}
 .sole-cart-button svg.svc-cal{margin-right:6px}
-@media(max-width:520px){.svc-row{grid-template-columns:1fr}}
 </style>
 </body></html>

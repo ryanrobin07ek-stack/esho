@@ -165,6 +165,45 @@ test("published Litrus catalog renders service booking forms and uses compact ca
   }
 });
 
+test("published services shops show no bag control in the header of any baked page", () => {
+  const dom = new JSDOM("", { url: "https://shop.example/", runScripts: "outside-only" });
+  const header = '<header class="sole-header"><nav class="sp-nav"><a href="#" data-go="shop">All products</a></nav><a class="sole-cart-button" href="#" data-go="cart" aria-label="Shopping bag, 0 items"><span>Bag <b data-cartn>0</b></span></a></header>';
+  const page = body => header + '<main class="sp-main">' + body + '</main>';
+  const data = {
+    shop: { key: "example", products: [] },
+    pages: {
+      home: page('<section class="prods"></section>'),
+      shop: page('<div class="sp-top"><h1></h1><p></p></div><section class="prods"></section>'),
+      "c/template": page('<section class="prods"></section>'),
+      "p/template": page('<div class="sp-top"><h1></h1></div><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p></div></div>')
+    },
+    shell: { head: header, foot: "", tail: "" },
+    templates: { productCard: '<article data-pid=""><h2 class="p-title"></h2><button class="p-btn" data-act="addqty">Add to bag</button></article>' }
+  };
+  const catalog = {
+    categories: [{ id: 8, name: "Haircuts" }],
+    products: [{ id: 5, name: "Cut", price: 500, category_id: 8, images: [], booking_enabled: true, duration_minutes: 45 }],
+    store: { name: "Salon", currency: "KES", offer_type: "services" }
+  };
+  try {
+    dom.window.eval(runtime);
+    dom.window.litrusRefreshPublishedCatalog(data, catalog);
+    const html = [data.shell.head, ...Object.values(data.pages)];
+    assert.ok(Object.keys(data.pages).length >= 4);
+    for (const markup of html) {
+      const doc = new dom.window.DOMParser().parseFromString(markup, "text/html");
+      assert.equal(doc.querySelector('[data-go="cart"]'), null, "no control leads to the empty cart");
+      assert.equal(doc.querySelector("[data-cartn]"), null);
+      assert.doesNotMatch(doc.body.textContent, /Bag/);
+    }
+    const button = new dom.window.DOMParser().parseFromString(data.pages.home, "text/html").querySelector(".sole-cart-button");
+    assert.equal(button.textContent, "Book");
+    assert.equal(button.dataset.go, "shop");
+  } finally {
+    dom.window.close();
+  }
+});
+
 test("published service cards route to booking details instead of adding to cart", () => {
   const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/", runScripts: "outside-only" });
   const { window } = dom;
@@ -260,6 +299,10 @@ test("Litrus service booking submits an RFC 4122 key and all customer details wi
     assert.match(requests[0].body.idempotency_key, /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i);
     assert.equal(requests[0].body.service_id, "42");
     assert.equal(requests[0].body.starts_at, "2030-01-02T10:00:00.000Z");
+    assert.equal(requests[0].body.duration_minutes, 45, "the length the customer was shown is sent with the request");
+    assert.deepEqual(Object.keys(requests[0].body).sort(), [
+      "customer_email", "customer_name", "customer_phone", "duration_minutes", "idempotency_key", "service_id", "starts_at"
+    ], "nothing beyond what the Worker's appointment endpoint reads is sent");
     assert.equal(requests[0].body.customer_name, "Sam Customer");
     assert.equal(requests[0].body.customer_email, "sam@example.test");
     assert.equal(requests[0].body.customer_phone, "+254700000000");
@@ -825,15 +868,15 @@ const variantCartLine = {
   option1_name: "Size", option2_name: "Color", price: 2700
 };
 
-function mountCheckout({ cart = [variantCartLine], holds = [], products = [sneaker], handler, pay = "Cash on delivery or pickup" } = {}) {
+function mountCheckout({ cart = [variantCartLine], holds = [], products = [sneaker], handler, pay = "Cash on delivery or pickup", paystackConnected = true, email = "sam@example.test" } = {}) {
   const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/#/checkout", runScripts: "outside-only" });
   const { window } = dom;
   const root = window.document.getElementById("store");
-  root.innerHTML = checkoutForm;
+  root.innerHTML = checkoutForm.replace('name="email" value="sam@example.test"', `name="email" value="${email}"`);
   const requests = [];
   const events = [];
   window.__ESHOP_THEME_CATALOG__ = {
-    store: { name: "Main shop", currency: "KES", delivery_fee: 0 }, products, categories: []
+    store: { name: "Main shop", currency: "KES", delivery_fee: 0, ...(paystackConnected === null ? {} : { paystack_connected: paystackConnected ? 1 : 0 }) }, products, categories: []
   };
   window.__ESHOP_TRACK_STOREFRONT_EVENT__ = (id, type, count) => events.push({ id, type, count });
   window.SPD = { shop: { key: "main", name: "Main shop", products: [] }, pages: {}, shell: {}, templates: {} };
@@ -888,19 +931,28 @@ test("Litrus checkout sends the chosen variant, the customer's own hold and the 
       { id: "9c1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e62", product_id: "42", quantity: 1, expires_at: future, customer_name: "Someone Else", contact: "sam@example.test" },
       { id: "not-a-uuid", product_id: "42", quantity: 1, expires_at: future, customer_name: "Sam Shop", contact: "sam@example.test" }
     ],
-    handler: () => orderResponse({ order: { discount: 270, total: 2430 }, top: { discount_cents: 27000 } })
+    handler: url => url === "/api/discounts/validate"
+      ? response(200, { valid: true, code: "SAVE10", discount_cents: 27000, discount: 270 })
+      : orderResponse({ order: { discount: 270, total: 2430 }, top: { discount_cents: 27000 } })
   });
   try {
     const field = harness.form.elements.namedItem("discount_code");
     assert.ok(field, "the checkout should offer a discount code field");
     field.value = " save 10 ";
     harness.form.querySelector("[data-discount-apply]").click();
+    await pause(5);
     assert.equal(field.value, "SAVE10");
-    assert.match(harness.form.querySelector(".sp-discount-status").textContent, /SAVE10 added.*shop checks it/i);
+    assert.deepEqual(harness.requests[0], {
+      url: "/api/discounts/validate",
+      body: { code: "SAVE10", items: [{ product_id: "42", quantity: 1, variant_id: "8-black" }] }
+    }, "the preview check sends the cart lines and the variant, never a price");
+    assert.match(harness.form.querySelector(".sp-discount-status").textContent, /Discount applied: .?KES 270/);
+    assert.match(harness.root.querySelector(".sp-total").textContent, /KES 2,430/, "the total drops before the order is placed");
 
     await harness.submit();
-    assert.equal(harness.requests.length, 1);
-    const { url, body } = harness.requests[0];
+    const orders = harness.requests.filter(request => request.url === "/api/orders");
+    assert.equal(orders.length, 1);
+    const { url, body } = orders[0];
     assert.equal(url, "/api/orders");
     assert.deepEqual(body.items, [{
       product_id: "42", quantity: 1, variant_id: "8-black",
@@ -1047,6 +1099,190 @@ test("Litrus checkout keeps plain orders unchanged when no variant, hold or code
     assert.deepEqual(harness.requests[0].body.items, [{ product_id: "42", quantity: 2 }]);
     assert.ok(!("hold_ids" in harness.requests[0].body));
     assert.ok(!("discount_code" in harness.requests[0].body));
+  } finally {
+    harness.window.close();
+  }
+});
+
+test("Litrus checkout offers Paystack and requires an email only when the shop has Paystack connected", async () => {
+  const connected = mountCheckout({ email: "", pay: "paystack", handler: () => orderResponse() });
+  try {
+    const paystack = connected.form.querySelector('input[name="pay"][value="paystack"]');
+    assert.ok(paystack, "a connected shop offers Paystack");
+    assert.equal(paystack.checked, true, "a connected shop preselects Paystack");
+    assert.equal(connected.form.elements.namedItem("email").required, true);
+    await connected.submit();
+    assert.equal(connected.requests.length, 0, "Paystack needs an email for the receipt, so nothing is sent without one");
+    assert.match(connected.form.querySelector(".sp-err").textContent, /email address for your Paystack receipt/);
+
+    // Choosing another way to pay makes the email optional again.
+    const cash = connected.form.querySelector('input[name="pay"][value="Cash on delivery or pickup"]');
+    cash.checked = true;
+    cash.dispatchEvent(new connected.window.Event("change", { bubbles: true }));
+    assert.equal(connected.form.elements.namedItem("email").required, false);
+    await connected.submit();
+    assert.equal(connected.requests.length, 1);
+    assert.ok(!("customer_email" in connected.requests[0].body), "a blank email is left out, not sent empty");
+    assert.equal(connected.requests[0].body.payment_method, "manual");
+    assert.doesNotMatch(connected.root.textContent, /Email:/, "the order summary has no empty email line");
+  } finally {
+    connected.window.close();
+  }
+
+  const notConnected = mountCheckout({ paystackConnected: false, email: "", handler: () => orderResponse() });
+  try {
+    assert.equal(notConnected.form.querySelector('input[name="pay"][value="paystack"]'), null,
+      "a shop without Paystack never shows it");
+    assert.equal(notConnected.form.querySelector('input[name="pay"]:checked').value, "Cash on delivery or pickup");
+    assert.equal(notConnected.form.elements.namedItem("email").required, false);
+    await notConnected.submit();
+    assert.equal(notConnected.requests.length, 1);
+    assert.ok(!("customer_email" in notConnected.requests[0].body));
+    assert.ok(!notConnected.requests.some(request => request.url.includes("/paystack/")),
+      "no payment is started for a shop without Paystack");
+  } finally {
+    notConnected.window.close();
+  }
+
+  // An older Worker does not publish the flag: keep the original behaviour (Paystack offered and
+  // preselected, email required for every order) because that Worker rejects orders without an email.
+  const unknown = mountCheckout({ paystackConnected: null, email: "", pay: "paystack", handler: () => orderResponse() });
+  try {
+    const paystack = unknown.form.querySelector('input[name="pay"][value="paystack"]');
+    assert.ok(paystack, "an unknown connection state still offers Paystack");
+    assert.equal(paystack.checked, true);
+    const cash = unknown.form.querySelector('input[name="pay"][value="Cash on delivery or pickup"]');
+    cash.checked = true;
+    cash.dispatchEvent(new unknown.window.Event("change", { bubbles: true }));
+    assert.equal(unknown.form.elements.namedItem("email").required, true, "email stays required without the flag");
+    await unknown.submit();
+    assert.equal(unknown.requests.length, 0, "no order is sent that the older Worker would reject");
+    assert.match(unknown.form.querySelector(".sp-err").textContent, /email address so the shop can confirm/);
+  } finally {
+    unknown.window.close();
+  }
+
+  const badEmail = mountCheckout({ paystackConnected: false, email: "not-an-email", handler: () => orderResponse() });
+  try {
+    await badEmail.submit();
+    assert.equal(badEmail.requests.length, 0);
+    assert.match(badEmail.form.querySelector(".sp-err").textContent, /email address does not look right/);
+  } finally {
+    badEmail.window.close();
+  }
+});
+
+test("Litrus checkout explains an email-less order the shop could not accept", async () => {
+  const harness = mountCheckout({
+    paystackConnected: false, email: "",
+    handler: () => response(400, { error: "Order needs an idempotency key, customer details, delivery method and at least one item." })
+  });
+  try {
+    await harness.submit();
+    assert.match(harness.form.querySelector(".sp-err").textContent, /without an email address/);
+    assert.equal(harness.form.querySelector('button[type="submit"]').disabled, false);
+    assert.equal(harness.form.elements.namedItem("email").required, true,
+      "after a refusal the email is asked for up front instead of failing again");
+    await harness.submit();
+    assert.equal(harness.requests.length, 1, "the second attempt is held until an email is entered");
+    assert.match(harness.form.querySelector(".sp-err").textContent, /Enter your email address/);
+  } finally {
+    harness.window.close();
+  }
+});
+
+test("Litrus checkout shows why a discount code was refused and lets the customer carry on", async () => {
+  const harness = mountCheckout({
+    paystackConnected: false,
+    handler: (url, body) => url === "/api/discounts/validate"
+      ? response(200, { valid: false, error: "That discount code has expired." })
+      : body.discount_code
+        ? response(409, { error: "That discount code has reached its usage limit.", error_code: "discount_invalid" })
+        : orderResponse({ order: { subtotal: 2700, total: 2700 } })
+  });
+  try {
+    const field = harness.form.elements.namedItem("discount_code");
+    field.value = "old10";
+    harness.form.querySelector("[data-discount-apply]").click();
+    await pause(5);
+    assert.match(harness.form.querySelector(".sp-discount-status").textContent, /has expired/);
+    assert.equal(harness.form.querySelector("[data-litrus-discount-row]"), null);
+    assert.equal(harness.root.querySelector(".sp-total b").textContent, "KES 2,700");
+
+    await harness.submit();
+    const orders = () => harness.requests.filter(request => request.url === "/api/orders");
+    assert.equal(orders().length, 1);
+    assert.equal(orders()[0].body.discount_code, "OLD10");
+    assert.match(harness.form.querySelector(".sp-err").textContent, /usage limit.*Clear the code or try another/);
+    assert.match(harness.form.querySelector(".sp-discount-status").textContent, /usage limit/);
+    assert.equal(harness.form.querySelector('button[type="submit"]').disabled, false);
+    assert.equal(harness.root.querySelector("[data-litrus-discount-row]"), null);
+
+    field.value = "";
+    await harness.submit();
+    assert.equal(orders().length, 2);
+    assert.ok(!("discount_code" in orders()[1].body));
+    assert.match(harness.root.textContent, /ORD-0123456789ABCDEF/);
+  } finally {
+    harness.window.close();
+  }
+});
+
+test("Litrus discount preview survives an older Worker, a dropped connection and later edits to the code", async () => {
+  const older = mountCheckout({ paystackConnected: false, handler: () => response(404, { error: "Not found." }) });
+  try {
+    older.form.elements.namedItem("discount_code").value = "save10";
+    older.form.querySelector("[data-discount-apply]").click();
+    await pause(5);
+    assert.match(older.form.querySelector(".sp-discount-status").textContent, /SAVE10 added.*shop checks it when you place your order/);
+  } finally {
+    older.window.close();
+  }
+
+  let offlineWindow;
+  const offline = mountCheckout({
+    paystackConnected: false,
+    handler: () => { throw new offlineWindow.TypeError("Failed to fetch"); }
+  });
+  offlineWindow = offline.window;
+  try {
+    offline.form.elements.namedItem("discount_code").value = "SAVE10";
+    offline.form.querySelector("[data-discount-apply]").click();
+    await pause(5);
+    assert.match(offline.form.querySelector(".sp-discount-status").textContent, /Could not reach the shop/);
+    assert.equal(offline.form.querySelector("[data-discount-apply]").disabled, false);
+  } finally {
+    offline.window.close();
+  }
+
+  const harness = mountCheckout({
+    paystackConnected: false,
+    handler: () => response(200, { valid: true, code: "SAVE10", discount_cents: 27000, discount: 270 })
+  });
+  try {
+    const field = harness.form.elements.namedItem("discount_code");
+    field.value = "SAVE10";
+    harness.form.querySelector("[data-discount-apply]").click();
+    await pause(5);
+    assert.equal(harness.root.querySelector(".sp-total b").textContent, "KES 2,430");
+    field.value = "SAVE11";
+    field.dispatchEvent(new harness.window.Event("input", { bubbles: true }));
+    assert.equal(harness.root.querySelector("[data-litrus-discount-row]"), null, "editing the code drops the previewed discount");
+    assert.equal(harness.root.querySelector(".sp-total b").textContent, "KES 2,700", "and restores the original total");
+  } finally {
+    harness.window.close();
+  }
+});
+
+test("Litrus checkout tells the customer when the chosen option is no longer sold", async () => {
+  const harness = mountCheckout({
+    paystackConnected: false,
+    handler: () => response(409, { error: "That option of City Sneaker is no longer available.", error_code: "variant_unavailable" })
+  });
+  try {
+    await harness.submit();
+    assert.match(harness.form.querySelector(".sp-err").textContent, /no longer available.*choose an option/i);
+    assert.equal(harness.form.querySelector('button[type="submit"]').disabled, false);
   } finally {
     harness.window.close();
   }
@@ -1217,6 +1453,40 @@ test("Litrus service booking loads slots when a date is chosen and explains empt
     await pause(5);
     assert.match(booking.status().textContent, /today or a later date/i);
     assert.equal(booking.requests.length, 3, "a past date never reaches the Worker");
+  } finally {
+    booking.window.close();
+  }
+});
+
+test("Litrus service booking never offers or sends a time that has already passed", async () => {
+  const past = new Date(Date.now() - 3_600_000).toISOString();
+  const booking = mountServiceBooking({
+    handler: () => response(200, { slots: [{ starts_at: past, label: "Earlier" }, { starts_at: slotTime, label: "10:00 AM" }] })
+  });
+  try {
+    await booking.chooseDate(futureDate);
+    const options = [...booking.form.elements.namedItem("starts_at").options].map(option => option.value).filter(Boolean);
+    assert.deepEqual(options, [slotTime], "a slot in the past is dropped from the list");
+
+    // A past date is refused before any request goes out.
+    booking.requests.length = 0;
+    const yesterday = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
+    await booking.chooseDate(yesterday);
+    assert.equal(booking.requests.length, 0);
+    assert.match(booking.status().textContent, /today or a later date/i);
+
+    // A time that slipped into the past while the form was open is not submitted.
+    const slots = booking.form.elements.namedItem("starts_at");
+    const stale = booking.window.document.createElement("option");
+    stale.value = past;
+    slots.append(stale);
+    slots.value = past;
+    booking.form.elements.namedItem("date").value = futureDate;
+    booking.fill();
+    booking.requests.length = 0;
+    await booking.submit();
+    assert.ok(!booking.requests.some(request => request.url === "/api/service-appointments"), "no request is sent for a past time");
+    assert.match(booking.status().textContent, /already passed/i);
   } finally {
     booking.window.close();
   }
@@ -1456,7 +1726,7 @@ test("Litrus generated sites show no reviews, ratings or trust claims unless the
   } finally {
     dom.window.close();
   }
-  for (const invented of ["Amina W.", "Brian O.", "Faith K.", "Free returns", "2,000+ orders", "4.8 / 5 rating", "Verified buyer", "SHOP.email||'hello@yourshop.com'", "SHOP.phone||'+254 700 000 000'", "'Nairobi, Kenya'", "We usually reply the same day"]) {
+  for (const invented of ["(142 reviews)", "<div>Fast delivery</div>", "<div>Easy returns</div>", "<div>Secure payment</div>", "<small>Best seller</small>", "<small>New arrival</small>", "Amina W.", "Brian O.", "Faith K.", "Free returns", "2,000+ orders", "4.8 / 5 rating", "Verified buyer", "SHOP.email||'hello@yourshop.com'", "SHOP.phone||'+254 700 000 000'", "'Nairobi, Kenya'", "We usually reply the same day"]) {
     assert.ok(!editor.includes(invented), `the builder must not publish "${invented}"`);
   }
   assert.doesNotMatch(editor, /className='lpk-mixer-stars'/, "a star rating is never injected into product cards");
@@ -1761,4 +2031,256 @@ test("Litrus product page loads its main photo first and keeps thumbnails lazy a
   } finally {
     dom.window.close();
   }
+});
+
+const plain = value => JSON.parse(JSON.stringify(value));
+
+function mountCraftPayloadBuilder() {
+  const start = editor.indexOf("window.litrusSetCraftCatalog=function(payload){");
+  const end = editor.indexOf("\nif(!(craftIntegrated&&window.parent!==window)){const pb=", start);
+  const serviceStart = editor.indexOf("function nearestServiceDuration(value){");
+  const serviceEnd = editor.indexOf("\nfunction showProductEditor(index){", serviceStart);
+  const keyStart = editor.indexOf("let hiddenCraftProducts=[];");
+  const keyEnd = editor.indexOf("\nfunction getCategoryNames(){", keyStart);
+  assert.ok(start >= 0 && end > start && serviceStart >= 0 && serviceEnd > serviceStart && keyStart >= 0 && keyEnd > keyStart);
+  const code = editor.slice(start, end);
+  const ids = [...new Set([...code.matchAll(/\bg\('([^']+)'\)/g)].map(match => match[1]))];
+  const dom = new JSDOM(
+    `${ids.map(id => `<input id="${id}">`).join("")}<p id="wServiceError" hidden></p><div id="wMoods"></div><div id="wTweak"></div>` +
+    '<input type="checkbox" data-service-day="1"><input type="checkbox" data-service-day="2">',
+    { runScripts: "outside-only" }
+  );
+  dom.window.eval(`
+    const g = id => document.getElementById(id);
+    const MOODS = [{ n: "Style A" }];
+    let mood = null, step = 1, designDraftId = "", generatedDefaultDesign = false;
+    let existingSitePreviewHtml = "", existingSitePreviewDirty = false;
+    let SHOP = { categoriesPosition: "after-products", cats: [], products: [], serviceDays: [1, 2] }, prods = [];
+    const MAX_CATEGORIES = 30, MAX_PRODUCTS = 100, craftIntegrated = true;
+    const mb = g("wMoods");
+    const applyRecipe = () => false, applyOfferTypeUI = () => {};
+    const setCategoryNames = () => {}, drawProds = () => {}, render = () => {}, previewVisible = () => false;
+    const sync = () => {}, setSaved = () => {}, apply = () => {}, autosave = () => {};
+    const randomDraftMood = () => null, imgSrc = value => value || "";
+    const getCraftDesignRecipe = () => ({ litrus: "mixer-recipe", v: 1 });
+    const exportShop = () => '<!doctype html><html><head></head><body>shop</body></html>';
+    const litrusFitPublishedHtml = html => html;
+    const read = () => {};
+    ${editor.slice(keyStart, keyEnd)}
+    ${editor.slice(serviceStart, serviceEnd)}
+    ${code}
+    window.probe = {
+      get prods() { return prods; },
+      get hidden() { return hiddenCraftProducts; },
+      shop: SHOP,
+      problems: serviceSettingsProblems
+    };
+  `);
+  return dom;
+}
+
+test("Litrus builder returns archived products untouched and never turns absence into a deletion", () => {
+  const dom = mountCraftPayloadBuilder();
+  try {
+    const archived = {
+      id: 900, name: "Retired lamp", price: 12, status: "archived", sku: "LAMP-1", stock: 3,
+      variants: [{ id: "v1", size: "S", stock: 1 }], images: []
+    };
+    const original = JSON.parse(JSON.stringify(archived));
+    const catalog = {
+      shop: { name: "Shop", currency: "KES" },
+      categories: [{ id: 1, name: "Home" }],
+      products: [
+        { id: 7, name: "Kept lamp", price: 20, status: "active", category_names: ["Home"], images: [] },
+        { id: 8, name: "Plain lamp", price: 30, category_names: ["Home"], images: [] },
+        archived
+      ]
+    };
+    const loaded = dom.window.litrusSetCraftCatalog(catalog);
+    assert.equal(loaded.products, 2, "archived products are not shown or edited in the builder");
+    assert.equal(loaded.categories, 1);
+    assert.equal(dom.window.probe.prods.length, 2);
+    assert.equal(dom.window.probe.hidden.length, 1);
+
+    const payload = dom.window.litrusGetCraftPublishPayload();
+    assert.deepEqual(plain(payload.catalog.products.map(product => String(product.id))), ["7", "8", "900"],
+      "every id the host sent comes back, in the same order, archived ones last");
+    assert.equal(payload.catalog.products[0].status, "active", "a status the host sent is passed through");
+    assert.ok(!("status" in payload.catalog.products[1]), "no status is invented for a product that had none");
+    assert.deepEqual(JSON.parse(JSON.stringify(payload.catalog.products[2])), original,
+      "an archived product comes back exactly as received");
+    assert.notStrictEqual(payload.catalog.products[2], archived, "and is a copy, so later edits cannot alias it");
+
+    // Autosave is repeatable: the same archived product is returned every time.
+    const again = dom.window.litrusGetCraftPublishPayload();
+    assert.deepEqual(plain(again.catalog.products.map(product => String(product.id))), ["7", "8", "900"]);
+
+    // When the host sends a fresh catalogue with no archived products, none are invented.
+    dom.window.litrusSetCraftCatalog({ ...catalog, products: catalog.products.slice(0, 2) });
+    assert.deepEqual(plain(dom.window.litrusGetCraftPublishPayload().catalog.products.map(product => String(product.id))), ["7", "8"]);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("Litrus builder gives a new product one stable key and never a made-up host id", () => {
+  const dom = mountCraftPayloadBuilder();
+  try {
+    dom.window.litrusSetCraftCatalog({
+      shop: { name: "Shop" }, categories: [{ id: 1, name: "Home" }],
+      products: [{ id: 7, name: "Existing", price: 20, category_names: ["Home"], images: [] }]
+    });
+    dom.window.probe.prods.push({ name: "Brand new", price: "15", desc: "", img: "", ci: [0] });
+    const first = dom.window.litrusGetCraftPublishPayload().catalog.products;
+    const second = dom.window.litrusGetCraftPublishPayload().catalog.products;
+    assert.equal(String(first[0].id), "7");
+    assert.ok(!("client_key" in first[0]), "an existing product is identified by its own id only");
+    assert.equal(first[1].id, "", "a new product has no id until the host assigns one");
+    assert.match(first[1].client_key, /^new-/);
+    assert.equal(second[1].client_key, first[1].client_key, "the key stays the same across autosaves");
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("Litrus builder checks the appointment schedule the way the Worker will before publishing", () => {
+  const dom = mountCraftPayloadBuilder();
+  try {
+    const set = (shopFields, services = [{ id: 5, name: "Cut", price: 500, duration_minutes: 45, category_names: ["Hair"], images: [] }]) =>
+      dom.window.litrusSetCraftCatalog({
+        shop: { name: "Salon", currency: "KES", offer_type: "services", ...shopFields },
+        categories: [{ id: 1, name: "Hair" }], products: services
+      });
+    const problems = () => dom.window.probe.problems();
+
+    set({});
+    assert.deepEqual(plain(problems()), [], "sensible defaults are valid");
+
+    set({ service_open_time: "17:00", service_close_time: "09:00" });
+    assert.match(problems().join(" "), /Closing time must be later than opening time/);
+    set({ service_open_time: "09:00", service_close_time: "09:00" });
+    assert.match(problems().join(" "), /Closing time must be later/);
+    set({ service_days: [] });
+    assert.match(problems().join(" "), /at least one open day/);
+    set({ service_timezone: "Mars/Olympus" });
+    assert.match(problems().join(" "), /Timezone must be a valid name/);
+    set({ service_buffer_minutes: 20 });
+    assert.match(problems().join(" "), /Buffer between appointments/);
+    set({ service_deposit_percent: 150 });
+    assert.match(problems().join(" "), /whole percentage from 0 to 100/);
+    set({ service_deposit_percent: 30, currency: "USD" });
+    assert.match(problems().join(" "), /only available when prices are in KES/);
+    set({ service_deposit_percent: 30 }, [{ id: 5, name: "Free chat", price: 0, category_names: ["Hair"], images: [] }]);
+    assert.match(problems().join(" "), /every service a price above zero/);
+    set({ service_open_time: "09:00", service_close_time: "10:00", service_buffer_minutes: 30 });
+    assert.match(problems().join(" "), /Cut \(45 min\) does not fit between your opening and closing times/);
+    set({}, [{ id: 5, name: "Odd", price: 5, duration_minutes: 50, category_names: ["Hair"], images: [] }]);
+    assert.match(problems().join(" "), /Odd: duration must be 15 to 240 minutes in 15-minute steps/);
+    set({}, [{ id: 5, name: "Long", price: 5, duration_minutes: 480, category_names: ["Hair"], images: [] }]);
+    assert.match(problems().join(" "), /Long: duration must be/);
+
+    // Products shops are never held to the appointment rules.
+    dom.window.litrusSetCraftCatalog({
+      shop: { name: "Shop", offer_type: "products", service_open_time: "18:00", service_close_time: "08:00" },
+      categories: [{ id: 1, name: "Hair" }], products: [{ id: 5, name: "Comb", price: 5, category_names: ["Hair"], images: [] }]
+    });
+    assert.deepEqual(plain(problems()), []);
+
+    // A bad schedule blocks publishing but never blocks the autosave of the owner's other work.
+    set({ service_open_time: "17:00", service_close_time: "09:00" });
+    assert.throws(() => dom.window.litrusGetCraftPublishPayload({ strict: true }), /Fix the appointment settings before publishing: .*Closing time/);
+    assert.ok(dom.window.litrusGetCraftPublishPayload().catalog.products.length === 1);
+    dom.window.eval("showServiceProblems()");
+    assert.equal(dom.window.document.getElementById("wServiceError").hidden, false, "the owner sees what to fix");
+    assert.match(dom.window.document.getElementById("wServiceError").textContent, /Closing time must be later/);
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("Litrus builder offers service durations in 15-minute steps from 15 to 240 minutes", () => {
+  assert.match(editor, /<select id="editProdDuration">/);
+  const select = new JSDOM(editor.match(/<label id="editProdDurationWrap"[^>]*>.*?<\/label>/)[0]).window.document.querySelectorAll("option");
+  assert.deepEqual([...select].map(option => Number(option.value)), Array.from({ length: 16 }, (_, index) => (index + 1) * 15));
+  assert.equal([...select].find(option => option.selected).value, "60", "an hour is the default");
+  const helper = editor.slice(editor.indexOf("function nearestServiceDuration(value){"), editor.indexOf("\nfunction serviceMinutes"));
+  const nearest = runInNewContext(`${helper}; nearestServiceDuration`);
+  assert.deepEqual([undefined, 0, "abc", 7, 52, 100, 999].map(value => nearest(value)), [60, 60, 60, 15, 45, 105, 240]);
+});
+
+test("Litrus builder preview describes booking without pretending to take one", () => {
+  const dom = new JSDOM("<!doctype html><body></body>", { runScripts: "outside-only" });
+  try {
+    const helpersStart = editor.indexOf("function fmtDur(m){");
+    const helpersEnd = editor.indexOf("\nfunction goTo(route){", helpersStart);
+    const previewStart = editor.indexOf("function buildPreview(id,name,price,dur){");
+    const previewEnd = editor.indexOf("\nfunction convertPDP(root){", previewStart);
+    assert.ok(helpersStart >= 0 && helpersEnd > helpersStart && previewStart >= 0 && previewEnd > previewStart);
+    dom.window.eval(`
+      var SHOP = { serviceDays: [1, 3], serviceOpenTime: "08:30", serviceCloseTime: "16:00", serviceDepositPercent: 20, serviceTimezone: "Africa/Nairobi" };
+      ${editor.slice(helpersStart, helpersEnd)}
+      ${editor.slice(previewStart, previewEnd)}
+      window.preview = buildPreview("5", "Cut", "500", 90);
+    `);
+    const preview = dom.window.preview;
+    assert.equal(preview.querySelectorAll("form,input,select,textarea,button").length, 0, "nothing in the preview can be filled in or submitted");
+    assert.match(preview.textContent, /1 hr 30 min/);
+    assert.match(preview.textContent, /Mon, Wed/);
+    assert.match(preview.textContent, /08:30 to 16:00/);
+    assert.match(preview.textContent, /20% deposit/);
+    assert.match(preview.textContent, /This preview cannot take bookings/);
+  } finally {
+    dom.window.close();
+  }
+  for (const gone of ["litrus:appointment-request", "Request sent", "svc-done", "wireForm", "Request booking</button>"]) {
+    assert.ok(!editor.includes(gone), `the builder must not keep the fake booking form (${gone})`);
+  }
+  const exportSource = editor.slice(editor.indexOf("function exportShop(){"), editor.indexOf("\nfunction litrusRefreshPublishedCatalog"));
+  assert.match(exportSource, /\.sp-toast,\.svc-book/, "the preview-only block is stripped from published pages");
+});
+
+test("Litrus published storefront bakes one product page, not one per product", () => {
+  const start = editor.indexOf("function staticRoutes(compact){");
+  const end = editor.indexOf("\nfunction routeFor(t){", start);
+  assert.ok(start >= 0 && end > start);
+  const build = compact => runInNewContext(`
+    const shopProds = () => Array.from({ length: 120 }, (_, index) => ["P" + index, "1", "", "", "", [], "", "id-" + index]);
+    const catList = () => [{ slug: "shoes" }, { slug: "bags" }];
+    ${editor.slice(start, end)}
+    staticRoutes(${compact})
+  `);
+  const full = build(false);
+  const compact = build(true);
+  assert.equal(full.filter(route => route.startsWith("p/")).length, 120, "the zip export keeps every product page");
+  assert.deepEqual([...compact].filter(route => route.startsWith("p/")), ["p/id-0"], "one product page is the layout template");
+  assert.equal(compact.filter(route => route.startsWith("c/")).length, 0, "category pages are rebuilt from the live catalogue");
+  for (const route of ["home", "shop", "page/about", "404"]) assert.ok(compact.includes(route));
+  assert.match(editor, /staticRoutes\(true\)\.forEach\(r=>\{/, "the published export uses the compact list");
+  assert.match(editor, /staticRoutes\(\)\.filter\(r=>r!=='404'\)/, "the page-by-page zip export still bakes everything");
+});
+
+test("Litrus keeps published HTML under the host limit when product photos are stored on the phone", () => {
+  const start = editor.indexOf("function litrusFitPublishedHtml(html){");
+  const end = editor.indexOf("\nfunction exportShop(){", start);
+  assert.ok(start >= 0 && end > start);
+  const photo = index => "data:image/jpeg;base64," + String(index).padStart(4, "0").repeat(1) + "A".repeat(50_000);
+  const fit = (count, html) => runInNewContext(`
+    const CTX = { data: { products: Array.from({ length: ${count} }, (_, index) => ({ img: (${photo.toString()})(index), spin_frames: [] })) } };
+    ${editor.slice(start, end)}
+    litrusFitPublishedHtml(${JSON.stringify(html)})
+  `);
+  const heroPhoto = "data:image/png;base64," + "H".repeat(10_000);
+  // Every product photo appears twice in the page, like the baked cards and the product list do.
+  const page = count => `<img src="${heroPhoto}">` + Array.from({ length: count }, (_, index) => `<i src="${photo(index)}"></i><b src="${photo(index)}"></b>`).join("");
+  const small = page(5);
+  assert.equal(fit(5, small), small, "a page under the budget is left exactly as built");
+  const big = page(40);
+  assert.ok(big.length > 3_000_000);
+  const fitted = fit(40, big);
+  assert.ok(fitted.length <= 2_400_000, `fitted page is ${fitted.length} characters`);
+  assert.ok(fitted.includes(heroPhoto), "photos that are not product photos are never replaced");
+  assert.ok(fitted.includes(photo(0)), "the first products keep their photos while there is room");
+  assert.ok(!fitted.includes(photo(39)), "the last product photo is dropped first");
+  assert.match(fitted, /data:image\/gif;base64,/);
+  assert.match(editor, /litrusFitPublishedHtml\(exportShop\(\)\)\.replace\(/, "the published payload goes through the size fit");
 });

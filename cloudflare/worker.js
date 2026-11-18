@@ -71,6 +71,8 @@ const HOLD_IP_LIMIT = { limit: 12, windowSeconds: 10 * 60 };
 const PAYMENT_INIT_IP_LIMIT = { limit: 10, windowSeconds: 10 * 60 };
 const DISCOUNT_VALIDATE_IP_LIMIT = { limit: 30, windowSeconds: 10 * 60 };
 const ANALYTICS_EVENT_IP_LIMIT = { limit: 120, windowSeconds: 10 * 60 };
+const VISIT_IP_LIMIT = { limit: 120, windowSeconds: 10 * 60 };
+const PRODUCT_INTEREST_IP_LIMIT = { limit: 240, windowSeconds: 10 * 60 };
 // Anonymous hold auto-approval caps: one visitor must not be able to lock a shop's stock.
 const MAX_ANON_HOLD_QUANTITY = 5;
 const MAX_ANON_ACTIVE_HOLDS_PER_IP = 3;
@@ -87,7 +89,7 @@ const OWNER_EMAIL_HOURLY_LIMIT = 20;
 const ANALYTICS_RETENTION_DAYS = 400;
 const NOTIFICATION_RETENTION_DAYS = 90;
 const MANUAL_PAYMENT_METHODS = new Set(["cash", "mobile_money", "bank", "other"]);
-const DISCOUNT_CODE_PATTERN = /^[A-Z0-9][A-Z0-9_-]{1,31}$/;
+const DISCOUNT_CODE_PATTERN = /^[A-Z0-9][A-Z0-9_-]{1,39}$/;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -145,6 +147,8 @@ async function provisionTenantOwnerKey(request, env, tenantId) {
   const ownerToken = generateTenantSecret();
   tenant.owner_token_hash = await sha256Hex(ownerToken);
   tenant.owner_token_hashes = [tenant.owner_token_hash];
+  // Recovery means the previous holder of the shop is no longer trusted: drop sign-in tokens too.
+  tenant.owner_login_tokens = [];
   await env.TENANTS.put(`tenant:${tenantId}`, JSON.stringify(tenant));
   return jsonResponse({
     ok: true,
@@ -1147,12 +1151,58 @@ async function consumeRateLimit(env, scope, identity, { limit, windowSeconds }) 
   return true;
 }
 
-async function clientIpHash(request) {
-  return sha256Hex(request.headers.get("CF-Connecting-IP") || "unknown");
+// Counters only ever hold a salted hash of the connecting IP (RATE_LIMIT_SALT, falling back to the
+// admin key, is a Worker secret) so a stored value cannot be reversed by enumerating IPv4 addresses.
+async function clientIpHash(request, env) {
+  const salt = env?.RATE_LIMIT_SALT || env?.PUBLISH_TOKEN || "";
+  return sha256Hex(`${salt}|${request.headers.get("CF-Connecting-IP") || "unknown"}`);
+}
+
+// Gives back one unit taken by consumeRateLimit (for work that turned out not to happen).
+async function releaseRateLimit(env, scope, identity) {
+  const key = `${scope}:${identity}`;
+  if (env.DB) {
+    try {
+      const result = await env.DB.prepare(
+        "UPDATE rate_limit_counters SET count = CASE WHEN count > 0 THEN count - 1 ELSE 0 END WHERE key = ?"
+      ).bind(key).run();
+      if (Number(result?.meta?.changes || 0)) return;
+    } catch {
+      // Table missing: fall through to the KV counter.
+    }
+  }
+  if (env.TENANTS) {
+    try {
+      const kvKey = `rate:${key}`;
+      const current = Number(await env.TENANTS.get(kvKey) || 0);
+      if (current > 0) await env.TENANTS.put(kvKey, String(current - 1), { expirationTtl: 3600 });
+    } catch {
+      // Best effort.
+    }
+  }
+}
+
+// True when the shop exists (tenant record, or a catalogue row for older shops). Public write endpoints
+// check this BEFORE taking a rate-limit slot so requests for made-up shop ids neither get a fresh
+// counter key each nor write rows.
+async function publicTenantExists(env, tenantId) {
+  if (tenantId === "main") return true;
+  if (typeof tenantId !== "string" || !TENANT_ID_PATTERN.test(tenantId)) return false;
+  try {
+    if (env.TENANTS && await env.TENANTS.get(`tenant:${tenantId}`, "json")) return true;
+  } catch {
+    // Fall through to the catalogue row.
+  }
+  if (!env.DB) return false;
+  try {
+    return Boolean(await env.DB.prepare("SELECT 1 AS present FROM catalog_snapshots WHERE tenant_id=?").bind(tenantId).first());
+  } catch {
+    return false;
+  }
 }
 
 async function limitPublicWrite(request, env, tenantId, scope, rule) {
-  return consumeRateLimit(env, `${scope}:${tenantId}`, await clientIpHash(request), rule);
+  return consumeRateLimit(env, `${scope}:${tenantId}`, await clientIpHash(request, env), rule);
 }
 
 // Owner/admin check for tenant-scoped owner endpoints (owner key, owner account session, or admin key).
@@ -2873,8 +2923,10 @@ function storefrontProductResolver(env, tenantId, catalog, catalogUpdatedAt) {
   };
 }
 
-function storefrontOrderResponse(row) {
-  return {
+// The default serializer is what customers may see (create, replay, payment verify). Owner endpoints pass
+// owner=true to add the operational fields (payment method/reference and the attention flags).
+function storefrontOrderResponse(row, owner = false) {
+  const response = {
     order_number: row.order_number,
     status: row.status,
     customer_name: row.customer_name,
@@ -2889,15 +2941,23 @@ function storefrontOrderResponse(row) {
     discount: Number(row.discount_cents) / 100,
     shipping: Number(row.shipping_cents) / 100,
     total: Number(row.total_cents) / 100,
+    subtotal_cents: Number(row.subtotal_cents),
+    discount_cents: Number(row.discount_cents || 0),
+    shipping_cents: Number(row.shipping_cents),
+    total_cents: Number(row.total_cents),
     payment_status: row.payment_status || "unpaid",
-    payment_method: row.payment_method || (row.payment_status === "paid" && row.payment_reference ? "paystack" : null),
     discount_code: row.discount_code || null,
-    needs_attention: Number(row.needs_attention || 0) === 1,
-    attention_reason: row.attention_reason || null,
     items: JSON.parse(row.items_json).map(({ hold_ids, ...item }) => item),
     created_at: row.created_at,
     updated_at: row.updated_at
   };
+  if (owner) {
+    response.payment_method = row.payment_method || (row.payment_status === "paid" && row.payment_reference ? "paystack" : null);
+    response.payment_reference = row.manual_payment_reference || (response.payment_method === "paystack" ? row.payment_reference || null : null);
+    response.needs_attention = Number(row.needs_attention || 0) === 1;
+    response.attention_reason = row.attention_reason || null;
+  }
+  return response;
 }
 
 function normalizeDiscountCode(value) {
@@ -2961,22 +3021,57 @@ async function releaseDiscountUsage(env, tenantId, code) {
   ).bind(tenantId, code).run();
 }
 
+function variantLabel(variant) {
+  return [[variant.option1_name, variant.option1_value], [variant.option2_name, variant.option2_value]]
+    .filter(([, value]) => value)
+    .map(([name, value]) => `${name || "Option"}: ${value}`)
+    .join(" / ");
+}
+
+// Resolves one requested order line against the published product. The price and the option labels come
+// from the catalogue, never from the client. A product with options needs a variant_id, except when no
+// option changes the price (older storefronts that cannot send one keep working).
+function resolveOrderVariant(product, requested) {
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  const basePriceCents = Math.round(Number(product.price) * 100);
+  const requestedId = requested?.variant_id === undefined || requested?.variant_id === null
+    ? "" : String(requested.variant_id).trim();
+  let variant = null;
+  let priceCents = basePriceCents;
+  if (requestedId) {
+    variant = variants.find(item => String(item.id) === requestedId) || null;
+    if (!variant) {
+      return { error: `That option of ${cleanText(product.name, 120)} is no longer available.`, errorCode: "variant_unavailable" };
+    }
+    if (variant.price !== null && variant.price !== undefined && variant.price !== "") {
+      priceCents = Math.round(Number(variant.price) * 100);
+    }
+  } else if (variants.length) {
+    const changesPrice = variants.some(item => item.price !== null && item.price !== undefined && item.price !== "" &&
+      Math.round(Number(item.price) * 100) !== basePriceCents);
+    if (changesPrice) {
+      return { error: `Choose an option for ${cleanText(product.name, 120)}.`, errorCode: "variant_required" };
+    }
+  }
+  if (!Number.isSafeInteger(priceCents) || priceCents < 0) {
+    return { error: "A catalogue price is invalid. Please contact the shop.", errorCode: "price_invalid" };
+  }
+  return { variant, priceCents };
+}
+
 async function handleStorefrontOrders(request, env, tenantId, ctx) {
   if (!env.DB) return jsonResponse({ error: "Order storage is not configured." }, 503);
-  const isOwner = tenantId === "main"
-    ? await authorizeMainOwner(request, env)
-    : await authorizeTenantOwner(request, env, tenantId);
   if (request.method === "GET") {
-    if (!isOwner && !await authorizeAdmin(request, env)) {
+    if (!await authorizeShopOwnerOrAdmin(request, env, tenantId)) {
       return jsonResponse({ error: "Shop owner authorization required." }, 401);
     }
     const listed = await env.DB.prepare(
       "SELECT * FROM storefront_orders WHERE tenant_id=? ORDER BY created_at DESC LIMIT 200"
     ).bind(tenantId).all();
-    return jsonResponse({ orders: (listed.results || []).map(storefrontOrderResponse) });
+    return jsonResponse({ orders: (listed.results || []).map(row => storefrontOrderResponse(row, true)) });
   }
   if (request.method === "PATCH") {
-    if (!isOwner && !await authorizeAdmin(request, env)) {
+    if (!await authorizeShopOwnerOrAdmin(request, env, tenantId)) {
       return jsonResponse({ error: "Shop owner authorization required." }, 401);
     }
     let input;
@@ -2992,17 +3087,62 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
       return jsonResponse({ error: "Choose a valid order and fulfillment status." }, 400);
     }
     const updatedAt = new Date().toISOString();
-    const previous = await env.DB.prepare(
-      "SELECT status FROM storefront_orders WHERE tenant_id=? AND order_number=?"
+    const before = await env.DB.prepare(
+      "SELECT status,discount_code,discount_released FROM storefront_orders WHERE tenant_id=? AND order_number=?"
     ).bind(tenantId, orderNumber).first();
-    const result = await env.DB.prepare(
-      "UPDATE storefront_orders SET status=?,updated_at=? WHERE tenant_id=? AND order_number=?"
-    ).bind(status, updatedAt, tenantId, orderNumber).run();
-    if (!Number(result.meta?.changes || 0)) return jsonResponse({ error: "Order not found." }, 404);
+    if (!before) return jsonResponse({ error: "Order not found." }, 404);
+    let transitioned = false;
+    if (status === "cancelled") {
+      // Only the request that actually flips the row to cancelled gives the redemption back: the UPDATE
+      // is atomic and records discount_released, so parallel or repeated cancels release exactly once.
+      const result = await env.DB.prepare(
+        `UPDATE storefront_orders SET status=?,updated_at=?,
+           discount_released=CASE WHEN COALESCE(discount_code,'')!='' THEN 1 ELSE 0 END
+         WHERE tenant_id=? AND order_number=? AND status!='cancelled'`
+      ).bind(status, updatedAt, tenantId, orderNumber).run();
+      transitioned = Number(result.meta?.changes || 0) > 0;
+    } else if (before.status === "cancelled") {
+      // Reopening: claim the order, then take its discount redemption back (atomic, within the limit).
+      // The claim only succeeds while the row is still cancelled in the state we read.
+      const released = Number(before.discount_released || 0) === 1 && Boolean(before.discount_code);
+      const claim = await env.DB.prepare(
+        `UPDATE storefront_orders SET status=?,discount_released=0,updated_at=?
+         WHERE tenant_id=? AND order_number=? AND status='cancelled' AND discount_released=?`
+      ).bind(status, updatedAt, tenantId, orderNumber, released ? 1 : Number(before.discount_released || 0)).run();
+      if (!Number(claim.meta?.changes || 0)) {
+        return jsonResponse({ error: "This order changed while you were editing it. Reload and try again." }, 409);
+      }
+      transitioned = true;
+      if (released) {
+        const reserve = await env.DB.prepare(
+          `UPDATE discount_codes SET used_count=used_count+1,updated_at=?
+           WHERE tenant_id=? AND code=? AND (usage_limit IS NULL OR used_count<usage_limit)`
+        ).bind(updatedAt, tenantId, before.discount_code).run();
+        // No row changed: either the limit is used up (refuse) or the owner deleted the code (nothing to take).
+        const refused = !Number(reserve.meta?.changes || 0) &&
+          Boolean(await loadDiscountCode(env, tenantId, before.discount_code));
+        if (refused) {
+          // The code's usage limit was used up by other orders meanwhile: keep this order cancelled.
+          await env.DB.prepare(
+            `UPDATE storefront_orders SET status='cancelled',discount_released=1,updated_at=?
+             WHERE tenant_id=? AND order_number=? AND status=? AND discount_released=0`
+          ).bind(updatedAt, tenantId, orderNumber, status).run();
+          return jsonResponse({
+            error: "The discount code on this order has reached its usage limit, so the order cannot be reopened.",
+            error_code: "discount_limit_reached"
+          }, 409);
+        }
+      }
+    } else {
+      await env.DB.prepare(
+        "UPDATE storefront_orders SET status=?,updated_at=? WHERE tenant_id=? AND order_number=? AND status!='cancelled'"
+      ).bind(status, updatedAt, tenantId, orderNumber).run();
+    }
     const order = await env.DB.prepare(
       "SELECT * FROM storefront_orders WHERE tenant_id=? AND order_number=?"
     ).bind(tenantId, orderNumber).first();
-    if (status === "cancelled" && order.discount_code && previous?.status !== "cancelled") {
+    if (!order) return jsonResponse({ error: "Order not found." }, 404);
+    if (status === "cancelled" && transitioned && order.discount_code) {
       await releaseDiscountUsage(env, tenantId, order.discount_code);
     }
     if (status === "cancelled") {
@@ -3013,11 +3153,12 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
         ).bind(updatedAt, updatedAt, tenantId, holdId).run();
       }
     }
-    return jsonResponse({ order: storefrontOrderResponse(order) });
+    return jsonResponse({ order: storefrontOrderResponse(order, true) });
   }
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, PATCH, OPTIONS" });
   }
+  if (!await publicTenantExists(env, tenantId)) return jsonResponse({ error: "Shop not found." }, 404);
   if (!await limitPublicWrite(request, env, tenantId, "order-ip", ORDER_IP_LIMIT) ||
       !await consumeRateLimit(env, "order-shop", tenantId, ORDER_SHOP_LIMIT)) {
     return jsonResponse({ error: "Too many orders from this connection. Try again shortly." }, 429, { "Retry-After": "60" });
@@ -3042,7 +3183,9 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
   const country = cleanText(input?.country, 80).trim();
   const deliveryMethod = input?.delivery_method === undefined ? "delivery" : input.delivery_method;
   if (!/^[a-f0-9-]{36}$/i.test(idempotencyKey) || !customerName
-    || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)
+    // Email is optional only for orders the shop settles itself (payment_method "manual"); everything else,
+    // including older storefronts that send no payment_method, still needs a valid address (receipts, Paystack).
+    || (customerEmail ? !EMAIL_PATTERN.test(customerEmail) : input?.payment_method !== "manual")
     || !["delivery", "pickup"].includes(deliveryMethod)
     || !Array.isArray(input?.items) || !input.items.length || input.items.length > 50) {
     return jsonResponse({ error: "Order needs an idempotency key, customer details, delivery method and at least one item." }, 400);
@@ -3050,7 +3193,9 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
   const existing = await env.DB.prepare(
     "SELECT * FROM storefront_orders WHERE tenant_id=? AND idempotency_key=?"
   ).bind(tenantId, idempotencyKey).first();
-  if (existing) return jsonResponse({ order: storefrontOrderResponse(existing), duplicate: true }, 200);
+  if (existing) {
+    return jsonResponse({ order: storefrontOrderResponse(existing), discount_cents: Number(existing.discount_cents || 0), duplicate: true }, 200);
+  }
 
   const requestedHoldIds = input?.hold_ids === undefined ? [] : input.hold_ids;
   if (!Array.isArray(requestedHoldIds) || requestedHoldIds.length > 50 ||
@@ -3091,6 +3236,7 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
   const catalog = JSON.parse(catalogRow.payload);
   const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
+  // product id -> { product, quantity (all options together), lines: variant id -> { variant, priceCents, quantity } }
   const requestedProducts = new Map();
   for (const requested of input.items) {
     const product = await resolveProduct(requested?.product_id);
@@ -3098,13 +3244,25 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
     if (!product || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) {
       return jsonResponse({ error: "An item is unavailable or has an invalid quantity." }, 409);
     }
+    const resolved = resolveOrderVariant(product, requested);
+    if (resolved.error) return jsonResponse({ error: resolved.error, error_code: resolved.errorCode }, 409);
     const productId = String(product.id);
-    const current = requestedProducts.get(productId);
-    const combinedQuantity = (current?.quantity || 0) + quantity;
-    if (combinedQuantity > 99) {
+    const entry = requestedProducts.get(productId) || { product, quantity: 0, lines: new Map() };
+    entry.quantity += quantity;
+    if (entry.quantity > 99) {
       return jsonResponse({ error: `${product.name} exceeds the per-product order quantity limit.` }, 409);
     }
-    requestedProducts.set(productId, { product, quantity: combinedQuantity });
+    const lineKey = resolved.variant ? String(resolved.variant.id) : "";
+    const line = entry.lines.get(lineKey) || { variant: resolved.variant, priceCents: resolved.priceCents, quantity: 0 };
+    line.quantity += quantity;
+    if (resolved.variant && line.quantity > Number(resolved.variant.stock)) {
+      return jsonResponse({
+        error: `${product.name} (${variantLabel(resolved.variant)}) does not have enough stock for this order.`,
+        error_code: "variant_out_of_stock"
+      }, 409);
+    }
+    entry.lines.set(lineKey, line);
+    requestedProducts.set(productId, entry);
   }
   const orderProductIds = new Set(requestedProducts.keys());
   if ([...holdIdsByProduct.keys()].some(productId => !orderProductIds.has(productId))) {
@@ -3112,7 +3270,7 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
   }
   const normalizedItems = [];
   let subtotalCents = 0;
-  for (const { product, quantity } of requestedProducts.values()) {
+  for (const { product, quantity, lines } of requestedProducts.values()) {
     const allocation = product.sku ? await env.DB.prepare(
       "SELECT web_enabled, web_stock FROM main_store_inventory WHERE tenant_id=? AND sku=?"
     ).bind(tenantId, String(product.sku)).first() : null;
@@ -3129,16 +3287,23 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
     if (!Number.isSafeInteger(availableStock) || availableStock < quantity) {
       return jsonResponse({ error: `${product.name} does not have enough stock for this order.` }, 409);
     }
-    const priceCents = Math.round(Number(product.price) * 100);
-    if (!Number.isSafeInteger(priceCents) || priceCents < 0) {
-      return jsonResponse({ error: "A catalogue price is invalid. Please contact the shop." }, 409);
+    let holdsAttached = false;
+    for (const line of lines.values()) {
+      subtotalCents += line.priceCents * line.quantity;
+      normalizedItems.push({
+        product_id: product.id, name: cleanText(product.name, 240),
+        sku: cleanText(product.sku, 120), quantity: line.quantity, unit_price: line.priceCents / 100,
+        ...(line.variant ? {
+          variant_id: cleanText(line.variant.id, 180),
+          variant_label: variantLabel(line.variant),
+          option1_name: line.variant.option1_name || "", option1_value: line.variant.option1_value || "",
+          option2_name: line.variant.option2_name || "", option2_value: line.variant.option2_value || ""
+        } : {}),
+        // Holds are per product: attach them to the first line only.
+        hold_ids: holdsAttached ? [] : holdIdsByProduct.get(String(product.id)) || []
+      });
+      holdsAttached = true;
     }
-    subtotalCents += priceCents * quantity;
-    normalizedItems.push({
-      product_id: product.id, name: cleanText(product.name, 240),
-      sku: cleanText(product.sku, 120), quantity, unit_price: priceCents / 100,
-      hold_ids: holdIdsByProduct.get(String(product.id)) || []
-    });
   }
   let discountCents = 0;
   let discountCode = "";
@@ -3206,7 +3371,7 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
   if (saved && saved.order_number !== orderNumber) {
     // A concurrent request with the same idempotency key won the insert; give the redemption back.
     if (discountCode) await releaseDiscountUsage(env, tenantId, discountCode).catch(() => {});
-    return jsonResponse({ order: storefrontOrderResponse(saved), duplicate: true }, 200);
+    return jsonResponse({ order: storefrontOrderResponse(saved), discount_cents: Number(saved.discount_cents || 0), duplicate: true }, 200);
   }
   const itemCount = normalizedItems.reduce((sum, item) => sum + item.quantity, 0);
   notifyShopOwner(env, ctx, tenantId, () => ({
@@ -3215,7 +3380,7 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
     title: `New order ${orderNumber}`,
     body: `${notificationFirstName(customerName)} placed order ${orderNumber}: ${itemCount} item${itemCount === 1 ? "" : "s"}, ${formatMoneyCents(totalCents, currency)}${discountCode ? ` (code ${discountCode})` : ""}.`
   }));
-  return jsonResponse({ order: storefrontOrderResponse(saved) }, 201);
+  return jsonResponse({ order: storefrontOrderResponse(saved), discount_cents: Number(saved.discount_cents || 0) }, 201);
 }
 
 async function handleStorefrontProductInterest(request, env, tenantId) {
@@ -3225,6 +3390,9 @@ async function handleStorefrontProductInterest(request, env, tenantId) {
   }
   if (tenantId !== "main" && !await env.TENANTS.get(`tenant:${tenantId}`, "json")) {
     return jsonResponse({ error: "Shop not found." }, 404);
+  }
+  if (!await limitPublicWrite(request, env, tenantId, "interest-ip", PRODUCT_INTEREST_IP_LIMIT)) {
+    return jsonResponse({ error: "Too many requests from this connection." }, 429, { "Retry-After": "60" });
   }
   const raw = await request.text();
   if (new TextEncoder().encode(raw).byteLength > 4096) {
@@ -3647,6 +3815,7 @@ async function handleStorefrontHoldRequests(request, env, tenantId, ctx) {
   if (request.method !== "POST") {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, PATCH, OPTIONS" });
   }
+  if (!await publicTenantExists(env, tenantId)) return jsonResponse({ error: "Shop not found." }, 404);
   if (!await limitPublicWrite(request, env, tenantId, "hold-ip", HOLD_IP_LIMIT)) {
     return jsonResponse({ error: "Too many hold requests from this connection. Try again shortly." }, 429, { "Retry-After": "60" });
   }
@@ -3710,10 +3879,14 @@ async function handleStorefrontHoldRequests(request, env, tenantId, ctx) {
     Number(catalog.store.hold_duration_hours) >= 1 && Number(catalog.store.hold_duration_hours) <= 720
     ? Number(catalog.store.hold_duration_hours)
     : 24;
-  if (!await consumeRateLimit(env, `hold-active:${tenantId}`, await clientIpHash(request), {
+  // One atomic unit per hold actually created. It is taken up front (so parallel requests cannot all pass
+  // a read-then-write check) and given back below when no new hold results (stock taken, retry).
+  const activeHoldScope = `hold-active:${tenantId}`;
+  const activeHoldIdentity = await clientIpHash(request, env);
+  if (!await consumeRateLimit(env, activeHoldScope, activeHoldIdentity, {
     limit: MAX_ANON_ACTIVE_HOLDS_PER_IP, windowSeconds: holdHours * 60 * 60
   })) {
-    return jsonResponse({ error: "You already have the maximum number of active holds with this shop. Complete or release one first." }, 429);
+    return jsonResponse({ error: "You already have the maximum number of holds with this shop for now. Place an order for them or try again once they expire." }, 429);
   }
   const expiresAt = new Date(Date.now() + holdHours * 60 * 60 * 1000).toISOString();
   const id = crypto.randomUUID();
@@ -3739,6 +3912,7 @@ async function handleStorefrontHoldRequests(request, env, tenantId, ctx) {
   const saved = await env.DB.prepare(
     "SELECT * FROM storefront_hold_requests WHERE tenant_id=? AND idempotency_key=?"
   ).bind(tenantId, idempotencyKey).first();
+  if (!saved || saved.id !== id) await releaseRateLimit(env, activeHoldScope, activeHoldIdentity);
   if (!saved) {
     return jsonResponse({ error: "There is not enough unreserved stock to hold this quantity." }, 409);
   }
@@ -4155,6 +4329,7 @@ async function handleServiceAppointments(request, env, tenantId, action = "appoi
     return jsonResponse({ appointment: updated }, 200, { "Cache-Control": "private, no-store" });
   }
   if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, PATCH, OPTIONS" });
+  if (!await publicTenantExists(env, tenantId)) return jsonResponse({ error: "Shop not found." }, 404);
   if (!await limitServiceAppointmentRequests(request, env, tenantId)) {
     return jsonResponse({ error: "Too many appointment requests from this connection. Try again later." }, 429);
   }
@@ -4297,6 +4472,20 @@ async function getEffectivePaystackSubaccount(env, tenantId) {
     `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,updated_at
      FROM paystack_subaccounts WHERE tenant_id=?`
   ).bind(tenantId).first();
+}
+
+// 1 when the shop can take Paystack payments now (same readiness test as payment initialize), 0 when it
+// cannot, and undefined when the state could not be read (the storefront then keeps its default behaviour).
+async function shopPaystackConnectedFlag(env, tenantId) {
+  try {
+    if (!env.DB) return undefined;
+    const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY || "");
+    if (!mode) return 0;
+    return paystackSubaccountReady(await getEffectivePaystackSubaccount(env, tenantId), mode) ? 1 : 0;
+  } catch (error) {
+    console.error("Could not read the shop's Paystack state.", error?.message || error);
+    return undefined;
+  }
 }
 
 async function handlePaystackSetup(request, env, tenantId, resource) {
@@ -4719,6 +4908,52 @@ function isInsufficientStockError(error) {
   return /insufficient_|pos_channel_not_allocated/.test(String(error?.message || ""));
 }
 
+// Remembers every Paystack reference issued for an order (the order row only keeps the newest). Best
+// effort: if the table is not migrated yet the lookup simply falls back to the current reference.
+async function recordPaymentAttempt(env, tenantId, orderNumber, reference, subaccountCode) {
+  if (!reference) return;
+  try {
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO storefront_payment_attempts (reference,tenant_id,order_number,subaccount_code,created_at)
+       VALUES (?,?,?,?,?)`
+    ).bind(reference, tenantId, orderNumber, subaccountCode || null, new Date().toISOString()).run();
+  } catch (error) {
+    console.error("Payment attempt could not be recorded.", error?.message || error);
+  }
+}
+
+// Finds the order a Paystack reference belongs to: the order's current reference first, then any older
+// reference issued for it. `paymentOrder` is the order as that reference sees it (its own reference and
+// subaccount), which is what amount/subaccount checks and settlement must use for an older reference.
+async function findOrderByPaymentReference(env, reference, tenantId = null) {
+  const direct = tenantId
+    ? await env.DB.prepare("SELECT * FROM storefront_orders WHERE tenant_id=? AND payment_reference=?").bind(tenantId, reference).first()
+    : await env.DB.prepare("SELECT * FROM storefront_orders WHERE payment_reference=?").bind(reference).first();
+  if (direct) return { order: direct, paymentOrder: direct, viaAttempt: false };
+  let attempt = null;
+  try {
+    attempt = tenantId
+      ? await env.DB.prepare(
+        "SELECT tenant_id,order_number,subaccount_code FROM storefront_payment_attempts WHERE tenant_id=? AND reference=?"
+      ).bind(tenantId, reference).first()
+      : await env.DB.prepare(
+        "SELECT tenant_id,order_number,subaccount_code FROM storefront_payment_attempts WHERE reference=?"
+      ).bind(reference).first();
+  } catch {
+    return null;
+  }
+  if (!attempt) return null;
+  const order = await env.DB.prepare(
+    "SELECT * FROM storefront_orders WHERE tenant_id=? AND order_number=?"
+  ).bind(attempt.tenant_id, attempt.order_number).first();
+  if (!order) return null;
+  return {
+    order,
+    viaAttempt: true,
+    paymentOrder: { ...order, payment_reference: reference, payment_subaccount_code: attempt.subaccount_code, viaAttempt: true }
+  };
+}
+
 // Records a payment as received. Money received is never lost: when the stock trigger refuses the
 // deduction (stock sold elsewhere since checkout) the order is still marked paid, deductible
 // lines are still deducted, and the order is flagged needs_attention for the owner.
@@ -4726,12 +4961,14 @@ function isInsufficientStockError(error) {
 async function updateOrderPayment(env, order, paymentStatus, paidAt = null, manual = null) {
   const updatedAt = new Date().toISOString();
   if (paymentStatus !== "paid") {
+    // A result for an older, superseded reference must not touch the order's current attempt.
+    if (order.viaAttempt) return { settled: false, changed: false, needsAttention: false, attentionReason: null };
     await env.DB.prepare(
       `UPDATE storefront_orders
        SET payment_status=?,paid_at=COALESCE(?,paid_at),updated_at=?
        WHERE tenant_id=? AND order_number=? AND payment_reference=? AND payment_status!='paid'`
     ).bind(paymentStatus, paidAt, updatedAt, order.tenant_id, order.order_number, order.payment_reference).run();
-    return { settled: false, needsAttention: false, attentionReason: null };
+    return { settled: false, changed: false, needsAttention: false, attentionReason: null };
   }
   const { quantitiesBySku, holdIds } = parseOrderItemsForSettlement(order);
   const holdStatements = [...holdIds].map(holdId => env.DB.prepare(
@@ -4752,20 +4989,39 @@ async function updateOrderPayment(env, order, paymentStatus, paidAt = null, manu
        WHERE tenant_id=? AND order_number=? AND payment_status!='paid'`
     ).bind(paidAt, manual.method, manual.reference || null, needsAttention ? 1 : 0, reason,
       updatedAt, order.tenant_id, order.order_number)
-    : needsAttention
-      ? env.DB.prepare(
-        `UPDATE storefront_orders
-         SET payment_status='paid',paid_at=COALESCE(?,paid_at),needs_attention=1,attention_reason=?,updated_at=?
-         WHERE tenant_id=? AND order_number=? AND payment_reference=? AND payment_status!='paid'`
-      ).bind(paidAt, reason, updatedAt, order.tenant_id, order.order_number, order.payment_reference)
-      : env.DB.prepare(
-        `UPDATE storefront_orders
-         SET payment_status=?,paid_at=COALESCE(?,paid_at),updated_at=?
-         WHERE tenant_id=? AND order_number=? AND payment_reference=? AND payment_status!='paid'`
-      ).bind("paid", paidAt, updatedAt, order.tenant_id, order.order_number, order.payment_reference);
+    : onlinePaidUpdate(needsAttention, reason);
+  // Paystack settlement. Settling through an older reference also adopts it as the order's reference.
+  function onlinePaidUpdate(needsAttention, reason) {
+    const sets = ["payment_status='paid'", "paid_at=COALESCE(?,paid_at)"];
+    const binds = [paidAt];
+    if (needsAttention) {
+      sets.push("needs_attention=1", "attention_reason=?");
+      binds.push(reason);
+    }
+    sets.push("updated_at=?");
+    binds.push(updatedAt);
+    if (order.viaAttempt) {
+      sets.push("payment_reference=?", "payment_subaccount_code=COALESCE(?,payment_subaccount_code)");
+      binds.push(order.payment_reference, order.payment_subaccount_code || null);
+    }
+    binds.push(order.tenant_id, order.order_number);
+    if (!order.viaAttempt) binds.push(order.payment_reference);
+    return env.DB.prepare(
+      `UPDATE storefront_orders SET ${sets.join(",")}
+       WHERE tenant_id=? AND order_number=?${order.viaAttempt ? "" : " AND payment_reference=?"} AND payment_status!='paid'`
+    ).bind(...binds);
+  }
+  // The order was cancelled while the customer was paying: record the money, leave the stock alone and
+  // tell the owner so they can refund or reinstate it.
+  if (order.status === "cancelled") {
+    const reason = "paid_after_cancel";
+    const [result] = await env.DB.batch([paidUpdate(true, reason)]);
+    const changed = Number(result?.meta?.changes || 0) > 0;
+    return { settled: true, changed, needsAttention: changed, attentionReason: reason };
+  }
   try {
-    await env.DB.batch([...holdStatements, ...deductions.map(item => item.statement), paidUpdate(false, null)]);
-    return { settled: true, needsAttention: false, attentionReason: null };
+    const results = await env.DB.batch([...holdStatements, ...deductions.map(item => item.statement), paidUpdate(false, null)]);
+    return { settled: true, changed: Number(results[results.length - 1]?.meta?.changes || 0) > 0, needsAttention: false, attentionReason: null };
   } catch (error) {
     if (!deductions.length || !isInsufficientStockError(error)) throw error;
   }
@@ -4782,17 +5038,30 @@ async function updateOrderPayment(env, order, paymentStatus, paidAt = null, manu
     }
   }
   const reason = failedSkus.length ? `insufficient_stock:${failedSkus.join(",")}`.slice(0, 300) : null;
-  await env.DB.batch([paidUpdate(failedSkus.length > 0, reason)]);
-  return { settled: true, needsAttention: failedSkus.length > 0, attentionReason: reason };
+  const [result] = await env.DB.batch([paidUpdate(failedSkus.length > 0, reason)]);
+  const changed = Number(result?.meta?.changes || 0) > 0;
+  // Only the call that actually recorded the payment reports the problem (parallel settlements stay quiet).
+  return { settled: true, changed, needsAttention: changed && failedSkus.length > 0, attentionReason: reason };
 }
 
 function notifyOrderNeedsAttention(env, ctx, order, settlement) {
-  notifyShopOwner(env, ctx, order.tenant_id, () => ({
+  const reason = settlement.attentionReason || "stock";
+  notifyShopOwner(env, ctx, order.tenant_id, () => reason.startsWith("paid_after_cancel") ? {
+    kind: "attention",
+    ref: order.order_number,
+    title: `Payment received for a cancelled order: ${order.order_number}`,
+    body: `Order ${order.order_number} was cancelled but the customer paid for it anyway. Refund the customer or reopen the order.`
+  } : reason.startsWith("duplicate_payment") ? {
+    kind: "attention",
+    ref: order.order_number,
+    title: `Paid twice: ${order.order_number}`,
+    body: `Order ${order.order_number} was already paid and another payment for it just arrived online. Refund one of the payments.`
+  } : {
     kind: "attention",
     ref: order.order_number,
     title: `Payment received, stock short: ${order.order_number}`,
-    body: `Order ${order.order_number} was paid but some items are out of stock (${settlement.attentionReason || "stock"}). Contact the customer or restock.`
-  }));
+    body: `Order ${order.order_number} was paid but some items are out of stock (${reason}). Contact the customer or restock.`
+  });
 }
 
 function transactionMatchesOrder(transaction, order) {
@@ -4816,6 +5085,7 @@ async function handlePaystackPayment(request, env, tenantId, action, ctx) {
 
   if (action === "initialize") {
     if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+    if (!await publicTenantExists(env, tenantId)) return jsonResponse({ error: "Shop not found." }, 404);
     if (!await limitPublicWrite(request, env, tenantId, "payment-init-ip", PAYMENT_INIT_IP_LIMIT)) {
       return jsonResponse({ error: "Too many payment attempts from this connection. Try again shortly." }, 429, { "Retry-After": "60" });
     }
@@ -4849,6 +5119,12 @@ async function handlePaystackPayment(request, env, tenantId, action, ctx) {
         authorization_url: order.payment_authorization_url
       });
     }
+    if (!EMAIL_PATTERN.test(String(order.customer_email || ""))) {
+      return jsonResponse({
+        error: "Paystack needs an email address for the receipt. Add one to this order or pay another way.",
+        error_code: "email_required"
+      }, 409);
+    }
     const initializingIsStale = order.payment_status === "initializing" &&
       !(Date.parse(order.updated_at) > Date.now() - PAYMENT_INITIALIZING_STALE_MS);
     if (order.payment_status === "initializing" && !initializingIsStale) {
@@ -4874,6 +5150,10 @@ async function handlePaystackPayment(request, env, tenantId, action, ctx) {
     if (!Number(reserved.meta?.changes || 0)) {
       return jsonResponse({ error: "Could not reserve payment setup for this order. Retry once." }, 409);
     }
+    // The reference above replaced the previous one on the order; keep both matchable so a customer who
+    // pays the older checkout link is still credited.
+    await recordPaymentAttempt(env, tenantId, orderNumber, order.payment_reference, order.payment_subaccount_code);
+    await recordPaymentAttempt(env, tenantId, orderNumber, reference, subaccount.subaccount_code);
 
     let response;
     try {
@@ -4933,10 +5213,9 @@ async function handlePaystackPayment(request, env, tenantId, action, ctx) {
     if (!/^ESHOP_[A-F0-9]{32}$/.test(reference)) {
       return jsonResponse({ error: "A valid payment reference is required." }, 400);
     }
-    const order = await env.DB.prepare(
-      "SELECT * FROM storefront_orders WHERE tenant_id=? AND payment_reference=?"
-    ).bind(tenantId, reference).first();
-    if (!order) return jsonResponse({ error: "Payment reference not found." }, 404);
+    const found = await findOrderByPaymentReference(env, reference, tenantId);
+    if (!found) return jsonResponse({ error: "Payment reference not found." }, 404);
+    const { order, paymentOrder } = found;
     if (order.payment_status === "paid") {
       return jsonResponse({
         tenant_id: tenantId,
@@ -4962,26 +5241,60 @@ async function handlePaystackPayment(request, env, tenantId, action, ctx) {
       return jsonResponse({ error: "Paystack returned an unreadable verification response." }, 502);
     }
     const transaction = result?.data;
-    if (!transactionMatchesOrder(transaction, order)) {
+    if (!transactionMatchesOrder(transaction, paymentOrder)) {
       return jsonResponse({ error: "Payment details do not match this order." }, 409);
     }
-    if (!transactionMatchesSubaccount(transaction, order.payment_subaccount_code, mode)) {
+    if (!transactionMatchesSubaccount(transaction, paymentOrder.payment_subaccount_code, mode)) {
       return jsonResponse({ error: "Paystack could not confirm that this payment used the expected live subaccount." }, 409);
     }
     const paymentStatus = transaction.status === "success" ? "paid"
       : ["failed", "abandoned"].includes(transaction.status) ? "failed" : "pending";
     const paidAt = paymentStatus === "paid" ? new Date().toISOString() : null;
-    const settlement = await updateOrderPayment(env, order, paymentStatus, paidAt);
+    const settlement = await updateOrderPayment(env, paymentOrder, paymentStatus, paidAt);
     if (settlement.needsAttention) notifyOrderNeedsAttention(env, ctx, order, settlement);
+    // Report what the order now is: an older, superseded reference never changes the current attempt.
+    const reported = found.viaAttempt && paymentStatus !== "paid" ? order.payment_status : paymentStatus;
     return jsonResponse({
       tenant_id: tenantId,
-      order: storefrontOrderResponse({ ...order, payment_status: paymentStatus, paid_at: paidAt }),
+      order: storefrontOrderResponse({ ...order, payment_status: reported, paid_at: reported === "paid" ? paidAt : order.paid_at }),
       order_number: order.order_number,
-      payment_status: paymentStatus,
-      paid_at: paidAt
+      payment_status: reported,
+      paid_at: reported === "paid" ? paidAt : order.paid_at
     });
   }
   return jsonResponse({ error: "Unsupported payment action." }, 404);
+}
+
+// A signed charge.success whose reference matches no order or appointment (for example a link issued before
+// attempts were recorded). The metadata set at initialisation names the shop and order, so tell that shop's
+// owner once instead of failing silently; the money is never lost, the owner can reconcile by hand.
+async function alertUnmatchedPayment(env, ctx, data, reference) {
+  try {
+    const tenantId = typeof data?.metadata?.tenant_id === "string" ? data.metadata.tenant_id : "";
+    const orderNumber = typeof data?.metadata?.order_number === "string" ? data.metadata.order_number : "";
+    if (!TENANT_ID_PATTERN.test(tenantId) || !/^ORD-[A-Z0-9-]{8,80}$/.test(orderNumber)) return;
+    const order = await env.DB.prepare(
+      "SELECT order_number,payment_status FROM storefront_orders WHERE tenant_id=? AND order_number=?"
+    ).bind(tenantId, orderNumber).first();
+    if (!order) return;
+    const title = `Unmatched payment for ${orderNumber}`;
+    const seen = await env.DB.prepare(
+      "SELECT 1 AS seen FROM owner_notifications WHERE tenant_id=? AND ref=? AND title=?"
+    ).bind(tenantId, orderNumber, title).first();
+    if (seen) return;
+    await env.DB.prepare(
+      `UPDATE storefront_orders SET needs_attention=1,attention_reason=?,updated_at=?
+       WHERE tenant_id=? AND order_number=? AND COALESCE(attention_reason,'')=''`
+    ).bind("unmatched_payment", new Date().toISOString(), tenantId, orderNumber).run();
+    notifyShopOwner(env, ctx, tenantId, () => ({
+      kind: "attention",
+      ref: orderNumber,
+      title,
+      body: `A customer paid online for order ${orderNumber} (${order.payment_status}) but the payment could not be matched automatically. Check Paystack and mark the order paid by hand if it was received.`
+    }));
+  } catch (error) {
+    console.error("Unmatched payment alert failed.", error?.message || error);
+  }
 }
 
 async function handlePaystackWebhook(request, env, ctx) {
@@ -5010,14 +5323,16 @@ async function handlePaystackWebhook(request, env, ctx) {
   if (event?.event !== "charge.success") return jsonResponse({ ok: true, ignored: true });
   const reference = typeof event.data?.reference === "string" ? event.data.reference : "";
   if (!/^ESHOP_[A-F0-9]{32}$/.test(reference)) return jsonResponse({ error: "Invalid payment reference." }, 400);
-  const order = await env.DB.prepare(
-    "SELECT * FROM storefront_orders WHERE payment_reference=?"
-  ).bind(reference).first();
+  const found = await findOrderByPaymentReference(env, reference);
+  const order = found?.order;
   if (!order) {
     const appointment = await env.DB.prepare(
       "SELECT * FROM storefront_service_appointments WHERE payment_reference=?"
     ).bind(reference).first();
-    if (!appointment) return jsonResponse({ error: "Payment reference not found." }, 404);
+    if (!appointment) {
+      await alertUnmatchedPayment(env, ctx, event.data, reference);
+      return jsonResponse({ error: "Payment reference not found." }, 404);
+    }
     const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
     if (!serviceAppointmentPaymentMatches(event.data, appointment) || event.data.status !== "success"
       || !transactionMatchesSubaccount(event.data, appointment.payment_subaccount_code, mode)) {
@@ -5030,13 +5345,27 @@ async function handlePaystackWebhook(request, env, ctx) {
     return jsonResponse({ ok: true, payment_status: "paid", appointment_id: appointment.id });
   }
   const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
-  if (!transactionMatchesOrder(event.data, order) || event.data.status !== "success"
-    || !transactionMatchesSubaccount(event.data, order.payment_subaccount_code, mode)) {
+  const { paymentOrder } = found;
+  if (!transactionMatchesOrder(event.data, paymentOrder) || event.data.status !== "success"
+    || !transactionMatchesSubaccount(event.data, paymentOrder.payment_subaccount_code, mode)) {
     return jsonResponse({ error: "Payment does not match the expected order amount and currency." }, 409);
   }
   if (order.payment_status !== "paid") {
-    const settlement = await updateOrderPayment(env, order, "paid", new Date().toISOString());
+    const settlement = await updateOrderPayment(env, paymentOrder, "paid", new Date().toISOString());
     if (settlement.needsAttention) notifyOrderNeedsAttention(env, ctx, order, settlement);
+  } else if (order.payment_method || order.payment_reference !== reference) {
+    // The order is already paid and this is a different payment: the owner recorded cash/M-Pesa/bank
+    // and the customer also paid online, or the customer paid two checkout links. Flag it whatever
+    // else the order is already flagged for, and tell the owner once per order.
+    const reason = "duplicate_payment";
+    const flagged = await env.DB.prepare(
+      `UPDATE storefront_orders SET needs_attention=1,updated_at=?,
+         attention_reason=CASE WHEN COALESCE(attention_reason,'')='' THEN ? ELSE attention_reason || ';' || ? END
+       WHERE tenant_id=? AND order_number=? AND COALESCE(attention_reason,'') NOT LIKE '%duplicate_payment%'`
+    ).bind(new Date().toISOString(), reason, reason, order.tenant_id, order.order_number).run();
+    if (Number(flagged.meta?.changes || 0)) {
+      notifyOrderNeedsAttention(env, ctx, order, { attentionReason: reason });
+    }
   }
   return jsonResponse({ ok: true, payment_status: "paid", order_number: order.order_number });
 }
@@ -5321,6 +5650,13 @@ async function handleTenants(request, env) {
     owner_token_hashes: [ownerTokenHash]
   };
   const emptyCatalog = JSON.stringify({ products: [], categories: [], store: { name } });
+  // A brand-new shop never inherits a payout account: drop any leftover row keyed by this address.
+  try {
+    await env.DB.prepare("DELETE FROM paystack_subaccounts WHERE tenant_id = ?").bind(id).run();
+    await env.DB.prepare("DELETE FROM paystack_owner_defaults WHERE source_tenant_id = ?").bind(id).run();
+  } catch (error) {
+    console.error("Could not clear stale payout rows for a new shop.", error?.message || error);
+  }
   await env.DB.prepare(
     `INSERT INTO catalog_snapshots (tenant_id, payload, admin_payload, updated_at)
      VALUES (?, ?, ?, ?)`
@@ -5657,6 +5993,9 @@ async function handleAnalyticsVisit(request, env, tenantId) {
     return jsonResponse({ error: "Shop not found." }, 404);
   }
   if (request.method === "POST") {
+    if (!await limitPublicWrite(request, env, tenantId, "visit-ip", VISIT_IP_LIMIT)) {
+      return jsonResponse({ error: "Too many visits from this connection." }, 429, { "Retry-After": "60" });
+    }
     const raw = await request.text();
     if (new TextEncoder().encode(raw).byteLength > 4096) return jsonResponse({ error: "Visit payload is too large." }, 413);
     let input;
@@ -5807,7 +6146,7 @@ async function handleStorefrontEventAnalytics(request, env, tenantId) {
     if (!Array.isArray(input?.items) || input.items.length < 1 || input.items.length > 50) {
       return jsonResponse({ error: "Analytics batches must contain between 1 and 50 items." }, 400);
     }
-    const allowedTypes = new Set(["view", "wishlist_add", "cart_add"]);
+    const allowedTypes = new Set(["view", "wishlist_add", "cart_add", "checkout_start", "purchase", "booking_submitted"]);
     const coalesced = new Map();
     for (const item of input.items) {
       const productId = typeof item?.product_id === "string" || typeof item?.product_id === "number"
@@ -5874,7 +6213,10 @@ async function handleStorefrontEventAnalytics(request, env, tenantId) {
         SUM(CASE WHEN event_type='view' THEN n ELSE 0 END) AS views,
         SUM(CASE WHEN event_type='wishlist_add' THEN n ELSE 0 END) AS wishlist_adds,
         SUM(CASE WHEN event_type='cart_add' THEN n ELSE 0 END) AS cart_adds,
-        SUM(CASE WHEN event_type='booking' THEN n ELSE 0 END) AS bookings
+        SUM(CASE WHEN event_type='booking' THEN n ELSE 0 END) AS bookings,
+        SUM(CASE WHEN event_type='checkout_start' THEN n ELSE 0 END) AS checkout_starts,
+        SUM(CASE WHEN event_type='purchase' THEN n ELSE 0 END) AS purchases,
+        SUM(CASE WHEN event_type='booking_submitted' THEN n ELSE 0 END) AS booking_submissions
        FROM storefront_event_daily
        WHERE tenant_id=? AND day>=?
        GROUP BY product_id`
@@ -5886,7 +6228,10 @@ async function handleStorefrontEventAnalytics(request, env, tenantId) {
         views: Number(item.views || 0),
         wishlist_adds: Number(item.wishlist_adds || 0),
         cart_adds: Number(item.cart_adds || 0),
-        bookings: Number(item.bookings || 0)
+        bookings: Number(item.bookings || 0),
+        checkout_starts: Number(item.checkout_starts || 0),
+        purchases: Number(item.purchases || 0),
+        booking_submissions: Number(item.booking_submissions || 0)
       }))
     }, 200, { "Cache-Control": "private, max-age=60" });
   }
@@ -6554,7 +6899,7 @@ async function handleOrderManualPayment(request, env, tenantId, orderNumber, ctx
     }, 400);
   }
   if (order.payment_status === "paid") {
-    return jsonResponse({ ok: true, duplicate: true, order: storefrontOrderResponse(order) });
+    return jsonResponse({ ok: true, duplicate: true, order: storefrontOrderResponse(order, true) });
   }
   if (order.status === "cancelled") {
     return jsonResponse({ error: "This order has been cancelled." }, 409);
@@ -6566,9 +6911,10 @@ async function handleOrderManualPayment(request, env, tenantId, orderNumber, ctx
   if (settlement.needsAttention) notifyOrderNeedsAttention(env, ctx, order, settlement);
   return jsonResponse({
     ok: true,
-    duplicate: false,
-    needs_attention: settlement.needsAttention,
-    order: storefrontOrderResponse(updated || order)
+    // Another request (a Paystack webhook, or a repeat of this one) recorded the payment first.
+    duplicate: !settlement.changed,
+    needs_attention: Number(updated?.needs_attention || 0) === 1,
+    order: storefrontOrderResponse(updated || order, true)
   });
 }
 
@@ -6637,7 +6983,7 @@ async function handleDiscountCodes(request, env, tenantId) {
   const code = normalizeDiscountCode(request.method === "DELETE"
     ? new URL(request.url).searchParams.get("code") : input.code);
   if (!code) {
-    return jsonResponse({ error: "Discount codes use 2-32 letters, numbers, hyphens or underscores." }, 400);
+    return jsonResponse({ error: "Discount codes use 2-40 letters, numbers, hyphens or underscores." }, 400);
   }
   const now = new Date().toISOString();
   if (request.method === "DELETE") {
@@ -6680,6 +7026,7 @@ async function handleDiscountCodes(request, env, tenantId) {
 async function handleDiscountValidate(request, env, tenantId) {
   if (!env.DB) return jsonResponse({ error: "Discount storage is not configured." }, 503);
   if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
+  if (!await publicTenantExists(env, tenantId)) return jsonResponse({ error: "Shop not found." }, 404);
   if (!await limitPublicWrite(request, env, tenantId, "discount-validate-ip", DISCOUNT_VALIDATE_IP_LIMIT)) {
     return jsonResponse({ error: "Too many discount checks. Try again shortly." }, 429, { "Retry-After": "60" });
   }
@@ -6705,12 +7052,11 @@ async function handleDiscountValidate(request, env, tenantId) {
   for (const requested of input.items) {
     const product = await resolveProduct(requested?.product_id);
     const quantity = Number(requested?.quantity);
-    const priceCents = Math.round(Number(product?.price) * 100);
-    if (!product || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99 ||
-        !Number.isSafeInteger(priceCents) || priceCents < 0) {
+    const resolved = product ? resolveOrderVariant(product, requested) : { error: true };
+    if (!product || resolved.error || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 99) {
       return jsonResponse({ valid: false, error: "An item is unavailable or has an invalid quantity." }, 200, { "Cache-Control": "no-store" });
     }
-    subtotalCents += priceCents * quantity;
+    subtotalCents += resolved.priceCents * quantity;
   }
   const row = await loadDiscountCode(env, tenantId, code);
   const evaluation = evaluateDiscountCode(row, subtotalCents, new Date().toISOString());
@@ -6813,30 +7159,54 @@ async function deleteTenant(request, env, tenantId) {
     console.error("Custom hostname release failed during shop deletion.", error?.message || error);
   }
 
-  // The owner's default Paystack account may point at this shop's subaccount row. Drop that pointer
-  // only when it serves no other shop of theirs; otherwise keep the row (minus the bank name).
+  // The owner's default Paystack account may point at this shop's subaccount row. A tenant-keyed row
+  // must never outlive its tenant (a later shop with the same address would inherit the payout
+  // account), so the default is moved to a surviving shop of the same owner and the row is deleted.
   try {
     const defaults = await env.DB.prepare(
       "SELECT owner_username FROM paystack_owner_defaults WHERE source_tenant_id = ?"
     ).bind(tenantId).all();
-    let stillReferenced = false;
+    const own = await env.DB.prepare(
+      `SELECT subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at
+       FROM paystack_subaccounts WHERE tenant_id = ?`
+    ).bind(tenantId).first();
+    let moved = false;
     for (const row of defaults.results || []) {
-      const others = await env.DB.prepare(
-        "SELECT COUNT(*) AS n FROM account_tenants WHERE username = ? AND tenant_id != ?"
-      ).bind(row.owner_username, tenantId).first();
-      if (Number(others?.n || 0) > 0) {
-        stillReferenced = true;
+      let target = "";
+      if (own?.subaccount_code && own.status === "connected") {
+        const survivors = await env.DB.prepare(
+          "SELECT tenant_id FROM account_tenants WHERE username = ? AND tenant_id != ? ORDER BY tenant_id"
+        ).bind(row.owner_username, tenantId).all();
+        for (const survivor of survivors.results || []) {
+          const existing = await env.DB.prepare(
+            "SELECT status FROM paystack_subaccounts WHERE tenant_id = ?"
+          ).bind(survivor.tenant_id).first();
+          if (!existing || existing.status !== "connected") { target = survivor.tenant_id; break; }
+        }
+      }
+      if (target) {
+        const now = new Date().toISOString();
+        await env.DB.prepare(
+          `INSERT INTO paystack_subaccounts
+             (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at)
+           VALUES (?,?,?,?,?,?,?,?,?)
+           ON CONFLICT(tenant_id) DO UPDATE SET
+             subaccount_code=excluded.subaccount_code,status=excluded.status,bank_name=excluded.bank_name,
+             account_last4=excluded.account_last4,account_mode=excluded.account_mode,
+             is_verified=excluded.is_verified,updated_at=excluded.updated_at`
+        ).bind(target, own.subaccount_code, own.status, own.bank_name || "", own.account_last4 || "",
+          own.account_mode || "unknown", Number(own.is_verified) || 0, own.created_at || now, now).run();
+        await env.DB.prepare(
+          "UPDATE paystack_owner_defaults SET source_tenant_id = ?, updated_at = ? WHERE owner_username = ? AND source_tenant_id = ?"
+        ).bind(target, now, row.owner_username, tenantId).run();
+        moved = true;
       } else {
         await env.DB.prepare("DELETE FROM paystack_owner_defaults WHERE owner_username = ? AND source_tenant_id = ?")
           .bind(row.owner_username, tenantId).run();
       }
     }
-    if (stillReferenced) {
-      report.paystack_subaccount = "retained_as_owner_default";
-      await env.DB.prepare("UPDATE paystack_subaccounts SET bank_name = '' WHERE tenant_id = ?").bind(tenantId).run();
-    } else {
-      await env.DB.prepare("DELETE FROM paystack_subaccounts WHERE tenant_id = ?").bind(tenantId).run();
-    }
+    await env.DB.prepare("DELETE FROM paystack_subaccounts WHERE tenant_id = ?").bind(tenantId).run();
+    report.paystack_subaccount = moved ? "moved_to_owner_default_shop" : "removed";
   } catch (error) {
     report.paystack_subaccount = "failed";
     report.failed_tables.push("paystack_subaccounts");
@@ -6846,7 +7216,7 @@ async function deleteTenant(request, env, tenantId) {
   // Child rows before parents so foreign keys (event items -> events/stock) stay satisfied.
   for (const table of [
     "inventory_event_items", "inventory_events", "inventory_stock", "main_store_inventory",
-    "storefront_inventory_deductions", "storefront_orders", "storefront_hold_requests",
+    "storefront_inventory_deductions", "storefront_payment_attempts", "storefront_orders", "storefront_hold_requests",
     "storefront_product_interest", "storefront_service_appointments", "storefront_appointment_slots",
     "storefront_event_daily", "storefront_visits", "push_subscriptions", "newsletter_subscribers",
     "business_branches", "pos_sync_changes", "nearby_pairings", "discount_codes", "owner_notifications",
@@ -6882,7 +7252,7 @@ async function deleteTenant(request, env, tenantId) {
 
   for (const key of [
     `published-theme:${tenantId}`, `published-product-aliases:${tenantId}`,
-    searchConsoleVerificationKey(tenantId), `craft-ai:data:v1:${tenantId}`
+    searchConsoleVerificationKey(tenantId), `craft-ai:data:v1:${tenantId}`, DIRECTORY_CACHE_KEY
   ]) {
     try {
       await env.TENANTS.delete(key);
@@ -7003,11 +7373,10 @@ async function loadShopDirectory(env) {
   const candidates = (result.results || []).filter(shop =>
     TENANT_ID_PATTERN.test(shop.tenant_id) && !RESERVED_TENANT_IDS.has(shop.tenant_id));
   const shops = (await Promise.all(candidates.map(async shop => {
-    if (shop.theme_id && shop.theme_id !== "classic") {
-      const published = await env.TENANTS.get(`published-theme:${shop.tenant_id}`, "json");
-      if (!published || published.themeId !== shop.theme_id ||
-          published.catalogUpdatedAt !== shop.updated_at) return null;
-    }
+    // Only shops that actually serve a storefront: a published page for one of the known themes. A
+    // catalogue that is ahead of its last publish still serves that publish, so it stays listed.
+    const published = await env.TENANTS.get(`published-theme:${shop.tenant_id}`, "json");
+    if (!publishedThemePointerUsable(published, shop.tenant_id)) return null;
     return {
       id: shop.tenant_id,
       name: cleanText(shop.name, 120) || shop.tenant_id,
@@ -7188,12 +7557,17 @@ async function runRetentionCleanup(env) {
     ["storefront_visits", "created_at < ?", [analyticsCutoff]],
     ["storefront_product_interest", "updated_at < ?", [analyticsCutoff]],
     ["owner_notifications", "created_at < ?", [notificationCutoff]],
-    ["rate_limit_counters", "window_start < ?", [Math.floor(now / 1000) - 2 * 86_400]],
+    // Superseded checkout references only matter while a customer could still pay the old link.
+    ["storefront_payment_attempts", "created_at < ?", [new Date(now - 180 * 86_400_000).toISOString()]],
+    // Hold caps count over the hold duration (up to 30 days); every other window is minutes to hours.
+    ["rate_limit_counters", "window_start < ? AND (key NOT LIKE 'hold-active:%' OR window_start < ?)",
+      [Math.floor(now / 1000) - 2 * 86_400, Math.floor(now / 1000) - 32 * 86_400]],
     ["storefront_appointment_slots", "expires_at <= ?", [new Date(now).toISOString()]]
   ];
   for (const [table, condition, bindings] of tasks) {
     try {
-      report[table] = await pruneRows(env, table, condition, bindings);
+      // The counters table is the one anonymous traffic can fill fastest: allow more passes per run.
+      report[table] = await pruneRows(env, table, condition, bindings, 5000, table === "rate_limit_counters" ? 80 : 20);
     } catch (error) {
       report[table] = `failed: ${String(error?.message || error).slice(0, 120)}`;
     }
@@ -7215,6 +7589,12 @@ function storefrontUnavailablePage(status, heading, message) {
       }
     }
   );
+}
+
+// A pointer the storefront can serve: a known (active or retired) theme with a key under the shop's own prefix.
+function publishedThemePointerUsable(pointer, tenantId) {
+  return Boolean(pointer && typeof pointer.key === "string" && FILLED_THEME_IDS.has(pointer.themeId) &&
+    pointer.key.startsWith(`published-sites/${tenantId}/${pointer.themeId}/`));
 }
 
 async function hasPublishedCraftStorefront(env, tenantId) {
@@ -7585,16 +7965,25 @@ export default {
           }
         }
         const catalog = JSON.parse(snapshot.payload);
+        // The storefront hides Paystack (and makes the email optional) only when the shop really has no
+        // connected Paystack account. The flag rides in the page's embedded catalogue, so it refreshes with
+        // the page cache (at most an hour) and is never trusted by the Worker itself at payment time.
+        catalog.store = { ...(catalog.store || {}), paystack_connected: await shopPaystackConnectedFlag(env, hostTenantId) };
         let themeId = catalog.store?.website_theme_id;
         seoCatalog = catalog;
+        if (!themeId || themeId === "classic") {
+          // The retired classic storefront no longer exists: a shop whose catalogue does not name a hosted
+          // theme keeps serving the storefront it last published (when it ever published one).
+          const lastPublished = publishedThemePointer ||
+            await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
+          if (publishedThemePointerUsable(lastPublished, hostTenantId)) themeId = lastPublished.themeId;
+        }
         seoThemeId = themeId || "classic";
         if (themeId && themeId !== "classic") {
           const requestedThemeKnown = /^[a-z0-9][a-z0-9-]{0,63}$/.test(themeId) && FILLED_THEME_IDS.has(themeId);
           const publishedTheme = publishedThemePointer ||
             await env.TENANTS?.get(`published-theme:${hostTenantId}`, "json");
-          const pointerUsable = Boolean(publishedTheme && typeof publishedTheme.key === "string" &&
-            FILLED_THEME_IDS.has(publishedTheme.themeId) &&
-            publishedTheme.key.startsWith(`published-sites/${hostTenantId}/${publishedTheme.themeId}/`));
+          const pointerUsable = publishedThemePointerUsable(publishedTheme, hostTenantId);
           // A shop keeps serving its last published storefront while the catalogue is ahead of it (between
           // the catalogue save and the republish) and when its catalogue names a retired or unknown theme.
           let stalePublish = false;
@@ -7625,14 +8014,9 @@ export default {
           }
           let html = publishedHtmlForRequest || await new Response(theme.body).text();
           if (themeId === "litrus-mixer") {
-            const upgraded = upgradePublishedLitrusHtml(html);
-            if (!upgraded) {
-              return new Response("This Litrus storefront needs to be republished from Craft to enable live catalog updates.", {
-                status: 503,
-                headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" }
-              });
-            }
-            html = upgraded;
+            // An export from before live catalogue updates cannot be upgraded in place. It still carries its
+            // own embedded catalogue, so customers are served that rather than an error page.
+            html = upgradePublishedLitrusHtml(html) || html;
           }
           let isLiquidTheme = themeId === "craft-main-storefront" &&
             /<meta\s+name=["']eshop-liquid-theme["']\s+content=["']my-own-theme["']/i.test(html);

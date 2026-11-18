@@ -78,6 +78,12 @@
         store.offer_type === "products" ? "products" : String(data.shop.offerType || ""),
       serviceTimezone: String(store.service_timezone || "Africa/Nairobi"),
       serviceDepositPercent: Number(store.service_deposit_percent) || 0,
+      // The Worker publishes the shop's real Paystack connection as store.paystack_connected. An absent
+      // flag (an older Worker) is "unknown" (null), which keeps the original behaviour: Paystack offered,
+      // email required. Only an explicit 0/false hides Paystack and makes the email optional.
+      paystackConnected: store.paystack_connected === true || store.paystack_connected === 1 || store.paystack_connected === "1"
+        ? true
+        : store.paystack_connected === false || store.paystack_connected === 0 || store.paystack_connected === "0" ? false : null,
       wa: String(store.whatsapp || store.whatsapp_number || data.shop.wa || ""),
       email: String(store.email || ""),
       phone: String(store.phone || ""),
@@ -613,12 +619,7 @@
         nav.replaceChildren(...links, all);
       }
       if (data.shop.offerType === "services") {
-        const bookingLink = shell.querySelector(".sole-cart-button, .sp-cartbtn");
-        if (bookingLink) {
-          bookingLink.dataset.go = "shop";
-          bookingLink.setAttribute("aria-label", "Book a service");
-          bookingLink.textContent = bookingLink.classList.contains("sp-cartbtn") ? "Book now" : "Book";
-        }
+        relabelBookingButtons(shell);
         const search = shell.querySelector(".sole-searchbar input, input[type='search']");
         if (search) {
           search.placeholder = "Search services";
@@ -640,6 +641,8 @@
       ];
       const relabel = html => {
         const page = parse(html);
+        // Baked pages carry their own copy of the header, so they get the same "Book" button as the shell.
+        relabelBookingButtons(page);
         const walker = document.createTreeWalker(page, NodeFilter.SHOW_TEXT);
         let node;
         while ((node = walker.nextNode())) {
@@ -664,6 +667,15 @@
         }
       }
     }
+  }
+
+  // A services shop has no bag: the header button leads to the services list instead of an empty cart.
+  function relabelBookingButtons(container) {
+    container.querySelectorAll(".sole-cart-button, .sp-cartbtn").forEach(button => {
+      button.dataset.go = "shop";
+      button.setAttribute("aria-label", "Book a service");
+      button.textContent = button.classList.contains("sp-cartbtn") ? "Book now" : "Book";
+    });
   }
 
   function litrusInitLiveSpin(root) {
@@ -698,10 +710,35 @@
     root.addEventListener("pointercancel", stop);
   }
 
-  function installPaystackOption(form) {
+  // Email is needed for the Paystack receipt. Every other way of paying may leave it blank, unless the
+  // Worker has not said whether Paystack is connected (an older Worker, which rejects orders without an
+  // email) or it has already refused an order without one.
+  function checkoutEmailAlwaysRequired(form) {
+    return form.dataset.eshopEmailRequired === "always";
+  }
+
+  function syncCheckoutEmail(form) {
+    const email = form.querySelector('input[name="email"]');
+    if (!email) return;
+    const paying = form.querySelector('input[name="pay"]:checked')?.value === "paystack";
+    const always = checkoutEmailAlwaysRequired(form);
+    email.required = paying || always;
+    const note = email.closest("label")?.querySelector("small");
+    if (note) note.textContent = paying ? "(required for your Paystack receipt)" : always ? "(required)" : "(optional)";
+  }
+
+  // Paystack is shown when the shop has a connected account, or when the Worker does not say (older
+  // Worker). It is hidden, never preselected, only when the Worker reports the shop has none.
+  function installPaystackOption(form, data) {
     if (form.dataset.eshopPaystackOption === "true") return;
+    form.dataset.eshopPaystackOption = "true";
+    const connected = data?.shop?.paystackConnected;
+    if (connected === null || connected === undefined) form.dataset.eshopEmailRequired = "always";
     const group = form.querySelector('input[name="pay"]')?.closest(".sp-radios");
-    if (!group) return;
+    if (!group || connected === false) {
+      syncCheckoutEmail(form);
+      return;
+    }
     const option = document.createElement("label");
     option.className = "sp-radio";
     const input = document.createElement("input");
@@ -719,13 +756,7 @@
     form.querySelectorAll('input[name="pay"]').forEach(item => {
       item.checked = item === input;
     });
-    const email = form.querySelector('input[name="email"]');
-    if (email) {
-      email.required = true;
-      const note = email.closest("label")?.querySelector("small");
-      if (note) note.textContent = "(required for your order and Paystack receipt)";
-    }
-    form.dataset.eshopPaystackOption = "true";
+    syncCheckoutEmail(form);
   }
 
   function storefrontRequestError(result, response, fallback) {
@@ -733,6 +764,7 @@
       ? result.error
       : `${fallback} (${response.status}).`);
     error.status = response.status;
+    if (result && typeof result.error_code === "string") error.code = result.error_code;
     return error;
   }
 
@@ -977,7 +1009,9 @@
       const query = new URLSearchParams({ service_id: form.dataset.serviceId, date: date.value });
       const result = await getStorefrontJson(`/api/service-appointments/availability?${query}`);
       if (date.value !== requestedDate) return;
-      const available = Array.isArray(result.slots) ? result.slots : [];
+      // Times that have already passed (a page left open, a clock that moved on) are never offered.
+      const available = (Array.isArray(result.slots) ? result.slots : []).filter(slot =>
+        slot && typeof slot.starts_at === "string" && Date.parse(slot.starts_at) > Date.now());
       slots.replaceChildren();
       const empty = document.createElement("option");
       empty.value = "";
@@ -1098,6 +1132,11 @@
       field("date")?.focus?.();
       return;
     }
+    if (!(Date.parse(startsAt) > Date.now())) {
+      say("That time has already passed. Pick another time.");
+      void loadServiceAvailability(form, "That time has already passed.");
+      return;
+    }
     if (!customer.customer_name) {
       say("Enter your name so the shop knows who to expect.");
       field("customer_name")?.focus?.();
@@ -1117,7 +1156,17 @@
     form.setAttribute("aria-busy", "true");
     say("Sending appointment request…");
     try {
-      const payload = { service_id: form.dataset.serviceId, starts_at: startsAt, ...customer };
+      const product = findCatalogProduct(data, form.dataset.serviceId);
+      // The length the customer was shown travels with the request. The Worker books from the
+      // published service, so this is what lets it spot a page that is out of date.
+      const duration = Number(product?.duration_minutes);
+      const validDuration = Number.isSafeInteger(duration) && duration >= 15 && duration <= 240 && duration % 15 === 0;
+      const payload = {
+        service_id: form.dataset.serviceId,
+        starts_at: startsAt,
+        ...(validDuration ? { duration_minutes: duration } : {}),
+        ...customer
+      };
       // The key is tied to what is being requested, so changing the time or details after a
       // failed attempt can never be answered with an older request's result.
       const signature = JSON.stringify(payload);
@@ -1130,7 +1179,6 @@
         ...payload
       }, "Booking request failed");
       const appointment = result.appointment && typeof result.appointment === "object" ? result.appointment : {};
-      const product = findCatalogProduct(data, payload.service_id);
       const timezone = data.shop.serviceTimezone;
       form.reset();
       delete form.dataset.idempotencyKey;
@@ -1286,19 +1334,107 @@
     else form.append(block);
   }
 
-  function applyDiscountCodeInput(form) {
+  function readCartLines(data) {
+    let cart;
+    try {
+      cart = JSON.parse(localStorage.getItem(`sp:${data.shop.key}:cart`) || "[]");
+    } catch {
+      return null;
+    }
+    return Array.isArray(cart) ? cart.filter(item =>
+      item && (typeof item.id === "string" || typeof item.id === "number") &&
+      Number.isSafeInteger(Number(item.q)) && Number(item.q) > 0
+    ) : [];
+  }
+
+  // Delivery follows the same rule as the checkout summary and the Worker: charged for delivery
+  // orders under the free-delivery threshold, measured on the subtotal before any discount.
+  function deliveryCents(data, subtotalCents, delivery) {
+    const fee = Math.round(Number(data.shop.fee) * 100);
+    const free = Math.round(Number(data.shop.free) * 100);
+    if (delivery === "pickup" || !(fee > 0)) return 0;
+    return free > 0 && subtotalCents >= free ? 0 : fee;
+  }
+
+  function clearCheckoutDiscount(form) {
+    delete form.dataset.discountPreview;
+    const summary = document.getElementById("spSum") || form.parentElement?.querySelector(".sp-sum");
+    if (!summary) return;
+    summary.querySelectorAll("[data-litrus-discount-row]").forEach(row => row.remove());
+    const totalAmount = summary.querySelector(".sp-total b");
+    if (totalAmount && totalAmount.dataset.litrusBaseTotal) {
+      totalAmount.textContent = totalAmount.dataset.litrusBaseTotal;
+      delete totalAmount.dataset.litrusBaseTotal;
+    }
+  }
+
+  // Re-draws the previewed discount after the checkout summary is rebuilt (for example when the
+  // customer switches between delivery and pickup).
+  function refreshDiscountPreview(form, data) {
+    let preview;
+    try {
+      preview = JSON.parse(form.dataset.discountPreview || "null");
+    } catch {
+      preview = null;
+    }
+    if (!preview || !preview.code || !(preview.cents > 0)) return;
+    const lines = readCartLines(data);
+    const subtotal = lines ? expectedSubtotalCents(data, lines) : null;
+    const delivery = form.querySelector('[name="dm"]:checked')?.value || "delivery";
+    const total = subtotal === null ? NaN : (subtotal - preview.cents + deliveryCents(data, subtotal, delivery)) / 100;
+    showCheckoutDiscount(form, data, { total }, preview.cents, preview.code);
+  }
+
+  // Asks the Worker what the code is worth for this cart before anything is ordered. Shops running an
+  // older Worker have no such check, so the customer is told the code is verified when they order.
+  async function applyDiscountCodeInput(form, data) {
     const input = form.elements.namedItem("discount_code");
     const status = form.querySelector(".sp-discount-status");
+    const apply = form.querySelector("[data-discount-apply]");
     if (!input || !status) return;
     const code = normalizeDiscountCode(input.value);
     if (code === null) {
+      clearCheckoutDiscount(form);
       status.textContent = "Enter the code exactly as the shop gave it to you.";
       return;
     }
     input.value = code;
-    status.textContent = code
-      ? `Code ${code} added. The shop checks it when you place your order, and the discount shows in your total.`
-      : "No discount code entered.";
+    clearCheckoutDiscount(form);
+    if (!code) {
+      status.textContent = "No discount code entered.";
+      return;
+    }
+    const lines = readCartLines(data);
+    if (!lines || !lines.length) {
+      status.textContent = "Your cart is empty.";
+      return;
+    }
+    const items = lines.map(orderItemFromCartLine).map(item => {
+      const line = { product_id: item.product_id, quantity: item.quantity };
+      if (item.variant_id) line.variant_id = item.variant_id;
+      return line;
+    });
+    if (apply) apply.disabled = true;
+    status.textContent = "Checking the code…";
+    try {
+      const result = await postStorefrontJson("/api/discounts/validate", { code, items }, "Could not check the code");
+      if (normalizeDiscountCode(input.value) !== code) return;
+      const cents = Number(result.discount_cents);
+      if (result.valid !== true || !Number.isSafeInteger(cents) || cents < 1) {
+        status.textContent = typeof result.error === "string" && result.error
+          ? result.error
+          : "That code cannot be used on this order.";
+        return;
+      }
+      form.dataset.discountPreview = JSON.stringify({ code, cents });
+      refreshDiscountPreview(form, data);
+    } catch (error) {
+      status.textContent = error && [404, 405, 501].includes(error.status)
+        ? `Code ${code} added. The shop checks it when you place your order, and the discount shows in your total.`
+        : friendlyRequestError(error, "Could not check the code. You can still place the order; the shop checks it then.");
+    } finally {
+      if (apply) apply.disabled = false;
+    }
   }
 
   function showCheckoutDiscount(form, data, order, discountCents, code) {
@@ -1317,7 +1453,10 @@
         row.append(label, amount);
         total.before(row);
         const totalAmount = total.querySelector("b");
-        if (totalAmount && Number.isFinite(Number(order.total))) totalAmount.textContent = formatShopMoney(data, order.total);
+        if (totalAmount && Number.isFinite(Number(order.total))) {
+          if (!totalAmount.dataset.litrusBaseTotal) totalAmount.dataset.litrusBaseTotal = totalAmount.textContent;
+          totalAmount.textContent = formatShopMoney(data, order.total);
+        }
       }
     }
     const status = form.querySelector(".sp-discount-status");
@@ -1341,7 +1480,7 @@
       "",
       `Name: ${customer.name}`,
       `Phone: ${customer.phone}`,
-      `Email: ${customer.email}`,
+      ...(customer.email ? [`Email: ${customer.email}`] : []),
       `Delivery: ${delivery === "pickup" ? "Pickup" : [customer.address, customer.town].filter(Boolean).join(", ")}`,
       `Payment: ${payment}`,
       "",
@@ -1410,19 +1549,14 @@
       address: value("addr")
     };
     const delivery = selected("dm") || "delivery";
-    const payment = selected("pay") || "paystack";
+    const payment = selected("pay") || (data.shop.paystackConnected !== false ? "paystack" : "Pay the shop directly");
+    const paying = payment === "paystack";
     const via = selected("via") || value("via") || "none";
-    let cart;
-    try {
-      cart = JSON.parse(localStorage.getItem(`sp:${data.shop.key}:cart`) || "[]");
-    } catch {
+    const lines = readCartLines(data);
+    if (!lines) {
       if (error) error.textContent = "Your cart could not be read. Refresh the shop and try again.";
       return;
     }
-    const lines = Array.isArray(cart) ? cart.filter(item =>
-      item && (typeof item.id === "string" || typeof item.id === "number") &&
-      Number.isSafeInteger(Number(item.q)) && Number(item.q) > 0
-    ) : [];
     const items = lines.map(orderItemFromCartLine);
     if (!customer.name) {
       if (error) error.textContent = "Please enter your name.";
@@ -1432,8 +1566,16 @@
       if (error) error.textContent = "Please enter a phone number we can reach you on.";
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email)) {
-      if (error) error.textContent = "Enter a valid email address for your order and Paystack receipt.";
+    if (!customer.email && (paying || checkoutEmailAlwaysRequired(form))) {
+      if (error) error.textContent = paying
+        ? "Enter your email address for your Paystack receipt."
+        : "Enter your email address so the shop can confirm your order.";
+      return;
+    }
+    if (customer.email && !SERVICE_EMAIL_PATTERN.test(customer.email)) {
+      if (error) error.textContent = paying
+        ? "Enter a valid email address for your Paystack receipt."
+        : "That email address does not look right. Check it or leave it blank.";
       return;
     }
     if (delivery === "delivery" && !customer.address && !customer.town) {
@@ -1476,13 +1618,14 @@
       const payload = {
         idempotency_key: form.dataset.idempotencyKey,
         customer_name: customer.name,
-        customer_email: customer.email,
         customer_phone: customer.phone,
         shipping_address: delivery === "pickup" ? "Store pickup" : customer.address || customer.town,
         city: customer.town,
         delivery_method: delivery,
+        payment_method: paying ? "paystack" : "manual",
         items
       };
+      if (customer.email) payload.customer_email = customer.email;
       if (holdIds.length) payload.hold_ids = holdIds;
       if (discountCode) payload.discount_code = discountCode;
       let created;
@@ -1515,7 +1658,7 @@
         showCheckoutDiscount(form, data, order, discountCents, discountCode);
       }
       const purchased = items.map(item => ({ product_id: item.product_id, quantity: item.quantity }));
-      if (payment === "paystack") {
+      if (paying) {
         // The purchase is counted when the payment is verified on return, not when it is only started.
         writeLocalJson(`sp:${data.shop.key}:pending-order`, {
           order_number: order.order_number, items: purchased, hold_ids: holdIds
@@ -1534,7 +1677,23 @@
       removeStoredHolds(holdIds);
       showManualOrder(root, order, customer, delivery, payment, via, data, items, discountCode, discountCents);
     } catch (caught) {
-      if (error) error.textContent = caught instanceof Error ? caught.message : "Your order could not be sent.";
+      let message = friendlyRequestError(caught, "Your order could not be sent.");
+      if (caught && caught.code === "discount_invalid") {
+        // Nothing was ordered, so the customer can clear the code or try another and order again.
+        message = `${message} Clear the code or try another one to continue.`;
+        clearCheckoutDiscount(form);
+        const codeStatus = form.querySelector(".sp-discount-status");
+        if (codeStatus) codeStatus.textContent = message;
+        form.elements.namedItem("discount_code")?.focus?.();
+      } else if (caught && (caught.code === "variant_unavailable" || caught.code === "variant_required")) {
+        message = `${message} Open the product again and choose an option.`;
+      } else if (caught && caught.status === 400 && !customer.email) {
+        message = "The shop could not take this order without an email address. Add your email and try again.";
+        form.dataset.eshopEmailRequired = "always";
+        syncCheckoutEmail(form);
+        form.elements.namedItem("email")?.focus?.();
+      }
+      if (error) error.textContent = message;
       if (submit) submit.disabled = false;
     }
   }
@@ -1725,7 +1884,7 @@
       if (discountApply) {
         event.preventDefault();
         const checkoutForm = discountApply.closest("form");
-        if (checkoutForm) applyDiscountCodeInput(checkoutForm);
+        if (checkoutForm) void applyDiscountCodeInput(checkoutForm, data);
         return;
       }
       const newRequest = target?.closest("[data-service-new-request]");
@@ -1770,9 +1929,33 @@
       // Enter in the code field applies the code; it must not submit the whole checkout.
       event.preventDefault();
       const checkoutForm = input.closest("form");
-      if (checkoutForm) applyDiscountCodeInput(checkoutForm);
+      if (checkoutForm) void applyDiscountCodeInput(checkoutForm, data);
+    });
+    root.addEventListener("input", event => {
+      const input = event.target instanceof HTMLInputElement && event.target.name === "discount_code" ? event.target : null;
+      const checkoutForm = input?.closest("form");
+      if (!checkoutForm || !checkoutForm.dataset.discountPreview) return;
+      // Editing the code drops the previewed discount until the new code is applied.
+      let applied = "";
+      try {
+        applied = JSON.parse(checkoutForm.dataset.discountPreview).code || "";
+      } catch {
+        applied = "";
+      }
+      if (normalizeDiscountCode(input.value) !== applied) {
+        clearCheckoutDiscount(checkoutForm);
+        const codeStatus = checkoutForm.querySelector(".sp-discount-status");
+        if (codeStatus) codeStatus.textContent = "";
+      }
     });
     root.addEventListener("change", event => {
+      const field = event.target instanceof HTMLInputElement && event.target.form?.id === "spco" ? event.target : null;
+      if (field && field.name === "pay") syncCheckoutEmail(field.form);
+      if (field && field.name === "dm") {
+        const checkoutForm = field.form;
+        // The page rebuilds the order summary on this change, so redraw the discount just after it.
+        setTimeout(() => refreshDiscountPreview(checkoutForm, data), 0);
+      }
       const date = event.target instanceof HTMLInputElement && event.target.matches('input[name="date"]')
         ? event.target
         : null;
@@ -1821,7 +2004,7 @@
         if (route === "checkout") {
           const form = root.querySelector("#spco");
           if (form) {
-            installPaystackOption(form);
+            installPaystackOption(form, data);
             installDiscountField(form);
           }
         }

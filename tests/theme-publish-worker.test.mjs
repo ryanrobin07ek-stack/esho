@@ -3,9 +3,10 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import worker from "../cloudflare/worker.js";
 
-const themeId = "cira-atelier-event-architecture-management";
+// Litrus Mixer is the only theme that can still be published; retired themes keep serving what they published.
+const themeId = "litrus-mixer";
 const catalogUpdatedAt = "2026-10-15T07:00:00.000Z";
-const publishedHtml = `<!doctype html><html><head><meta name="eshop-filled-theme" content="${themeId}"></head><body><h1>Owner Shop</h1><article>Owner Product One</article></body></html>`;
+const publishedHtml = `<!doctype html><html><head><meta name="eshop-filled-theme" content="${themeId}"></head><body><h1>Owner Shop</h1><article>Owner Product One</article><script>window.LITRUS_LIVE_CATALOG_VERSION=1;</script></body></html>`;
 
 function createEnv(selectedThemeId = themeId) {
   const values = new Map();
@@ -102,7 +103,7 @@ test("Worker persists only a complete supported fill and serves that same publis
   const pointer = JSON.parse(env.values.get("published-theme:main"));
   assert.equal(pointer.themeId, themeId);
   assert.equal(pointer.catalogUpdatedAt, catalogUpdatedAt);
-  assert.match(pointer.key, /^published-sites\/main\/cira-atelier-event-architecture-management\//);
+  assert.match(pointer.key, /^published-sites\/main\/litrus-mixer\//);
   const savedHtml = env.objects.get(pointer.key).body;
   assert.match(savedHtml, /id="eshop-published-catalog"/);
   assert.match(savedHtml, /window\.__ESHOP_THEME_CATALOG__/);
@@ -115,6 +116,7 @@ test("Worker persists only a complete supported fill and serves that same publis
   assert.equal(env.catalogReads, 1, "Serving an embedded catalog must not query D1.");
   assert.match(html, /Owner Product One/);
   assert.match(html, /eshop-filled-theme/);
+  assert.match(html, /LITRUS_LIVE_CATALOG_VERSION/);
   assert.match(html, /id="eshop-published-catalog"/);
   assert.match(html, /theme-catalog-adapter\.js\?v=commerce-3/);
   assert.match(html, /storefront-analytics\.js\?v=events-1/);
@@ -153,6 +155,16 @@ test("Worker rejects unsupported, incomplete, stale, and unauthenticated theme p
   }), env);
   assert.equal(unsupported.status, 422);
 
+  // Retired hosted themes can never be published again, even with an otherwise valid body.
+  for (const retired of ["elora-linen", "aviya-luxury", "cira-atelier-event-architecture-management", "aurex-electronics"]) {
+    const response = await worker.fetch(publishRequest({
+      theme_id: retired,
+      catalog_updated_at: catalogUpdatedAt,
+      html: publishedHtml.replace(themeId, retired)
+    }), createEnv(retired));
+    assert.equal(response.status, 422, `${retired} must not be publishable`);
+  }
+
   const incomplete = await worker.fetch(publishRequest({
     theme_id: themeId,
     catalog_updated_at: catalogUpdatedAt,
@@ -176,22 +188,27 @@ test("Worker rejects unsupported, incomplete, stale, and unauthenticated theme p
   assert.equal(env.objects.size, 0);
 });
 
-test("Worker accepts the Elora Liquid HTML storefront theme", async () => {
-  for (const themeId of ["elora-linen"]) {
-    const env = createEnv(themeId);
-    const html = `<!doctype html><html><head><meta name="eshop-filled-theme" content="${themeId}"><meta name="eshop-liquid-theme" content="standalone"></head><body><script type="application/json" id="eshop-liquid-theme-catalog">{}</script><script src="/theme-packages/liquid-catalog-runtime.js" defer></script></body></html>`;
-    const response = await worker.fetch(publishRequest({
-      theme_id: themeId,
-      catalog_updated_at: catalogUpdatedAt,
-      html
-    }), env);
+test("Worker no longer publishes the Elora theme but keeps serving an Elora storefront published earlier", async () => {
+  const eloraId = "elora-linen";
+  const env = createEnv(eloraId);
+  const html = `<!doctype html><html><head><meta name="eshop-filled-theme" content="${eloraId}"><meta name="eshop-liquid-theme" content="standalone"></head><body><main id="legacy-elora">Elora shop</main><script type="application/json" id="eshop-liquid-theme-catalog">{}</script><script src="/theme-packages/liquid-catalog-runtime.js" defer></script></body></html>`;
+  const refused = await worker.fetch(publishRequest({
+    theme_id: eloraId, catalog_updated_at: catalogUpdatedAt, html
+  }), env);
+  assert.equal(refused.status, 422);
+  assert.equal(env.objects.size, 0);
 
-    assert.equal(response.status, 200, `${themeId} should be publishable`);
-    assert.equal((await response.json()).theme_id, themeId);
-    const pointer = JSON.parse(env.values.get("published-theme:main"));
-    assert.equal(pointer.themeId, themeId);
-    assert.match(env.objects.get(pointer.key).body, /id="eshop-published-catalog"/);
-  }
+  // Stored before the theme was retired: the pointer and object are exactly what an old publish left behind.
+  const key = `published-sites/main/${eloraId}/2026-10-15T0700000000Z-legacy.html`;
+  env.objects.set(key, {
+    body: html,
+    httpMetadata: { contentType: "text/html; charset=utf-8" },
+    customMetadata: { themeId: eloraId, catalogUpdatedAt }
+  });
+  env.values.set("published-theme:main", JSON.stringify({ key, themeId: eloraId, catalogUpdatedAt }));
+  const served = await worker.fetch(new Request("https://eshop-storefront.workers.dev/"), env);
+  assert.equal(served.status, 200);
+  assert.match(await served.text(), /legacy-elora/);
 });
 
 test("Worker accepts the Litrus Mixer storefront", async () => {
@@ -218,42 +235,21 @@ test("storefront fails closed instead of serving an unpublished template", async
   assert.match(await response.text(), /not been filled and published/);
 });
 
-test("skeleton templates are preview-fetch-only and raw theme HTML is not public", async () => {
+test("theme skeleton routes are retired and raw theme HTML is not public", async () => {
   const env = createEnv();
-  const direct = await worker.fetch(new Request(
-    `https://rrobin.co.ke/theme-skeletons/${themeId}/index.html`
-  ), env);
-  assert.equal(direct.status, 404);
-
-  const spoofedEditorFetch = await worker.fetch(new Request(
-    `https://rrobin.co.ke/theme-skeletons/${themeId}/index.html`,
-    { headers: { "X-Eshop-Theme-Internal": "preview" } }
-  ), env);
-  assert.equal(spoofedEditorFetch.status, 200);
-  assert.match(spoofedEditorFetch.headers.get("Cache-Control"), /private, no-store/);
-
-  const documentNavigation = await worker.fetch(new Request(
-    `https://rrobin.co.ke/theme-skeletons/${themeId}/index.html`,
-    {
-      headers: {
-        "Sec-Fetch-Dest": "document",
-        "X-Eshop-Theme-Internal": "preview"
-      }
+  // Theme Studio previews fetched skeletons from the Worker; with Theme Studio gone every variant is a 404.
+  for (const headers of [
+    {},
+    { "X-Eshop-Theme-Internal": "preview" },
+    { Authorization: "Bearer worker-test-token", "X-Eshop-Theme-Internal": "preview" }
+  ]) {
+    for (const theme of [themeId, "elora-linen"]) {
+      const response = await worker.fetch(new Request(
+        `https://rrobin.co.ke/theme-skeletons/${theme}/index.html?tenant=main`, { headers }
+      ), env);
+      assert.equal(response.status, 404);
     }
-  ), env);
-  assert.equal(documentNavigation.status, 404);
-
-  const editorFetch = await worker.fetch(new Request(
-    `https://rrobin.co.ke/theme-skeletons/${themeId}/index.html?tenant=main`,
-    {
-      headers: {
-        Authorization: "Bearer worker-test-token",
-        "X-Eshop-Theme-Internal": "preview"
-      }
-    }
-  ), env);
-  assert.equal(editorFetch.status, 200);
-  assert.match(editorFetch.headers.get("Cache-Control"), /no-store/);
+  }
 
   env.objects.set(`themes/${themeId}/index.html`, {
     body: "<html>unfilled theme template</html>",

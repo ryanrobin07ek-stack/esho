@@ -12,12 +12,17 @@ async function sha256Hex(value) {
   return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
+// The shop has a published Litrus Mixer page (the only editor left); the verification tag is injected into it.
+const PUBLISHED_KEY = `published-sites/${SHOP_ID}/litrus-mixer/catalog-v1.html`;
+const PUBLISHED_PAGE = "<!doctype html><html><head><title>Shop</title></head><body><div id=\"store\"></div><script>window.LITRUS_LIVE_CATALOG_VERSION=1;</script></body></html>";
+
 function makeEnv(username = "mama-owner") {
   const kv = new Map([
-    [`tenant:${SHOP_ID}`, JSON.stringify({ id: SHOP_ID, name: "Mama Shoes", owner_username: "mama-owner" })]
+    [`tenant:${SHOP_ID}`, JSON.stringify({ id: SHOP_ID, name: "Mama Shoes", owner_username: "mama-owner", catalog_updated_at: "catalog-v1" })],
+    [`published-theme:${SHOP_ID}`, JSON.stringify({ key: PUBLISHED_KEY, themeId: "litrus-mixer", catalogUpdatedAt: "catalog-v1" })]
   ]);
   const catalog = {
-    store: { name: "Mama Shoes", website_theme_id: "classic" },
+    store: { name: "Mama Shoes", website_theme_id: "litrus-mixer" },
     products: [{ id: 1, slug: "red-shoe", name: "Red Shoe", price: 25, stock: 1, images: [] }],
     categories: [],
     pages: []
@@ -53,7 +58,16 @@ function makeEnv(username = "mama-owner") {
         };
       }
     },
-    BUSINESS_ARCHIVE: {},
+    BUSINESS_ARCHIVE: {
+      async get(key) {
+        return key === PUBLISHED_KEY ? {
+          body: PUBLISHED_PAGE,
+          customMetadata: { themeId: "litrus-mixer", catalogUpdatedAt: "catalog-v1" },
+          httpMetadata: { contentType: "text/html; charset=utf-8" }
+        } : null;
+      },
+      async put() {}
+    },
     ASSETS: {
       async fetch() {
         return new Response("<!doctype html><html><head><title>Shop</title></head><body><div id=\"app\"></div></body></html>", {

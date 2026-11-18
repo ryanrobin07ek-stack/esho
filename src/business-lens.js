@@ -130,6 +130,14 @@ function normalizeSnapshot(snapshot, context) {
   return { ...snapshot, sales, visits, expenses };
 }
 
+// The Worker records payment methods as keys (cash, mobile_money, bank, other, paystack). Use the
+// same labels as POS receipts so one method is not split across two names in payment reports.
+const STOREFRONT_PAYMENT_LABELS = { cash: "Cash", mobile_money: "Mobile money", bank: "Bank", other: "Other", paystack: "Paystack" };
+function storefrontPaymentLabel(order, paid) {
+  const method = String(order.payment_method || "");
+  return STOREFRONT_PAYMENT_LABELS[method] || method || (paid ? "Paystack" : "other");
+}
+
 function mergeStorefrontOrders(sales, orders) {
   const remoteSales = orders.map((order, index) => {
     const total = Number(order.total) || 0;
@@ -157,7 +165,7 @@ function mergeStorefrontOrders(sales, orders) {
       customerPhone: String(order.customer_phone || ""),
       city: String(order.city || ""),
       country: String(order.country || ""),
-      paymentMethod: String(order.payment_method || (paid ? "Paystack" : "other")),
+      paymentMethod: storefrontPaymentLabel(order, paid),
       lineItems: items.map(item => ({
         productId: String(item.product_id || item.productId || item.sku || item.name || ""),
         name: String(item.name || "Item"),

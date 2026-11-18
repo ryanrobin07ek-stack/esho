@@ -453,6 +453,14 @@ function createStorefrontOrderDatabase() {
                 Object.assign(order, { payment_status: 'pending', payment_authorization_url, updated_at });
                 return { meta: { changes: 1 } };
               }
+              if (query.includes("SET payment_status='paid',paid_at=COALESCE")) {
+                const [paid_at, updated_at, tenant_id, order_number, payment_reference] = values;
+                const order = [...orders.values()].find(row => row.tenant_id === tenant_id
+                  && row.order_number === order_number && row.payment_reference === payment_reference);
+                if (!order || order.payment_status === 'paid') return { meta: { changes: 0 } };
+                Object.assign(order, { payment_status: 'paid', paid_at: paid_at || order.paid_at, updated_at });
+                return { meta: { changes: 1 } };
+              }
               if (query.includes('SET payment_status=?,paid_at=COALESCE')) {
                 const [payment_status, paid_at, updated_at, tenant_id, order_number, payment_reference] = values;
                 const order = [...orders.values()].find(row => row.tenant_id === tenant_id
@@ -1835,7 +1843,7 @@ test('live POS changes sync through tenant-authorized D1 and visit analytics ret
   assert.equal(eventAnalytics.status, 200);
   const eventReport = await eventAnalytics.json();
   assert.deepEqual(eventReport.product_activity, [
-    { product_id: '7', views: 3, wishlist_adds: 2, cart_adds: 3, bookings: 0 }
+    { product_id: '7', views: 3, wishlist_adds: 2, cart_adds: 3, bookings: 0, checkout_starts: 0, purchases: 0, booking_submissions: 0 }
   ]);
   const unauthenticatedAnalytics = await worker.fetch(new Request(
     'https://eshop-storefront.workers.dev/api/analytics/visit?tenant=main&days=30'
@@ -4760,7 +4768,7 @@ test('anonymous holds are capped per request, per connection and per product sha
   assert.equal((await hold(1, '203.0.113.1')).status, 201);
   const fourth = await hold(1, '203.0.113.1');
   assert.equal(fourth.status, 429);
-  assert.match((await fourth.json()).error, /maximum number of active holds/);
+  assert.match((await fourth.json()).error, /maximum number of holds/);
   assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_hold_requests')[0].n, 3);
   // Many visitors together still cannot hold more than 75% of the stock (7 of 10): 3 held so far.
   assert.equal((await hold(4, '198.51.100.1')).status, 201);
@@ -5429,7 +5437,7 @@ test('deleting a shop erases its data, releases its hostname and reserves the ad
   assert.equal((await claim('owner-shop-a')).status, 201);
 });
 
-test('deleting a shop keeps a Paystack account that is still the owner default for other shops, and survives hostname failures', async () => {
+test('deleting a shop moves a Paystack account that is still the owner default to another of their shops, and survives hostname failures', async () => {
   const { env, db, rows, tokens } = await createHardeningEnv({
     tenants: ['multi-1', 'multi-2'],
     extraEnv: { CLOUDFLARE_ZONE_ID: 'zone-1', CLOUDFLARE_API_TOKEN: 'cf-token', CUSTOM_HOSTNAME_TARGET: 'customers.example.test' }
@@ -5448,13 +5456,16 @@ test('deleting a shop keeps a Paystack account that is still the owner default f
     assert.equal(deleted.status, 200);
     const report = await deleted.json();
     assert.equal(report.custom_hostname_released, false, 'a Cloudflare failure is reported, not hidden');
-    assert.equal(report.paystack_subaccount, 'retained_as_owner_default');
+    assert.equal(report.paystack_subaccount, 'moved_to_owner_default_shop');
   } finally {
     console.error = originalError;
     stub.restore();
   }
-  assert.equal(rows("SELECT bank_name FROM paystack_subaccounts WHERE tenant_id='multi-1'")[0].bank_name, '');
-  assert.equal(rows("SELECT COUNT(*) AS n FROM paystack_owner_defaults WHERE source_tenant_id='multi-1'")[0].n, 1);
+  // No row keyed by the deleted shop survives; the owner's default now lives on the shop they still have.
+  assert.equal(rows("SELECT COUNT(*) AS n FROM paystack_subaccounts WHERE tenant_id='multi-1'")[0].n, 0);
+  assert.equal(rows("SELECT subaccount_code FROM paystack_subaccounts WHERE tenant_id='multi-2'")[0].subaccount_code, 'ACCT_multi1');
+  assert.equal(rows("SELECT source_tenant_id FROM paystack_owner_defaults WHERE owner_username='owner-multi-1'")[0].source_tenant_id, 'multi-2');
+  assert.equal(rows("SELECT COUNT(*) AS n FROM paystack_owner_defaults WHERE source_tenant_id='multi-1'")[0].n, 0);
   assert.equal(rows("SELECT COUNT(*) AS n FROM custom_hostnames WHERE tenant_id='multi-1'")[0].n, 0, 'the local route is dropped even if Cloudflare release failed');
 });
 
@@ -5807,4 +5818,633 @@ test('discount validation previews a cart without redeeming and is rate limited'
   for (let index = 0; index < 28; index += 1) await validate({ code: 'NOPE', items: [{ product_id: 7, quantity: 1 }] });
   const throttled = await validate({ code: 'NOPE', items: [{ product_id: 7, quantity: 1 }] });
   assert.equal(throttled.status, 429);
+});
+
+// ---------------------------------------------------------------------------
+// Worker review pass: variants, settlement edge cases, directory/serving, give-backs.
+// ---------------------------------------------------------------------------
+const VARIANT_CATALOG = {
+  products: [
+    {
+      id: 20, name: 'Sneaker', sku: 'SNK-20', price: 25, stock: 7, option1_name: 'Size',
+      variants: [
+        { id: 'v42', option1_name: 'Size', option1_value: '42', size: '42', color: '', price: 30, stock: 2 },
+        { id: 'v43', option1_name: 'Size', option1_value: '43', size: '43', color: '', price: null, stock: 5 }
+      ]
+    },
+    {
+      id: 21, name: 'Cap', sku: 'CAP-21', price: 10, stock: 50, option1_name: 'Color',
+      variants: [
+        { id: 'c-red', option1_name: 'Color', option1_value: 'Red', price: null, stock: 25 },
+        { id: 'c-blue', option1_name: 'Color', option1_value: 'Blue', price: 10, stock: 25 }
+      ]
+    },
+    { id: 22, name: 'Plain Mug', sku: 'MUG-22', price: 5, stock: 10 }
+  ],
+  categories: [],
+  store: HARDENING_STORE
+};
+
+test('orders price, stock-check and label option variants from the catalogue, never from the client', async () => {
+  const { env, rows } = await createHardeningEnv({ catalog: VARIANT_CATALOG });
+  const place = (items, extra = {}) => worker.fetch(orderRequest('shop-a', items, extra, { ip: `10.2.0.${Math.floor(Math.random() * 250) + 1}` }), env);
+  const reject = async (items, code) => {
+    const response = await place(items);
+    assert.equal(response.status, 409, JSON.stringify(items));
+    assert.equal((await response.json()).error_code, code);
+  };
+  // A variant that changes the price must be chosen: otherwise the customer would pay the base price.
+  await reject([{ product_id: 20, quantity: 1 }], 'variant_required');
+  await reject([{ product_id: 20, quantity: 1, variant_id: 'v99' }], 'variant_unavailable');
+  await reject([{ product_id: 22, quantity: 1, variant_id: 'v42' }], 'variant_unavailable');
+  await reject([{ product_id: 20, quantity: 3, variant_id: 'v42' }], 'variant_out_of_stock');
+  await reject([{ product_id: 20, quantity: 1, variant_id: 'v42' }, { product_id: 20, quantity: 2, variant_id: 'v42' }], 'variant_out_of_stock');
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_orders')[0].n, 0);
+
+  const created = await place([
+    // Client-supplied prices and labels are ignored.
+    { product_id: 20, quantity: 2, variant_id: 'v42', unit_price: 1, variant_label: 'Size: hacked', price: 1 },
+    { product_id: 20, quantity: 1, variant_id: 'v43' },
+    { product_id: 22, quantity: 1 }
+  ]);
+  assert.equal(created.status, 201);
+  const body = await created.json();
+  assert.equal(body.order.subtotal_cents, 2 * 3000 + 2500 + 500);
+  assert.equal(body.order.total_cents, 9000);
+  assert.equal(body.order.discount_cents, 0);
+  assert.equal(body.discount_cents, 0);
+  assert.equal('needs_attention' in body.order, false, 'customers never see owner-only fields');
+  const lines = body.order.items.map(({ variant_id, variant_label, unit_price, quantity, option1_name, option1_value }) =>
+    ({ variant_id, variant_label, unit_price, quantity, option1_name, option1_value }));
+  assert.deepEqual(lines, [
+    { variant_id: 'v42', variant_label: 'Size: 42', unit_price: 30, quantity: 2, option1_name: 'Size', option1_value: '42' },
+    { variant_id: 'v43', variant_label: 'Size: 43', unit_price: 25, quantity: 1, option1_name: 'Size', option1_value: '43' },
+    { variant_id: undefined, variant_label: undefined, unit_price: 5, quantity: 1, option1_name: undefined, option1_value: undefined }
+  ]);
+
+  // Older storefronts that cannot send a variant keep working when no option changes the price.
+  const legacy = await place([{ product_id: 21, quantity: 2 }]);
+  assert.equal(legacy.status, 201);
+  assert.equal((await legacy.json()).order.subtotal_cents, 2000);
+
+  // The public discount preview prices variants the same way.
+  rows;
+  const priced = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/discounts/validate?tenant=shop-a', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.50' },
+    body: JSON.stringify({ code: 'NOPE', items: [{ product_id: 20, quantity: 1, variant_id: 'v42' }] })
+  }), env);
+  assert.equal((await priced.json()).valid, false);
+});
+
+test('rate-limit counters store only a salted hash, and a hold that is not created gives its slot back', async () => {
+  const catalog = {
+    products: [{ id: 7, name: 'Canvas Tote', sku: 'TOTE-7', price: 12.5, stock: 2, booking_enabled: true }],
+    categories: [], store: HARDENING_STORE
+  };
+  const { env, rows } = await createHardeningEnv({ catalog, extraEnv: { RATE_LIMIT_SALT: 'pepper' } });
+  const ip = '203.0.113.77';
+  const hold = (key = crypto.randomUUID()) => worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/product-holds?tenant=shop-a', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip },
+      body: JSON.stringify({ idempotency_key: key, product_id: 7, quantity: 1, customer_name: 'Visitor', contact: 'v@example.test' })
+    }), env);
+  assert.equal((await hold()).status, 201);
+  // Stock for holds is 75% of 2 = 1: the second hold is refused and must not burn one of the 3 slots.
+  for (let index = 0; index < 5; index += 1) assert.equal((await hold()).status, 409);
+  const slots = rows("SELECT count FROM rate_limit_counters WHERE key LIKE 'hold-active:shop-a:%'");
+  assert.deepEqual(slots.map(row => row.count), [1]);
+  const keys = rows('SELECT key FROM rate_limit_counters').map(row => row.key).join('\n');
+  assert.equal(keys.includes(ip), false, 'no raw IP address is stored');
+  const unsalted = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip)))]
+    .map(byte => byte.toString(16).padStart(2, '0')).join('');
+  assert.equal(keys.includes(unsalted), false, 'the stored hash cannot be reversed by hashing candidate IPs');
+});
+
+test('visit and product-interest beacons are rate limited per connection', async () => {
+  const { env } = await createHardeningEnv();
+  const visit = ip => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/analytics/visit?tenant=shop-a', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip },
+    body: JSON.stringify({ visitor_id: crypto.randomUUID(), path: '/' })
+  }), env);
+  for (let index = 0; index < 120; index += 1) assert.equal((await visit('198.51.100.20')).status, 202);
+  assert.equal((await visit('198.51.100.20')).status, 429);
+  assert.equal((await visit('198.51.100.21')).status, 202);
+});
+
+function signedPaystackWebhook(secret, reference, amount) {
+  const body = JSON.stringify({
+    event: 'charge.success',
+    data: { reference, amount, currency: 'KES', status: 'success', domain: 'test', subaccount: { subaccount_code: 'ACCT_test1' } }
+  });
+  return crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-512' }, false, ['sign'])
+    .then(key => crypto.subtle.sign('HMAC', key, new TextEncoder().encode(body)))
+    .then(digest => ({
+      body,
+      signature: [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('')
+    }));
+}
+
+test('a payment for an order cancelled meanwhile is recorded and flagged, never deducted or lost', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_cancelled' } });
+  allocateMug(db, 'shop-a', 3);
+  const order = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 2 }]);
+  const reference = 'ESHOP_00000000000000000000000000000002';
+  db.run("UPDATE storefront_orders SET payment_reference=?,payment_subaccount_code='ACCT_test1',payment_status='pending' WHERE order_number=?", [reference, order.order_number]);
+  const cancelled = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=shop-a', {
+    method: 'PATCH', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ order_number: order.order_number, status: 'cancelled' })
+  }), env);
+  assert.equal(cancelled.status, 200);
+  const { body, signature } = await signedPaystackWebhook('sk_test_cancelled', reference, 1000);
+  const deliver = ctx => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/payments/paystack/webhook', {
+    method: 'POST', headers: { 'x-paystack-signature': signature }, body
+  }), env, ctx);
+  const ctx = hardeningCtx();
+  assert.equal((await deliver(ctx)).status, 200);
+  assert.equal((await deliver(ctx)).status, 200, 'a webhook retry is harmless');
+  await ctx.settle();
+  const row = rows('SELECT * FROM storefront_orders WHERE order_number=?', [order.order_number])[0];
+  assert.equal(row.payment_status, 'paid');
+  assert.equal(row.status, 'cancelled');
+  assert.equal(row.needs_attention, 1);
+  assert.equal(row.attention_reason, 'paid_after_cancel');
+  assert.equal(rows('SELECT web_stock FROM main_store_inventory')[0].web_stock, 3, 'a cancelled order does not take stock');
+  const notes = rows("SELECT title FROM owner_notifications WHERE kind='attention'");
+  assert.equal(notes.length, 1, 'the owner is told once');
+  assert.match(notes[0].title, /cancelled order/);
+});
+
+test('an order paid by hand that the customer also pays online is flagged as paid twice', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_double' } });
+  const order = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 2 }]);
+  const reference = 'ESHOP_00000000000000000000000000000003';
+  db.run("UPDATE storefront_orders SET payment_reference=?,payment_subaccount_code='ACCT_test1',payment_status='pending' WHERE order_number=?", [reference, order.order_number]);
+  const manual = await worker.fetch(new Request(`https://eshop-storefront.workers.dev/api/store/orders/${order.order_number}/payment?tenant=shop-a`, {
+    method: 'POST', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ method: 'cash' })
+  }), env, hardeningCtx());
+  assert.equal(manual.status, 200);
+  const { body, signature } = await signedPaystackWebhook('sk_test_double', reference, 1000);
+  const ctx = hardeningCtx();
+  const deliver = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/payments/paystack/webhook', {
+    method: 'POST', headers: { 'x-paystack-signature': signature }, body
+  }), env, ctx);
+  assert.equal((await deliver()).status, 200);
+  assert.equal((await deliver()).status, 200);
+  await ctx.settle();
+  const row = rows('SELECT * FROM storefront_orders WHERE order_number=?', [order.order_number])[0];
+  assert.equal(row.payment_method, 'cash', 'the recorded method is not overwritten');
+  assert.equal(row.needs_attention, 1);
+  assert.equal(row.attention_reason, 'duplicate_payment');
+  assert.equal(rows("SELECT COUNT(*) AS n FROM owner_notifications WHERE kind='attention'")[0].n, 1);
+});
+
+test('webhook, verify-style retries and a manual record racing each other settle once and notify once', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_race' } });
+  allocateMug(db, 'shop-a', 3);
+  const first = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 2 }]);
+  const second = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 2 }]);
+  db.run("UPDATE storefront_orders SET payment_reference='ESHOP_00000000000000000000000000000004',payment_subaccount_code='ACCT_test1',payment_status='pending' WHERE order_number=?", [first.order_number]);
+  db.run("UPDATE storefront_orders SET payment_reference='ESHOP_00000000000000000000000000000005',payment_subaccount_code='ACCT_test1',payment_status='pending' WHERE order_number=?", [second.order_number]);
+  const hook = async (reference, ctx) => {
+    const { body, signature } = await signedPaystackWebhook('sk_test_race', reference, 1000);
+    return worker.fetch(new Request('https://eshop-storefront.workers.dev/api/payments/paystack/webhook', {
+      method: 'POST', headers: { 'x-paystack-signature': signature }, body
+    }), env, ctx);
+  };
+  const manual = (orderNumber, ctx) => worker.fetch(new Request(`https://eshop-storefront.workers.dev/api/store/orders/${orderNumber}/payment?tenant=shop-a`, {
+    method: 'POST', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ method: 'bank' })
+  }), env, ctx);
+  const ctx = hardeningCtx();
+  // The first order takes 2 of 3 mugs. The second then needs 2 with 1 left: short, so it is flagged.
+  assert.equal((await hook('ESHOP_00000000000000000000000000000004', ctx)).status, 200);
+  const results = await Promise.all([
+    hook('ESHOP_00000000000000000000000000000005', ctx), hook('ESHOP_00000000000000000000000000000005', ctx),
+    manual(second.order_number, ctx), hook('ESHOP_00000000000000000000000000000005', ctx)
+  ]);
+  assert.deepEqual(results.map(response => response.status), [200, 200, 200, 200]);
+  await ctx.settle();
+  assert.equal(rows('SELECT web_stock FROM main_store_inventory')[0].web_stock, 1);
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_inventory_deductions')[0].n, 1);
+  assert.equal(rows("SELECT payment_status FROM storefront_orders WHERE order_number=?", [second.order_number])[0].payment_status, 'paid');
+  // Racing identical settlements raise the stock problem once. If the hand-recorded payment won the race,
+  // the online payment that followed really is a second payment and is reported once as such.
+  assert.equal(rows("SELECT COUNT(*) AS n FROM owner_notifications WHERE kind='attention' AND title LIKE 'Payment received, stock short%'")[0].n, 1, 'one alert for one problem');
+  const paidTwice = rows("SELECT COUNT(*) AS n FROM owner_notifications WHERE kind='attention' AND title LIKE 'Paid twice%'")[0].n;
+  const method = rows('SELECT payment_method FROM storefront_orders WHERE order_number=?', [second.order_number])[0].payment_method;
+  assert.equal(paidTwice, method ? 1 : 0, 'a double-payment alert appears only when the manual record was the first payment, and only once');
+});
+
+test('cancelling an order in parallel gives a discount redemption back exactly once', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ catalog: DISCOUNT_CATALOG });
+  db.run("INSERT INTO discount_codes (tenant_id,code,type,value,used_count,active,created_at,updated_at) VALUES ('shop-a','TEN','percent',10,0,1,'now','now')");
+  const one = await placeHardeningOrder(env, 'shop-a', [{ product_id: 7, quantity: 1 }], { discount_code: 'TEN' });
+  await placeHardeningOrder(env, 'shop-a', [{ product_id: 7, quantity: 1 }], { discount_code: 'TEN' });
+  assert.equal(one.discount_code, 'TEN');
+  assert.equal(rows("SELECT used_count FROM discount_codes WHERE code='TEN'")[0].used_count, 2);
+  const cancel = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=shop-a', {
+    method: 'PATCH', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ order_number: one.order_number, status: 'cancelled' })
+  }), env);
+  const results = await Promise.all([cancel(), cancel(), cancel()]);
+  assert.deepEqual(results.map(response => response.status), [200, 200, 200]);
+  assert.equal(rows("SELECT used_count FROM discount_codes WHERE code='TEN'")[0].used_count, 1);
+});
+
+test('retention keeps long-lived hold counters but prunes everything else that expired', async () => {
+  const { env, rows } = await createHardeningEnv();
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  env.DB.prepare('INSERT INTO rate_limit_counters (key,window_start,count) VALUES (?,?,1)').bind('hold-active:shop-a:recent', nowSeconds - 5 * 86_400).run();
+  env.DB.prepare('INSERT INTO rate_limit_counters (key,window_start,count) VALUES (?,?,1)').bind('hold-active:shop-a:ancient', nowSeconds - 40 * 86_400).run();
+  env.DB.prepare('INSERT INTO rate_limit_counters (key,window_start,count) VALUES (?,?,1)').bind('order-ip:shop-a:old', nowSeconds - 5 * 86_400).run();
+  await worker.scheduled({ cron: '17 3 * * *' }, env, hardeningCtx());
+  assert.deepEqual(rows('SELECT key FROM rate_limit_counters ORDER BY key').map(row => row.key), ['hold-active:shop-a:recent']);
+});
+
+test('a shop that names no hosted theme still serves its last published storefront, and the directory lists only served shops', async () => {
+  const classicCatalog = { ...LITRUS_CATALOG, store: { ...LITRUS_CATALOG.store, website_theme_id: 'classic' } };
+  // Published before the catalogue stopped naming a hosted theme: still served.
+  const published = await createStorefrontHardeningEnv({ catalog: classicCatalog });
+  const page = await storefrontGet(published.env, '/');
+  assert.equal(page.status, 200);
+  assert.match(await page.text(), /LITRUS_LIVE_CATALOG_VERSION/);
+  // Never published: a plain "not available" page, not a 503 and not an empty shell.
+  const never = await createStorefrontHardeningEnv({ catalog: classicCatalog, publish: null });
+  const missing = await storefrontGet(never.env, '/');
+  assert.equal(missing.status, 404);
+  assert.match(await missing.text(), /not available/);
+
+  // The directory (and so sitemap.xml and /shops) lists the shop that serves a page, not the one that does not.
+  const { env, db, TENANTS } = await createStorefrontHardeningEnv({ catalog: classicCatalog });
+  const catalogJson = JSON.stringify(classicCatalog);
+  db.run('INSERT INTO catalog_snapshots (tenant_id,payload,admin_payload,updated_at) VALUES (?,?,?,?)', ['shop-unpublished', catalogJson, catalogJson, PUBLISHED_VERSION]);
+  await TENANTS.put('tenant:shop-unpublished', JSON.stringify({ id: 'shop-unpublished', name: 'Unpublished' }));
+  await TENANTS.put('tenant:main', JSON.stringify({ id: 'main', name: 'Main' }));
+  const directory = await worker.fetch(new Request('https://rrobin.co.ke/shops'), env);
+  assert.equal(directory.status, 200);
+  const html = await directory.text();
+  assert.match(html, /shop-a\.rrobin\.co\.ke/);
+  assert.doesNotMatch(html, /shop-unpublished/);
+
+  // The catalogue moves ahead of the publish: the shop is still served, so it stays listed.
+  db.run("UPDATE catalog_snapshots SET updated_at='2026-03-01T00:00:00.000Z' WHERE tenant_id='shop-a'");
+  await TENANTS.delete('directory:v1');
+  assert.match(await (await worker.fetch(new Request('https://rrobin.co.ke/shops'), env)).text(), /shop-a\.rrobin\.co\.ke/);
+});
+
+test('deleting a shop also drops it from the cached shop directory', async () => {
+  const { env, TENANTS, tokens } = await createHardeningEnv({ tenants: ['shop-a'] });
+  await TENANTS.put('directory:v1', JSON.stringify({ built_at: Date.now(), shops: [{ id: 'shop-a', name: 'A', url: 'https://shop-a.rrobin.co.ke/' }] }));
+  const deleted = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants/shop-a', {
+    method: 'DELETE', headers: ownerHeaders(tokens['shop-a'])
+  }), env);
+  assert.equal(deleted.status, 200);
+  assert.equal(await TENANTS.get('directory:v1'), null);
+});
+
+test('recovering a shop key by admin also revokes the owner tokens minted at sign-in', async () => {
+  const { env, TENANTS } = await createHardeningEnv({ tenants: ['shop-a'], extraEnv: { PUBLISH_TOKEN: 'admin-recovery' } });
+  const tenant = JSON.parse(await TENANTS.get('tenant:shop-a'));
+  await TENANTS.put('tenant:shop-a', JSON.stringify({
+    ...tenant, owner_login_tokens: [{ hash: await sha256HexForTest('login-token'), username: 'owner-shop-a', session: 's', created_at: 'now' }]
+  }));
+  const asLoginToken = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/store/notifications?tenant=shop-a', {
+    headers: ownerHeaders('login-token')
+  }), env);
+  assert.equal((await asLoginToken()).status, 200);
+  const recovered = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants/shop-a/owner-key', {
+    method: 'PUT', headers: ownerHeaders('admin-recovery')
+  }), env);
+  assert.equal(recovered.status, 200);
+  assert.equal((await asLoginToken()).status, 401);
+});
+
+test('every literal SQL statement in worker.js compiles against the fully migrated schema', async () => {
+  const { db } = await createMigratedD1();
+  const source = (await readFile(new URL('../cloudflare/worker.js', import.meta.url), 'utf8')).replace(/\r\n/g, '\n');
+  const failures = [];
+  let compiled = 0;
+  for (const match of source.matchAll(/\.prepare\(\s*(["`])/g)) {
+    const quote = match[1];
+    let index = match.index + match[0].length;
+    let text = '';
+    while (index < source.length && source[index] !== quote) {
+      if (source[index] === '\\') { text += source[index + 1]; index += 2; continue; }
+      text += source[index++];
+    }
+    // Statements built from expressions (table names, joined strings) are skipped; they have their own tests.
+    if (text.includes('${') || !/^\s*[,)]/.test(source.slice(index + 1))) continue;
+    const line = source.slice(0, match.index).split('\n').length;
+    try {
+      db.prepare(text).free();
+      compiled += 1;
+    } catch (error) {
+      failures.push(`worker.js:${line} ${error.message}`);
+    }
+  }
+  assert.deepEqual(failures, []);
+  assert.ok(compiled > 150, `expected to compile 150+ statements, compiled ${compiled}`);
+});
+
+test('a deleted shop never passes its Paystack payout account to whoever later claims the same address', async () => {
+  const { env, db, rows, tokens, TENANTS } = await createHardeningEnv({
+    tenants: ['shop-old', 'shop-keep'],
+    extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_hijack' }
+  });
+  db.run("UPDATE account_tenants SET username='owner-shop-old' WHERE tenant_id='shop-keep'");
+  db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at) VALUES ('shop-old','ACCT_previous_owner','connected','KCB Bank','6789','test',0,'now','now')");
+  db.run("INSERT INTO paystack_owner_defaults (owner_username,source_tenant_id,created_at,updated_at) VALUES ('owner-shop-old','shop-old','now','now')");
+  const deleted = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants/shop-old', {
+    method: 'DELETE', headers: ownerHeaders(tokens['shop-old'])
+  }), env);
+  assert.equal(deleted.status, 200);
+  assert.equal(rows("SELECT COUNT(*) AS n FROM paystack_subaccounts WHERE tenant_id='shop-old'")[0].n, 0);
+  // The tombstone expires; a different account takes the address.
+  await TENANTS.delete('tenant-tombstone:shop-old');
+  await TENANTS.put('session:' + await sha256HexForTest('stranger-session'), JSON.stringify({ username: 'stranger' }));
+  db.run("INSERT INTO accounts (username,password_salt,password_hash,email,created_at) VALUES ('stranger','s','h','stranger@example.test','now')");
+  const claimed = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants', {
+    method: 'PUT', headers: ownerHeaders('stranger-session'), body: JSON.stringify({ id: 'shop-old', name: 'Fresh Shop' })
+  }), env);
+  assert.equal(claimed.status, 201);
+  db.run("INSERT INTO storefront_orders (tenant_id,order_number,idempotency_key,status,customer_name,customer_email,shipping_address,currency,subtotal_cents,discount_cents,shipping_cents,total_cents,items_json,created_at,updated_at,payment_status) VALUES ('shop-old','ORD-HIJACKTEST0001',?,'pending','Pat','pat@customer.example','1 Road','KES',1000,0,0,1000,'[]','now','now','unpaid')", [crypto.randomUUID()]);
+  const stub = stubFetch(async () => new Response('{}', { status: 500 }));
+  try {
+    const initialize = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/payments/paystack/initialize?tenant=shop-old', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.99' },
+      body: JSON.stringify({ order_number: 'ORD-HIJACKTEST0001' })
+    }), env);
+    assert.equal(initialize.status, 409, 'the new shop has no payout account of its own');
+    assert.equal(stub.calls.filter(call => call.url.includes('paystack')).length, 0, 'Paystack is never called with the old account');
+  } finally {
+    stub.restore();
+  }
+});
+
+test('an owner default that survives on a shop whose address is later reused is cleared when the address is claimed again', async () => {
+  const { env, db, rows, TENANTS } = await createHardeningEnv({ tenants: ['shop-x'] });
+  // Simulates rows left behind by an older worker version (before deletion moved the default).
+  db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at) VALUES ('shop-reused','ACCT_leftover','connected','','','test',0,'now','now')");
+  db.run("INSERT INTO paystack_owner_defaults (owner_username,source_tenant_id,created_at,updated_at) VALUES ('someone-else','shop-reused','now','now')");
+  await TENANTS.put('session:' + await sha256HexForTest('newcomer-session'), JSON.stringify({ username: 'newcomer' }));
+  db.run("INSERT INTO accounts (username,password_salt,password_hash,email,created_at) VALUES ('newcomer','s','h','newcomer@example.test','now')");
+  const claimed = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants', {
+    method: 'PUT', headers: ownerHeaders('newcomer-session'), body: JSON.stringify({ id: 'shop-reused', name: 'Reused' })
+  }), env);
+  assert.equal(claimed.status, 201);
+  assert.equal(rows("SELECT COUNT(*) AS n FROM paystack_subaccounts WHERE tenant_id='shop-reused'")[0].n, 0);
+  assert.equal(rows("SELECT COUNT(*) AS n FROM paystack_owner_defaults WHERE source_tenant_id='shop-reused'")[0].n, 0);
+});
+
+test('public write endpoints reject made-up shops before taking a rate-limit slot or writing any row', async () => {
+  const { env, rows } = await createHardeningEnv({ extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_ghost' } });
+  const post = (path, body) => worker.fetch(new Request(`https://eshop-storefront.workers.dev${path}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.50' }, body: JSON.stringify(body)
+  }), env);
+  for (let index = 0; index < 40; index += 1) {
+    const ghost = `ghost-${index}`;
+    assert.equal((await post(`/api/orders?tenant=${ghost}`, { items: [] })).status, 404);
+    assert.equal((await post(`/api/product-holds?tenant=${ghost}`, { items: [] })).status, 404);
+    assert.equal((await post(`/api/discounts/validate?tenant=${ghost}`, { code: 'X', items: [] })).status, 404);
+    assert.equal((await post(`/api/payments/paystack/initialize?tenant=${ghost}`, { order_number: 'ORD-DOESNOTEXIST01' })).status, 404);
+    assert.equal((await post(`/api/service-appointments?tenant=${ghost}`, {})).status, 404);
+  }
+  assert.equal(rows('SELECT COUNT(*) AS n FROM rate_limit_counters')[0].n, 0, 'no counter row for shops that do not exist');
+  // A real shop still gets limited as before.
+  assert.equal((await post('/api/product-holds?tenant=shop-a', { items: [] })).status, 400);
+  assert.equal(rows('SELECT COUNT(*) AS n FROM rate_limit_counters')[0].n, 1);
+});
+
+test('a second payment for an order that is already flagged still alerts the owner once', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_flagged' } });
+  const order = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 2 }]);
+  const reference = 'ESHOP_00000000000000000000000000000006';
+  db.run("UPDATE storefront_orders SET payment_reference=?,payment_subaccount_code='ACCT_test1',payment_status='pending' WHERE order_number=?", [reference, order.order_number]);
+  const manual = await worker.fetch(new Request(`https://eshop-storefront.workers.dev/api/store/orders/${order.order_number}/payment?tenant=shop-a`, {
+    method: 'POST', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ method: 'cash' })
+  }), env, hardeningCtx());
+  assert.equal(manual.status, 200);
+  // Stock ran short at manual settlement: the order is already flagged for something else.
+  db.run("UPDATE storefront_orders SET needs_attention=1,attention_reason='insufficient_stock:TOTE-7' WHERE order_number=?", [order.order_number]);
+  const { body, signature } = await signedPaystackWebhook('sk_test_flagged', reference, 1000);
+  const ctx = hardeningCtx();
+  const deliver = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/payments/paystack/webhook', {
+    method: 'POST', headers: { 'x-paystack-signature': signature }, body
+  }), env, ctx);
+  assert.equal((await deliver()).status, 200);
+  assert.equal((await deliver()).status, 200);
+  await ctx.settle();
+  const row = rows('SELECT * FROM storefront_orders WHERE order_number=?', [order.order_number])[0];
+  assert.equal(row.attention_reason, 'insufficient_stock:TOTE-7;duplicate_payment', 'the earlier reason is kept and the duplicate added');
+  const notes = rows("SELECT title FROM owner_notifications WHERE kind='attention'");
+  assert.equal(notes.length, 1);
+  assert.match(notes[0].title, /Paid twice/);
+});
+
+test('reopening a cancelled order re-reserves its discount, so cancel-reopen-cancel never over-releases', async () => {
+  const { env, db, rows, tokens } = await createHardeningEnv({ catalog: DISCOUNT_CATALOG });
+  db.run("INSERT INTO discount_codes (tenant_id,code,type,value,usage_limit,used_count,active,created_at,updated_at) VALUES ('shop-a','ONCE','percent',10,1,0,1,'now','now')");
+  const patch = (orderNumber, status) => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=shop-a', {
+    method: 'PATCH', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ order_number: orderNumber, status })
+  }), env);
+  const used = () => rows("SELECT used_count FROM discount_codes WHERE code='ONCE'")[0].used_count;
+  const orderA = await placeHardeningOrder(env, 'shop-a', [{ product_id: 7, quantity: 1 }], { discount_code: 'ONCE' });
+  assert.equal(used(), 1);
+  assert.equal((await patch(orderA.order_number, 'cancelled')).status, 200);
+  assert.equal(used(), 0);
+  assert.equal((await patch(orderA.order_number, 'cancelled')).status, 200, 'cancelling twice is harmless');
+  assert.equal(used(), 0);
+  // Reopening takes the redemption back; the code cannot then be used by a new order.
+  assert.equal((await patch(orderA.order_number, 'confirmed')).status, 200);
+  assert.equal(used(), 1);
+  const refused = await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], { discount_code: 'ONCE' }, { ip: '198.51.100.40' }), env);
+  assert.equal(refused.status, 409);
+  // Cancelling again gives it back once, and a new order may use it.
+  assert.equal((await patch(orderA.order_number, 'cancelled')).status, 200);
+  assert.equal(used(), 0);
+  const orderB = await placeHardeningOrder(env, 'shop-a', [{ product_id: 7, quantity: 1 }], { discount_code: 'ONCE' });
+  assert.equal(used(), 1);
+  // A's code is now used by B: A cannot be reopened and stays cancelled; the count is not touched.
+  const blocked = await patch(orderA.order_number, 'pending');
+  assert.equal(blocked.status, 409);
+  assert.equal((await blocked.json()).error_code, 'discount_limit_reached');
+  assert.equal(rows('SELECT status FROM storefront_orders WHERE order_number=?', [orderA.order_number])[0].status, 'cancelled');
+  assert.equal(used(), 1);
+  assert.equal((await patch(orderA.order_number, 'cancelled')).status, 200, 'still cancelled, so no second release');
+  assert.equal(used(), 1);
+  assert.equal(orderB.discount_code, 'ONCE');
+  // Plain status changes on an open order keep working.
+  assert.equal((await patch(orderB.order_number, 'processing')).status, 200);
+  assert.equal(rows('SELECT status FROM storefront_orders WHERE order_number=?', [orderB.order_number])[0].status, 'processing');
+});
+
+test('paying an older checkout link after the order was re-initialised still settles the order', async () => {
+  const { env, rows, db } = await createHardeningEnv({ extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_attempts' } });
+  db.run("INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at) VALUES ('shop-a','ACCT_test1','connected','KCB','1234','test',0,'now','now')");
+  const order = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 1 }]);
+  let verifyStatus = 'abandoned';
+  const stub = stubFetch(async (url, init) => {
+    if (url.includes('transaction/initialize')) {
+      const reference = JSON.parse(init.body).reference;
+      return new Response(JSON.stringify({ data: { authorization_url: `https://checkout.paystack.com/${reference}`, reference } }));
+    }
+    if (url.includes('transaction/verify/')) {
+      const reference = decodeURIComponent(url.split('/verify/')[1]);
+      return new Response(JSON.stringify({ data: {
+        reference, amount: 500, currency: 'KES', status: verifyStatus, domain: 'test', subaccount: { subaccount_code: 'ACCT_test1' }
+      } }));
+    }
+    return undefined;
+  });
+  const initialize = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/payments/paystack/initialize?tenant=shop-a', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.61' },
+    body: JSON.stringify({ order_number: order.order_number })
+  }), env);
+  const verify = reference => worker.fetch(new Request(`https://eshop-storefront.workers.dev/api/payments/paystack/verify?tenant=shop-a&reference=${reference}`), env, hardeningCtx());
+  const sign = async raw => {
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode('sk_test_attempts'), { name: 'HMAC', hash: 'SHA-512' }, false, ['sign']);
+    const digest = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(raw));
+    return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  };
+  const hook = async (reference, ctx, metadata) => {
+    const body = JSON.stringify({ event: 'charge.success', data: {
+      reference, amount: 500, currency: 'KES', status: 'success', domain: 'test',
+      subaccount: { subaccount_code: 'ACCT_test1' }, ...(metadata ? { metadata } : {})
+    } });
+    return worker.fetch(new Request('https://eshop-storefront.workers.dev/api/payments/paystack/webhook', {
+      method: 'POST', headers: { 'x-paystack-signature': await sign(body) }, body
+    }), env, ctx);
+  };
+  try {
+    const first = (await (await initialize()).json()).reference;
+    assert.equal((await (await verify(first)).json()).payment_status, 'failed');
+    const second = (await (await initialize()).json()).reference;
+    assert.notEqual(first, second);
+    assert.equal(rows('SELECT payment_reference FROM storefront_orders WHERE order_number=?', [order.order_number])[0].payment_reference, second);
+    assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_payment_attempts')[0].n, 2);
+    // Verifying the superseded reference as abandoned again must not disturb the current attempt.
+    assert.equal((await (await verify(first)).json()).payment_status, 'pending');
+    assert.equal(rows('SELECT payment_status FROM storefront_orders WHERE order_number=?', [order.order_number])[0].payment_status, 'pending');
+    // The customer finally pays the FIRST link.
+    const ctx = hardeningCtx();
+    assert.equal((await hook(first, ctx)).status, 200);
+    const row = rows('SELECT payment_status,payment_reference,needs_attention FROM storefront_orders WHERE order_number=?', [order.order_number])[0];
+    assert.equal(row.payment_status, 'paid');
+    assert.equal(row.payment_reference, first, 'the reference that was actually paid is adopted');
+    assert.equal(row.needs_attention, 0);
+    // A retry of the same webhook is harmless and silent; paying the second link too is a duplicate.
+    assert.equal((await hook(first, ctx)).status, 200);
+    await ctx.settle();
+    assert.equal(rows("SELECT COUNT(*) AS n FROM owner_notifications WHERE kind='attention'")[0].n, 0);
+    assert.equal((await hook(second, ctx)).status, 200);
+    assert.equal((await hook(second, ctx)).status, 200);
+    await ctx.settle();
+    assert.equal(rows('SELECT attention_reason FROM storefront_orders WHERE order_number=?', [order.order_number])[0].attention_reason, 'duplicate_payment');
+    assert.equal(rows("SELECT COUNT(*) AS n FROM owner_notifications WHERE kind='attention'")[0].n, 1);
+    // A reference nobody knows still gets a 404 (Paystack retries), but the owner hears about it once.
+    const other = await placeHardeningOrder(env, 'shop-a', [{ product_id: 8, quantity: 1 }]);
+    const unmatchedCtx = hardeningCtx();
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const response = await hook('ESHOP_FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', unmatchedCtx,
+        { tenant_id: 'shop-a', order_number: other.order_number });
+      assert.equal(response.status, 404);
+      await unmatchedCtx.settle();
+    }
+    assert.equal(rows("SELECT COUNT(*) AS n FROM owner_notifications WHERE title LIKE 'Unmatched payment%'")[0].n, 1);
+    assert.equal(rows('SELECT attention_reason FROM storefront_orders WHERE order_number=?', [other.order_number])[0].attention_reason, 'unmatched_payment');
+  } finally {
+    stub.restore();
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Contract gaps: optional email, funnel events, public/owner order shapes, orders auth.
+// ---------------------------------------------------------------------------
+test('email is optional only for orders the shop settles itself, and Paystack still needs one', async () => {
+  const { env, rows } = await createHardeningEnv({ extraEnv: { PAYSTACK_SECRET_KEY: 'sk_test_optional_email' } });
+  const place = (extra, ip) => worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], extra, { ip }), env);
+  const noEmail = { customer_email: '' };
+  assert.equal((await place({ ...noEmail, payment_method: 'manual' }, '10.9.0.1')).status, 201);
+  assert.equal((await place({ ...noEmail, payment_method: 'paystack' }, '10.9.0.2')).status, 400);
+  assert.equal((await place({ ...noEmail }, '10.9.0.3')).status, 400, 'older storefronts send no payment_method and keep needing an email');
+  assert.equal((await place({ customer_email: 'not-an-email', payment_method: 'manual' }, '10.9.0.4')).status, 400);
+  assert.equal(rows('SELECT customer_email FROM storefront_orders')[0].customer_email, '');
+  const emailless = rows('SELECT order_number FROM storefront_orders')[0].order_number;
+  const initialize = await worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/payments/paystack/initialize?tenant=shop-a',
+    { method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '10.9.0.9' }, body: JSON.stringify({ order_number: emailless }) }
+  ), env);
+  assert.equal(initialize.status, 409);
+  assert.equal((await initialize.json()).error_code, 'email_required');
+});
+
+test('funnel events are stored and summed next to views and cart adds', async () => {
+  const { env } = await createHardeningEnv();
+  const post = items => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/analytics/events?tenant=shop-a', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '10.9.1.1' }, body: JSON.stringify({ items })
+  }), env);
+  assert.equal((await post([
+    { product_id: 7, type: 'checkout_start', n: 2 },
+    { product_id: 7, type: 'purchase', n: 1 },
+    { product_id: 9, type: 'booking_submitted', n: 1 },
+    { product_id: 7, type: 'view', n: 4 }
+  ])).status, 202);
+  assert.equal((await post([{ product_id: 7, type: 'refund', n: 1 }])).status, 400);
+  const summary = await (await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/analytics/events?tenant=shop-a&days=7', {
+    headers: ownerHeaders('owner-key-for-shop-a')
+  }), env)).json();
+  const byId = Object.fromEntries(summary.product_activity.map(item => [item.product_id, item]));
+  assert.equal(byId['7'].checkout_starts, 2);
+  assert.equal(byId['7'].purchases, 1);
+  assert.equal(byId['7'].views, 4);
+  assert.equal(byId['9'].booking_submissions, 1);
+  assert.equal(byId['7'].booking_submissions, 0);
+});
+
+test('customers never see owner-only order fields; owners see the payment reference', async () => {
+  const { env, tokens } = await createHardeningEnv();
+  const created = await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], { payment_method: 'manual' }, { ip: '10.9.2.1' }), env);
+  const { order } = await created.json();
+  for (const field of ['needs_attention', 'attention_reason', 'payment_method', 'payment_reference', 'manual_payment_reference']) {
+    assert.equal(field in order, false, `${field} must not be in the customer response`);
+  }
+  const paid = await worker.fetch(new Request(`https://eshop-storefront.workers.dev/api/store/orders/${order.order_number}/payment?tenant=shop-a`, {
+    method: 'POST', headers: ownerHeaders(tokens['shop-a']), body: JSON.stringify({ method: 'mobile_money', reference: 'QWE123XYZ' })
+  }), env);
+  assert.equal(paid.status, 200);
+  const owner = (await paid.json()).order;
+  assert.equal(owner.payment_method, 'mobile_money');
+  assert.equal(owner.payment_reference, 'QWE123XYZ');
+  assert.equal(owner.needs_attention, false);
+  const listed = await (await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=shop-a', {
+    headers: ownerHeaders(tokens['shop-a'])
+  }), env)).json();
+  assert.equal(listed.orders[0].payment_reference, 'QWE123XYZ');
+  // A replayed create (same idempotency key) is still the customer shape.
+  const key = crypto.randomUUID();
+  await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { ip: '10.9.2.2', key }), env);
+  const replay = await (await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { ip: '10.9.2.3', key }), env)).json();
+  assert.equal(replay.duplicate, true);
+  assert.equal('needs_attention' in replay.order, false);
+});
+
+test('order list and status changes accept the shop owner key or that shop account session, never another shop', async () => {
+  const { env, tokens, TENANTS } = await createHardeningEnv();
+  const sessionFor = async username => {
+    const token = `session-for-${username}`;
+    await TENANTS.put(`session:${await sha256HexForTest(token)}`, JSON.stringify({ username }));
+    return token;
+  };
+  const list = token => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=shop-a', {
+    headers: token ? ownerHeaders(token) : {}
+  }), env);
+  assert.equal((await list(tokens['shop-a'])).status, 200);
+  assert.equal((await list(await sessionFor('owner-shop-a'))).status, 200, 'the shop own account session works');
+  assert.equal((await list(await sessionFor('owner-shop-b'))).status, 401, 'another shop account session is refused');
+  assert.equal((await list(tokens['shop-b'])).status, 401);
+  assert.equal((await list(null)).status, 401);
+  const created = await worker.fetch(orderRequest('shop-a', [{ product_id: 7, quantity: 1 }], {}, { ip: '10.9.3.1' }), env);
+  const { order } = await created.json();
+  const patch = token => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/orders?tenant=shop-a', {
+    method: 'PATCH', headers: ownerHeaders(token), body: JSON.stringify({ order_number: order.order_number, status: 'confirmed' })
+  }), env);
+  assert.equal((await patch(await sessionFor('owner-shop-b'))).status, 401);
+  assert.equal((await patch(await sessionFor('owner-shop-a'))).status, 200);
 });

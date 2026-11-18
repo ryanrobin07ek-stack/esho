@@ -13935,6 +13935,107 @@ const StudioRenderers = {
     });
   },
 
+  manualPaymentLabel(method) {
+    return ({ cash: "Cash", mobile_money: "Mobile money", bank: "Bank transfer", other: "Other", paystack: "Paystack" })[method] || String(method || "");
+  },
+
+  orderAttentionText(reason) {
+    const text = String(reason || "");
+    const stock = text.match(/^insufficient_stock:(.*)$/);
+    if (stock) {
+      return `Paid, but stock ran short${stock[1] ? ` for ${stock[1].split(",").join(", ")}` : ""}. Contact the customer or restock.`;
+    }
+    if (text.startsWith("paid_after_cancel")) {
+      return "The customer paid for an order you cancelled. Refund the customer or reopen the order.";
+    }
+    if (text.startsWith("duplicate_payment")) {
+      return "This order was marked paid by hand and the customer also paid online. Refund one of the payments.";
+    }
+    return `This order needs your attention${text ? ` (${text})` : ""}.`;
+  },
+
+  renderRemoteOrderRow(order, currency) {
+    const escape = AppUtils.escapeHTML;
+    const orderNumber = escape(order.order_number);
+    const orderCurrency = order.currency || currency;
+    const paid = order.payment_status === "paid";
+    const cancelled = order.status === "cancelled";
+    const attention = order.needs_attention === true;
+    const discountAmount = Number(order.discount) || 0;
+    const paymentLabel = paid
+      ? `paid${order.payment_method ? ` via ${this.manualPaymentLabel(order.payment_method)}` : ""}${order.payment_method && order.payment_reference ? ` (ref ${order.payment_reference})` : ""}`
+      : order.payment_status || "unpaid";
+    return `<article class="studio-list-row studio-order-card studio-online-order-card" data-online-order-row${attention ? " data-needs-attention" : ""}>
+      <div class="studio-order-header"><div><strong>${orderNumber}</strong><span>${escape(order.customer_name || "Customer not recorded")} · ${escape(order.customer_email || "No email")} · ${escape(order.created_at || "Date unavailable")}</span></div><strong class="studio-order-total">${this.formatMainShopMoney(order.total, orderCurrency)}</strong></div>
+      <div class="studio-order-items">${(order.items || []).map(item => `${escape(item.name)} × ${Number(item.quantity) || 0}`).join(" · ") || "No item details"}</div>
+      <div class="studio-order-meta"><span>Payment: ${escape(paymentLabel)}</span><span>Status: ${escape(order.status || "pending")}</span>${discountAmount > 0 ? `<span>Discount${order.discount_code ? ` (${escape(order.discount_code)})` : ""}: -${this.formatMainShopMoney(discountAmount, orderCurrency)}</span>` : ""}</div>
+      ${attention ? `<p class="studio-panel-note" role="alert" data-order-attention><strong>Needs attention.</strong> ${escape(this.orderAttentionText(order.attention_reason))}</p>` : ""}
+      <div class="studio-order-controls"><label>Status<select data-online-order-status="${orderNumber}">${["pending", "confirmed", "processing", "ready", "fulfilled", "cancelled"].map(status => `<option value="${status}" ${order.status === status ? "selected" : ""}>${status}</option>`).join("")}</select></label>
+        <button type="button" class="btn-secondary" data-online-order-update="${orderNumber}">Save status</button></div>
+      ${!paid && !cancelled ? `<div class="studio-order-controls"><label>Payment received<select data-online-order-pay-method>${["cash", "mobile_money", "bank", "other"].map(method => `<option value="${method}">${escape(this.manualPaymentLabel(method))}</option>`).join("")}</select></label>
+        <button type="button" class="btn-secondary" data-online-order-pay="${orderNumber}">Mark paid</button></div>
+        <div class="studio-order-controls" style="grid-template-columns:minmax(0,1fr)"><label>Payment reference (optional)<input data-online-order-pay-ref maxlength="120" autocomplete="off"></label></div>` : ""}
+      </article>`;
+  },
+
+  renderOrderAttentionSummary(orders) {
+    const flagged = (orders || []).filter(order => order.needs_attention === true);
+    return flagged.length
+      ? `<p class="studio-panel-note" role="alert" data-orders-attention><strong>${flagged.length} order${flagged.length === 1 ? "" : "s"} need${flagged.length === 1 ? "s" : ""} attention:</strong> ${flagged.map(order => AppUtils.escapeHTML(order.order_number)).join(", ")}</p>`
+      : "";
+  },
+
+  renderOwnerAlertsPanel(snapshot) {
+    const escape = AppUtils.escapeHTML;
+    const alerts = snapshot.remoteAlerts;
+    const rows = (alerts?.notifications || []).map(alert => `<article class="studio-list-row" data-owner-alert="${escape(alert.id)}"><div><strong>${escape(alert.title)}</strong><span>${escape(alert.body)}</span><small>${escape(alert.created_at || "")}</small></div><div class="studio-row-end"><span>${alert.read_at ? "" : "New"}</span></div></article>`).join("");
+    const note = snapshot.remoteAlertsError
+      ? escape(snapshot.remoteAlertsError)
+      : alerts ? `${alerts.unread_count} unread alert${alerts.unread_count === 1 ? "" : "s"}.` : "New orders, booking requests, holds and payments that need attention appear here.";
+    return `<article class="studio-panel" data-owner-alerts-panel><div class="studio-panel-heading"><h2>Shop alerts</h2><button type="button" class="btn-secondary studio-load-button" data-owner-alerts-load aria-label="Load shop alerts">Load</button></div>
+      <p class="studio-panel-note" data-owner-alerts-status>${note}</p>
+      ${rows || `<p class="store-workspace-empty">No shop alerts loaded.</p>`}
+      ${alerts?.unread_count ? `<button type="button" class="btn-secondary" data-owner-alerts-read-all>Mark all read</button>` : ""}</article>`;
+  },
+
+  renderDiscountPanel(snapshot) {
+    const escape = AppUtils.escapeHTML;
+    const currency = snapshot.currency || "KES";
+    const discounts = Array.isArray(snapshot.remoteDiscounts) ? snapshot.remoteDiscounts : [];
+    const rows = discounts.map(discount => {
+      const offer = discount.type === "percent"
+        ? `${Number(discount.value)}% off`
+        : `${this.formatMainShopMoney(Number(discount.value) / 100, currency)} off`;
+      const details = [
+        offer,
+        discount.min_order_cents ? `min spend ${this.formatMainShopMoney(Number(discount.min_order_cents) / 100, currency)}` : "",
+        `used ${Number(discount.used_count) || 0}${discount.usage_limit == null ? "" : ` of ${Number(discount.usage_limit)}`}`,
+        discount.ends_at ? `expires ${String(discount.ends_at).slice(0, 10)}` : "",
+        discount.active ? "active" : "disabled"
+      ].filter(Boolean).join(" · ");
+      const code = escape(discount.code);
+      return `<article class="studio-list-row" data-discount-row="${code}"><div><strong>${code}</strong><span>${escape(details)}</span></div><div class="studio-row-end">
+        <button type="button" class="btn-secondary" data-discount-toggle="${code}" data-discount-active="${discount.active ? "1" : "0"}">${discount.active ? "Disable" : "Enable"}</button>
+        <button type="button" class="btn-secondary" data-discount-delete="${code}">Delete</button></div></article>`;
+    }).join("");
+    const note = snapshot.remoteDiscountsError
+      ? escape(snapshot.remoteDiscountsError)
+      : snapshot.remoteDiscounts ? `${discounts.length} discount code${discounts.length === 1 ? "" : "s"}. Customers enter a code at checkout; shipping is never discounted.` : "Create codes customers can enter at checkout.";
+    return `<article class="studio-panel" data-discounts-panel><div class="studio-panel-heading"><h2>Discount codes</h2><button type="button" class="btn-secondary studio-load-button" data-discounts-load aria-label="Load discount codes">Load</button></div>
+      <p class="studio-panel-note" data-discounts-status>${note}</p>
+      <form class="store-workspace-form" data-discount-form>
+        <label>Code<input name="code" required minlength="2" maxlength="32" pattern="[A-Za-z0-9_\\-]{2,32}" autocomplete="off"></label>
+        <label>Type<select name="type"><option value="percent">Percent off</option><option value="fixed">Fixed amount off (${escape(currency)})</option></select></label>
+        <label>Value (percent, or amount in ${escape(currency)})<input name="value" type="number" min="1" step="any" required></label>
+        <label>Minimum spend in ${escape(currency)} (optional)<input name="min_order" type="number" min="0" step="any"></label>
+        <label>Expires on (optional)<input name="ends_at" type="date"></label>
+        <label>Usage limit (optional)<input name="usage_limit" type="number" min="1" step="1"></label>
+        <button type="submit" class="btn-primary">Add discount code</button>
+        <p role="status" aria-live="polite"></p>
+      </form>
+      ${rows || `<p class="store-workspace-empty">No discount codes loaded.</p>`}</article>`;
+  },
+
   renderMainShopContent(path, snapshot, skipBusinessLens = false) {
     const { products, categories, sales, posCategories } = snapshot;
     const activeTenant = AppController.getActiveTenant();
@@ -14009,13 +14110,7 @@ const StudioRenderers = {
       const status = String(order.status || "awaiting payment").replaceAll("_", " ");
       return `<article class="studio-list-row studio-order-card"><div><strong>${AppUtils.escapeHTML(order.order_number || `WEB-${order.id}`)}</strong><span>${AppUtils.escapeHTML(order.customer_name || "Web customer")} · ${AppUtils.escapeHTML(order.created_at || "Date unavailable")}</span></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(amount, order.currency || currency)}</strong><span>${AppUtils.escapeHTML(status)}</span></div></article>`;
     }).join("") || `<p class="store-workspace-empty">No web orders recorded yet.</p>`;
-    const remoteOrderRows = (snapshot.remoteOrders || []).map(order => `<article class="studio-list-row studio-order-card studio-online-order-card" data-online-order-row>
-      <div class="studio-order-header"><div><strong>${AppUtils.escapeHTML(order.order_number)}</strong><span>${AppUtils.escapeHTML(order.customer_name || "Customer not recorded")} · ${AppUtils.escapeHTML(order.customer_email || "No email")} · ${AppUtils.escapeHTML(order.created_at || "Date unavailable")}</span></div><strong class="studio-order-total">${this.formatMainShopMoney(order.total, order.currency)}</strong></div>
-      <div class="studio-order-items">${(order.items || []).map(item => `${AppUtils.escapeHTML(item.name)} × ${Number(item.quantity) || 0}`).join(" · ") || "No item details"}</div>
-      <div class="studio-order-meta"><span>Payment: ${AppUtils.escapeHTML(order.payment_status || "unpaid")}</span><span>Status: ${AppUtils.escapeHTML(order.status || "pending")}</span></div>
-      <div class="studio-order-controls"><label>Status<select data-online-order-status="${AppUtils.escapeHTML(order.order_number)}">${["pending", "confirmed", "processing", "ready", "fulfilled", "cancelled"].map(status => `<option value="${status}" ${order.status === status ? "selected" : ""}>${status}</option>`).join("")}</select></label>
-        <button type="button" class="btn-secondary" data-online-order-update="${AppUtils.escapeHTML(order.order_number)}">Save status</button></div>
-      </article>`).join("") || `<p class="store-workspace-empty">No server-backed orders loaded.</p>`;
+    const remoteOrderRows = (snapshot.remoteOrders || []).map(order => this.renderRemoteOrderRow(order, currency)).join("") || `<p class="store-workspace-empty">No server-backed orders loaded.</p>`;
     const businessOrderRows = [...sales].sort((a, b) => String(b.date).localeCompare(String(a.date))).map(sale =>
       `<article class="studio-list-row studio-order-card"><div><strong>${AppUtils.escapeHTML(sale.reference)}</strong><span>${AppUtils.escapeHTML(sale.customerName || "Customer not recorded")} · ${AppUtils.escapeHTML(sale.date || "Date unavailable")}</span><small>${AppUtils.escapeHTML(sale.channel)} · ${sale.itemCount} item${sale.itemCount === 1 ? "" : "s"}</small></div><div class="studio-row-end"><strong>${this.formatMainShopMoney(sale.total, sale.currency || currency)}</strong><span>${AppUtils.escapeHTML(sale.status)}</span></div></article>`
     ).join("") || `<p class="store-workspace-empty">No business orders or POS receipts recorded yet.</p>`;
@@ -14098,7 +14193,9 @@ const StudioRenderers = {
         return `<section class="studio-workspace-section">
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders</h2><button type="button" class="btn-secondary studio-load-button" data-business-online-orders-load aria-label="Load online orders">Load</button></div>
             <p class="studio-panel-note" data-online-orders-status>Orders and payment status are stored privately for this shop.</p>
-            ${orderRows(orders)}${remoteOrderRows}</article>
+            ${this.renderOrderAttentionSummary(snapshot.remoteOrders)}${orderRows(orders)}${remoteOrderRows}</article>
+          ${this.renderOwnerAlertsPanel(snapshot)}
+          ${this.renderDiscountPanel(snapshot)}
         </section>`;
       }
       if (page.route === "/account/web/studio/store/bookings") {
@@ -14134,7 +14231,7 @@ const StudioRenderers = {
       }
       if (page.section.title === "Websites") return this.renderWebStudioWebsiteTool(page);
       if (page.route === "/account/web/studio/crm/notifications") {
-        return `<section class="studio-workspace-section"><article class="studio-panel">
+        return `<section class="studio-workspace-section">${this.renderOwnerAlertsPanel(snapshot)}<article class="studio-panel">
           <span class="studio-workspace-kicker">CUSTOMER NOTIFICATIONS</span><h2>Website notifications</h2>
           <p class="studio-panel-note">Customers choose whether to receive browser notifications. Push delivery requires an active notification service and customer opt-in. Broadcasts are sent immediately to every opted-in device.</p>
           <div class="studio-dashboard-grid"><button type="button" class="btn-primary" data-enable-notifications>Enable notifications on this device</button><button type="button" class="btn-secondary" data-disable-notifications>Turn off notifications on this device</button></div>
@@ -14462,7 +14559,9 @@ const StudioRenderers = {
         ${view === "orders" ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Business orders and POS receipts</h2><span>${sales.length} recorded</span></div>${businessOrderRows}</article>
           <article class="studio-panel"><div class="studio-panel-heading"><h2>Online order management</h2><button type="button" class="btn-secondary studio-load-button" data-business-online-orders-load aria-label="Load online orders">Load</button></div>
             <p class="studio-panel-note" data-online-orders-status>${snapshot.remoteOrdersError ? AppUtils.escapeHTML(snapshot.remoteOrdersError) : "Orders and payment status are stored privately for this shop."}</p>
-            ${remoteOrderRows}</article>`
+            ${this.renderOrderAttentionSummary(snapshot.remoteOrders)}${remoteOrderRows}</article>
+          ${this.renderOwnerAlertsPanel(snapshot)}
+          ${this.renderDiscountPanel(snapshot)}`
           : view === "sales" ? `<div class="studio-metric-grid">${metric("Order value", this.formatMainShopMoney(webSales.reduce((sum, sale) => sum + sale.total, 0), currency))}${metric("Paid orders", paidSales.length)}${metric("Unpaid orders", orders.filter(order => !["paid", "completed"].includes(String(order.status || "").toLowerCase())).length)}</div><article class="studio-panel"><div class="studio-panel-heading"><h2>Sales history</h2></div>${orderRows(orders)}</article>`
             : `<article class="studio-panel"><div class="studio-panel-heading"><h2>Payment activity · all channels</h2></div>${paymentActivityRows || `<p class="store-workspace-empty">No payment activity recorded yet.</p>`}</article>`}
         </section>`;
@@ -15086,11 +15185,12 @@ const StudioRenderers = {
         const status = container.querySelector("[data-online-orders-status]");
         button.disabled = true;
         try {
-          await window.EshopInventoryBridge.updateStorefrontOrder(tenantId, orderNumber, statusSelect.value);
+          const updated = await window.EshopInventoryBridge.updateStorefrontOrder(tenantId, orderNumber, statusSelect.value);
+          const saved = updated?.order?.order_number === orderNumber ? updated.order : null;
           const updatedSnapshot = {
             ...snapshot,
             remoteOrders: (snapshot.remoteOrders || []).map(order =>
-              order.order_number === orderNumber ? { ...order, status: statusSelect.value } : order)
+              order.order_number === orderNumber ? (saved || { ...order, status: statusSelect.value }) : order)
           };
           if (window.BusinessLens?.mergeStorefrontOrders) {
             updatedSnapshot.sales = window.BusinessLens.mergeStorefrontOrders(
@@ -15107,6 +15207,188 @@ const StudioRenderers = {
           button.disabled = false;
         }
       });
+    });
+    const rerenderWith = (updatedSnapshot, statusSelector, text) => {
+      container.innerHTML = this.renderMainShopContent(path, updatedSnapshot);
+      const updatedStatus = statusSelector ? container.querySelector(statusSelector) : null;
+      if (updatedStatus && text) updatedStatus.textContent = text;
+      this.bindBusinessCloudActions(container, path, updatedSnapshot, tenantId);
+    };
+    const withOrders = (remoteOrders) => {
+      const updatedSnapshot = { ...snapshot, remoteOrders };
+      if (window.BusinessLens?.mergeStorefrontOrders) {
+        updatedSnapshot.sales = window.BusinessLens.mergeStorefrontOrders(snapshot.sales, remoteOrders);
+      }
+      return updatedSnapshot;
+    };
+    container.querySelectorAll("[data-online-order-pay]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const orderNumber = button.dataset.onlineOrderPay;
+        const row = button.closest("[data-online-order-row]");
+        const method = row?.querySelector("[data-online-order-pay-method]")?.value || "";
+        const reference = String(row?.querySelector("[data-online-order-pay-ref]")?.value || "").trim();
+        const status = container.querySelector("[data-online-orders-status]");
+        if (!window.confirm(`Record ${orderNumber} as paid (${this.manualPaymentLabel(method)})? This marks the order paid and deducts its stock.`)) return;
+        button.disabled = true;
+        try {
+          const result = await window.EshopInventoryBridge.recordStorefrontOrderPayment(
+            tenantId, orderNumber, { method, ...(reference ? { reference } : {}) }
+          );
+          const saved = result.order && result.order.order_number === orderNumber ? result.order : null;
+          rerenderWith(
+            withOrders((snapshot.remoteOrders || []).map(order => order.order_number === orderNumber
+              ? (saved || { ...order, payment_status: "paid", payment_method: method })
+              : order)),
+            "[data-online-orders-status]",
+            result.duplicate
+              ? `${orderNumber} was already marked paid.`
+              : result.needs_attention
+                ? `${orderNumber} marked paid, but stock ran short. Review it below.`
+                : `${orderNumber} marked paid.`
+          );
+        } catch (error) {
+          if (status) status.textContent = error instanceof Error ? error.message : "Could not record this payment.";
+          button.disabled = false;
+        }
+      });
+    });
+    container.querySelector("[data-discounts-load]")?.addEventListener("click", async event => {
+      const button = event.currentTarget;
+      const status = container.querySelector("[data-discounts-status]");
+      button.disabled = true;
+      if (status) status.textContent = "Loading discount codes…";
+      try {
+        const result = await window.EshopInventoryBridge.listDiscountCodes(tenantId);
+        const updatedSnapshot = { ...snapshot, remoteDiscounts: Array.isArray(result.discounts) ? result.discounts : [] };
+        delete updatedSnapshot.remoteDiscountsError;
+        rerenderWith(updatedSnapshot);
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : "Could not load discount codes.";
+        button.disabled = false;
+      }
+    });
+    container.querySelector("[data-discount-form]")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const status = form.querySelector('[role="status"]');
+      const submit = form.querySelector('button[type="submit"]');
+      const data = new FormData(form);
+      const type = data.get("type") === "fixed" ? "fixed" : "percent";
+      const entered = Number(data.get("value"));
+      const value = type === "percent" ? entered : Math.round(entered * 100);
+      if (!Number.isSafeInteger(value) || value < 1 || (type === "percent" && value > 100)) {
+        if (status) status.textContent = type === "percent"
+          ? "A percent discount must be a whole number from 1 to 100."
+          : "Enter a fixed discount of at least one cent.";
+        return;
+      }
+      const minOrder = Math.round((Number(data.get("min_order")) || 0) * 100);
+      const limitText = String(data.get("usage_limit") || "").trim();
+      const usageLimit = limitText ? Number(limitText) : null;
+      if (!Number.isSafeInteger(minOrder) || minOrder < 0 ||
+          (usageLimit !== null && (!Number.isSafeInteger(usageLimit) || usageLimit < 1))) {
+        if (status) status.textContent = "Minimum spend must be 0 or more and the usage limit a whole number of at least 1.";
+        return;
+      }
+      const endsText = String(data.get("ends_at") || "").trim();
+      const endsAt = endsText ? new Date(`${endsText}T23:59:59`) : null;
+      if (endsAt && !Number.isFinite(endsAt.getTime())) {
+        if (status) status.textContent = "Choose a valid expiry date.";
+        return;
+      }
+      const body = {
+        code: String(data.get("code") || "").trim().toUpperCase(),
+        type,
+        value,
+        min_order_cents: minOrder,
+        usage_limit: usageLimit,
+        active: true,
+        ...(endsAt ? { ends_at: endsAt.toISOString() } : {})
+      };
+      if (submit) submit.disabled = true;
+      if (status) status.textContent = "Saving discount code…";
+      try {
+        const result = await window.EshopInventoryBridge.createDiscountCode(tenantId, body);
+        const updatedSnapshot = {
+          ...snapshot,
+          remoteDiscounts: [result.discount, ...(snapshot.remoteDiscounts || []).filter(item => item.code !== result.discount.code)]
+        };
+        delete updatedSnapshot.remoteDiscountsError;
+        rerenderWith(updatedSnapshot, "[data-discounts-status]", `${result.discount.code} created.`);
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : "Could not save this discount code.";
+        if (submit) submit.disabled = false;
+      }
+    });
+    container.querySelectorAll("[data-discount-toggle]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const code = button.dataset.discountToggle;
+        const status = container.querySelector("[data-discounts-status]");
+        button.disabled = true;
+        try {
+          const result = await window.EshopInventoryBridge.updateDiscountCode(
+            tenantId, { code, active: button.dataset.discountActive !== "1" }
+          );
+          rerenderWith({
+            ...snapshot,
+            remoteDiscounts: (snapshot.remoteDiscounts || []).map(item => item.code === code ? result.discount : item)
+          }, "[data-discounts-status]", `${code} ${result.discount.active ? "enabled" : "disabled"}.`);
+        } catch (error) {
+          if (status) status.textContent = error instanceof Error ? error.message : "Could not update this discount code.";
+          button.disabled = false;
+        }
+      });
+    });
+    container.querySelectorAll("[data-discount-delete]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const code = button.dataset.discountDelete;
+        const status = container.querySelector("[data-discounts-status]");
+        if (!window.confirm(`Delete discount code ${code}? Customers will no longer be able to use it.`)) return;
+        button.disabled = true;
+        try {
+          await window.EshopInventoryBridge.deleteDiscountCode(tenantId, code);
+          rerenderWith({
+            ...snapshot,
+            remoteDiscounts: (snapshot.remoteDiscounts || []).filter(item => item.code !== code)
+          }, "[data-discounts-status]", `${code} deleted.`);
+        } catch (error) {
+          if (status) status.textContent = error instanceof Error ? error.message : "Could not delete this discount code.";
+          button.disabled = false;
+        }
+      });
+    });
+    container.querySelector("[data-owner-alerts-load]")?.addEventListener("click", async event => {
+      const button = event.currentTarget;
+      const status = container.querySelector("[data-owner-alerts-status]");
+      button.disabled = true;
+      if (status) status.textContent = "Loading shop alerts…";
+      try {
+        const updatedSnapshot = { ...snapshot, remoteAlerts: await window.BusinessNotifications.owner.list(tenantId) };
+        delete updatedSnapshot.remoteAlertsError;
+        rerenderWith(updatedSnapshot);
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : "Could not load shop alerts.";
+        button.disabled = false;
+      }
+    });
+    container.querySelector("[data-owner-alerts-read-all]")?.addEventListener("click", async event => {
+      const button = event.currentTarget;
+      const status = container.querySelector("[data-owner-alerts-status]");
+      button.disabled = true;
+      try {
+        await window.BusinessNotifications.owner.markRead(tenantId, "all");
+        const readAt = new Date().toISOString();
+        rerenderWith({
+          ...snapshot,
+          remoteAlerts: {
+            unread_count: 0,
+            notifications: (snapshot.remoteAlerts?.notifications || []).map(alert => ({ ...alert, read_at: alert.read_at || readAt }))
+          }
+        }, "[data-owner-alerts-status]", "All alerts marked read.");
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : "Could not mark alerts read.";
+        button.disabled = false;
+      }
     });
     container.querySelector("[data-online-appointments-load]")?.addEventListener("click", async event => {
       const button = event.currentTarget;
@@ -15431,6 +15713,18 @@ const StudioRenderers = {
           load: () => window.EshopInventoryBridge.listStorefrontOrders(activeTenant.id)
         });
       }
+      if (ordersPage) {
+        remoteLoads.push({
+          key: "remoteDiscounts",
+          load: () => window.EshopInventoryBridge.listDiscountCodes(activeTenant.id)
+        });
+      }
+      if (ordersPage || /\/crm\/notifications(?:\/|$)/.test(path)) {
+        remoteLoads.push({
+          key: "remoteAlerts",
+          load: () => window.BusinessNotifications.owner.list(activeTenant.id)
+        });
+      }
       const storefrontAnalyticsPaths = new Set([
         "/account/web", "/account/dashboard",
         "/account/web/studio/dashboard/overview",
@@ -15478,6 +15772,8 @@ const StudioRenderers = {
         if (result.status === "fulfilled") {
           renderSnapshot[key] = key === "remoteOrders"
             ? (Array.isArray(result.value.orders) ? result.value.orders : [])
+            : key === "remoteDiscounts"
+              ? (Array.isArray(result.value.discounts) ? result.value.discounts : [])
             : key === "remoteHolds"
               ? (Array.isArray(result.value.holds) ? result.value.holds : [])
             : key === "remoteAppointments"
@@ -19179,11 +19475,34 @@ const AppController = {
     // Handle initial route
     this.handleRoute(this.currentRoute());
     window.dispatchEvent(new Event("craft:app-ready"));
+    this.startOwnerAlertPolling();
 
     // Browser back / forward buttons
     window.addEventListener("hashchange", () => {
       this.handleRoute(this.currentRoute(), true);
     });
+  },
+
+  // Shows each Worker outbox alert (new order, booking, hold, paid-but-short-stock) once.
+  startOwnerAlertPolling() {
+    const owner = window.BusinessNotifications?.owner;
+    if (!owner || this.ownerAlertTimer) return;
+    const check = async () => {
+      if (document.visibilityState === "hidden") return;
+      const tenantId = this.getActiveTenant().id;
+      const result = await owner.poll(tenantId);
+      if (!result || this.getActiveTenant().id !== tenantId) return;
+      result.fresh.slice(0, 3).forEach(alert =>
+        AppUtils.showToast(alert.title, alert.kind === "attention" ? "danger" : "success"));
+      if (result.fresh.length > 3) {
+        AppUtils.showToast(`${result.fresh.length - 3} more new shop alerts.`);
+      }
+    };
+    this.ownerAlertTimer = window.setInterval(() => void check(), owner.pollIntervalMs);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") void check();
+    });
+    window.setTimeout(() => void check(), 5000);
   },
 
   async syncPendingStorefrontOrders() {
@@ -22226,7 +22545,6 @@ const AppController = {
           customer_name: orderData.customer_name,
           customer_email: orderData.customer_email,
           customer_phone: orderData.customer_phone,
-          discount_cents: Math.round(Number(orderData.discount || 0) * 100),
           hold_ids: holdIds,
           items: cart.map(item => ({ product_id: item.product_id, quantity: Number(item.quantity || 1) }))
         };
@@ -22545,6 +22863,12 @@ const AppController = {
     const tenant = this.getActiveTenant();
     const current = this.tenantCatalogs().find(item => item.tenant_id === tenant.id);
     if (!current) throw new Error("The current shop catalog is not available on this device.");
+    // The live product store is newer than the cached tenant catalog (POS sales and
+    // inventory edits do not refresh the cache), so read stock, status and archived
+    // products from it when it exists.
+    const liveSelect = typeof SQLiteEngine?.select === "function";
+    const currentProducts = liveSelect ? SQLiteEngine.select("products") : current.products || [];
+    const currentInventory = liveSelect ? SQLiteEngine.select("inventory") : current.inventory || [];
     const names = data.categories.map(category => {
       const name = String(category?.name || "").trim();
       if (!name || name.length > 80) throw new Error("A Litrus category name is empty or too long.");
@@ -22558,13 +22882,13 @@ const AppController = {
       categoryIds.set(name.toLocaleLowerCase(), id);
       return { ...(existing || {}), id, name };
     });
-    const products = data.products.map((item, index) => {
+    const builderProducts = data.products.map((item, index) => {
       const name = String(item?.name || "").trim();
       const price = Number(item?.price);
       if (!name || name.length > 120 || !Number.isFinite(price) || price < 0) {
         throw new Error("A Litrus product has an invalid name or price.");
       }
-      const original = current.products.find(product => String(product.id) === String(item.id));
+      const original = currentProducts.find(product => String(product.id) === String(item.id));
       const categoryNames = Array.isArray(item.category_names)
         ? [...new Set(item.category_names.map(value => String(value || "").trim()).filter(Boolean))]
         : typeof item.category_name === "string" && item.category_name.trim()
@@ -22617,6 +22941,13 @@ const AppController = {
         status: original?.status || "active"
       };
     });
+    // Litrus only knows the products the host sent it, and the host never sends
+    // archived ones. Merge them back untouched so an autosave cannot delete them;
+    // they stay hidden from the storefront because every publish path skips them.
+    const builderProductIds = new Set(builderProducts.map(product => String(product.id)));
+    const archivedProducts = currentProducts.filter(product =>
+      product?.status === "archived" && !builderProductIds.has(String(product.id)));
+    const products = [...builderProducts, ...archivedProducts];
     const shop = data.shop;
     const store = {
       ...(current.store || {}),
@@ -22646,13 +22977,13 @@ const AppController = {
       products,
       categories,
       store,
-      inventory: (current.inventory || []).filter(record =>
+      inventory: currentInventory.filter(record =>
         products.some(product => String(product.id) === String(record.product_id)))
     });
     if (isDraftEditor) {
       const draft = StudioRenderers.websiteBuilderDraft();
       draft.categories = categories.map(category => ({ id: category.id, name: category.name }));
-      draft.products = products.map(product => ({
+      draft.products = builderProducts.map(product => ({
         id: product.id,
         source_product_id: product.source_product_id,
         name: product.name,
@@ -22673,7 +23004,7 @@ const AppController = {
       StudioRenderers.saveWebsiteBuilderDraft(draft);
       const signature = JSON.stringify({
         categories: categories.map(category => [String(category.id), category.name]),
-        products: products.map(product => [
+        products: builderProducts.map(product => [
           String(product.id),
           String(product.source_product_id || ""),
           product.name,
@@ -23994,24 +24325,6 @@ const AppController = {
         return;
       }
 
-      // 7. Promo code application
-      if (e.target.id === "btn-apply-promo") {
-        const input = document.getElementById("promo-code-input");
-        const val = input ? input.value.trim().toUpperCase() : "";
-        if (val === "LUXURY20") {
-          window.__ESHOP_APPLIED_DISCOUNT = 50;
-          AppUtils.showToast("Promo Code LUXURY20 applied: $50 off!");
-          this.handleRoute("/bag", false);
-        } else if (val === "WELCOME10") {
-          window.__ESHOP_APPLIED_DISCOUNT = 25;
-          AppUtils.showToast("Promo Code WELCOME10 applied: $25 off!");
-          this.handleRoute("/bag", false);
-        } else {
-          AppUtils.showToast("Invalid promotion code", "danger");
-        }
-        return;
-      }
-
       // 8. Admin Products: Edit
       const editProdBtn = e.target.closest("[data-action='admin-edit-prod']");
       if (editProdBtn) {
@@ -24237,6 +24550,35 @@ window.EshopInventoryBridge = {
     return AppController.cloudflareRequest(
       `/api/orders?tenant=${encodeURIComponent(tenantId)}`,
       { method: "PATCH", body: JSON.stringify({ order_number: orderNumber, status }) }, tenantId
+    );
+  },
+  recordStorefrontOrderPayment(tenantId, orderNumber, payment) {
+    return AppController.cloudflareRequest(
+      `/api/store/orders/${encodeURIComponent(orderNumber)}/payment?tenant=${encodeURIComponent(tenantId)}`,
+      { method: "POST", body: JSON.stringify(payment) }, tenantId
+    );
+  },
+  listDiscountCodes(tenantId) {
+    return AppController.cloudflareRequest(
+      `/api/store/discounts?tenant=${encodeURIComponent(tenantId)}`, {}, tenantId
+    );
+  },
+  createDiscountCode(tenantId, discount) {
+    return AppController.cloudflareRequest(
+      `/api/store/discounts?tenant=${encodeURIComponent(tenantId)}`,
+      { method: "POST", body: JSON.stringify(discount) }, tenantId
+    );
+  },
+  updateDiscountCode(tenantId, discount) {
+    return AppController.cloudflareRequest(
+      `/api/store/discounts?tenant=${encodeURIComponent(tenantId)}`,
+      { method: "PATCH", body: JSON.stringify(discount) }, tenantId
+    );
+  },
+  deleteDiscountCode(tenantId, code) {
+    return AppController.cloudflareRequest(
+      `/api/store/discounts?tenant=${encodeURIComponent(tenantId)}&code=${encodeURIComponent(code)}`,
+      { method: "DELETE" }, tenantId
     );
   },
   listStorefrontHolds(tenantId) {

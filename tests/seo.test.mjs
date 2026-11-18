@@ -196,8 +196,19 @@ test('long descriptions are cut at a word boundary within 155 characters', () =>
 
 // ---- End to end through the real worker ----
 
+// The hosted classic storefront is gone: a shop is only served from a page it published (Litrus Mixer here,
+// whose product pages have real URLs). The catalogue still says "classic": the published page wins.
+const LITRUS_SHELL = SHELL.replace('</body>', '<script>window.LITRUS_LIVE_CATALOG_VERSION=1;</script></body>');
+const PUBLISHED_KEY = 'published-sites/mama/litrus-mixer/v1.html';
+const publishedPointer = (tenantId, themeId = 'litrus-mixer') => ({
+  key: `published-sites/${tenantId}/${themeId}/v1.html`, themeId, catalogUpdatedAt: 'v1'
+});
+
 function makeEnv(catalog) {
-  const tenants = new Map([['tenant:mama', JSON.stringify({ id: 'mama', name: 'Mama Shoes', catalog_updated_at: 'v1' })]]);
+  const tenants = new Map([
+    ['tenant:mama', JSON.stringify({ id: 'mama', name: 'Mama Shoes', catalog_updated_at: 'v1' })],
+    ['published-theme:mama', JSON.stringify(publishedPointer('mama'))]
+  ]);
   return {
     TENANTS: {
       async get(key, type) { const value = tenants.get(key); return value == null ? null : (type === 'json' ? JSON.parse(value) : value); },
@@ -217,7 +228,16 @@ function makeEnv(catalog) {
         }) };
       }
     },
-    BUSINESS_ARCHIVE: {},
+    BUSINESS_ARCHIVE: {
+      async get(key) {
+        return key === PUBLISHED_KEY ? {
+          body: LITRUS_SHELL,
+          customMetadata: { themeId: 'litrus-mixer', catalogUpdatedAt: 'v1' },
+          httpMetadata: { contentType: 'text/html; charset=utf-8' }
+        } : null;
+      },
+      async put() {}
+    },
     ASSETS: { async fetch() { return new Response(SHELL, { headers: { 'Content-Type': 'text/html; charset=utf-8', ETag: '"x"' } }); } }
   };
 }
@@ -247,10 +267,11 @@ function makePlatformEnv() {
     ['draft', catalogFor('Draft Shop', { website_theme_id: 'craft-main-storefront' })]
   ]);
   const kv = new Map([
-    ['published-theme:kamau', {
-      themeId: 'craft-main-storefront',
-      catalogUpdatedAt: 'v1'
-    }]
+    ['published-theme:mama', publishedPointer('mama')],
+    ['published-theme:kamau', publishedPointer('kamau', 'craft-main-storefront')],
+    // hidden and empty are excluded for their own reasons; give them a page so only that reason applies.
+    ['published-theme:hidden', publishedPointer('hidden')],
+    ['published-theme:empty', publishedPointer('empty')]
   ]);
   return {
     kv,
@@ -381,6 +402,7 @@ test('shop directory refreshes after its cache expires to include newly publishe
   const cached = JSON.parse(env.kv.get('directory:v1'));
   env.kv.set('directory:v1', JSON.stringify({ ...cached, built_at: Date.now() - 2 * 60 * 60 * 1000 }));
   env.catalogs.set('newshop', makeCatalog({ name: 'New Shop' }));
+  env.kv.set('published-theme:newshop', publishedPointer('newshop'));
 
   const xml = await (await getRoot(env, '/sitemap.xml')).text();
   assert.ok(xml.includes('https://newshop.rrobin.co.ke/sitemap.xml'));
