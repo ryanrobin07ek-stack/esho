@@ -2786,3 +2786,78 @@ test("a published product shows its details, its sold-out sizes and a browse pri
     window.close();
   }
 });
+
+test("a published product page reprices itself as the shopper picks each option", () => {
+  const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/", runScripts: "outside-only" });
+  const { window } = dom;
+  const data = {
+    shop: { key: "repricing-shop", cur: "KES", products: [] },
+    pages: {
+      home: '<main class="sp-main"><section class="prods"></section></main>',
+      shop: '<main class="sp-main"><div class="sp-top"><h1></h1><p></p></div><section class="prods"></section></main>',
+      "p/template": '<main class="sp-main"><div class="sp-top"><h1></h1></div><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p><div class="sp-buy"><button data-act="addqty">Add to cart</button></div></div></div></main>'
+    },
+    templates: { productCard: '<article data-pid=""><h3 class="p-title"></h3><div class="p-price"></div></article>' }
+  };
+  window.__ESHOP_THEME_CATALOG__ = {
+    categories: [{ id: 1, name: "Shirts", slug: "shirts" }],
+    store: { name: "Repricing Shop", currency: "KES", offer_type: "products" },
+    products: [{
+      id: 1, name: "Poplin Shirt", slug: "poplin-shirt", price: 1000, stock: 7, category_id: 1,
+      images: [], description: "A shirt.",
+      option1_name: "Size", option2_name: "Colour",
+      sizes: ["S", "M", "L"], colors: ["Red"],
+      variants: [
+        { id: "vS", option1_value: "S", option2_value: "Red", size: "S", color: "Red", price: 1000, stock: 4 },
+        { id: "vM", option1_value: "M", option2_value: "Red", size: "M", color: "Red", price: 1200, stock: 3 },
+        { id: "vL", option1_value: "L", option2_value: "Red", size: "L", color: "Red", price: 1500, stock: 0 }
+      ]
+    }]
+  };
+  window.__ESHOP_TRACK_STOREFRONT_EVENT__ = () => {};
+  let pageFor = () => "";
+  window.SPRT = options => {
+    pageFor = options.page;
+    window.document.getElementById("store").innerHTML = options.page("shop");
+    return { go(route) { window.document.getElementById("store").innerHTML = options.page(route); } };
+  };
+  try {
+    window.eval(runtime);
+    window.litrusStartLiveStore(data);
+    // A published page is rebuilt from HTML, so the picker is driven by delegation on #store.
+    const store = window.document.getElementById("store");
+    store.innerHTML = pageFor("p/1");
+    const price = () => store.querySelector(".sp-price").textContent;
+    const button = () => store.querySelector("[data-variant-required]");
+    assert.equal(price(), "KES 1,000", "the base price shows before anything is picked");
+    assert.equal(button().disabled, true, "nothing can be bought before the options are picked");
+
+    const choose = (option, value) => {
+      const select = store.querySelector(`[data-variant-option="${option}"]`);
+      select.value = value;
+      select.dispatchEvent(new window.Event("change", { bubbles: true }));
+    };
+    choose("color", "Red");
+    choose("size", "M");
+    assert.equal(price(), "KES 1,200", "the medium shirt costs more, and the page says so");
+    assert.equal(button().dataset.variantId, "vM");
+    assert.equal(button().disabled, false);
+
+    choose("size", "S");
+    assert.equal(price(), "KES 1,000");
+    assert.equal(button().dataset.variantId, "vS");
+
+    // The sold-out size still shows its price, and still cannot be bought.
+    choose("size", "L");
+    assert.equal(price(), "KES 1,500");
+    assert.equal(button().disabled, true);
+
+    // Clearing an option goes back to the base price rather than keeping a stale one.
+    choose("size", "");
+    assert.equal(price(), "KES 1,000");
+    assert.equal(button().dataset.variantId, undefined);
+    assert.equal(button().disabled, true);
+  } finally {
+    window.close();
+  }
+});

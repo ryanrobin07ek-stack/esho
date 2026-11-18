@@ -6,8 +6,10 @@ import test from "node:test";
 import {
   bindProductTaxonomyFields,
   createProductTaxonomyFields,
+  findClosestProductTaxonomyCategory,
   loadProductTaxonomy,
-  readProductTaxonomyFields
+  readProductTaxonomyFields,
+  searchProductTaxonomyCategories
 } from "../src/product-taxonomy.js";
 const {
   bindProductTaxonomyFields: bindRetryableTaxonomyFields,
@@ -147,12 +149,42 @@ test("category picker lets the merchant save a custom category when needed", asy
   assert.ok(addCustom);
   addCustom.click();
 
-  assert.deepEqual(readProductTaxonomyFields(form), {
-    taxonomyCategoryId: "",
-    taxonomyCategoryName: "",
-    taxonomyCustomCategory: "My handmade footwear",
-    taxonomyAttributes: []
-  });
+  // The owner keeps their own wording, and the closest standard category lends its attributes
+  // so the product page is not left blank.
+  const saved = readProductTaxonomyFields(form);
+  assert.equal(saved.taxonomyCustomCategory, "My handmade footwear");
+  assert.match(saved.taxonomyCategoryName, /Footwear$/);
+  assert.ok(saved.taxonomyCategoryId);
+  assert.ok(widget.closest("form").querySelectorAll("[data-taxonomy-attribute]").length > 0);
+  assert.match(
+    widget.querySelector("[data-taxonomy-selected]").textContent,
+    /Custom: My handmade footwear/,
+    "the owner must still see their own category name"
+  );
+});
+
+test("a shop owner's own category wording still finds the standard attributes", () => {
+  // Shop owners write "used shoes", not "Apparel & Accessories > Shoes". Dropping the describing
+  // words from the front is what finds the real category.
+  const closest = name => findClosestProductTaxonomyCategory(taxonomy.categories, name)?.fullName || null;
+  assert.equal(closest("used shoes"), "Apparel & Accessories > Shoes");
+  assert.equal(closest("Shoes"), "Apparel & Accessories > Shoes");
+  assert.equal(closest("mens leather jackets"), closest("jackets"));
+  assert.match(closest("second hand phones"), /^Electronics/);
+  assert.equal(closest("qwxz plorb"), null, "a name that matches nothing stays the owner's own");
+  assert.equal(closest(""), null);
+  assert.equal(findClosestProductTaxonomyCategory(null, "shoes"), null);
+});
+
+test("search offers whole-word matches before words that merely contain the query", () => {
+  const ranked = query => searchProductTaxonomyCategories(taxonomy.categories, query, 5).map(c => c.name);
+  const phones = ranked("phones");
+  assert.ok(phones.length);
+  assert.ok(
+    phones.every(name => name.toLowerCase().split(/[^a-z0-9]+/).includes("phones")),
+    `Mellophones must not outrank real phones: ${phones.join(", ")}`
+  );
+  assert.equal(ranked("shoes")[0], "Shoes", "Hoes must never outrank Shoes");
 });
 
 test("saving a Web custom category keeps its taxonomy selection and reusable category id", async () => {

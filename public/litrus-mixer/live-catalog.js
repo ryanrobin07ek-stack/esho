@@ -2441,7 +2441,43 @@
         if (codeStatus) codeStatus.textContent = "";
       }
     });
+    // The price has to follow the option the shopper picks. The editor preview syncs this in its
+    // own runtime, but a published page only loads this file, and pages are rebuilt from HTML, so
+    // the picker is synced here with every other delegated control.
+    const syncVariantPrice = picker => {
+      const product = data.shop.products.find(item => String(item.id) === String(picker.dataset.productVariantPicker));
+      const variants = Array.isArray(product?.variants) ? product.variants : [];
+      if (!variants.length) return;
+      const selects = [...picker.querySelectorAll("[data-variant-option]")];
+      const optionValue = (variant, select) => String((select.dataset.variantOption === "size"
+        ? variant.option1_value ?? variant.size
+        : variant.option2_value ?? variant.color) ?? "");
+      const chosen = selects.length > 0 && selects.every(select => select.value)
+        ? variants.find(variant => selects.every(select => optionValue(variant, select) === select.value))
+        : null;
+      const info = picker.closest(".sp-info") || picker.closest(".sp-pdp") || root;
+      const priceNode = info.querySelector(".sp-price");
+      if (priceNode) {
+        const amount = chosen && chosen.price !== null && chosen.price !== undefined && chosen.price !== ""
+          ? Number(chosen.price)
+          : Number(product.price);
+        priceNode.textContent = (data.shop.cur ? `${data.shop.cur} ` : "") + amount.toLocaleString("en-US");
+      }
+      info.querySelectorAll("[data-variant-required]").forEach(button => {
+        if (chosen) {
+          button.dataset.variantId = String(chosen.id);
+          button.disabled = Number(chosen.stock) <= 0;
+        } else {
+          delete button.dataset.variantId;
+          button.disabled = true;
+        }
+      });
+    };
     root.addEventListener("change", event => {
+      const picker = event.target instanceof Element
+        ? event.target.closest("[data-product-variant-picker]")
+        : null;
+      if (picker) syncVariantPrice(picker);
       const field = event.target instanceof HTMLInputElement && event.target.form?.id === "spco" ? event.target : null;
       if (field && field.name === "pay") syncCheckoutEmail(field.form);
       if (field && field.name === "dm") {

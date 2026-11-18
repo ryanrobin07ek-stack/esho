@@ -15,6 +15,9 @@ function normalizeCategoryText(value) {
 
 const taxonomySearchCache = new WeakMap();
 
+// Normalized text is space separated, so a whole-word test is a padded substring test.
+const containsWord = (value, query) => ` ${value} `.includes(` ${query} `);
+
 export function searchProductTaxonomyCategories(categories, query, limit = 30) {
   const normalizedQuery = normalizeCategoryText(query);
   if (!normalizedQuery || !Array.isArray(categories) || !Number.isSafeInteger(limit) || limit < 1) return [];
@@ -32,15 +35,21 @@ export function searchProductTaxonomyCategories(categories, query, limit = 30) {
     const { category, name, path } = entry;
     const searchable = [name, ...path];
     if (!queryParts.every(part => searchable.some(value => value.includes(part)))) return null;
+    // A whole word beats a word that merely contains the query: searching "phones" must offer
+    // Mobile Phones before Mellophones, and "shoes" must not land on Hoes.
     const score = name === normalizedQuery ? 1000
       : name.startsWith(normalizedQuery) ? 900
         : path.some(value => value === normalizedQuery) ? 850
-          : name.includes(normalizedQuery) ? 750
-            : path.some(value => value.startsWith(normalizedQuery)) ? 650
-              : 500;
+          : containsWord(name, normalizedQuery) ? 800
+            : name.includes(normalizedQuery) ? 750
+              : path.some(value => value.startsWith(normalizedQuery)) ? 650
+                : path.some(value => containsWord(value, normalizedQuery)) ? 600
+                  : 500;
     return { category, score };
   }).filter(Boolean)
     .sort((left, right) => right.score - left.score
+      || left.category.fullName.split('>').length - right.category.fullName.split('>').length
+      || left.category.name.length - right.category.name.length
       || left.category.fullName.localeCompare(right.category.fullName))
     .slice(0, limit)
     .map(result => result.category);
@@ -54,6 +63,23 @@ export function matchProductTaxonomyCategory(categories, categoryName) {
   return categories.filter(category => normalizeCategoryText(category.name) === normalizedName)
     .sort((left, right) => left.fullName.split('>').length - right.fullName.split('>').length
       || left.fullName.localeCompare(right.fullName))[0] || null;
+}
+
+// Shop owners name their categories the way they speak: "used shoes", "mens leather jackets".
+// An exact match finds none of those, and the search needs every word to appear, so "used" alone
+// used to leave the product with no attributes at all. English puts the head noun last, so drop
+// the describing words from the front until what is left names a real standard category.
+export function findClosestProductTaxonomyCategory(categories, categoryName) {
+  const exact = matchProductTaxonomyCategory(categories, categoryName);
+  if (exact) return exact;
+  const normalized = normalizeCategoryText(categoryName);
+  if (!normalized || !Array.isArray(categories)) return null;
+  const words = normalized.split(/\s+/).filter(Boolean);
+  for (let start = 0; start < words.length; start += 1) {
+    const [match] = searchProductTaxonomyCategories(categories, words.slice(start).join(' '), 1);
+    if (match) return match;
+  }
+  return null;
 }
 
 export function createProductTaxonomyFields({
@@ -175,22 +201,6 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
     const status = widget.querySelector('[data-taxonomy-status]');
     const retry = widget.querySelector('[data-taxonomy-retry]');
     const storeCategorySelect = widget.closest('form')?.querySelector('[data-store-category-select]');
-    // The owner has already said what this product is. The standard categories now follow that
-    // choice instead of making them pick a second time: the match only used to run once, when the
-    // form opened, so choosing a category afterwards left the attributes blank.
-    let loadedTaxonomyCategories = [];
-    storeCategorySelect?.addEventListener('change', () => {
-      if (widget.dataset.taxonomyInitialized !== 'true') return;
-      if (categoryInput.value || customCategoryInput.value) return;
-      const label = String(storeCategorySelect.selectedOptions[0]?.textContent || '').trim();
-      if (!label) return;
-      const matched = matchProductTaxonomyCategory(loadedTaxonomyCategories, label);
-      if (matched) {
-        selectCategory(matched);
-        return;
-      }
-      status.textContent = `No standard attributes match "${label}" yet. Search above to choose one.`;
-    });
     const addPanel = widget.querySelector('[data-taxonomy-add-panel]');
     const addOpen = widget.querySelector('[data-taxonomy-add-open]');
     const addClose = widget.querySelector('[data-taxonomy-add-close]');
@@ -265,16 +275,24 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
         selectCategory(matchedCategory);
         return;
       }
-      categoryInput.value = '';
-      categoryNameInput.value = '';
+      // Keep the owner's own name for the shop, and borrow the closest standard category's
+      // attributes so the product page still shows size, colour and the rest.
+      const closest = findClosestProductTaxonomyCategory(taxonomy?.categories, customCategory);
+      categoryInput.value = closest?.id || '';
+      categoryNameInput.value = closest?.fullName || '';
       customCategoryInput.value = customCategory;
       search.value = '';
       results.innerHTML = '';
       customOffer.innerHTML = '';
-      selected.innerHTML = `<span>Custom: ${escapeHtml(customCategory)}</span><button type="button" data-taxonomy-clear>Clear</button>`;
+      selected.innerHTML = `<span>Custom: ${escapeHtml(customCategory)}</span>${closest
+        ? `<small>Attributes from ${escapeHtml(closest.fullName)}</small>`
+        : ''}<button type="button" data-taxonomy-clear>Clear</button>`;
       attributeFields.innerHTML = '';
+      if (closest) renderAttributeFields(attributeFields, closest, attributesById, initialAttributes);
       initialAttributes = [];
-      status.textContent = 'This custom category will be saved with the product.';
+      status.textContent = closest
+        ? `Using the standard attributes for ${closest.name}. Search above to pick a different match.`
+        : 'This custom category will be saved with the product.';
     };
 
     const saveStoreCategory = async (name, category) => {
@@ -314,7 +332,6 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
       void (taxonomyPromiseOverride || loadProductTaxonomy()).then(data => {
         taxonomy = data;
         categoriesById = new Map(data.categories.map(category => [category.id, category]));
-        loadedTaxonomyCategories = data.categories;
         attributesById = new Map(data.attributes.map(attribute => [attribute.id, attribute]));
         widget.dataset.taxonomyInitialized = 'true';
         const initialCategoryId = widget.dataset.initialCategoryId || '';
@@ -325,12 +342,7 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
         } else if (widget.dataset.initialCustomCategory) {
           selectCustomCategory(widget.dataset.initialCustomCategory);
         } else if (storeCategorySelect?.selectedOptions[0]?.value) {
-          const matchedCategory = matchProductTaxonomyCategory(
-            data.categories,
-            storeCategorySelect.selectedOptions[0].textContent
-          );
-          if (matchedCategory) selectCategory(matchedCategory);
-          else status.textContent = 'No standard attributes match this Store category yet.';
+          selectCustomCategory(storeCategorySelect.selectedOptions[0].textContent);
         } else {
           status.textContent = 'Search by category name to choose a standard category.';
         }
@@ -375,14 +387,12 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
         loadData();
         return;
       }
-      const matchedCategory = matchProductTaxonomyCategory(
-        taxonomy?.categories,
-        storeCategorySelect.selectedOptions[0]?.textContent
-      );
-      selectCategory(matchedCategory);
-      if (!matchedCategory) {
-        status.textContent = 'No standard attributes match this Store category yet.';
+      const label = String(storeCategorySelect.selectedOptions[0]?.textContent || '').trim();
+      if (!label) {
+        selectCategory(null);
+        return;
       }
+      selectCustomCategory(label);
     });
     results.addEventListener('click', event => {
       const button = event.target.closest('[data-taxonomy-result]');
