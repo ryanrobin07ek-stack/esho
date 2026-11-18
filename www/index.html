@@ -10763,7 +10763,13 @@ const SQLiteEngine = {
 
   // Plans
   getPlans() {
-    return this.select("plans");
+    // Pricing is Craft’s own, not the shop’s data. It used to be seeded into the device on first run,
+    // so a phone installed months ago kept showing whatever the tiers were then. Today’s tiers are
+    // always shown; only which one this device is on is remembered.
+    const chosen = new Set(this.select("plans")
+      .filter(plan => Number(plan.is_current) === 1)
+      .map(plan => String(plan.slug)));
+    return plans.map(plan => ({ ...plan, is_current: chosen.has(plan.slug) ? 1 : 0 }));
   },
 
   selectPlan(planSlug) {
