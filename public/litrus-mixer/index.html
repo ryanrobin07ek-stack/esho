@@ -7431,6 +7431,21 @@ function previewDocument(){
  const shop=previewSource.cloneNode(true);shop.classList.remove('preview-source');
  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><base href="'+document.baseURI.replace(/"/g,'&quot;')+'">'+links+styles+'<style id="preview-scroll-style">html,body{height:auto!important;min-height:100%;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:auto!important;-webkit-overflow-scrolling:touch;touch-action:pan-y!important}body{touch-action:pan-y!important}</style></head><body>'+shop.outerHTML+'<script>('+soleInteractions.toString()+')(document.querySelector(".sole-store"));<\/script></body></html>';
 }
+// The saved page is shown without scripts, so a published page that fills itself in from the live
+// catalogue (compact exports) would preview as a blank white screen. Only use it when it has real content.
+let savedSiteStaticCache={html:'',ok:false};
+function savedSiteHasStaticContent(){
+ if(!existingSitePreviewHtml)return false;
+ if(savedSiteStaticCache.html===existingSitePreviewHtml)return savedSiteStaticCache.ok;
+ let ok=false;
+ try{
+  const parsed=new DOMParser().parseFromString(existingSitePreviewHtml,'text/html');
+  parsed.querySelectorAll('script,style,noscript,template').forEach(node=>node.remove());
+  ok=(parsed.body?.textContent||'').replace(/s+/g,' ').trim().length>=120;
+ }catch(error){ok=false}
+ savedSiteStaticCache={html:existingSitePreviewHtml,ok};
+ return ok;
+}
 function savedSitePreviewDocument(){
  if(!existingSitePreviewHtml)return '';
  const parsed=new DOMParser().parseFromString(existingSitePreviewHtml,'text/html');
@@ -7471,7 +7486,7 @@ function refreshPreview(){
  clearTimeout(previewTimer);
  previewTimer=setTimeout(()=>{
   if(!previewVisible())return;
-  const showingSavedSite=!!existingSitePreviewHtml&&!existingSitePreviewDirty;
+  const showingSavedSite=!!existingSitePreviewHtml&&!existingSitePreviewDirty&&savedSiteHasStaticContent();
   const mode=showingSavedSite?'saved':'generated';
   const next=showingSavedSite?savedSitePreviewDocument():previewDocument();
   if(mode!==lastPreviewMode){
