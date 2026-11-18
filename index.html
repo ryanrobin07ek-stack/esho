@@ -12898,14 +12898,7 @@ const StudioRenderers = {
           <label><span>Category</span><select class="business-filter" data-filter="category"><option value="all">All</option>${SQLiteEngine.getCategories().map(category => `<option value="${AppUtils.escapeHTML(category.name)}" ${businessFilters.category === category.name ? "selected" : ""}>${AppUtils.escapeHTML(category.name)}</option>`).join("")}</select></label>
           <label><span>Interval</span><select class="business-filter" data-filter="granularity"><option value="day" ${(!businessFilters.granularity || businessFilters.granularity === "day") ? "selected" : ""}>Daily</option><option value="week" ${businessFilters.granularity === "week" ? "selected" : ""}>Weekly</option><option value="month" ${businessFilters.granularity === "month" ? "selected" : ""}>Monthly</option></select></label>
         </nav>` : ""}
-        <nav class="studio-workspace-bottom-nav" aria-label="Business sections">
-          ${bottomItems.map(item => `
-            <a href="${item.route}" class="studio-workspace-bottom-link ${item.section === section ? "is-active" : ""}" data-route="${item.route}" ${item.section === section ? 'aria-current="page"' : ""}>
-              <span class="studio-nav-icon" aria-hidden="true">${item.icon}</span>
-              <span>${item.title}</span>
-            </a>
-          `).join("")}
-        </nav>
+        ${this.ownerBottomNav(path)}
         <section id="store-workspace-content" class="store-workspace-content business-lens-content" aria-live="polite" style="min-height:180px;padding-top:10px;">
           ${initialContent}
         </section>
@@ -12950,6 +12943,73 @@ const StudioRenderers = {
           </article>
         `).join("")}
       </section>`;
+  },
+
+  // ONE bottom bar for the whole owner app. Main Store and Craft used to be two worlds with two
+  // different bars, so the same shop had two Overviews, two Products and three Orders, and Bookings
+  // and Notifications were reachable only from a kebab menu inside one of them. The destinations
+  // below are the same wherever the owner is standing; each one simply opens the screen that owns it.
+  ownerNavSections() {
+    return [
+      {
+        key: "home",
+        title: "Home",
+        icon: "⌂",
+        route: "/account/main-shop",
+        owns: path => path === "/account/main-shop" || path === "/account/dashboard" || path === "/account"
+          || path.startsWith("/account/web/studio/dashboard")
+      },
+      {
+        key: "orders",
+        title: "Orders",
+        icon: "▤",
+        route: "/store/sales",
+        owns: path => ["/store/sales", "/store/orders", "/store/revenue", "/store/channels", "/store/payments"].includes(path)
+          || path.startsWith("/account/web/studio/store/orders")
+          || path.startsWith("/account/web/studio/store/bookings")
+          || path === "/store/bookings"
+      },
+      {
+        key: "products",
+        title: "Products",
+        icon: "▦",
+        route: "/store/manage/products",
+        owns: path => path === "/store/manage" || path.startsWith("/store/manage/")
+          || ["/store/products", "/store/inventory", "/store/categories", "/store/split-shop", "/account/products", "/account/categories", "/account/inventory"].includes(path)
+          || path.startsWith("/account/web/studio/store/")
+      },
+      {
+        key: "customers",
+        title: "Customers",
+        icon: "◉",
+        route: "/account/customers",
+        owns: path => path.startsWith("/account/customers")
+          || path.startsWith("/account/web/studio/crm")
+          || path === "/account/main-shop/marketing"
+      },
+      {
+        key: "more",
+        title: "More",
+        icon: "⋮",
+        route: "/account/web/studio/websites/list",
+        owns: path => path.startsWith("/account/web/studio/websites")
+          || path === "/account/web/studio/payments"
+          || path.startsWith("/account/profile")
+          || path.startsWith("/account/main-shop/")
+          || ["/account/settings", "/account/plans", "/account/tenants", "/stores", "/help", "/settings"].includes(path)
+      }
+    ];
+  },
+
+  ownerBottomNav(path) {
+    const sections = this.ownerNavSections();
+    const active = sections.find(section => section.owns(path)) || sections[0];
+    return `<nav class="studio-workspace-bottom-nav" aria-label="Shop sections">
+          ${sections.map(section => `<a href="${section.route}" class="studio-workspace-bottom-link ${section.key === active.key ? "is-active" : ""}" data-route="${section.route}" ${section.key === active.key ? 'aria-current="page"' : ""}>
+              <span class="studio-nav-icon" aria-hidden="true">${section.icon}</span>
+              <span>${AppUtils.escapeHTML(section.title)}</span>
+            </a>`).join("")}
+        </nav>`;
   },
 
   webStudioNavigation() {
@@ -13235,9 +13295,7 @@ const StudioRenderers = {
         <section id="store-workspace-content" class="store-workspace-content studio-workspace-section" aria-live="polite" style="min-height:180px;padding-top:10px;">
           ${initialContent}
         </section>
-        <nav class="studio-workspace-bottom-nav" aria-label="Web Studio sections">
-          ${sections.map(section => `<a href="${section.route}" class="studio-workspace-bottom-link ${section.title === page.section.title ? "is-active" : ""}" data-route="${section.route}" ${section.title === page.section.title ? 'aria-current="page"' : ""}><span class="studio-nav-icon" aria-hidden="true">${section.icon}</span><span>${section.title}</span></a>`).join("")}
-        </nav>
+        ${this.ownerBottomNav(path)}
       </main>`;
   },
 
