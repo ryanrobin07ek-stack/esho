@@ -15,9 +15,6 @@ import {
   createAttributePricingFields,
   readAttributePricingFields
 } from './attribute-pricing-fields.js';
-import {
-  chosenAttributeLabel, normalizeChosenAttributes, priceWithAttributes
-} from './attribute-pricing.js';
 
 import { DEFAULT_SERVICE_MINUTES, normalizeServiceDuration } from './service-model.js';
 import {
@@ -56,6 +53,7 @@ import {
 import { listInstances, startInstance, updateInstance, instanceTotals } from './till/instances.js';
 import { NearbyBluetooth } from './till/native-plugins.js';
 import { createTillUi } from './screens/till/ui.js';
+import { createTillCart } from './till/cart.js';
 export {
   classifyQrCode, parseProductLabel, matchProductLabel, MIN_IMAGE_MATCH_SIMILARITY,
   suggestImageCategories, rankImageMatches
@@ -89,14 +87,8 @@ export function createPosApp() {
     commonHeader, pageEnd, card, field, select, button, editIcon, deleteIcon, iconButton, iconLink,
     statusTag, empty, tabsTitle, metric, toast
   } = createTillUi();
+  const { cartLineKey, addProductToCart } = createTillCart({ state, updateCartPanel });
   // --- end till module wiring ---
-
-  const currentCartTotals = async () => {
-    const settings = await getSettings();
-    const subtotal = state.cart.reduce((sum, item) => sum + toCents(item.unitPrice) * item.quantity, 0);
-    const tax = Math.round(subtotal * settings.taxRate / 100);
-    return { settings, subtotal, tax, total: subtotal + tax };
-  };
 
   function render(path = '/pos', params = new URLSearchParams()) {
     const route = path.startsWith('/pos/') ? path : '/pos';
@@ -165,32 +157,6 @@ export function createPosApp() {
         window.requestAnimationFrame(() => updatedPanel.classList.remove('is-entering'));
       }
     }
-  }
-
-  const cartLineKey = (item) => `${item.productId}|${item.variantId || ''}|${item.attributesLabel || ''}`;
-
-  function addProductToCart(product, variant, chosenAttributes = []) {
-    const variantId = variant ? String(variant.id) : '';
-    const picked = normalizeChosenAttributes(product.pricedAttributes || [], chosenAttributes);
-    const attributesLabel = chosenAttributeLabel(picked);
-    const existing = state.cart.find((item) => item.productId === product.id
-      && String(item.variantId || '') === variantId
-      && String(item.attributesLabel || '') === attributesLabel);
-    if (existing) {
-      existing.quantity = Math.min(99999, existing.quantity + 1);
-    } else {
-      state.cart.push({
-        productId: product.id,
-        name: product.name,
-        quantity: 1,
-        unitPrice: priceWithAttributes(variantPrice(product, variant), product.pricedAttributes || [], picked),
-        variantId,
-        variantLabel: variant ? variant.label : '',
-        attributes: picked,
-        attributesLabel
-      });
-    }
-    updateCartPanel();
   }
 
   function renderVariantModalMarkup() {
