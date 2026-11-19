@@ -76,10 +76,42 @@ export function findClosestProductTaxonomyCategory(categories, categoryName) {
   if (!normalized || !Array.isArray(categories)) return null;
   const words = normalized.split(/\s+/).filter(Boolean);
   for (let start = 0; start < words.length; start += 1) {
-    const [match] = searchProductTaxonomyCategories(categories, words.slice(start).join(' '), 1);
+    const match = bestNameMatch(categories, words.slice(start).join(' '));
     if (match) return match;
   }
   return null;
+}
+
+/**
+ * One pass over the categories, scoring on the name only, keeping nothing.
+ *
+ * This deliberately does NOT use searchProductTaxonomyCategories: that builds and keeps a normalised
+ * index of all 14,606 categories, which is the right trade when the owner is typing in the search
+ * box but pure waste when all we need is to match a name a product was saved with. Building it on
+ * every product form was enough extra memory to get the app killed on a phone with little free RAM.
+ */
+function bestNameMatch(categories, phrase) {
+  const query = normalizeCategoryText(phrase);
+  if (!query) return null;
+  let best = null;
+  let bestScore = 0;
+  let bestDepth = Infinity;
+  for (const category of categories) {
+    const name = normalizeCategoryText(category.name);
+    const score = name === query ? 1000
+      : name.startsWith(query) ? 900
+        : containsWord(name, query) ? 800
+          : name.includes(query) ? 750
+            : 0;
+    if (!score) continue;
+    const depth = String(category.fullName || '').split('>').length;
+    if (score > bestScore || (score === bestScore && depth < bestDepth)) {
+      best = category;
+      bestScore = score;
+      bestDepth = depth;
+    }
+  }
+  return best;
 }
 
 export function createProductTaxonomyFields({
@@ -127,18 +159,35 @@ export function createProductTaxonomyFields({
   </section>`;
 }
 
+// The bundle hands the taxonomy over as a base64 string on a global. Decoding it to bytes once and
+// dropping the string frees that copy, and keeping the bytes is what lets the taxonomy be released
+// and decoded again later: deleting the string outright would leave nothing to decode from, so the
+// first product form opened after the web builder would have no categories at all.
+let compressedBytes;
+
+function compressedTaxonomyBytes() {
+  if (compressedBytes) return compressedBytes;
+  const encoded = globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__;
+  if (typeof encoded !== 'string' || !encoded) {
+    throw new Error('The offline product category data is missing from this app build.');
+  }
+  const binary = atob(encoded);
+  compressedBytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+  try {
+    delete globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__;
+  } catch {
+    globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__ = '';
+  }
+  return compressedBytes;
+}
+
 export async function loadProductTaxonomy() {
   if (!taxonomyPromise) {
     const pending = (async () => {
       if (typeof DecompressionStream !== 'function') {
         throw new Error('This device cannot open the compressed product category file.');
       }
-      const encoded = globalThis.__ESHOP_PRODUCT_TAXONOMY_GZIP__;
-      if (typeof encoded !== 'string' || !encoded) {
-        throw new Error('The offline product category data is missing from this app build.');
-      }
-      const binary = atob(encoded);
-      const bytes = Uint8Array.from(binary, character => character.charCodeAt(0));
+      const bytes = compressedTaxonomyBytes();
       const decompressed = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
       const taxonomy = await new Response(decompressed).json();
       if (!taxonomy || !Array.isArray(taxonomy.categories) || !Array.isArray(taxonomy.attributes)) {
@@ -152,6 +201,17 @@ export async function loadProductTaxonomy() {
     });
   }
   return taxonomyPromise;
+}
+
+/**
+ * Drops the decoded taxonomy so the ~40 MB of live objects behind it can be collected. Called before
+ * opening the web builder, which needs none of it and is where the app ran out of memory. The next
+ * product form decodes it again from the bundled file; nothing is lost but the decode time.
+ *
+ * The search index is a WeakMap keyed by the categories array, so it goes with it.
+ */
+export function releaseProductTaxonomy() {
+  taxonomyPromise = undefined;
 }
 
 function renderAttributeFields(container, category, attributesById, initialAttributes) {

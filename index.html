@@ -21421,6 +21421,10 @@ const AppController = {
     if (path === "/account/web/site") {
       const litrusFrame = document.getElementById("builder-litrus-mixer");
       if (litrusFrame) {
+        // The builder needs none of the product taxonomy, and it is ~40 MB of live objects. Letting
+        // it go here is the difference between the builder opening and Android killing the app for
+        // using too much memory. The next product form decodes it again from the bundled file.
+        window.EshopProductTaxonomy?.releaseProductTaxonomy?.();
         const isDraftEditor = params.get("new") === "1" && params.get("edit") === "1";
         const draftId = isDraftEditor ? StudioRenderers.websiteBuilderDraft().draft_id : "";
         // The shop this editor session belongs to. Everything the editor sends is applied to this
