@@ -1,8 +1,9 @@
+import { readTillSource } from './helpers/till-source.mjs';
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const posSource = await readFile(new URL("../src/pos.js", import.meta.url), "utf8");
+const posSource = await readTillSource();
 const appStyles = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
 test("POS Sell keeps checkout floating while products remain scrollable", () => {

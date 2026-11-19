@@ -1,3 +1,4 @@
+import { readTillSource } from './helpers/till-source.mjs';
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { gunzipSync } from "node:zlib";
@@ -18,7 +19,7 @@ const {
 
 const compressedTaxonomy = await readFile(new URL("../public/data/shopify-product-taxonomy.json.gz", import.meta.url));
 const taxonomy = JSON.parse(gunzipSync(compressedTaxonomy).toString("utf8"));
-const posSource = await readFile(new URL("../src/pos.js", import.meta.url), "utf8");
+const posSource = await readTillSource();
 const appHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const sneakerCategory = taxonomy.categories.find(category =>
   category.fullName === "Apparel & Accessories > Shoes > Sneakers"

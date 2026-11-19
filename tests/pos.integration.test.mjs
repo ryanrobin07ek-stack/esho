@@ -1,3 +1,4 @@
+import { readTillSource } from './helpers/till-source.mjs';
 import assert from 'node:assert/strict';
 import { readFile as readFileRaw, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -17,7 +18,7 @@ const readFile = async (path, options) => {
 };
 
 test('POS charts keep full history and render larger, scrollable value/date axes', async () => {
-  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const source = await readTillSource();
   const start = source.indexOf('  function chartAxisMoney(');
   const end = source.indexOf('\n  function renderSettings(', start);
   assert.ok(start >= 0 && end > start, 'The POS chart renderers should be a bounded block.');
@@ -49,7 +50,7 @@ test('POS charts keep full history and render larger, scrollable value/date axes
 });
 
 test('POS cart interactions render locally without reloading saved POS state', async () => {
-  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const source = await readTillSource();
   const addCart = source.match(/else if \(action === 'add-cart'\) \{([\s\S]*?)\n      \} else if \(action === 'cart-plus'/)?.[1];
   const addProduct = source.match(/async function addProductToSale\([\s\S]*?\n  \}/)?.[0];
   assert.ok(addCart);
@@ -61,7 +62,7 @@ test('POS cart interactions render locally without reloading saved POS state', a
 });
 
 test('POS sales load all line items in one batch instead of querying once per sale', async () => {
-  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const source = await readTillSource();
   const listSales = source.match(/async function listSales\(\) \{([\s\S]*?)\n\}/)?.[1];
   assert.ok(listSales);
   assert.match(listSales, /FROM pos_sale_items WHERE sale_id IN \(SELECT id FROM pos_sales\)/);
@@ -69,7 +70,7 @@ test('POS sales load all line items in one batch instead of querying once per sa
 });
 
 test('POS sync IDs stay stable when Web Crypto is unavailable', async () => {
-  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const source = await readTillSource();
   const start = source.indexOf('  function sha256Fallback(bytes) {');
   const end = source.indexOf('  async function queueProduct(', start);
   assert.ok(start >= 0 && end > start, 'The POS sync ID helpers should have a bounded implementation.');
@@ -83,7 +84,7 @@ test('POS sync IDs stay stable when Web Crypto is unavailable', async () => {
 });
 
 test('POS checkout clears a saved sale and reports a post-save sync failure', async () => {
-  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const source = await readTillSource();
   const start = source.indexOf('  async function saveCheckout(data, method, paid) {');
   const end = source.indexOf('  async function queueCloudRecord(', start);
   assert.ok(start >= 0 && end > start, 'The POS checkout save flow should have a bounded implementation.');
@@ -117,7 +118,7 @@ test('POS checkout clears a saved sale and reports a post-save sync failure', as
 });
 
 test('POS product and inventory rows expose pencil and trash actions', async () => {
-  const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const source = await readTillSource();
   const inventory = source.match(/if \(screen === '\/catalogue\/inventory'\) \{([\s\S]*?)\n    \}\n    return `<section class="pos-content">/)?.[1];
   assert.ok(inventory, 'POS inventory screen should have a bounded renderer.');
   assert.match(inventory, /iconLink\(`\/pos\/inventory\?edit=\$\{item\.id\}`/);
@@ -148,7 +149,7 @@ test('POS product and inventory rows expose pencil and trash actions', async () 
 
 test('Orders removes the New sale border and quotations use selectable three-column product cards', async () => {
   const [source, pageSource] = await Promise.all([
-    readFile(new URL('../src/pos.js', import.meta.url), 'utf8'),
+    readTillSource(),
     readFile(new URL('../index.html', import.meta.url), 'utf8')
   ]);
   const orders = source.match(/function renderOrders\(\) \{([\s\S]*?)\n  \}/)?.[1];
@@ -168,7 +169,7 @@ test('Orders removes the New sale border and quotations use selectable three-col
 
 test('More keeps its three destinations in separate full-width cards', async () => {
   const [source, pageSource] = await Promise.all([
-    readFile(new URL('../src/pos.js', import.meta.url), 'utf8'),
+    readTillSource(),
     readFile(new URL('../index.html', import.meta.url), 'utf8')
   ]);
   const more = source.match(/function renderMore\(\) \{([\s\S]*?)\n  \}/)?.[1];
@@ -185,7 +186,7 @@ test('More keeps its three destinations in separate full-width cards', async () 
 test('workspace screen navigation uses side drawers and loading placeholders use skeletons', async () => {
   const [pageSource, posSource] = await Promise.all([
     readFile(new URL('../index.html', import.meta.url), 'utf8'),
-    readFile(new URL('../src/pos.js', import.meta.url), 'utf8')
+    readTillSource()
   ]);
   assert.match(pageSource, /renderWorkspaceSidebar\(title, items, activeRoute\)[\s\S]*?workspace-sidebar-scrim[\s\S]*?workspace-sidebar-links[\s\S]*?aria-current="page"/);
   assert.match(pageSource, /title: "Orders" \},\s*\{ route: "\/store\/payments", title: "Payments" \}/);
@@ -239,7 +240,7 @@ test('barcode and QR scanning formats route safely without treating QR text as a
 });
 
 test('loading website stock imports local website products into POS without admin-key sync', async () => {
-  const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const posSource = await readTillSource();
   const appSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   const sync = posSource.match(/async function syncSharedStock\(source\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  function toast/)?.[1];
   assert.ok(sync, 'POS shared stock flow should be present.');
@@ -349,7 +350,7 @@ test('photo matching ranks 5000 saved embeddings within the local scan budget', 
 });
 
 test('POS sales and received purchases queue refreshed product stock for cloud sync', async () => {
-  const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const posSource = await readTillSource();
   const receiveStart = posSource.indexOf('async function receivePurchaseOrder(recordId)');
   const syncStart = posSource.indexOf('async function syncInventorySales', receiveStart);
   const checkoutStart = posSource.indexOf("case 'checkout': {");
@@ -389,7 +390,7 @@ test('POS sales and received purchases queue refreshed product stock for cloud s
 });
 
 test('Android POS exposes same-shop Bluetooth phone-to-phone snapshot sync', async () => {
-  const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const posSource = await readTillSource();
   const nativePlugin = await readFile(
     new URL('../android/app/src/main/java/com/eshop/atelier/NearbyBluetoothPlugin.java', import.meta.url),
     'utf8'
@@ -678,7 +679,7 @@ test('Litrus checkout creates a server order from the live cart', async () => {
 });
 
 test('nearby Wi-Fi pairing needs one phone scan and asks the PC operator before transfer', async () => {
-  const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const posSource = await readTillSource();
   const appBridge = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(posSource, /The phone scans this register’s QR once/);
   assert.match(posSource, /encrypted POS transfer goes directly over the same Wi-Fi/);
@@ -766,7 +767,7 @@ test('M-Pesa notification listener is archived and absent from the active app', 
     readFile(new URL('../android/app/src/main/java/com/eshop/atelier/MainActivity.java', import.meta.url), 'utf8'),
     readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8'),
     readFile(new URL('../index.html', import.meta.url), 'utf8'),
-    readFile(new URL('../src/pos.js', import.meta.url), 'utf8'),
+    readTillSource(),
     readFile(new URL('../archive/mpesa-notification-listener/android/app/src/main/java/com/eshop/atelier/MpesaNotificationListenerService.kt', import.meta.url), 'utf8'),
     readFile(new URL('../archive/mpesa-notification-listener/android/app/src/main/java/com/eshop/atelier/MpesaNotificationParser.kt', import.meta.url), 'utf8'),
     readFile(new URL('../archive/mpesa-notification-listener/android/app/src/main/java/com/eshop/atelier/MpesaNotificationsPlugin.kt', import.meta.url), 'utf8'),
@@ -887,7 +888,7 @@ test('Craft opens the saved website dashboard and hides the main shop from websi
 
 test('product media saves locally before publishing and handles native gallery results', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const posSource = await readTillSource();
   const mediaSave = pageSource.match(/} else if \(kind === "web-product"\) \{([\s\S]*?)\n            \} else if \(kind === "loyalty-settings"\)/)?.[1];
   const compression = pageSource.match(/async compressImageFile\(file, \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  formatMoney/)?.[0];
   const imageUpload = pageSource.match(/async uploadCatalogImage\(image, apiUrl, tenant, token(?:, onStored)?\) \{([\s\S]*?)\r?\n  \},/)?.[1];
@@ -1208,7 +1209,7 @@ test('managing a website opens its Web Studio products and exposes publishing', 
 
 test('new-website workspace keeps Store import and web-product actions without restoring the theme picker', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const posSource = await readTillSource();
   const websitesNavigation = pageSource.match(/title: "Websites",([\s\S]*?)\n      \},\n      \{\n        title: "Payments"/)?.[1];
   assert.ok(websitesNavigation, 'Websites tabs should have a bounded navigation entry.');
   assert.match(websitesNavigation, /title: "New web", route: "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?title: "Add"[\s\S]*?title: "Website editor"/);
@@ -1859,7 +1860,7 @@ test('POS persists products, manual payments, invoices and business instances in
       if (/\bsrc\s*=/.test(script[1])) continue;
       assert.doesNotThrow(() => new Script(script[2], { filename: `index.html:inline-script-${index + 1}` }));
     }
-    const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+    const posSource = await readTillSource();
     assert.match(posSource, /decodeFromVideoElement\(video/);
     assert.match(posSource, /getUserMedia\(\{[\s\S]*?facingMode: \{ ideal: 'environment' \}/);
     assert.match(posSource, /Added \$\{result\.name\}\. Scan the next item\./);
@@ -2410,7 +2411,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(overviewWithRevenue, /Net sales before tax over time with value and date axes/);
     assert.match(overviewWithRevenue, /class="pos-revenue-chart-axis-label"/);
     assert.match(overviewWithRevenue, /class="pos-revenue-chart-line"/);
-    const posChartSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+    const posChartSource = await readTillSource();
     assert.match(posChartSource, /const revenueSeries = Object\.entries\(daily\)\.sort\(\(\[first\], \[second\]\) => first\.localeCompare\(second\)\);/);
     const revenueSeriesLineStart = posChartSource.indexOf('const revenueSeries = Object.entries(daily)');
     const revenueSeriesLine = posChartSource.slice(revenueSeriesLineStart, posChartSource.indexOf('\n', revenueSeriesLineStart));
@@ -2651,7 +2652,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.ok((await app.listCategories()).some(category => category.id === categoryId));
     assert.ok(Array.isArray(await app.listSales()));
 
-    const source = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
+    const source = await readTillSource();
     assert.doesNotMatch(source, /confirmPendingMpesaSalePayment|linkMpesaTransaction|pos_payment_links|smsParser/);
   } finally {
     db.close();
