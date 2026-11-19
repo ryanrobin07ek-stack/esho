@@ -32,8 +32,31 @@ test("matching a saved category no longer builds the whole search index", () => 
   has(source, "function bestNameMatch", "and that helper keeps nothing");
 });
 
-test("the taxonomy can be released, and the builder releases it", () => {
-  has(source, "export function releaseProductTaxonomy", "there must be a way to drop it");
-  has(source, "taxonomyPromise = undefined;", "releasing clears the cached decode");
-  has(appHtml, "releaseProductTaxonomy?.()", "opening the web builder must let the taxonomy go");
+test("the saved-category match is cached, so opening a product form is not a scan", () => {
+  // Matching normalised all 14,606 names on every call, twice, before the form drew anything.
+  // Measured: 62 ms every time; 6 ms once the normalised names are kept.
+  has(source, "const normalizedNameCache = new WeakMap();", "names are cached");
+  has(source, "const normalizedFullNameCache = new WeakMap();", "and so are full paths");
+  has(source, "const names = normalizedNames(categories);", "the matcher reads the cache");
+  has(source, "const paths = normalizedFullNames(categories);", "including for the exact-path scan");
+  // Releasing the taxonomy was a guess at the crash and only bought a re-decode, so it is not wired
+  // to the builder any more. The function stays for a caller that genuinely needs it.
+  has(source, "export function releaseProductTaxonomy", "the release is still available");
+  assert.ok(!appHtml.includes("releaseProductTaxonomy?.()"),
+    "the builder must not pay a re-decode for memory that was never the problem");
+});
+
+test("the builder payload does not carry 36 base64 frames per product", () => {
+  // Measured on the phone: java.lang.OutOfMemoryError on a single 54,194,920 byte allocation when
+  // the web builder opened. sendCatalog serialised every product's images AND up to 36 spin frames
+  // into one postMessage.
+  const start = appHtml.indexOf("const sendCatalog = () => {");
+  assert.ok(start > 0, "sendCatalog should be findable");
+  const body = appHtml.slice(start, appHtml.indexOf("litrusFrame.contentWindow?.postMessage", start));
+  assert.ok(!body.includes("spin_frames: Array.isArray(product.spin_frames) ? product.spin_frames"),
+    "the frames themselves must not be sent to the builder");
+  has(body, "spin_frame_count:", "a count is enough for the preview");
+  // And nothing is lost: a builder save that omits them restores what was already stored.
+  has(appHtml, ": original?.spin_frames || [],",
+    "frames the builder never saw must survive the round trip");
 });

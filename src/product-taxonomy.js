@@ -58,9 +58,13 @@ export function searchProductTaxonomyCategories(categories, query, limit = 30) {
 export function matchProductTaxonomyCategory(categories, categoryName) {
   const normalizedName = normalizeCategoryText(categoryName);
   if (!normalizedName || !Array.isArray(categories)) return null;
-  const exactPath = categories.find(category => normalizeCategoryText(category.fullName) === normalizedName);
-  if (exactPath) return exactPath;
-  return categories.filter(category => normalizeCategoryText(category.name) === normalizedName)
+  // Both scans normalised all 14,606 names on every call. Opening a product form did that twice
+  // before it drew anything, which is most of where the form's delay came from.
+  const names = normalizedNames(categories);
+  const paths = normalizedFullNames(categories);
+  const exactIndex = paths.indexOf(normalizedName);
+  if (exactIndex >= 0) return categories[exactIndex];
+  return categories.filter((category, index) => names[index] === normalizedName)
     .sort((left, right) => left.fullName.split('>').length - right.fullName.split('>').length
       || left.fullName.localeCompare(right.fullName))[0] || null;
 }
@@ -90,14 +94,39 @@ export function findClosestProductTaxonomyCategory(categories, categoryName) {
  * box but pure waste when all we need is to match a name a product was saved with. Building it on
  * every product form was enough extra memory to get the app killed on a phone with little free RAM.
  */
+// Normalising 14,606 names on every call cost 62 ms each time, every time, because it kept nothing.
+// The names alone are a fraction of the full search index (which also splits every path), so they
+// are worth keeping: the cost is paid once and the match drops to a plain string comparison.
+const normalizedNameCache = new WeakMap();
+const normalizedFullNameCache = new WeakMap();
+
+const cachedBy = (cache, categories, read) => {
+  let values = cache.get(categories);
+  if (!values) {
+    values = categories.map(read);
+    cache.set(categories, values);
+  }
+  return values;
+};
+
+function normalizedNames(categories) {
+  return cachedBy(normalizedNameCache, categories, category => normalizeCategoryText(category.name));
+}
+
+function normalizedFullNames(categories) {
+  return cachedBy(normalizedFullNameCache, categories, category => normalizeCategoryText(category.fullName));
+}
+
 function bestNameMatch(categories, phrase) {
   const query = normalizeCategoryText(phrase);
   if (!query) return null;
+  const names = normalizedNames(categories);
   let best = null;
   let bestScore = 0;
   let bestDepth = Infinity;
-  for (const category of categories) {
-    const name = normalizeCategoryText(category.name);
+  for (let index = 0; index < categories.length; index += 1) {
+    const category = categories[index];
+    const name = names[index];
     const score = name === query ? 1000
       : name.startsWith(query) ? 900
         : containsWord(name, query) ? 800

@@ -10103,7 +10103,7 @@ body.craft-app-ui #app .launchpad-link {
   </style>
   <meta name="theme-color" content="#F5FAFF">
   <link rel="manifest" href="/manifest.webmanifest">
-  <script type="module" crossorigin src="/assets/app-D7izA-Yc.js"></script>
+  <script type="module" crossorigin src="/assets/app-DnTrnYpO.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/app-Be6BvG5L.css">
 </head>
 <body>
@@ -21486,10 +21486,9 @@ const AppController = {
     if (path === "/account/web/site") {
       const litrusFrame = document.getElementById("builder-litrus-mixer");
       if (litrusFrame) {
-        // The builder needs none of the product taxonomy, and it is ~40 MB of live objects. Letting
-        // it go here is the difference between the builder opening and Android killing the app for
-        // using too much memory. The next product form decodes it again from the bundled file.
-        window.EshopProductTaxonomy?.releaseProductTaxonomy?.();
+        // Releasing the taxonomy here was a guess at the crash, and it was the wrong one: the app
+        // dies on a single 54 MB bitmap allocation, not on the taxonomy. All the release bought was
+        // a quarter-second re-decode the next time a product form opened, so it is gone.
         const isDraftEditor = params.get("new") === "1" && params.get("edit") === "1";
         const draftId = isDraftEditor ? StudioRenderers.websiteBuilderDraft().draft_id : "";
         // The shop this editor session belongs to. Everything the editor sends is applied to this
@@ -21534,7 +21533,11 @@ const AppController = {
                   image: (Array.isArray(product.images) ? product.images[0] : "") ||
                     product.imageUri || product.image || "",
                   media_type: product.media_type || "image",
-                  spin_frames: Array.isArray(product.spin_frames) ? product.spin_frames : [],
+                  // Up to 36 base64 frames per product, all of it serialised into one postMessage.
+                  // That is what the 54 MB allocation was that killed the app when the builder
+                  // opened. The builder only previews; the saved frames are kept here and restored
+                  // on the way back, so sending a count instead loses nothing but the spin preview.
+                  spin_frame_count: Array.isArray(product.spin_frames) ? product.spin_frames.length : 0,
                   video_url: product.video_url || "",
                   booking_enabled: product.booking_enabled === true || product.booking_enabled === 1,
                   // Only a service carries a duration. Defaulting every product to an hour made
