@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile as readFileRaw } from "node:fs/promises";
 import test from "node:test";
+import { readAppSource } from "./helpers/app-source.mjs";
 
 const readFile = async (path, options) => {
   const contents = await readFileRaw(path, options);
@@ -8,7 +9,7 @@ const readFile = async (path, options) => {
 };
 
 test("Main Store screens use the compact Craft header and back navigation", async () => {
-  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const source = await readAppSource({ lf: true });
   const start = source.indexOf("renderMainShopWorkspace(path) {");
   const end = source.indexOf("\n  webStudioNavigation()", start);
   assert.ok(start >= 0 && end > start, "Main Store should have a bounded workspace renderer.");
@@ -23,7 +24,7 @@ test("Main Store screens use the compact Craft header and back navigation", asyn
 });
 
 test("Web dashboard and CRM KPI groups feature one full-width metric above two smaller metrics", async () => {
-  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const source = await readAppSource({ lf: true });
   for (const label of [
     'metric("Paid web revenue"',
     'metric("Visits"',
@@ -50,7 +51,7 @@ test("Web dashboard and CRM KPI groups feature one full-width metric above two s
 });
 
 test("Web Studio separates Orders and Bookings and ranks batched storefront events", async () => {
-  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const source = await readAppSource({ lf: true });
   assert.match(source, /title: "Orders", route: "\/account\/web\/studio\/store\/orders"/);
   assert.match(source, /title: "Bookings", route: "\/account\/web\/studio\/store\/bookings"/);
   assert.match(source, /page\.route === "\/account\/web\/studio\/store\/orders"[\s\S]*?\$\{orderRows\(orders\)\}\$\{remoteOrderRows\}/);
@@ -65,7 +66,7 @@ test("Web Studio separates Orders and Bookings and ranks batched storefront even
 });
 
 test("Web Studio product upload offers photos, 360° spin, video, and cutout modes", async () => {
-  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const source = await readAppSource({ lf: true });
   assert.match(source, /\["keep", "Photos"\].*\["3d", "360° spin"\].*\["video", "Video"\].*\["cutout", "Cutout"\]/);
   assert.match(source, /data-web-product-video-record>Record video/);
   assert.match(source, /data-web-product-video-pick>Pick video/);
@@ -103,7 +104,7 @@ test("storefront visit history records customer pages, not Craft app screens", a
 });
 
 test("Visits and Traffic use a saved day filter and concise analytics panels", async () => {
-  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const source = await readAppSource({ lf: true });
   assert.match(source, /data-filter="analyticsDays" type="number" inputmode="numeric" min="1" max="365"/);
   assert.match(source, /const analyticsCutoff = Date\.now\(\) - this\.analyticsDays\(\) \* 86400000;/);
   assert.equal((source.match(/fetchStorefrontAnalytics\([^)]*this\.analyticsDays\(\)[^)]*\)/g) || []).length, 2);
@@ -120,7 +121,7 @@ test("Visits and Traffic use a saved day filter and concise analytics panels", a
 });
 
 test("Store Products and Payments use shorter copy; new-website screens are removed", async () => {
-  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const source = await readAppSource({ lf: true });
   assert.doesNotMatch(source, /Website products are saved in app SQLite|separately from Store\/POS inventory/);
   assert.doesNotMatch(source, /renderWebsiteBuilderCatalog|renderWebsiteThemes\(|renderWebsiteThemeChoices|NEW WEBSITE · STEP [12] OF 3/);
 
@@ -135,7 +136,7 @@ test("Store Products and Payments use shorter copy; new-website screens are remo
 });
 
 test("Payments keeps Paystack setup and removes manual payment-account controls", async () => {
-  const source = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const source = await readAppSource({ lf: true });
   assert.match(source, /data-paystack-reuse/);
   assert.doesNotMatch(source, /data-studio-form="payment-add"|Saved accounts|data-remove-payment/);
 });

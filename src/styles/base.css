@@ -1,0 +1,165 @@
+/* Craft Premium Commerce & Studio Design System */
+:root {
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-subtle: #F5F5F5;
+  --surface-hover: #EBEBEB;
+  --text-main: #18181B;
+  --text-muted: #66666B;
+  --text-dim: #8A8A90;
+  --border: #E2E2E5;
+  --border-subtle: #F0F0F1;
+  --accent: #18181B;
+  --accent-hover: #333337;
+  --accent-light: #F1F1F2;
+  --accent-contrast: #FFFFFF;
+  --badge-bg: #F0F0F1;
+  --badge-text: #3A3A3D;
+  --success: #1E6B42;
+  --success-bg: #EBF7EE;
+  --warning: #B45309;
+  --warning-bg: #FEF3C7;
+  --danger: #991B1B;
+  --danger-bg: #FEE2E2;
+  --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-display: Impact, Haettenschweiler, "Arial Narrow", "sans-serif-condensed", sans-serif;
+  --radius: 4px;
+  --radius-sm: 2px;
+  --radius-lg: 8px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08);
+  --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --container-max: 1360px;
+}
+
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body.app-shell {
+  background-color: var(--bg);
+}
+
+body.app-shell #app {
+  flex: 1 0 auto;
+  min-height: 100vh;
+  background-color: var(--bg);
+}
+
+#craft-video-splash {
+  position: fixed;
+  z-index: 30000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+  opacity: 1;
+  transition: opacity .45s ease, visibility .45s ease;
+}
+
+#craft-video-splash[hidden] { display: none !important; }
+
+#craft-video-splash video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  pointer-events: none;
+}
+
+#craft-video-splash video::-webkit-media-controls,
+#craft-video-splash video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+#craft-video-splash.is-video-unavailable {
+  background: #000 url("/craft-splash-poster.jpg") center / cover no-repeat;
+}
+
+#craft-video-splash.is-hiding {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #craft-video-splash { transition: none; }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--accent);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Utility Containers */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+

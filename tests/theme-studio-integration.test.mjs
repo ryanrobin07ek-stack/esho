@@ -5,11 +5,12 @@ import { runInNewContext } from "node:vm";
 import { JSDOM, VirtualConsole } from "jsdom";
 import { WEBSITE_THEME_CATALOG } from "../src/theme-catalog.js";
 import * as ServiceModel from "../src/service-model.js";
+import { readAppSource, readAppStyles } from "./helpers/app-source.mjs";
 
 const read = async path => (await readFile(new URL(path, import.meta.url), "utf8")).replace(/\r\n/g, "\n");
 
 test("customer shop screens never collect or persist the Cloudflare master key", async () => {
-  const app = await read("../index.html");
+  const app = await readAppSource({ lf: true });
   const shopsScreen = app.match(/renderTenantsManager\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  renderInventory/)?.[1];
   const publishModal = app.match(/openCloudflarePublishModal\([^)]*\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  [A-Za-z]/)?.[1];
 
@@ -22,7 +23,7 @@ test("customer shop screens never collect or persist the Cloudflare master key",
 });
 
 test("storefront newsletter and owner push broadcasts use Cloudflare", async () => {
-  const app = await read("../index.html");
+  const app = await readAppSource({ lf: true });
   const signupForm = app.match(/<form id="web-newsletter-signup">([\s\S]*?)<\/form>/)?.[1];
   const notificationsPage = app.match(/if \(page\.route === "\/account\/web\/studio\/crm\/notifications"\) \{([\s\S]*?)\n      \}/)?.[1];
 
@@ -42,16 +43,17 @@ test("storefront newsletter and owner push broadcasts use Cloudflare", async () 
 });
 
 test("nested Web Studio routes dispatch through the workspace renderer", async () => {
-  const app = await read("../index.html");
+  const app = await readAppSource({ lf: true });
   assert.match(app, /path === "\/account\/web" \|\| path\.startsWith\("\/account\/web\/studio\/"\)\)\s*\{\s*html = StudioRenderers\.renderMainShopWorkspace\(path\);/);
   assert.match(app, /title: "Websites",\s*route: "\/account\/web\/studio\/websites\/list"/);
   assert.match(app, /const initialPath = path === "\/account\/web"\s*\?\s*"\/account\/web\/studio\/dashboard\/overview"/);
 });
 
 test("CHESSER styling is limited to Craft app routes and excludes Theme Studio", async () => {
-  const [app, pos] = await Promise.all([read("../index.html"), read("../src/pos.js")]);
+  const [app, pos] = await Promise.all([readAppSource({ lf: true }), read("../src/pos.js")]);
   const themeSetup = app.match(/setAppShellTheme\(path(?:,\s*params\s*=\s*new URLSearchParams\(\))?\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  currentRoute/)?.[1];
-  const craftStyles = app.match(/\/\* CHESSER visual system for Craft app screens only\. \*\/([\s\S]*?)<\/style>/)?.[1];
+  // The CHESSER section runs to the end of the app stylesheet (it used to end at </style>).
+  const craftStyles = (await readAppStyles({ lf: true })).match(/\/\* CHESSER visual system for Craft app screens only\. \*\/([\s\S]*)$/)?.[1];
 
   assert.ok(themeSetup);
   assert.ok(craftStyles);
@@ -143,7 +145,7 @@ test("Litrus refreshes published pages and preserves spin and video product medi
   const [mixer, liveCatalog, app] = await Promise.all([
     read("../public/litrus-mixer/index.html"),
     read("../public/litrus-mixer/live-catalog.js"),
-    read("../index.html")
+    readAppSource({ lf: true })
   ]);
   const exportStart = mixer.indexOf("function exportShop(){");
   const exportEnd = mixer.indexOf("\nfunction litrusRefreshPublishedCatalog", exportStart);
@@ -326,7 +328,7 @@ test("Litrus published catalog updates category names without flattening the sel
 });
 
 test("Litrus shop rename accepts indented Roles5 storefront exports", async () => {
-  const app = await read("../index.html");
+  const app = await readAppSource({ lf: true });
   const method = app.match(/renameLitrusMixerStorefront\(html, shopName\) \{([\s\S]*?)\r?\n  \},/)?.[1];
   assert.ok(method);
   const rename = new Function("AppUtils", `return function (html, shopName) {${method}\n};`)({
@@ -356,7 +358,7 @@ test("Litrus shop rename accepts indented Roles5 storefront exports", async () =
 });
 
 test("Litrus catalog saves and restores every product category", async () => {
-  const app = await read("../index.html");
+  const app = await readAppSource({ lf: true });
   const method = app.match(/async saveLitrusMixerCatalog\(input, isDraftEditor, expectedTenantId\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  openCloudflarePublishModal/)?.[1];
   const designSave = app.match(/const saveLitrusDesign = payload => \{([\s\S]*?)\r?\n        \};/)?.[1];
   assert.ok(method);
@@ -403,7 +405,7 @@ test("Litrus catalog saves and restores every product category", async () => {
 });
 
 test("Litrus catalog round-trips service settings and booking details", async () => {
-  const app = await read("../index.html");
+  const app = await readAppSource({ lf: true });
   const mixer = await read("../public/litrus-mixer/index.html");
   const method = app.match(/async saveLitrusMixerCatalog\(input, isDraftEditor, expectedTenantId\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  openCloudflarePublishModal/)?.[1];
   const sendCatalog = app.match(/const sendCatalog = \(\) => \{([\s\S]*?)\r?\n        \};/)?.[1];
@@ -486,7 +488,7 @@ test("Litrus catalog round-trips service settings and booking details", async ()
 });
 
 test("Craft Litrus reload restores saved design without overwriting it on hydration", async () => {
-  const app = await read("../index.html");
+  const app = await readAppSource({ lf: true });
   const mixer = await read("../public/litrus-mixer/index.html");
   const designSave = app.match(/const saveLitrusDesign = payload => \{([\s\S]*?)\r?\n        \};/)?.[1];
   const sendCatalog = app.match(/const sendCatalog = \(\) => \{([\s\S]*?)\r?\n        \};/)?.[1];

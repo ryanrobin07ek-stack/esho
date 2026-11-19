@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { readAppSource } from "./helpers/app-source.mjs";
 
 const bootstrap = await readFile(new URL("../src/bootstrap.js", import.meta.url), "utf8");
 const visualTheme = await readFile(new URL("../src/app-visual-theme.css", import.meta.url), "utf8");
-const appHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const appHtml = await readAppSource();
 const posSource = await readFile(new URL("../src/pos.js", import.meta.url), "utf8");
 
 test("native app screens share the homepage visual foundation", () => {

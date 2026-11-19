@@ -1,0 +1,377 @@
+
+.pos-product-tile strong {
+  margin-top: 7px;
+  font-size: 0.8rem;
+}
+
+.pos-product-tile > span:not(.pos-product-placeholder) {
+  margin-top: 3px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.pos-product-tile small,
+.pos-cart-item small,
+.pos-record-head small,
+.pos-category-row small,
+.pos-invoice-row small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  margin-top: 3px;
+}
+
+.pos-cart {
+  position: sticky;
+  top: 10px;
+  padding: 12px;
+  border-radius: 24px;
+}
+
+.pos-cart h2 {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.pos-cart h2 small {
+  color: var(--text-muted);
+  font: 0.72rem var(--font-main);
+}
+
+.pos-cart-item {
+  min-width: 0;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 5px;
+}
+
+.pos-cart-item > strong {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.pos-cart-items {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.pos-cart-item input[type="number"] {
+  flex: 0 0 52px;
+  width: 52px;
+  min-height: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 5px;
+  text-align: center;
+}
+
+.pos-quantity-button {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-subtle);
+  font-size: 1.1rem;
+}
+
+.pos-form,
+.pos-editor-form {
+  display: grid;
+  gap: 10px;
+}
+
+.pos-field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.pos-field > span,
+.pos-help {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.pos-field input,
+.pos-field select,
+.pos-filter-row input,
+.pos-filter-row select,
+.pos-inline-form input,
+.pos-cart-item input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text-main);
+}
+
+.pos-checkout {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  gap: 7px;
+}
+
+.pos-payment-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.pos-payment-option {
+  display: flex;
+  min-width: 0;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text-main);
+  font: 650 0.76rem var(--font-main);
+  cursor: pointer;
+}
+
+.pos-payment-option.is-selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: var(--surface-subtle);
+}
+
+.pos-payment-logo {
+  width: 17px;
+  height: 14px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.pos-customer-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.pos-customer-fields .pos-field {
+  gap: 2px;
+}
+
+.pos-customer-fields .pos-field > span {
+  font-size: 0.72rem;
+}
+
+.pos-customer-fields input {
+  min-height: 30px;
+  padding: 0 7px;
+  font-size: 0.82rem;
+}
+
+.pos-checkout-totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+}
+
+.pos-checkout-totals .is-total {
+  grid-column: 1 / -1;
+}
+
+.pos-checkout .pos-total-line {
+  padding: 3px 0;
+  font-size: 0.82rem;
+}
+
+.pos-checkout .pos-total-line.is-total {
+  padding: 6px 0 2px;
+  font-size: 0.98rem;
+}
+
+.pos-credit-details {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.pos-credit-details summary {
+  cursor: pointer;
+}
+
+.pos-checkout-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.pos-checkout-actions button {
+  height: 30px;
+  min-height: 30px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 0.76rem;
+}
+
+.pos-checkout-actions .btn-primary,
+.pos-checkout-actions .btn-secondary {
+  height: 30px;
+  min-height: 30px;
+  padding: 0 6px;
+}
+
+.pos-checkout-complete {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 0.76rem;
+}
+
+.pos-discount-modal {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.pos-discount-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: rgba(0, 0, 0, 0.52);
+}
+
+/* The till asks which option is being sold. Each choice is a tap target with its price and what is
+   left, stacked so a thumb can hit it; before this the buttons had no styling at all and ran
+   together as plain text. */
+.pos-variant-options {
+  display: grid;
+  gap: 8px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.pos-variant-options button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.pos-variant-options button strong {
+  overflow-wrap: anywhere;
+}
+
+.pos-variant-options button span {
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.pos-variant-options button small {
+  grid-column: 1 / -1;
+  opacity: 0.65;
+}
+
+.pos-variant-options button[disabled] {
+  opacity: 0.5;
+}
+
+/* The priced choices sit above the option buttons in the same dialog. */
+.pos-discount-dialog .pos-field select[data-pos-priced-attribute] {
+  min-height: 44px;
+}
+
+.pos-discount-dialog {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: min(100%, 320px);
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text-main);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+
+.pos-discount-dialog h3,
+.pos-discount-dialog p {
+  margin: 0;
+}
+
+.pos-discount-dialog h3 {
+  font-size: 1rem;
+}
+
+.pos-discount-dialog p,
+.pos-discount-dialog small {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.pos-discount-form,
+.pos-discount-field {
+  display: grid;
+  gap: 7px;
+}
+
+.pos-discount-field {
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.pos-discount-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.pos-discount-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.pos-discount-actions button {
+  min-height: 36px;
+  font-size: 0.78rem;
+}
+
+.pos-checkout .pos-help {
+  margin: 0;
+  font-size: 0.66rem;
+}
+
+.pos-total-line {
+  padding: 5px 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}

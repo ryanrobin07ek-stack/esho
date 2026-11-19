@@ -1,0 +1,284 @@
+/* Mobile Nav Toggle */
+.mobile-menu-btn {
+  display: none;
+  width: 42px;
+  height: 42px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+}
+
+@media (max-width: 1024px) {
+  .nav-menu {
+    display: none;
+  }
+  .mobile-menu-btn {
+    display: flex;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar:not(.studio-module-navbar) .nav-container {
+    height: auto;
+    min-height: 72px;
+    flex-wrap: wrap;
+    gap: 0 8px;
+  }
+  .navbar:not(.studio-module-navbar) .nav-left {
+    order: 1;
+    gap: 12px;
+  }
+  .navbar:not(.studio-module-navbar) .nav-right {
+    order: 2;
+    gap: 8px;
+  }
+  .navbar:not(.studio-module-navbar) .nav-center {
+    display: block;
+    order: 3;
+    flex: 0 0 100%;
+    max-width: none;
+    padding-bottom: 12px;
+  }
+  .btn-studio-pill span {
+    display: none;
+  }
+}
+
+.launchpad {
+  --launch-blue: var(--accent);
+  height: 100vh;
+  height: 100svh;
+  min-height: 0;
+  padding: clamp(24px, 5vw, 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow-x: auto;
+  color: var(--accent-contrast);
+  background: var(--launch-blue);
+  font-family: var(--font-display);
+}
+
+.launchpad-top,
+.launchpad-footer,
+.launchpad-link-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.launchpad-top {
+  gap: 16px;
+  font-family: var(--font-main);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.launchpad-brand {
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+}
+
+.launchpad-main {
+  width: min(100%, 920px);
+  margin: 10px auto 0;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.launchpad-eyebrow,
+.launchpad-footer {
+  font-family: var(--font-main);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.launchpad-title {
+  margin: 6px 0 clamp(12px, 2vh, 18px);
+  font-size: clamp(4.4rem, 17vw, 10rem);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.launchpad-title span {
+  display: block;
+}
+
+.launchpad-logo {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.launchpad-links {
+  flex: 1;
+  min-height: 0;
+  border-top: 1px solid color-mix(in srgb, var(--accent-contrast) 55%, transparent);
+  display: flex;
+  flex-direction: column;
+}
+
+.launchpad-link {
+  width: 100%;
+  min-height: 76px;
+  padding: 6px 4px;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent-contrast) 55%, transparent);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  transition: padding 180ms ease, color 180ms ease, background 180ms ease;
+}
+
+a.launchpad-link:hover,
+a.launchpad-link:focus-visible {
+  padding-right: 20px;
+  padding-left: 20px;
+  color: var(--text-main);
+  background: var(--accent-light);
+  outline: none;
+}
+
+.launchpad-link-meta {
+  font-family: var(--font-main);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.launchpad-link-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: clamp(3rem, 11vw, 6.5rem);
+  font-family: var(--font-display);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+}
+
+.launchpad-arrow {
+  flex: 0 0 auto;
+  font-family: Arial, sans-serif;
+  font-size: 0.42em;
+  font-weight: 400;
+}
+
+.launchpad-link-disabled {
+  color: color-mix(in srgb, var(--accent-contrast) 48%, transparent);
+}
+
+.launchpad-link-disabled .launchpad-link-title {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: color-mix(in srgb, var(--accent-contrast) 42%, transparent);
+}
+
+.launchpad-footer {
+  gap: 12px;
+  margin-top: 8px;
+  color: color-mix(in srgb, var(--accent-contrast) 76%, transparent);
+}
+
+@media (max-width: 480px) {
+  .launchpad {
+    padding: 18px 22px 10px;
+  }
+
+  .launchpad-top,
+  .launchpad-footer {
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+  }
+
+  .launchpad-title {
+    font-size: clamp(3.5rem, 16vw, 5.8rem);
+  }
+
+  .launchpad-link-title {
+    font-size: clamp(2.8rem, 11vw, 4.2rem);
+  }
+}
+
+/* Mobile Drawer */
+.mobile-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+}
+
+.mobile-drawer-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 82%;
+  max-width: 340px;
+  background: var(--surface);
+  z-index: 201;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.mobile-drawer.active {
+  transform: translateX(0);
+}
+
+.mobile-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-nav-list {
+  list-style: none;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mobile-nav-link {
+  font-size: 1.125rem;
+  font-weight: 500;
+  display: block;
+  padding: 6px 0;
+}
+

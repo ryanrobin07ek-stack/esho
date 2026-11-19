@@ -6,6 +6,7 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import initSqlJs from 'sql.js';
 import { WEBSITE_THEME_CATALOG } from '../src/theme-catalog.js';
+import { readAppSource } from './helpers/app-source.mjs';
 import {
   classifyQrCode, createPosApp, matchProductLabel, MIN_IMAGE_MATCH_SIMILARITY,
   parseProductLabel, rankImageMatches, suggestImageCategories
@@ -137,7 +138,7 @@ test('POS product and inventory rows expose pencil and trash actions', async () 
   assert.match(source, /productDetailsCards\('\/pos\/inventory', 'inventory'\)/);
   assert.match(source, /summaryMode === 'inventory'[\s\S]*?in stock/);
   assert.match(source, /categoryDetailsCards\(\)/);
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /\.pos-row-actions \.pos-icon-action \{[\s\S]*?border: 0 !important;[\s\S]*?background: transparent !important/);
   assert.match(pageSource, /\.pos-row-actions \.product-list-delete \{[\s\S]*?color: var\(--danger\)/);
   assert.match(pageSource, /@media \(max-width: 520px\) \{[\s\S]*?\.pos-catalogue-desktop-list \{\s*display: none/);
@@ -149,7 +150,7 @@ test('POS product and inventory rows expose pencil and trash actions', async () 
 test('Orders removes the New sale border and quotations use selectable three-column product cards', async () => {
   const [source, pageSource] = await Promise.all([
     readFile(new URL('../src/pos.js', import.meta.url), 'utf8'),
-    readFile(new URL('../index.html', import.meta.url), 'utf8')
+    readAppSource({ lf: true })
   ]);
   const orders = source.match(/function renderOrders\(\) \{([\s\S]*?)\n  \}/)?.[1];
   const quotations = source.match(/function renderQuotations\(\) \{([\s\S]*?)\n  \}/)?.[1];
@@ -169,7 +170,7 @@ test('Orders removes the New sale border and quotations use selectable three-col
 test('More keeps its three destinations in separate full-width cards', async () => {
   const [source, pageSource] = await Promise.all([
     readFile(new URL('../src/pos.js', import.meta.url), 'utf8'),
-    readFile(new URL('../index.html', import.meta.url), 'utf8')
+    readAppSource({ lf: true })
   ]);
   const more = source.match(/function renderMore\(\) \{([\s\S]*?)\n  \}/)?.[1];
 
@@ -184,7 +185,7 @@ test('More keeps its three destinations in separate full-width cards', async () 
 
 test('workspace screen navigation uses side drawers and loading placeholders use skeletons', async () => {
   const [pageSource, posSource] = await Promise.all([
-    readFile(new URL('../index.html', import.meta.url), 'utf8'),
+    readAppSource({ lf: true }),
     readFile(new URL('../src/pos.js', import.meta.url), 'utf8')
   ]);
   assert.match(pageSource, /renderWorkspaceSidebar\(title, items, activeRoute\)[\s\S]*?workspace-sidebar-scrim[\s\S]*?workspace-sidebar-links[\s\S]*?aria-current="page"/);
@@ -240,7 +241,7 @@ test('barcode and QR scanning formats route safely without treating QR text as a
 
 test('loading website stock imports local website products into POS without admin-key sync', async () => {
   const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
-  const appSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const appSource = await readAppSource({ lf: true });
   const sync = posSource.match(/async function syncSharedStock\(source\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  function toast/)?.[1];
   assert.ok(sync, 'POS shared stock flow should be present.');
   assert.match(sync, /let catalog = bridge\.localCatalog\(websiteId\)[\s\S]*?if \(\(!catalog \|\| !catalog\.products\?\.length\) && navigator\.onLine !== false\) \{\s*catalog = await bridge\.catalog\(websiteId\)/);
@@ -253,7 +254,7 @@ test('loading website stock imports local website products into POS without admi
 });
 
 test('embedded theme preview replaces demo catalog and resolves merchant product categories', async () => {
-  const appSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const appSource = await readAppSource({ lf: true });
   const seed = {
     categories: [{ id: 'demo-food', name: 'Demo food' }],
     products: [{ id: 'demo-burger', name: 'Drizzle Artisan Burger', categoryIds: ['demo-food'] }]
@@ -408,7 +409,7 @@ test('Android POS exposes same-shop Bluetooth phone-to-phone snapshot sync', asy
 
 test('published Craft storefront batches anonymous events without per-action product-interest writes', async () => {
   const runtime = await readFile(new URL('../public/craft-storefront-cloudflare.js', import.meta.url), 'utf8');
-  const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const app = await readAppSource({ lf: true });
   assert.match(runtime, /window\.__ESHOP_CLOUDFLARE_STOREFRONT__ !== true/);
   assert.doesNotMatch(runtime, /\/api\/product-interest/);
   assert.match(runtime, /__ESHOP_TRACK_STOREFRONT_EVENT__/);
@@ -536,7 +537,7 @@ test('published storefront customers can opt in to Web Push on their device', as
 
 test('storefront app installation is owner-controlled and opens only after a shopper taps', async () => {
   const runtime = await readFile(new URL('../public/craft-storefront-cloudflare.js', import.meta.url), 'utf8');
-  const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const app = await readAppSource({ lf: true });
   assert.match(app, /name="installPromptEnabled"[\s\S]*?Enable the app install invitation for shoppers/);
   assert.match(app, /install_prompt_enabled: data\.get\("installPromptEnabled"\) \? 1 : 0/);
 
@@ -679,7 +680,7 @@ test('Litrus checkout creates a server order from the live cart', async () => {
 
 test('nearby Wi-Fi pairing needs one phone scan and asks the PC operator before transfer', async () => {
   const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
-  const appBridge = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const appBridge = await readAppSource({ lf: true });
   assert.match(posSource, /The phone scans this register’s QR once/);
   assert.match(posSource, /encrypted POS transfer goes directly over the same Wi-Fi/);
   assert.match(posSource, /nearbyPairing\(tenantId, 'GET'[\s\S]*?relayOffer\.offer[\s\S]*?nearbyPairing\(tenantId, 'POST'[\s\S]*?action: 'answer'/);
@@ -693,7 +694,7 @@ test('nearby Wi-Fi pairing needs one phone scan and asks the PC operator before 
 });
 
 test('Studio payment setup captures the active tenant and allows retry after a timed-out bank request', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const capacitorConfig = await readFile(new URL('../capacitor.config.ts', import.meta.url), 'utf8');
   const studioLoader = pageSource.match(/async loadMainShopWorkspace\(path\) \{([\s\S]*?)\n  \},\n\n  [a-zA-Z]/)?.[1];
   assert.ok(studioLoader, 'Studio workspace event handlers should have a bounded loader scope.');
@@ -707,7 +708,7 @@ test('Studio payment setup captures the active tenant and allows retry after a t
 });
 
 test('new websites inherit Paystack from the app account instead of collecting website-specific bank details', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const websiteSetup = pageSource.match(/id="new-website-form"([\s\S]*?)<\/form>/)?.[1];
   const websiteSubmit = pageSource.match(/const newWebsiteForm = document\.getElementById\("new-website-form"\);([\s\S]*?)\n    \}\n    if \(newWebsiteForm\?\.querySelector/)?.[1];
   assert.ok(websiteSetup, 'Website setup should have a bounded form.');
@@ -733,12 +734,12 @@ test('legacy Kinetic and Veluna themes are not selectable storefronts', () => {
 });
 
 test('hosted theme editor keeps SPA hash navigation inside the preview iframe', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /previewDocument\.addEventListener\("click", event => \{[\s\S]*?event\.target\?\.closest\?\.\("a\[href\]"\)[\s\S]*?href\?\.startsWith\("#\/"\)[\s\S]*?event\.preventDefault\(\)[\s\S]*?event\.stopImmediatePropagation\(\)[\s\S]*?previewWindow\.location\.hash = href/);
 });
 
 test('Main Store shows Split products beside Categories in the Products navigation', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /products:\s*\[[\s\S]*?route: "\/store\/categories", title: "Categories"\s*\},\s*\{\s*route: "\/store\/split-shop", title: "Split products"/);
   assert.match(pageSource, /if \(path === "\/store\/split-shop"\) return this\.renderSplitShop\(snapshot, activeTenant\)/);
   assert.match(pageSource, /"\/store\/categories", "\/store\/inventory", "\/store\/split-shop"/);
@@ -746,7 +747,7 @@ test('Main Store shows Split products beside Categories in the Products navigati
 });
 
 test('M-Pesa workspace is removed and old deep links return to home', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const [bootstrap, archivedUi, archivedTools] = await Promise.all([
     readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8'),
     readFile(new URL('../archive/mpesa-ui/index.html.snapshot', import.meta.url), 'utf8'),
@@ -765,7 +766,7 @@ test('M-Pesa notification listener is archived and absent from the active app', 
     readFile(new URL('../android/app/src/main/AndroidManifest.xml', import.meta.url), 'utf8'),
     readFile(new URL('../android/app/src/main/java/com/eshop/atelier/MainActivity.java', import.meta.url), 'utf8'),
     readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8'),
-    readFile(new URL('../index.html', import.meta.url), 'utf8'),
+    readAppSource({ lf: true }),
     readFile(new URL('../src/pos.js', import.meta.url), 'utf8'),
     readFile(new URL('../archive/mpesa-notification-listener/android/app/src/main/java/com/eshop/atelier/MpesaNotificationListenerService.kt', import.meta.url), 'utf8'),
     readFile(new URL('../archive/mpesa-notification-listener/android/app/src/main/java/com/eshop/atelier/MpesaNotificationParser.kt', import.meta.url), 'utf8'),
@@ -795,7 +796,7 @@ test('M-Pesa notification listener is archived and absent from the active app', 
 });
 
 test('classic inline app script avoids Vite rewriting dynamic module imports', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const bootstrap = await readFile(new URL('../src/bootstrap.js', import.meta.url), 'utf8');
   assert.doesNotMatch(pageSource, /await import\(["']\//);
   assert.match(pageSource, /EshopThemeRuntime\.loadEditableStorefrontTheme\(\)/);
@@ -804,7 +805,7 @@ test('classic inline app script avoids Vite rewriting dynamic module imports', a
 });
 
 test('filled themes use the shared fill engine while legacy adapter behavior remains available', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const workerSource = await readFile(new URL('../cloudflare/worker.js', import.meta.url), 'utf8');
   const adapter = await readFile(new URL('../public/theme-catalog-adapter.js', import.meta.url), 'utf8');
   assert.match(pageSource, /fillThemeForShop\(theme\.id, catalog/);
@@ -830,7 +831,7 @@ test('filled themes use the shared fill engine while legacy adapter behavior rem
 });
 
 test('Theme Studio replaces the legacy website editor and keeps final setup', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const editor = pageSource.match(/renderWebsiteEditor\(isNewWebsite = false\) \{([\s\S]*?)\n  \},\n\n  renderWebsiteStoreEditor/)?.[1];
   assert.ok(editor, 'The existing website editor should render.');
   assert.match(editor, /new-website-form/);
@@ -838,7 +839,7 @@ test('Theme Studio replaces the legacy website editor and keeps final setup', as
 });
 
 test('Craft app branding uses the supplied shopping bag icon and launcher label', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const capacitorConfig = await readFile(new URL('../capacitor.config.ts', import.meta.url), 'utf8');
   const androidStrings = await readFile(new URL('../android/app/src/main/res/values/strings.xml', import.meta.url), 'utf8');
   const webManifest = JSON.parse(await readFile(new URL('../public/manifest.webmanifest', import.meta.url), 'utf8'));
@@ -854,7 +855,7 @@ test('Craft app branding uses the supplied shopping bag icon and launcher label'
 });
 
 test('app account includes email recovery and sends verified reset codes to the Worker', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const accountRenderer = pageSource.match(/renderAppAccount\(\) \{([\s\S]*?)\n  \},\n\n  render[^]*?\(/)?.[1];
   assert.ok(accountRenderer, 'The app-account screen should be rendered.');
   assert.match(accountRenderer, /id="app-account-email-field" hidden[\s\S]*?name="email" type="email"/);
@@ -865,7 +866,7 @@ test('app account includes email recovery and sends verified reset codes to the 
 });
 
 test('existing website editor routes stay pinned to the selected tenant', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const routeTenantSelection = pageSource.match(/if \(\(path === "\/account\/web\/site" && params\.get\("new"\) !== "1" \|\| path === "\/account\/web\/store"\) && params\.has\("tenant"\)\) \{([\s\S]*?)\n    \}\n    if \(path === "\/account\/web\/site" && params\.get\("new"\) === "1"\)/)?.[1];
   const editHandler = pageSource.match(/const editWebsite = e\.target\.closest\("\[data-edit-website\]"\);([\s\S]*?)\n      }\n\n      const editStore/)?.[1];
   assert.ok(routeTenantSelection, 'Opening an editor URL should resolve its explicit website tenant.');
@@ -876,7 +877,7 @@ test('existing website editor routes stay pinned to the selected tenant', async 
 });
 
 test('Craft opens the saved website dashboard and hides the main shop from website lists', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /const initialPath = path === "\/account\/web"\s*\?\s*"\/account\/web\/studio\/dashboard\/overview"/);
   assert.match(pageSource, /const visibleWebsites = websites\s*\.filter\(website => website\.id !== "main"\)\s*\.sort\(\(a, b\) => Number\(b\.id === activeTenant\.id\) - Number\(a\.id === activeTenant\.id\)\)/);
   assert.match(pageSource, /website\.id === activeTenant\.id \? '<span class="profile-current-website-badge">Currently managing<\/span>'/);
@@ -886,7 +887,7 @@ test('Craft opens the saved website dashboard and hides the main shop from websi
 });
 
 test('product media saves locally before publishing and handles native gallery results', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
   const mediaSave = pageSource.match(/} else if \(kind === "web-product"\) \{([\s\S]*?)\n            \} else if \(kind === "loyalty-settings"\)/)?.[1];
   const compression = pageSource.match(/async compressImageFile\(file, \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  formatMoney/)?.[0];
@@ -993,7 +994,7 @@ test('product media saves locally before publishing and handles native gallery r
 });
 
 test('web-only product entry keeps the requested field order and saves optional buying price', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const form = pageSource.match(/<form class="store-workspace-form" data-studio-form="web-product"[\s\S]*?<\/form>/)?.[0];
   assert.ok(form, 'The Web-only product form should be available even without existing categories.');
   const positions = [
@@ -1018,7 +1019,7 @@ test('web-only product entry keeps the requested field order and saves optional 
 });
 
 test('catalog publishing bounds concurrent media work and preserves item order', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const publishModal = pageSource.match(/openCloudflarePublishModal\(publishImmediately = false\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  initStudioModals/)?.[1];
   const concurrencyHelper = publishModal?.match(/const mapWithConcurrency = async \(items, limit, worker\) => \{[\s\S]*?\r?\n        \};/)?.[0];
   assert.ok(concurrencyHelper, 'Catalog publishing should define a bounded media worker.');
@@ -1037,12 +1038,12 @@ test('catalog publishing bounds concurrent media work and preserves item order',
 });
 
 test('Store bulk hold actions use the soft silver card style', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /body\.craft-app-ui #app \.store-bulk-actions \[data-bulk-product-holds\],[\s\S]*?border-radius:\s*12px;[\s\S]*?background:\s*linear-gradient\(145deg,\s*#fff 0%,\s*#f0f0f0 100%\)/);
 });
 
 test('Craft orders render as spacious silver cards with a concise Load action', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /class="studio-list-row studio-order-card"/);
   assert.match(pageSource, /class="studio-list-row studio-order-card studio-online-order-card"[\s\S]*?studio-order-header[\s\S]*?studio-order-items[\s\S]*?studio-order-controls/);
   assert.match(pageSource, /studio-list-row\.studio-order-card\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*0;[^}]*max-height:\s*none;[^}]*padding:\s*14px;[^}]*background:\s*linear-gradient\(145deg,\s*#dedede 0%,\s*#c4c4c4 100%\)/);
@@ -1051,14 +1052,14 @@ test('Craft orders render as spacious silver cards with a concise Load action', 
 });
 
 test('Craft booking Load buttons are compact rounded silver controls', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /data-online-appointments-load aria-label="Load appointments">Load/);
   assert.match(pageSource, /data-online-holds-load aria-label="Load hold requests">Load/);
   assert.match(pageSource, /body\.craft-app-ui #app \.studio-load-button\s*\{[^}]*min-height:\s*30px;[^}]*height:\s*30px;[^}]*padding:\s*4px 11px;[^}]*border-radius:\s*999px !important;[^}]*background:\s*linear-gradient\(145deg,\s*#dedede 0%,\s*#c4c4c4 100%\)/);
 });
 
 test('Craft CRM separates Customers, Points, and Subscribers with bulk subscriber removal', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /title: "Customers", route: "\/account\/web\/studio\/crm\/customers", contentPath: "\/account\/customers"[\s\S]*?title: "Points", route: "\/account\/web\/studio\/crm\/points", contentPath: "\/account\/customers\/loyalty"[\s\S]*?title: "Subscribers", route: "\/account\/web\/studio\/crm\/subscribers", contentPath: "\/account\/customers\/newsletter"/);
   assert.match(pageSource, /data-newsletter-select-all><span>Select all subscribers<\/span>/);
   assert.match(pageSource, /data-newsletter-subscriber-select value="\$\{AppUtils\.escapeHTML\(subscriber\.id\)\}"/);
@@ -1068,7 +1069,7 @@ test('Craft CRM separates Customers, Points, and Subscribers with bulk subscribe
 });
 
 test('Performance visits, orders, and revenue use compact full-width cards', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const performance = pageSource.match(/if \(path === "\/account\/main-shop\/performance" \|\| path === "\/store\/revenue"\) \{([\s\S]*?)\r?\n    \}\r?\n    if \(path === "\/account\/main-shop\/product-intelligence"\)/)?.[1];
   assert.ok(performance, 'Performance should have a dedicated metrics section.');
   assert.match(performance, /studio-performance-metrics[\s\S]*?performanceMetrics\.map/);
@@ -1079,7 +1080,7 @@ test('Performance visits, orders, and revenue use compact full-width cards', asy
 });
 
 test('Main Store uses compact silver shortcuts and has no separate insights screen', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const businessLensSource = await readFile(new URL('../src/business-lens.js', import.meta.url), 'utf8');
   assert.doesNotMatch(pageSource, /Cloud storefront orders could not be loaded/);
   assert.match(pageSource, /const mainStoreShortcuts = businessPath === "\/account\/main-shop"[\s\S]*?<\/nav>`\s*:\s*"";/);
@@ -1101,7 +1102,7 @@ test('Main Store uses compact silver shortcuts and has no separate insights scre
 });
 
 test('Main Store opens a compact product editor with cross-channel add, edit, and delete', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const businessLensSource = await readFile(new URL('../src/business-lens.js', import.meta.url), 'utf8');
   assert.match(businessLensSource, /Product leaderboard · revenue[\s\S]*?main-store-product-entry[\s\S]*?Products sold/);
   assert.match(businessLensSource, /href="\/store\/products\/manage" data-route="\/store\/products\/manage"><span>Edit products<\/span>/);
@@ -1141,7 +1142,7 @@ test('Main Store opens a compact product editor with cross-channel add, edit, an
 });
 
 test('Web Studio website products and categories can be removed without deleting Store/POS records', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const websiteWorkspace = pageSource.match(/if \(path === "\/store\/products"\) \{([\s\S]*?)\r?\n    \}\r?\n    if \(path === "\/store\/categories"\)/)?.[1];
   const categoryWorkspace = pageSource.match(/if \(path === "\/store\/categories"\) \{([\s\S]*?)\r?\n    \}\r?\n    if \(path === "\/store\/inventory"\)/)?.[1];
   const productRemoval = pageSource.match(/document\.querySelectorAll\("\[data-remove-website-product\]"\)([\s\S]*?)document\.querySelectorAll\("\[data-remove-website-category\]"\)/)?.[1];
@@ -1180,7 +1181,7 @@ test('Web Studio website products and categories can be removed without deleting
 });
 
 test('Web Studio can add multiple Store products at once and carries their images into the website catalog', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const productsWorkspace = pageSource.match(/if \(path === "\/store\/products"\) \{([\s\S]*?)\n    \}\n    if \(path === "\/store\/categories"\)/)?.[1];
   const importHandler = pageSource.match(/document\.querySelectorAll\("\.store-existing-product-form"\)\.forEach\(form => \{([\s\S]*?)\n      const addProductTrigger/)?.[1];
   assert.ok(productsWorkspace, 'Web Studio should render the website product workspace.');
@@ -1194,7 +1195,7 @@ test('Web Studio can add multiple Store products at once and carries their image
 });
 
 test('managing a website opens its Web Studio products and exposes publishing', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const manageHandler = pageSource.match(/const manageWebsite = e\.target\.closest\("\[data-manage-website\]"\);([\s\S]*?)\r?\n      }\r?\n\r?\n      const editWebsite/)?.[1];
   assert.ok(manageHandler, 'Website management should have a dedicated click handler.');
   assert.match(manageHandler, /this\.setActiveTenantCatalog\([\s\S]*?this\.navigate\("\/account\/web\/studio\/store\/products"\)/);
@@ -1207,7 +1208,7 @@ test('managing a website opens its Web Studio products and exposes publishing', 
 });
 
 test('new-website workspace keeps Store import and web-product actions without restoring the theme picker', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const posSource = await readFile(new URL('../src/pos.js', import.meta.url), 'utf8');
   const websitesNavigation = pageSource.match(/title: "Websites",([\s\S]*?)\n      \},\n      \{\n        title: "Payments"/)?.[1];
   assert.ok(websitesNavigation, 'Websites tabs should have a bounded navigation entry.');
@@ -1261,7 +1262,7 @@ test('new-website workspace keeps Store import and web-product actions without r
 });
 
 test('new Litrus draft image search omits shop auth and keeps image data local until publishing', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const cloudflareRequestStart = pageSource.indexOf('async cloudflareRequest(path');
   const cloudflareRequestEnd = pageSource.indexOf('\n  async loadTenantCatalog', cloudflareRequestStart);
   const cloudflareRequest = pageSource.slice(cloudflareRequestStart, cloudflareRequestEnd);
@@ -1289,7 +1290,7 @@ test('new Litrus draft image search omits shop auth and keeps image data local u
 });
 
 test('new website draft discards a stale Chapa catalog and rejects non-main theme routes', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const prepareDraft = pageSource.match(/async prepareWebsiteBuilderDraftTenant\(draft, themeId\) \{([\s\S]*?)\n  \},\n\n  restoreWebsiteBuilderPreviousTenant/)?.[1];
   assert.ok(prepareDraft, 'The draft preparation method should be available.');
 
@@ -1417,7 +1418,7 @@ test('new website draft discards a stale Chapa catalog and rejects non-main them
 });
 
 test('new website source catalog merges POS-only items without replacing Main Store inventory', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const sourceCatalog = pageSource.match(/async websiteBuilderSourceCatalog\(\) \{([\s\S]*?)\n  \},\n\n  async prepareWebsiteBuilderDraftTenant/)?.[1];
   assert.ok(sourceCatalog, 'The shared Store/POS catalog loader should be available.');
   const SQLiteEngine = {
@@ -1477,7 +1478,7 @@ test('new website source catalog merges POS-only items without replacing Main St
 });
 
 test('new websites start with a clean draft and each shop has a dedicated domains screen', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /resetWebsiteBuilderDraft\(\) \{[\s\S]*?removeItem\("ESHOP_NEW_WEBSITE_DRAFT_V1"\)[\s\S]*?removeItem\(WEBSITE_BUILDER_DRAFT_SYNC_KEY\)[\s\S]*?tenant_catalogs = AppController\.tenantCatalogs\(\)\.filter/);
   assert.match(pageSource, /website-management-new" href="\/account\/web\/studio\/websites\/webmaker" data-start-new-website>\+ New web/);
   assert.match(pageSource, /const domainsRoute = `\/account\/profile\/webs\/\$\{encodeURIComponent\(domainTenantId\)\}\/domains`;/);
@@ -1492,7 +1493,7 @@ test('new websites start with a clean draft and each shop has a dedicated domain
 });
 
 test('main app inline script parses before packaging', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const inlineScripts = [...pageSource.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
     .filter(script => !/\bsrc\s*=/.test(script[1]));
   const appScript = inlineScripts.find(script => !/\btype\s*=\s*["']module["']/i.test(script[1]));
@@ -1504,7 +1505,7 @@ test('main app inline script parses before packaging', async () => {
 });
 
 test('home and app screens are a flat full-screen app with white cards', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const visualTheme = await readFile(new URL('../src/app-visual-theme.css', import.meta.url), 'utf8');
   const homeStyle = pageSource.match(/\.home-screen\s*\{([^}]*)\}/)?.[1];
   assert.ok(homeStyle, 'The home screen should define its own color treatment.');
@@ -1519,13 +1520,13 @@ test('home and app screens are a flat full-screen app with white cards', async (
 });
 
 test('app screens do not load or rotate decorative background images', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.doesNotMatch(pageSource, /data-home-background|data-app-screen-background|home-backgrounds\/|app-backgrounds\//);
   assert.doesNotMatch(pageSource, /app-background-emblem|setupHomeBackground|setupAppScreenBackground/);
 });
 
 test('home summary metrics are compact full-width cards', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const metricGrid = pageSource.match(/\.home-metric-grid\s*\{([^}]*)\}/)?.[1];
   const metricCard = pageSource.match(/\.home-data-card\s*\{([^}]*)\}/)?.[1];
   const launchpad = pageSource.match(/renderLaunchpad\(\)\s*\{[\s\S]*?return `([\s\S]*?)`;\s*\n\s*\},/)?.[1];
@@ -1540,7 +1541,7 @@ test('home summary metrics are compact full-width cards', async () => {
 });
 
 test('recent orders show a short product name, payment amount and POS or Web', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /const nameCharacters = Array\.from\(itemName\);[\s\S]*?nameCharacters\.length > 12[\s\S]*?nameCharacters\.slice\(0,\s*11\)\.join\(""\)/);
   assert.match(pageSource, /const channelLabel = \/web\|online\/i\.test\(String\(sale\.channel \|\| ""\)\) \? "Web" : "POS"/);
   assert.match(pageSource, /<strong>\$\{AppUtils\.escapeHTML\(itemLabel\)\}<\/strong>[\s\S]*?<small>\$\{channelLabel\}<\/small>[\s\S]*?<strong>\$\{AppUtils\.escapeHTML\(money\(sale\.total\)\)\}<\/strong>[\s\S]*?<small>Payment<\/small>/);
@@ -1549,13 +1550,13 @@ test('recent orders show a short product name, payment amount and POS or Web', a
 });
 
 test('mobile Studio notifications sit above the fixed bottom navigation', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   assert.match(pageSource, /@media \(max-width: 680px\)\s*\{\s*body\.app-shell \.toast-container\s*\{[^}]*bottom:\s*calc\(88px \+ env\(safe-area-inset-bottom,\s*0px\)\)[^}]*z-index:\s*1101/);
   assert.match(pageSource, /body\.app-shell \.toast\s*\{[^}]*width:\s*min\(100%,\s*560px\)/);
 });
 
 test('website currency control is native-app-only in Payments, not in the website editor', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const storeEditor = pageSource.match(/renderWebsiteStoreEditor\(\) \{([\s\S]*?)\n  \},\n\n  renderProductsManager/)?.[1];
   const payments = pageSource.match(/if \(path === "\/account\/payments"\) \{([\s\S]*?)\n    \}\n    if \(path === "\/store\/orders"/)?.[1];
   const currencyBinder = pageSource.match(/const websiteCurrencyForm = container\.querySelector\("\[data-app-website-currency\]"\);([\s\S]*?)\n    const branchesUrl/)?.[1];
@@ -1575,7 +1576,7 @@ test('website currency control is native-app-only in Payments, not in the websit
 });
 
 test('app shell keeps readable text on white surfaces while preserving accent button contrast', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const themeSettingsStart = pageSource.indexOf('  applyThemeSettings(appearance = this.getStudioAppearance()) {');
   const themeSettingsEnd = pageSource.indexOf('  setAppShellTheme(', themeSettingsStart);
   const themeSettings = themeSettingsStart >= 0 && themeSettingsEnd > themeSettingsStart
@@ -1590,7 +1591,7 @@ test('app shell keeps readable text on white surfaces while preserving accent bu
 });
 
 test('home navigation drawer links directly to My Shops outside builder preview', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const mobileDrawer = pageSource.match(/<!-- Mobile Navigation Drawer -->([\s\S]*?)<\/div>\s*`/);
   assert.ok(mobileDrawer, 'Home navigation should include a mobile drawer.');
   assert.match(mobileDrawer[1], /href="\/account\/tenants" class="mobile-nav-link" data-route="\/account\/tenants">My shops<\/a>/);
@@ -1598,7 +1599,7 @@ test('home navigation drawer links directly to My Shops outside builder preview'
 });
 
 test('storefront checkout clearly continues to Paystack after submitting an order', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const checkout = pageSource.match(/renderCheckout\(\) \{([\s\S]*?)\n  \},\n\n  renderOrderConfirmation/)?.[1];
   assert.ok(checkout, 'Storefront checkout should have a bounded renderer.');
   assert.match(checkout, /Submit your order to continue to Paystack’s secure payment page/);
@@ -1608,7 +1609,7 @@ test('storefront checkout clearly continues to Paystack after submitting an orde
 });
 
 test('app catalog caching and publishing read hold duration from the workspace settings renderer', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const catalogCache = pageSource.match(/cacheActiveTenantCatalog\(\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  setActiveTenantCatalog/)?.[1];
   const publishStore = pageSource.match(/const publishStore = \{([\s\S]*?)\r?\n        \};/)?.[1];
   assert.ok(catalogCache, 'The active tenant catalog cache should have a bounded method.');
@@ -1620,7 +1621,7 @@ test('app catalog caching and publishing read hold duration from the workspace s
 });
 
 test('storefront hold eligibility can be updated for all or selected products at once', async () => {
-  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const pageSource = await readAppSource({ lf: true });
   const helper = pageSource.match(/setWebsiteProductHoldState\(productIds, enabled\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  setActiveTenantCatalog/)?.[1];
   assert.ok(helper, 'The shared product hold updater should have a bounded method.');
   assert.match(pageSource, /data-store-holds-all="enable"/);
@@ -1854,7 +1855,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.equal((overviewMarkup.match(/class="pos-overview-metric"/g) || []).length, 5);
     assert.match(overviewMarkup, /class="pos-card pos-revenue-card"/);
     assert.match(app.render('/pos'), /<span>Sell<\/span>/);
-    const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+    const pageSource = await readAppSource({ lf: true });
     for (const [index, script] of [...pageSource.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries()) {
       if (/\bsrc\s*=/.test(script[1])) continue;
       assert.doesNotThrow(() => new Script(script[2], { filename: `index.html:inline-script-${index + 1}` }));

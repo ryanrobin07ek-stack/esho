@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { readAppSource } from "./helpers/app-source.mjs";
 
 const posSource = await readFile(new URL("../src/pos.js", import.meta.url), "utf8");
-const appStyles = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const appStyles = await readAppSource();
 
 test("POS Sell keeps checkout floating while products remain scrollable", () => {
   const mobileStart = appStyles.indexOf("@media (max-width: 760px)");

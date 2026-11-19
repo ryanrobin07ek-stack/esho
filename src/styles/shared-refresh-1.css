@@ -1,0 +1,391 @@
+/* Shared visual refresh for storefront, Studio, builder, and POS routes. */
+:root {
+  --bg: #FFFFFF;
+  --surface: #ffffff;
+  --surface-subtle: #F5F5F5;
+  --surface-hover: #EBEBEB;
+  --text-main: #18181B;
+  --text-muted: #66666B;
+  --text-dim: #8A8A90;
+  --border: #E2E2E5;
+  --border-subtle: #F0F0F1;
+  --accent: #18181B;
+  --accent-hover: #333337;
+  --accent-light: #F1F1F2;
+  --accent-contrast: #ffffff;
+  --badge-bg: #F0F0F1;
+  --badge-text: #3A3A3D;
+  --success: #23734D;
+  --success-bg: #E8F7EF;
+  --warning: #A66417;
+  --warning-bg: #FFF5E6;
+  --danger: #A33B46;
+  --danger-bg: #FFF0F1;
+  --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-serif: var(--font-main);
+  --font-display: var(--font-main);
+  --radius: 5px;
+  --radius-sm: 3px;
+  --radius-lg: 8px;
+  --shadow-sm: 0 1px 2px rgba(42, 102, 160, 0.06);
+  --shadow-md: 0 2px 8px rgba(42, 102, 160, 0.08);
+  --shadow-lg: 0 8px 24px rgba(42, 102, 160, 0.12);
+  --transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+  --container-max: 1280px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body,
+body.app-shell,
+body.app-shell #app {
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: var(--font-main);
+}
+
+.container {
+  padding-right: 24px;
+  padding-left: 24px;
+}
+
+.navbar {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.nav-container,
+.studio-module-navbar .nav-container {
+  min-height: 60px;
+  height: 60px;
+}
+
+.brand-logo,
+.studio-module-title,
+.pos-brand {
+  color: var(--text-main);
+  font-family: var(--font-main);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.studio-module-brand img {
+  width: 32px;
+  height: 32px;
+}
+
+.brand-dot {
+  background: var(--accent);
+}
+
+.nav-link {
+  color: var(--text-muted);
+  font-weight: 550;
+}
+
+.nav-link.active::after {
+  height: 2px;
+  background: var(--accent);
+}
+
+.nav-icon-btn,
+.mobile-menu-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+.studio-module-navbar .studio-profile-btn {
+  border: 1px solid #000;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+}
+
+.nav-icon-btn:hover,
+.mobile-menu-btn:hover {
+  border-color: #b9b8ad;
+  background: var(--surface-subtle);
+  color: var(--text-main);
+}
+
+.studio-module-navbar .studio-profile-btn:hover {
+  border-color: #222;
+  background: #222;
+  color: #fff;
+}
+
+.btn-studio-pill,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.app-account-password-toggle {
+  min-height: 42px;
+  height: auto;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-primary,
+.btn-primary:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-secondary,
+.btn-studio-pill {
+  background: var(--surface);
+  color: var(--text-main);
+}
+
+.btn-secondary:hover,
+.btn-studio-pill:hover {
+  border-color: #b9b8ad;
+  background: var(--surface-subtle);
+  color: var(--text-main);
+}
+
+.btn-danger {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-studio-pill:focus-visible,
+.nav-icon-btn:focus-visible,
+.mobile-menu-btn:focus-visible,
+.studio-card:focus-visible,
+.launchpad-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+#app input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#app select,
+#app textarea,
+.search-input,
+.filter-select {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+#app input:focus,
+#app select:focus,
+#app textarea:focus,
+.search-input:focus,
+.filter-select:focus {
+  border-color: var(--accent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+#app input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#app select,
+#app textarea {
+  min-height: 44px;
+  padding: 9px 12px;
+}
+
+#app input[type="checkbox"],
+#app input[type="radio"] {
+  accent-color: var(--accent);
+}
+
+#app h1,
+#app h2,
+#app h3,
+#app h4 {
+  font-family: var(--font-main);
+  line-height: 1.25;
+}
+
+.section-heading,
+.studio-page-header h1,
+.profile-page-title,
+.pos-header h1,
+.pos-section-heading h2,
+.pos-section-heading h3,
+.pos-card h3,
+.pos-card h4,
+.app-account-title {
+  color: var(--text-main);
+  font-family: var(--font-main);
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  text-transform: none;
+}
+
+.section-heading {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.section-eyebrow,
+.studio-architecture-eyebrow,
+.launchpad-eyebrow,
+.app-account-kicker {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.studio-architecture-title {
+  font-family: var(--font-main);
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+  text-transform: none;
+}
+
+.launchpad {
+  width: 100%;
+  height: auto;
+  min-height: 100svh;
+  overflow: visible;
+  padding: max(28px, env(safe-area-inset-top)) clamp(20px, 5vw, 56px) max(22px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(ellipse at 92% 4%, rgba(154, 119, 79, 0.12), transparent 30%),
+    radial-gradient(ellipse at 5% 90%, rgba(113, 123, 96, 0.1), transparent 34%),
+    var(--bg);
+  color: var(--text-main);
+  font-family: var(--font-main);
+}
+
+.launchpad-top,
+.launchpad-footer {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.launchpad-brand {
+  color: var(--text-main);
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.launchpad-main {
+  width: min(100%, 900px);
+  margin: 24px auto 0;
+}
+
+.launchpad-title {
+  max-width: 12ch;
+  margin: 10px 0 28px;
+  font-family: var(--font-main);
+  font-size: clamp(2.4rem, 8vw, 4.5rem);
+  font-weight: 650;
+  letter-spacing: -0.055em;
+  line-height: 1.02;
+  text-transform: none;
+  white-space: normal;
+}
+
+.launchpad-title span {
+  display: block;
+}
+
+.launchpad-links {
+  border-top: 1px solid var(--border);
+}
+
+.launchpad-link {
+  min-height: 78px;
+  padding: 12px 4px;
+  border-bottom-color: var(--border);
+  color: var(--text-main);
+}
+
+a.launchpad-link:hover,
+a.launchpad-link:focus-visible {
+  padding-right: 8px;
+  padding-left: 8px;
+  background: var(--surface-subtle);
+  color: var(--text-main);
+}
+
+.launchpad-link-meta {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.launchpad-link-title {
+  font-family: var(--font-main);
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+.launchpad-arrow,
+.studio-card::after {
+  display: none;
+}
+
+.launchpad-link-disabled {
+  color: var(--text-dim);
+}
+
+.launchpad-link-disabled .launchpad-link-title {
+  text-decoration: none;
+}
+
+.launchpad-footer {
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.studio-nav-grid,
+.product-list {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.studio-card {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 74px;
+  padding: 16px 12px;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  background: var(--surface);
+  transition: background-color 140ms ease, border-color 140ms ease;
+}

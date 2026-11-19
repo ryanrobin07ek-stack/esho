@@ -1,0 +1,326 @@
+/* Metric KPI Cards */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+@media (max-width: 960px) {
+  .metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .metric-card {
+    padding: 12px;
+  }
+}
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+.metric-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.inventory-metrics {
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.inventory-metrics .metric-card {
+  gap: 4px;
+  padding: 10px;
+}
+
+.inventory-metrics .metric-label {
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.inventory-metrics .metric-value {
+  font-size: clamp(1rem, 4.5vw, 1.35rem);
+  overflow-wrap: anywhere;
+}
+
+.inventory-metrics .metric-card > span:last-child {
+  font-size: 0.625rem !important;
+  line-height: 1.25;
+}
+
+.inventory-list {
+  border-top: 1px solid var(--border);
+}
+
+.inventory-search {
+  width: 100%;
+  height: 42px;
+  margin: 0 0 10px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.inventory-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.inventory-item summary {
+  min-height: 58px;
+  padding: 8px 4px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.inventory-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.inventory-item-name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inventory-item-stock {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.inventory-item-price {
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.inventory-item-details {
+  padding: 4px 4px 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.inventory-item-details strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-main);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+}
+
+.inventory-item-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.inventory-edit-field {
+  min-width: 0;
+}
+
+.inventory-edit-field input {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.inventory-save-button {
+  width: auto !important;
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.plans-main {
+  padding-top: 12px !important;
+}
+
+.plans-main .studio-page-header h1 {
+  display: block;
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.plans-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 24px;
+}
+
+.plan-card {
+  min-width: 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.plan-card.is-current {
+  border: 2px solid var(--accent);
+}
+
+.plan-card-topline {
+  min-height: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.plan-card-topline .product-badge {
+  font-size: 0.625rem;
+  padding: 3px 7px;
+}
+
+.plan-card h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.2;
+}
+
+.plan-card-description {
+  min-height: 2.7em;
+  margin: 6px 0 12px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.plan-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.plan-card-price strong {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.plan-card-price span {
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+}
+
+.plan-card-features {
+  display: grid;
+  gap: 7px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.plan-card-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.plan-card-features svg {
+  flex: 0 0 14px;
+  margin-top: 1px;
+}
+
+.plan-card-more {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.plan-card-more summary {
+  width: fit-content;
+  margin-bottom: 8px;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.plan-card-action {
+  width: 100%;
+  min-height: 40px;
+  margin-top: auto;
+  padding: 6px 10px;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 600px) {
+  .plans-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .plan-card {
+    padding: 14px;
+  }
+
+  .plan-card-description {
+    min-height: 0;
+    margin-bottom: 9px;
+  }
+
+  .plan-card-features {
+    gap: 5px;
+  }
+}
+

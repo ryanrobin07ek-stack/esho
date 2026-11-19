@@ -1,0 +1,349 @@
+/* CHESSER visual system for Craft app screens only. */
+@font-face {
+  font-family: "Craft DM Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/dm-sans-400.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Craft DM Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/dm-sans-500.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Craft DM Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/dm-sans-700.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Craft Barlow Condensed";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/barlow-condensed-500.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Craft Barlow Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/barlow-condensed-600.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Craft Barlow Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/barlow-condensed-700.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Craft Barlow Condensed";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/barlow-condensed-800.ttf") format("truetype");
+}
+
+body.craft-app-ui {
+  background: #fafafa;
+  color: #050505;
+  font-family: "Craft DM Sans", "DM Sans", sans-serif;
+}
+
+body.craft-app-ui #app {
+  --bg: #fafafa;
+  --surface: #fff;
+  --surface-subtle: #f3f3f3;
+  --surface-hover: #e8e8e8;
+  --text-main: #050505;
+  --text-muted: #707070;
+  --text-dim: #929292;
+  --border: #dadada;
+  --border-subtle: #e5e5e5;
+  --badge-bg: #e5e5e5;
+  --badge-text: #303030;
+  --font-main: "Craft DM Sans", "DM Sans", sans-serif;
+  --font-serif: "Craft DM Sans", "DM Sans", sans-serif;
+  --font-display: "Craft Barlow Condensed", "Arial Narrow", sans-serif;
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-lg: 0px;
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: var(--font-main);
+}
+
+body.craft-app-ui #app h1,
+body.craft-app-ui #app h2,
+body.craft-app-ui #app h3,
+body.craft-app-ui #app h4,
+body.craft-app-ui #app .brand-logo,
+body.craft-app-ui #app .studio-module-title,
+body.craft-app-ui #app .pos-brand,
+body.craft-app-ui #app .launchpad-link-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+body.craft-app-ui #app .section-heading,
+body.craft-app-ui #app .studio-page-header h1,
+body.craft-app-ui #app .profile-page-title,
+body.craft-app-ui #app .pos-header h1,
+body.craft-app-ui #app .studio-workspace-title h1 {
+  font-size: clamp(1.75rem, 5vw, 2.8rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+body.craft-app-ui #app .navbar,
+body.craft-app-ui #app .studio-module-navbar {
+  background: #fafafa;
+  border-bottom: 1px solid #dadada;
+  box-shadow: none;
+}
+
+body.craft-app-ui #app .studio-card,
+body.craft-app-ui #app .category-circle-card,
+body.craft-app-ui #app .product-card,
+body.craft-app-ui #app .campaign-card,
+body.craft-app-ui #app .bag-item-card,
+body.craft-app-ui #app .order-summary-card,
+body.craft-app-ui #app .form-group-card,
+body.craft-app-ui #app .store-settings-card,
+body.craft-app-ui #app .modal-card,
+body.craft-app-ui #app .pos-product-tile,
+body.craft-app-ui #app .product-info-panel,
+body.craft-app-ui #app .website-theme-card,
+body.craft-app-ui #app .website-builder-card,
+body.craft-app-ui #app .studio-panel,
+body.craft-app-ui #app .studio-feature-panel,
+body.craft-app-ui #app .dashboard-card,
+body.craft-app-ui #app .pos-card,
+body.craft-app-ui #app .pos-overview-card,
+body.craft-app-ui #app .pos-revenue-card,
+body.craft-app-ui #app .metric-card,
+body.craft-app-ui #app .profile-page-card,
+body.craft-app-ui #app .settings-card,
+body.craft-app-ui #app .store-website-panel,
+body.craft-app-ui #app .store-workspace-card,
+body.craft-app-ui #app .studio-data-card,
+body.craft-app-ui #app .studio-department-content,
+body.craft-app-ui #app .plan-card,
+body.craft-app-ui #app .checkout-card,
+body.craft-app-ui #app .order-summary,
+body.craft-app-ui #app .store-workspace-form,
+body.craft-app-ui #app .home-store-card,
+body.craft-app-ui #app .bl-card {
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 12px !important;
+  background-color: #fff !important;
+  color: #050505 !important;
+  box-shadow: 0 18px 40px -28px #000 !important;
+}
+
+body.craft-app-ui #app .home-store-card {
+  border-color: #050505 !important;
+  background-color: #050505 !important;
+  color: #fff !important;
+  box-shadow: 0 18px 40px -28px #fff !important;
+}
+
+body.craft-app-ui #app .home-store-card {
+  min-height: 56px;
+  border-radius: 12px !important;
+}
+
+body.craft-app-ui #app .pos-overview-card {
+  border-color: #111 !important;
+  background-color: #111 !important;
+  color: #fff !important;
+}
+
+body.craft-app-ui #app .store-workspace-row {
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+body.craft-app-ui #app .studio-card:nth-child(3n + 1) {
+  transform: rotate(-.35deg);
+}
+
+body.craft-app-ui #app .studio-card:nth-child(3n) {
+  transform: rotate(.3deg);
+}
+
+body.craft-app-ui #app .nav-container,
+body.craft-app-ui #app .studio-module-navbar .nav-container {
+  min-height: 56px;
+  height: 56px;
+  gap: 8px;
+}
+
+body.craft-app-ui #app .studio-module-back > svg,
+body.craft-app-ui #app .pos-brand-back > svg,
+body.craft-app-ui #app .studio-workspace-back > svg {
+  flex-basis: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+body.craft-app-ui #app .studio-module-back {
+  gap: 7px;
+}
+
+body.craft-app-ui #app .studio-module-title {
+  font-size: 1rem;
+  letter-spacing: .1em;
+}
+
+body.craft-app-ui #app .studio-workspace-heading {
+  min-height: 34px;
+  gap: 8px;
+  margin-bottom: 4px;
+  justify-content: space-between;
+}
+
+body.craft-app-ui #app .studio-workspace-back {
+  flex-basis: 30px;
+  width: 30px;
+  height: 30px;
+}
+
+body.craft-app-ui #app .studio-workspace-tab-title {
+  font-size: .98rem;
+  letter-spacing: .07em;
+  text-align: right;
+}
+
+body.craft-app-ui #app .pos-header {
+  min-height: 34px;
+  padding-bottom: 2px;
+}
+
+body.craft-app-ui #app .pos-brand-back {
+  min-height: 30px;
+  gap: 7px;
+  font-size: .9rem;
+}
+
+body.craft-app-ui #app .studio-module-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: #050505;
+}
+
+body.craft-app-ui #app .studio-module-back > svg,
+body.craft-app-ui #app .pos-brand-back > svg,
+body.craft-app-ui #app .studio-workspace-back > svg {
+  display: block;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+body.craft-app-ui #app .studio-module-title {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+
+body.craft-app-ui #app .pos-brand-back {
+  gap: 10px;
+}
+
+body.craft-app-ui #app .pos-brand-back img {
+  display: none;
+}
+
+body.craft-app-ui #app .studio-workspace-heading {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 30px;
+  margin: 0 0 4px;
+  padding: 0;
+  border: 0;
+}
+
+body.craft-app-ui #app .web-studio-shell {
+  padding-top: 2px !important;
+}
+
+body.craft-app-ui #app .studio-workspace-back {
+  display: grid;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #050505;
+}
+
+body.craft-app-ui #app .studio-workspace-tab-title {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: .92rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-align: right;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+
+body.craft-app-ui #app .web-studio-shell .studio-panel .studio-list-row {
+  display: flex;
+  box-sizing: border-box;
+  height: 68px;
+  min-height: 68px;
+  max-height: 68px;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  padding: 8px 10px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 18px 40px -28px #000;
+}
+
+body.craft-app-ui #app .btn-primary,
+body.craft-app-ui #app .btn-secondary,
+body.craft-app-ui #app .btn-studio-pill,
+body.craft-app-ui #app .btn-danger,
+body.craft-app-ui #app button,
+body.craft-app-ui #app input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+body.craft-app-ui #app select,
+body.craft-app-ui #app textarea {
+  border-radius: 0;
+  font-family: var(--font-main);
+}
+
+body.craft-app-ui #app .web-product-actions .web-product-action-card,
+body.craft-app-ui #app .store-bulk-actions [data-bulk-product-holds],
+body.craft-app-ui #app .store-bulk-actions [data-bulk-remove],
+body.craft-app-ui #app .newsletter-refresh-button {
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #fff 0%, #f0f0f0 100%);
+  color: #111;
+  box-shadow: 0 12px 24px -22px #000;
+}

@@ -4,6 +4,7 @@ import test from 'node:test';
 import initSqlJs from 'sql.js';
 import { fileURLToPath } from 'node:url';
 import { createPosApp } from '../src/pos.js';
+import { readAppSource } from './helpers/app-source.mjs';
 
 test('POS overview refreshes saved sales and includes unpaid receipts in the recorded-sales total', async () => {
   const SQL = await initSqlJs({
@@ -92,7 +93,7 @@ test('POS overview refreshes saved sales and includes unpaid receipts in the rec
     assert.match(paymentsTab, /KES\s*0\.00/);
     assert.match(paymentsTab, /Outstanding credit/);
     assert.match(paymentsTab, /1 unpaid receipts/);
-    const appStyles = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+    const appStyles = await readAppSource();
     assert.match(appStyles, /body\.craft-app-ui #app \.pos-overview-card\s*\{[^}]*background-color:\s*#111 !important;[^}]*color:\s*#fff !important;/);
     assert.match(appStyles, /\.pos-overview-controls \.pos-ranges\s*\{[^}]*flex:\s*1 1 0[^}]*width:\s*auto/);
     assert.match(appStyles, /\.pos-content \.pos-overview-refresh\s*\{[^}]*width:\s*32px !important[^}]*height:\s*32px !important/);
