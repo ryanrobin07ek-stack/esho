@@ -164,7 +164,27 @@ export function bindProductVariantFields(widget) {
     });
   };
 
+  const valuePricesMarkup = option => (option.values.length ? `<div class="product-variant-value-prices">
+        <span>Price change per value (optional)</span>
+        ${option.values.map(value => `<label><span>${escapeHtml(value.value)}</span>
+          <input type="number" step="0.01" data-variant-value-price="${escapeHtml(value.value)}"
+            value="${escapeHtml(String(value.priceDelta || 0))}" inputmode="decimal"></label>`).join('')}
+      </div>` : '');
+
+  // The name and values boxes are only built when an option is added or removed. Rebuilding them
+  // on every update replaced the box under the owner's finger: finish typing a name, tap the
+  // values box, and it vanished and the keyboard closed. Updates now only redraw the price rows.
   const renderOptionBlocks = () => {
+    const blocks = [...optionsHost.querySelectorAll('[data-variant-option]')];
+    if (blocks.length === options.length) {
+      blocks.forEach((block, index) => {
+        block.querySelector('.product-variant-value-prices')?.remove();
+        const markup = valuePricesMarkup(options[index]);
+        if (markup) block.querySelector('.form-grid')?.insertAdjacentHTML('afterend', markup);
+      });
+      addOption.disabled = options.length >= MAX_OPTIONS;
+      return;
+    }
     optionsHost.innerHTML = options.map((option, index) => `<div class="product-variant-option" data-variant-option="${index}">
       <div class="form-grid">
         <label>Option ${index + 1} name<input type="text" data-variant-option-name maxlength="80"
@@ -172,12 +192,7 @@ export function bindProductVariantFields(widget) {
         <label>Option ${index + 1} values<input type="text" data-variant-option-values maxlength="1000"
           value="${escapeHtml(option.values.map(value => value.value).join(', '))}" placeholder="e.g. 250 g, 500 g"></label>
       </div>
-      ${option.values.length ? `<div class="product-variant-value-prices">
-        <span>Price change per value (optional)</span>
-        ${option.values.map(value => `<label><span>${escapeHtml(value.value)}</span>
-          <input type="number" step="0.01" data-variant-value-price="${escapeHtml(value.value)}"
-            value="${escapeHtml(String(value.priceDelta || 0))}" inputmode="decimal"></label>`).join('')}
-      </div>` : ''}
+      ${valuePricesMarkup(option)}
       <button type="button" class="btn-secondary" data-variant-remove-option>Remove this option</button>
     </div>`).join('');
     addOption.disabled = options.length >= MAX_OPTIONS;
@@ -275,6 +290,37 @@ export function bindProductVariantFields(widget) {
     }
     options.splice(Number(block.dataset.variantOption), 1);
     safeRender();
+  });
+
+  // The price boxes used to appear only on "change", which a text box fires when it loses focus.
+  // An owner typing "S, M, L" and looking for where to put prices saw nothing at all. Now they
+  // appear once typing pauses, and the cursor is put back where it was.
+  let typingTimer;
+  optionsHost.addEventListener('input', event => {
+    const target = typeof event.target?.matches === 'function' ? event.target : null;
+    // Only the values box: re-drawing while the name is typed would drop the keyboard for nothing.
+    if (!target?.matches('[data-variant-option-values]')) return;
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+      if (document.activeElement !== target) return;
+      const index = Number(target.closest('[data-variant-option]')?.dataset.variantOption);
+      const selector = target.matches('[data-variant-option-values]')
+        ? '[data-variant-option-values]'
+        : '[data-variant-option-name]';
+      const caret = target.selectionStart;
+      try {
+        capture();
+        render();
+      } catch (error) {
+        status.textContent = error instanceof Error ? error.message : 'Product options could not be updated.';
+        return;
+      }
+      const again = optionsHost.querySelectorAll('[data-variant-option]')[index]?.querySelector(selector);
+      if (again) {
+        again.focus();
+        try { again.setSelectionRange(caret, caret); } catch { /* not every input type supports it */ }
+      }
+    }, 600);
   });
 
   optionsHost.addEventListener('change', () => {

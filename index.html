@@ -13238,6 +13238,7 @@ const StudioRenderers = {
         <label>Description<textarea name="description" rows="3"></textarea></label>
         <div data-wizard-product-taxonomy></div>
         <div data-wizard-product-variants></div>
+        <div class="web-product-attribute-pricing" data-wizard-product-attribute-pricing></div>
         <div class="web-product-media">
           <label data-wizard-photo-label>Add photos (up to 8)<input type="file" accept="image/*" data-wizard-product-images multiple></label>
           <div class="web-product-media-modes" role="group" aria-label="Product media type">
@@ -16956,6 +16957,8 @@ const StudioRenderers = {
             }
           });
           variantsHost.innerHTML = window.EshopProductVariants.createProductVariantFields({
+            // Reopening a product must bring back its third option and per-value prices too.
+            options: Array.isArray(product?.options) ? product.options : [],
             option1Name: product?.option1_name || "",
             option2Name: product?.option2_name || "",
             sizes: product?.sizes || [],
@@ -21011,6 +21014,9 @@ const AppController = {
         });
         window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyHost);
         variantsHost.innerHTML = window.EshopProductVariants.createProductVariantFields({
+          // Without the saved options list, a third option and every per-value price reset to 0
+          // the moment a product was reopened for editing.
+          options: Array.isArray(product?.options) ? product.options : [],
           option1Name: product?.option1_name || "",
           option2Name: product?.option2_name || "",
           sizes: product?.sizes || [],
@@ -21018,7 +21024,24 @@ const AppController = {
           variants: product?.variants || []
         });
         window.EshopProductVariants.bindProductVariantFields(variantsHost.firstElementChild || variantsHost);
+        // The new-store wizard is where most products are made, and it had no way to charge by
+        // attribute; only the Craft store form and the till did.
+        const pricingHost = productForm.querySelector("[data-wizard-product-attribute-pricing]");
+        if (pricingHost) {
+          pricingHost.innerHTML = window.EshopAttributePricing.createAttributePricingFields({
+            pricedAttributes: product?.priced_attributes || []
+          });
+          window.EshopAttributePricing.bindAttributePricingFields(
+            pricingHost.firstElementChild || pricingHost,
+            () => window.EshopProductTaxonomy.readAvailableTaxonomyAttributes(productForm)
+          );
+        }
       };
+      // Picking a category changes which attributes exist, so the pricing editor follows at once.
+      productForm.addEventListener("product-taxonomy-change", () => {
+        productForm.querySelector("[data-wizard-product-attribute-pricing] [data-attribute-pricing]")
+          ?.refreshAttributePricing?.();
+      });
       const renderDraftProducts = () => {
         const allProducts = StudioRenderers.websiteBuilderDraft().products;
         const query = productSearch.value.trim().toLocaleLowerCase();
@@ -21303,6 +21326,9 @@ const AppController = {
             taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
             taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
             taxonomy_attributes: taxonomy.taxonomyAttributes,
+            priced_attributes: window.EshopAttributePricing.readAttributePricingFields(
+              productForm.querySelector("[data-wizard-product-attribute-pricing] [data-attribute-pricing]")
+            ),
             ...variants,
             stock: variants.stock ?? stock
           };
