@@ -1,4 +1,3 @@
-import { registerPlugin } from '@capacitor/core';
 import { isReversedSale } from './revenue-definition.js';
 import {
   bindProductTaxonomyFields,
@@ -55,13 +54,12 @@ import {
   listQuotations, saveQuotation, deleteQuotation, convertQuotationToInvoice
 } from './till/quotations.js';
 import { listInstances, startInstance, updateInstance, instanceTotals } from './till/instances.js';
+import { NearbyBluetooth } from './till/native-plugins.js';
 export {
   classifyQrCode, parseProductLabel, matchProductLabel, MIN_IMAGE_MATCH_SIMILARITY,
   suggestImageCategories, rankImageMatches
 } from './till/product-matching.js';
 export { POS_SAFETY_COPY_TABLES, recoverInterruptedBulkChange } from './till/safety-copy.js';
-
-const NearbyBluetooth = registerPlugin('NearbyBluetooth');
 
 export function createPosApp() {
   const state = { cart: [], invoiceItems: [], invoiceDraftId: null, search: '', category: '', expandedSale: 0, paymentMethod: '',
