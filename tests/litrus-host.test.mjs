@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { createLitrusHostMessageHandler, isValidLitrusHtml, SHOP_CHANGED_MESSAGE } from '../src/litrus-host.js';
+import { readAppSource } from './helpers/app-source.mjs';
 
 const ORIGIN = 'https://app.test';
 const goodHtml = '<!doctype html><html><head><meta name="eshop-filled-theme" content="litrus-mixer"></head></html>';
@@ -125,7 +126,7 @@ test('a failed save is reported to the editor and never opens the publish dialog
 });
 
 test('the builder Store button opens the store details of the shop being edited', async () => {
-  const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const app = await readAppSource();
   assert.match(app, /id="builder-litrus-store-details" href="\/account\/web\/store\?tenant=\$\{encodeURIComponent\(tenant\.id\)\}"/);
   assert.match(app, /path === "\/account\/web\/store"\) && params\.has\("tenant"\)/,
     'The store route activates the shop named in the link before rendering.');

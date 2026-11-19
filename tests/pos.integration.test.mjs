@@ -6,7 +6,8 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import initSqlJs from 'sql.js';
 import { WEBSITE_THEME_CATALOG } from '../src/theme-catalog.js';
-import { readAppSource } from './helpers/app-source.mjs';
+import { spawnSync } from 'node:child_process';
+import { APP_SCRIPT, appScriptFiles, readAppSource } from './helpers/app-source.mjs';
 import {
   classifyQrCode, createPosApp, matchProductLabel, MIN_IMAGE_MATCH_SIMILARITY,
   parseProductLabel, rankImageMatches, suggestImageCategories
@@ -1493,14 +1494,18 @@ test('new websites start with a clean draft and each shop has a dedicated domain
 });
 
 test('main app inline script parses before packaging', async () => {
-  const pageSource = await readAppSource({ lf: true });
+  const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   const inlineScripts = [...pageSource.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
     .filter(script => !/\bsrc\s*=/.test(script[1]));
-  const appScript = inlineScripts.find(script => !/\btype\s*=\s*["']module["']/i.test(script[1]));
-  assert.ok(appScript, 'The app should have an inline application script.');
-  assert.doesNotThrow(() => new Script(appScript[2], { filename: 'index.html:inline-app-script' }));
-  for (const script of inlineScripts.filter(item => /\btype\s*=\s*["']module["']/i.test(item[1]))) {
-    assert.doesNotThrow(() => new Script(script[2], { filename: 'index.html:inline-module-script' }));
+  for (const script of inlineScripts) {
+    assert.doesNotThrow(() => new Script(script[2], { filename: 'index.html:inline-script' }));
+  }
+  // The app script is an ES module now: src/app/main.js and the screen and shell modules it imports.
+  const appFiles = await appScriptFiles();
+  assert.ok(appFiles.includes(APP_SCRIPT), 'The app should have its application script.');
+  for (const file of appFiles) {
+    const result = spawnSync(process.execPath, ['--check', file], { encoding: 'utf8' });
+    assert.equal(result.status, 0, `${file} should parse: ${result.stderr}`);
   }
 });
 
@@ -1856,7 +1861,8 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(overviewMarkup, /class="pos-card pos-revenue-card"/);
     assert.match(app.render('/pos'), /<span>Sell<\/span>/);
     const pageSource = await readAppSource({ lf: true });
-    for (const [index, script] of [...pageSource.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries()) {
+    const indexHtml = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+    for (const [index, script] of [...indexHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)].entries()) {
       if (/\bsrc\s*=/.test(script[1])) continue;
       assert.doesNotThrow(() => new Script(script[2], { filename: `index.html:inline-script-${index + 1}` }));
     }

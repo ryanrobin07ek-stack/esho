@@ -20,13 +20,36 @@ export async function readAppStyles({ lf = false } = {}) {
   return lf ? toLf(text) : text;
 }
 
-// index.html with the moved styles put back where its <style> block was (just before the
-// theme-color meta tag), so a pattern that used to match index.html, in order, still does.
+// The app script moved from index.html into src/app/main.js, which imports the screen and shell
+// modules split out of it.
+export const APP_SCRIPT = "src/app/main.js";
+const APP_SCRIPT_TAG = `<script type="module" src="/${APP_SCRIPT}"></script>`;
+
+// main.js and every module it imports from src/screens and src/shell, in import order.
+export async function appScriptFiles() {
+  const main = await read(APP_SCRIPT);
+  const modules = [...main.matchAll(/^import \{[^}]*\} from '\.\.\/((?:screens|shell)\/[\w/-]+\.js)';/gm)].map(match => `src/${match[1]}`);
+  return [APP_SCRIPT, ...modules];
+}
+
+// The app script: main.js followed by the modules split out of it.
+export async function readAppScript({ lf = false } = {}) {
+  const text = (await Promise.all((await appScriptFiles()).map(read))).join("\n");
+  return lf ? toLf(text) : text;
+}
+
+// index.html with what moved out of it put back in place: the styles where its <style> block was
+// (just before the theme-color meta tag) and the app script where its inline <script> was. A
+// pattern that used to match index.html, in order, still does.
 export async function readAppSource({ lf = false } = {}) {
-  const html = await read("index.html");
+  let html = await read("index.html");
   const styles = await readAppStyles();
   const anchor = html.search(/^ *<meta name="theme-color"/m);
   const at = anchor >= 0 ? anchor : html.indexOf("</head>");
-  const text = `${html.slice(0, at)}${styles}\n${html.slice(at)}`;
-  return lf ? toLf(text) : text;
+  html = `${html.slice(0, at)}${styles}\n${html.slice(at)}`;
+  if (html.includes(APP_SCRIPT_TAG)) {
+    const script = await readAppScript();
+    html = html.replace(APP_SCRIPT_TAG, () => `<script type="module" data-app-script>\n${script}\n</script>`);
+  }
+  return lf ? toLf(html) : html;
 }

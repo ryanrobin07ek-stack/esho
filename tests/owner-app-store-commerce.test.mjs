@@ -3,12 +3,13 @@ import { readFile as readFileRaw } from "node:fs/promises";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 import * as ServiceModel from "../src/service-model.js";
+import { readAppSource } from "./helpers/app-source.mjs";
 
 const readFile = async (path, options) => {
   const contents = await readFileRaw(path, options);
   return typeof contents === "string" ? contents.replace(/\r\n/g, "\n") : contents;
 };
-const app = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const app = await readAppSource({ lf: true });
 const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, character =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 

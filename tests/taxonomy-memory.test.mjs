@@ -4,9 +4,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { readAppSource } from "./helpers/app-source.mjs";
 
 const source = await readFile(new URL("../src/product-taxonomy.js", import.meta.url), "utf8");
-const appHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const appHtml = await readAppSource();
 const has = (text, snippet, why) => assert.ok(text.includes(snippet), `${why}\nmissing: ${snippet}`);
 
 test("the encoded string is freed, but the bytes are kept so it can be decoded again", () => {

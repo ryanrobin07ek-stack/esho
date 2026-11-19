@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFile, stat } from "node:fs/promises";
 import test from "node:test";
+import { readAppSource } from "./helpers/app-source.mjs";
 
-const appHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const appHtml = await readAppSource();
 const bootstrap = await readFile(new URL("../src/bootstrap.js", import.meta.url), "utf8");
 const styles = await readFile(
   new URL("../android/app/src/main/res/values/styles.xml", import.meta.url),

@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { readFile as readFileRaw } from "node:fs/promises";
 import test from "node:test";
 import { JSDOM } from "jsdom";
+import { readAppSource } from "./helpers/app-source.mjs";
 
-const app = (await readFileRaw(new URL("../index.html", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
+const app = (await readAppSource()).replace(/\r\n/g, "\n");
 const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, character =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 const AppUtils = { escapeHTML, showToast() {} };

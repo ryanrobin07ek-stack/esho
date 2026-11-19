@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import initSqlJs from 'sql.js';
 import { createPosApp } from '../src/pos.js';
+import { readAppSource } from './helpers/app-source.mjs';
 
 // Behavioural tests for the paths that can replace or wipe a shop's catalogue: restoring an
 // inventory backup, replacing a browser register from the cloud, background sync deletions,
@@ -275,7 +276,7 @@ test('background sync refuses to apply a mass deletion of the local catalogue un
 });
 
 test('opening a restored database with empty WebView storage never resets the catalogue', async () => {
-  const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const app = await readAppSource();
   const start = app.indexOf('  async init(seedCategories, seedProducts, seedStore, seedPlans, seedAnalytics) {');
   const end = app.indexOf('\n  seedInitial(', start);
   assert.ok(start > 0 && end > start, 'SQLiteEngine.init should be extractable.');
@@ -332,7 +333,7 @@ test('opening a restored database with empty WebView storage never resets the ca
 });
 
 test('the one-time builder reset never blanks a restored shop and survives blocked storage', async () => {
-  const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const app = await readAppSource();
   const start = app.indexOf('  async resetBuildYourWebDataOnce() {');
   const end = app.indexOf('\n  // Studio CRUD for Products', start);
   assert.ok(start > 0 && end > start, 'resetBuildYourWebDataOnce should be extractable.');

@@ -4,8 +4,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { isService, offerTypeForCatalogue, serviceDuration } from "../src/service-model.js";
+import { readAppSource } from "./helpers/app-source.mjs";
 
-const appHtml = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const appHtml = await readAppSource();
 const bootstrap = await readFile(new URL("../src/bootstrap.js", import.meta.url), "utf8");
 
 test("the web product form asks what the item is and how long it takes", () => {

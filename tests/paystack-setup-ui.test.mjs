@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { readAppSource } from "./helpers/app-source.mjs";
 
-const pageSource = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const pageSource = await readAppSource();
 const loadSetup = pageSource.match(/const loadSetup = async \(\) => \{([\s\S]*?)retry\?\.addEventListener/)?.[1] || "";
 const setupErrors = loadSetup.match(/const errors = \[([\s\S]*?)\n      \];/)?.[1] || "";
 

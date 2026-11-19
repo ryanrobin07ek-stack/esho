@@ -3,6 +3,7 @@ import { readFile as readFileRaw } from "node:fs/promises";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 import { JSDOM, VirtualConsole } from "jsdom";
+import { readAppSource } from "./helpers/app-source.mjs";
 
 const readFile = async (path, options) => {
   const contents = await readFileRaw(path, options);
@@ -75,7 +76,7 @@ test("Litrus editor preview supports product details, add to bag, and wishlist h
 });
 
 test("existing website editors preserve the saved theme instead of forcing Litrus", async () => {
-  const app = await readFile(new URL("../index.html", import.meta.url), "utf8");
+  const app = await readAppSource({ lf: true });
   const start = app.indexOf("renderWebsiteEditor(isNewWebsite = false) {");
   const end = app.indexOf("\n  renderWebsiteStoreEditor(", start);
   assert.ok(start >= 0 && end > start);

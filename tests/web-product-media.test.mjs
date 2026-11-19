@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { readAppSource } from "./helpers/app-source.mjs";
 
-const app = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const app = await readAppSource();
 
 test("website product form accepts and stores up to eight product photos", () => {
   assert.match(app, /imageInput\.multiple = true/);

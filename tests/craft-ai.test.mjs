@@ -6,6 +6,7 @@ import worker from '../cloudflare/worker.js';
 import { CRAFT_AI_SCREEN_DIRECTORY } from '../src/craft-ai-screens.js';
 import { buildLocalAnalytics } from '../src/local-analytics.js';
 import { REVENUE_DEFINITION } from '../src/revenue-definition.js';
+import { readAppSource } from './helpers/app-source.mjs';
 
 function evaluateAssistant(dom, source) {
   dom.window.CraftAiScreenDirectory = CRAFT_AI_SCREEN_DIRECTORY;
@@ -343,7 +344,7 @@ test('Craft AI retries malformed successful provider responses and returns a use
 });
 
 test('Craft AI UI mounts on management screens and discloses provider processing', async () => {
-  const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const app = await readAppSource();
   const assistant = await readFile(new URL('../src/craft-ai.js', import.meta.url), 'utf8');
   assert.match(app, /src="\/src\/craft-ai\.js"/);
   assert.match(app, /window\.CraftAI\?\.mount/);

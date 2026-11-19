@@ -74,8 +74,9 @@ test("Web Studio product upload offers photos, 360° spin, video, and cutout mod
 });
 
 test("storefront visit history records customer pages, not Craft app screens", async () => {
-  for (const file of ["../index.html", "../www/index.html"]) {
-    const source = await readFile(new URL(file, import.meta.url), "utf8");
+  // www/ is build output where the app script is now bundled and minified, so only the source is checked.
+  for (const file of ["the app source"]) {
+    const source = await readAppSource({ lf: true });
     const methodStart = source.indexOf("  isStorefrontVisitPath(path) {");
     const methodEnd = source.indexOf("\n  recordWebVisit(path) {", methodStart);
     assert.ok(methodStart >= 0 && methodEnd > methodStart, `${file} should have a bounded visit classifier.`);

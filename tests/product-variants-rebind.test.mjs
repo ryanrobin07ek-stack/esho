@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { JSDOM } from 'jsdom';
+import { readAppSource } from './helpers/app-source.mjs';
 import {
   bindProductVariantFields, createProductVariantFields, readProductVariantFields
 } from '../src/product-variants.js';
@@ -52,7 +53,7 @@ test('binding the section reopens a saved product with its sizes and per-size pr
 });
 
 test('the owner app binds the section, so saving again cannot blank the options', async () => {
-  const source = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const source = await readAppSource();
   const calls = [...source.matchAll(/bindProductVariantFields\(([^)]*)\)/g)].map(match => match[1].trim());
   assert.ok(calls.length >= 3, 'every product form binds the variant fields');
   for (const argument of calls) {

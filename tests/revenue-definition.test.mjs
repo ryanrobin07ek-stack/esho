@@ -5,6 +5,7 @@ import { JSDOM } from 'jsdom';
 import { buildLocalAnalytics } from '../src/local-analytics.js';
 import { isPaidSale, isReversedSale, saleDiscount, saleOutstanding, saleRevenue, sumRevenue } from '../src/revenue-definition.js';
 import * as ServiceModel from '../src/service-model.js';
+import { readAppSource } from './helpers/app-source.mjs';
 
 const NOW = Date.parse('2026-06-30T12:00:00.000Z');
 const daysAgo = days => new Date(NOW - days * 86400000).toISOString();
@@ -271,7 +272,7 @@ test('the AI helper pages through appointments from the last 30 days and reports
 });
 
 test('the Craft AI services list follows the product, not the shop type', async () => {
-  const app = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const app = await readAppSource();
   const start = app.indexOf('        listServices: () => SQLiteEngine');
   assert.ok(start > 0, 'listServices should be defined from the catalogue.');
   const end = app.indexOf(String.fromCharCode(10) + '      });', start);
