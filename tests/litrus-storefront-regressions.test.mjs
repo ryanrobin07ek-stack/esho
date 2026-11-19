@@ -2861,3 +2861,82 @@ test("a published product page reprices itself as the shopper picks each option"
     window.close();
   }
 });
+
+test("a published page reprices as priced attributes are chosen, and a mixed shop still books its services", () => {
+  const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/", runScripts: "outside-only" });
+  const { window } = dom;
+  const data = {
+    shop: { key: "mixed-shop", cur: "KES", products: [] },
+    pages: {
+      home: '<main class="sp-main"><section class="prods"></section></main>',
+      shop: '<main class="sp-main"><div class="sp-top"><h1></h1><p></p></div><section class="prods"></section></main>',
+      "p/template": '<main class="sp-main"><div class="sp-top"><h1></h1></div><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p><div class="sp-buy"><button data-act="addqty">Add to cart</button></div></div></div></main>'
+    },
+    templates: { productCard: '<article data-pid=""><h3 class="p-title"></h3><div class="p-price"></div><button class="p-btn" data-act="addqty">Add to bag</button></article>' }
+  };
+  window.__ESHOP_THEME_CATALOG__ = {
+    categories: [{ id: 1, name: "Shoes", slug: "shoes" }],
+    // A shop that sells goods and time side by side.
+    store: { name: "Mixed", currency: "KES", offer_type: "both" },
+    products: [
+      {
+        id: 1, name: "Poplin Shirt", slug: "shirt", price: 1000, stock: 7, category_id: 1,
+        images: [], description: "A shirt.",
+        priced_attributes: [{
+          attributeId: "a9", attributeName: "Footwear material",
+          values: [{ value: "Canvas", priceDelta: 0 }, { value: "Leather", priceDelta: 500 }]
+        }]
+      },
+      {
+        id: 2, name: "Haircut", slug: "haircut", price: 500, stock: 0, category_id: 1,
+        images: [], description: "A cut.", duration_minutes: 45
+      }
+    ]
+  };
+  window.__ESHOP_TRACK_STOREFRONT_EVENT__ = () => {};
+  let pageFor = () => "";
+  window.SPRT = options => {
+    pageFor = options.page;
+    window.document.getElementById("store").innerHTML = options.page("shop");
+    return { go(route) { window.document.getElementById("store").innerHTML = options.page(route); } };
+  };
+  try {
+    window.eval(runtime);
+    window.litrusStartLiveStore(data);
+    const store = window.document.getElementById("store");
+    store.innerHTML = pageFor("p/1");
+    const price = () => store.querySelector(".sp-price").textContent;
+    assert.equal(price(), "KES 1,000");
+
+    const select = store.querySelector('[data-priced-attribute="Footwear material"]');
+    assert.ok(select, "a priced attribute is something the shopper can choose");
+    const offered = [...select.options].map(option => option.textContent);
+    assert.ok(offered.some(text => text.includes("Leather (+KES 500)")),
+      `the price of a choice is shown before it is made: ${offered.join(", ")}`);
+
+    select.value = "Leather";
+    select.dispatchEvent(new window.Event("change", { bubbles: true }));
+    assert.equal(price(), "KES 1,500", "clicking through attributes changes the price");
+    select.value = "Canvas";
+    select.dispatchEvent(new window.Event("change", { bubbles: true }));
+    assert.equal(price(), "KES 1,000");
+    select.value = "";
+    select.dispatchEvent(new window.Event("change", { bubbles: true }));
+    assert.equal(price(), "KES 1,000", "clearing the choice returns to the base price");
+
+    // The haircut in the same shop is booked, not bagged.
+    store.innerHTML = pageFor("p/2");
+    const buyArea = store.querySelector(".sp-buy");
+    assert.ok(!buyArea || buyArea.hidden || buyArea.style.display === "none",
+      "a service does not offer Add to bag, even in a shop that also sells goods");
+    assert.ok(store.querySelector("[data-litrus-service-booking-form]"),
+      "a service in a mixed shop still offers its booking form");
+
+    // And the shirt in that same shop keeps its buy area.
+    store.innerHTML = pageFor("p/1");
+    const shirtBuy = store.querySelector(".sp-buy");
+    assert.ok(shirtBuy && !shirtBuy.hidden, "the shirt is still bought, not booked");
+  } finally {
+    window.close();
+  }
+});

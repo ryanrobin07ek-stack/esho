@@ -3,6 +3,7 @@ import { isReversedSale } from './revenue-definition.js';
 import {
   bindProductTaxonomyFields,
   createProductTaxonomyFields,
+  readAvailableTaxonomyAttributes,
   readProductTaxonomyFields
 } from './product-taxonomy.js';
 import {
@@ -10,6 +11,17 @@ import {
   createProductVariantFields,
   readProductVariantFields
 } from './product-variants.js';
+import {
+  bindAttributePricingFields,
+  createAttributePricingFields,
+  readAttributePricingFields
+} from './attribute-pricing-fields.js';
+import {
+  chosenAttributeLabel,
+  normalizeChosenAttributes,
+  normalizePricedAttributes,
+  priceWithAttributes
+} from './attribute-pricing.js';
 
 import {
   DEFAULT_SERVICE_MINUTES, SERVICE_MAX_MINUTES, SERVICE_MIN_MINUTES, SERVICE_STEP_MINUTES,
@@ -319,6 +331,7 @@ async function initializePosDatabase() {
       taxonomy_custom_category TEXT,
       taxonomy_attributes_json TEXT NOT NULL DEFAULT '[]',
       variants_json TEXT NOT NULL DEFAULT '[]',
+      priced_attributes_json TEXT NOT NULL DEFAULT '[]',
       image_embedding BLOB,
       low_stock_threshold INTEGER NOT NULL DEFAULT 3 CHECK (low_stock_threshold >= 0),
       active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0,1)),
@@ -423,7 +436,9 @@ async function initializePosDatabase() {
       unit_cost_cents INTEGER,
       unit_cost_captured INTEGER NOT NULL DEFAULT 0,
       variant_id TEXT,
-      variant_label TEXT
+      variant_label TEXT,
+      attributes_json TEXT,
+      attributes_label TEXT
     );
     CREATE TABLE IF NOT EXISTS pos_sale_payments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -567,6 +582,9 @@ async function initializePosDatabase() {
   if (!productColumns.some((column) => column.name === 'supplier_id')) {
     await run('ALTER TABLE pos_products ADD COLUMN supplier_id TEXT');
   }
+  if (!productColumns.some((column) => column.name === 'priced_attributes_json')) {
+    await run("ALTER TABLE pos_products ADD COLUMN priced_attributes_json TEXT NOT NULL DEFAULT '[]'");
+  }
   if (!productColumns.some((column) => column.name === 'variants_json')) {
     await run("ALTER TABLE pos_products ADD COLUMN variants_json TEXT NOT NULL DEFAULT '[]'");
   }
@@ -576,6 +594,12 @@ async function initializePosDatabase() {
   }
   if (!saleItemColumns.some((column) => column.name === 'variant_label')) {
     await run('ALTER TABLE pos_sale_items ADD COLUMN variant_label TEXT');
+  }
+  if (!saleItemColumns.some((column) => column.name === 'attributes_json')) {
+    await run('ALTER TABLE pos_sale_items ADD COLUMN attributes_json TEXT');
+  }
+  if (!saleItemColumns.some((column) => column.name === 'attributes_label')) {
+    await run('ALTER TABLE pos_sale_items ADD COLUMN attributes_label TEXT');
   }
   const invoiceColumns = await rows('PRAGMA table_info(pos_invoices)');
   if (!invoiceColumns.some((column) => column.name === 'status')) {
@@ -727,6 +751,7 @@ async function listProducts() {
   return rows(`SELECT p.id, p.name, p.sku, p.barcode, p.expiry_date AS expiryDate, p.category_id AS categoryId, c.name AS categoryName,
     p.taxonomy_category_id AS taxonomyCategoryId, p.taxonomy_custom_category AS taxonomyCustomCategory,
     p.taxonomy_attributes_json AS taxonomyAttributesJson, p.variants_json AS variantsJson,
+    p.priced_attributes_json AS pricedAttributesJson,
     p.price_cents, p.buying_price_cents, p.stock_count AS stock, p.image_uri AS imageUri,
     hex(p.image_embedding) AS imageEmbeddingHex,
     p.low_stock_threshold AS lowStockThreshold, p.active,
@@ -740,6 +765,7 @@ async function listProducts() {
       taxonomyCustomCategory: item.taxonomyCustomCategory || '',
       taxonomyAttributes: JSON.parse(item.taxonomyAttributesJson || '[]'),
       variants: JSON.parse(item.variantsJson || '[]'),
+      pricedAttributes: JSON.parse(item.pricedAttributesJson || '[]'),
       price: fromCents(item.price_cents), buyingPrice: item.buying_price_cents == null ? null : fromCents(item.buying_price_cents),
       stock: item.stock, imageUri: item.imageUri, imageEmbedding: embeddingHexToInt8(item.imageEmbeddingHex || ''),
       lowStockThreshold: Number(item.lowStockThreshold) || 0,
@@ -836,9 +862,15 @@ async function saveProduct(data) {
   if (variants.length) stock = variants.reduce((total, variant) => total + variant.stock, 0);
   if (variants.length && (!Number.isSafeInteger(stock) || stock < 0)) throw new Error('Total option stock is too large.');
   const variantsJson = JSON.stringify(variants);
+  const mentionsPricedAttributes = Object.hasOwn(data, 'pricedAttributes');
+  let pricedAttributes = mentionsPricedAttributes ? normalizePricedAttributes(data.pricedAttributes) : [];
+  if (!mentionsPricedAttributes && id > 0) {
+    pricedAttributes = JSON.parse((await rows('SELECT priced_attributes_json FROM pos_products WHERE id=?', [id]))[0]?.priced_attributes_json || '[]');
+  }
+  const pricedAttributesJson = JSON.stringify(pricedAttributes);
   const values = [name, categoryId, priceCents, buyingCents, stock, sku || null, barcode || null, expiryDate || null,
     String(data.imageUri || '').trim() || null,
-    lowStockThreshold, active, taxonomyCategoryId, taxonomyCustomCategory, taxonomyAttributesJson, variantsJson,
+    lowStockThreshold, active, taxonomyCategoryId, taxonomyCustomCategory, taxonomyAttributesJson, variantsJson, pricedAttributesJson,
     durationMinutes, supplierId || null];
   const hasEmbedding = Object.hasOwn(data, 'imageEmbeddingHex');
   const embeddingHex = hasEmbedding ? String(data.imageEmbeddingHex || '') : '';
@@ -847,14 +879,14 @@ async function saveProduct(data) {
   }
   if (id > 0) {
     const embeddingUpdate = hasEmbedding ? `,image_embedding=${embeddingHex ? `X'${embeddingHex}'` : 'NULL'}` : '';
-    const result = await run(`UPDATE pos_products SET name=?,category_id=?,price_cents=?,buying_price_cents=?,stock_count=?,sku=?,barcode=?,expiry_date=?,image_uri=?,low_stock_threshold=?,active=?,taxonomy_category_id=?,taxonomy_custom_category=?,taxonomy_attributes_json=?,variants_json=?,duration_minutes=?,supplier_id=?${embeddingUpdate} WHERE id=?`, [...values, id]);
+    const result = await run(`UPDATE pos_products SET name=?,category_id=?,price_cents=?,buying_price_cents=?,stock_count=?,sku=?,barcode=?,expiry_date=?,image_uri=?,low_stock_threshold=?,active=?,taxonomy_category_id=?,taxonomy_custom_category=?,taxonomy_attributes_json=?,variants_json=?,priced_attributes_json=?,duration_minutes=?,supplier_id=?${embeddingUpdate} WHERE id=?`, [...values, id]);
     if (!result.changes?.changes) throw new Error('This product could not be found. Refresh and try again.');
     await recordSharedStockUpdate(sku, stock);
     return id;
   }
   const embeddingColumn = hasEmbedding ? ',image_embedding' : '';
   const embeddingValue = hasEmbedding ? `,${embeddingHex ? `X'${embeddingHex}'` : 'NULL'}` : '';
-  const result = await run(`INSERT INTO pos_products (name,category_id,price_cents,buying_price_cents,stock_count,sku,barcode,expiry_date,image_uri,low_stock_threshold,active,taxonomy_category_id,taxonomy_custom_category,taxonomy_attributes_json,variants_json,duration_minutes,supplier_id,created_at${embeddingColumn}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?${embeddingValue})`, [...values, nowIso()]);
+  const result = await run(`INSERT INTO pos_products (name,category_id,price_cents,buying_price_cents,stock_count,sku,barcode,expiry_date,image_uri,low_stock_threshold,active,taxonomy_category_id,taxonomy_custom_category,taxonomy_attributes_json,variants_json,priced_attributes_json,duration_minutes,supplier_id,created_at${embeddingColumn}) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?${embeddingValue})`, [...values, nowIso()]);
   await recordSharedStockUpdate(sku, stock);
   return result.changes?.lastId;
 }
@@ -1006,12 +1038,15 @@ async function saveSale(items, { paymentMethod, paid, customerName, customerPhon
   ];
   const itemStatements = items.map((item) => {
     const product = productData.get(Number(item.productId));
+    const picked = Array.isArray(item.attributes) ? item.attributes : [];
     return stmt(`INSERT INTO pos_sale_items
-      (sale_id,product_id,name,quantity,unit_price_cents,unit_cost_cents,unit_cost_captured,variant_id,variant_label)
-      SELECT id,?,?,?,?,?,1,?,? FROM pos_sales WHERE receipt_number=?`,
+      (sale_id,product_id,name,quantity,unit_price_cents,unit_cost_cents,unit_cost_captured,variant_id,variant_label,attributes_json,attributes_label)
+      SELECT id,?,?,?,?,?,1,?,?,?,? FROM pos_sales WHERE receipt_number=?`,
     [Number(item.productId) > 0 ? Number(item.productId) : null, item.name, item.quantity, toCents(item.unitPrice),
       product?.buying_price_cents == null ? null : Number(product.buying_price_cents),
-      String(item.variantId || '').trim() || null, String(item.variantLabel || '').trim() || null, receipt]);
+      String(item.variantId || '').trim() || null, String(item.variantLabel || '').trim() || null,
+      picked.length ? JSON.stringify(picked) : null,
+      String(item.attributesLabel || '').trim() || chosenAttributeLabel(picked) || null, receipt]);
   });
   const paymentStatement = isPaid && totalCents > 0
     ? [stmt(`INSERT INTO pos_sale_payments
@@ -1153,7 +1188,7 @@ async function recordSharedLocalSale(tenantId, eventId, items, updateMirrors = t
 async function listSales() {
   const sales = await rows('SELECT * FROM pos_sales ORDER BY created_at DESC, id DESC');
   const items = await rows(`SELECT sale_id,product_id AS productId,name,quantity,unit_price_cents,unit_cost_cents,
-    variant_id AS variantId, variant_label AS variantLabel
+    variant_id AS variantId, variant_label AS variantLabel, attributes_label AS attributesLabel
     FROM pos_sale_items WHERE sale_id IN (SELECT id FROM pos_sales) ORDER BY sale_id,id`);
   const itemsBySale = new Map();
   for (const item of items) {
@@ -1164,6 +1199,7 @@ async function listSales() {
       name: item.name,
       variantId: item.variantId || '',
       variantLabel: item.variantLabel || '',
+      attributesLabel: item.attributesLabel || '',
       quantity: item.quantity,
       unitPrice: fromCents(item.unit_price_cents),
       historicalUnitCost: item.unit_cost_cents == null ? null : fromCents(item.unit_cost_cents)
@@ -1762,7 +1798,7 @@ export function createPosApp() {
       <div class="pos-cart-heading"><strong>Receipt</strong><span>${state.cart.length} item${state.cart.length === 1 ? '' : 's'}</span></div>
       ${state.cart.length ? `<div class="pos-cart-items">${state.cart.map((item) => `
         <div class="pos-cart-item">
-          <strong>${escapeHtml(item.name)}${item.variantLabel ? ` · ${escapeHtml(item.variantLabel)}` : ''}</strong>
+          <strong>${escapeHtml(item.name)}${item.variantLabel ? ` · ${escapeHtml(item.variantLabel)}` : ''}${item.attributesLabel ? ` · ${escapeHtml(item.attributesLabel)}` : ''}</strong>
           <button type="button" class="pos-quantity-button" data-pos-action="cart-minus" data-line="${escapeHtml(cartLineKey(item))}" aria-label="Decrease">−</button>
           <input type="number" min="1" max="99999" value="${item.quantity}" aria-label="Quantity" data-pos-quantity="${escapeHtml(cartLineKey(item))}">
           <button type="button" class="pos-quantity-button" data-pos-action="cart-plus" data-line="${escapeHtml(cartLineKey(item))}" aria-label="Increase">+</button>
@@ -1792,12 +1828,15 @@ export function createPosApp() {
     }
   }
 
-  const cartLineKey = (item) => `${item.productId}|${item.variantId || ''}`;
+  const cartLineKey = (item) => `${item.productId}|${item.variantId || ''}|${item.attributesLabel || ''}`;
 
-  function addProductToCart(product, variant) {
+  function addProductToCart(product, variant, chosenAttributes = []) {
     const variantId = variant ? String(variant.id) : '';
+    const picked = normalizeChosenAttributes(product.pricedAttributes || [], chosenAttributes);
+    const attributesLabel = chosenAttributeLabel(picked);
     const existing = state.cart.find((item) => item.productId === product.id
-      && String(item.variantId || '') === variantId);
+      && String(item.variantId || '') === variantId
+      && String(item.attributesLabel || '') === attributesLabel);
     if (existing) {
       existing.quantity = Math.min(99999, existing.quantity + 1);
     } else {
@@ -1805,9 +1844,11 @@ export function createPosApp() {
         productId: product.id,
         name: product.name,
         quantity: 1,
-        unitPrice: variantPrice(product, variant),
+        unitPrice: priceWithAttributes(variantPrice(product, variant), product.pricedAttributes || [], picked),
         variantId,
-        variantLabel: variant ? variant.label : ''
+        variantLabel: variant ? variant.label : '',
+        attributes: picked,
+        attributesLabel
       });
     }
     updateCartPanel();
@@ -1815,23 +1856,41 @@ export function createPosApp() {
 
   function renderVariantModalMarkup() {
     const product = state.products.find((item) => item.id === state.variantPickerProductId);
-    if (!product || !product.variants?.length) return '';
+    const variants = product?.variants || [];
+    const priced = product?.pricedAttributes || [];
+    if (!product || (!variants.length && !priced.length)) return '';
+    // Choices that carry a price are asked for alongside the options that carry stock, so the till
+    // charges exactly what the website charges for the same thing.
+    const pricedMarkup = priced.map((attribute) => `<label class="pos-field">
+      <span>${escapeHtml(attribute.attributeName)}</span>
+      <select data-pos-priced-attribute="${escapeHtml(attribute.attributeName)}">
+        <option value="">Not chosen</option>
+        ${(attribute.values || []).map((value) => {
+          const delta = Number(value.priceDelta) || 0;
+          const shown = delta === 0 ? '' : ` (${delta > 0 ? '+' : '-'}${money(Math.abs(delta), state.settings.currency)})`;
+          return `<option value="${escapeHtml(value.value)}">${escapeHtml(value.value)}${escapeHtml(shown)}</option>`;
+        }).join('')}
+      </select>
+    </label>`).join('');
+    const variantButtons = variants.map((variant) => {
+      const soldOut = Number(variant.stock) <= 0;
+      return `<button type="button" class="btn-secondary" data-pos-action="pick-variant" data-id="${product.id}"
+        data-variant="${escapeHtml(variant.id)}" ${soldOut ? 'disabled' : ''}>
+        <strong>${escapeHtml(variant.label)}</strong>
+        <span>${money(variantPrice(product, variant), state.settings.currency)}</span>
+        <small>${soldOut ? 'Sold out' : `${variant.stock} left`}</small>
+      </button>`;
+    }).join('');
     return `<div class="pos-discount-modal">
       <button class="pos-discount-backdrop" type="button" data-pos-action="close-variant" aria-label="Close options"></button>
       <section class="pos-discount-dialog" role="dialog" aria-modal="true" aria-labelledby="pos-variant-title">
         <h3 id="pos-variant-title">${escapeHtml(product.name)}</h3>
-        <p>Choose the option being sold.</p>
-        <div class="pos-variant-options">
-          ${product.variants.map((variant) => {
-            const soldOut = Number(variant.stock) <= 0;
-            return `<button type="button" class="btn-secondary" data-pos-action="pick-variant" data-id="${product.id}"
-              data-variant="${escapeHtml(variant.id)}" ${soldOut ? 'disabled' : ''}>
-              <strong>${escapeHtml(variant.label)}</strong>
-              <span>${money(variantPrice(product, variant), state.settings.currency)}</span>
-              <small>${soldOut ? 'Sold out' : `${variant.stock} left`}</small>
-            </button>`;
-          }).join('')}
-        </div>
+        <p>${variants.length ? 'Choose the option being sold.' : 'Choose what is being sold.'}</p>
+        ${pricedMarkup}
+        ${variants.length
+          ? `<div class="pos-variant-options">${variantButtons}</div>`
+          : `<div class="pos-variant-options"><button type="button" class="btn-primary"
+              data-pos-action="pick-variant" data-id="${product.id}">Add to sale</button></div>`}
         <div class="pos-discount-actions"><button class="btn-secondary" type="button" data-pos-action="close-variant">Cancel</button></div>
       </section>
     </div>`;
@@ -1967,6 +2026,9 @@ export function createPosApp() {
       ${field('Expiry date · optional', 'expiryDate', item?.expiryDate || '', { type: 'date' })}
       ${field('Unit cost · optional', 'buyingPrice', item?.buyingPrice ?? '', { type: 'number', min: '0', step: '0.01' })}
       <div data-product-stock-field ${item?.isService ? 'hidden' : ''}>${field('Stock · blank means untracked', 'stock', item?.stock ?? '', { type: 'number', min: '0', step: '1' })}</div>
+      <div data-product-attribute-pricing>${createAttributePricingFields({
+        pricedAttributes: item?.pricedAttributes || []
+      })}</div>
       <div data-product-variants-field ${item?.isService ? 'hidden' : ''}>${createProductVariantFields({
         variants: item?.variants || [],
         option1Name: item?.variants?.[0]?.option1_name || '',
@@ -2138,7 +2200,7 @@ export function createPosApp() {
         </button>
         ${openId === sale.id ? `<div class="pos-record-details">
           <div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Item</th><th>Qty</th><th>Each</th><th>Total</th></tr></thead><tbody>
-          ${sale.items.map((item) => `<tr><td>${escapeHtml(item.name)}${item.variantLabel ? ` · ${escapeHtml(item.variantLabel)}` : ''}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
+          ${sale.items.map((item) => `<tr><td>${escapeHtml(item.name)}${item.variantLabel ? ` · ${escapeHtml(item.variantLabel)}` : ''}${item.attributesLabel ? ` · ${escapeHtml(item.attributesLabel)}` : ''}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
           </tbody></table></div>
           <div class="pos-total-line"><span>Subtotal / discount / tax</span><b>${money(sale.subtotal, sale.currency)} / ${money(sale.discount, sale.currency)} / ${money(sale.tax, sale.currency)}</b></div>
           <div class="pos-total-line is-total"><span>Balance due</span><b>${money(Math.max(0, sale.total - sale.amountPaid), sale.currency)}</b></div>
@@ -3259,6 +3321,14 @@ export function createPosApp() {
       bindProductTaxonomyFields(app);
       const variantFields = app.querySelector?.('[data-product-variant-fields]');
       if (variantFields) bindProductVariantFields(variantFields);
+      const pricingFields = app.querySelector?.('[data-attribute-pricing]');
+      if (pricingFields) {
+        bindAttributePricingFields(pricingFields, () => readAvailableTaxonomyAttributes(pricingFields.closest('form') || app));
+        // The listener goes on the form, which is replaced on every render, so none ever stack up.
+        pricingFields.closest('form')?.addEventListener('product-taxonomy-change', () => {
+          pricingFields.refreshAttributePricing?.();
+        });
+      }
     }
   }
 
@@ -5199,6 +5269,7 @@ export function createPosApp() {
           if (data.isService !== '1') delete data.durationMinutes;
           // Options are read from the same editor the website form uses. A service has none.
           const variantFields = form.querySelector('[data-product-variant-fields]');
+          data.pricedAttributes = readAttributePricingFields(form.querySelector('[data-attribute-pricing]'));
           data.variants = data.isService === '1' || !variantFields
             ? []
             : readProductVariantFields(variantFields).variants;
@@ -6213,7 +6284,7 @@ export function createPosApp() {
       } else if (action === 'add-cart') {
         const product = state.products.find((item) => item.id === id);
         if (!product || !product.active) throw new Error('This product is no longer available.');
-        if (product.variants?.length) {
+        if (product.variants?.length || product.pricedAttributes?.length) {
           state.variantPickerProductId = id;
           updateCartPanel();
           return;
@@ -6222,9 +6293,16 @@ export function createPosApp() {
       } else if (action === 'pick-variant') {
         const product = state.products.find((item) => item.id === id);
         if (!product || !product.active) throw new Error('This product is no longer available.');
-        const variant = (product.variants || []).find((row) => String(row.id) === String(target.dataset.variant));
-        if (!variant) throw new Error('That option is no longer available.');
-        addProductToCart(product, variant);
+        const dialog = target.closest('.pos-discount-dialog');
+        const chosenAttributes = [...(dialog?.querySelectorAll('[data-pos-priced-attribute]') || [])]
+          .filter((select) => select.value)
+          .map((select) => ({ attributeName: select.dataset.posPricedAttribute, value: select.value }));
+        const needsVariant = Boolean(product.variants?.length);
+        const variant = needsVariant
+          ? (product.variants || []).find((row) => String(row.id) === String(target.dataset.variant))
+          : null;
+        if (needsVariant && !variant) throw new Error('That option is no longer available.');
+        addProductToCart(product, variant, chosenAttributes);
         state.variantPickerProductId = 0;
         updateCartPanel();
       } else if (action === 'close-variant') {
@@ -6429,7 +6507,7 @@ export function createPosApp() {
     return `<h1>Craft · Receipt</h1><p>${escapeHtml(sale.receipt_number)} · ${new Date(sale.created_at).toLocaleString()}</p>
       <p>${escapeHtml(sale.customer_name || '')} ${escapeHtml(sale.customer_phone || '')}</p>
       <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${sale.items.map((item) =>
-        `<tr><td>${escapeHtml(item.name)}${item.variantLabel ? ` · ${escapeHtml(item.variantLabel)}` : ''}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
+        `<tr><td>${escapeHtml(item.name)}${item.variantLabel ? ` · ${escapeHtml(item.variantLabel)}` : ''}${item.attributesLabel ? ` · ${escapeHtml(item.attributesLabel)}` : ''}</td><td>${item.quantity}</td><td>${money(item.unitPrice, sale.currency)}</td><td>${money(item.quantity * item.unitPrice, sale.currency)}</td></tr>`).join('')}
       </tbody></table><p>Subtotal ${money(sale.subtotal, sale.currency)} · Discount ${money(sale.discount, sale.currency)} · Tax ${money(sale.tax, sale.currency)}</p>
       <p class="total">Total · ${money(sale.total, sale.currency)}</p>
       ${receiptPaymentLine(sale)}`;

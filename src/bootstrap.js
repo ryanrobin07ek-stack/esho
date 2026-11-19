@@ -18,10 +18,14 @@ import { createAppBackHandler, installBackButton } from './back-button.js';
 import { createLitrusHostMessageHandler, isValidLitrusHtml } from './litrus-host.js';
 import * as RevenueDefinition from './revenue-definition.js';
 import * as ServiceModel from './service-model.js';
+import * as AttributePricing from './attribute-pricing.js';
+import * as AttributePricingFields from './attribute-pricing-fields.js';
 import { withStartupTimeout } from './startup-timeout.js';
 window.EshopRevenue = RevenueDefinition;
 // A service is a property of the product, never of the shop: the app shell needs the same rule.
 window.EshopServiceModel = ServiceModel;
+// Charging by attribute is one rule shared by the form, the till and the storefront.
+window.EshopAttributePricing = { ...AttributePricing, ...AttributePricingFields };
 window.EshopLitrusHost = { createMessageHandler: createLitrusHostMessageHandler, isValidHtml: isValidLitrusHtml };
 window.EshopWebsiteThemeCatalog = WEBSITE_THEME_CATALOG;
 window.EshopProductTaxonomy = ProductTaxonomy;

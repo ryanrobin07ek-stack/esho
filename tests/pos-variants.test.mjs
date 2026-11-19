@@ -27,7 +27,9 @@ async function startPos() {
     confirm: () => true,
     ShopSQLite: {
       async query(statement, values = []) { return { values: queryRows(statement, values) }; },
-      async run(statement, values = []) { return runSql(statement, values); },
+      // Capacitor SQLite nests the row count, and pos.js reads it that way. The flat shape made
+      // every UPDATE look like it had changed nothing.
+      async run(statement, values = []) { return { changes: runSql(statement, values) }; },
       async execute(statement) { db.exec(statement); },
       async executeSet(statements) {
         db.run('BEGIN');
@@ -166,4 +168,58 @@ test('time is not sold in sizes, and an option still needs a value', async () =>
     name: 'Broken', categoryId, price: 10, sku: 'BRK-1', barcode: '', expiryDate: '', active: true,
     variants: [{ id: 'x', option1_value: '', option2_value: '', price: 1, stock: 1 }]
   }), /needs a value/);
+});
+
+const materials = [{
+  attributeId: "a9",
+  attributeName: "Footwear material",
+  values: [{ value: "Canvas", priceDelta: 0 }, { value: "Leather", priceDelta: 500 }]
+}];
+
+test("the till charges for a priced attribute and the receipt says which was chosen", async () => {
+  const { app, queryRows } = await startPos();
+  const categoryId = (await app.listCategories())[0].id;
+  const shirtId = await addProduct(app, {
+    name: "Poplin Shirt", categoryId, price: 1000, sku: "SHIRT-5",
+    stock: 5, buyingPrice: 400, lowStockThreshold: 2, pricedAttributes: materials
+  });
+  const saved = (await app.listProducts()).find(product => product.id === shirtId);
+  assert.equal(saved.pricedAttributes.length, 1);
+  assert.equal(saved.pricedAttributes[0].values[1].priceDelta, 500);
+
+  // The cashier picks Leather, so the line is the base price plus the adjustment.
+  const sale = await app.saveSale(
+    [{
+      productId: shirtId, name: "Poplin Shirt", quantity: 2, unitPrice: 1500,
+      attributes: [{ attributeName: "Footwear material", value: "Leather" }],
+      attributesLabel: "Leather"
+    }],
+    { paymentMethod: "Cash", paid: true }
+  );
+  const line = queryRows("SELECT unit_price_cents,attributes_label,attributes_json FROM pos_sale_items WHERE sale_id=?", [sale.id])[0];
+  assert.equal(line.unit_price_cents, 150000);
+  assert.equal(line.attributes_label, "Leather");
+  assert.match(line.attributes_json, /Footwear material/);
+  const listed = (await app.listSales()).find(item => item.id === sale.id);
+  assert.equal(listed.items[0].attributesLabel, "Leather", "an old receipt still says what was sold");
+  assert.equal(stockOf(queryRows, shirtId), 3, "a priced choice still moves ordinary stock");
+});
+
+test("a service carries no priced attributes, and editing a product keeps them", async () => {
+  const { app } = await startPos();
+  const categoryId = (await app.listCategories())[0].id;
+  const shirtId = await addProduct(app, {
+    name: "Poplin Shirt", categoryId, price: 1000, sku: "SHIRT-6", stock: 5,
+    lowStockThreshold: 2, pricedAttributes: materials
+  });
+  // A save that never mentions pricing must not wipe it.
+  await app.saveProduct({ id: shirtId, name: "Poplin Shirt", categoryId, price: 1100, sku: "SHIRT-6", stock: 5, lowStockThreshold: 2, active: true, barcode: "", expiryDate: "" });
+  const kept = (await app.listProducts()).find(product => product.id === shirtId);
+  assert.equal(kept.price, 1100);
+  assert.equal(kept.pricedAttributes.length, 1, "the prices survive an unrelated edit");
+
+  await assert.rejects(() => app.saveProduct({
+    name: "Broken", categoryId, price: 10, sku: "BRK-9", barcode: "", expiryDate: "", active: true,
+    pricedAttributes: [{ attributeName: "Color", values: [{ value: "Red", priceDelta: "nope" }] }]
+  }), /valid price change for Color: Red/);
 });

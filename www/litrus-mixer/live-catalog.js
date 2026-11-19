@@ -48,7 +48,9 @@
         spin_frames: frames,
         video_url: typeof product.video_url === "string" ? product.video_url : "",
         booking_enabled: product.booking_enabled === true || product.booking_enabled === 1,
-        duration_minutes: Number(product.duration_minutes) || 60,
+        // Only a service carries a duration. Defaulting every product to an hour made the whole
+        // catalogue look bookable, which is what hid a mixed shop's real services.
+        duration_minutes: Number(product.duration_minutes) > 0 ? Number(product.duration_minutes) : 0,
         stock: Number(product.stock) || 0,
         variants: Array.isArray(product.variants) ? product.variants.slice(0, 100).map(variant => ({
           ...(variant && typeof variant === "object" ? variant : {}),
@@ -65,7 +67,8 @@
           [...new Set((product.variants || []).map(variant => String(variant.option2_value ?? variant.color ?? "")).filter(Boolean))].slice(0, 20),
         taxonomy_category_id: product.taxonomy_category_id || null,
         taxonomy_category_name: String(product.taxonomy_category_name || product.taxonomy_custom_category || ""),
-        taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes.slice(0, 30) : []
+        taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes.slice(0, 30) : [],
+        priced_attributes: Array.isArray(product.priced_attributes) ? product.priced_attributes.slice(0, 5) : []
       };
     }).filter(product => product.id && product.name);
     const store = catalog.store || {};
@@ -104,6 +107,12 @@
       container.innerHTML = String(html || "");
       return container;
     };
+    // A service is a property of the product. Asking the shop instead left a shop selling goods
+    // and time unable to book anything, and called every shelf item in a salon a service.
+    const sellsTime = product => Number(product?.duration_minutes) > 0
+       // A shop that sells nothing but services is the fallback: its products were saved before
+       // durations were ever asked for, so none of them carries one.
+       || data.shop.offerType === "services";
     const updateCard = (card, product) => {
       card.dataset.pid = product.id;
       card.dataset.cats = product.cats.join("|");
@@ -129,11 +138,11 @@
       card.dataset.taxonomyAttributes = JSON.stringify(product.taxonomy_attributes);
       card.dataset.categoryId = String(product.category_id || "");
       card.dataset.productType = product.taxonomy_category_name;
-      const addButtons = data.shop.offerType === "services"
+      const addButtons = sellsTime(product)
         ? card.querySelectorAll("[data-add], .sole-product-add, .p-btn, [data-act='addqty']")
         : card.querySelectorAll("[data-add]");
       addButtons.forEach(button => {
-        if (data.shop.offerType === "services") {
+        if (sellsTime(product)) {
           button.removeAttribute("data-add");
           button.removeAttribute("data-act");
           button.dataset.go = `p/${product.id}`;
@@ -237,10 +246,10 @@
         info.querySelectorAll("[data-litrus-service-booking-form]").forEach(form => form.remove());
         const buyArea = page.querySelector(".sp-buy");
         if (buyArea) {
-          buyArea.hidden = data.shop.offerType === "services";
-          buyArea.style.display = data.shop.offerType === "services" ? "none" : "";
+          buyArea.hidden = sellsTime(product);
+          buyArea.style.display = sellsTime(product) ? "none" : "";
         }
-        if (data.shop.offerType !== "services" && product.booking_enabled && product.stock > 0) {
+        if (!sellsTime(product) && product.booking_enabled && product.stock > 0) {
           const form = document.createElement("form");
           form.className = "sp-hold-form";
           form.dataset.litrusProductHoldForm = "";
@@ -283,7 +292,7 @@
           form.append(heading, note, quantityLabel, nameLabel, contactLabel, submit, status);
           info.append(form);
         }
-        if (data.shop.offerType === "services") {
+        if (sellsTime(product)) {
           page.querySelectorAll(".sp-info .sp-buy, .sp-info [data-act='buynow'], .sp-info ul.sp-points")
             .forEach(element => element.remove());
           const form = document.createElement("form");
@@ -453,6 +462,39 @@
           button.disabled = true;
           button.dataset.variantRequired = "true";
         });
+      }
+      // Attributes the owner charges for become choices the shopper makes, and the price follows.
+      const priced = (product.priced_attributes || []).filter(attribute =>
+        attribute && attribute.attributeName && Array.isArray(attribute.values) && attribute.values.length);
+      if (priced.length && buyArea) {
+        const pricedHost = document.createElement("div");
+        pricedHost.className = "sp-priced-attributes";
+        pricedHost.dataset.productPricedAttributes = product.id;
+        pricedHost.style.cssText = "display:grid;gap:10px;margin:16px 0";
+        priced.forEach(attribute => {
+          const label = document.createElement("label");
+          label.textContent = attribute.attributeName;
+          label.style.cssText = "display:grid;gap:6px";
+          const select = document.createElement("select");
+          select.dataset.pricedAttribute = attribute.attributeName;
+          select.style.cssText = "min-height:44px;padding:8px";
+          const empty = document.createElement("option");
+          empty.value = "";
+          empty.textContent = `Choose ${attribute.attributeName.toLowerCase()}`;
+          select.append(empty);
+          attribute.values.slice(0, 20).forEach(value => {
+            const option = document.createElement("option");
+            option.value = String(value.value ?? "");
+            const delta = Number(value.priceDelta ?? value.price_delta) || 0;
+            // Say what a choice costs before it is made, rather than only after the total moves.
+            const shown = (data.shop.cur ? `${data.shop.cur} ` : "") + Math.abs(delta).toLocaleString("en-US");
+            option.textContent = delta === 0 ? option.value : `${option.value} (${delta > 0 ? "+" : "-"}${shown})`;
+            select.append(option);
+          });
+          label.append(select);
+          pricedHost.append(label);
+        });
+        buyArea.prepend(pricedHost);
       }
       // What the product is made of, in the customer's words. These were collected by the owner and
       // published, then only ever used to build filter dropdowns, so a shopper never saw them.
@@ -1386,6 +1428,13 @@
 
   function orderItemFromCartLine(item) {
     const line = { product_id: String(item.id), quantity: Number(item.q) };
+    const picked = Array.isArray(item.attributes) ? item.attributes : [];
+    if (picked.length) {
+      line.attributes = picked.slice(0, 5).map(pick => ({
+        attribute_name: String(pick?.attributeName ?? pick?.attribute_name ?? "").trim().slice(0, 80),
+        value: String(pick?.value ?? "").trim().slice(0, 80)
+      })).filter(pick => pick.attribute_name && pick.value);
+    }
     const variantId = String(item.variantId ?? "").trim();
     if (!variantId) return line;
     // Variant identifiers and labels travel with the line so the Worker can price the variant
@@ -2401,7 +2450,7 @@
       const productId = add?.dataset.add;
       if (productId) trackEvent(productId, "cart_add");
     }, true);
-    if (data.shop.offerType === "services") {
+    {
       root.addEventListener("click", event => {
         const target = event.target instanceof Element ? event.target : null;
         const button = target?.closest(".sole-product-add, .p-btn, [data-add], [data-act='addqty'], [data-act='buynow']");
@@ -2409,6 +2458,9 @@
         const card = button.closest("[data-pid]");
         const serviceId = button.dataset.pid || button.dataset.add || card?.dataset.pid;
         if (!serviceId) return;
+        const tapped = data.shop.products.find(item => String(item.id) === String(serviceId));
+        // Only time is booked. A shelf item in the same shop still goes into the bag.
+        if (!(Number(tapped?.duration_minutes) > 0) && data.shop.offerType !== "services") return;
         event.preventDefault();
         event.stopImmediatePropagation();
         const route = `p/${serviceId}`;
@@ -2444,6 +2496,41 @@
     // The price has to follow the option the shopper picks. The editor preview syncs this in its
     // own runtime, but a published page only loads this file, and pages are rebuilt from HTML, so
     // the picker is synced here with every other delegated control.
+    // What the chosen priced attributes add to (or take off) the price of this product.
+    const pricedAttributeDelta = (product, info) => {
+      const offered = Array.isArray(product?.priced_attributes) ? product.priced_attributes : [];
+      if (!offered.length || !info) return 0;
+      return [...info.querySelectorAll("[data-priced-attribute]")].reduce((total, select) => {
+        if (!select.value) return total;
+        const attribute = offered.find(item => item && item.attributeName === select.dataset.pricedAttribute);
+        const match = (attribute?.values || []).find(value =>
+          String(value.value ?? "").toLowerCase() === select.value.toLowerCase());
+        return total + (Number(match?.priceDelta ?? match?.price_delta) || 0);
+      }, 0);
+    };
+    const showPrice = (info, amount) => {
+      const priceNode = info?.querySelector(".sp-price");
+      if (!priceNode) return;
+      priceNode.textContent = (data.shop.cur ? `${data.shop.cur} ` : "")
+        + Math.max(0, Math.round(amount * 100) / 100).toLocaleString("en-US");
+    };
+    // Picking a priced attribute on a product with no variants must still move the price.
+    const syncPricedAttributes = host => {
+      const product = data.shop.products.find(item => String(item.id) === String(host.dataset.productPricedAttributes));
+      if (!product) return;
+      const info = host.closest(".sp-info") || host.closest(".sp-pdp") || root;
+      const picker = info.querySelector("[data-product-variant-picker]");
+      if (picker) {
+        syncVariantPrice(picker);
+        return;
+      }
+      showPrice(info, Number(product.price) + pricedAttributeDelta(product, info));
+      const picked = JSON.stringify([...info.querySelectorAll("[data-priced-attribute]")]
+        .filter(select => select.value)
+        .map(select => ({ attributeName: select.dataset.pricedAttribute, value: select.value })));
+      info.querySelectorAll("[data-act='addqty'], [data-act='buynow']")
+        .forEach(button => { button.dataset.pricedAttributes = picked; });
+    };
     const syncVariantPrice = picker => {
       const product = data.shop.products.find(item => String(item.id) === String(picker.dataset.productVariantPicker));
       const variants = Array.isArray(product?.variants) ? product.variants : [];
@@ -2456,13 +2543,15 @@
         ? variants.find(variant => selects.every(select => optionValue(variant, select) === select.value))
         : null;
       const info = picker.closest(".sp-info") || picker.closest(".sp-pdp") || root;
-      const priceNode = info.querySelector(".sp-price");
-      if (priceNode) {
-        const amount = chosen && chosen.price !== null && chosen.price !== undefined && chosen.price !== ""
-          ? Number(chosen.price)
-          : Number(product.price);
-        priceNode.textContent = (data.shop.cur ? `${data.shop.cur} ` : "") + amount.toLocaleString("en-US");
-      }
+      const base = chosen && chosen.price !== null && chosen.price !== undefined && chosen.price !== ""
+        ? Number(chosen.price)
+        : Number(product.price);
+      showPrice(info, base + pricedAttributeDelta(product, info));
+      const pickedForLine = JSON.stringify([...info.querySelectorAll("[data-priced-attribute]")]
+        .filter(select => select.value)
+        .map(select => ({ attributeName: select.dataset.pricedAttribute, value: select.value })));
+      info.querySelectorAll("[data-act='addqty'], [data-act='buynow'], [data-variant-required]")
+        .forEach(button => { button.dataset.pricedAttributes = pickedForLine; });
       info.querySelectorAll("[data-variant-required]").forEach(button => {
         if (chosen) {
           button.dataset.variantId = String(chosen.id);
@@ -2478,6 +2567,10 @@
         ? event.target.closest("[data-product-variant-picker]")
         : null;
       if (picker) syncVariantPrice(picker);
+      const pricedHost = event.target instanceof Element
+        ? event.target.closest("[data-product-priced-attributes]")
+        : null;
+      if (pricedHost) syncPricedAttributes(pricedHost);
       const field = event.target instanceof HTMLInputElement && event.target.form?.id === "spco" ? event.target : null;
       if (field && field.name === "pay") syncCheckoutEmail(field.form);
       if (field && field.name === "dm") {

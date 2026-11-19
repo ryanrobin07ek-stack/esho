@@ -3182,6 +3182,31 @@ function variantLabel(variant) {
 // Resolves one requested order line against the published product. The price and the option labels come
 // from the catalogue, never from the client. A product with options needs a variant_id, except when no
 // option changes the price (older storefronts that cannot send one keep working).
+function resolveOrderAttributes(product, requested) {
+  const offered = Array.isArray(product.priced_attributes) ? product.priced_attributes : [];
+  const picks = Array.isArray(requested?.attributes) ? requested.attributes : [];
+  const chosen = [];
+  let deltaCents = 0;
+  for (const attribute of offered) {
+    if (!attribute || !attribute.attributeName || !Array.isArray(attribute.values)) continue;
+    const pick = picks.find(item =>
+      String(item?.attributeName ?? item?.attribute_name ?? "").trim() === attribute.attributeName);
+    const value = String(pick?.value ?? "").trim();
+    if (!value) continue;
+    const match = attribute.values.find(option =>
+      String(option?.value ?? "").trim().toLowerCase() === value.toLowerCase());
+    if (!match) {
+      return {
+        error: `That choice of ${cleanText(attribute.attributeName, 80)} is no longer available.`,
+        errorCode: "attribute_unavailable"
+      };
+    }
+    deltaCents += Math.round((Number(match.priceDelta ?? match.price_delta) || 0) * 100);
+    chosen.push({ attributeName: attribute.attributeName, value: String(match.value) });
+  }
+  return { deltaCents, chosen, label: chosen.map(item => item.value).join(" / ") };
+}
+
 function resolveOrderVariant(product, requested) {
   const variants = Array.isArray(product.variants) ? product.variants : [];
   const basePriceCents = Math.round(Number(product.price) * 100);
@@ -3204,10 +3229,14 @@ function resolveOrderVariant(product, requested) {
       return { error: `Choose an option for ${cleanText(product.name, 120)}.`, errorCode: "variant_required" };
     }
   }
+  const attributes = resolveOrderAttributes(product, requested);
+  if (attributes.error) return attributes;
+  // A discount cannot take the line below zero, matching the rule the storefront and till use.
+  priceCents = Math.max(0, priceCents + attributes.deltaCents);
   if (!Number.isSafeInteger(priceCents) || priceCents < 0) {
     return { error: "A catalogue price is invalid. Please contact the shop.", errorCode: "price_invalid" };
   }
-  return { variant, priceCents };
+  return { variant, priceCents, attributes: attributes.chosen, attributeLabel: attributes.label };
 }
 
 async function handleStorefrontOrders(request, env, tenantId, ctx) {
@@ -3403,8 +3432,11 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
     if (entry.quantity > 99) {
       return jsonResponse({ error: `${product.name} exceeds the per-product order quantity limit.` }, 409);
     }
-    const lineKey = resolved.variant ? String(resolved.variant.id) : "";
-    const line = entry.lines.get(lineKey) || { variant: resolved.variant, priceCents: resolved.priceCents, quantity: 0 };
+    const lineKey = `${resolved.variant ? String(resolved.variant.id) : ""}|${resolved.attributeLabel || ""}`;
+    const line = entry.lines.get(lineKey) || {
+      variant: resolved.variant, priceCents: resolved.priceCents, quantity: 0,
+      attributes: resolved.attributes || [], attributeLabel: resolved.attributeLabel || ""
+    };
     line.quantity += quantity;
     if (resolved.variant && line.quantity > Number(resolved.variant.stock)) {
       return jsonResponse({
@@ -3444,6 +3476,12 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
       normalizedItems.push({
         product_id: product.id, name: cleanText(product.name, 240),
         sku: cleanText(product.sku, 120), quantity: line.quantity, unit_price: line.priceCents / 100,
+        ...(line.attributeLabel ? {
+          attributes_label: cleanText(line.attributeLabel, 240),
+          attributes: line.attributes.map(item => ({
+            attribute_name: cleanText(item.attributeName, 80), value: cleanText(item.value, 80)
+          }))
+        } : {}),
         ...(line.variant ? {
           variant_id: cleanText(line.variant.id, 180),
           variant_label: variantLabel(line.variant),

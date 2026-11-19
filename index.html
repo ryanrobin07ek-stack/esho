@@ -15272,6 +15272,7 @@ const StudioRenderers = {
           </div>
           <label data-web-product-stock>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label>
           <div class="web-product-variants" data-web-product-variants></div>
+          <div class="web-product-attribute-pricing" data-web-product-attribute-pricing></div>
           <label class="web-product-hold"><input type="checkbox" name="booking_enabled"><span>Allow customer holds</span></label>
           <button type="button" class="btn-secondary" data-web-product-cancel hidden>Cancel edit</button>
           <button type="submit" class="btn-primary">Save web product</button>
@@ -16862,7 +16863,8 @@ const StudioRenderers = {
         });
         const taxonomyHost = webProductForm.querySelector("[data-web-product-taxonomy]");
         const variantsHost = webProductForm.querySelector("[data-web-product-variants]");
-        if (!taxonomyHost || !variantsHost) throw new Error("The Web product form is missing category or options controls.");
+        const pricingHost = webProductForm.querySelector("[data-web-product-attribute-pricing]");
+        if (!taxonomyHost || !variantsHost || !pricingHost) throw new Error("The Web product form is missing category, options or attribute pricing controls.");
         const websiteCategories = SQLiteEngine.getCategories();
         const bindProductDetails = product => {
           taxonomyHost.innerHTML = window.EshopProductTaxonomy.createProductTaxonomyFields({
@@ -16897,7 +16899,20 @@ const StudioRenderers = {
             variants: product?.variants || []
           });
           window.EshopProductVariants.bindProductVariantFields(variantsHost.firstElementChild || variantsHost);
+          // Charging by attribute: the choices on offer are the chosen category's own attributes.
+          pricingHost.innerHTML = window.EshopAttributePricing.createAttributePricingFields({
+            pricedAttributes: product?.priced_attributes || []
+          });
+          window.EshopAttributePricing.bindAttributePricingFields(
+            pricingHost.firstElementChild || pricingHost,
+            () => window.EshopProductTaxonomy.readAvailableTaxonomyAttributes(webProductForm)
+          );
         };
+        // Picking a category changes which attributes exist, so the pricing editor is told at once
+        // rather than waiting for the form to be reopened.
+        webProductForm.addEventListener("product-taxonomy-change", () => {
+          pricingHost.firstElementChild?.refreshAttributePricing?.();
+        });
         bindProductDetails(null);
         const mediaStatus = webProductForm.querySelector("[data-web-product-media-status]");
         const imageInput = webProductForm.querySelector("[data-web-product-image]");
@@ -17402,6 +17417,9 @@ const StudioRenderers = {
               }
               if (!media) throw new Error("Product media could not be initialized. Reopen the product form and try again.");
               const productVariants = window.EshopProductVariants.readProductVariantFields(form);
+              const pricedAttributes = window.EshopAttributePricing.readAttributePricingFields(
+                form.querySelector("[data-attribute-pricing]")
+              );
               const imageFiles = data.getAll("image").filter(file => file instanceof File && file.size > 0);
               if (imageFiles.length > 8) throw new Error("Choose up to 8 product photos.");
               const existingImages = Array.isArray(existingProduct?.images) ? existingProduct.images.slice(0, 8) : [];
@@ -17469,6 +17487,7 @@ const StudioRenderers = {
                 taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
                 taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
                 taxonomy_attributes: taxonomy.taxonomyAttributes,
+                priced_attributes: pricedAttributes,
                 ...productVariants,
                 booking_enabled: data.get("booking_enabled") === "on",
                 description: existingProduct?.description || "",
@@ -21364,6 +21383,7 @@ const AppController = {
               taxonomy_category_name: String(product.taxonomy_category_name || ""),
               taxonomy_custom_category: product.taxonomy_custom_category || null,
               taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes : [],
+              priced_attributes: Array.isArray(product.priced_attributes) ? product.priced_attributes : [],
               sizes: Array.isArray(product.sizes) ? product.sizes : [],
               colors: Array.isArray(product.colors) ? product.colors : [],
               variants: Array.isArray(product.variants) ? product.variants : [],
@@ -22204,7 +22224,8 @@ const AppController = {
               taxonomy_category_id: product.taxonomy_category_id || null,
               taxonomy_category_name: product.taxonomy_category_name || "",
               taxonomy_custom_category: product.taxonomy_custom_category || null,
-              taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes : []
+              taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes : [],
+              priced_attributes: Array.isArray(product.priced_attributes) ? product.priced_attributes : []
             })),
             categories: draftCatalog.categories.map(category => ({
               id: category.id,
@@ -23788,6 +23809,9 @@ const AppController = {
         taxonomy_attributes: Array.isArray(item.taxonomy_attributes)
           ? item.taxonomy_attributes
           : original?.taxonomy_attributes || [],
+        priced_attributes: Array.isArray(item.priced_attributes)
+          ? item.priced_attributes
+          : original?.priced_attributes || [],
         stock: Math.max(0, Number(original?.stock) || 0),
         status: original?.status || "active"
       };

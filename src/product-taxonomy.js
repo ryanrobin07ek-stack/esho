@@ -231,6 +231,14 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
       throw new Error('Saved product attributes could not be read.', { cause: error });
     }
 
+    // Anything that depends on which attributes a category offers — the attribute pricing editor —
+    // is told the moment they change, instead of being re-rendered on a guess.
+    const announceChange = () => {
+      const view = widget.ownerDocument?.defaultView;
+      if (typeof view?.CustomEvent !== 'function') return;
+      widget.dispatchEvent(new view.CustomEvent('product-taxonomy-change', { bubbles: true }));
+    };
+
     const renderMatches = () => {
       if (!taxonomy) return;
       const query = search.value.trim().toLocaleLowerCase();
@@ -265,6 +273,7 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
       if (category) renderAttributeFields(attributeFields, category, attributesById, initialAttributes);
       initialAttributes = [];
       status.textContent = category ? 'Set any applicable attributes; they are optional.' : 'Search by category name to choose a standard category.';
+      announceChange();
     };
 
     const selectCustomCategory = value => {
@@ -293,6 +302,7 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
       status.textContent = closest
         ? `Using the standard attributes for ${closest.name}. Search above to pick a different match.`
         : 'This custom category will be saved with the product.';
+      announceChange();
     };
 
     const saveStoreCategory = async (name, category) => {
@@ -425,6 +435,23 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
     });
     if (widget.dataset.initialCategoryId || widget.dataset.initialCustomCategory || storeCategorySelect?.value) loadData();
   }
+}
+
+/**
+ * The attributes the chosen category offers, read from the fields the picker has already rendered.
+ * The attribute pricing editor asks for these so the two can never drift apart: if the product is a
+ * shoe, the attributes it can charge for are the shoe's attributes. An attribute with no fixed value
+ * list (a free-text one) is left out, because there is nothing to put a price against.
+ */
+export function readAvailableTaxonomyAttributes(form) {
+  if (!form) return [];
+  return [...form.querySelectorAll('select[data-taxonomy-attribute]')].map(field => ({
+    attributeId: field.dataset.taxonomyAttribute || '',
+    attributeName: field.dataset.taxonomyAttributeName || '',
+    values: [...field.options]
+      .filter(option => option.value)
+      .map(option => ({ valueId: option.value, value: (option.dataset.valueName || option.textContent).trim() }))
+  })).filter(attribute => attribute.attributeName && attribute.values.length);
 }
 
 export function readProductTaxonomyFields(form) {

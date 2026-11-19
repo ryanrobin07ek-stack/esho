@@ -2303,7 +2303,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.equal(queryRows('SELECT name,price_cents FROM pos_products WHERE id=1')[0].name, 'Canvas Tote');
     assert.equal(queryRows('SELECT price_cents FROM pos_products WHERE id=1')[0].price_cents, 1850);
     await app.addScannedBarcode('123456789012');
-    assert.match(root.innerHTML, /data-pos-quantity="1|"/);
+    assert.match(root.innerHTML, /data-pos-quantity="1||"/);
     await click('cancel-sale');
     const keyboardInput = {
       value: '123456789012',
@@ -2312,7 +2312,7 @@ test('POS persists products, manual payments, invoices and business instances in
     await handlers.keydown[0]({
       key: 'Enter', target: keyboardInput, preventDefault() {}
     });
-    assert.match(root.innerHTML, /data-pos-quantity="1|"/);
+    assert.match(root.innerHTML, /data-pos-quantity="1||"/);
     await click('cancel-sale');
     await app.addScannedBarcode('UNKNOWN-987');
     assert.match(window.location.hash, /\/pos\/catalogue\/products\?new=1&barcode=UNKNOWN-987/);
@@ -2323,7 +2323,7 @@ test('POS persists products, manual payments, invoices and business instances in
 
     await click('add-cart', { id: '1' });
     assert.doesNotMatch(root.innerHTML, /Current sale/);
-    assert.match(root.innerHTML, /data-pos-quantity="1|"/);
+    assert.match(root.innerHTML, /data-pos-quantity="1||"/);
     assert.match(root.innerHTML, /data-method="Mobile money"/);
     assert.match(root.innerHTML, /data-method="Cash"/);
     assert.match(root.innerHTML, /data-method="Bank"/);
@@ -2346,11 +2346,11 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.doesNotMatch(root.innerHTML, /role="dialog" aria-modal="true"/);
     await handlers.change[0]({
       type: 'change',
-      target: { value: '2', dataset: { posQuantity: '1|' }, closest: (selector) =>
-        selector === '[data-pos-quantity]' ? { value: '2', dataset: { posQuantity: '1|' } } : null }
+      target: { value: '2', dataset: { posQuantity: '1||' }, closest: (selector) =>
+        selector === '[data-pos-quantity]' ? { value: '2', dataset: { posQuantity: '1||' } } : null }
     });
     await app.refresh();
-    assert.match(root.innerHTML, /value="2" aria-label="Quantity" data-pos-quantity="1|"/);
+    assert.match(root.innerHTML, /value="2" aria-label="Quantity" data-pos-quantity="1||"/);
     await click('checkout-method', { method: 'Card' });
     assert.match(root.innerHTML, /data-method="Card" aria-pressed="true"/);
     await click('cancel-sale');
@@ -2360,8 +2360,8 @@ test('POS persists products, manual payments, invoices and business instances in
     await click('add-cart', { id: '1' });
     await handlers.change[0]({
       type: 'change',
-      target: { value: '2', dataset: { posQuantity: '1|' }, closest: (selector) =>
-        selector === '[data-pos-quantity]' ? { value: '2', dataset: { posQuantity: '1|' } } : null }
+      target: { value: '2', dataset: { posQuantity: '1||' }, closest: (selector) =>
+        selector === '[data-pos-quantity]' ? { value: '2', dataset: { posQuantity: '1||' } } : null }
     });
     await app.refresh();
     const syncedProductId = (await app.listBusinessRecords('product', 'local'))
