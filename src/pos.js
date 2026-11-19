@@ -31,6 +31,7 @@ import {
   createSku, escapeHtml, money, assertDate, durationLabel, serviceChoices, purchaseLabel,
   assertTotals, csvRows
 } from './till/format.js';
+import { rows, run, transaction, stmt } from './till/db.js';
 
 const NearbyBluetooth = registerPlugin('NearbyBluetooth');
 
@@ -161,10 +162,6 @@ export function rankImageMatches(products, embedding, threshold = MIN_IMAGE_MATC
   }
   return matches.sort((left, right) => right.similarity - left.similarity).slice(0, limit);
 }
-const rows = async (sql, values = []) => (await window.ShopSQLite.query(sql, values)).values || [];
-const run = (sql, values = []) => window.ShopSQLite.run(sql, values);
-const transaction = (statements) => window.ShopSQLite.executeSet(statements, true);
-const stmt = (statement, values = []) => ({ statement, values });
 
 // Reversible bulk rewrites. Anything that replaces many rows at once (replacing the browser POS
 // with a shop's cloud records, restoring an inventory backup) first copies the affected tables
