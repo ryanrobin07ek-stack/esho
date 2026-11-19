@@ -2940,3 +2940,77 @@ test("a published page reprices as priced attributes are chosen, and a mixed sho
     window.close();
   }
 });
+
+test("a published product with three options is still sellable", () => {
+  const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/", runScripts: "outside-only" });
+  const { window } = dom;
+  const data = {
+    shop: { key: "three-option-shop", cur: "KES", products: [] },
+    pages: {
+      home: '<main class="sp-main"><section class="prods"></section></main>',
+      shop: '<main class="sp-main"><div class="sp-top"><h1></h1><p></p></div><section class="prods"></section></main>',
+      "p/template": '<main class="sp-main"><div class="sp-top"><h1></h1></div><div class="sp-pdp"><div class="sp-gallery"></div><div class="sp-info"><div class="sp-price"></div><p class="sp-desc"></p><div class="sp-buy"><button data-act="addqty">Add to cart</button></div></div></div></main>'
+    },
+    templates: { productCard: '<article data-pid=""><h3 class="p-title"></h3><div class="p-price"></div></article>' }
+  };
+  const variant = (size, colour, fabric, price, stock) => ({
+    id: JSON.stringify([size, colour, fabric]),
+    option1_name: "Size", option1_value: size, size,
+    option2_name: "Colour", option2_value: colour, color: colour,
+    option3_name: "Fabric", option3_value: fabric,
+    price, stock
+  });
+  window.__ESHOP_THEME_CATALOG__ = {
+    categories: [{ id: 1, name: "Shirts", slug: "shirts" }],
+    store: { name: "Three", currency: "KES", offer_type: "products" },
+    products: [{
+      id: 1, name: "Poplin Shirt", slug: "shirt", price: 1000, stock: 4, category_id: 1,
+      images: [], description: "A shirt.",
+      option1_name: "Size", option2_name: "Colour", option3_name: "Fabric",
+      variants: [
+        variant("S", "Black", "Cotton", 1000, 2),
+        variant("S", "Black", "Linen", 1400, 2),
+        variant("M", "Black", "Cotton", 1100, 0)
+      ]
+    }]
+  };
+  window.__ESHOP_TRACK_STOREFRONT_EVENT__ = () => {};
+  let pageFor = () => "";
+  window.SPRT = options => {
+    pageFor = options.page;
+    window.document.getElementById("store").innerHTML = options.page("shop");
+    return { go(route) { window.document.getElementById("store").innerHTML = options.page(route); } };
+  };
+  try {
+    window.eval(runtime);
+    window.litrusStartLiveStore(data);
+    const store = window.document.getElementById("store");
+    store.innerHTML = pageFor("p/1");
+
+    // Three dropdowns, the third one named by the owner.
+    const selects = [...store.querySelectorAll("[data-variant-option]")];
+    assert.equal(selects.length, 3, "every option gets its own dropdown");
+    assert.equal(selects[2].dataset.variantOptionPosition, "3");
+    const fabrics = [...selects[2].options].map(option => option.value).filter(Boolean);
+    assert.deepEqual(fabrics, ["Cotton", "Linen"]);
+
+    const choose = (index, value) => {
+      selects[index].value = value;
+      selects[index].dispatchEvent(new window.Event("change", { bubbles: true }));
+    };
+    // Before this, a third option meant no variant ever matched and the button stayed dead.
+    choose(0, "S");
+    choose(1, "Black");
+    choose(2, "Linen");
+    assert.equal(store.querySelector(".sp-price").textContent, "KES 1,400",
+      "the three-option variant is found and priced");
+    const button = store.querySelector("[data-variant-required]");
+    assert.equal(button.dataset.variantId, '["S","Black","Linen"]');
+    assert.equal(button.disabled, false, "it can actually be bought");
+
+    choose(2, "Cotton");
+    assert.equal(store.querySelector(".sp-price").textContent, "KES 1,000");
+  } finally {
+    window.close();
+  }
+});

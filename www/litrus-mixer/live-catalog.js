@@ -423,19 +423,31 @@
         picker.className = "sp-variant-picker";
         picker.dataset.productVariantPicker = product.id;
         picker.style.cssText = "display:grid;gap:10px;margin:16px 0";
-        const dimensions = [
-          ["size", product.option1_name || "Option 1", [...new Set(variants.map(variant => String(variant.option1_value ?? variant.size ?? "")).filter(Boolean))],
-            `Choose ${product.option1_name || "option 1"}`],
-          ["color", product.option2_name || "Option 2", [...new Set(variants.map(variant => String(variant.option2_value ?? variant.color ?? "")).filter(Boolean))],
-            `Choose ${product.option2_name || "option 2"}`]
-        ];
-        dimensions.forEach(([name, labelText, values, placeholder]) => {
+        // Every option the product carries gets its own dropdown. The first two keep the names
+        // "size" and "color" so storefronts and carts built on them still match.
+        const optionKey = position => (position === 1 ? "size" : position === 2 ? "color" : `option${position}`);
+        const optionValueOf = (variant, position) => String((position === 1
+          ? variant.option1_value ?? variant.size
+          : position === 2
+            ? variant.option2_value ?? variant.color
+            : variant[`option${position}_value`]) ?? "");
+        const dimensions = [];
+        for (let position = 1; position <= 4; position += 1) {
+          const values = [...new Set(variants.map(variant => optionValueOf(variant, position)).filter(Boolean))];
+          if (!values.length) continue;
+          const name = String(product[`option${position}_name`]
+            || variants.find(variant => variant[`option${position}_name`])?.[`option${position}_name`]
+            || `Option ${position}`);
+          dimensions.push([optionKey(position), name, values, `Choose ${name.toLowerCase()}`, position]);
+        }
+        dimensions.forEach(([name, labelText, values, placeholder, position]) => {
           if (!values.length) return;
           const label = document.createElement("label");
           label.textContent = labelText;
           label.style.cssText = "display:grid;gap:6px";
           const select = document.createElement("select");
           select.dataset.variantOption = name;
+          select.dataset.variantOptionPosition = String(position);
           select.required = true;
           select.style.cssText = "min-height:44px;padding:8px";
           const empty = document.createElement("option");
@@ -446,9 +458,7 @@
             const option = document.createElement("option");
             option.value = value;
             // Say a size is gone before the customer picks it, instead of greying the button after.
-            const matching = variants.filter(variant => String((name === "size"
-              ? variant.option1_value ?? variant.size
-              : variant.option2_value ?? variant.color) ?? "") === value);
+            const matching = variants.filter(variant => optionValueOf(variant, position) === value);
             const soldOut = matching.length > 0 && matching.every(variant => Number(variant.stock) <= 0);
             option.textContent = soldOut ? value + " \u00b7 sold out" : value;
             option.disabled = soldOut;
@@ -2536,9 +2546,13 @@
       const variants = Array.isArray(product?.variants) ? product.variants : [];
       if (!variants.length) return;
       const selects = [...picker.querySelectorAll("[data-variant-option]")];
-      const optionValue = (variant, select) => String((select.dataset.variantOption === "size"
-        ? variant.option1_value ?? variant.size
-        : variant.option2_value ?? variant.color) ?? "");
+      const optionValue = (variant, select) => {
+        const position = Number(select.dataset.variantOptionPosition)
+          || (select.dataset.variantOption === "size" ? 1 : 2);
+        if (position === 1) return String(variant.option1_value ?? variant.size ?? "");
+        if (position === 2) return String(variant.option2_value ?? variant.color ?? "");
+        return String(variant[`option${position}_value`] ?? "");
+      };
       const chosen = selects.length > 0 && selects.every(select => select.value)
         ? variants.find(variant => selects.every(select => optionValue(variant, select) === select.value))
         : null;

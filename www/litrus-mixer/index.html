@@ -4687,7 +4687,8 @@ function SPRT(D){
   if(!product)return;
   const selectors=Array.from(picker.querySelectorAll('[data-variant-option]'));
   const ready=selectors.length&&selectors.every(select=>select.value);
-  const variant=ready?product.variants.find(item=>String(item.size||'')===(size?size.value:'')&&String(item.color||'')===(color?color.value:'')):null;
+  const optionOf=(item,position)=>String((position===1?(item.option1_value!=null?item.option1_value:item.size):position===2?(item.option2_value!=null?item.option2_value:item.color):item['option'+position+'_value'])||'');
+  const variant=ready?product.variants.find(item=>selectors.every(select=>{const position=Number(select.dataset.variantOptionPosition)||(select.dataset.variantOption==='size'?1:2);return optionOf(item,position)===select.value})):null;
   const info=picker.closest('.sp-info'),price=info&&info.querySelector('.sp-price');
   if(price)price.textContent=fmt(variant&&variant.price!=null?variant.price:product.num);
   if(info)info.querySelectorAll('[data-variant-required]').forEach(button=>{if(variant){button.dataset.variantId=String(variant.id);button.disabled=Number(variant.stock)<=0}else{delete button.dataset.variantId;button.disabled=true}});
@@ -5313,7 +5314,8 @@ function exportPagesRuntime(){
   if(!p)return;
   var size=picker.querySelector('[data-variant-option=size]'),color=picker.querySelector('[data-variant-option=color]');
   var chosen=selectors.length&&selectors.every(function(select){return select.value});
-  var variant=chosen?p.variants.filter(function(item){return String(item.size||'')===(size?size.value:'')&&String(item.color||'')===(color?color.value:'')})[0]:null;
+  var optionOf=function(item,position){return String((position===1?(item.option1_value!=null?item.option1_value:item.size):position===2?(item.option2_value!=null?item.option2_value:item.color):item['option'+position+'_value'])||'')};
+  var variant=chosen?p.variants.filter(function(item){return selectors.every(function(select){var position=Number(select.dataset.variantOptionPosition)||(select.dataset.variantOption==='size'?1:2);return optionOf(item,position)===select.value})})[0]:null;
   var info=picker.closest('.sp-info'),price=info&&info.querySelector('.sp-price'),button=info&&info.querySelector('[data-variant-required]');
   if(price)price.textContent=money(variant&&variant.price!=null?variant.price:p.num);
   if(button){

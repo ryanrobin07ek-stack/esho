@@ -718,7 +718,9 @@ function normalizePosVariants(value) {
   return list.map((variant) => {
     const option1Value = String(variant?.option1_value ?? variant?.size ?? '').trim().slice(0, 80);
     const option2Value = String(variant?.option2_value ?? variant?.color ?? '').trim().slice(0, 80);
-    const label = [option1Value, option2Value].filter(Boolean).join(' / ');
+    const extraValues = [3, 4].map((position) =>
+      String(variant?.[`option${position}_value`] ?? '').trim().slice(0, 80));
+    const label = [option1Value, option2Value, ...extraValues].filter(Boolean).join(' / ');
     if (!label) throw new Error('Each product option needs a value.');
     if (seen.has(label.toLowerCase())) throw new Error(`${label} is listed twice.`);
     seen.add(label.toLowerCase());

@@ -34,8 +34,10 @@ test('the saved options live on the section, not on the host the markup is writt
   assert.equal(host.dataset.initialVariants, undefined, 'the host div carries nothing');
   const section = host.firstElementChild;
   assert.ok(section, 'the markup produces a section');
-  assert.equal(section.dataset.initialOption1Name, 'Size');
-  assert.equal(section.dataset.initialSizes, 'S, M, L');
+  // Options are now one list on the section, rather than option1/option2 attributes.
+  const savedOptions = JSON.parse(section.dataset.initialOptions);
+  assert.equal(savedOptions[0].name, 'Size');
+  assert.deepEqual(savedOptions[0].values.map(value => value.value), ['S', 'M', 'L']);
   assert.equal(JSON.parse(section.dataset.initialVariants).length, 3);
 });
 

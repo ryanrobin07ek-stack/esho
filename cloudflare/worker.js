@@ -3173,7 +3173,10 @@ async function releaseDiscountUsage(env, tenantId, code) {
 }
 
 function variantLabel(variant) {
-  return [[variant.option1_name, variant.option1_value], [variant.option2_name, variant.option2_value]]
+  return [
+    [variant.option1_name, variant.option1_value], [variant.option2_name, variant.option2_value],
+    [variant.option3_name, variant.option3_value], [variant.option4_name, variant.option4_value]
+  ]
     .filter(([, value]) => value)
     .map(([name, value]) => `${name || "Option"}: ${value}`)
     .join(" / ");
