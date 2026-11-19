@@ -1,7 +1,8 @@
 // The Craft app shell: router, renderers and controllers. Moved verbatim from the inline
 // <script> in index.html; it is being split into src/screens and src/shell modules.
 
-(function() {
+// Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
+// modules need is exported at the end.
   // Seed dataset for Craft
 const storeInfo = {
   id: 1,
@@ -15484,4 +15485,3 @@ window.EshopInventoryBridge = {
   } else {
     document.addEventListener("DOMContentLoaded", () => AppController.init(), { once: true });
   }
-})();
