@@ -7487,13 +7487,14 @@ if(craftIntegrated&&window.parent!==window){
 // moods
 const mb=g('wMoods');
 MOODS.forEach((md,i)=>{
- const pa=PALS[md.pal[0]-1]||PALS[0],b=document.createElement('button');b.type='button';b.className='mood';
+ const pal=i=>PALS[((md.pal&&(md.pal[i]!==undefined?md.pal[i]:md.pal[0]))||1)-1]||PALS[0];
+ const b=document.createElement('button');b.type='button';b.className='mood';
  b.hidden=i>=8;b.dataset.options=JSON.stringify({hero:md.hero,card:md.card,cat:md.cat,foot:md.foot,pal:md.pal,font:md.font,lay:md.lay,anim:md.anim,scroll:md.scroll});
- b.innerHTML='<span class="sw"><i style="background:'+pa[1]+'"></i><i style="background:'+pa[4]+'"></i><i style="background:'+pa[5]+'"></i></span><b>'+md.n+'</b>';
+ b.innerHTML='<span class="sw"><i style="background:'+pal(0)[1]+'"></i><i style="background:'+pal(1)[4]+'"></i><i style="background:'+pal(2)[5]+'"></i></span><b>'+md.n+'</b>';
  b.onclick=()=>{mood=md;[...mb.children].forEach(x=>x.classList.toggle('on',x===b));apply(md);g('wTweak').hidden=false};
  mb.append(b)});
-const moreMoods=document.createElement('button');moreMoods.type='button';moreMoods.className='ghost mood-more';moreMoods.setAttribute('aria-controls','wMoods');moreMoods.setAttribute('aria-expanded','false');moreMoods.textContent='More feelings ('+(MOODS.length-8)+')';
-moreMoods.onclick=()=>{const show=moreMoods.getAttribute('aria-expanded')!=='true';[...mb.children].forEach((b,i)=>{if(i>=8)b.hidden=!show});moreMoods.setAttribute('aria-expanded',String(show));moreMoods.textContent=show?'Fewer feelings':'More feelings ('+(MOODS.length-8)+')'};
+const moreMoods=document.createElement('button');moreMoods.type='button';moreMoods.className='ghost mood-more';moreMoods.setAttribute('aria-controls','wMoods');moreMoods.setAttribute('aria-expanded','false');moreMoods.textContent='Show '+(MOODS.length-8)+' more';
+moreMoods.onclick=()=>{const show=moreMoods.getAttribute('aria-expanded')!=='true';[...mb.children].forEach((b,i)=>{if(i>=8)b.hidden=!show});moreMoods.setAttribute('aria-expanded',String(show));moreMoods.textContent=show?'Show fewer':'More feelings ('+(MOODS.length-8)+')'};
 mb.after(moreMoods);
 function apply(md,randomizeDetails=true,persist=true){
  clearPaletteOverrides();

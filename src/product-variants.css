@@ -40,3 +40,71 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Each option is its own block, separated rather than boxed, so four of them do not look like four
+   competing cards inside the one card. */
+.product-variant-option {
+  display: grid;
+  gap: 10px;
+  padding: 12px 0 14px;
+  border-top: 1px solid var(--border, #dedee2);
+}
+
+.product-variant-option:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.product-variant-option .form-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.product-variant-option .form-grid > label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* Values are short ("S", "Leather"), so the price sits beside the name instead of under it. A
+   full-width box per value turned three sizes into a screen and a half of scrolling. */
+.product-variant-value-prices {
+  display: grid;
+  gap: 8px;
+}
+
+.product-variant-value-prices > span:first-child {
+  font-size: 0.82rem;
+  font-weight: 600;
+  opacity: 0.65;
+}
+
+.product-variant-value-prices > label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(88px, 120px);
+  gap: 10px;
+  align-items: center;
+}
+
+.product-variant-value-prices > label > span {
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.product-variant-value-prices input {
+  width: 100%;
+  min-width: 0;
+}
+
+.product-variant-option > [data-variant-remove-option] {
+  justify-self: start;
+}
+
+/* This status reports what was built, not what went wrong. The form's blanket rule paints every
+   [role="status"] in danger red, which made "3 product variants" read as an error. */
+.product-variant-fields.product-variants > p[data-variant-status] {
+  color: inherit;
+  opacity: 0.7;
+}
+

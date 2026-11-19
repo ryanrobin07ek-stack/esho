@@ -9,6 +9,7 @@ import * as ProductVariants from './product-variants.js';
 import { ProductCutout } from './product-cutout.js';
 import './app-visual-theme.css';
 import './product-variants.css';
+import './attribute-pricing.css';
 import { WEBSITE_THEME_CATALOG } from './theme-catalog.js';
 import { renderLiquidStorefront } from './liquid-storefront-renderer.js';
 import './theme-web-editor.js';

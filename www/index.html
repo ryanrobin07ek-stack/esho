@@ -4864,6 +4864,49 @@ body.craft-app-ui #app .website-wizard-go-builder:hover {
   background: rgba(0, 0, 0, 0.52);
 }
 
+/* The till asks which option is being sold. Each choice is a tap target with its price and what is
+   left, stacked so a thumb can hit it; before this the buttons had no styling at all and ran
+   together as plain text. */
+.pos-variant-options {
+  display: grid;
+  gap: 8px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.pos-variant-options button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.pos-variant-options button strong {
+  overflow-wrap: anywhere;
+}
+
+.pos-variant-options button span {
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.pos-variant-options button small {
+  grid-column: 1 / -1;
+  opacity: 0.65;
+}
+
+.pos-variant-options button[disabled] {
+  opacity: 0.5;
+}
+
+/* The priced choices sit above the option buttons in the same dialog. */
+.pos-discount-dialog .pos-field select[data-pos-priced-attribute] {
+  min-height: 44px;
+}
+
 .pos-discount-dialog {
   position: relative;
   z-index: 1;
@@ -8489,6 +8532,27 @@ body.web-product-field-focused #app .studio-workspace-bottom-nav {
   line-height: 1.3;
 }
 
+/* The attribute pricing card sits directly under Product options in the same form, so it is the
+   same card: same padding, same border, same help-text size. Left on its own defaults it was a
+   larger box with body-sized text and looked like it belonged to a different screen. */
+.web-product-attribute-pricing .attribute-pricing-fields {
+  gap: 6px;
+  margin: 4px 0;
+  padding: 8px;
+  border: 1px solid #d8d8db;
+  border-radius: 8px;
+}
+
+.web-product-attribute-pricing .attribute-pricing-fields h3,
+.web-product-attribute-pricing .attribute-pricing-fields p {
+  margin: 0;
+}
+
+.web-product-attribute-pricing .attribute-pricing-fields p {
+  font-size: .72rem;
+  line-height: 1.3;
+}
+
 .web-product-variants .product-variant-fields .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -10039,8 +10103,8 @@ body.craft-app-ui #app .launchpad-link {
   </style>
   <meta name="theme-color" content="#F5FAFF">
   <link rel="manifest" href="/manifest.webmanifest">
-  <script type="module" crossorigin src="/assets/app-B58veRtP.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/app-qKGfSach.css">
+  <script type="module" crossorigin src="/assets/app-D7izA-Yc.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/app-Be6BvG5L.css">
 </head>
 <body>
   <div id="craft-video-splash" hidden aria-hidden="true">

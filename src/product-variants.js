@@ -236,7 +236,7 @@ export function bindProductVariantFields(widget) {
       row.innerHTML = `<strong>${escapeHtml(labels.join(' · '))}</strong>
         <label>Price<input type="number" min="0" step="0.01" data-variant-price
           value="${escapeHtml(suggested === '' ? '' : String(suggested))}"
-          placeholder="${escapeHtml(delta ? String(money(basePrice + delta)) : 'Same as product')}"></label>
+          placeholder="${escapeHtml(basePrice ? String(money(basePrice + delta)) : 'Price')}"></label>
         <label>Stock<input type="number" min="0" step="1" data-variant-stock value="${escapeHtml(current.stock ?? 0)}"></label>`;
       rows.append(row);
     }

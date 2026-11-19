@@ -1,0 +1,99 @@
+/* The attribute pricing editor sits next to Product options in the same forms, so it is the same
+   card: a bordered block with its own heading, not loose text floating under the one above it. */
+.attribute-pricing-fields {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--border, #dedee2);
+  border-radius: 12px;
+}
+
+.attribute-pricing-fields h3,
+.attribute-pricing-fields p {
+  margin: 0;
+}
+
+/* The explanation is help text, not body copy. Left at the inherited size it ran to six lines on a
+   phone and dwarfed the control it was explaining. */
+.attribute-pricing-fields > p {
+  font-size: 0.88rem;
+  opacity: 0.7;
+}
+
+.attribute-pricing-fields h3 span {
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.attribute-pricing-row {
+  display: grid;
+  gap: 10px;
+  padding: 12px 0 14px;
+  border-top: 1px solid var(--border, #dedee2);
+}
+
+.attribute-pricing-row:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.attribute-pricing-row > label {
+  display: grid;
+  gap: 6px;
+}
+
+/* Choice and its price on one row: the choice name is short, and stacking them pushed a three-choice
+   attribute off the screen. */
+.attribute-pricing-value {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(88px, 120px) auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.attribute-pricing-value > label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.attribute-pricing-value > label > span {
+  font-size: 0.8rem;
+  opacity: 0.65;
+}
+
+.attribute-pricing-value input,
+.attribute-pricing-value select {
+  width: 100%;
+  min-width: 0;
+}
+
+.attribute-pricing-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.attribute-pricing-fields > [data-attribute-pricing-add] {
+  justify-self: start;
+}
+
+/* Informational, like the options editor: the form's blanket [role="status"] rule would otherwise
+   paint "Choose a category above first" in danger red. */
+.attribute-pricing-fields[data-attribute-pricing] > p[data-attribute-pricing-status] {
+  color: inherit;
+  opacity: 0.7;
+  margin: 0;
+}
+
+@media (max-width: 420px) {
+  .attribute-pricing-value {
+    grid-template-columns: minmax(0, 1fr) minmax(80px, 1fr);
+  }
+
+  .attribute-pricing-value > [data-priced-value-remove] {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
