@@ -1503,7 +1503,7 @@ test('main app inline script parses before packaging', async () => {
   }
 });
 
-test('home and app screens use a slate-blue-to-black background with stronger silver cards', async () => {
+test('home and app screens are a flat full-screen app with white cards', async () => {
   const pageSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   const visualTheme = await readFile(new URL('../src/app-visual-theme.css', import.meta.url), 'utf8');
   const homeStyle = pageSource.match(/\.home-screen\s*\{([^}]*)\}/)?.[1];
@@ -1511,8 +1511,8 @@ test('home and app screens use a slate-blue-to-black background with stronger si
   assert.match(homeStyle, /background:\s*transparent/);
   assert.match(homeStyle, /--home-light-foreground:\s*#111/);
   assert.match(homeStyle, /--home-dark-foreground:\s*#111/);
-  assert.match(visualTheme, /--app-shell-background:\s*linear-gradient\(180deg,\s*#5B8DB8[\s\S]*?#050505 100%\)/);
-  assert.match(visualTheme, /--app-card-surface:\s*linear-gradient/);
+  assert.match(visualTheme, /--app-shell-background:\s*#eceff2;/);
+  assert.match(visualTheme, /--app-card-surface:\s*#ffffff;/);
   assert.match(pageSource, /\.home-screen-greeting\s*\{[^}]*color:\s*var\(--home-light-foreground\)/);
   assert.match(pageSource, /\.home-data-card,\s*\.home-panel\s*\{[^}]*background:\s*var\(--home-dark-card\)[^}]*color:\s*var\(--home-dark-foreground\)/);
   assert.match(visualTheme, /body\.app-shell #app :is\(article, \[class~="card"\], \[class\*="-card"\]/);

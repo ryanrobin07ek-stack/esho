@@ -11,8 +11,10 @@ test("native app screens share the homepage visual foundation", () => {
   assert.match(bootstrap, /import '\.\/app-visual-theme\.css'/);
   assert.match(visualTheme, /body\.app-shell,\s*body\.app-screen-fade-active/);
   assert.match(appHtml, /classList\.toggle\("app-interior-theme", path !== "\/"\)/);
-  assert.match(visualTheme, /--app-shell-background:\s*linear-gradient\(180deg,\s*#5B8DB8 0%,\s*#B8CCE0 18%,\s*#E5E9ED 32%[^}]*#050505 100%\)/);
-  assert.match(visualTheme, /background:\s*var\(--app-shell-background\) fixed/);
+  // Full-screen app: one flat background, not a card floating over a wallpaper gradient.
+  assert.match(visualTheme, /--app-shell-background:\s*#eceff2;/);
+  assert.match(visualTheme, /background:\s*var\(--app-shell-background\);/);
+  assert.doesNotMatch(visualTheme, /#5B8DB8|#050505|linear-gradient/i);
   assert.doesNotMatch(appHtml, /home-background|app-screen-background|app-background-emblem|home-backgrounds\/|app-backgrounds\//);
   assert.doesNotMatch(appHtml, /setupHomeBackground|setupAppScreenBackground/);
   assert.match(appHtml, /classList\.toggle\("app-screen-fade-active", showScreenFade\)/);
@@ -23,9 +25,14 @@ test("native app screens share the homepage visual foundation", () => {
   assert.match(visualTheme, /--app-ink:\s*#111111/);
   assert.match(visualTheme, /--app-silver:\s*#c7ccd2/);
   assert.match(visualTheme, /--app-white:\s*#ffffff/);
-  assert.match(visualTheme, /--app-card-radius:\s*12px/);
-  assert.match(visualTheme, /--app-card-surface:\s*linear-gradient/);
-  assert.match(visualTheme, /backdrop-filter:\s*blur\(14px\) saturate\(160%\)/);
+  assert.match(visualTheme, /--app-card-radius:\s*10px/);
+  // Flat white sections: nothing frosted, nothing lifted off the page by a shadow.
+  assert.match(visualTheme, /--app-card-surface:\s*#ffffff/);
+  assert.doesNotMatch(visualTheme, /blur\(/);
+  assert.match(visualTheme, /body\.app-shell #app \*,\s*body\.app-screen-fade-active #app \*\s*\{\s*box-shadow:\s*none !important;/);
+  // The bottom bar is docked to the screen edge and the header spans the full width.
+  assert.match(visualTheme, /\.studio-workspace-bottom-nav, \.store-bottom-nav\)[^{]*\{[^}]*left:\s*0 !important;[^}]*bottom:\s*0 !important;[^}]*border-radius:\s*0 !important;/);
+  assert.match(visualTheme, /\.studio-workspace-heading\s*\{[^}]*position:\s*sticky;[^}]*width:\s*100vw;/);
   assert.match(visualTheme, /background:\s*var\(--app-card-surface\) !important/);
   assert.match(visualTheme, /body\.app-screen-fade-active #app :is\(\.pos-bottom-nav, \.studio-workspace-bottom-nav, \.store-bottom-nav\)/);
   assert.match(visualTheme, /body\.app-screen-fade-active #app :is\([\s\S]*?store-bottom-nav \.store-bottom-link\[aria-current="page"\]/);
@@ -50,9 +57,9 @@ test("native app screens share the homepage visual foundation", () => {
   assert.match(posSource, /circle cx="12" cy="5" r="1\.8"\/><circle cx="12" cy="12" r="1\.8"\/><circle cx="12" cy="19"/);
 });
 
-test("app backgrounds are static gradients without rotating imagery", () => {
+test("app backgrounds are flat, without gradients or rotating imagery", () => {
   assert.doesNotMatch(appHtml, /data-home-background|data-app-screen-background|home-backgrounds\/|app-backgrounds\//);
   assert.doesNotMatch(appHtml, /app-background-emblem|setupHomeBackground|setupAppScreenBackground/);
-  assert.match(visualTheme, /--app-shell-background:\s*linear-gradient\(180deg,\s*#5B8DB8[\s\S]*?#050505 100%\)/);
-  assert.match(visualTheme, /--app-card-surface:\s*linear-gradient/);
+  assert.match(visualTheme, /--app-shell-background:\s*#eceff2;/);
+  assert.match(visualTheme, /--app-card-surface:\s*#ffffff;/);
 });
