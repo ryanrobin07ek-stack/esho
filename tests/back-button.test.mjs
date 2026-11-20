@@ -27,20 +27,30 @@ test('back closes the top-most overlay before navigating anywhere', () => {
   assert.equal(handler({ canGoBack: true }), 'closed-overlay');
   assert.deepEqual(log, ['close:drawer', 'close:modal']);
   assert.equal(state.route, '/pos/overview', 'The screen underneath is untouched.');
-  assert.equal(handler({ canGoBack: true }), 'went-back');
-  assert.equal(log.at(-1), 'history.back');
+  // History is never used: the builder preview fills it with its own pages.
+  assert.equal(handler({ canGoBack: true }), 'navigated-up');
+  assert.equal(log.at(-1), 'navigate:/pos');
+  assert.ok(!log.includes('history.back'));
 });
 
-test('back goes up one screen when there is no history to step through', () => {
-  const account = harness({ route: '/account/web/studio/store/products?x=1' });
-  assert.equal(account.handler({ canGoBack: false }), 'navigated-up');
-  assert.deepEqual(account.log, ['navigate:/account']);
+test('back goes up one screen by the app sections, never through browser history', () => {
+  const craft = harness({ route: '/account/web/studio/store/products?x=1' });
+  assert.equal(craft.handler({ canGoBack: true }), 'navigated-up');
+  assert.deepEqual(craft.log, ['navigate:/account/web']);
   const pos = harness({ route: '/pos/catalogue/inventory' });
   pos.handler({});
   assert.deepEqual(pos.log, ['navigate:/pos']);
   const store = harness({ route: '/store/orders' });
   store.handler({});
-  assert.deepEqual(store.log, ['navigate:/']);
+  assert.deepEqual(store.log, ['navigate:/account/web'], 'Craft store screens go back to Craft.');
+  assert.equal(parentRoute('/pos'), '/');
+  assert.equal(parentRoute('/account/main-shop/products'), '/account/main-shop', 'Main Store pages go to Main Store.');
+  assert.equal(parentRoute('/account/main-shop'), '/');
+  assert.equal(parentRoute('/account/web/site?new=1&edit=1&theme=litrus-mixer'), '/account/web/studio/websites/webmaker',
+    'The builder for a new store goes back to the new-store screen, not through preview pages.');
+  assert.equal(parentRoute('/account/web/site?edit=1'), '/account/web/studio/websites/list');
+  assert.equal(parentRoute('/account/web/studio/websites/webmaker'), '/account/web/studio/websites/list');
+  assert.equal(parentRoute('/account/web'), '/');
   assert.equal(parentRoute('/category/shoes?studio=1'), '/account/categories');
   assert.equal(parentRoute('/account'), '/');
 });
@@ -155,5 +165,5 @@ test('createAppBackHandler drives the real router, toast and exit', () => {
   win.location.hash = '#/';
   handler({});
   handler({});
-  assert.deepEqual(calls, ['navigate:/account', `toast:${EXIT_WARNING}`, 'exit']);
+  assert.deepEqual(calls, ['navigate:/', `toast:${EXIT_WARNING}`, 'exit']);
 });

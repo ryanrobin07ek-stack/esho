@@ -99,13 +99,27 @@ export function normalizeRoute(route) {
 
 export const isHomeRoute = (route) => normalizeRoute(route) === HOME_ROUTE;
 
-/** Where "up one screen" goes when there is no browser history to step back through. */
+const CRAFT_ROUTE = '/account/web';
+const MAIN_STORE_ROUTE = '/account/main-shop';
+const WEBSITES_ROUTE = '/account/web/studio/websites/list';
+
+/**
+ * "Up one screen", by a fixed map of the app's sections. Browser history is not used: the web
+ * builder's preview adds its own history entries, so history.back() flipped preview pages instead
+ * of leaving the builder, and back felt dead.
+ */
 export function parentRoute(route) {
   const path = normalizeRoute(route);
+  const query = String(route ?? '');
   if (path === HOME_ROUTE) return HOME_ROUTE;
-  if (path.startsWith('/account/')) return '/account';
   if (path.startsWith('/pos/')) return '/pos';
-  if (path.startsWith('/category/') && /[?&]studio=1(?:&|$)/.test(String(route))) return '/account/categories';
+  if (path.startsWith(`${MAIN_STORE_ROUTE}/`)) return MAIN_STORE_ROUTE;
+  if (path === '/account/web/site') {
+    return /[?&]new=1(?:&|$)/.test(query) ? '/account/web/studio/websites/webmaker' : WEBSITES_ROUTE;
+  }
+  if (path === '/account/web/studio/websites/webmaker' || path === '/account/web/studio/websites/add') return WEBSITES_ROUTE;
+  if (path.startsWith('/account/web/') || path === '/store' || path.startsWith('/store/')) return CRAFT_ROUTE;
+  if (path.startsWith('/category/') && /[?&]studio=1(?:&|$)/.test(query)) return '/account/categories';
   return HOME_ROUTE;
 }
 
@@ -130,10 +144,6 @@ export function createBackHandler({ closeTopOverlay: closeOverlay, getRoute, nav
     const route = getRoute();
     if (!isHomeRoute(route)) {
       lastExitWarningAt = -Infinity;
-      if (event?.canGoBack) {
-        goBack();
-        return 'went-back';
-      }
       navigate(parentRoute(route));
       return 'navigated-up';
     }

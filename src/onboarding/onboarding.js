@@ -56,7 +56,8 @@ export async function startOnboarding({ prefill = false } = {}) {
   document.body.append(overlay);
   const close = state => { write(STATE_KEY, state); overlay.remove(); renderChecklist(); };
   const draw = () => {
-    overlay.innerHTML = `<div class="onb-card"><button type="button" class="onb-skip" data-onb-skip>Skip</button>${stepMarkup(data.step, data)}</div>`;
+    // The hidden Back button is what Android's back button presses (src/back-button.js clicks [data-back-close]).
+    overlay.innerHTML = `<div class="onb-card"><button type="button" hidden data-back-close data-onb-back>Back</button><button type="button" class="onb-skip" data-onb-skip>Skip</button>${stepMarkup(data.step, data)}</div>`;
     overlay.querySelector('input, .onb-primary')?.focus();
   };
   const fail = text => { const e = overlay.querySelector('[data-onb-error]'); if (e) { e.textContent = text; e.hidden = false; } };
@@ -65,6 +66,7 @@ export async function startOnboarding({ prefill = false } = {}) {
     const target = event.target.closest('button');
     if (!target) return;
     if (target.matches('[data-onb-skip]')) return close('skipped');
+    if (target.matches('[data-onb-back]')) { if (data.step > 1) { data.step -= 1; return draw(); } return close('skipped'); }
     if (target.matches('[data-onb-offer]')) { data.offer = target.dataset.onbOffer; data.name = overlay.querySelector('[data-onb-name]')?.value || data.name; return draw(); }
     if (target.matches('[data-onb-add]')) {
       const name = overlay.querySelector('[data-onb-pname]').value.trim();
