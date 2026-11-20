@@ -46,6 +46,37 @@ function parseValues(value, label) {
   return uniqueValues(parts);
 }
 
+const optionKey = name => String(name ?? '').trim().toLowerCase();
+
+/**
+ * Options that share a name (ignoring case and spaces) become one option holding all their values.
+ * An owner typed "Size: L" and then a second option "Size: M", and the shop showed two Size
+ * dropdowns. Each value keeps its own price change; a value that repeats keeps its first one.
+ * Unnamed options are left alone so the editor can still ask the owner to name them. Nothing is
+ * capped here: the caller decides whether too many values is an error or something to trim.
+ */
+export function mergeDuplicateOptions(options = []) {
+  const merged = [];
+  const byName = new Map();
+  for (const option of Array.isArray(options) ? options : []) {
+    const key = optionKey(option?.name);
+    const values = Array.isArray(option?.values) ? option.values : [];
+    let target = key ? byName.get(key) : undefined;
+    if (!target) {
+      target = { option: { ...option, values: [] }, seen: new Set() };
+      merged.push(target);
+      if (key) byName.set(key, target);
+    }
+    for (const value of values) {
+      const valueKey = String(value?.value ?? '').trim().toLowerCase();
+      if (!valueKey || target.seen.has(valueKey)) continue;
+      target.seen.add(valueKey);
+      target.option.values.push(value);
+    }
+  }
+  return merged.map(entry => entry.option);
+}
+
 /** Reads one option's value off a saved variant, old shape or new. */
 function variantOptionValue(variant, option) {
   const named = variant[`option${option}_value`];
@@ -63,13 +94,14 @@ function variantOptionValue(variant, option) {
 export function readSavedOptions({ options = [], variants = [], sizes = [], colors = [], option1Name = '', option2Name = '' } = {}) {
   const savedVariants = Array.isArray(variants) ? variants : [];
   if (Array.isArray(options) && options.length) {
-    return options.slice(0, MAX_OPTIONS).map((option, index) => ({
+    return mergeDuplicateOptions(options.slice(0, MAX_OPTIONS).map((option, index) => ({
       name: String(option?.name ?? option?.option_name ?? '').slice(0, 80) || `Option ${index + 1}`,
       values: (Array.isArray(option?.values) ? option.values : []).map(value => ({
         value: String(value?.value ?? value ?? '').slice(0, 80),
         priceDelta: money(Number(value?.priceDelta ?? value?.price_delta) || 0)
-      })).filter(value => value.value).slice(0, MAX_VALUES_PER_OPTION)
-    })).filter(option => option.values.length);
+      })).filter(value => value.value)
+    })).filter(option => option.values.length))
+      .map(option => ({ ...option, values: option.values.slice(0, MAX_VALUES_PER_OPTION) }));
   }
   const legacy = [];
   for (let option = 1; option <= MAX_OPTIONS; option += 1) {
@@ -84,7 +116,8 @@ export function readSavedOptions({ options = [], variants = [], sizes = [], colo
       values: values.map(value => ({ value, priceDelta: 0 }))
     });
   }
-  return legacy;
+  return mergeDuplicateOptions(legacy)
+    .map(option => ({ ...option, values: option.values.slice(0, MAX_VALUES_PER_OPTION) }));
 }
 
 export function createProductVariantFields(saved = {}) {
@@ -161,6 +194,22 @@ export function bindProductVariantFields(widget) {
     });
   };
 
+  // Said as the owner types the name, before anything is saved, so a second "Size" is not a surprise.
+  const updateNameWarnings = () => {
+    const seen = new Set();
+    for (const block of optionsHost.querySelectorAll('[data-variant-option]')) {
+      const warning = block.querySelector('[data-variant-option-warning]');
+      const name = block.querySelector('[data-variant-option-name]')?.value.trim() || '';
+      const key = optionKey(name);
+      const repeated = Boolean(key) && seen.has(key);
+      if (key) seen.add(key);
+      if (!warning) continue;
+      const text = repeated ? `${name} is already an option; its values will be combined.` : '';
+      if (warning.textContent !== text) warning.textContent = text;
+      warning.hidden = !repeated;
+    }
+  };
+
   const valuePricesMarkup = option => (option.values.length ? `<div class="product-variant-value-prices">
         <span>Extra price per value</span>
         ${option.values.map(value => `<label><span>${escapeHtml(value.value)}</span>
@@ -177,9 +226,10 @@ export function bindProductVariantFields(widget) {
       blocks.forEach((block, index) => {
         block.querySelector('.product-variant-value-prices')?.remove();
         const markup = valuePricesMarkup(options[index]);
-        if (markup) block.querySelector('.form-grid')?.insertAdjacentHTML('afterend', markup);
+        if (markup) block.querySelector('[data-variant-option-warning]')?.insertAdjacentHTML('afterend', markup);
       });
       addOption.disabled = options.length >= MAX_OPTIONS;
+      updateNameWarnings();
       return;
     }
     optionsHost.innerHTML = options.map((option, index) => `<div class="product-variant-option" data-variant-option="${index}">
@@ -189,6 +239,7 @@ export function bindProductVariantFields(widget) {
         <label>Values<input type="text" data-variant-option-values maxlength="1000"
           value="${escapeHtml(option.values.map(value => value.value).join(', '))}" placeholder="S, M, L"></label>
       </div>
+      <p class="product-variant-option-warning" data-variant-option-warning aria-live="polite" hidden></p>
       ${valuePricesMarkup(option)}
       <div class="product-variant-option-actions"><button type="button" class="btn-secondary" data-variant-remove-option>Remove</button></div>
     </div>`).join('');
@@ -197,12 +248,13 @@ export function bindProductVariantFields(widget) {
     if (lastActions) lastActions.append(addOption);
     else optionsHost.after(addOption);
     addOption.disabled = options.length >= MAX_OPTIONS;
+    updateNameWarnings();
   };
 
   const render = () => {
     renderOptionBlocks();
     rows.replaceChildren();
-    const usable = options.filter(option => option.name && option.values.length);
+    const usable = mergeDuplicateOptions(options.filter(option => option.name && option.values.length));
     for (const option of options) {
       if (option.name && !option.values.length) {
         status.textContent = `Enter values for ${option.name} or remove the option.`;
@@ -217,6 +269,12 @@ export function bindProductVariantFields(widget) {
     }
     if (!usable.length) {
       status.textContent = '';
+      updateStockControl(false);
+      return;
+    }
+    const crowded = usable.find(option => option.values.length > MAX_VALUES_PER_OPTION);
+    if (crowded) {
+      status.textContent = `${crowded.name} supports up to ${MAX_VALUES_PER_OPTION} values.`;
       updateStockControl(false);
       return;
     }
@@ -299,6 +357,11 @@ export function bindProductVariantFields(widget) {
   let typingTimer;
   optionsHost.addEventListener('input', event => {
     const target = typeof event.target?.matches === 'function' ? event.target : null;
+    // The name box only refreshes the repeated-name warning; nothing is re-drawn under the finger.
+    if (target?.matches('[data-variant-option-name]')) {
+      updateNameWarnings();
+      return;
+    }
     // Only the values box: re-drawing while the name is typed would drop the keyboard for nothing.
     if (!target?.matches('[data-variant-option-values]')) return;
     clearTimeout(typingTimer);
@@ -342,7 +405,7 @@ export function bindProductVariantFields(widget) {
 export function readProductVariantFields(widget) {
   if (!widget) throw new Error('Product option fields are required.');
   const blocks = [...widget.querySelectorAll('[data-variant-option]')];
-  const options = blocks.map((block, index) => {
+  const options = mergeDuplicateOptions(blocks.map((block, index) => {
     const name = block.querySelector('[data-variant-option-name]')?.value.trim().slice(0, 80) || '';
     const values = parseValues(block.querySelector('[data-variant-option-values]')?.value || '', name || `Option ${index + 1}`);
     if (Boolean(name) !== Boolean(values.length)) {
@@ -359,7 +422,9 @@ export function readProductVariantFields(widget) {
         return { value, priceDelta: money(priceDelta) };
       })
     };
-  }).filter(option => option.name && option.values.length);
+  }).filter(option => option.name && option.values.length));
+  const crowded = options.find(option => option.values.length > MAX_VALUES_PER_OPTION);
+  if (crowded) throw new Error(`${crowded.name} supports up to ${MAX_VALUES_PER_OPTION} values.`);
 
   const variantRows = [...widget.querySelectorAll('[data-variant-row]')];
   if (!options.length) {
