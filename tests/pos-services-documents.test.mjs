@@ -1,5 +1,6 @@
 // The till must sell a service, keep quotations and invoices, attach suppliers to products and keep the
 // M-Pesa reference. Each of these used to be missing or disconnected from the rest of the POS.
+import { readTillSource } from './helpers/till-source.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import initSqlJs from 'sql.js';
@@ -333,6 +334,6 @@ test('checkout asks for the M-Pesa reference only when mobile money is chosen', 
   await app.refresh();
   // The cart lives in the panel's own state, so assert on the rendered source of truth instead.
   assert.ok(soap.id);
-  const source = (await import('node:fs')).readFileSync(new URL('../src/pos.js', import.meta.url), 'utf8');
+  const source = await readTillSource();
   assert.match(source, /state\.paymentMethod === 'Mobile money' \? `[\s\S]*?name', 'mpesaRef'|field\('M-Pesa reference · optional', 'mpesaRef'/);
 });

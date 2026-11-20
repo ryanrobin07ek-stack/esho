@@ -1,3 +1,4 @@
+import { readTillSource } from './helpers/till-source.mjs';
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -6,7 +7,7 @@ import { readAppSource } from "./helpers/app-source.mjs";
 const bootstrap = await readFile(new URL("../src/bootstrap.js", import.meta.url), "utf8");
 const visualTheme = await readFile(new URL("../src/app-visual-theme.css", import.meta.url), "utf8");
 const appHtml = await readAppSource();
-const posSource = await readFile(new URL("../src/pos.js", import.meta.url), "utf8");
+const posSource = await readTillSource();
 
 test("native app screens share the homepage visual foundation", () => {
   assert.match(bootstrap, /import '\.\/app-visual-theme\.css'/);
