@@ -1946,7 +1946,8 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /async loadHomeDashboard\(\)[\s\S]*?StudioRenderers\.getMainShopSnapshot\(\)[\s\S]*?Sales today[\s\S]*?Recent orders/);
     assert.match(launchpad, /class="home-shortcut-grid" aria-label="Quick actions"[\s\S]*?href="\/store\/products" data-route="\/store\/products"[\s\S]*?Products[\s\S]*?href="\/store\/inventory" data-route="\/store\/inventory"[\s\S]*?Inventory[\s\S]*?href="\/store\/orders" data-route="\/store\/orders"[\s\S]*?Orders[\s\S]*?href="\/store\/categories" data-route="\/store\/categories"[\s\S]*?Categories/);
     assert.equal((launchpad.match(/class="home-shortcut-link"/g) || []).length, 4);
-    assert.match(pageSource, /if \(path === "\/"\) \{\s*void this\.loadHomeDashboard\(\);?\s*\}/);
+    // Home loads its dashboard, then hands the live store to the setup guide (src/onboarding).
+    assert.match(pageSource, /if \(path === "\/"\) \{\s*void this\.loadHomeDashboard\(\);?\s*(?:\/\/[^\n]*\s*)?void import\("\.\.\/onboarding\/onboarding\.js"\)\.then\(module => module\.onHomeShown\(\{ SQLiteEngine \}\)\);\s*\}/);
     assert.doesNotMatch(launchpad, /Overall Revenue|Overall Profit|Overall Customers|Average Order|home-overall-metric/);
     assert.doesNotMatch(pageSource, /loadHomeOverallMetrics|home-overall-metric|home-overall-metrics/);
     assert.match(pageSource, /path === "\/account\/main-shop" \|\| path\.startsWith\("\/account\/main-shop\/"\)[\s\S]*?renderMainShopWorkspace\(path\)/);
