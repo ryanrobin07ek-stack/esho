@@ -15,6 +15,7 @@ import { renderStoreCategories } from '../screens/craft/store-categories.js';
 import { renderStoreInventory } from '../screens/craft/store-inventory.js';
 import { renderStoreOrders } from '../screens/craft/store-orders.js';
 import { renderStoreBookings } from '../screens/craft/store-bookings.js';
+import { renderCrmCustomers } from '../screens/craft/crm-customers.js';
 
 // Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
 // modules need is exported at the end.
@@ -4672,9 +4673,7 @@ export const StudioRenderers = {
       return renderDashboardProductIntelligence.call(this, { mostBookedProductRows, mostCartedProductRows, mostViewedProductRows, mostWishlistedProductRows, remoteProductAnalytics, snapshot });
     }
     if (path === "/account/customers" || path === "/account/customers/") {
-      return `<section class="studio-workspace-section"><div class="studio-metric-grid studio-metric-grid-featured">${metric("Identified web customers", customers.length, "", "/account/web/studio/crm/customers")}${metric("Repeat customers", customers.filter(customer => customer.orders > 1).length, "", "/account/web/studio/crm/customers")}${metric("Newsletter subscribers", newsletterSubscribers.length, "", "/account/web/studio/crm/subscribers")}</div>
-      <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">CUSTOMER RELATIONSHIPS</span><h2>Returning customers</h2></div><a href="/account/customers/loyalty" data-route="/account/customers/loyalty">Manage points</a></div>
-        ${customerRows || `<p class="store-workspace-empty">Customers will appear after they place an order with an email address or phone number.</p>`}</article></section>`;
+      return renderCrmCustomers.call(this, { customerRows, customers, metric, newsletterSubscribers });
     }
     if (path === "/account/customers/loyalty") {
       const pointsPerVisit = Number(this.getWorkspaceSetting("points_per_visit", 1));
