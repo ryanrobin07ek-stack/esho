@@ -80,6 +80,11 @@ export const builderScreen = {
           .builder-litrus-toolbar button:focus-visible,.builder-litrus-toolbar a:focus-visible,.builder-litrus-device-controls summary:focus-visible{outline:2px solid #111;outline-offset:2px}
           .builder-litrus-toolbar [hidden]{display:none!important}
           .builder-litrus-toolbar #builder-litrus-publish{background:#111;color:#fff;border-color:#111}
+          .builder-litrus-toolbar #builder-litrus-save[data-save-state="saved"]{color:#5f6670}
+          .builder-litrus-toolbar #builder-litrus-save[data-save-state="dirty"]{border-color:#111;font-weight:700}
+          .builder-litrus-toolbar #builder-litrus-save[data-save-state="saving"]{cursor:progress;color:#5f6670}
+          .builder-litrus-toolbar #builder-litrus-save[data-save-state="error"]{border-color:#b42318;color:#b42318}
+          .builder-litrus-save-short{display:none}
           .builder-litrus-device-controls{position:relative;margin-left:auto}
           .builder-litrus-device-controls[hidden]{display:none!important}
           .builder-litrus-device-controls summary{gap:6px;list-style:none}
@@ -88,11 +93,13 @@ export const builderScreen = {
           .builder-litrus-device-menu{position:absolute;top:50px;right:0;z-index:20;display:grid;min-width:150px;gap:4px;padding:6px;border:1px solid #c7ccd2;border-radius:10px;background:#fff;box-shadow:none}
           .builder-litrus-device-menu button{width:100%;justify-content:flex-start}
           .builder-litrus-device-menu button[aria-pressed="true"]{background:#111;color:#fff;border-color:#111}
+          @media(max-width:400px){.builder-litrus-save-long{display:none}.builder-litrus-save-short{display:inline}}
           @media(max-width:520px){.builder-litrus-toolbar{gap:4px;padding-inline:5px}.builder-litrus-toolbar button,.builder-litrus-toolbar a,.builder-litrus-device-controls summary{padding-inline:8px;font-size:11px}}
         </style>
         <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:#eceff2;color:#111;">
           <header class="builder-litrus-toolbar" aria-label="Shop builder controls">
             <button id="builder-litrus-publish" type="button">Publish</button>
+            <button id="builder-litrus-save" type="button" data-save-state="saved" aria-live="polite" title="All changes are saved"><span class="builder-litrus-save-long">Saved</span><span class="builder-litrus-save-short">Saved</span></button>
             ${draftEditor ? "" : `<a id="builder-litrus-store-details" href="/account/web/store?tenant=${encodeURIComponent(tenant.id)}" data-route="/account/web/store?tenant=${encodeURIComponent(tenant.id)}">Store</a>`}
             <button id="builder-litrus-sections" type="button">Sections</button>
             <button id="builder-litrus-advanced" type="button">Advanced</button>
@@ -288,6 +295,54 @@ export function setupLitrusBuilder(params, path) {
         openPublish: () => this.openCloudflarePublishModal(true)
       });
       window.addEventListener("message", this.litrusMixerMessageHandler);
+      releaseLitrusLeaveGuard.call(this);
+      // Nothing is saved until the owner presses Save (or Publish, which saves first). The button shows
+      // the editor's save state, and leaving the editor with unsaved changes asks first.
+      const saveButton = document.getElementById("builder-litrus-save");
+      let lastSaveError = "";
+      const showSaveState = ({ state, error }) => {
+        if (!saveButton) return;
+        const [long, short] = SAVE_LABELS[state] || SAVE_LABELS.saved;
+        saveButton.dataset.saveState = state in SAVE_LABELS ? state : "saved";
+        saveButton.querySelector(".builder-litrus-save-long").textContent = long;
+        saveButton.querySelector(".builder-litrus-save-short").textContent = short;
+        saveButton.title = state === "error" ? `Could not save: ${error}` : state === "dirty" ? "Save your changes"
+          : state === "saving" ? "Saving your changes" : "All changes are saved";
+        saveButton.disabled = state === "saving";
+        if (state === "error" && error && error !== lastSaveError) {
+          AppUtils.showToast(`Could not save the website: ${error}`, "danger");
+        }
+        lastSaveError = state === "error" ? error : "";
+      };
+      const watchSaveState = () => {
+        const frameWindow = litrusFrame.contentWindow;
+        if (typeof frameWindow?.craftLitrusWatchSaveState !== "function") return;
+        this.litrusStopWatchingSave?.();
+        this.litrusStopWatchingSave = frameWindow.craftLitrusWatchSaveState(showSaveState);
+      };
+      litrusFrame.addEventListener("load", watchSaveState);
+      watchSaveState();
+      saveButton?.addEventListener("click", () => {
+        void litrusFrame.contentWindow?.craftLitrusSave?.();
+      });
+      const hasUnsavedChanges = () => {
+        try {
+          return Boolean(litrusFrame.contentWindow?.craftLitrusHasUnsavedChanges?.());
+        } catch (error) {
+          console.error("Could not check the website editor for unsaved changes.", error);
+          return false;
+        }
+      };
+      // Any route change (Android back, a link, the Store button, even reopening this screen) rebuilds
+      // the editor, so it is asked before every one.
+      this.routeLeaveGuard = () => !litrusFrame.isConnected || !hasUnsavedChanges() ||
+        window.confirm("Your website changes are not saved. Leave without saving?");
+      this.litrusBeforeUnload = event => {
+        if (!hasUnsavedChanges()) return;
+        event.preventDefault();
+        event.returnValue = "";
+      };
+      window.addEventListener("beforeunload", this.litrusBeforeUnload);
       const publishButton = document.getElementById("builder-litrus-publish");
       const sectionsButton = document.getElementById("builder-litrus-sections");
       const advancedButton = document.getElementById("builder-litrus-advanced");
@@ -315,11 +370,30 @@ export function setupLitrusBuilder(params, path) {
           if (devices) devices.open = false;
         });
       });
-    } else if (this.litrusMixerMessageHandler) {
-      window.removeEventListener("message", this.litrusMixerMessageHandler);
-      this.litrusMixerMessageHandler = null;
+    } else {
+      releaseLitrusLeaveGuard.call(this);
+      if (this.litrusMixerMessageHandler) {
+        window.removeEventListener("message", this.litrusMixerMessageHandler);
+        this.litrusMixerMessageHandler = null;
+      }
     }
   }
+}
+
+const SAVE_LABELS = {
+  saved: ["Saved", "Saved"],
+  dirty: ["Unsaved changes", "Save"],
+  saving: ["Saving…", "Saving…"],
+  error: ["Save failed", "Retry"]
+};
+
+// Stops asking before leaving, once the builder screen is gone or about to be rebuilt.
+function releaseLitrusLeaveGuard() {
+  this.routeLeaveGuard = null;
+  this.litrusStopWatchingSave?.();
+  this.litrusStopWatchingSave = null;
+  if (this.litrusBeforeUnload) window.removeEventListener("beforeunload", this.litrusBeforeUnload);
+  this.litrusBeforeUnload = null;
 }
 
 // Screen entry points. The router (handleRoute in src/app/main.js) still draws this screen itself,
@@ -332,6 +406,7 @@ export function mount(root, params = new URLSearchParams()) {
 
 // Stops listening to the Litrus iframe, as postRenderSetup does when the screen has no builder frame.
 export function unmount() {
+  releaseLitrusLeaveGuard.call(AppController);
   if (AppController.litrusMixerMessageHandler) {
     window.removeEventListener("message", AppController.litrusMixerMessageHandler);
     AppController.litrusMixerMessageHandler = null;

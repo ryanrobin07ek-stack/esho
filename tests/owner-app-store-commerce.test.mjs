@@ -107,6 +107,58 @@ test("A builder echo of an archived product does not duplicate or revive it", as
   assert.equal(saved.products[0].status, "archived", "Only the owner app can unarchive a product.");
 });
 
+// Regression: archived products were still lost on builder saves in two ways. In a new-store draft the
+// merge-back looked only at the draft's own list, not at the product table the save replaces. And an
+// echoed archived copy went through the edit path: with no stored match it was saved as a new ACTIVE
+// product, and a malformed one ("invalid name or price") blocked every save.
+function draftSaveHarness({ live, draftProducts }) {
+  assert.ok(saveMethod, "saveLitrusMixerCatalog should be extractable.");
+  let draft = { shop_name: "New shop", categories: [{ id: 1, name: "Shoes" }], products: draftProducts };
+  const StudioRenderers = { websiteBuilderDraft: () => JSON.parse(JSON.stringify(draft)), saveWebsiteBuilderDraft: next => { draft = next; } };
+  const save = new Function("SQLiteEngine", "window", "StudioRenderers", "WEBSITE_BUILDER_DRAFT_SYNC_KEY",
+    `return async function (input, isDraftEditor, expectedTenantId) {${saveMethod}
+};`)(
+    { select: name => JSON.parse(JSON.stringify((name === "products" ? live : []) || [])) },
+    { ShopSQLite: { async flush() {} }, EshopServiceModel: ServiceModel, localStorage: { setItem() {} } },
+    StudioRenderers, "draft-sync"
+  );
+  let saved = null;
+  const controller = {
+    getActiveTenant: () => ({ id: "draft", name: "New shop" }),
+    tenantCatalogs: () => [{ tenant_id: "draft", categories: [{ id: 1, name: "Shoes" }], store: {}, products: [] }],
+    setActiveTenantCatalog(_tenant, catalog) { saved = catalog; }
+  };
+  return { run: input => save.call(controller, input, true, "draft").then(() => ({ saved, draft })) };
+}
+
+test("A new-store draft save keeps the archived products of the table it replaces", async () => {
+  const archived = { id: 9, name: "Retired sandal", price: 800, stock: 2, status: "archived", sku: "SAN-9" };
+  const live = [{ id: 601, name: "Runner", price: 2500, status: "active", category_id: 1 }, archived];
+  const { saved, draft } = await draftSaveHarness({ live, draftProducts: [{ id: 601, name: "Runner", price: 2500, category_id: 1 }] })
+    .run(builderCatalog([{ id: 601, name: "Runner", price: 2600, category_names: ["Shoes"] }]));
+  assert.deepEqual(saved.products.find(product => product.id === 9), archived, "the archived product is kept exactly as stored");
+  assert.equal(saved.products.find(product => product.id === 601).price, 2600);
+  assert.equal(draft.products.length, 1, "the draft's own list is unchanged in size");
+});
+
+test("An echoed archived copy is never saved as an active product or edited", async () => {
+  const stored = { id: 2, name: "Retired boot", price: 4000, stock: 7, status: "archived", sku: "BOOT-1", category_id: 1 };
+  const live = {
+    products: [{ id: 1, name: "Shoe", price: 10, stock: 3, status: "active", category_id: 1 }, stored],
+    inventory: [{ product_id: 1, stock: 3 }, { product_id: 2, stock: 7 }]
+  };
+  // A malformed echo (no name, no price) used to throw "invalid name or price" and block the whole save.
+  const saved = await litrusSaveHarness({ live, cached: { products: [], inventory: [] } }).run(builderCatalog([
+    { id: 1, name: "Shoe", price: 12, category_names: ["Shoes"] },
+    { id: 2, name: "", price: null, status: "archived" },
+    { id: 77, name: "Ghost", price: 5, status: "archived", category_names: ["Shoes"] }
+  ]));
+  assert.deepEqual(saved.products.map(product => String(product.id)).sort(), ["1", "2"],
+    "an archived echo with no stored product is not created as a new (active) product");
+  assert.deepEqual(saved.products.find(product => product.id === 2), stored, "the stored archived product is untouched");
+  assert.equal(saved.products.find(product => product.id === 1).price, 12, "the rest of the save still happens");
+});
+
 test("Archived products are not sent to Litrus and publishing skips them", () => {
   const sendCatalog = app.match(/const sendCatalog = \(\) => \{([\s\S]*?)\n        \};/)?.[1];
   assert.ok(sendCatalog, "sendCatalog should be extractable.");

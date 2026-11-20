@@ -6824,16 +6824,9 @@ autosave=function(){
  clearTimeout(svT);
  if(craftIntegrated){
   if(window.parent===window||!document.documentElement.classList.contains('craft-ready'))return;
+  // Inside Craft an edit is not saved; it only marks the design as changed until the owner presses Save.
   clearTimeout(craftSaveTimer);
-  craftSaveTimer=setTimeout(()=>{
-   try{
-    const payload=window.litrusGetCraftPublishPayload();
-    const requestId=Date.now()+'-'+(++craftSaveSequence);
-    latestCraftSaveRequest=requestId;
-    setSaved('Saving changes on this device...');
-    window.parent.postMessage({type:'craft-litrus-draft',requestId,...payload},location.origin);
-   }catch(error){setSaved('Could not save changes: '+String(error&&error.message||error))}
-  },700);
+  craftSaveTimer=setTimeout(craftCheckUnsaved,250);
   return;
  };
  svT=setTimeout(async()=>{
@@ -6843,6 +6836,65 @@ autosave=function(){
    setSaved('Auto-saved on this device at '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'.')}
   catch(e){setSaved('Auto-save is not available in this browser.')}},600)
 }
+/* Explicit save inside Craft. Nothing is written to Craft until the owner presses Save (or Publish, which
+   saves first); edits, shuffles and moods only mark the design as changed. "Changed" means different from
+   what was last saved (or loaded), compared by a signature of what a save writes, so an edit that ends where
+   it started, or a re-render on load, is not an unsaved change. */
+let craftSavedSignature='',craftSaveState='saved',craftSaveError='',craftSaveInFlight=null,craftSaveWatchers=[];
+const craftPendingSaves=new Map();
+function craftDesignSignature(){read();return JSON.stringify([getCraftDesignRecipe(),SHOP.cats,prods])}
+function craftEmitSaveState(){
+ setSaved(craftSaveState==='saving'?'Saving…':craftSaveState==='error'?'Could not save: '+craftSaveError:craftSaveState==='dirty'?'Unsaved changes. Press Save to keep them.':'All changes saved.');
+ const state={state:craftSaveState,error:craftSaveError};
+ craftSaveWatchers.slice().forEach(watch=>{try{watch(state)}catch(error){}});
+}
+function craftSetSaveState(state,error){craftSaveState=state;craftSaveError=error||'';craftEmitSaveState()}
+function craftCheckUnsaved(){
+ clearTimeout(craftSaveTimer);
+ if(!document.documentElement.classList.contains('craft-ready'))return false;
+ const changed=craftDesignSignature()!==craftSavedSignature;
+ if(craftSaveInFlight)return changed;
+ if(!changed){if(craftSaveState!=='saved')craftSetSaveState('saved')}
+ else if(craftSaveState==='saved')craftSetSaveState('dirty');
+ return changed;
+}
+function craftMarkLoaded(){craftSavedSignature=craftDesignSignature();craftSetSaveState('saved')}
+function craftSave(options){
+ if(craftSaveInFlight)return craftSaveInFlight;
+ clearTimeout(craftSaveTimer);
+ let payload,signature;
+ try{payload=window.litrusGetCraftPublishPayload(options);signature=craftDesignSignature()}
+ catch(error){craftSetSaveState('error',String(error&&error.message||error));return Promise.resolve(null)}
+ const requestId=Date.now()+'-'+(++craftSaveSequence);latestCraftSaveRequest=requestId;
+ craftSetSaveState('saving');
+ craftSaveInFlight=new Promise(resolve=>{
+  let timeout=0;
+  const finish=error=>{
+   clearTimeout(timeout);craftPendingSaves.delete(requestId);craftSaveInFlight=null;
+   if(error){craftSetSaveState('error',error);resolve(null);return}
+   craftSavedSignature=signature;craftSaveState='saved';craftSaveError='';
+   if(!craftCheckUnsaved())craftEmitSaveState();
+   resolve(payload);
+  };
+  timeout=setTimeout(()=>finish('Craft did not answer. Check the app and try again.'),60000);
+  craftPendingSaves.set(requestId,finish);
+  try{window.parent.postMessage({type:'craft-litrus-draft',requestId,...payload},location.origin)}
+  catch(error){finish(String(error&&error.message||error))}
+ });
+ return craftSaveInFlight;
+}
+// Craft's toolbar drives these (same origin): its Save button, its leave check and its status label.
+window.craftLitrusSave=()=>craftSave().then(payload=>!!payload);
+window.craftLitrusHasUnsavedChanges=()=>{
+ if(!craftIntegrated||!document.documentElement.classList.contains('craft-ready'))return false;
+ return craftCheckUnsaved()||!!craftSaveInFlight;
+};
+window.craftLitrusWatchSaveState=watch=>{
+ if(typeof watch!=='function')return()=>{};
+ craftSaveWatchers.push(watch);
+ try{watch({state:craftSaveState,error:craftSaveError})}catch(error){}
+ return()=>{craftSaveWatchers=craftSaveWatchers.filter(item=>item!==watch)};
+};
 const go=()=>{setPreviewUpdating();clearTimeout(tm);tm=setTimeout(()=>{if(!craftIntegrated||previewVisible())render();sync();autosave()},120)};
 const _autosave0=autosave;autosave=function(){_autosave0.apply(this,arguments);if(photoAuto&&!(craftIntegrated&&window.parent!==window)){clearTimeout(photoAutoTimer);photoAutoTimer=setTimeout(function(){if(!getPhotoKey(false)){photoAuto=false;return}photoAutoRun=true;fillEmptyShopImages()},600)}};
 document.addEventListener('change',e=>{if(e.target&&e.target.closest&&e.target.closest('.bar,#wz,#advSide'))autosave()});
@@ -7506,8 +7558,8 @@ if(craftIntegrated&&window.parent!==window){
    return;
   }
   if(event.data?.type==='craft-litrus-draft-saved'){
-   if(String(event.data.requestId||'')!==latestCraftSaveRequest)return;
-   setSaved(event.data.error?'Could not save changes: '+String(event.data.error):'Changes saved on this device.');
+   const finish=craftPendingSaves.get(String(event.data.requestId||''));
+   if(finish)finish(event.data.error?String(event.data.error):'');
    return;
   }
   if(event.data?.type==='craft-litrus-image-response'){
@@ -7519,12 +7571,19 @@ if(craftIntegrated&&window.parent!==window){
    return;
   }
   if(event.data?.type!=='craft-litrus-catalog')return;
-  try{window.litrusSetCraftCatalog(event.data.catalog)}
+  try{window.litrusSetCraftCatalog(event.data.catalog);craftMarkLoaded()}
   catch(error){window.parent.postMessage({type:'craft-litrus-error',message:String(error.message||error)},location.origin)}
  });
- publishButton.onclick=()=>{
-  try{window.parent.postMessage({type:'craft-litrus-publish',...window.litrusGetCraftPublishPayload({strict:true})},location.origin)}
-  catch(error){const status=g('wWarn');status.textContent=String(error.message||error)}
+ publishButton.onclick=async()=>{
+  const status=g('wWarn');status.textContent='';
+  try{
+   read();const problems=serviceSettingsProblems();
+   if(problems.length)throw new Error('Fix the appointment settings before publishing: '+problems.join(' '));
+   if(craftSaveInFlight)await craftSaveInFlight;
+   const payload=await craftSave({strict:true});
+   if(!payload){status.textContent='Not published. '+(craftSaveError||'The changes could not be saved.');return}
+   window.parent.postMessage({type:'craft-litrus-publish',...payload},location.origin);
+  }catch(error){status.textContent=String(error&&error.message||error)}
  };
  window.parent.postMessage({type:'craft-litrus-ready',version:1},location.origin);
 }
