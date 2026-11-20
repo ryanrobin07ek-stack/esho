@@ -8128,7 +8128,7 @@ export const AppController = {
     if (path === "/") {
       void this.loadHomeDashboard();
       // First-run setup guide and the Get started checklist (src/onboarding).
-      void import("../onboarding/onboarding.js").then(module => module.onHomeShown());
+      void import("../onboarding/onboarding.js").then(module => module.onHomeShown({ SQLiteEngine }));
     }
     if (path === "/account/web/studio/websites/webmaker") {
       this.bindWebsiteBuilderEvents();

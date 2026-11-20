@@ -2,7 +2,8 @@
 // on Home. Shown once for a shop with no products; "Show setup guide" on the checklist replays it.
 // Saves through the app's own store (SQLiteEngine) and till (window.ShopPOS).
 import './onboarding.css';
-import { SQLiteEngine } from '../app/main.js';
+// The app passes its live store in onHomeShown(); importing main.js here could load a second copy.
+let appStore = null;
 
 const STATE_KEY = 'ESHOP_ONBOARDING_V1';
 const CHECKLIST_KEY = 'ESHOP_ONBOARDING_CHECKLIST_V1';
@@ -37,9 +38,15 @@ function stepMarkup(step, data) {
     <button type="button" class="onb-primary" data-onb-next>Finish</button>`;
 }
 
+/** The shop's saved name and offer type, from the app's live store (empty until Home has shown). */
+export function currentShop() {
+  try { const store = appStore?.getStore() || {}; return { name: store.name || '', offer_type: store.offer_type || '' }; } catch { return { name: '', offer_type: '' }; }
+}
+
 export async function startOnboarding() {
   if (document.querySelector('.onb-overlay')) return;
-  const data = { step: 1, name: '', offer: 'products', added: [] };
+  const shop = currentShop();
+  const data = { step: 1, name: shop.name || '', offer: ['products', 'services', 'both'].includes(shop.offer_type) ? shop.offer_type : 'products', added: [] };
   const overlay = document.createElement('div');
   overlay.className = 'onb-overlay';
   overlay.setAttribute('role', 'dialog');
@@ -75,7 +82,10 @@ export async function startOnboarding() {
     if (data.step === 2) {
       data.name = overlay.querySelector('[data-onb-name]').value.trim();
       if (!data.name) return fail('Enter your shop name.');
-      try { SQLiteEngine.updateStore({ name: data.name, title: data.name, offer_type: data.offer }); }
+      try {
+        if (!appStore) throw new Error('The shop details could not be saved yet. Try again in a moment.');
+        appStore.updateStore({ name: data.name, title: data.name, offer_type: data.offer });
+      }
       catch (error) { return fail(error?.message || 'Your shop details could not be saved.'); }
     }
     if (data.step === 4) return close('done');
@@ -127,7 +137,8 @@ document.addEventListener('click', event => {
 
 // Home is drawn by the router; add the checklist whenever it appears, and start the guide once
 // for a shop that has no products yet (an existing shop is marked done without being asked).
-export async function onHomeShown() {
+export async function onHomeShown(context = {}) {
+  if (context.SQLiteEngine) appStore = context.SQLiteEngine;
   if (!document.querySelector('.home-screen-main')) return;
   await renderChecklist();
   // On start-up Home is drawn again once the till is ready, without this hook; put the card back.
