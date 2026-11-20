@@ -42,7 +42,8 @@ test('back goes up one screen by the app sections, never through browser history
   assert.deepEqual(pos.log, ['navigate:/pos']);
   const store = harness({ route: '/store/orders' });
   store.handler({});
-  assert.deepEqual(store.log, ['navigate:/account/web'], 'Craft store screens go back to Craft.');
+  assert.deepEqual(store.log, ['navigate:/account/main-shop'], 'Main Store pages (/store/...) go back to Main Store.');
+  assert.equal(parentRoute('/account/customers'), '/account/main-shop');
   assert.equal(parentRoute('/pos'), '/');
   assert.equal(parentRoute('/account/main-shop/products'), '/account/main-shop', 'Main Store pages go to Main Store.');
   assert.equal(parentRoute('/account/main-shop'), '/');

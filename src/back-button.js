@@ -118,7 +118,9 @@ export function parentRoute(route) {
     return /[?&]new=1(?:&|$)/.test(query) ? '/account/web/studio/websites/webmaker' : WEBSITES_ROUTE;
   }
   if (path === '/account/web/studio/websites/webmaker' || path === '/account/web/studio/websites/add') return WEBSITES_ROUTE;
-  if (path.startsWith('/account/web/') || path === '/store' || path.startsWith('/store/')) return CRAFT_ROUTE;
+  if (path.startsWith('/account/web/')) return CRAFT_ROUTE;
+  // Main Store's own pages live under /store/... and /account/customers.
+  if (path === '/store' || path.startsWith('/store/') || path.startsWith('/account/customers')) return MAIN_STORE_ROUTE;
   if (path.startsWith('/category/') && /[?&]studio=1(?:&|$)/.test(query)) return '/account/categories';
   return HOME_ROUTE;
 }

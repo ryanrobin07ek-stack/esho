@@ -2,6 +2,7 @@
 // <script> in index.html; it is being split into src/screens and src/shell modules.
 // Screen and shell modules moved out of this file.
 import { bagScreen } from '../screens/shop/bag.js';
+import { navIcon } from '../nav-icons.js';
 import { favoritesScreen } from '../screens/shop/favorites.js';
 import { orderConfirmationScreen } from '../screens/shop/order-confirmation.js';
 import { categoriesScreen } from '../screens/shop/categories.js';
@@ -1623,11 +1624,11 @@ export const StudioRenderers = {
     }
     const businessFilters = window.BusinessLens?.readFilters?.() || {};
     const bottomItems = [
-      { route: "/account/main-shop", title: "Overview", section: "overview", icon: "⌂" },
-      { route: "/store/revenue", title: "Sales", section: "sales", icon: "↗" },
-      { route: "/account/customers", title: "Customers", section: "customers", icon: "◉" },
-      { route: "/store/manage/products", title: "Store", section: "store", icon: "▤" },
-      { route: "/account/main-shop/finance", title: "More", section: "more", icon: "⋮" }
+      { route: "/account/main-shop", title: "Overview", section: "overview", icon: navIcon("overview") },
+      { route: "/store/revenue", title: "Sales", section: "sales", icon: navIcon("sales") },
+      { route: "/account/customers", title: "Customers", section: "customers", icon: navIcon("customers") },
+      { route: "/store/manage/products", title: "Catalogue", section: "store", icon: navIcon("products") },
+      { route: "/account/main-shop/finance", title: "More", section: "more", icon: navIcon("more") }
     ];
     const isStoreManagement = path === "/store/manage" || path.startsWith("/store/manage/");
     const section = isStoreManagement ? "store"
@@ -1777,9 +1778,9 @@ export const StudioRenderers = {
     const domainsRoute = `/account/profile/webs/${encodeURIComponent(domainTenantId)}/domains`;
     return [
       {
-        title: "Dashboard",
+        title: "Overview",
         route: "/account/web/studio/dashboard/overview",
-        icon: "⌂",
+        icon: navIcon("overview"),
         tabs: [
           { title: "Overview", route: "/account/web/studio/dashboard/overview", contentPath: "/account/dashboard" },
           { title: "Visits", route: "/account/web/studio/dashboard/visits", contentPath: "/account/main-shop/visits" },
@@ -1789,9 +1790,9 @@ export const StudioRenderers = {
         ]
       },
       {
-        title: "Store",
+        title: "Web shop",
         route: "/account/web/studio/store/products",
-        icon: "▦",
+        icon: navIcon("products"),
         tabs: [
           { title: "Products", route: "/account/web/studio/store/products", contentPath: "/store/products" },
           { title: "Categories", route: "/account/web/studio/store/categories", contentPath: "/store/categories" },
@@ -1801,9 +1802,9 @@ export const StudioRenderers = {
         ]
       },
       {
-        title: "CRM",
+        title: "Customers",
         route: "/account/web/studio/crm/customers",
-        icon: "◉",
+        icon: navIcon("customers"),
         tabs: [
           { title: "Customers", route: "/account/web/studio/crm/customers", contentPath: "/account/customers" },
           { title: "Points", route: "/account/web/studio/crm/points", contentPath: "/account/customers/loyalty" },
@@ -1814,7 +1815,7 @@ export const StudioRenderers = {
       {
         title: "Websites",
         route: "/account/web/studio/websites/list",
-        icon: "▤",
+        icon: navIcon("websites"),
         tabs: [
           { title: "Websites", route: "/account/web/studio/websites/list", contentPath: "/account/web/studio/websites/list" },
           { title: "Domains", route: domainsRoute, contentPath: domainsRoute },
@@ -1826,7 +1827,7 @@ export const StudioRenderers = {
       {
         title: "Payments",
         route: "/account/web/studio/payments",
-        icon: "＄",
+        icon: navIcon("payments"),
         tabs: [{ title: "Payments", route: "/account/web/studio/payments", contentPath: "/account/payments" }]
       }
     ];

@@ -1,6 +1,7 @@
 // Shared markup for every till screen: header, section menu, bottom nav, form fields, buttons,
 // status tags, empty states, metrics and the toast.
 import { escapeHtml } from '../../till/format.js';
+import { navIcon } from '../../nav-icons.js';
 
 export function createTillUi() {
   const primaryNavLink = (path, label, icon, selected) =>
@@ -65,11 +66,11 @@ export function createTillUi() {
       </header>
       <div class="pos-header-divider" aria-hidden="true"></div>
       <nav class="pos-bottom-nav" aria-label="Point of sale">
-        ${primaryNavLink('/pos', 'Sell', '＋', primarySection(path) === 'sell')}
-        ${primaryNavLink('/pos/overview', 'Overview', '⌂', primarySection(path) === 'overview')}
-        ${primaryNavLink('/pos/catalogue/inventory', 'Catalogue', '▦', primarySection(path) === 'catalogue')}
-        ${primaryNavLink('/pos/orders', 'Orders', '▤', primarySection(path) === 'orders')}
-        ${primaryNavLink('/pos/more', 'More', '⋮', primarySection(path) === 'more')}
+        ${primaryNavLink('/pos', 'Sell', navIcon('sell'), primarySection(path) === 'sell')}
+        ${primaryNavLink('/pos/overview', 'Overview', navIcon('overview'), primarySection(path) === 'overview')}
+        ${primaryNavLink('/pos/catalogue/inventory', 'Catalogue', navIcon('products'), primarySection(path) === 'catalogue')}
+        ${primaryNavLink('/pos/orders', 'Orders', navIcon('orders'), primarySection(path) === 'orders')}
+        ${primaryNavLink('/pos/more', 'More', navIcon('more'), primarySection(path) === 'more')}
       </nav>`;
   };
 

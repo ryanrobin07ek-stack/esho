@@ -1134,7 +1134,8 @@ test('Main Store opens a compact product editor with cross-channel add, edit, an
   }
   const bottomItems = pageSource.match(/const bottomItems = \[([\s\S]*?)\n    \];/)?.[1];
   assert.ok(bottomItems, 'Main Store should render its bottom navigation.');
-  assert.match(bottomItems, /route: "\/store\/manage\/products", title: "Store"/);
+  // Same name as the POS tab for the same thing (products, categories and inventory together).
+  assert.match(bottomItems, /route: "\/store\/manage\/products", title: "Catalogue"/);
   assert.doesNotMatch(bottomItems, /title: "Products"/);
   assert.match(pageSource, /store:\s*\[\s*\{\s*route: "\/store\/products", title: "Web products"\s*\},\s*\{\s*route: "\/store\/products\/manage", title: "Edit products"\s*\},\s*\{\s*route: "\/store\/inventory", title: "Inventory"\s*\},\s*\{\s*route: "\/store\/categories", title: "Web categories"\s*\},\s*\{\s*route: "\/store\/split-shop", title: "Split products"\s*\}\s*\]/);
   assert.match(pageSource, /const sectionSidebar = this\.renderWorkspaceSidebar\([\s\S]*?section === "store" \? "Store"/);
@@ -1808,9 +1809,10 @@ test('POS persists products, manual payments, invoices and business instances in
     const storeMarkup = app.render('/pos');
     assert.match(storeMarkup, /class="pos-bottom-nav"/);
     assert.equal((storeMarkup.match(/class="pos-tab /g) || []).length, 5);
-    assert.match(storeMarkup, /class="pos-nav-icon" aria-hidden="true">＋<\/span><span>Sell<\/span>/);
-    assert.match(storeMarkup, /class="pos-nav-icon" aria-hidden="true">▦<\/span><span>Catalogue<\/span>/);
-    assert.match(storeMarkup, /class="pos-nav-icon" aria-hidden="true">▤<\/span><span>Orders<\/span>/);
+    // One SVG icon set for every bottom menu (src/nav-icons.js), not text symbols.
+    for (const label of ['Sell', 'Catalogue', 'Orders']) {
+      assert.match(storeMarkup, new RegExp(`class="pos-nav-icon" aria-hidden="true"><svg class="nav-icon-svg"[\\s\\S]*?<\\/svg><\\/span><span>${label}<\\/span>`));
+    }
     assert.doesNotMatch(storeMarkup, /Open app account|>Account<\/a>/);
     assert.match(storeMarkup, /aria-label="POS screens menu"[\s\S]*?href="\/account\/profile\/webs"[\s\S]*?href="\/account\/profile\/accounts"[\s\S]*?href="\/account\/profile\/privacy"/);
     const inventoryMarkup = app.render('/pos/inventory');
@@ -1959,7 +1961,7 @@ test('POS persists products, manual payments, invoices and business instances in
     const bottomItemsEnd = workspace.indexOf("\n    ];", bottomItemsStart);
     assert.ok(bottomItemsStart >= 0 && bottomItemsEnd > bottomItemsStart, "Main Store should define its bottom navigation.");
     const bottomItems = workspace.slice(bottomItemsStart, bottomItemsEnd);
-    assert.match(bottomItems, /title: "Overview"[\s\S]*?title: "Sales"[\s\S]*?title: "Customers"[\s\S]*?title: "Store"[\s\S]*?title: "More"/);
+    assert.match(bottomItems, /title: "Overview"[\s\S]*?title: "Sales"[\s\S]*?title: "Customers"[\s\S]*?title: "Catalogue"[\s\S]*?title: "More"/);
     assert.doesNotMatch(bottomItems, /title: "Products"/);
     assert.match(workspace, /store:\s*\[\s*\{ route: "\/store\/products", title: "Web products" \}[\s\S]*?\{ route: "\/store\/categories", title: "Web categories" \}/);
     assert.match(pageSource, /data-business-filter-toggle aria-label="Show filters" aria-controls="business-date-filters" aria-expanded="false"[\s\S]*?viewBox="0 0 24 24"[\s\S]*?id="business-date-filters" class="bl-date-filter" aria-label="Business filters" hidden/);
@@ -2090,7 +2092,7 @@ test('POS persists products, manual payments, invoices and business instances in
     assert.match(pageSource, /class="profile-sidebar-logout" href="\/" data-route="\/" data-home-screen aria-label="Log out"[\s\S]*?<span>Log out<\/span>/);
     assert.match(pageSource, /path === "\/account\/profile" \|\| path\.startsWith\("\/account\/profile\/"\)[\s\S]*?renderProfileScreen\(path\)/);
     assert.match(pageSource, /renderWeb\(\)\s*\{\s*return StudioRenderers\.renderMainShopWorkspace\("\/account\/web"\);/);
-    assert.match(pageSource, /webStudioNavigation\(\)[\s\S]*?title: "Dashboard"[\s\S]*?title: "Store"[\s\S]*?title: "CRM"[\s\S]*?title: "Websites"[\s\S]*?title: "Payments"/);
+    assert.match(pageSource, /webStudioNavigation\(\)[\s\S]*?title: "Overview"[\s\S]*?title: "Web shop"[\s\S]*?title: "Customers"[\s\S]*?title: "Websites"[\s\S]*?title: "Payments"/);
     assert.match(pageSource, /title: "Overview"[\s\S]*?title: "Visits"[\s\S]*?title: "Traffic"[\s\S]*?title: "Performance"[\s\S]*?title: "Product intelligence"/);
     assert.match(pageSource, /title: "Products"[\s\S]*?title: "Categories"[\s\S]*?title: "Inventory"[\s\S]*?title: "Orders"[\s\S]*?title: "Bookings"/);
     assert.match(pageSource, /title: "Customers"[\s\S]*?title: "Points"[\s\S]*?title: "Subscribers"[\s\S]*?title: "Notifications"/);
