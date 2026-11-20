@@ -1747,11 +1747,14 @@ export const StudioRenderers = {
             <header class="profile-website-card-heading">
               <div>
                 <h2><a class="profile-website-settings-link" href="/account/profile/webs/${encodeURIComponent(website.id)}" data-route="/account/profile/webs/${encodeURIComponent(website.id)}">${AppUtils.escapeHTML(website.name)}</a></h2>
-                <p class="profile-website-domain"><a href="https://${AppUtils.escapeHTML(website.hostname)}" target="_blank" rel="noopener">${AppUtils.escapeHTML(website.hostname)}</a></p>
+                ${website.id === WEBSITE_BUILDER_DRAFT_TENANT_ID
+                  // A draft has no web address yet: plain text, and no "open live website" button.
+                  ? `<p class="profile-website-domain">${AppUtils.escapeHTML(website.hostname)}</p>`
+                  : `<p class="profile-website-domain"><a href="https://${AppUtils.escapeHTML(website.hostname)}" target="_blank" rel="noopener">${AppUtils.escapeHTML(website.hostname)}</a></p>`}
               </div>
-              <a class="profile-website-live" href="https://${AppUtils.escapeHTML(website.hostname)}" target="_blank" rel="noopener" aria-label="Open ${AppUtils.escapeHTML(website.name)} live website">
+              ${website.id === WEBSITE_BUILDER_DRAFT_TENANT_ID ? "" : `<a class="profile-website-live" href="https://${AppUtils.escapeHTML(website.hostname)}" target="_blank" rel="noopener" aria-label="Open ${AppUtils.escapeHTML(website.name)} live website">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-              </a>
+              </a>`}
             </header>
             ${website.id === activeTenant.id ? '<span class="profile-current-website-badge">Currently managing</span>' : ""}
             <div class="profile-page-details">
