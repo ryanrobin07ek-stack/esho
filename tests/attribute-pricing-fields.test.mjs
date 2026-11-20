@@ -100,5 +100,5 @@ test("a saved product reopens with its prices, and no category means nothing to 
   // showing an empty box the owner cannot use.
   const { widget: empty } = openEditor({ attributes: [] });
   assert.equal(empty.querySelector("[data-attribute-pricing-add]").disabled, true);
-  assert.match(empty.querySelector("[data-attribute-pricing-status]").textContent, /Choose a category/);
+  assert.match(empty.querySelector("[data-attribute-pricing-status]").textContent, /Pick the product type/);
 });
