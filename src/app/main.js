@@ -35,6 +35,7 @@ import { renderPayments } from '../screens/craft/payments.js';
 import { newStoreScreen, newStoreDraft, newStoreDraftSave, newStoreEvents } from '../screens/craft/new-store.js';
 import { setupLitrusBuilder, builderScreen } from '../screens/builder/builder.js';
 import { builderCatalogBridge, litrusMixerCatalog } from '../screens/builder/builder-catalog.js';
+import { mountProductPricing, posPricingValues, readProductPricingFields, webPricingValues } from '../screens/main-store/product-pricing-fields.js';
 
 // Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
 // modules need is exported at the end.
@@ -2416,6 +2417,7 @@ export const StudioRenderers = {
           <label>Stock<input name="stock" type="number" min="0" step="1" required></label>
         </div>
         <div data-main-product-taxonomy></div>
+        <div data-product-pricing-variants></div><div data-product-pricing-attributes></div>
         <div class="main-store-product-channels" aria-label="Save product to">
           <label><input type="checkbox" name="channels" value="pos" checked> POS</label>
           <label><input type="checkbox" name="channels" value="web" checked> Web</label>
@@ -2724,6 +2726,7 @@ export const StudioRenderers = {
     const taxonomyHost = form.querySelector("[data-main-product-taxonomy]");
     // The Category text input above owns name="category"; the picker must not render a second category select.
     const renderTaxonomy = product => {
+      mountProductPricing(form, product);
       if (!taxonomyHost || !window.EshopProductTaxonomy) return;
       const web = product?.webProduct;
       const pos = product?.posProduct;
@@ -2831,7 +2834,9 @@ export const StudioRenderers = {
       const price = Number(values.get("price"));
       const costText = String(values.get("costPrice") || "").trim();
       const costPrice = costText === "" ? null : Number(costText);
-      const stock = Number(values.get("stock"));
+      const pricing = readProductPricingFields(form, message => { if (status) status.textContent = message; });
+      if (!pricing) return;
+      const stock = pricing.variants.length ? pricing.stock : Number(values.get("stock"));
       const channels = new Set(values.getAll("channels").map(String));
       const writePos = channels.has("pos");
       const writeWeb = channels.has("web");
@@ -2897,6 +2902,7 @@ export const StudioRenderers = {
             ...(webProduct ? { id: webProduct.id } : {}),
             name, sku: sku || webProduct?.sku || "", category_id: category.id,
             price, cost_price: costPrice ?? 0, stock,
+            ...webPricingValues(pricing),
             ...(taxonomy ? {
               taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
               taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
@@ -2915,6 +2921,7 @@ export const StudioRenderers = {
             id: Number(posProduct?.id) || 0,
             name, sku: sku || posProduct?.sku || "", categoryId: category.id,
             price, buyingPrice: costPrice == null ? "" : costPrice, stock,
+            ...posPricingValues(pricing),
             imageUri: posProduct?.imageUri || webProduct?.images?.[0] || "",
             ...(taxonomy ? {
               taxonomyCategoryId: taxonomy.taxonomyCategoryId || "",
@@ -2941,16 +2948,20 @@ export const StudioRenderers = {
         }
         if (writeWeb && writePos) {
           await this.publishPosProduct(posProduct);
-          if (taxonomy) {
-            // publishPosProduct keeps the old web taxonomy when POS has none, so write the chosen value explicitly.
+          if (posProduct) {
+            // publishPosProduct keeps the old web taxonomy when POS has none, and copies no options,
+            // so write the chosen values explicitly.
             const published = SQLiteEngine.select("products").find(item => String(item.sku || "") === String(posProduct.sku || ""));
             if (published) {
               SQLiteEngine.saveProduct({
                 ...published, id: published.id,
-                taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
-                taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
-                taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
-                taxonomy_attributes: taxonomy.taxonomyAttributes
+                ...webPricingValues(pricing),
+                ...(taxonomy ? {
+                  taxonomy_category_id: taxonomy.taxonomyCategoryId || null,
+                  taxonomy_category_name: taxonomy.taxonomyCategoryName || "",
+                  taxonomy_custom_category: taxonomy.taxonomyCustomCategory || null,
+                  taxonomy_attributes: taxonomy.taxonomyAttributes
+                } : {})
               });
               AppController.cacheActiveTenantCatalog();
               await window.ShopSQLite.flush();
@@ -10412,6 +10423,7 @@ export const AppController = {
                 </select>
               </div>
             </div>
+            <div data-product-pricing-variants></div><div data-product-pricing-attributes></div>
 
             <div class="form-grid">
               <div class="form-field">
@@ -10487,17 +10499,7 @@ export const AppController = {
     const taxonomyFields = taxonomyMarkup.firstElementChild;
     modalForm.elements.namedItem("categoryId").closest(".form-grid").insertAdjacentElement("afterend", taxonomyFields);
     window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyFields);
-    const variantsMarkup = document.createElement("div");
-    variantsMarkup.innerHTML = window.EshopProductVariants.createProductVariantFields({
-      option1Name: product?.option1_name || "",
-      option2Name: product?.option2_name || "",
-      sizes: product?.variants?.length ? product.sizes || [] : [],
-      colors: product?.variants?.length ? product.colors || [] : [],
-      variants: product?.variants || []
-    });
-    const variantFields = variantsMarkup.firstElementChild;
-    taxonomyFields.insertAdjacentElement("afterend", variantFields);
-    window.EshopProductVariants.bindProductVariantFields(variantFields);
+    mountProductPricing(modalForm, product);
     let previewObjectUrl = "";
     imageInput.addEventListener("change", () => {
       const files = Array.from(imageInput.files || []);
@@ -10540,7 +10542,7 @@ export const AppController = {
             ? imageUrl ? [imageUrl] : []
             : Array.isArray(product?.images) ? product.images.slice(0, 8) : currentImage ? [currentImage] : [];
         const taxonomy = window.EshopProductTaxonomy.readProductTaxonomyFields(modalForm);
-        const productVariants = window.EshopProductVariants.readProductVariantFields(modalForm);
+        const productVariants = readProductPricingFields(modalForm);
         saved = SQLiteEngine.saveProduct({
           id: prodId ? Number(prodId) : undefined,
           name: fd.get("name"),

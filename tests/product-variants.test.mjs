@@ -5,6 +5,9 @@ import test from "node:test";
 import { JSDOM } from "jsdom";
 import {
   MAX_OPTIONS,
+  MAX_VALUES_PER_OPTION,
+  mergeDuplicateOptions,
+  readSavedOptions,
   bindProductVariantFields,
   createProductVariantFields,
   readProductVariantFields
@@ -132,4 +135,80 @@ test("a product with no options stays on the shared product stock", () => {
   assert.equal(widget.querySelectorAll("[data-variant-row]").length, 0);
   assert.deepEqual(readProductVariantFields(form), { sizes: [], colors: [], options: [], variants: [] });
   assert.equal(form.querySelector('[name="stock"]').disabled, false, "the product's own stock still applies");
+});
+
+test("two options with the same name are saved as one, each value keeping its price change", () => {
+  const { widget, form, dom } = openEditor({}, "1000");
+  setOption(widget, dom, 0, "Size", "L");
+  setOption(widget, dom, 1, " size ", "M, l");
+  priceValue(widget, dom, 0, "L", 200);
+  priceValue(widget, dom, 1, "M", 50);
+  // The second "l" repeats L; the first L and its +200 win.
+  priceValue(widget, dom, 1, "l", 999);
+
+  assert.equal(widget.querySelectorAll("[data-variant-row]").length, 2, "one Size with L and M, not L x M");
+  const saved = readProductVariantFields(form);
+  assert.equal(saved.options.length, 1);
+  assert.equal(saved.options[0].name, "Size");
+  assert.deepEqual(saved.options[0].values, [{ value: "L", priceDelta: 200 }, { value: "M", priceDelta: 50 }]);
+  assert.deepEqual(saved.sizes, ["L", "M"]);
+  assert.deepEqual(saved.colors, []);
+  assert.equal(saved.option2_name, "");
+  assert.deepEqual(saved.variants.map(variant => variant.id), ['["L",""]', '["M",""]']);
+  assert.equal(saved.variants[0].price, 1200);
+});
+
+test("a repeated option name is warned about while it is typed", () => {
+  const { widget, dom } = openEditor();
+  setOption(widget, dom, 0, "Size", "L");
+  widget.querySelector("[data-variant-add-option]").click();
+  const second = widget.querySelectorAll("[data-variant-option]")[1];
+  const warning = second.querySelector("[data-variant-option-warning]");
+  assert.equal(warning.hidden, true);
+
+  const name = second.querySelector("[data-variant-option-name]");
+  name.value = "SIZE";
+  name.dispatchEvent(new dom.window.Event("input", { bubbles: true }));
+  assert.equal(warning.hidden, false);
+  assert.equal(warning.textContent, "SIZE is already an option; its values will be combined.");
+  assert.equal(widget.querySelectorAll("[data-variant-option]")[0].querySelector("[data-variant-option-warning]").hidden, true,
+    "the first Size is not the repeat");
+
+  name.value = "Colour";
+  name.dispatchEvent(new dom.window.Event("input", { bubbles: true }));
+  assert.equal(warning.hidden, true);
+});
+
+test("a product saved with two Size options opens as one Size option", () => {
+  const { widget, form } = openEditor({
+    options: [
+      { name: "Size", values: [{ value: "L", priceDelta: 100 }] },
+      { name: "size", values: [{ value: "M", priceDelta: 0 }, { value: "L", priceDelta: 5 }] },
+      { name: "Colour", values: [{ value: "Red", priceDelta: 0 }] }
+    ]
+  });
+  const blocks = widget.querySelectorAll("[data-variant-option]");
+  assert.equal(blocks.length, 2);
+  assert.equal(blocks[0].querySelector("[data-variant-option-values]").value, "L, M");
+  assert.equal(blocks[0].querySelector('[data-variant-value-price="L"]').value, "100");
+  assert.equal(widget.querySelectorAll("[data-variant-row]").length, 2);
+  assert.deepEqual(readProductVariantFields(form).options.map(option => option.name), ["Size", "Colour"]);
+});
+
+test("merging helpers keep unnamed options apart and a legacy Size/Size product reads as one", () => {
+  assert.deepEqual(mergeDuplicateOptions([
+    { name: "", values: [{ value: "A" }] },
+    { name: "", values: [{ value: "B" }] }
+  ]).length, 2);
+  const legacy = readSavedOptions({ option1Name: "Size", option2Name: "Size", sizes: ["L"], colors: ["M"] });
+  assert.deepEqual(legacy, [{ name: "Size", values: [{ value: "L", priceDelta: 0 }, { value: "M", priceDelta: 0 }] }]);
+});
+
+test("combined values still respect the per-option limit", () => {
+  const { widget, form, dom } = openEditor();
+  const many = count => Array.from({ length: count }, (_, index) => `V${index}`);
+  setOption(widget, dom, 0, "Size", many(MAX_VALUES_PER_OPTION).join(", "));
+  setOption(widget, dom, 1, "Size", "Extra");
+  assert.match(widget.querySelector("[data-variant-status]").textContent, /up to 20 values/);
+  assert.throws(() => readProductVariantFields(form), /Size supports up to 20 values/);
 });
