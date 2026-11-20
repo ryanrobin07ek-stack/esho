@@ -94,6 +94,7 @@ export function createProductVariantFields(saved = {}) {
       data-initial-options="${escapeHtml(JSON.stringify(options))}"
       data-initial-variants="${escapeHtml(JSON.stringify(savedVariants))}">
     <h3>Options <span>Optional</span></h3>
+    <p class="editor-card-hint">Each choice can change the price and has its own stock.</p>
     <div data-variant-options></div>
     <button type="button" class="btn-secondary" data-variant-add-option>+ Add option</button>
     <p data-variant-status role="status" aria-live="polite"></p>
