@@ -9,6 +9,7 @@ import { renderDashboardVisits } from '../screens/craft/dashboard-visits.js';
 import { renderDashboardOverview } from '../screens/craft/dashboard-overview.js';
 import { renderDashboardTraffic } from '../screens/craft/dashboard-traffic.js';
 import { renderDashboardPerformance } from '../screens/craft/dashboard-performance.js';
+import { renderDashboardProductIntelligence } from '../screens/craft/dashboard-product-intelligence.js';
 
 // Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
 // modules need is exported at the end.
@@ -4700,21 +4701,7 @@ export const StudioRenderers = {
       return renderDashboardPerformance.call(this, { abandonedRows, activityRows, currency, dayStart, metric, monthStart, orderRows, paidSales, revenueIn, salesIn, uniqueIn, weekStart });
     }
     if (path === "/account/main-shop/product-intelligence") {
-      return `<section class="studio-workspace-section">
-        <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">PRODUCT INTELLIGENCE</span><h2>Product rankings</h2></div><button type="button" class="btn-secondary" data-business-product-analytics aria-label="Refresh product activity">Refresh</button></div>
-          <p class="studio-panel-note" data-product-analytics-status>${snapshot.remoteProductAnalyticsError
-            ? AppUtils.escapeHTML(snapshot.remoteProductAnalyticsError)
-            : remoteProductAnalytics
-              ? `Updated ${new Date(snapshot.remoteProductAnalyticsUpdatedAt || Date.now()).toLocaleTimeString()}. Batched anonymous activity from the last 30 days; bookings count submitted product holds.`
-              : "Activity has not loaded yet. Refresh to load batched product views, cart additions, wishlist saves and bookings from the live storefront."}</p>
-        </article>
-        ${remoteProductAnalytics ? `<div class="studio-dashboard-grid">
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most viewed products</h2></div><p class="studio-panel-note">Product page views · last 30 days</p>${mostViewedProductRows}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most added to carts</h2></div><p class="studio-panel-note">Cart additions · last 30 days</p>${mostCartedProductRows}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most wishlisted products</h2></div><p class="studio-panel-note">Anonymous wishlist saves · last 30 days</p>${mostWishlistedProductRows}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most booked products</h2></div><p class="studio-panel-note">Submitted product holds · last 30 days</p>${mostBookedProductRows}</article>
-        </div>` : ""}
-      </section>`;
+      return renderDashboardProductIntelligence.call(this, { mostBookedProductRows, mostCartedProductRows, mostViewedProductRows, mostWishlistedProductRows, remoteProductAnalytics, snapshot });
     }
     if (path === "/account/customers" || path === "/account/customers/") {
       return `<section class="studio-workspace-section"><div class="studio-metric-grid studio-metric-grid-featured">${metric("Identified web customers", customers.length, "", "/account/web/studio/crm/customers")}${metric("Repeat customers", customers.filter(customer => customer.orders > 1).length, "", "/account/web/studio/crm/customers")}${metric("Newsletter subscribers", newsletterSubscribers.length, "", "/account/web/studio/crm/subscribers")}</div>
