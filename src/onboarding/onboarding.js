@@ -43,9 +43,10 @@ export function currentShop() {
   try { const store = appStore?.getStore() || {}; return { name: store.name || '', offer_type: store.offer_type || '' }; } catch { return { name: '', offer_type: '' }; }
 }
 
-export async function startOnboarding() {
+export async function startOnboarding({ prefill = false } = {}) {
   if (document.querySelector('.onb-overlay')) return;
-  const shop = currentShop();
+  // A new shop starts empty (the app's placeholder name is not the owner's); a replay shows what is saved.
+  const shop = prefill ? currentShop() : { name: '', offer_type: '' };
   const data = { step: 1, name: shop.name || '', offer: ['products', 'services', 'both'].includes(shop.offer_type) ? shop.offer_type : 'products', added: [] };
   const overlay = document.createElement('div');
   overlay.className = 'onb-overlay';
@@ -131,7 +132,7 @@ document.addEventListener('click', event => {
   if (!target) return;
   const state = read(CHECKLIST_KEY) || {};
   if (target.matches('[data-onb-dismiss]')) { write(CHECKLIST_KEY, { ...state, dismissed: true }); target.closest('.onb-checklist')?.remove(); }
-  else if (target.matches('[data-onb-replay]')) startOnboarding();
+  else if (target.matches('[data-onb-replay]')) startOnboarding({ prefill: true });
   else if (target.dataset.onbItem === 'payments') write(CHECKLIST_KEY, { ...state, payments: true });
 });
 
