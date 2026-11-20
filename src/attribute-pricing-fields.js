@@ -25,6 +25,7 @@ export function createAttributePricingFields({ pricedAttributes = [] } = {}) {
   return `<section class="attribute-pricing-fields" data-attribute-pricing
       data-initial-priced-attributes="${escapeHtml(JSON.stringify(saved))}">
     <h3>Attribute prices <span>Optional</span></h3>
+    <p class="editor-card-hint">Adds to the price; no separate stock.</p>
     <div data-attribute-pricing-rows></div>
     <button type="button" class="btn-secondary" data-attribute-pricing-add>+ Add price</button>
     <p data-attribute-pricing-status role="status" aria-live="polite"></p>

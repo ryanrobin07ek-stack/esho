@@ -7356,6 +7356,7 @@ export const AppController = {
         Number(product.price) || 0,
         Number(product.cost_price) || 0,
         Number(product.stock) || 0,
+        Number(product.duration_minutes) || 0,
         String(product.category_id),
         String(product.sku || ""),
         String(product.description || ""),
@@ -7550,7 +7551,9 @@ export const AppController = {
       categoryIds.set(category.id, saved.id);
     }
     for (const product of draft.products) {
-      const stock = Math.max(0, Number(product.stock) || 0);
+      // A service from the wizard keeps its duration and, like the store form, counts no stock.
+      const durationMinutes = window.EshopServiceModel.serviceDuration(product) || null;
+      const stock = durationMinutes ? null : Math.max(0, Number(product.stock) || 0);
       const saved = SQLiteEngine.saveProduct({
         name: product.name,
         sku: product.sku || "",
@@ -7559,6 +7562,7 @@ export const AppController = {
         original_price: Number(product.price) || 0,
         cost_price: Math.max(0, Number(product.cost_price) || 0),
         stock,
+        duration_minutes: durationMinutes,
         description: product.description || "",
         category_id: categoryIds.get(product.category_id) ?? null,
         images: Array.isArray(product.images) ? product.images : [],

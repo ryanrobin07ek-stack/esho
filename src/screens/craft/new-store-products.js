@@ -2,6 +2,7 @@
 // One block of AppController.bindWebsiteBuilderEvents, called with this = AppController.
 // Moved verbatim from the app script (index.html, then src/app/main.js).
 import { AppUtils, LOCAL_PRODUCT_MEDIA_PREFIX, StudioRenderers, WEBSITE_BUILDER_DRAFT_SYNC_KEY } from '../../app/main.js';
+import { bindServiceFields } from './service-fields.js';
 
 export function bindWizardProducts() {
   const productList = document.getElementById("website-wizard-product-list");
@@ -26,6 +27,7 @@ export function bindWizardProducts() {
     };
     const mediaStatus = productForm.querySelector("[data-wizard-media-status]");
     const mediaPreview = productForm.querySelector("[data-wizard-media-preview]");
+    const serviceFields = bindServiceFields(productForm, productForm.querySelector("[data-wizard-product-stock]"));
     const imageInput = productForm.querySelector("[data-wizard-product-images]");
     const videoInput = productForm.querySelector("[data-wizard-video-file]");
     const nativeMedia = window.EshopNativeMedia;
@@ -276,6 +278,7 @@ export function bindWizardProducts() {
       productForm.querySelector('button[type="submit"]').textContent = "Add product";
       if (cancelProductEdit) cancelProductEdit.hidden = true;
       bindProductFields(null);
+      serviceFields.apply();
       setMediaMode("image", true);
     };
 
@@ -298,6 +301,7 @@ export function bindWizardProducts() {
         productForm.elements.sku.value = editingProduct.sku || "";
         productForm.elements.description.value = editingProduct.description || "";
         productForm.elements.category_id.value = String(editingProduct.category_id ?? "");
+        serviceFields.load(editingProduct);
         productForm.querySelector('button[type="submit"]').textContent = "Save product";
         if (cancelProductEdit) cancelProductEdit.hidden = false;
         bindProductFields(editingProduct);
@@ -366,7 +370,9 @@ export function bindWizardProducts() {
       const price = Number(productForm.elements.price.value);
       const costText = productForm.elements.cost_price.value.trim();
       const costPrice = costText ? Number(costText) : null;
-      const stock = Number(productForm.elements.stock.value);
+      // A service is sold as time: it keeps a duration and counts no stock.
+      const durationMinutes = serviceFields.read();
+      const stock = durationMinutes ? 0 : Number(productForm.elements.stock.value);
       if (!category) {
         AppUtils.showToast("Add or choose a category for this product.", "danger");
         return;
@@ -432,7 +438,8 @@ export function bindWizardProducts() {
             productForm.querySelector("[data-wizard-product-attribute-pricing] [data-attribute-pricing]")
           ),
           ...variants,
-          stock: variants.stock ?? stock
+          stock: durationMinutes ? null : variants.stock ?? stock,
+          duration_minutes: durationMinutes
         };
         if (editingProduct) {
           const target = draft.products.find(product => String(product.id) === String(editingProduct.id));
