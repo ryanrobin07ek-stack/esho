@@ -16,6 +16,21 @@ import { settingsScreen } from '../screens/account/settings.js';
 import { plansScreen } from '../screens/account/plans.js';
 import { tenantsScreen, tenantsController } from '../screens/account/tenants.js';
 import { homeScreen } from '../screens/home/home.js';
+import { renderDashboardVisits } from '../screens/craft/dashboard-visits.js';
+import { renderDashboardOverview } from '../screens/craft/dashboard-overview.js';
+import { renderDashboardTraffic } from '../screens/craft/dashboard-traffic.js';
+import { renderDashboardPerformance } from '../screens/craft/dashboard-performance.js';
+import { renderDashboardProductIntelligence } from '../screens/craft/dashboard-product-intelligence.js';
+import { renderStoreProducts } from '../screens/craft/store-products.js';
+import { renderStoreCategories } from '../screens/craft/store-categories.js';
+import { renderStoreInventory } from '../screens/craft/store-inventory.js';
+import { renderStoreOrders } from '../screens/craft/store-orders.js';
+import { renderStoreBookings } from '../screens/craft/store-bookings.js';
+import { renderCrmCustomers } from '../screens/craft/crm-customers.js';
+import { renderCrmPoints } from '../screens/craft/crm-points.js';
+import { renderCrmSubscribers } from '../screens/craft/crm-subscribers.js';
+import { renderCrmNotifications } from '../screens/craft/crm-notifications.js';
+import { renderPayments } from '../screens/craft/payments.js';
 
 // Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
 // modules need is exported at the end.
@@ -1469,7 +1484,7 @@ const WEBSITE_THEME_BUSINESS_GROUPS = {
 };
 
 // The till and the web form offer the same durations, from the one shared service definition.
-function webServiceDurationOptions(selected) {
+export function webServiceDurationOptions(selected) {
   const model = window.EshopServiceModel;
   const step = model?.SERVICE_STEP_MINUTES || 15;
   const min = model?.SERVICE_MIN_MINUTES || 15;
@@ -3590,65 +3605,14 @@ export const StudioRenderers = {
     if (path === "/account/web" || path.startsWith("/account/web/studio/")) {
       const page = this.webStudioPage(path);
       if (page.route === "/account/web/studio/store/orders") {
-        const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
-        return `<section class="studio-workspace-section">
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders</h2><button type="button" class="btn-secondary studio-load-button" data-business-online-orders-load aria-label="Load online orders">Load</button></div>
-            <p class="studio-panel-note" data-online-orders-status>Orders and payment status are stored privately for this shop.</p>
-            ${this.renderOrderAttentionSummary(snapshot.remoteOrders)}${orderRows(orders)}${remoteOrderRows}</article>
-          ${this.renderOwnerAlertsPanel(snapshot)}
-          ${this.renderDiscountPanel(snapshot)}
-        </section>`;
+        return renderStoreOrders.call(this, { orderRows, remoteOrderRows, snapshot });
       }
       if (page.route === "/account/web/studio/store/bookings") {
-        const holdHours = Number(this.getWorkspaceSetting("max_hold_hours", 24));
-        const activeProductCount = SQLiteEngine.select("products", product => product.status !== "archived").length;
-        // A salon that also sells shampoo still takes bookings, so this follows the catalogue.
-        const servicesShop = window.EshopServiceModel.sellsServices(
-          window.EshopServiceModel.offerTypeForCatalogue(SQLiteEngine.select("products", product => product.status !== "archived"), SQLiteEngine.getStore().offer_type)
-        );
-        return `<section class="studio-workspace-section">
-          ${servicesShop ? this.renderServiceAppointmentsPanel(snapshot) : ""}
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold settings</h2></div>
-            <p class="studio-panel-note">Set the hold duration and manage product eligibility. Publish the storefront after changes.</p>
-            <form class="store-workspace-form" data-studio-form="booking-settings"><label>Maximum hold duration (hours)<input name="maxHoldHours" type="number" min="1" max="720" step="1" value="${holdHours}" required></label><button type="submit" class="btn-primary">Save hold settings</button><p role="status"></p></form>
-          </article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Apply holds to all products</h2></div>
-            <p class="studio-panel-note">Enable or disable customer holds for all ${activeProductCount} active website products at once. You can still change individual products afterward; this does not change stock.</p>
-            <div class="studio-inline-actions">
-              <button type="button" class="btn-primary" data-store-holds-all="enable" ${activeProductCount ? "" : "disabled"}>Enable holds for all products</button>
-              <button type="button" class="btn-secondary" data-store-holds-all="disable" ${activeProductCount ? "" : "disabled"}>Disable holds for all products</button>
-            </div>
-          </article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Bookings and holds</h2></div>
-            ${bookings.map(booking => {
-              const expired = new Date(booking.expires_at).getTime() <= Date.now();
-              return `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(booking.product_name)} · ${booking.quantity}</strong><span>${AppUtils.escapeHTML(booking.customer_name)} · ${AppUtils.escapeHTML(booking.contact)} · Expires ${AppUtils.escapeHTML(booking.expires_at)}</span></div><div class="studio-row-end"><span>${expired ? "Expired" : AppUtils.escapeHTML(booking.status || "On hold")}</span>${!expired && booking.status !== "released" ? `<button type="button" class="btn-secondary" data-release-hold="${booking.id}">Release</button>` : ""}</div></article>`;
-            }).join("") || `<p class="store-workspace-empty">No bookings or holds recorded yet.</p>`}
-          </article>
-          ${servicesShop ? "" : this.renderServiceAppointmentsPanel(snapshot)}
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Storefront hold requests</h2><button type="button" class="btn-secondary studio-load-button" data-online-holds-load aria-label="Load hold requests">Load</button></div>
-            <p class="studio-panel-note" data-online-holds-status>${snapshot.remoteHoldsError ? AppUtils.escapeHTML(snapshot.remoteHoldsError) : snapshot.remoteHolds ? `${remoteHolds.length} live hold${remoteHolds.length === 1 ? "" : "s"} loaded.` : "Customer holds reserve available website stock immediately until released or expired."}</p>
-            ${remoteHoldRows}
-          </article>
-        </section>`;
+        return renderStoreBookings.call(this, { bookings, remoteHoldRows, remoteHolds, snapshot });
       }
       if (page.section.title === "Websites") return this.renderWebStudioWebsiteTool(page);
       if (page.route === "/account/web/studio/crm/notifications") {
-        return `<section class="studio-workspace-section">${this.renderOwnerAlertsPanel(snapshot)}<article class="studio-panel">
-          <span class="studio-workspace-kicker">CUSTOMER NOTIFICATIONS</span><h2>Website notifications</h2>
-          <p class="studio-panel-note">Customers choose whether to receive browser notifications. Push delivery requires an active notification service and customer opt-in. Broadcasts are sent immediately to every opted-in device.</p>
-          <div class="studio-dashboard-grid"><button type="button" class="btn-primary" data-enable-notifications>Enable notifications on this device</button><button type="button" class="btn-secondary" data-disable-notifications>Turn off notifications on this device</button></div>
-          <p class="bl-push-status" role="status" aria-live="polite">Notification availability depends on browser support and customer permission.</p>
-          <form class="store-workspace-form" data-business-broadcast>
-            <h2>Send a push notification</h2>
-            <label>Title<input name="title" maxlength="80" required></label>
-            <label>Message<textarea name="body" rows="3" maxlength="240" required></textarea></label>
-            <label>Open this page when tapped<input name="url" value="/" maxlength="300" required></label>
-            <p class="studio-panel-note">This sends now to all browsers that opted in to this shop’s notifications.</p>
-            <button type="submit" class="btn-primary">Send notification</button>
-            <p role="status" aria-live="polite"></p>
-          </form>
-        </article></section>`;
+        return renderCrmNotifications.call(this, { snapshot });
       }
       let content = this.renderMainShopContent(page.contentPath, snapshot, true);
       const studioRoutes = new Map([
@@ -3754,112 +3718,25 @@ export const StudioRenderers = {
     const activityRows = [...productActivity.entries()].sort((a, b) => (b[1].basketAdds + b[1].favorites) - (a[1].basketAdds + a[1].favorites)).slice(0, 10)
       .map(([name, activity]) => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(name)}</strong><span>${activity.favorites} likes · ${activity.basketAdds} added to basket</span></article>`).join("");
     if (path === "/account" || path === "/account/main-shop" || path === "/account/main-shop/" || path === "/account/dashboard") {
-      const movingProducts = new Map();
-      paidSales.forEach(sale => sale.lineItems.forEach(item => movingProducts.set(item.name, (movingProducts.get(item.name) || 0) + item.quantity)));
-      const moving = [...movingProducts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-      const awaiting = SQLiteEngine.select("orders", order => !["paid", "completed", "refunded", "cancelled", "canceled", "failed"].includes(String(order.status || "").toLowerCase()));
-      const recentVisitEmpty = `<p class="store-workspace-empty">No visits yet.</p>`;
-      return `
-        <section class="studio-workspace-section">
-          <div class="studio-metric-grid studio-metric-grid-featured">${metric("Paid web revenue", this.formatMainShopMoney(window.EshopRevenue.sumRevenue(webSales), currency), "", "/account/web/studio/store/orders")}${metric("Customer visits", storefrontVisitCount, "", "/account/web/studio/dashboard/visits")}${metric("Awaiting payments", awaiting.length, "", "/account/web/studio/store/orders")}</div>
-          <div class="studio-dashboard-grid">
-            <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">RECENT ACTIVITY</span><h2 class="studio-overview-activity-title">Storefront visit history</h2></div><div class="studio-overview-activity-actions"><button type="button" class="studio-overview-load" data-business-cloud-analytics>Load</button><a href="/account/main-shop/visits" data-route="/account/main-shop/visits">View all</a></div></div>
-              <p class="studio-panel-note" data-business-cloud-analytics-status role="status">${snapshot.remoteAnalyticsError
-                ? "Could not load visits."
-                : snapshot.remoteAnalytics
-                  ? "Recent visits."
-                  : "Analytics not loaded."}</p>
-              ${recentVisitRows || recentVisitEmpty}
-            </article>
-            <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">WEB SHOP</span><h2 class="studio-overview-activity-title">What’s moving</h2></div><a href="/account/main-shop/performance" data-route="/account/main-shop/performance">Performance</a></div>
-              ${moving.map(([name, quantity]) => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(name)}</strong><span>${quantity} sold</span></article>`).join("") || `<p class="store-workspace-empty">No paid product sales yet. Completed sales will show the products gaining momentum.</p>`}
-            </article>
-          </div>
-        </section>`;
+      return renderDashboardOverview.call(this, { currency, metric, paidSales, recentVisitRows, snapshot, storefrontVisitCount, webSales });
     }
     if (path === "/account/main-shop/visits") {
-      const visitFrequency = snapshot.remoteAnalytics
-        ? (storefrontVisitCount / Math.max(1, storefrontUniqueCount)).toFixed(1)
-        : analyticsVisits.length ? (analyticsVisits.length / Math.max(1, new Set(analyticsVisits.map(visit => visit.session_id)).size)).toFixed(1) : "—";
-      return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid studio-metric-grid-featured">${metric("Visits", storefrontVisitCount, "", "/account/web/studio/dashboard/traffic")}${metric("Unique visitors", storefrontUniqueCount, "", "/account/web/studio/dashboard/traffic")}${metric(snapshot.remoteAnalytics ? "Visits per visitor" : "Pages per visit", visitFrequency, "", "/account/web/studio/dashboard/traffic")}</div>
-        ${analyticsLoadCard}
-        ${locationGrid}
-        <article class="studio-panel"><div class="studio-panel-heading"><h2>Visit history</h2></div>
-          ${snapshot.remoteAnalytics ? recentVisitRows || `<p class="store-workspace-empty">No visits yet.</p>` : analyticsVisits.slice(0, 100).map(visit => `<article class="studio-list-row"><div><strong>${AppUtils.escapeHTML(visit.path || "/")}</strong><span>${AppUtils.escapeHTML(visit.device || "Unknown device")}</span></div><span>${AppUtils.escapeHTML(AppUtils.formatDateTime(visit.created_at))}</span></article>`).join("") || `<p class="store-workspace-empty">No visits yet.</p>`}
-        </article></section>`;
+      return renderDashboardVisits.call(this, { analyticsLoadCard, analyticsVisits, locationGrid, metric, recentVisitRows, snapshot, storefrontUniqueCount, storefrontVisitCount });
     }
     if (path === "/account/main-shop/traffic") {
-      const productPageViews = snapshot.remoteAnalytics
-        ? (snapshot.remoteAnalytics.product_views || []).reduce((total, item) => total + (Number(item.views) || 0), 0)
-        : analyticsVisits.filter(visit => visit.path.startsWith("/product/")).length;
-      return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid studio-metric-grid-featured">${metric("Total visits", storefrontVisitCount, "", "/account/web/studio/dashboard/visits")}${metric("Unique visitors", storefrontUniqueCount, "", "/account/web/studio/dashboard/visits")}${metric("Product page views", productPageViews, "", "/account/web/studio/dashboard/product-intelligence")}</div>
-        ${analyticsLoadCard}
-        ${locationGrid}
-        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Most visited pages</h2></div>${pageRows || `<p class="store-workspace-empty">No pages yet.</p>`}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Devices</h2></div>${deviceRows || `<p class="store-workspace-empty">No devices yet.</p>`}</article></div>
-      </section>`;
+      return renderDashboardTraffic.call(this, { analyticsLoadCard, analyticsVisits, deviceRows, locationGrid, metric, pageRows, snapshot, storefrontUniqueCount, storefrontVisitCount });
     }
     if (path === "/account/main-shop/performance" || path === "/store/revenue") {
-      const weekSales = salesIn(weekStart);
-      const monthSales = salesIn(monthStart);
-      const pendingOrders = SQLiteEngine.select("orders", order => !["paid", "completed", "refunded", "cancelled", "canceled", "failed"].includes(String(order.status || "").toLowerCase()));
-      const cart = SQLiteEngine.getCart();
-      const performanceMetrics = [
-        ["Visits", [uniqueIn(dayStart), uniqueIn(weekStart), uniqueIn(monthStart)], "/account/web/studio/dashboard/traffic"],
-        ["Orders", [salesIn(dayStart).length, weekSales.length, monthSales.length], "/account/web/studio/store/orders"],
-        ["Revenue", [
-          this.formatMainShopMoney(revenueIn(dayStart), currency),
-          this.formatMainShopMoney(revenueIn(weekStart), currency),
-          this.formatMainShopMoney(revenueIn(monthStart), currency)
-        ], "/account/web/studio/store/orders"]
-      ];
-      return `<section class="studio-workspace-section">
-        <div class="studio-performance-metrics" aria-label="Visits, orders, and revenue">
-          ${performanceMetrics.map(([label, values, route]) => `<a class="studio-performance-metric" href="${route}" data-route="${route}" aria-label="${label}">
-            <strong class="studio-performance-label">${label}</strong>
-            ${values.map((value, index) => `<span class="studio-performance-period"><small>${["Today", "This week", "This month"][index]}</small><strong>${AppUtils.escapeHTML(String(value))}</strong></span>`).join("")}
-          </a>`).join("")}
-        </div>
-        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Paid conversion</h2></div>${metric("Paid web orders", paidSales.length)}${metric("Paid web order value", this.formatMainShopMoney(window.EshopRevenue.sumRevenue(paidSales), currency))}<p class="studio-panel-note">Conversion rate is not calculated until visits and paid orders can be joined using shared visitor attribution.</p></article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders awaiting payment</h2><a href="/store/orders" data-route="/store/orders">Open orders</a></div>${orderRows(pendingOrders)}</article></div>
-        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Checkouts without an order</h2></div><p class="studio-panel-note">Browser-local sessions that entered checkout and have no later order record.</p>${abandonedRows || `<p class="store-workspace-empty">No unfinished checkout sessions recorded.</p>`}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Product likes &amp; baskets</h2></div>${activityRows || `<p class="store-workspace-empty">Product activity will appear after visitors like or add items to their basket.</p>`}</article></div>
-        <article class="studio-panel"><div class="studio-panel-heading"><h2>Current basket on this device</h2></div>${cart.map(item => `<article class="studio-list-row"><strong>${AppUtils.escapeHTML(item.name || "Store product")}</strong><span>${Number(item.quantity) || 1} in basket</span></article>`).join("") || `<p class="store-workspace-empty">No active basket on this device.</p>`}</article>
-      </section>`;
+      return renderDashboardPerformance.call(this, { abandonedRows, activityRows, currency, dayStart, metric, monthStart, orderRows, paidSales, revenueIn, salesIn, uniqueIn, weekStart });
     }
     if (path === "/account/main-shop/product-intelligence") {
-      return `<section class="studio-workspace-section">
-        <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">PRODUCT INTELLIGENCE</span><h2>Product rankings</h2></div><button type="button" class="btn-secondary" data-business-product-analytics aria-label="Refresh product activity">Refresh</button></div>
-          <p class="studio-panel-note" data-product-analytics-status>${snapshot.remoteProductAnalyticsError
-            ? AppUtils.escapeHTML(snapshot.remoteProductAnalyticsError)
-            : remoteProductAnalytics
-              ? `Updated ${new Date(snapshot.remoteProductAnalyticsUpdatedAt || Date.now()).toLocaleTimeString()}. Batched anonymous activity from the last 30 days; bookings count submitted product holds.`
-              : "Activity has not loaded yet. Refresh to load batched product views, cart additions, wishlist saves and bookings from the live storefront."}</p>
-        </article>
-        ${remoteProductAnalytics ? `<div class="studio-dashboard-grid">
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most viewed products</h2></div><p class="studio-panel-note">Product page views · last 30 days</p>${mostViewedProductRows}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most added to carts</h2></div><p class="studio-panel-note">Cart additions · last 30 days</p>${mostCartedProductRows}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most wishlisted products</h2></div><p class="studio-panel-note">Anonymous wishlist saves · last 30 days</p>${mostWishlistedProductRows}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Most booked products</h2></div><p class="studio-panel-note">Submitted product holds · last 30 days</p>${mostBookedProductRows}</article>
-        </div>` : ""}
-      </section>`;
+      return renderDashboardProductIntelligence.call(this, { mostBookedProductRows, mostCartedProductRows, mostViewedProductRows, mostWishlistedProductRows, remoteProductAnalytics, snapshot });
     }
     if (path === "/account/customers" || path === "/account/customers/") {
-      return `<section class="studio-workspace-section"><div class="studio-metric-grid studio-metric-grid-featured">${metric("Identified web customers", customers.length, "", "/account/web/studio/crm/customers")}${metric("Repeat customers", customers.filter(customer => customer.orders > 1).length, "", "/account/web/studio/crm/customers")}${metric("Newsletter subscribers", newsletterSubscribers.length, "", "/account/web/studio/crm/subscribers")}</div>
-      <article class="studio-panel"><div class="studio-panel-heading"><div><span class="studio-workspace-kicker">CUSTOMER RELATIONSHIPS</span><h2>Returning customers</h2></div><a href="/account/customers/loyalty" data-route="/account/customers/loyalty">Manage points</a></div>
-        ${customerRows || `<p class="store-workspace-empty">Customers will appear after they place an order with an email address or phone number.</p>`}</article></section>`;
+      return renderCrmCustomers.call(this, { customerRows, customers, metric, newsletterSubscribers });
     }
     if (path === "/account/customers/loyalty") {
-      const pointsPerVisit = Number(this.getWorkspaceSetting("points_per_visit", 1));
-      const pointsPerCurrency = Number(this.getWorkspaceSetting("points_per_currency", 0));
-      return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid studio-metric-grid-featured">${metric("Points per visit", pointsPerVisit)}${metric("Pts / " + AppUtils.escapeHTML(currency) + " spent", pointsPerCurrency)}${metric("Customers with points", customers.filter(customer => customer.points > 0).length)}</div>
-        <form class="store-workspace-form crm-points-rules" data-studio-form="loyalty-settings"><h2>Points rules</h2><p>Points per verified visit and each full ${AppUtils.escapeHTML(currency)} spent.</p><div class="studio-form-grid"><label>Pts / verified visit<input name="pointsPerVisit" type="number" min="0" step="1" value="${pointsPerVisit}" required></label><label>Pts / full ${AppUtils.escapeHTML(currency)} spent<input name="pointsPerCurrency" type="number" min="0" step="1" value="${pointsPerCurrency}" required></label></div><button type="submit" class="btn-primary">Save rules</button><p role="status"></p></form>
-        <form class="store-workspace-form" data-studio-form="points-adjust"><h2>Record verified activity or adjust points</h2><label>Customer<select name="customerKey" required><option value="">Choose a customer</option>${customers.map(customer => `<option value="${AppUtils.escapeHTML(customer.key)}">${AppUtils.escapeHTML(customer.name)} · ${customer.points} points</option>`).join("")}</select></label><div class="studio-form-grid"><label>Verified paid purchase amount (${AppUtils.escapeHTML(currency)})<input name="purchaseAmount" type="number" min="0" step="0.01" placeholder="Optional"></label><label>Manual adjustment (+/- points)<input name="delta" type="number" step="1" placeholder="Optional"></label></div><label class="studio-check-label"><input name="verifiedVisit" type="checkbox" value="yes"> Add points for one verified visit</label><label>Reason for manual adjustment<input name="reason" maxlength="140" placeholder="Required only for a manual adjustment"></label><button type="submit" class="btn-primary">Record points</button><p role="status"></p></form>
-        <article class="studio-panel"><div class="studio-panel-heading"><h2>Points balances</h2></div>${customerRows || `<p class="store-workspace-empty">No identified customers yet.</p>`}</article>
-      </section>`;
+      return renderCrmPoints.call(this, { currency, customerRows, customers, metric });
     }
     if (path === "/account/customers/bookings" || path === "/store/bookings") {
       const maxHours = Number(this.getWorkspaceSetting("max_hold_hours", 24));
@@ -3873,71 +3750,10 @@ export const StudioRenderers = {
         }).join("") || `<p class="store-workspace-empty">No holds recorded yet.</p>`}</article></section>`;
     }
     if (["/account/customers/newsletter", "/account/web/studio/crm/newsletter"].includes(path)) {
-      const remoteSubscribers = snapshot.remoteNewsletter || [];
-      const confirmedSubscribers = remoteSubscribers.filter(subscriber => subscriber.status === "subscribed").length;
-      const pendingSubscribers = remoteSubscribers.filter(subscriber => subscriber.status === "pending").length;
-      return `<section class="studio-workspace-section">
-        <div class="studio-panel-heading newsletter-header"><h2>Email newsletter</h2><button type="button" class="btn-secondary newsletter-refresh-button" data-business-newsletter-refresh aria-label="Refresh subscribers" title="Refresh subscribers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 17 5l3 2M4 17l3 2a7 7 0 0 0 11.5-4"/></svg></button></div>
-        <div class="studio-metric-grid newsletter-metrics">${metric("Confirmed", confirmedSubscribers, "Campaign-ready")}${metric("Pending", pendingSubscribers, "Email unconfirmed")}</div>
-        <p class="studio-panel-note">${snapshot.remoteNewsletterError ? `Could not load shared subscribers: ${AppUtils.escapeHTML(snapshot.remoteNewsletterError)}` : "Storefront signups are confirmed by email and shared with this shop in Cloudflare. Campaign delivery uses the configured Resend sender."}</p>
-        <form class="store-workspace-form" data-business-newsletter-send><h2>Compose and send</h2><label>Subject<input name="subject" maxlength="120" required></label><label>Message<textarea name="message" rows="5" maxlength="4000" required></textarea></label><p class="studio-panel-note">Unsubscribe links are added automatically. The app reports provider acceptance, not guaranteed inbox delivery.</p><button type="submit" class="btn-primary" ${confirmedSubscribers ? "" : "disabled"}>Send to ${confirmedSubscribers} confirmed subscriber${confirmedSubscribers === 1 ? "" : "s"}</button><p role="status"></p></form>
-        <article class="studio-panel"><div class="studio-panel-heading"><h2>Subscribers (${remoteSubscribers.length})</h2></div>
-          ${remoteSubscribers.length ? `<div class="store-bulk-actions newsletter-bulk-actions" data-newsletter-bulk>
-            <label class="store-bulk-select-all"><input type="checkbox" data-newsletter-select-all><span>Select all subscribers</span></label>
-            <span class="store-bulk-selection-count" data-newsletter-selection-count>0 selected</span>
-            <button type="button" class="btn-secondary" data-newsletter-remove-selected disabled>Remove selected</button>
-          </div>` : ""}
-          <p role="status" aria-live="polite" data-newsletter-action-status></p>
-          ${remoteSubscribers.map(subscriber => `<article class="studio-list-row newsletter-subscriber-row">
-            <label class="newsletter-subscriber-select" aria-label="Select ${AppUtils.escapeHTML(subscriber.email)}"><input type="checkbox" data-newsletter-subscriber-select value="${AppUtils.escapeHTML(subscriber.id)}"></label>
-            <div><strong>${AppUtils.escapeHTML(subscriber.name || subscriber.email)}</strong><span>${AppUtils.escapeHTML(subscriber.email)} · ${AppUtils.escapeHTML(subscriber.status)} · joined ${AppUtils.escapeHTML(subscriber.created_at)}</span></div>
-            <button type="button" class="btn-secondary" data-remove-remote-subscriber="${AppUtils.escapeHTML(subscriber.id)}">Remove</button>
-          </article>`).join("") || `<p class="store-workspace-empty">No storefront subscribers yet.</p>`}</article>
-      </section>`;
+      return renderCrmSubscribers.call(this, { metric, snapshot });
     }
     if (path === "/account/payments") {
-      const storeCurrency = String(SQLiteEngine.getStore().currency || "KES").toUpperCase();
-      const nativeCurrencySettings = window.Capacitor?.isNativePlatform?.() === true
-        ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Website currency</h2><span>${AppUtils.escapeHTML(activeTenant.name || activeTenant.hostname)}</span></div>
-          <p class="studio-panel-note">Choose the currency for this website. Changing it does not convert prices. Online payments require KES.</p>
-          <form class="store-workspace-form" data-app-website-currency><label>Website currency<select name="currency" required>
-            ${[
-              ["KES", "Kenyan shilling (KES)"],
-              ["USD", "US dollar (USD)"],
-              ["EUR", "Euro (EUR)"],
-              ["GBP", "British pound (GBP)"],
-              ["TZS", "Tanzanian shilling (TZS)"],
-              ["UGX", "Ugandan shilling (UGX)"],
-              ["RWF", "Rwandan franc (RWF)"],
-              ["NGN", "Nigerian naira (NGN)"],
-              ["GHS", "Ghanaian cedi (GHS)"],
-              ["ZAR", "South African rand (ZAR)"]
-            ].map(([code, label]) => `<option value="${code}" ${storeCurrency === code ? "selected" : ""}>${label}</option>`).join("")}
-            ${!["KES", "USD", "EUR", "GBP", "TZS", "UGX", "RWF", "NGN", "GHS", "ZAR"].includes(storeCurrency)
-              ? `<option value="${AppUtils.escapeHTML(storeCurrency)}" selected>${AppUtils.escapeHTML(storeCurrency)}</option>`
-              : ""}
-          </select></label><button type="submit" class="btn-primary">Save website currency</button><p role="status" aria-live="polite"></p></form>
-        </article>`
-        : "";
-      return `<section class="studio-workspace-section"><article class="studio-panel"><div class="studio-panel-heading"><h2>Payment account</h2><span data-paystack-status>Checking account…</span></div>
-        <p class="studio-panel-note">Connect or change the account used for payments across your websites.</p>
-        ${nativeCurrencySettings}
-        <p class="studio-panel-note">Test mode cannot confirm payouts. In Live mode, the bank must be verified before connection. Only a reference and masked account details are stored.</p>
-        <form class="store-workspace-form" data-paystack-setup autocomplete="off"><div class="studio-form-grid">
-          <label>Business name<input name="business_name" maxlength="120" autocomplete="organization" required></label>
-          <label>Bank<select name="settlement_bank" required><option value="">Loading banks…</option></select></label><button type="button" class="btn-secondary" data-paystack-retry hidden>Retry</button>
-          <label>Bank account number<input name="account_number" inputmode="numeric" autocomplete="off" minlength="5" maxlength="20" pattern="[0-9]{5,20}" required></label>
-          <label>Account contact name<input name="primary_contact_name" maxlength="120" autocomplete="name" required></label>
-          <label>Contact email<input name="primary_contact_email" type="email" maxlength="240" autocomplete="email" required></label>
-          <label>Contact phone<input name="primary_contact_phone" type="tel" maxlength="40" autocomplete="tel" required></label>
-        </div><button type="submit" class="btn-primary" data-paystack-submit>Connect bank account</button><p role="status" data-paystack-form-status></p></form>
-        <form class="store-workspace-form" data-paystack-reuse hidden style="display:none;"><h3>Use an existing account</h3>
-          <p class="studio-panel-note">Choose an account already connected to one of your websites.</p>
-          <label>Connected account<select name="source_tenant_id" required><option value="">Loading accounts…</option></select></label>
-          <label style="display:flex;align-items:flex-start;gap:8px;"><input type="checkbox" name="confirm_reuse" required><span>Use this as the default payment account for my websites.</span></label>
-          <button type="submit" class="btn-secondary" data-paystack-reuse-submit>Use this account</button><p role="status" data-paystack-reuse-status></p>
-        </form>
-        </article></section>`;
+      return renderPayments.call(this, { activeTenant });
     }
     if (path === "/store/orders" || path === "/store/sales" || path === "/store/payments") {
       const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
@@ -3967,155 +3783,13 @@ export const StudioRenderers = {
       `;
     }
     if (path === "/store/products") {
-      const websiteCategories = SQLiteEngine.getCategories();
-      const posOnly = snapshot.posProducts.filter(pos => !webProducts.some(web => {
-        const posSku = String(pos.sku || "").trim().toUpperCase();
-        const webSku = String(web.sku || "").trim().toUpperCase();
-        return posSku && webSku ? posSku === webSku
-          : !posSku && !webSku && String(web.name || "").trim().toLowerCase() === String(pos.name || "").trim().toLowerCase();
-      }));
-      return `
-        <div class="studio-inline-actions web-product-actions">
-          <button type="button" class="btn-secondary web-product-action-card" id="store-add-product-trigger">Add from Store</button>
-          <button type="button" class="btn-primary web-product-action-card" id="store-create-web-product">Add web product</button>
-          <a class="btn-secondary web-product-action-card" href="/account/products" data-route="/account/products">Advanced web catalog</a>
-          <button type="button" class="btn-secondary web-product-action-card" id="btn-publish-cloudflare">Publish to ${AppUtils.escapeHTML(activeTenant.hostname)}</button>
-        </div>
-        <p class="studio-panel-note">Website products are managed separately. Publish to update ${AppUtils.escapeHTML(activeTenant.hostname)}.</p>
-        <div id="product-modal-container"></div>
-        ${webProducts.length ? `<div class="store-bulk-actions" data-bulk-removal="products"><label class="store-bulk-select-all"><input type="checkbox" data-bulk-select-all><span>Select all products</span></label><span class="store-bulk-selection-count" data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-product-holds="enable" disabled>Enable holds</button><button type="button" class="btn-secondary" data-bulk-product-holds="disable" disabled>Disable holds</button><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected products</button></div>` : ""}
-        <form class="store-workspace-form store-existing-product-form" data-store-web-import hidden>
-          <h2>Add from main Store</h2>
-          <p class="studio-panel-note">Select one or more products. Existing Store images are copied when available.</p>
-          <label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" data-store-import-select-all> Select all available products</label>
-          <p class="studio-panel-note" data-store-import-count>0 selected</p>
-          <div style="max-height:360px;overflow:auto;">
-            ${posOnly.map(pos => {
-              const index = snapshot.products.findIndex(item => item.posProductId === Number(pos.id));
-              if (index < 0) return "";
-              const image = pos.imageUri || pos.images?.[0] || "";
-              return `<label class="studio-list-row" style="display:flex;align-items:center;gap:10px;">
-                <input type="checkbox" data-store-import-product="${index}">
-                ${image ? `<img src="${AppUtils.escapeHTML(image)}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:7px;">` : ""}
-                <span style="flex:1;min-width:0;"><strong>${AppUtils.escapeHTML(pos.name)}</strong><span>${AppUtils.escapeHTML(pos.categoryName || "Uncategorized")}</span></span>
-                <strong>${this.formatMainShopMoney(pos.price, currency)}</strong>
-              </label>`;
-            }).join("") || `<p class="store-workspace-empty">No additional Store products to add.</p>`}
-          </div>
-          <button type="submit" class="btn-primary" disabled>Add selected from Store</button>
-          <p role="status"></p>
-        </form>
-        <form class="store-workspace-form" data-studio-form="web-product" hidden>
-          <h2>Create web-only product</h2>
-          <input type="hidden" name="productId" value="">
-          <label>Product name<input name="name" maxlength="160" required></label>
-          <div class="web-product-taxonomy" data-web-product-taxonomy></div>
-          <div class="studio-form-grid">
-            <label>Selling price<input name="price" type="number" min="0" step="0.01" required></label>
-            <label>Buying price · optional<input name="costPrice" type="number" min="0" step="0.01"></label>
-          </div>
-          <div class="web-product-media">
-            <label class="web-product-file">Add photos (up to 8)<input name="image" type="file" accept="image/*" data-web-product-image multiple></label>
-            <div class="web-product-media-modes" role="group" aria-label="Product media type">${[["keep", "Photos"], ["3d", "360° spin"], ["video", "Video"], ["cutout", "Cutout"]].map(([value, label], index) => `<button type="button" class="btn-secondary" data-web-product-media-mode="${value}" aria-pressed="${index === 0}">${label}</button>`).join("")}</div>
-            <div class="web-product-video-options" data-web-product-video-options hidden>
-              <button type="button" class="btn-secondary" data-web-product-video-record>Record video</button>
-              <button type="button" class="btn-secondary" data-web-product-video-pick>Pick video</button>
-              <input type="file" accept="video/*" capture="environment" data-web-product-record-file hidden>
-              <input type="file" accept="video/*" data-web-product-video-file hidden>
-            </div>
-            <div class="web-product-media-preview" data-web-product-media-preview hidden></div>
-            <p class="studio-panel-note" data-web-product-media-status role="status" aria-live="polite">Add product photos or choose another media type.</p>
-          </div>
-          <div class="studio-form-grid">
-            <label>Item type<select name="itemType" data-web-product-item-type><option value="product">Product</option><option value="service">Service</option></select></label>
-            <label data-web-product-duration hidden>How long it takes<select name="durationMinutes">${webServiceDurationOptions()}</select></label>
-          </div>
-          <label data-web-product-stock>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label>
-          <div class="web-product-variants" data-web-product-variants></div>
-          <div class="web-product-attribute-pricing" data-web-product-attribute-pricing></div>
-          <label class="web-product-hold"><input type="checkbox" name="booking_enabled"><span>Allow customer holds</span></label>
-          <button type="button" class="btn-secondary" data-web-product-cancel hidden>Cancel edit</button>
-          <button type="submit" class="btn-primary">Save web product</button>
-          <p role="status"></p>
-        </form>
-        <div class="store-workspace-list">
-          ${webProducts.map(product => {
-            const categoryName = SQLiteEngine.getCategories().find(category => Number(category.id) === Number(product.category_id))?.name || "Uncategorized";
-            const existsInPos = snapshot.posProducts.some(pos => {
-              const posSku = String(pos.sku || "").trim().toUpperCase();
-              const webSku = String(product.sku || "").trim().toUpperCase();
-              return posSku && webSku ? posSku === webSku
-                : !posSku && !webSku && String(pos.name || "").trim().toLowerCase() === String(product.name || "").trim().toLowerCase();
-            });
-            return `
-            <div class="store-bulk-row">
-            <label class="store-bulk-item" aria-label="Select ${AppUtils.escapeHTML(product.name)}"><input type="checkbox" data-bulk-item="${product.id}"></label>
-            <details class="store-product-detail-wrap" data-store-search="${AppUtils.escapeHTML(`${product.name} ${product.sku || ""} ${categoryName}`.toLocaleLowerCase())}">
-              <summary class="store-workspace-row">
-                <div><strong class="store-product-name">${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(categoryName)} · ${this.formatMainShopMoney(product.price, currency)}</span></div>
-                <div class="store-product-sources"><span class="store-product-source">Web</span></div>
-              </summary>
-              <div class="store-product-detail">
-                <div class="store-product-detail-grid">
-                  <div><strong>Price</strong> <span>${this.formatMainShopMoney(product.price, currency)}</span></div>
-                  <div><strong>Stock</strong> <span>${product.stock == null ? "Not set" : `${product.stock} units`}</span></div>
-                  <div><strong>SKU</strong> <span>${AppUtils.escapeHTML(product.sku || "Not assigned")}</span></div>
-                  <div><strong>Brand</strong> <span>${AppUtils.escapeHTML(product.brand || "—")}</span></div>
-                  <div><strong>Discount</strong> <span>${Number(product.discount || 0)}%</span></div>
-                </div>
-                <label class="studio-panel-note"><input type="checkbox" data-web-product-booking="${product.id}" ${product.booking_enabled ? "checked" : ""}> Allow customers to place temporary holds on this product</label>
-                <p>${AppUtils.escapeHTML(product.description || "No description.")}</p>
-                ${product.images?.[0] ? `<img class="store-product-detail-image" src="${AppUtils.escapeHTML(product.images[0])}" alt="${AppUtils.escapeHTML(product.name)}">` : ""}
-                <button type="button" class="btn-secondary" data-edit-web-product="${product.id}" style="margin-top:12px;">Edit product</button>
-                ${existsInPos ? "" : `<button type="button" class="btn-secondary" data-store-pos-product="${product.id}" style="margin-top:12px;">Add to Store/POS</button>`}
-                <button type="button" class="btn-secondary" data-remove-website-product="${product.id}" style="margin-top:12px;">Remove from this website</button>
-              </div>
-            </details>
-            </div>
-          `}).join("") || `<p class="store-workspace-empty">No website products yet. Add a web-only product or select one from Store inventory.</p>`}
-        </div>`;
+      return renderStoreProducts.call(this, { activeTenant, currency, snapshot, webProducts });
     }
     if (path === "/store/categories") {
-      const websiteCategories = SQLiteEngine.getCategories();
-      const storeOnlyCategories = snapshot.posCategories.filter(posCategory => !websiteCategories.some(webCategory => webCategory.name.trim().toLocaleLowerCase() === posCategory.name.trim().toLocaleLowerCase()));
-      return `
-        <form class="store-workspace-form" data-studio-form="web-category">
-          <input name="name" aria-label="Category name" placeholder="Category name" required maxlength="120"><button type="submit" class="btn-primary">Add category</button><p role="status"></p>
-        </form>
-        <section class="studio-panel"><div class="studio-panel-heading"><h2>Categories available in Store inventory</h2></div>
-          ${storeOnlyCategories.map(category => `<article class="store-category-import-row"><strong>${AppUtils.escapeHTML(category.name)}</strong><button type="button" class="btn-secondary" data-store-website-category="${AppUtils.escapeHTML(category.name)}">Add from Store</button></article>`).join("") || `<p class="store-workspace-empty">No additional Store categories to import.</p>`}
-        </section>
-        ${websiteCategories.length ? `<div class="store-bulk-actions" data-bulk-removal="categories"><label class="store-bulk-select-all"><input type="checkbox" data-bulk-select-all><span>Select all categories</span></label><span class="store-bulk-selection-count" data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected categories</button></div>` : ""}
-        <div class="store-workspace-list">${websiteCategories.map(category => {
-          const categoryProducts = webProducts.filter(product => Number(product.category_id) === Number(category.id));
-          return `
-          <div class="store-bulk-row">
-          <label class="store-bulk-item" aria-label="Select ${AppUtils.escapeHTML(category.name)}"><input type="checkbox" data-bulk-item="${category.id}"></label>
-          <details class="store-category-wrap">
-            <summary class="store-workspace-row">
-              <div><strong class="store-product-name">${AppUtils.escapeHTML(category.name)}</strong><span>${categoryProducts.length} products</span></div>
-              <div class="store-product-sources"><span class="store-product-source">Web only</span></div>
-            </summary>
-            <div class="store-category-details">
-              <div class="store-category-products">
-                ${categoryProducts.map(product => `<details class="store-category-product"><summary><strong>${AppUtils.escapeHTML(product.name)}</strong><span>${this.formatMainShopMoney(product.price, currency)} · ${product.stock == null ? "Stock not set" : `${product.stock} in stock`}</span></summary><p>SKU: ${AppUtils.escapeHTML(product.sku || "Not assigned")} · Website catalog</p>${product.description ? `<p>${AppUtils.escapeHTML(product.description)}</p>` : ""}</details>`).join("") || `<span class="store-workspace-empty">No products in this category yet.</span>`}
-              </div>
-              <button type="button" class="btn-secondary" data-remove-website-category="${category.id}" style="margin:12px 0;">Remove category from this website</button>
-              <a class="btn-secondary" href="/store/products" data-route="/store/products">Add web product to this category</a>
-            </div>
-          </details></div>`;
-        }).join("") || `<p class="store-workspace-empty">No website categories yet.</p>`}</div>`;
+      return renderStoreCategories.call(this, { currency, snapshot, webProducts });
     }
     if (path === "/store/inventory") {
-      return `
-        <p class="studio-panel-note">Website stock is managed independently. Updating it does not change POS inventory.</p>
-        <div class="store-workspace-list">${webProducts.map(product => `
-          <form class="store-workspace-row store-stock-form" data-pos-id="" data-web-id="${product.id}">
-            <div><strong class="store-product-name">${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(product.sku || "No SKU")} · Website stock</span></div>
-            <label>Quantity<input name="stock" type="number" min="0" step="1" value="${product.stock ?? ""}" required></label>
-            <button type="submit" class="btn-secondary">Save web stock</button>
-          </form>
-        `).join("") || `<p class="store-workspace-empty">No website products to manage.</p>`}</div>`;
+      return renderStoreInventory.call(this, { webProducts });
     }
     if (path === "/store/revenue") {
       const revenueLines = sales.flatMap(sale => {

@@ -48,6 +48,13 @@ export async function readAppScript({ lf = false } = {}) {
       if (!main.includes(spread)) return block;
       main = main.replace(spread, () => methods);
       return "";
+    }).replace(/^export function (\w+)\(\{[^}]*\}\) \{\n([\s\S]*?)^\}\n/gm, (block, name, body) => {
+      // A screen branch cut out of a method (e.g. StudioRenderers.renderMainShopContent): main.js
+      // calls it with `return name.call(this, { ... });` where the branch body was. Put the body back.
+      const call = new RegExp(`^ *return ${name}\\.call\\(this, \\{[^}]*\\}\\);\\n`, "m");
+      if (!call.test(main)) return block;
+      main = main.replace(call, () => body);
+      return "";
     });
     rest.push(source);
   }
