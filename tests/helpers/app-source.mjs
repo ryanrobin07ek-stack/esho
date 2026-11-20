@@ -25,10 +25,19 @@ export async function readAppStyles({ lf = false } = {}) {
 export const APP_SCRIPT = "src/app/main.js";
 const APP_SCRIPT_TAG = `<script type="module" src="/${APP_SCRIPT}"></script>`;
 
-// main.js and every module it imports from src/screens and src/shell, in import order.
+// main.js and every module it imports from src/screens and src/shell, in import order, followed by
+// the sibling modules those import (a screen split across several files).
 export async function appScriptFiles() {
   const main = await read(APP_SCRIPT);
   const modules = [...main.matchAll(/^import \{[^}]*\} from '\.\.\/((?:screens|shell)\/[\w/-]+\.js)';/gm)].map(match => `src/${match[1]}`);
+  for (let index = 0; index < modules.length; index += 1) {
+    const dir = modules[index].slice(0, modules[index].lastIndexOf("/") + 1);
+    const source = await read(modules[index]);
+    for (const match of source.matchAll(/^import \{[^}]*\} from '\.\/([\w/-]+\.js)';/gm)) {
+      const file = `${dir}${match[1]}`;
+      if (!modules.includes(file)) modules.push(file);
+    }
+  }
   return [APP_SCRIPT, ...modules];
 }
 
@@ -50,6 +59,19 @@ export async function readAppScript({ lf = false } = {}) {
       return "";
     });
     rest.push(source);
+  }
+  // Statement blocks cut out of a big method live as `export function name(...) { ... }` (body at a
+  // two-space indent) and are called in place with `name.call(this, ...);` or
+  // `return name.call(this, ...);`. Put each body back at its call, at the call's indent.
+  for (let index = 0; index < rest.length; index += 1) {
+    rest[index] = rest[index].replace(/^export function (\w+)\([^)]*\) \{\n([\s\S]*?)^\}\n/gm, (block, name, body) => {
+      const call = new RegExp(`^( *)(?:return )?${name}\\.call\\(this(?:, [\\w, ]+)?\\);\\n`, "m");
+      const found = main.match(call);
+      if (!found) return block;
+      const shift = " ".repeat(found[1].length - 2);
+      main = main.replace(call, () => body.replace(/^(?=.)/gm, shift));
+      return "";
+    });
   }
   const text = [main, ...rest].join("\n");
   return lf || !mainRaw.includes("\r\n") ? text : text.replace(/\n/g, "\r\n");
