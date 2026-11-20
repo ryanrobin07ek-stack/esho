@@ -12,7 +12,9 @@ export async function initializeSQLite(){
  if(Capacitor.getPlatform()==='web'){await defineCustomElements(window);document.body.appendChild(document.createElement('jeep-sqlite'));await customElements.whenDefined('jeep-sqlite');await sqlite.initWebStore();}
  const state=await sqlite.checkConnectionsConsistency(), conn=await sqlite.isConnection(NAME,false);
  db=state.result&&conn.result?await sqlite.retrieveConnection(NAME,false):await sqlite.createConnection(NAME,false,'no-encryption',1,false);await db.open();
- await db.execute(TABLES.map(t=>'CREATE TABLE IF NOT EXISTS "'+t+'" (row_id INTEGER PRIMARY KEY AUTOINCREMENT,payload TEXT NOT NULL)').join(';'));
+ // One statement per table: on Android, joining them with ';' left the last table uncreated on a
+ // fresh install, and the first load then failed with "no such table" (a white screen).
+ for(const t of TABLES)await db.execute('CREATE TABLE IF NOT EXISTS "'+t+'" (row_id INTEGER PRIMARY KEY AUTOINCREMENT,payload TEXT NOT NULL);');
  window.ShopSQLite={
   load,
   save(snapshot){return enqueue(()=>save(snapshot));},
