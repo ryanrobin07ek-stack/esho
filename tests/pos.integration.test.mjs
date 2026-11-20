@@ -242,7 +242,7 @@ test('barcode and QR scanning formats route safely without treating QR text as a
 test('loading website stock imports local website products into POS without admin-key sync', async () => {
   const posSource = await readTillSource();
   const appSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  const sync = posSource.match(/async function syncSharedStock\(source\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  function toast/)?.[1];
+  const sync = posSource.match(/async function syncSharedStock\(source\) \{([\s\S]*?)\r?\n  \}\r?\n\r?\n  return \{/)?.[1];
   assert.ok(sync, 'POS shared stock flow should be present.');
   assert.match(sync, /let catalog = bridge\.localCatalog\(websiteId\)[\s\S]*?if \(\(!catalog \|\| !catalog\.products\?\.length\) && navigator\.onLine !== false\) \{\s*catalog = await bridge\.catalog\(websiteId\)/);
   assert.match(sync, /if \(source === 'website'\)[\s\S]*?for \(const websiteProduct of \(catalog\.products \|\| \[\]\)\.filter\(\(product\) => product\.status !== 'archived'\)\)[\s\S]*?await addCategory\(categoryName\)[\s\S]*?await saveProduct\(\{[\s\S]*?stock,[\s\S]*?const saved = \(await listProducts\(\)\)/);
