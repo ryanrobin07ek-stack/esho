@@ -7,6 +7,7 @@ import { orderConfirmationScreen } from '../screens/shop/order-confirmation.js';
 import { categoriesScreen } from '../screens/shop/categories.js';
 import { renderDashboardVisits } from '../screens/craft/dashboard-visits.js';
 import { renderDashboardOverview } from '../screens/craft/dashboard-overview.js';
+import { renderDashboardTraffic } from '../screens/craft/dashboard-traffic.js';
 
 // Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
 // modules need is exported at the end.
@@ -4692,16 +4693,7 @@ export const StudioRenderers = {
       return renderDashboardVisits.call(this, { analyticsLoadCard, analyticsVisits, locationGrid, metric, recentVisitRows, snapshot, storefrontUniqueCount, storefrontVisitCount });
     }
     if (path === "/account/main-shop/traffic") {
-      const productPageViews = snapshot.remoteAnalytics
-        ? (snapshot.remoteAnalytics.product_views || []).reduce((total, item) => total + (Number(item.views) || 0), 0)
-        : analyticsVisits.filter(visit => visit.path.startsWith("/product/")).length;
-      return `<section class="studio-workspace-section">
-        <div class="studio-metric-grid studio-metric-grid-featured">${metric("Total visits", storefrontVisitCount, "", "/account/web/studio/dashboard/visits")}${metric("Unique visitors", storefrontUniqueCount, "", "/account/web/studio/dashboard/visits")}${metric("Product page views", productPageViews, "", "/account/web/studio/dashboard/product-intelligence")}</div>
-        ${analyticsLoadCard}
-        ${locationGrid}
-        <div class="studio-dashboard-grid"><article class="studio-panel"><div class="studio-panel-heading"><h2>Most visited pages</h2></div>${pageRows || `<p class="store-workspace-empty">No pages yet.</p>`}</article>
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Devices</h2></div>${deviceRows || `<p class="store-workspace-empty">No devices yet.</p>`}</article></div>
-      </section>`;
+      return renderDashboardTraffic.call(this, { analyticsLoadCard, analyticsVisits, deviceRows, locationGrid, metric, pageRows, snapshot, storefrontUniqueCount, storefrontVisitCount });
     }
     if (path === "/account/main-shop/performance" || path === "/store/revenue") {
       const weekSales = salesIn(weekStart);
