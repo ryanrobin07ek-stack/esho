@@ -74,21 +74,23 @@ export const builderScreen = {
     }
       return `
         <style>
-          .builder-litrus-toolbar{z-index:1;min-height:46px;padding:5px 10px;display:flex;align-items:center;gap:7px;overflow:visible;background:var(--surface);color:var(--text-main);border-bottom:1px solid var(--border)}
-          .builder-litrus-toolbar button,.builder-litrus-toolbar a,.builder-litrus-device-controls summary{height:36px;min-height:36px;padding:0 11px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border:1px solid var(--border);border-radius:14px;background:var(--surface-subtle);color:var(--text-main);font:600 12px system-ui,sans-serif;text-decoration:none;cursor:pointer}
+          /* Flat and compact, like the editor panels: white bar, 1px lines, one 10px radius, 44px targets. */
+          .builder-litrus-toolbar{z-index:1;min-height:54px;padding:5px 8px;display:flex;align-items:center;gap:6px;overflow:visible;box-sizing:border-box;background:#fff;color:#111;border-bottom:1px solid #c7ccd2;box-shadow:none}
+          .builder-litrus-toolbar button,.builder-litrus-toolbar a,.builder-litrus-device-controls summary{height:44px;min-height:44px;min-width:44px;padding:0 12px;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;border:1px solid #c7ccd2;border-radius:10px;background:#fff;color:#111;font:600 12px system-ui,sans-serif;text-decoration:none;cursor:pointer;box-shadow:none}
+          .builder-litrus-toolbar button:focus-visible,.builder-litrus-toolbar a:focus-visible,.builder-litrus-device-controls summary:focus-visible{outline:2px solid #111;outline-offset:2px}
           .builder-litrus-toolbar [hidden]{display:none!important}
-          .builder-litrus-toolbar #builder-litrus-publish{background:var(--surface);color:var(--text-main);border-color:var(--border)}
+          .builder-litrus-toolbar #builder-litrus-publish{background:#111;color:#fff;border-color:#111}
           .builder-litrus-device-controls{position:relative;margin-left:auto}
           .builder-litrus-device-controls[hidden]{display:none!important}
-          .builder-litrus-device-controls summary{gap:7px;list-style:none}
+          .builder-litrus-device-controls summary{gap:6px;list-style:none}
           .builder-litrus-device-controls summary::-webkit-details-marker{display:none}
           .builder-litrus-device-controls summary svg{width:17px;height:17px}
-          .builder-litrus-device-menu{position:absolute;top:42px;right:0;z-index:20;display:grid;min-width:150px;gap:4px;padding:6px;border:1px solid var(--border);border-radius:16px;background:var(--surface);box-shadow:0 12px 30px rgba(24,24,27,.14)}
+          .builder-litrus-device-menu{position:absolute;top:50px;right:0;z-index:20;display:grid;min-width:150px;gap:4px;padding:6px;border:1px solid #c7ccd2;border-radius:10px;background:#fff;box-shadow:none}
           .builder-litrus-device-menu button{width:100%;justify-content:flex-start}
-          .builder-litrus-device-menu button[aria-pressed="true"]{background:var(--accent-light);color:var(--text-main);border-color:var(--border)}
-          @media(max-width:520px){.builder-litrus-toolbar{gap:4px;padding-inline:5px}.builder-litrus-toolbar button,.builder-litrus-toolbar a,.builder-litrus-device-controls summary{padding-inline:7px;font-size:11px}}
+          .builder-litrus-device-menu button[aria-pressed="true"]{background:#111;color:#fff;border-color:#111}
+          @media(max-width:520px){.builder-litrus-toolbar{gap:4px;padding-inline:5px}.builder-litrus-toolbar button,.builder-litrus-toolbar a,.builder-litrus-device-controls summary{padding-inline:8px;font-size:11px}}
         </style>
-        <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:var(--bg);color:var(--text-main);">
+        <main style="width:100%;min-width:0;height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);overflow:hidden;background:#eceff2;color:#111;">
           <header class="builder-litrus-toolbar" aria-label="Shop builder controls">
             <button id="builder-litrus-publish" type="button">Publish</button>
             ${draftEditor ? "" : `<a id="builder-litrus-store-details" href="/account/web/store?tenant=${encodeURIComponent(tenant.id)}" data-route="/account/web/store?tenant=${encodeURIComponent(tenant.id)}">Store</a>`}
@@ -104,7 +106,7 @@ export const builderScreen = {
               </div>
             </details>
           </header>
-          <iframe id="builder-litrus-mixer" title="Shop builder" src="/litrus-mixer/index.html?craft=1" allow="clipboard-read; clipboard-write" style="display:block;width:100%;min-width:0;height:100%;border:0;background:var(--bg);"></iframe>
+          <iframe id="builder-litrus-mixer" title="Shop builder" src="/litrus-mixer/index.html?craft=1" allow="clipboard-read; clipboard-write" style="display:block;width:100%;min-width:0;height:100%;border:0;background:#eceff2;"></iframe>
         </main>
         <div id="product-modal-container"></div>
       `;
