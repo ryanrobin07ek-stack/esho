@@ -9,9 +9,12 @@ import {
 } from "./seo.js";
 import { renderLiquidStorefront } from "../src/liquid-storefront-renderer.js";
 import { CRAFT_AI_SCREEN_DIRECTORY } from "../src/craft-ai-screens.js";
+import { encodeCatalogForStorage, readStoredCatalog, MAX_STORED_CATALOG_BYTES } from "./catalog-storage.js";
 
-const MAX_CATALOG_BYTES = 900_000;
-const MAX_PUBLISHED_THEME_BYTES = 4_000_000;
+// Largest catalogue request accepted. What is stored is compressed when large (catalog-storage.js).
+const MAX_CATALOG_BYTES = 12_000_000;
+// The published page embeds the public catalogue; it is stored in R2, so it may be large for big shops.
+const MAX_PUBLISHED_THEME_BYTES = 16_000_000;
 const MAX_MEDIA_BYTES = 3_000_000;
 const MAX_VIDEO_BYTES = 50_000_000;
 const MAX_CRAFT_IMAGE_REQUESTS = 20;
@@ -475,7 +478,7 @@ async function handleStorefrontManifest(request, env, tenantId) {
   ).bind(tenantId).first();
   if (!snapshot?.payload) return env.ASSETS.fetch(new Request(assetUrl, { method: "GET" }));
 
-  const catalog = JSON.parse(snapshot.payload);
+  const catalog = await readStoredCatalog(snapshot.payload);
   const store = catalog.store || {};
   const name = String(store.name || catalog.name || "Store").trim().slice(0, 120) || "Store";
   const shortName = Array.from(name).slice(0, 12).join("");
@@ -2154,7 +2157,7 @@ async function handleCatalog(request, env, tenantId) {
     const payload = isPrivateRead && row.admin_payload && row.admin_payload !== "{}"
       ? row.admin_payload
       : row.payload;
-    const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(payload));
+    const catalog = await applyLiveVariantStock(env, tenantId, await readStoredCatalog(payload));
     const sharedRows = await env.DB.prepare(
       "SELECT sku, stock FROM inventory_stock WHERE tenant_id = ?"
     ).bind(tenantId).all();
@@ -2207,9 +2210,9 @@ async function handleCatalog(request, env, tenantId) {
     let publicCatalog;
     let privateCatalog;
     try {
-      publicCatalog = JSON.parse(row.payload);
+      publicCatalog = await readStoredCatalog(row.payload);
       privateCatalog = row.admin_payload && row.admin_payload !== "{}"
-        ? JSON.parse(row.admin_payload)
+        ? await readStoredCatalog(row.admin_payload)
         : publicCatalog;
     } catch {
       return jsonResponse({ error: "The saved catalog is invalid; publish the full catalog to repair it." }, 500);
@@ -2226,8 +2229,8 @@ async function handleCatalog(request, env, tenantId) {
     } catch (error) {
       return jsonResponse({ error: error.message }, 400);
     }
-    const payload = JSON.stringify(cleaned.publicCatalog);
-    const privatePayload = JSON.stringify(cleaned.privateCatalog);
+    const payload = (await encodeCatalogForStorage(JSON.stringify(cleaned.publicCatalog), cleaned.publicCatalog)).text;
+    const privatePayload = (await encodeCatalogForStorage(JSON.stringify(cleaned.privateCatalog), cleaned.privateCatalog)).text;
     const updatedAt = new Date().toISOString();
     const currentThemeId = publicCatalog.store?.website_theme_id || "classic";
     const nextThemeId = cleaned.publicCatalog.store?.website_theme_id || "classic";
@@ -2286,11 +2289,13 @@ async function handleCatalog(request, env, tenantId) {
     return jsonResponse({ error: error.message }, 400);
   }
 
-  const payload = JSON.stringify(catalog.publicCatalog);
-  const privatePayload = JSON.stringify(catalog.privateCatalog);
-  if (new TextEncoder().encode(payload).byteLength > MAX_CATALOG_BYTES) {
-    return jsonResponse({ error: "Catalog is too large. Move uploaded photos to R2 before publishing." }, 413);
+  const storedPublic = await encodeCatalogForStorage(JSON.stringify(catalog.publicCatalog), catalog.publicCatalog);
+  const storedPrivate = await encodeCatalogForStorage(JSON.stringify(catalog.privateCatalog), catalog.privateCatalog);
+  if (storedPublic.bytes > MAX_STORED_CATALOG_BYTES || storedPrivate.bytes > MAX_STORED_CATALOG_BYTES) {
+    return jsonResponse({ error: "Catalog is too large to store. Move uploaded photos to R2 before publishing." }, 413);
   }
+  const payload = storedPublic.text;
+  const privatePayload = storedPrivate.text;
   const updatedAt = new Date().toISOString();
   await env.DB.prepare(
     `INSERT INTO catalog_snapshots (tenant_id, payload, admin_payload, updated_at) VALUES (?, ?, ?, ?)
@@ -2904,7 +2909,7 @@ async function handleThemePublish(request, env, tenantId) {
   }
   let catalog;
   try {
-    catalog = JSON.parse(snapshot.payload);
+    catalog = await readStoredCatalog(snapshot.payload);
   } catch {
     return jsonResponse({ error: "The saved catalog is invalid; publish the catalog again." }, 500);
   }
@@ -3417,7 +3422,7 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
     "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id=?"
   ).bind(tenantId).first();
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
-  const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
+  const catalog = await applyLiveVariantStock(env, tenantId, await readStoredCatalog(catalogRow.payload));
   const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
   // product id -> { product, quantity (all options together), lines: variant id -> { variant, priceCents, quantity } }
   const requestedProducts = new Map();
@@ -3607,7 +3612,7 @@ async function handleStorefrontProductInterest(request, env, tenantId) {
     "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
   ).bind(tenantId).first();
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
-  const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
+  const catalog = await applyLiveVariantStock(env, tenantId, await readStoredCatalog(catalogRow.payload));
   const product = await storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at)(productId);
   if (!product) return jsonResponse({ error: "Product not found in this shop's published catalogue." }, 404);
   const canonicalProductId = String(product.id);
@@ -3954,7 +3959,7 @@ async function handleStorefrontHoldRequests(request, env, tenantId, ctx) {
       const catalogRow = await env.DB.prepare(
         "SELECT payload FROM catalog_snapshots WHERE tenant_id=?"
       ).bind(tenantId).first();
-      const catalog = catalogRow ? JSON.parse(catalogRow.payload) : null;
+      const catalog = catalogRow ? await readStoredCatalog(catalogRow.payload) : null;
       const product = (catalog?.products || []).find(item => String(item.id) === String(hold.product_id));
       if (!product || product.booking_enabled !== true) {
         return jsonResponse({ error: "This product is no longer accepting holds." }, 409);
@@ -4041,7 +4046,7 @@ async function handleStorefrontHoldRequests(request, env, tenantId, ctx) {
     "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id=?"
   ).bind(tenantId).first();
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
-  const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
+  const catalog = await applyLiveVariantStock(env, tenantId, await readStoredCatalog(catalogRow.payload));
   const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
   const product = await resolveProduct(productId);
   if (!product || product.booking_enabled !== true) {
@@ -4369,7 +4374,7 @@ async function serviceCatalogProduct(env, tenantId, serviceId) {
   if (!row) return { error: appointmentError("This shop has not published a catalogue yet.", 409, "service_unavailable") };
   let catalog;
   try {
-    catalog = JSON.parse(row.payload);
+    catalog = await readStoredCatalog(row.payload);
   } catch {
     throw new Error("The published shop catalogue is invalid.");
   }
@@ -4392,7 +4397,7 @@ async function serviceCatalogProduct(env, tenantId, serviceId) {
 async function serviceScheduleForShop(env, tenantId) {
   try {
     const row = await env.DB.prepare("SELECT payload FROM catalog_snapshots WHERE tenant_id=?").bind(tenantId).first();
-    const catalog = row ? JSON.parse(row.payload) : {};
+    const catalog = row ? await readStoredCatalog(row.payload) : {};
     return serviceSchedule(catalog) || serviceSchedule({});
   } catch {
     return serviceSchedule({});
@@ -4496,7 +4501,7 @@ function isSeatConflict(error) {
 async function serviceShopName(env, tenantId) {
   try {
     const row = await env.DB.prepare("SELECT payload FROM catalog_snapshots WHERE tenant_id=?").bind(tenantId).first();
-    const name = row ? cleanText(JSON.parse(row.payload)?.store?.name, 80).trim() : "";
+    const name = row ? cleanText((await readStoredCatalog(row.payload))?.store?.name, 80).trim() : "";
     return name || "the shop";
   } catch {
     return "the shop";
@@ -6383,7 +6388,7 @@ async function handleInventory(request, env, tenantId, action) {
       "SELECT sku FROM main_store_inventory WHERE tenant_id = ?"
     ).bind(tenantId).all();
     const allocationSkus = new Set((allocationRows.results || []).map(item => String(item.sku)));
-    const catalog = snapshot ? JSON.parse(snapshot.payload) : null;
+    const catalog = snapshot ? await readStoredCatalog(snapshot.payload) : null;
     const catalogSkus = new Set((catalog?.products || []).map(product => product.sku).filter(Boolean));
     const unmatched = normalized.filter(item => !catalogSkus.has(item.sku) && !allocationSkus.has(item.sku));
     if (unmatched.length) {
@@ -7035,7 +7040,7 @@ async function handleAnalyticsVisit(request, env, tenantId) {
       const catalogRow = await env.DB.prepare(
         "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id = ?"
       ).bind(tenantId).first();
-      const catalog = catalogRow?.payload ? JSON.parse(catalogRow.payload) : { products: [] };
+      const catalog = catalogRow?.payload ? await readStoredCatalog(catalogRow.payload) : { products: [] };
       const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow?.updated_at || "");
       for (const item of productViews.results) {
         const path = String(item.path || "");
@@ -7134,7 +7139,7 @@ async function handleStorefrontEventAnalytics(request, env, tenantId) {
     let ignored = coalesced.size;
     if (catalogRow?.payload) {
       ignored = 0;
-      const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
+      const catalog = await applyLiveVariantStock(env, tenantId, await readStoredCatalog(catalogRow.payload));
       const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at || "");
       for (const item of coalesced.values()) {
         const product = await resolveProduct(item.productId);
@@ -7473,7 +7478,7 @@ async function buildAiAnalyticsContext(env, tenantId) {
   let catalog = null;
   if (catalogRow?.payload) {
     try {
-      const published = JSON.parse(catalogRow.payload);
+      const published = await readStoredCatalog(catalogRow.payload);
       const catalogProducts = Array.isArray(published.products) ? published.products : [];
       const catalogCategories = Array.isArray(published.categories) ? published.categories : [];
       const categoriesById = new Map(catalogCategories.map(category => [String(category.id), cleanText(category.name, 120)]));
@@ -8096,7 +8101,7 @@ async function handleDiscountValidate(request, env, tenantId) {
     "SELECT payload, updated_at FROM catalog_snapshots WHERE tenant_id=?"
   ).bind(tenantId).first();
   if (!catalogRow) return jsonResponse({ error: "This shop has not published a catalogue yet." }, 409);
-  const catalog = await applyLiveVariantStock(env, tenantId, JSON.parse(catalogRow.payload));
+  const catalog = await applyLiveVariantStock(env, tenantId, await readStoredCatalog(catalogRow.payload));
   const resolveProduct = storefrontProductResolver(env, tenantId, catalog, catalogRow.updated_at);
   let subtotalCents = 0;
   for (const requested of input.items) {
@@ -8412,10 +8417,10 @@ async function loadShopDirectory(env) {
        json_extract(payload, '$.store.tagline') AS tagline,
        json_extract(payload, '$.store.description') AS description,
        json_extract(payload, '$.store.website_theme_id') AS theme_id,
-       json_array_length(json_extract(payload, '$.products')) AS product_count
+       COALESCE(json_extract(payload, '$.product_count'), json_array_length(json_extract(payload, '$.products'))) AS product_count
      FROM catalog_snapshots
      WHERE json_valid(payload)
-       AND json_array_length(json_extract(payload, '$.products')) > 0
+       AND COALESCE(json_extract(payload, '$.product_count'), json_array_length(json_extract(payload, '$.products'))) > 0
        AND COALESCE(json_extract(payload, '$.store.hide_from_search'), 0) = 0
      ORDER BY tenant_id
      LIMIT 2000`
@@ -8461,7 +8466,7 @@ async function handleSeoFile(env, tenantId, pathname, origin) {
   ).bind(tenantId).first();
   let catalog = null;
   try {
-    catalog = snapshot?.payload ? JSON.parse(snapshot.payload) : null;
+    catalog = snapshot?.payload ? await readStoredCatalog(snapshot.payload) : null;
   } catch (error) {
     console.error("Could not read catalog for SEO endpoint.", error);
     return new Response("Shop sitemap is temporarily unavailable.", {
@@ -9039,7 +9044,7 @@ export default {
             if (cachedPage) return cachedStorefrontResponse(cachedPage);
           }
         }
-        const catalog = await applyLiveVariantStock(env, hostTenantId, JSON.parse(snapshot.payload));
+        const catalog = await applyLiveVariantStock(env, hostTenantId, await readStoredCatalog(snapshot.payload));
         // The storefront hides Paystack (and makes the email optional) only when the shop really has no
         // connected Paystack account. The flag rides in the page's embedded catalogue, so it refreshes with
         // the page cache (at most an hour) and is never trusted by the Worker itself at payment time.

@@ -3190,9 +3190,48 @@ test('catalog API provides CORS preflight and rejects oversized payloads', async
       'Authorization': 'Bearer test-token',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ products: [], categories: [], padding: 'x'.repeat(910_000) })
+    // The request limit is now 12 MB (large catalogues are stored compressed); above it is still refused.
+    body: JSON.stringify({ products: [], categories: [], padding: 'x'.repeat(12_100_000) })
   }), env);
   assert.equal(tooLarge.status, 413);
+});
+
+test('a catalogue of 1,000 products publishes, is stored compressed, and reads back whole', async () => {
+  const DB = createDatabase();
+  const env = { DB, TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
+  await env.TENANTS.put('tenant:main', JSON.stringify({ id: 'main', name: 'Main shop' }));
+  // Varied words so the text compresses like a real shop's, not like one repeated string.
+  const words = ['cotton', 'leather', 'blue', 'handmade', 'classic', 'summer', 'premium', 'light', 'soft', 'durable', 'Nairobi', 'organic'];
+  let seed = 7;
+  const word = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return words[seed % words.length]; };
+  const products = Array.from({ length: 1000 }, (_, index) => ({
+    id: index + 1, name: `Product ${index + 1} ${word()} ${word()}`, sku: `SKU-${index + 1}`, price: 100 + index,
+    category_id: (index % 6) + 1, stock: 5,
+    description: Array.from({ length: 220 }, word).join(' '),
+    images: [`https://images.example/p${index + 1}-a.jpg`, `https://images.example/p${index + 1}-b.jpg`]
+  }));
+  const categories = Array.from({ length: 6 }, (_, index) => ({ id: index + 1, name: `Category ${index + 1}` }));
+  const body = JSON.stringify({ products, categories, store: { name: 'Big shop' } });
+  assert.ok(body.length > 900_000, 'well over the old 900 KB limit');
+
+  const published = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog?tenant=main', {
+    method: 'PUT', headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' }, body
+  }), env);
+  assert.equal(published.status, 200, await published.clone().text());
+  assert.equal((await published.json()).product_count, 1000);
+
+  const stored = await DB.prepare('SELECT payload FROM catalog_snapshots WHERE tenant_id = ?').bind('main').first();
+  const wrapper = JSON.parse(stored.payload);
+  assert.equal(typeof wrapper.catalog_gzip, 'string', 'stored compressed');
+  assert.equal(wrapper.product_count, 1000, 'the directory can count products without unpacking');
+  assert.equal(wrapper.store.name, 'Big shop', 'the directory can read the shop name');
+  assert.ok(new TextEncoder().encode(stored.payload).byteLength < 1_900_000, 'fits in one D1 value');
+
+  const loaded = await worker.fetch(new Request('https://rrobin.co.ke/api/catalog'), env);
+  const result = await loaded.json();
+  assert.equal(result.products.length, 1000);
+  assert.equal(result.products[999].name, products[999].name);
+  assert.equal(result.products[0].description, products[0].description);
 });
 
 test('R2 media uploads require shop ownership and are publicly served from an isolated tenant prefix', async () => {
