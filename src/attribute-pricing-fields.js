@@ -76,7 +76,7 @@ export function bindAttributePricingFields(widget, getAttributes) {
     if (!attributes.length && !state.length) {
       rowsHost.innerHTML = '';
       addButton.disabled = true;
-      status.textContent = 'Choose a category first.';
+      status.textContent = 'Pick the product type under Attributes first.';
       return;
     }
     addButton.disabled = state.length >= MAX_PRICED_ATTRIBUTES;
