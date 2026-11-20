@@ -51,6 +51,7 @@ import { createSalesScreen } from './screens/till/sales.js';
 import { createCustomersScreen } from './screens/till/customers.js';
 import { createInvoicesScreen } from './screens/till/invoices.js';
 import { createInstancesScreen } from './screens/till/instances.js';
+import { createOrdersScreen } from './screens/till/orders.js';
 export {
   classifyQrCode, parseProductLabel, matchProductLabel, MIN_IMAGE_MATCH_SIMILARITY,
   suggestImageCategories, rankImageMatches
@@ -109,6 +110,7 @@ export function createPosApp() {
   const {
     renderInstances
   } = createInstancesScreen({ state, tabsTitle, card, statusTag, field, select, button, metric });
+  const { renderOrders } = createOrdersScreen({ tabsTitle, card, state, button });
   // --- end till module wiring ---
 
   function render(path = '/pos', params = new URLSearchParams()) {
@@ -125,20 +127,6 @@ export function createPosApp() {
       screen === '/settings' || screen === '/more/settings' ? renderSettings(params) :
       screen === '/more' ? renderMore() :
       screen === '/overview' ? renderOverview(params) : empty('POS page not found', 'Choose a section above.')}${pageEnd}`;
-  }
-
-  function renderOrders() {
-    return `<section class="pos-content">${tabsTitle('Orders', 'Park an unpaid cart and resume it later or on another synced device.',
-      `<a href="/pos" data-route="/pos" class="btn-secondary pos-orders-new-sale">New sale</a>`)}
-      ${card(`<h3>Saved orders · ${state.tickets.length}</h3>
-        ${state.tickets.map((ticket) => `<div class="pos-category-row">
-          <strong>${escapeHtml(ticket.name || 'Saved order')}<small>${ticket.items.length} item${ticket.items.length === 1 ? '' : 's'} · ${new Date(ticket.createdAt).toLocaleString()}</small></strong>
-          <span>${escapeHtml(ticket.customerName || 'No customer')}</span>
-          <b>${money(ticket.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0), state.settings.currency)}</b>
-          ${button('Resume sale', 'resume-ticket', `data-record-id="${escapeHtml(ticket.id)}"`)}
-          ${button('Delete', 'delete-ticket', `data-record-id="${escapeHtml(ticket.id)}"`, true)}
-        </div>`).join('') || '<p class="pos-help">No parked orders. Use “Park order” in checkout to save a cart without completing the sale.</p>'}`)}
-    </section>`;
   }
 
   function renderQuotations() {
