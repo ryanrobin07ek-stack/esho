@@ -13,6 +13,7 @@ import { renderDashboardProductIntelligence } from '../screens/craft/dashboard-p
 import { renderStoreProducts } from '../screens/craft/store-products.js';
 import { renderStoreCategories } from '../screens/craft/store-categories.js';
 import { renderStoreInventory } from '../screens/craft/store-inventory.js';
+import { renderStoreOrders } from '../screens/craft/store-orders.js';
 
 // Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
 // modules need is exported at the end.
@@ -4528,14 +4529,7 @@ export const StudioRenderers = {
     if (path === "/account/web" || path.startsWith("/account/web/studio/")) {
       const page = this.webStudioPage(path);
       if (page.route === "/account/web/studio/store/orders") {
-        const orders = SQLiteEngine.select("orders", null, (a, b) => String(b.created_at).localeCompare(String(a.created_at)));
-        return `<section class="studio-workspace-section">
-          <article class="studio-panel"><div class="studio-panel-heading"><h2>Orders</h2><button type="button" class="btn-secondary studio-load-button" data-business-online-orders-load aria-label="Load online orders">Load</button></div>
-            <p class="studio-panel-note" data-online-orders-status>Orders and payment status are stored privately for this shop.</p>
-            ${this.renderOrderAttentionSummary(snapshot.remoteOrders)}${orderRows(orders)}${remoteOrderRows}</article>
-          ${this.renderOwnerAlertsPanel(snapshot)}
-          ${this.renderDiscountPanel(snapshot)}
-        </section>`;
+        return renderStoreOrders.call(this, { orderRows, remoteOrderRows, snapshot });
       }
       if (page.route === "/account/web/studio/store/bookings") {
         const holdHours = Number(this.getWorkspaceSetting("max_hold_hours", 24));
