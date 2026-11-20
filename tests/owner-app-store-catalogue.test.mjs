@@ -3,6 +3,7 @@ import { readFile as readFileRaw } from "node:fs/promises";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 import { readAppSource } from "./helpers/app-source.mjs";
+import * as ProductPricingFields from "../src/screens/main-store/product-pricing-fields.js";
 
 const app = (await readAppSource()).replace(/\r\n/g, "\n");
 const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, character =>
@@ -47,9 +48,11 @@ function mountProducts() {
     bindProductTaxonomyFields() {},
     readProductTaxonomyFields: () => ({ taxonomyCategoryId: "gid://x/1", taxonomyCategoryName: "Shoes", taxonomyCustomCategory: "", taxonomyAttributes: [] })
   };
-  new Function("AppUtils", "AppController", "SQLiteEngine", "window",
+  // The options and attribute price editors are imported by main.js; pass the real ones in.
+  const pricingNames = Object.keys(ProductPricingFields);
+  new Function("AppUtils", "AppController", "SQLiteEngine", "window", ...pricingNames,
     `return function (container, snapshot, path) {${productManagerBind}\n};`)(
-    AppUtils, {}, {}, { EshopProductTaxonomy: taxonomy }
+    AppUtils, {}, {}, { EshopProductTaxonomy: taxonomy }, ...pricingNames.map(name => ProductPricingFields[name])
   ).call({}, container, snapshot, "/store/manage/products");
   return { dom, container, calls };
 }
