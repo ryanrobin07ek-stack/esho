@@ -12,6 +12,7 @@ import { renderDashboardPerformance } from '../screens/craft/dashboard-performan
 import { renderDashboardProductIntelligence } from '../screens/craft/dashboard-product-intelligence.js';
 import { renderStoreProducts } from '../screens/craft/store-products.js';
 import { renderStoreCategories } from '../screens/craft/store-categories.js';
+import { renderStoreInventory } from '../screens/craft/store-inventory.js';
 
 // Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
 // modules need is exported at the end.
@@ -4832,15 +4833,7 @@ export const StudioRenderers = {
       return renderStoreCategories.call(this, { currency, snapshot, webProducts });
     }
     if (path === "/store/inventory") {
-      return `
-        <p class="studio-panel-note">Website stock is managed independently. Updating it does not change POS inventory.</p>
-        <div class="store-workspace-list">${webProducts.map(product => `
-          <form class="store-workspace-row store-stock-form" data-pos-id="" data-web-id="${product.id}">
-            <div><strong class="store-product-name">${AppUtils.escapeHTML(product.name)}</strong><span>${AppUtils.escapeHTML(product.sku || "No SKU")} · Website stock</span></div>
-            <label>Quantity<input name="stock" type="number" min="0" step="1" value="${product.stock ?? ""}" required></label>
-            <button type="submit" class="btn-secondary">Save web stock</button>
-          </form>
-        `).join("") || `<p class="store-workspace-empty">No website products to manage.</p>`}</div>`;
+      return renderStoreInventory.call(this, { webProducts });
     }
     if (path === "/store/revenue") {
       const revenueLines = sales.flatMap(sale => {
