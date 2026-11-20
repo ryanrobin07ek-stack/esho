@@ -3015,3 +3015,79 @@ test("a published product with three options is still sellable", () => {
     window.close();
   }
 });
+
+// Inside Craft nothing is saved until the owner presses Save (or Publish, which saves first). Autosave used
+// to post a full save to Craft about 700 ms after every edit, shuffle and mood.
+function mountCraftSaveState() {
+  const start = editor.indexOf("/* Explicit save inside Craft.");
+  const end = editor.indexOf("\nconst go=()=>{setPreviewUpdating();", start);
+  assert.ok(start >= 0 && end > start, "the save-state code was found");
+  const dom = new JSDOM('<p id="wSaved"></p>', { url: "https://app.test/litrus-mixer/index.html?craft=1", runScripts: "outside-only" });
+  dom.window.eval(`
+    document.documentElement.classList.add('craft-ready');
+    const craftIntegrated = true;
+    let craftSaveTimer = null, craftSaveSequence = 0, latestCraftSaveRequest = '';
+    let SHOP = { name: 'Shop', cats: ['Home'] }, prods = [{ name: 'Lamp' }];
+    const read = () => {}, setSaved = text => { document.getElementById('wSaved').textContent = text; };
+    const getCraftDesignRecipe = () => ({ litrus: 'mixer-recipe', details: { name: SHOP.name } });
+    window.posted = [];
+    window.litrusGetCraftPublishPayload = () => ({ html: '<!doctype html>', catalog: { products: prods.slice() }, recipe: {} });
+    Object.defineProperty(window, 'parent', { value: { postMessage: message => window.posted.push(message) } });
+    ${editor.slice(start, end)}
+    window.saveState = {
+      markLoaded: craftMarkLoaded,
+      answer: (requestId, error) => craftPendingSaves.get(requestId)(error || ''),
+      edit: name => { SHOP.name = name; },
+      state: () => craftSaveState
+    };
+  `);
+  return dom;
+}
+
+test("Litrus inside Craft saves only when asked, and knows when changes are unsaved", async () => {
+  const autosave = editor.slice(editor.indexOf("autosave=function(){"), editor.indexOf("\nconst go=()=>{setPreviewUpdating();"));
+  const craftBranch = autosave.slice(autosave.indexOf("if(craftIntegrated){"), autosave.indexOf("svT=setTimeout("));
+  assert.doesNotMatch(craftBranch, /craft-litrus-draft|postMessage|litrusGetCraftPublishPayload/, "an edit never posts a save to Craft");
+  assert.equal((editor.match(/type:'craft-litrus-draft'/g) || []).length, 1, "only the explicit save posts one");
+
+  const dom = mountCraftSaveState();
+  try {
+    const { saveState } = dom.window;
+    saveState.markLoaded();
+    assert.equal(dom.window.craftLitrusHasUnsavedChanges(), false, "what Craft sent counts as saved");
+    saveState.edit("Shop two");
+    assert.equal(dom.window.craftLitrusHasUnsavedChanges(), true);
+    assert.equal(saveState.state(), "dirty");
+    saveState.edit("Shop");
+    assert.equal(dom.window.craftLitrusHasUnsavedChanges(), false, "an edit undone by hand is not an unsaved change");
+    assert.equal(dom.window.posted.length, 0, "nothing was sent while editing");
+
+    saveState.edit("Shop three");
+    assert.equal(dom.window.craftLitrusHasUnsavedChanges(), true);
+    const states = [];
+    dom.window.craftLitrusWatchSaveState(state => states.push(state.state));
+    const saving = dom.window.craftLitrusSave();
+    assert.equal(dom.window.posted.length, 1);
+    assert.equal(dom.window.posted[0].type, "craft-litrus-draft");
+    assert.equal(dom.window.craftLitrusHasUnsavedChanges(), true, "unsaved until Craft confirms");
+    saveState.answer(dom.window.posted[0].requestId);
+    assert.equal(await saving, true);
+    assert.equal(dom.window.craftLitrusHasUnsavedChanges(), false);
+    assert.deepEqual(states, ["dirty", "saving", "saved"]);
+
+    saveState.edit("Shop four");
+    const failing = dom.window.craftLitrusSave();
+    saveState.answer(dom.window.posted[1].requestId, "Disk full");
+    assert.equal(await failing, false);
+    assert.equal(saveState.state(), "error");
+    assert.match(dom.window.document.getElementById("wSaved").textContent, /Could not save: Disk full/);
+    assert.equal(dom.window.craftLitrusHasUnsavedChanges(), true, "a failed save leaves the changes unsaved");
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("Litrus Publish inside Craft saves first and publishes only what was saved", () => {
+  const publish = editor.slice(editor.indexOf(" publishButton.onclick=async()=>{"), editor.indexOf("window.parent.postMessage({type:'craft-litrus-ready'"));
+  assert.match(publish, /const payload=await craftSave\(\{strict:true\}\);[\s\S]*?if\(!payload\)\{[\s\S]*?return\}[\s\S]*?type:'craft-litrus-publish',\.\.\.payload/);
+});

@@ -7776,9 +7776,17 @@ export const AppController = {
     window.dispatchEvent(new Event("craft:app-ready"));
     this.startOwnerAlertPolling();
 
-    // Browser back / forward buttons
+    // Browser back / forward buttons. A screen with unsaved work (the website builder) can refuse to
+    // be left; the address is then put back without another hashchange.
+    this.lastHashRoute = this.currentRoute();
     window.addEventListener("hashchange", () => {
-      this.handleRoute(this.currentRoute(), true);
+      const next = this.currentRoute();
+      if (next !== this.lastHashRoute && !this.confirmRouteLeave(next)) {
+        window.history.replaceState(window.history.state, "", `#${this.lastHashRoute}`);
+        return;
+      }
+      this.lastHashRoute = next;
+      this.handleRoute(next, true);
     });
   },
 
@@ -7923,9 +7931,24 @@ export const AppController = {
     return h ? (h.charAt(0) === "/" ? h : "/" + h) : "/";
   },
 
+  // Asks the current screen's leave guard (set by the website builder while it has unsaved changes).
+  confirmRouteLeave(nextRoute) {
+    if (typeof this.routeLeaveGuard !== "function") return true;
+    try {
+      return this.routeLeaveGuard(nextRoute) !== false;
+    } catch (error) {
+      console.error("Could not check the screen for unsaved changes.", error);
+      return true;
+    }
+  },
+
   navigate(path, openWorkspaceHome = false) {
     /* Hash routing: works from file://, any sub-path, or a hosted page */
-    if (this.currentRoute() === path) { this.handleRoute(path); window.scrollTo(0, 0); return; }
+    if (this.currentRoute() === path) {
+      // Re-showing the same screen rebuilds it, which would drop unsaved builder changes too.
+      if (!this.confirmRouteLeave(path)) return;
+      this.handleRoute(path); window.scrollTo(0, 0); return;
+    }
     window.location.hash = "#" + path;   /* hashchange -> handleRoute */
     window.scrollTo(0, 0);
   },

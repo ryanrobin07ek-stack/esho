@@ -96,6 +96,19 @@ export const litrusMixerCatalog = {
     const currentProducts = draftProductsForMatch ||
       (liveSelect ? SQLiteEngine.select("products") : current.products || []);
     const currentInventory = liveSelect ? SQLiteEngine.select("inventory") : current.inventory || [];
+    // Archived products belong to Craft. The builder never shows them, so whatever it sends for one
+    // (nothing, or an echo of the copy it was given) must not change, revive or drop it. They used to
+    // be lost two ways: in a new-store draft the merge-back looked only at the draft's own list, never
+    // at the product table this save replaces; and an echoed copy went through the edit path, where a
+    // copy with no stored match was saved as a new ACTIVE product and a malformed one blocked the save.
+    const archivedById = new Map();
+    [...currentProducts, ...(draftProductsForMatch && liveSelect ? SQLiteEngine.select("products") : [])]
+      .forEach(product => {
+        const id = String(product?.id ?? "");
+        if (product?.status === "archived" && id && !archivedById.has(id)) archivedById.set(id, product);
+      });
+    const editedItems = data.products.filter(item =>
+      item?.status !== "archived" && !archivedById.has(String(item?.id ?? "")));
     const names = data.categories.map(category => {
       const name = String(category?.name || "").trim();
       if (!name || name.length > 80) throw new Error("A Litrus category name is empty or too long.");
@@ -109,7 +122,7 @@ export const litrusMixerCatalog = {
       categoryIds.set(name.toLocaleLowerCase(), id);
       return { ...(existing || {}), id, name };
     });
-    const builderProducts = data.products.map((item, index) => {
+    const builderProducts = editedItems.map((item, index) => {
       const name = String(item?.name || "").trim();
       const price = Number(item?.price);
       if (!name || name.length > 120 || !Number.isFinite(price) || price < 0) {
@@ -171,12 +184,10 @@ export const litrusMixerCatalog = {
         status: original?.status || "active"
       };
     });
-    // Litrus only knows the products the host sent it, and the host never sends
-    // archived ones. Merge them back untouched so an autosave cannot delete them;
-    // they stay hidden from the storefront because every publish path skips them.
+    // Every archived product goes back exactly as stored; every publish path skips them.
     const builderProductIds = new Set(builderProducts.map(product => String(product.id)));
-    const archivedProducts = currentProducts.filter(product =>
-      product?.status === "archived" && !builderProductIds.has(String(product.id)));
+    const archivedProducts = [...archivedById.values()].filter(product =>
+      !builderProductIds.has(String(product.id)));
     const products = [...builderProducts, ...archivedProducts];
     const shop = data.shop;
     const store = {
@@ -244,6 +255,9 @@ export const litrusMixerCatalog = {
           category_name: product.category_name
         };
       });
+      // The draft keeps its archived products too.
+      draft.products.push(...(Array.isArray(draftProductsForMatch) ? draftProductsForMatch : [])
+        .filter(product => product?.status === "archived" && !builderProductIds.has(String(product.id))));
       draft.shop_name = store.name;
       draft.selected_theme = "litrus-mixer";
       StudioRenderers.saveWebsiteBuilderDraft(draft);

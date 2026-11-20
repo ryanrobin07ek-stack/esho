@@ -1988,49 +1988,73 @@ html.craft-integrated.craft-advanced #mobileAdvancedScreen #advSide{display:bloc
 html.craft-integrated #pgbar .preview-back,html.craft-integrated #pgbar #craftPublish,html.craft-integrated #pgbar .preview-devices,html.craft-integrated #pgbar .hint{display:none!important}
 html.craft-integrated #pgbar{min-height:34px;padding:3px 8px;position:sticky;top:0;z-index:5}
 html.craft-integrated #wPhotoCredits{display:none}
+/* Builder chrome inside Craft: flat and compact. Grey ground, white cards with a 1px line, one 10px radius,
+   no gradients, blur or shadows, 44px touch targets. Only the editor UI; the storefront preview is untouched. */
 html.craft-integrated{
- --app-ink:#111;--app-silver:#c7ccd2;--app-silver-surface:#eceff2;
- --app-card-surface:linear-gradient(145deg,rgba(247,249,251,.94),rgba(187,193,200,.88));
- --app-shell-background:linear-gradient(180deg,#5b8db8 0%,#b8cce0 18%,#e5e9ed 32%,#d7dce1 50%,#c5cbd1 68%,#959ba2 84%,#050505 100%);
- background:var(--app-shell-background) fixed;color:var(--app-ink);
+ --app-ink:#111;--app-muted:#5f6670;--app-silver:#c7ccd2;--app-silver-surface:#eceff2;
+ --app-card-surface:#fff;--app-shell-background:#eceff2;--app-radius:10px;
+ background:#eceff2;color:var(--app-ink);
  font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif
 }
-html.craft-integrated body{background:var(--app-shell-background) fixed;color:var(--app-ink);font-family:inherit}
+html.craft-integrated body{background:#eceff2;color:var(--app-ink);font-family:inherit}
 html.craft-integrated #wz{
- --ui-bg:#eceff2;--ui-card:var(--app-card-surface);--ui-fg:#111;--ui-line:#c7ccd2;
- --ui-acc:#18181b;--ui-acc-fg:#fff;--ui-muted:#555b62;
- background:transparent;color:var(--app-ink)
+ --ui-bg:#eceff2;--ui-card:#fff;--ui-fg:#111;--ui-line:#c7ccd2;
+ --ui-acc:#111;--ui-acc-fg:#fff;--ui-muted:#5f6670;
+ background:#eceff2;color:var(--app-ink)
 }
-html.craft-integrated #wz .wz-head{padding:6px 16px 4px;background:var(--app-card-surface);border-bottom:1px solid var(--app-silver)}
+html.craft-integrated #wz .wz-head{padding:6px 12px 0;background:#fff;border-bottom:1px solid var(--app-silver);box-shadow:none}
 html.craft-integrated #wz .wz-head h1{display:none}
-html.craft-integrated #wz .wz-steps{gap:6px;margin-top:4px;padding-bottom:6px}
-html.craft-integrated #wz .wz-steps li{border:1px solid rgba(173,179,186,.82);background:rgba(255,255,255,.58);color:#484d53;border-radius:12px;font-size:11px;font-weight:600}
-html.craft-integrated #wz .wz-steps li.on{border-color:rgba(173,179,186,.92);background:linear-gradient(145deg,#f8f9fa,#c7ccd2);color:#111;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 6px rgba(17,20,24,.1)}
-html.craft-integrated #wz .wz-steps li.done{border-color:var(--app-silver);background:rgba(236,239,242,.82);color:#484d53}
-html.craft-integrated #wz .wz-sec{padding:14px 14px 22px;background:transparent}
-html.craft-integrated #wz .wz-sec h2{margin:2px 0 12px;font-size:17px;font-weight:700;letter-spacing:-.015em;color:var(--app-ink)}
-html.craft-integrated #wz .wz-sec h3{color:var(--app-ink)}
-html.craft-integrated #wz .wz-sec>label{margin:9px 0;padding:11px 12px;border:1px solid var(--app-silver);border-radius:12px;background:var(--app-card-surface);box-shadow:0 12px 30px rgba(17,20,24,.1),inset 0 1px 0 rgba(255,255,255,.76)}
-html.craft-integrated #wz label{color:var(--app-ink)}
-html.craft-integrated #wz input:not([type=checkbox]),html.craft-integrated #wz select,html.craft-integrated #wz textarea{border-color:var(--app-silver);background:rgba(255,255,255,.68);color:var(--app-ink)}
-html.craft-integrated #wz input:focus,html.craft-integrated #wz select:focus,html.craft-integrated #wz textarea:focus{outline:2px solid rgba(17,17,17,.16);border-color:#737980}
-html.craft-integrated #wz button{border:1px solid #18181b;border-radius:12px;background:#18181b;color:#fff;font-weight:650}
-html.craft-integrated #wz button.ghost{border-color:var(--app-silver);background:var(--app-card-surface);color:var(--app-ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.76)}
-html.craft-integrated #wz .wz-words{margin:10px 0;padding:10px;border:1px solid var(--app-silver);border-radius:12px;background:var(--app-card-surface)}
+html.craft-integrated #wz .wz-steps{gap:6px;margin-top:2px;padding-bottom:6px}
+html.craft-integrated #wz .wz-steps li{display:flex;align-items:center;min-height:44px;box-sizing:border-box;padding:0 12px;border:1px solid var(--app-silver);background:#fff;color:var(--app-muted);border-radius:var(--app-radius);font-size:12px;font-weight:600;box-shadow:none}
+html.craft-integrated #wz .wz-steps li.on{border-color:#111;background:#111;color:#fff;box-shadow:none}
+html.craft-integrated #wz .wz-steps li.done{border-color:var(--app-silver);background:#fff;color:#111}
+html.craft-integrated #wz .wz-sec{padding:10px 12px 20px;background:transparent}
+html.craft-integrated #wz .wz-sec h2{margin:2px 0 8px;font-size:15px;font-weight:700;letter-spacing:0;color:var(--app-ink)}
+html.craft-integrated #wz .wz-sec h3{margin:10px 0 6px;font-size:12px;font-weight:700;color:var(--app-ink)}
+html.craft-integrated #wz .hint,html.craft-integrated #wz small,html.craft-integrated #wz .prod-meta small,html.craft-integrated #wz .category-count,html.craft-integrated #wz .catalog-count{color:var(--app-muted)}
+html.craft-integrated #wz .wz-sec>label{margin:6px 0;padding:8px 10px;border:1px solid var(--app-silver);border-radius:var(--app-radius);background:#fff;box-shadow:none}
+html.craft-integrated #wz label{color:var(--app-ink);font-size:11px;font-weight:600}
+html.craft-integrated #wz input:not([type=checkbox]):not([type=radio]),html.craft-integrated #wz select,html.craft-integrated #wz textarea{min-height:44px;box-sizing:border-box;padding:8px 10px;border:1px solid var(--app-silver);border-radius:var(--app-radius);background:#fff;color:var(--app-ink);font-size:14px;font-weight:400;box-shadow:none}
+html.craft-integrated #wz textarea{min-height:72px}
+html.craft-integrated #wz input:focus,html.craft-integrated #wz select:focus,html.craft-integrated #wz textarea:focus{outline:2px solid #111;outline-offset:0;border-color:#111}
+html.craft-integrated #wz button{min-height:44px;padding:0 12px;border:1px solid #111;border-radius:var(--app-radius);background:#111;color:#fff;font-size:13px;font-weight:600;box-shadow:none}
+html.craft-integrated #wz button.ghost{border-color:var(--app-silver);background:#fff;color:var(--app-ink);box-shadow:none}
+html.craft-integrated #wz button:focus-visible{outline:2px solid #111;outline-offset:2px}
+html.craft-integrated #wz .wz-words{margin:8px 0;padding:8px 10px;border:1px solid var(--app-silver);border-radius:var(--app-radius);background:#fff}
 html.craft-integrated #wz .wz-words small{display:none}
-html.craft-integrated #wz details,html.craft-integrated #wz #wServiceSettings,html.craft-integrated #wz .done-box,html.craft-integrated #wz .product-editor,html.craft-integrated #wz .catalog-content-card{border:1px solid var(--app-silver);border-radius:12px;background:var(--app-card-surface);box-shadow:0 12px 30px rgba(17,20,24,.1),inset 0 1px 0 rgba(255,255,255,.76)}
-html.craft-integrated #wz details{padding:12px;margin:10px 0}
-html.craft-integrated #wz #wServiceSettings{padding:12px}
-html.craft-integrated #wz .mood{border:1px solid var(--app-silver)!important;border-radius:12px!important;background:var(--app-card-surface)!important;box-shadow:0 12px 30px rgba(17,20,24,.1),inset 0 1px 0 rgba(255,255,255,.76)}
-html.craft-integrated #wz .mood.on{border-color:#18181b!important;box-shadow:0 0 0 2px rgba(17,17,17,.14)}
-html.craft-integrated #wz .prow{border-color:var(--app-silver);background:var(--app-card-surface);box-shadow:0 12px 30px rgba(17,20,24,.1),inset 0 1px 0 rgba(255,255,255,.76)}
+html.craft-integrated #wz details,html.craft-integrated #wz #wServiceSettings,html.craft-integrated #wz .done-box,html.craft-integrated #wz .product-editor,html.craft-integrated #wz .catalog-content-card,html.craft-integrated #wz .catalog-empty{border:1px solid var(--app-silver);border-radius:var(--app-radius);background:#fff;box-shadow:none}
+html.craft-integrated #wz details{padding:8px 10px;margin:8px 0}
+html.craft-integrated #wz #wServiceSettings,html.craft-integrated #wz .done-box,html.craft-integrated #wz .product-editor{padding:10px}
+html.craft-integrated #wz .catalog-empty{border-style:dashed;padding:12px}
+html.craft-integrated #wz .mood{border:1px solid var(--app-silver)!important;border-radius:var(--app-radius)!important;background:#fff!important;box-shadow:none!important}
+html.craft-integrated #wz .mood.on{border-color:#111!important;box-shadow:inset 0 0 0 1px #111!important}
+html.craft-integrated #wz .prow{margin:6px 0;padding:8px;border:1px solid var(--app-silver);border-radius:var(--app-radius);background:#fff;box-shadow:none}
+html.craft-integrated #wz .prod-thumb,html.craft-integrated #wz .ph .thumb{border-radius:var(--app-radius)}
+html.craft-integrated #wz .prod-actions button{min-height:44px;padding:0 10px!important;border-radius:var(--app-radius)!important;font-size:12px!important}
 html.craft-integrated #wz .catalog-tabs{border-color:var(--app-silver)}
-html.craft-integrated #wz .catalog-tabs button[aria-selected="true"]{background:linear-gradient(145deg,#f8f9fa,#c7ccd2);color:#111;border-color:var(--app-silver)}
+html.craft-integrated #wz .catalog-tabs button{min-height:44px;border-color:var(--app-silver);border-radius:var(--app-radius);background:#fff;color:var(--app-ink)}
+html.craft-integrated #wz .catalog-tabs button[aria-selected="true"]{background:#111;color:#fff;border-color:#111}
+html.craft-integrated #wz .catadd button{min-height:44px;border-radius:var(--app-radius)}
+html.craft-integrated #wz .catchips button{min-height:44px;padding:0 10px!important;border-radius:var(--app-radius)!important;background:#fff!important;border-color:var(--app-silver)!important}
+html.craft-integrated #wz .pc button.chip{min-height:44px;border-radius:var(--app-radius)!important}
 html.craft-integrated #wz .wz-head>#shopSettingsToggle{display:none!important}
-html.craft-integrated #mobTab{inset:auto 8px calc(8px + env(safe-area-inset-bottom,0px));height:44px;padding:3px 5px;gap:2px;border:1px solid rgba(173,179,186,.82);border-radius:999px;background:linear-gradient(145deg,rgba(247,248,249,.94),rgba(183,189,196,.9));box-shadow:0 12px 30px rgba(17,20,24,.16),inset 0 1px 0 rgba(255,255,255,.88);-webkit-backdrop-filter:blur(22px) saturate(165%);backdrop-filter:blur(22px) saturate(165%)}
-html.craft-integrated #mobTab button{min-height:36px;border:1px solid transparent;border-radius:999px;background:transparent;color:#484d53}
-html.craft-integrated #mobTab button[aria-pressed="true"]{border:1px solid rgba(173,179,186,.92);border-top-color:rgba(173,179,186,.92);background:linear-gradient(145deg,#f8f9fa,#c7ccd2);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 2px 6px rgba(17,20,24,.1);color:#111}
-
+html.craft-integrated #mobTab{inset:auto 0 0;height:calc(56px + env(safe-area-inset-bottom,0px));padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));gap:6px;box-sizing:border-box;border:0;border-top:1px solid var(--app-silver);border-radius:0;background:#fff;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+html.craft-integrated #mobTab button{min-height:44px;border:1px solid var(--app-silver);border-radius:var(--app-radius);background:#fff;color:var(--app-muted);font:600 13px Inter,"Segoe UI",Roboto,Arial,sans-serif;box-shadow:none}
+html.craft-integrated #mobTab button[aria-pressed="true"]{border:1px solid #111;border-top-color:#111;background:#111;color:#fff;box-shadow:none}
+html.craft-integrated #pgbar{background:#fff;border-bottom:1px solid var(--app-silver)}
+html.craft-integrated #pgbar select{min-height:44px;border:1px solid var(--app-silver);border-radius:var(--app-radius);background:#fff}
+html.craft-integrated .preview-viewport{background:#eceff2}
+html.craft-integrated .preview-viewport iframe{box-shadow:none;outline:1px solid var(--app-silver)}
+html.craft-integrated.craft-preview #stage,html.craft-integrated.craft-advanced #mobileAdvancedScreen{background:#eceff2}
+html.craft-integrated #advSide{background:#fff;color:var(--app-ink)}
+html.craft-integrated #advSide .bar,html.craft-integrated #advSide .bar.sub{background:#fff;border-color:var(--app-silver);box-shadow:none}
+html.craft-integrated #advSide select,html.craft-integrated #advSide input:not([type=checkbox]):not([type=radio]){min-height:44px;box-sizing:border-box;border:1px solid var(--app-silver);border-radius:var(--app-radius);background:#fff;color:var(--app-ink)}
+html.craft-integrated #advSide button{min-height:44px;border-radius:var(--app-radius);box-shadow:none}
+html.craft-integrated #advSide label{color:var(--app-muted);font-size:11px}
+html.craft-integrated #litrus-sections-panel{bottom:calc(62px + env(safe-area-inset-bottom,0px))!important;border:1px solid var(--app-silver)!important;border-radius:var(--app-radius)!important;background:#fff!important;color:#111!important;box-shadow:none!important;font:13px Inter,"Segoe UI",Roboto,Arial,sans-serif!important}
+html.craft-integrated #litrus-sections-panel button{min-height:44px;min-width:44px;border:1px solid var(--app-silver);border-radius:var(--app-radius);background:#fff;color:#111;box-shadow:none}
+html.craft-integrated #litrus-sections-panel input,html.craft-integrated #litrus-sections-panel textarea,html.craft-integrated #litrus-sections-panel select{min-height:44px;box-sizing:border-box;border:1px solid var(--app-silver);border-radius:var(--app-radius)}
+@media(max-width:820px){html.craft-integrated #wz .product-editor:not([hidden]){box-shadow:none;border-radius:var(--app-radius)}}
 </style><script>if(new URLSearchParams(location.search).get('craft')==='1')document.documentElement.classList.add('craft-integrated');</script>
 <style id="phone-layout-fixes">
 @media(max-width:599px){
@@ -6800,16 +6824,9 @@ autosave=function(){
  clearTimeout(svT);
  if(craftIntegrated){
   if(window.parent===window||!document.documentElement.classList.contains('craft-ready'))return;
+  // Inside Craft an edit is not saved; it only marks the design as changed until the owner presses Save.
   clearTimeout(craftSaveTimer);
-  craftSaveTimer=setTimeout(()=>{
-   try{
-    const payload=window.litrusGetCraftPublishPayload();
-    const requestId=Date.now()+'-'+(++craftSaveSequence);
-    latestCraftSaveRequest=requestId;
-    setSaved('Saving changes on this device...');
-    window.parent.postMessage({type:'craft-litrus-draft',requestId,...payload},location.origin);
-   }catch(error){setSaved('Could not save changes: '+String(error&&error.message||error))}
-  },700);
+  craftSaveTimer=setTimeout(craftCheckUnsaved,250);
   return;
  };
  svT=setTimeout(async()=>{
@@ -6819,6 +6836,65 @@ autosave=function(){
    setSaved('Auto-saved on this device at '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'.')}
   catch(e){setSaved('Auto-save is not available in this browser.')}},600)
 }
+/* Explicit save inside Craft. Nothing is written to Craft until the owner presses Save (or Publish, which
+   saves first); edits, shuffles and moods only mark the design as changed. "Changed" means different from
+   what was last saved (or loaded), compared by a signature of what a save writes, so an edit that ends where
+   it started, or a re-render on load, is not an unsaved change. */
+let craftSavedSignature='',craftSaveState='saved',craftSaveError='',craftSaveInFlight=null,craftSaveWatchers=[];
+const craftPendingSaves=new Map();
+function craftDesignSignature(){read();return JSON.stringify([getCraftDesignRecipe(),SHOP.cats,prods])}
+function craftEmitSaveState(){
+ setSaved(craftSaveState==='saving'?'Saving…':craftSaveState==='error'?'Could not save: '+craftSaveError:craftSaveState==='dirty'?'Unsaved changes. Press Save to keep them.':'All changes saved.');
+ const state={state:craftSaveState,error:craftSaveError};
+ craftSaveWatchers.slice().forEach(watch=>{try{watch(state)}catch(error){}});
+}
+function craftSetSaveState(state,error){craftSaveState=state;craftSaveError=error||'';craftEmitSaveState()}
+function craftCheckUnsaved(){
+ clearTimeout(craftSaveTimer);
+ if(!document.documentElement.classList.contains('craft-ready'))return false;
+ const changed=craftDesignSignature()!==craftSavedSignature;
+ if(craftSaveInFlight)return changed;
+ if(!changed){if(craftSaveState!=='saved')craftSetSaveState('saved')}
+ else if(craftSaveState==='saved')craftSetSaveState('dirty');
+ return changed;
+}
+function craftMarkLoaded(){craftSavedSignature=craftDesignSignature();craftSetSaveState('saved')}
+function craftSave(options){
+ if(craftSaveInFlight)return craftSaveInFlight;
+ clearTimeout(craftSaveTimer);
+ let payload,signature;
+ try{payload=window.litrusGetCraftPublishPayload(options);signature=craftDesignSignature()}
+ catch(error){craftSetSaveState('error',String(error&&error.message||error));return Promise.resolve(null)}
+ const requestId=Date.now()+'-'+(++craftSaveSequence);latestCraftSaveRequest=requestId;
+ craftSetSaveState('saving');
+ craftSaveInFlight=new Promise(resolve=>{
+  let timeout=0;
+  const finish=error=>{
+   clearTimeout(timeout);craftPendingSaves.delete(requestId);craftSaveInFlight=null;
+   if(error){craftSetSaveState('error',error);resolve(null);return}
+   craftSavedSignature=signature;craftSaveState='saved';craftSaveError='';
+   if(!craftCheckUnsaved())craftEmitSaveState();
+   resolve(payload);
+  };
+  timeout=setTimeout(()=>finish('Craft did not answer. Check the app and try again.'),60000);
+  craftPendingSaves.set(requestId,finish);
+  try{window.parent.postMessage({type:'craft-litrus-draft',requestId,...payload},location.origin)}
+  catch(error){finish(String(error&&error.message||error))}
+ });
+ return craftSaveInFlight;
+}
+// Craft's toolbar drives these (same origin): its Save button, its leave check and its status label.
+window.craftLitrusSave=()=>craftSave().then(payload=>!!payload);
+window.craftLitrusHasUnsavedChanges=()=>{
+ if(!craftIntegrated||!document.documentElement.classList.contains('craft-ready'))return false;
+ return craftCheckUnsaved()||!!craftSaveInFlight;
+};
+window.craftLitrusWatchSaveState=watch=>{
+ if(typeof watch!=='function')return()=>{};
+ craftSaveWatchers.push(watch);
+ try{watch({state:craftSaveState,error:craftSaveError})}catch(error){}
+ return()=>{craftSaveWatchers=craftSaveWatchers.filter(item=>item!==watch)};
+};
 const go=()=>{setPreviewUpdating();clearTimeout(tm);tm=setTimeout(()=>{if(!craftIntegrated||previewVisible())render();sync();autosave()},120)};
 const _autosave0=autosave;autosave=function(){_autosave0.apply(this,arguments);if(photoAuto&&!(craftIntegrated&&window.parent!==window)){clearTimeout(photoAutoTimer);photoAutoTimer=setTimeout(function(){if(!getPhotoKey(false)){photoAuto=false;return}photoAutoRun=true;fillEmptyShopImages()},600)}};
 document.addEventListener('change',e=>{if(e.target&&e.target.closest&&e.target.closest('.bar,#wz,#advSide'))autosave()});
@@ -7482,8 +7558,8 @@ if(craftIntegrated&&window.parent!==window){
    return;
   }
   if(event.data?.type==='craft-litrus-draft-saved'){
-   if(String(event.data.requestId||'')!==latestCraftSaveRequest)return;
-   setSaved(event.data.error?'Could not save changes: '+String(event.data.error):'Changes saved on this device.');
+   const finish=craftPendingSaves.get(String(event.data.requestId||''));
+   if(finish)finish(event.data.error?String(event.data.error):'');
    return;
   }
   if(event.data?.type==='craft-litrus-image-response'){
@@ -7495,12 +7571,19 @@ if(craftIntegrated&&window.parent!==window){
    return;
   }
   if(event.data?.type!=='craft-litrus-catalog')return;
-  try{window.litrusSetCraftCatalog(event.data.catalog)}
+  try{window.litrusSetCraftCatalog(event.data.catalog);craftMarkLoaded()}
   catch(error){window.parent.postMessage({type:'craft-litrus-error',message:String(error.message||error)},location.origin)}
  });
- publishButton.onclick=()=>{
-  try{window.parent.postMessage({type:'craft-litrus-publish',...window.litrusGetCraftPublishPayload({strict:true})},location.origin)}
-  catch(error){const status=g('wWarn');status.textContent=String(error.message||error)}
+ publishButton.onclick=async()=>{
+  const status=g('wWarn');status.textContent='';
+  try{
+   read();const problems=serviceSettingsProblems();
+   if(problems.length)throw new Error('Fix the appointment settings before publishing: '+problems.join(' '));
+   if(craftSaveInFlight)await craftSaveInFlight;
+   const payload=await craftSave({strict:true});
+   if(!payload){status.textContent='Not published. '+(craftSaveError||'The changes could not be saved.');return}
+   window.parent.postMessage({type:'craft-litrus-publish',...payload},location.origin);
+  }catch(error){status.textContent=String(error&&error.message||error)}
  };
  window.parent.postMessage({type:'craft-litrus-ready',version:1},location.origin);
 }
