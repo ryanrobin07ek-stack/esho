@@ -48,6 +48,7 @@ import { createSellScreen } from './screens/till/sell.js';
 import { createCatalogueInventoryScreen } from './screens/till/catalogue-inventory.js';
 import { createCatalogueSuppliersScreen } from './screens/till/catalogue-suppliers.js';
 import { createSalesScreen } from './screens/till/sales.js';
+import { createCustomersScreen } from './screens/till/customers.js';
 export {
   classifyQrCode, parseProductLabel, matchProductLabel, MIN_IMAGE_MATCH_SIMILARITY,
   suggestImageCategories, rankImageMatches
@@ -99,6 +100,7 @@ export function createPosApp() {
   const {
     renderSales
   } = createSalesScreen({ state, tabsTitle, metric, empty, card, statusTag, field, select });
+  const { renderCustomers } = createCustomersScreen({ tabsTitle, card, state });
   // --- end till module wiring ---
 
   function render(path = '/pos', params = new URLSearchParams()) {
@@ -115,35 +117,6 @@ export function createPosApp() {
       screen === '/settings' || screen === '/more/settings' ? renderSettings(params) :
       screen === '/more' ? renderMore() :
       screen === '/overview' ? renderOverview(params) : empty('POS page not found', 'Choose a section above.')}${pageEnd}`;
-  }
-
-  function renderCustomers() {
-    const customers = new Map();
-    for (const sale of state.sales) {
-      if (!sale.customer_phone || !sale.customer_name) continue;
-      const key = sale.customer_phone.replace(/\D/g, '') || sale.customer_phone;
-      const customer = customers.get(key) || {
-        name: sale.customer_name, phone: sale.customer_phone, receipts: 0,
-        revenue: 0, outstanding: 0, lastSale: sale.created_at
-      };
-      customer.receipts += 1;
-      customer.revenue += sale.total;
-      customer.outstanding += Math.max(0, sale.total - sale.amountPaid);
-      if (sale.created_at > customer.lastSale) {
-        customer.name = sale.customer_name;
-        customer.lastSale = sale.created_at;
-      }
-      customers.set(key, customer);
-    }
-    const entries = [...customers.values()].sort((a, b) => b.revenue - a.revenue);
-    return `<section class="pos-content">
-      ${tabsTitle('Customers', `${entries.length} customer${entries.length === 1 ? '' : 's'} with recorded sales.`)}
-      ${card(`<div class="pos-table-wrap"><table class="pos-table"><thead><tr><th>Customer</th><th>Phone</th><th>Receipts</th><th>Revenue</th><th>Outstanding</th><th>Last sale</th></tr></thead><tbody>
-        ${entries.map((customer) => `<tr><td>${escapeHtml(customer.name)}</td><td>${escapeHtml(customer.phone)}</td><td>${customer.receipts}</td>
-          <td>${money(customer.revenue, state.settings.currency)}</td><td>${money(customer.outstanding, state.settings.currency)}</td>
-          <td>${new Date(customer.lastSale).toLocaleDateString()}</td></tr>`).join('')
-          || '<tr><td colspan="6">Customer name and phone are recorded at checkout.</td></tr>'}
-      </tbody></table></div>`)}</section>`;
   }
 
   function renderInvoices(params) {
