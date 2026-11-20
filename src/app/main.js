@@ -11,6 +11,7 @@ import { renderDashboardTraffic } from '../screens/craft/dashboard-traffic.js';
 import { renderDashboardPerformance } from '../screens/craft/dashboard-performance.js';
 import { renderDashboardProductIntelligence } from '../screens/craft/dashboard-product-intelligence.js';
 import { renderStoreProducts } from '../screens/craft/store-products.js';
+import { renderStoreCategories } from '../screens/craft/store-categories.js';
 
 // Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
 // modules need is exported at the end.
@@ -4828,35 +4829,7 @@ export const StudioRenderers = {
       return renderStoreProducts.call(this, { activeTenant, currency, snapshot, webProducts });
     }
     if (path === "/store/categories") {
-      const websiteCategories = SQLiteEngine.getCategories();
-      const storeOnlyCategories = snapshot.posCategories.filter(posCategory => !websiteCategories.some(webCategory => webCategory.name.trim().toLocaleLowerCase() === posCategory.name.trim().toLocaleLowerCase()));
-      return `
-        <form class="store-workspace-form" data-studio-form="web-category">
-          <input name="name" aria-label="Category name" placeholder="Category name" required maxlength="120"><button type="submit" class="btn-primary">Add category</button><p role="status"></p>
-        </form>
-        <section class="studio-panel"><div class="studio-panel-heading"><h2>Categories available in Store inventory</h2></div>
-          ${storeOnlyCategories.map(category => `<article class="store-category-import-row"><strong>${AppUtils.escapeHTML(category.name)}</strong><button type="button" class="btn-secondary" data-store-website-category="${AppUtils.escapeHTML(category.name)}">Add from Store</button></article>`).join("") || `<p class="store-workspace-empty">No additional Store categories to import.</p>`}
-        </section>
-        ${websiteCategories.length ? `<div class="store-bulk-actions" data-bulk-removal="categories"><label class="store-bulk-select-all"><input type="checkbox" data-bulk-select-all><span>Select all categories</span></label><span class="store-bulk-selection-count" data-bulk-selection-count>0 selected</span><button type="button" class="btn-secondary" data-bulk-remove disabled>Remove selected categories</button></div>` : ""}
-        <div class="store-workspace-list">${websiteCategories.map(category => {
-          const categoryProducts = webProducts.filter(product => Number(product.category_id) === Number(category.id));
-          return `
-          <div class="store-bulk-row">
-          <label class="store-bulk-item" aria-label="Select ${AppUtils.escapeHTML(category.name)}"><input type="checkbox" data-bulk-item="${category.id}"></label>
-          <details class="store-category-wrap">
-            <summary class="store-workspace-row">
-              <div><strong class="store-product-name">${AppUtils.escapeHTML(category.name)}</strong><span>${categoryProducts.length} products</span></div>
-              <div class="store-product-sources"><span class="store-product-source">Web only</span></div>
-            </summary>
-            <div class="store-category-details">
-              <div class="store-category-products">
-                ${categoryProducts.map(product => `<details class="store-category-product"><summary><strong>${AppUtils.escapeHTML(product.name)}</strong><span>${this.formatMainShopMoney(product.price, currency)} · ${product.stock == null ? "Stock not set" : `${product.stock} in stock`}</span></summary><p>SKU: ${AppUtils.escapeHTML(product.sku || "Not assigned")} · Website catalog</p>${product.description ? `<p>${AppUtils.escapeHTML(product.description)}</p>` : ""}</details>`).join("") || `<span class="store-workspace-empty">No products in this category yet.</span>`}
-              </div>
-              <button type="button" class="btn-secondary" data-remove-website-category="${category.id}" style="margin:12px 0;">Remove category from this website</button>
-              <a class="btn-secondary" href="/store/products" data-route="/store/products">Add web product to this category</a>
-            </div>
-          </details></div>`;
-        }).join("") || `<p class="store-workspace-empty">No website categories yet.</p>`}</div>`;
+      return renderStoreCategories.call(this, { currency, snapshot, webProducts });
     }
     if (path === "/store/inventory") {
       return `
