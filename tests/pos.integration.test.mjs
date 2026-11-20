@@ -20,7 +20,7 @@ const readFile = async (path, options) => {
 test('POS charts keep full history and render larger, scrollable value/date axes', async () => {
   const source = await readTillSource();
   const start = source.indexOf('  function chartAxisMoney(');
-  const end = source.indexOf('\n  function renderSettings(', start);
+  const end = source.indexOf('\n  return {', start);
   assert.ok(start >= 0 && end > start, 'The POS chart renderers should be a bounded block.');
   assert.match(source, /const revenueSeries = Object\.entries\(daily\)\.sort\(\(\[first\], \[second\]\) => first\.localeCompare\(second\)\);/);
   const revenueSeriesLineStart = source.indexOf('const revenueSeries = Object.entries(daily)');
