@@ -18,6 +18,7 @@ import { renderStoreBookings } from '../screens/craft/store-bookings.js';
 import { renderCrmCustomers } from '../screens/craft/crm-customers.js';
 import { renderCrmPoints } from '../screens/craft/crm-points.js';
 import { renderCrmSubscribers } from '../screens/craft/crm-subscribers.js';
+import { renderCrmNotifications } from '../screens/craft/crm-notifications.js';
 
 // Module scope keeps these names private, as the old IIFE wrapper did; what screen and shell
 // modules need is exported at the end.
@@ -4540,21 +4541,7 @@ export const StudioRenderers = {
       }
       if (page.section.title === "Websites") return this.renderWebStudioWebsiteTool(page);
       if (page.route === "/account/web/studio/crm/notifications") {
-        return `<section class="studio-workspace-section">${this.renderOwnerAlertsPanel(snapshot)}<article class="studio-panel">
-          <span class="studio-workspace-kicker">CUSTOMER NOTIFICATIONS</span><h2>Website notifications</h2>
-          <p class="studio-panel-note">Customers choose whether to receive browser notifications. Push delivery requires an active notification service and customer opt-in. Broadcasts are sent immediately to every opted-in device.</p>
-          <div class="studio-dashboard-grid"><button type="button" class="btn-primary" data-enable-notifications>Enable notifications on this device</button><button type="button" class="btn-secondary" data-disable-notifications>Turn off notifications on this device</button></div>
-          <p class="bl-push-status" role="status" aria-live="polite">Notification availability depends on browser support and customer permission.</p>
-          <form class="store-workspace-form" data-business-broadcast>
-            <h2>Send a push notification</h2>
-            <label>Title<input name="title" maxlength="80" required></label>
-            <label>Message<textarea name="body" rows="3" maxlength="240" required></textarea></label>
-            <label>Open this page when tapped<input name="url" value="/" maxlength="300" required></label>
-            <p class="studio-panel-note">This sends now to all browsers that opted in to this shop’s notifications.</p>
-            <button type="submit" class="btn-primary">Send notification</button>
-            <p role="status" aria-live="polite"></p>
-          </form>
-        </article></section>`;
+        return renderCrmNotifications.call(this, { snapshot });
       }
       let content = this.renderMainShopContent(page.contentPath, snapshot, true);
       const studioRoutes = new Map([
