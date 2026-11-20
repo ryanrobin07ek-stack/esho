@@ -334,13 +334,17 @@
           name.autocomplete = "name";
           name.required = true;
           nameLabel.append(name);
+          // Many customers have only a phone. The booking and its manage link are shown here and kept on
+          // this device, so email is optional; the phone below stays required.
+          // A deposit is charged through Paystack, which needs an email for the receipt.
+          const takesDeposit = (Number(data.shop.serviceDepositPercent) || 0) > 0;
           const emailLabel = document.createElement("label");
-          emailLabel.textContent = "Email";
+          emailLabel.textContent = takesDeposit ? "Email (for the deposit receipt)" : "Email (optional)";
           const email = document.createElement("input");
           email.name = "customer_email";
           email.type = "email";
           email.autocomplete = "email";
-          email.required = true;
+          email.required = takesDeposit;
           emailLabel.append(email);
           const phoneLabel = document.createElement("label");
           phoneLabel.textContent = "Phone";

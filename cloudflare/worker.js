@@ -5180,10 +5180,11 @@ async function createServiceAppointment(request, env, tenantId, ctx) {
   const customerEmail = cleanText(input?.customer_email, 240).trim().toLowerCase();
   const customerPhone = cleanText(input?.customer_phone, 40).trim();
   const start = parseServiceInstant(startsAtValue);
+  // Email is optional (many customers have only a phone); when given it must be valid. Phone stays required.
   if (!/^[a-f0-9-]{36}$/i.test(idempotencyKey) || !serviceId || !start ||
-      !customerName || !EMAIL_PATTERN.test(customerEmail) ||
+      !customerName || (customerEmail && !EMAIL_PATTERN.test(customerEmail)) ||
       !/^\+?[0-9][0-9 ()-]{6,22}$/.test(customerPhone)) {
-    return appointmentError("An appointment needs a valid request key, service, time, name, email, and phone number.", 400, "invalid_request");
+    return appointmentError("An appointment needs a valid request key, service, time, name and phone number (and a valid email if one is given).", 400, "invalid_request");
   }
   const existing = await env.DB.prepare(
     "SELECT * FROM storefront_service_appointments WHERE tenant_id=? AND idempotency_key=?"
@@ -5209,6 +5210,10 @@ async function createServiceAppointment(request, env, tenantId, ctx) {
     return appointmentError("The service price or deposit settings are invalid.", 409, "service_unavailable");
   }
   const depositCents = schedule.depositPercent > 0 ? Math.ceil(priceCents * schedule.depositPercent / 100) : 0;
+  // A deposit is charged through Paystack, which needs the customer's email for the receipt.
+  if (depositCents > 0 && !customerEmail) {
+    return appointmentError("This service takes a deposit, so add your email for the payment receipt.", 400, "email_required");
+  }
   const now = new Date().toISOString();
   const requestExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
   const endsAt = new Date(start.getTime() + duration * 60 * 1000).toISOString();

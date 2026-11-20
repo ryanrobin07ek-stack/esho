@@ -825,3 +825,50 @@ test("serviceAppointmentLocalToIso converts shop-local wall time to UTC across z
   assert.equal(renderers.serviceAppointmentLocalToIso("2026-11-21", "", "Africa/Nairobi"), "");
   assert.equal(renderers.serviceAppointmentLocalToIso("2026-11-21", "09:00", "Not/AZone"), "");
 });
+
+// ---------------------------------------------------------------------------------------------
+// Email is optional for bookings, unless the service takes a deposit (Paystack needs an email)
+// ---------------------------------------------------------------------------------------------
+
+async function bookWithoutEmail(env, startsAt) {
+  return worker.fetch(new Request(`${HOST}/api/service-appointments?tenant=${TENANT}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "CF-Connecting-IP": freshIp() },
+    body: JSON.stringify({
+      idempotency_key: crypto.randomUUID(), service_id: 8, starts_at: startsAt,
+      customer_name: "Phone Only", customer_email: "", customer_phone: "+254700000222"
+    })
+  }), env);
+}
+
+test("A customer with only a phone number can book a service that takes no deposit", async () => {
+  const { env } = await createWorkerEnv();
+  const slots = await futureSlots(env);
+  const response = await bookWithoutEmail(env, at(slots, 0));
+  assert.equal(response.status, 201, await response.clone().text());
+  const body = await response.json();
+  assert.ok(body.appointment.id, "the booking is created");
+  assert.equal(body.appointment.customer_phone, undefined, "contact details are never sent back publicly");
+});
+
+test("A service with a deposit still asks for an email, for the Paystack receipt", async () => {
+  const { env } = await createWorkerEnv({ service_deposit_percent: 20 });
+  const slots = await futureSlots(env);
+  const response = await bookWithoutEmail(env, at(slots, 0));
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).error_code, "email_required");
+});
+
+test("A typed email must still be valid", async () => {
+  const { env } = await createWorkerEnv();
+  const slots = await futureSlots(env);
+  const response = await worker.fetch(new Request(`${HOST}/api/service-appointments?tenant=${TENANT}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "CF-Connecting-IP": freshIp() },
+    body: JSON.stringify({
+      idempotency_key: crypto.randomUUID(), service_id: 8, starts_at: at(slots, 0),
+      customer_name: "Bad Email", customer_email: "not-an-email", customer_phone: "+254700000333"
+    })
+  }), env);
+  assert.equal(response.status, 400);
+});
