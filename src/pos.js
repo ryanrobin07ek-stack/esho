@@ -53,6 +53,7 @@ import { createInvoicesScreen } from './screens/till/invoices.js';
 import { createInstancesScreen } from './screens/till/instances.js';
 import { createOrdersScreen } from './screens/till/orders.js';
 import { createQuotationsScreen } from './screens/till/quotations.js';
+import { createMoreScreen } from './screens/till/more.js';
 export {
   classifyQrCode, parseProductLabel, matchProductLabel, MIN_IMAGE_MATCH_SIMILARITY,
   suggestImageCategories, rankImageMatches
@@ -115,6 +116,7 @@ export function createPosApp() {
   const {
     renderQuotations
   } = createQuotationsScreen({ state, tabsTitle, card, field, statusTag, button });
+  const { renderMore } = createMoreScreen({ tabsTitle, card });
   // --- end till module wiring ---
 
   function render(path = '/pos', params = new URLSearchParams()) {
@@ -131,14 +133,6 @@ export function createPosApp() {
       screen === '/settings' || screen === '/more/settings' ? renderSettings(params) :
       screen === '/more' ? renderMore() :
       screen === '/overview' ? renderOverview(params) : empty('POS page not found', 'Choose a section above.')}${pageEnd}`;
-  }
-
-  function renderMore() {
-    return `<section class="pos-content">${tabsTitle('More', 'Business tools and settings.')}
-      ${card('<a class="pos-more-link" href="/pos/more/instances" data-route="/pos/more/instances"><strong>Business instances</strong></a>', 'pos-more-card')}
-      ${card('<a class="pos-more-link" href="/pos/sales" data-route="/pos/sales"><strong>Sales &amp; receipts</strong></a>', 'pos-more-card')}
-      ${card('<a class="pos-more-link" href="/pos/more/settings" data-route="/pos/more/settings"><strong>Settings</strong></a>', 'pos-more-card')}
-    </section>`;
   }
 
   function renderOverview(params = new URLSearchParams()) {
