@@ -928,34 +928,57 @@
     if (note) note.textContent = paying ? "(required for your Paystack receipt)" : always ? "(required)" : "(optional)";
   }
 
-  // Paystack is shown when the shop has a connected account, or when the Worker does not say (older
-  // Worker). It is hidden, never preselected, only when the Worker reports the shop has none.
+  function paymentChoice(value, title, detail, checked) {
+    const option = document.createElement("label");
+    option.className = "sp-radio";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "pay";
+    input.value = value;
+    input.checked = checked;
+    const label = document.createElement("span");
+    label.textContent = title;
+    const hint = document.createElement("small");
+    hint.textContent = detail;
+    label.append(hint);
+    option.append(input, label);
+    return option;
+  }
+
+  // The template's payment choices (Mobile money, Cash, Bank or card) are placeholders: the shop never
+  // set them up and the order only records "paystack" or "manual". On a live shop they are replaced by
+  // what is true. With Paystack: Paystack (preselected) or paying the shop directly. Without Paystack:
+  // no choices, only a note that the shop will arrange payment. When the Worker does not say (an older
+  // Worker), the original behaviour stays: Paystack offered next to the template's choices.
   function installPaystackOption(form, data) {
     if (form.dataset.eshopPaystackOption === "true") return;
     form.dataset.eshopPaystackOption = "true";
     const connected = data?.shop?.paystackConnected;
     if (connected === null || connected === undefined) form.dataset.eshopEmailRequired = "always";
     const group = form.querySelector('input[name="pay"]')?.closest(".sp-radios");
-    if (!group || connected === false) {
+    if (!group) {
       syncCheckoutEmail(form);
       return;
     }
-    const option = document.createElement("label");
-    option.className = "sp-radio";
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "pay";
-    input.value = "paystack";
-    input.checked = true;
-    const label = document.createElement("span");
-    label.textContent = "Pay securely with Paystack";
-    const hint = document.createElement("small");
-    hint.textContent = "M-Pesa or card";
-    label.append(hint);
-    option.append(input, label);
-    group.prepend(option);
+    const shopName = String(data?.shop?.name || "").trim() || "The shop";
+    if (connected === false) {
+      const note = document.createElement("p");
+      note.className = "sp-pay-note";
+      note.dataset.eshopPayNote = "";
+      note.textContent = `${shopName} will contact you to confirm your order and how to pay.`;
+      group.replaceWith(note);
+      syncCheckoutEmail(form);
+      return;
+    }
+    const paystack = paymentChoice("paystack", "Pay securely with Paystack", "M-Pesa or card", true);
+    if (connected === true) {
+      group.replaceChildren(paystack, paymentChoice("Pay the shop directly", "Pay the shop directly",
+        `${shopName} confirms your order and how to pay`, false));
+    } else {
+      group.prepend(paystack);
+    }
     form.querySelectorAll('input[name="pay"]').forEach(item => {
-      item.checked = item === input;
+      item.checked = item.value === "paystack";
     });
     syncCheckoutEmail(form);
   }

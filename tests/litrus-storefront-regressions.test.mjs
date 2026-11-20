@@ -869,7 +869,7 @@ const variantCartLine = {
   option1_name: "Size", option2_name: "Color", price: 2700
 };
 
-function mountCheckout({ cart = [variantCartLine], holds = [], products = [sneaker], handler, pay = "Cash on delivery or pickup", paystackConnected = true, email = "sam@example.test" } = {}) {
+function mountCheckout({ cart = [variantCartLine], holds = [], products = [sneaker], handler, pay = undefined, paystackConnected = true, email = "sam@example.test" } = {}) {
   const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/#/checkout", runScripts: "outside-only" });
   const { window } = dom;
   const root = window.document.getElementById("store");
@@ -900,9 +900,10 @@ function mountCheckout({ cart = [variantCartLine], holds = [], products = [sneak
   window.eval(runtime);
   window.litrusStartLiveStore(window.SPD);
   const form = root.querySelector("#spco");
-  form.querySelector(`input[name="pay"][value="${pay}"]`).checked = true;
+  const choice = pay ?? (paystackConnected === null ? "Cash on delivery or pickup" : paystackConnected ? "Pay the shop directly" : null);
+  if (choice) form.querySelector(`input[name="pay"][value="${choice}"]`).checked = true;
   form.querySelectorAll('input[name="pay"]').forEach(input => {
-    if (input.value !== pay) input.checked = false;
+    if (input.value !== choice) input.checked = false;
   });
   return {
     window, root, form, requests, events,
@@ -1116,8 +1117,10 @@ test("Litrus checkout offers Paystack and requires an email only when the shop h
     assert.equal(connected.requests.length, 0, "Paystack needs an email for the receipt, so nothing is sent without one");
     assert.match(connected.form.querySelector(".sp-err").textContent, /email address for your Paystack receipt/);
 
+    assert.deepEqual([...connected.form.querySelectorAll('input[name="pay"]')].map(input => input.value),
+      ["paystack", "Pay the shop directly"], "the template's made-up choices are replaced by what is true");
     // Choosing another way to pay makes the email optional again.
-    const cash = connected.form.querySelector('input[name="pay"][value="Cash on delivery or pickup"]');
+    const cash = connected.form.querySelector('input[name="pay"][value="Pay the shop directly"]');
     cash.checked = true;
     cash.dispatchEvent(new connected.window.Event("change", { bubbles: true }));
     assert.equal(connected.form.elements.namedItem("email").required, false);
@@ -1134,7 +1137,10 @@ test("Litrus checkout offers Paystack and requires an email only when the shop h
   try {
     assert.equal(notConnected.form.querySelector('input[name="pay"][value="paystack"]'), null,
       "a shop without Paystack never shows it");
-    assert.equal(notConnected.form.querySelector('input[name="pay"]:checked').value, "Cash on delivery or pickup");
+    assert.equal(notConnected.form.querySelector('input[name="pay"]'), null,
+      "a shop with no online payment offers no made-up payment choices");
+    assert.match(notConnected.form.querySelector("[data-eshop-pay-note]").textContent,
+      /Main shop will contact you to confirm your order and how to pay/);
     assert.equal(notConnected.form.elements.namedItem("email").required, false);
     await notConnected.submit();
     assert.equal(notConnected.requests.length, 1);
