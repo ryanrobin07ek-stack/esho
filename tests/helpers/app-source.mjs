@@ -32,10 +32,27 @@ export async function appScriptFiles() {
   return [APP_SCRIPT, ...modules];
 }
 
-// The app script: main.js followed by the modules split out of it.
+// The app script as one text, the way it read before it was split. Each screen or shell module
+// holds methods cut verbatim out of an object in main.js, as `export const name = { ... };`, and
+// main.js spreads them back in with `  ...name,` at the same spot. Here the methods go back in
+// place of that spread line, so a pattern bounded by a method's neighbours still matches. The rest
+// of each module (imports, mount/unmount) follows main.js.
 export async function readAppScript({ lf = false } = {}) {
-  const text = (await Promise.all((await appScriptFiles()).map(read))).join("\n");
-  return lf ? toLf(text) : text;
+  const [mainFile, ...moduleFiles] = await appScriptFiles();
+  const mainRaw = await read(mainFile);
+  let main = toLf(mainRaw);
+  const rest = [];
+  for (const file of moduleFiles) {
+    const source = toLf(await read(file)).replace(/^export const (\w+) = \{\n([\s\S]*?)^\};\n/gm, (block, name, methods) => {
+      const spread = `  ...${name},\n`;
+      if (!main.includes(spread)) return block;
+      main = main.replace(spread, () => methods);
+      return "";
+    });
+    rest.push(source);
+  }
+  const text = [main, ...rest].join("\n");
+  return lf || !mainRaw.includes("\r\n") ? text : text.replace(/\n/g, "\r\n");
 }
 
 // index.html with what moved out of it put back in place: the styles where its <style> block was
