@@ -11471,4 +11471,4 @@ window.EshopInventoryBridge = {
   }
 
 // Shared with the screen and shell modules.
-export { AppController, AppUtils, SQLiteEngine, StoreRenderers };
+export { AppUtils, SQLiteEngine, StoreRenderers };
