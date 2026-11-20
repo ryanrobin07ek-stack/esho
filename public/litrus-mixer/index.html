@@ -4200,6 +4200,9 @@ if(window.innerWidth>1100&&!document.documentElement.classList.contains('craft-i
     </script>
 </div>
 <script src="/litrus-mixer/live-catalog.js"></script>
+<script src="/litrus-mixer/shop-types-products-a.js"></script>
+<script src="/litrus-mixer/shop-types-products-b.js"></script>
+<script src="/litrus-mixer/shop-types-services.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
 const heroes=[...document.querySelectorAll('#hero-canvas > .hero-section')];
@@ -6785,6 +6788,22 @@ const INDUSTRY_MORE_COPY={
  }
 };
 Object.keys(INDUSTRY_MORE_COPY).forEach(function(type){Object.keys(INDUSTRY_MORE_COPY[type]).forEach(function(slot){const have=SHOP_COPY[type][slot]=SHOP_COPY[type][slot]||[];INDUSTRY_MORE_COPY[type][slot].forEach(function(text){if(have.indexOf(text)<0)have.push(text)})})});
+// More shop types and their word banks, from shop-types-*.js (loaded before this script). An entry
+// with an existing id only adds lines to that type's bank.
+(window.LITRUS_SHOP_TYPES||[]).forEach(function(entry){
+ if(!entry||typeof entry.id!=='string'||!entry.copy||!OFFER_TYPE_OPTIONS[entry.offer])return;
+ const options=OFFER_TYPE_OPTIONS[entry.offer];
+ if(!options.some(function(option){return option[0]===entry.id}))options.push([entry.id,String(entry.label||entry.id)]);
+ const bank=SHOP_COPY[entry.id]=SHOP_COPY[entry.id]||{};
+ Object.keys(entry.copy).forEach(function(slot){
+  const value=entry.copy[slot];
+  if(!Array.isArray(value)){if(!bank[slot])bank[slot]=value;return}
+  const have=bank[slot]=Array.isArray(bank[slot])?bank[slot]:[];
+  value.forEach(function(text){if(have.indexOf(text)<0)have.push(text)});
+ });
+});
+// Alphabetical, with "Other services" kept last.
+Object.keys(OFFER_TYPE_OPTIONS).forEach(function(offer){OFFER_TYPE_OPTIONS[offer].sort(function(a,b){return (a[0]==='other-service')-(b[0]==='other-service')||a[1].localeCompare(b[1])})});
 const wordCount=text=>String(text||'').trim().split(/\s+/).filter(Boolean).length;
 function pickShopCopy(type,slot,original){
  const pool=(SHOP_COPY[type]&&SHOP_COPY[type][slot])||[],rule=COPY_RULES[slot];
