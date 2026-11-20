@@ -4550,7 +4550,7 @@ function prepareNonProductImages(root){
   img.setAttribute('data-lpk-image-slot',slot);
   if(SHOP.userImages[slot])img.setAttribute('src',imgSrc(SHOP.userImages[slot]));
   else if(SHOP.autoImages[slot])img.setAttribute('src',SHOP.autoImages[slot]);
-  else if(!src||/^data:image\/svg\+xml/i.test(src)||/images\.unsplash\.com/i.test(src)||(role!=='hero'&&shopProds().some(function(p){return p&&p[6]===src})))img.setAttribute('data-lpk-empty-image','');
+  else if(!src||/^data:image\/svg\+xml/i.test(src)||/images\.unsplash\.com/i.test(src)||shopProds().some(function(p){return p&&p[6]===src}))img.setAttribute('data-lpk-empty-image','');
  });
 }
 
@@ -5792,11 +5792,12 @@ function render(){
   if(!primary){primary=document.createElement('a');primary.className='hero-btn';(title&&title.parentElement||heroMain).append(primary)}
   primary.href='#';primary.dataset.go='shop';primary.textContent=copy[2];
   buttons.forEach(button=>button.remove());
-  const productImages=products.filter(product=>product&&product[6]);
+  // The hero keeps the theme's own picture until the owner uploads one or uses Add photos. Product
+  // photos are not put here: cut-out and square product shots looked stretched and out of place.
   heroMain.querySelectorAll('img').forEach((image,index)=>{
    const src=image.getAttribute('src')||'';
-   if(productImages.length){const product=productImages[index%productImages.length];image.setAttribute('src',product[6]);image.alt=product[0];image.removeAttribute('srcset')}
-   else if(!src||/^data:image\/svg\+xml/i.test(src))image.setAttribute('src',photo(products[index%Math.max(1,products.length)],index,true));
+   const product=products[index%Math.max(1,products.length)];
+   if(!src||/^data:image\/svg\+xml/i.test(src)||products.some(item=>item&&item[6]===src))image.setAttribute('src',art(product&&product[2]||'shoe',tones[index%tones.length],true));
   });
  }
  const heroNav=hero.querySelector('.hero-nav');
@@ -7017,7 +7018,7 @@ async function fillEmptyShopImages(){
    const slot=img.getAttribute('data-lpk-image-slot'),src=img.getAttribute('src')||'';
    if(!slot||SHOP.userImages[slot]||SHOP.autoImages[slot])return;
    const demoPhoto=/images\.unsplash\.com/i.test(src),brokenPhoto=!!src&&!/^data:/i.test(src)&&img.complete&&img.naturalWidth===0;
-   if(src&&!demoPhoto&&!brokenPhoto&&!(slot.indexOf('hero-')!==0&&shopProds().some(function(p){return p&&p[6]===src}))&&!/^data:image\/svg\+xml/i.test(src))return;
+   if(src&&!demoPhoto&&!brokenPhoto&&!shopProds().some(function(p){return p&&p[6]===src})&&!/^data:image\/svg\+xml/i.test(src))return;
    let label=img.getAttribute('alt')||'';
    const card=img.closest('.cat,.cat-card,.urb-cat-card,.akta-cat-card');
    if(card){const title=card.querySelector('span,h4');if(title&&title.textContent.trim())label=title.textContent.trim()}
