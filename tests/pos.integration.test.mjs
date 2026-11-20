@@ -86,7 +86,7 @@ test('POS sync IDs stay stable when Web Crypto is unavailable', async () => {
 test('POS checkout clears a saved sale and reports a post-save sync failure', async () => {
   const source = await readTillSource();
   const start = source.indexOf('  async function saveCheckout(data, method, paid) {');
-  const end = source.indexOf('  async function queueCloudRecord(', start);
+  const end = source.indexOf('\n  return {', start);
   assert.ok(start >= 0 && end > start, 'The POS checkout save flow should have a bounded implementation.');
   const state = { cart: [{ productId: 1 }], activeTicketId: '', paymentMethod: 'Cash', discount: 0 };
   let saveCount = 0;
@@ -358,7 +358,7 @@ test('POS sales and received purchases queue refreshed product stock for cloud s
   const receivePurchase = posSource.slice(receiveStart, syncStart);
   const checkout = posSource.slice(checkoutStart, paymentStart);
   const saveCheckoutStart = posSource.indexOf('async function saveCheckout(');
-  const saveCheckoutEnd = posSource.indexOf('async function queueCloudRecord(', saveCheckoutStart);
+  const saveCheckoutEnd = posSource.indexOf('\n  return {', saveCheckoutStart);
   const saveCheckout = posSource.slice(saveCheckoutStart, saveCheckoutEnd);
   assert.ok(receiveStart >= 0 && syncStart > receiveStart, 'Purchase receiving should have a bounded implementation.');
   assert.ok(checkoutStart >= 0 && paymentStart > checkoutStart, 'POS checkout should have a bounded implementation.');
