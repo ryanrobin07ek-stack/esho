@@ -110,7 +110,10 @@ test("Litrus Add photos fills section slots without reusing product photos", asy
   assert.match(photoFiller, /SHOP\.autoImages\[request\.slot\]=image\.url/);
   assert.doesNotMatch(photoFiller, /productSlots|slot:'product-|prods\.map/);
   assert.match(mixer, /const isProductHeroImage=shopProds\(\)\.some\(function\(product\)\{return product&&product\[6\]===src\}\)/);
-  assert.match(mixer, /role!=='hero'&&shopProds\(\)\.some\(function\(p\)\{return p&&p\[6\]===src\}\)/);
+  // A product photo in any section slot, the hero included, counts as empty so Add photos replaces it.
+  assert.match(mixer, /\|\|shopProds\(\)\.some\(function\(p\)\{return p&&p\[6\]===src\}\)\)img\.setAttribute\('data-lpk-empty-image',''\)/);
+  assert.doesNotMatch(mixer, /role!=='hero'&&shopProds\(\)/);
+  assert.match(photoFiller, /&&!shopProds\(\)\.some\(function\(p\)\{return p&&p\[6\]===src\}\)&&/);
   assert.match(mixer, /photo\(null,0,true\)/);
 });
 
