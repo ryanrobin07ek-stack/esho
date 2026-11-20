@@ -165,6 +165,7 @@ export function bindWizardCategories() {
     const category = StudioRenderers.websiteBuilderDraft().categories.find(item =>
       String(item.id) === button.dataset.editWizardCategory);
     if (!category) return;
+    categoryForm.hidden = false;
     categoryForm.elements.id.value = String(category.id);
     categoryForm.elements.name.value = category.name;
     categoryForm.querySelector('button[type="submit"]').textContent = "Save category";

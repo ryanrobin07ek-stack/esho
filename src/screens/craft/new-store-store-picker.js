@@ -17,6 +17,7 @@ export function bindWizardStorePicker() {
     if (!picker || !status || !list || !importButton || !searchInput || !categoryFilter || !selectAll) return;
 
     picker.hidden = false;
+    picker.scrollIntoView({ block: "start", behavior: "smooth" });
     list.innerHTML = "";
     status.textContent = "Loading all Store products…";
     loadStore.disabled = true;
@@ -46,13 +47,17 @@ export function bindWizardStorePicker() {
               (selectedCategory === "general" ? !category : category.toLocaleLowerCase() === selectedCategory);
             return categoryMatches && (!query || `${product.name} ${product.sku || ""} ${product.description || ""} ${category}`.toLocaleLowerCase().includes(query));
           });
-        const visibleProducts = matchingProducts.slice(0, 50);
-        list.innerHTML = visibleProducts.map(({ product, index, category }) => `<label class="studio-list-row" style="display:flex;align-items:center;gap:9px;min-height:52px;padding:6px 4px;">
-          <input type="checkbox" data-wizard-store-product="${index}" ${selectedProductIds.has(index) ? "checked" : ""}>
-          ${product.imageUri ? `<img src="${AppUtils.escapeHTML(product.imageUri)}" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:7px;">` : ""}
-          <span style="flex:1;min-width:0;"><strong>${AppUtils.escapeHTML(product.name || "Unnamed product")}</strong><span>${AppUtils.escapeHTML(category || "General")} · ${AppUtils.escapeHTML(String(product.stock ?? 0))} in stock</span></span>
-          <strong>${AppUtils.escapeHTML(String(product.price ?? ""))}</strong>
-        </label>`).join("") || `<p class="studio-panel-note">No products match this filter.</p>`;
+        // Every Store product, drawn like the website product rows so they look the way they do in Store.
+        const visibleProducts = matchingProducts;
+        list.innerHTML = visibleProducts.map(({ product, index, category }) => {
+          const image = product.imageUri || (Array.isArray(product.images) ? product.images.find(value => typeof value === "string" && value) : "");
+          return `<label class="website-wizard-product-row website-wizard-store-row">
+          <input type="checkbox" data-wizard-store-product="${index}" ${selectedProductIds.has(index) ? "checked" : ""} aria-label="Select ${AppUtils.escapeHTML(product.name || "product")}">
+          ${image ? `<img class="website-wizard-product-thumb" src="${AppUtils.escapeHTML(image)}" alt="">` : `<span class="website-wizard-product-thumb" aria-hidden="true"></span>`}
+          <span class="website-wizard-product-copy"><strong>${AppUtils.escapeHTML(product.name || "Unnamed product")}</strong><span>${AppUtils.escapeHTML(category || "General")} · ${AppUtils.escapeHTML(String(product.stock ?? 0))} in stock</span></span>
+          <strong>${AppUtils.formatMoney(product.price ?? 0)}</strong>
+        </label>`;
+        }).join("") || `<p class="studio-panel-note">No products match this filter.</p>`;
         status.textContent = `${visibleProducts.length < matchingProducts.length ? `Showing ${visibleProducts.length} of ${matchingProducts.length} matches` : `${matchingProducts.length} matches`} · ${products.length} Store products · ${selectedProductIds.size} selected`;
         importButton.disabled = selectedProductIds.size === 0;
         selectAll.checked = visibleProducts.length > 0 && visibleProducts.every(({ index }) => selectedProductIds.has(index));
@@ -77,7 +82,6 @@ export function bindWizardStorePicker() {
               (selectedCategory === "general" ? !category : category.toLocaleLowerCase() === selectedCategory);
             return categoryMatches && (!query || `${product.name} ${product.sku || ""} ${product.description || ""} ${category}`.toLocaleLowerCase().includes(query));
           })
-          .slice(0, 50)
           .forEach(({ index }) => {
             if (selectAll.checked) selectedProductIds.add(index);
             else selectedProductIds.delete(index);
@@ -104,7 +108,7 @@ export function bindWizardStorePicker() {
             sku: String(product.sku || ""),
             brand: String(product.brand || ""),
             price: Number(product.price ?? product.selling_price) || 0,
-            cost_price: Number(product.cost_price ?? product.costPrice) || 0,
+            cost_price: Number(product.cost_price ?? product.costPrice ?? product.buyingPrice) || 0,
             stock: Math.max(0, Number(product.stock) || 0),
             description: String(product.description || ""),
             images: Array.isArray(product.images) ? product.images.slice(0, 8) : product.imageUri ? [product.imageUri] : [],
@@ -112,11 +116,15 @@ export function bindWizardStorePicker() {
             spin_frames: Array.isArray(product.spin_frames) ? product.spin_frames.slice() : [],
             video_path: String(product.video_path || ""),
             video_url: String(product.video_url || ""),
-            taxonomy_category_id: product.taxonomy_category_id || null,
-            taxonomy_category_name: String(product.taxonomy_category_name || ""),
-            taxonomy_custom_category: product.taxonomy_custom_category || null,
-            taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes : [],
-            priced_attributes: Array.isArray(product.priced_attributes) ? product.priced_attributes : [],
+            // Store hands products over in camelCase (src/pos.js listProducts); keep both spellings.
+            taxonomy_category_id: product.taxonomy_category_id || product.taxonomyCategoryId || null,
+            taxonomy_category_name: String(product.taxonomy_category_name || product.taxonomyCategoryName || ""),
+            taxonomy_custom_category: product.taxonomy_custom_category || product.taxonomyCustomCategory || null,
+            taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes
+              : Array.isArray(product.taxonomyAttributes) ? product.taxonomyAttributes : [],
+            priced_attributes: Array.isArray(product.priced_attributes) ? product.priced_attributes
+              : Array.isArray(product.pricedAttributes) ? product.pricedAttributes : [],
+            duration_minutes: Number(product.duration_minutes ?? product.durationMinutes) || 0,
             sizes: Array.isArray(product.sizes) ? product.sizes : [],
             colors: Array.isArray(product.colors) ? product.colors : [],
             variants: Array.isArray(product.variants) ? product.variants : [],
@@ -136,7 +144,7 @@ export function bindWizardStorePicker() {
       AppUtils.showToast(status.textContent, "danger");
     } finally {
       loadStore.disabled = false;
-      loadStore.textContent = "Choose products from Store";
+      loadStore.textContent = "Add from Store";
     }
   };
 }

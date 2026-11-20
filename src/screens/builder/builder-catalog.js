@@ -87,7 +87,14 @@ export const litrusMixerCatalog = {
     // inventory edits do not refresh the cache), so read stock, status and archived
     // products from it when it exists.
     const liveSelect = typeof SQLiteEngine?.select === "function";
-    const currentProducts = liveSelect ? SQLiteEngine.select("products") : current.products || [];
+    // A new-store draft's products live in the draft, not the Main Store tables. Matching them
+    // against the Main Store found nothing, so every autosave gave them new ids and dropped their
+    // attributes, attribute prices, options, cost and SKU.
+    const draftProductsForMatch = isDraftEditor && Array.isArray(StudioRenderers.websiteBuilderDraft()?.products)
+      ? StudioRenderers.websiteBuilderDraft().products
+      : null;
+    const currentProducts = draftProductsForMatch ||
+      (liveSelect ? SQLiteEngine.select("products") : current.products || []);
     const currentInventory = liveSelect ? SQLiteEngine.select("inventory") : current.inventory || [];
     const names = data.categories.map(category => {
       const name = String(category?.name || "").trim();
@@ -209,23 +216,34 @@ export const litrusMixerCatalog = {
     });
     if (isDraftEditor) {
       const draft = StudioRenderers.websiteBuilderDraft();
+      const previousDraftProducts = new Map((Array.isArray(draft.products) ? draft.products : [])
+        .map(product => [String(product.id), product]));
       draft.categories = categories.map(category => ({ id: category.id, name: category.name }));
-      draft.products = builderProducts.map(product => ({
-        id: product.id,
-        source_product_id: product.source_product_id,
-        name: product.name,
-        price: product.price,
-        stock: product.stock,
-        description: product.description,
-        images: product.images,
-        option1_name: product.option1_name || "",
-        option2_name: product.option2_name || "",
-        sizes: product.sizes || [],
-        colors: product.colors || [],
-        variants: product.variants || [],
-        category_id: product.category_id,
-        category_name: product.category_name
-      }));
+      // Litrus edits only what it shows (name, price, stock, words, photos, category). Everything
+      // else on a draft product (attributes, attribute prices, options, cost, SKU, media) is kept
+      // from the draft instead of being dropped on every autosave.
+      draft.products = builderProducts.map(product => {
+        const previous = previousDraftProducts.get(String(product.id));
+        // Litrus does not carry options, so an empty list from it means "not sent", not "removed".
+        const keep = (value, fallback) => Array.isArray(value) && value.length ? value : fallback || [];
+        return {
+          ...(previous || {}),
+          id: product.id,
+          source_product_id: product.source_product_id ?? previous?.source_product_id,
+          name: product.name,
+          price: product.price,
+          stock: product.stock,
+          description: product.description,
+          images: product.images,
+          option1_name: product.option1_name || previous?.option1_name || "",
+          option2_name: product.option2_name || previous?.option2_name || "",
+          sizes: keep(product.sizes, previous?.sizes),
+          colors: keep(product.colors, previous?.colors),
+          variants: keep(product.variants, previous?.variants),
+          category_id: product.category_id,
+          category_name: product.category_name
+        };
+      });
       draft.shop_name = store.name;
       draft.selected_theme = "litrus-mixer";
       StudioRenderers.saveWebsiteBuilderDraft(draft);

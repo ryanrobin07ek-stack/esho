@@ -16,68 +16,99 @@ body.app-screen-fade-active {
   font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
+/* Category picker: one field row like every other field, no card around it, one corner radius. */
 .product-taxonomy-picker {
   display: grid;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--app-silver, #c7ccd2);
-  border-radius: 12px;
-  background: var(--app-card-surface, #ffffff);
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.product-category-heading {
+  font-size: .85rem;
+  font-weight: 600;
 }
 
 .product-category-pill {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 0;
-  width: fit-content;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
   max-width: 100%;
-  overflow: hidden;
-  border: 1px solid var(--app-silver, #c7ccd2);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .76);
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .product-category-pill label {
-  display: grid;
-  gap: 2px;
+  display: block;
+  flex: 1 1 auto;
   min-width: 0;
-  padding: 5px 12px 5px 14px;
-  font-size: .75rem;
+  padding: 0;
 }
 
 .product-category-pill select {
+  width: 100%;
   min-width: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
 }
 
 .product-category-pill button {
-  align-self: stretch;
-  padding: 7px 13px;
-  border: 0;
-  border-left: 1px solid var(--app-silver, #c7ccd2);
-  background: rgba(255, 255, 255, .32);
-  color: inherit;
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--app-silver, #c7ccd2);
+  border-radius: var(--app-control-radius, 10px);
+  background: #ffffff;
+  color: var(--app-ink, #111111);
   font: inherit;
-  font-size: .8rem;
+  font-size: .85rem;
+  font-weight: 600;
   white-space: nowrap;
+}
+
+.product-category-pill button[hidden] {
+  display: none;
+}
+
+.product-category-pill button:active,
+.product-taxonomy-add-actions button:active {
+  background: #f2f4f6;
 }
 
 .product-taxonomy-add-panel {
   display: grid;
   gap: 8px;
   padding: 10px;
-  border: 1px solid var(--app-silver, #c7ccd2);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, .66);
+  border: 1px solid #dfe3e8;
+  border-radius: var(--app-card-radius, 10px);
+  background: #f7f8f9;
 }
 
 .product-taxonomy-add-panel[hidden] {
   display: none;
+}
+
+.product-taxonomy-add-panel [data-taxonomy-type-title] {
+  font-size: .9rem;
+}
+
+.product-taxonomy-add-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.product-taxonomy-add-actions button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--app-silver, #c7ccd2);
+  border-radius: var(--app-control-radius, 10px);
+  background: #ffffff;
+  color: var(--app-ink, #111111);
+  font: inherit;
+  font-size: .85rem;
 }
 
 .product-taxonomy-picker h3 {
@@ -91,46 +122,106 @@ body.app-screen-fade-active {
   opacity: .7;
 }
 
+/* Search results read as one list with dividers, not a stack of boxes. */
 .product-taxonomy-picker [data-taxonomy-results] {
   display: grid;
-  gap: 6px;
-  max-height: 220px;
+  gap: 0;
+  max-height: 240px;
   overflow: auto;
+  border: 1px solid #dfe3e8;
+  border-radius: var(--app-card-radius, 10px);
+  background: #ffffff;
 }
 
-.product-taxonomy-picker [data-taxonomy-results] button,
-.product-taxonomy-picker [data-taxonomy-custom-offer] button,
-.product-taxonomy-picker [data-taxonomy-selected] button,
-.product-taxonomy-add-panel > button {
-  width: 100%;
-  padding: 9px 10px;
-  border: 1px solid var(--app-silver, #c7ccd2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, .76);
-  color: inherit;
-  text-align: left;
+.product-taxonomy-picker [data-taxonomy-results]:empty,
+.product-taxonomy-picker [data-taxonomy-custom-offer]:empty,
+.product-taxonomy-picker [data-taxonomy-selected]:empty {
+  display: none;
 }
 
 .product-taxonomy-picker [data-taxonomy-results] button {
   display: grid;
   gap: 2px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  border: 0;
+  border-top: 1px solid #eef0f2;
+  border-radius: 0;
+  background: #ffffff;
+  color: var(--app-ink, #111111);
+  font: inherit;
+  text-align: left;
+}
+
+.product-taxonomy-picker [data-taxonomy-results] button:first-child {
+  border-top: 0;
+}
+
+.product-taxonomy-picker [data-taxonomy-results] button:active {
+  background: #f2f4f6;
+}
+
+.product-taxonomy-picker [data-taxonomy-results] button strong {
+  font-size: .92rem;
+  font-weight: 600;
 }
 
 .product-taxonomy-picker [data-taxonomy-results] button small {
-  color: #555b61;
-  font-size: .76rem;
+  color: #5f6670;
+  font-size: .74rem;
 }
 
+.product-taxonomy-picker [data-taxonomy-custom-offer] button {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px dashed var(--app-silver, #c7ccd2);
+  border-radius: var(--app-control-radius, 10px);
+  background: #ffffff;
+  color: var(--app-ink, #111111);
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* The chosen type is a small chip with a Clear action, not a row with a boxed button. */
 .product-taxonomy-picker [data-taxonomy-selected] {
-  display: flex;
+  display: inline-flex;
+  flex-wrap: wrap;
+  width: fit-content;
+  max-width: 100%;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 2px 8px;
+  padding: 2px 2px 2px 12px;
+  border-radius: 999px;
+  background: #f2f4f6;
+  font-size: .82rem;
+}
+
+.product-taxonomy-picker [data-taxonomy-selected] small {
+  color: #5f6670;
+  font-size: .76rem;
 }
 
 .product-taxonomy-picker [data-taxonomy-selected] button {
   width: auto;
-  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--app-ink, #111111);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+}
+
+.product-taxonomy-picker [data-taxonomy-status] {
+  margin: 0;
+  color: #5f6670;
+  font-size: .78rem;
 }
 
 .product-taxonomy-picker [data-taxonomy-attributes] {
@@ -139,32 +230,60 @@ body.app-screen-fade-active {
   gap: 8px;
 }
 
+.product-taxonomy-picker [data-taxonomy-attributes] label {
+  display: grid;
+  gap: 4px;
+  font-size: .9rem;
+}
+
+/* Attributes: two compact columns under a thin divider, so 17 fields are 9 rows, not 17. */
 .product-taxonomy-attributes {
   display: grid;
   gap: 8px;
+  margin: 4px 0;
+  padding-top: 12px;
+  border-top: 1px solid #eef0f2;
 }
 
 .product-taxonomy-attributes h3 {
   margin: 0;
-  font-size: .9rem;
+  font-size: .95rem;
+  font-weight: 700;
 }
 
 .product-taxonomy-attributes [data-taxonomy-attributes] {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+@media (min-width: 720px) {
+  .product-taxonomy-attributes [data-taxonomy-attributes] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .product-taxonomy-attributes [data-taxonomy-attributes] label {
   display: grid;
   gap: 4px;
-  font-size: .9rem;
+  min-width: 0;
+  color: #5f6670;
+  font-size: .76rem;
+  font-weight: 600;
 }
 
-.product-taxonomy-picker [data-taxonomy-attributes] label {
-  display: grid;
-  gap: 4px;
-  font-size: .9rem;
+#app .product-taxonomy-attributes [data-taxonomy-attribute] {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px !important;
+  padding: 0 28px 0 10px !important;
+  color: var(--app-ink, #111111);
+  font-size: .86rem !important;
+  text-overflow: ellipsis;
+}
+
+#app .product-taxonomy-attributes input[data-taxonomy-attribute] {
+  padding: 0 10px !important;
 }
 
 body.app-shell #app,
@@ -559,4 +678,16 @@ body.app-screen-fade-active #app .home-screen .home-launcher-group {
 body.app-shell #app .pos-card h3,
 body.app-screen-fade-active #app .pos-card h3 {
   font-size: 1rem;
+}
+
+/* One corner radius for controls. An older Craft rule set every button in the app to square
+   corners, so Add, Attributes and the option buttons had sharp edges next to rounded fields.
+   :not([data-square]) only lifts this rule above that one; nothing uses the attribute. */
+body.craft-app-ui #app :is(.btn-primary, .btn-secondary, .btn-danger):not([data-square]),
+body #app :is(.product-category-pill, .product-taxonomy-add-actions, [data-taxonomy-custom-offer], .product-variants, .attribute-pricing-fields) button:not([data-square]) {
+  border-radius: var(--app-control-radius, 10px);
+}
+
+body #app .product-taxonomy-picker [data-taxonomy-selected] button:not([data-square]) {
+  border-radius: 999px;
 }

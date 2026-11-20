@@ -1,0 +1,151 @@
+/* Options and Attribute prices in the product forms: compact cards with one radius, short labels,
+   and small controls, instead of tall blocks of help text. */
+.product-variants,
+.attribute-pricing-fields {
+  gap: 10px;
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid #e3e6ea;
+  border-radius: var(--app-card-radius, 10px);
+  background: #ffffff;
+}
+
+.product-variants h3,
+.attribute-pricing-fields h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.product-variants h3 span,
+.attribute-pricing-fields h3 span {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #f2f4f6;
+  color: #5f6670;
+  font-size: 0.6rem;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.product-variants label,
+.attribute-pricing-fields label {
+  color: #5f6670;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.product-variant-value-prices > label > span,
+.attribute-pricing-value > label > span {
+  color: #5f6670;
+  font-size: 0.76rem;
+  opacity: 1;
+}
+
+#app :is(.product-variants, .attribute-pricing-fields) :is(input, select) {
+  min-height: 36px !important;
+  padding: 0 10px !important;
+  color: var(--app-ink, #111111);
+  font-size: 0.85rem !important;
+}
+
+#app :is(.product-variants, .attribute-pricing-fields) select {
+  padding-right: 28px !important;
+}
+
+body #app :is(.product-variants, .attribute-pricing-fields) button:not([data-square]) {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid #d5d9de;
+  background: #ffffff;
+  color: var(--app-ink, #111111);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+body #app :is(.product-variants, .attribute-pricing-fields) button:not([data-square]):active {
+  background: #f2f4f6;
+}
+
+body #app .attribute-pricing-fields button.attribute-pricing-icon:not([data-square]) {
+  display: inline-grid;
+  width: 32px;
+  padding: 0;
+  place-items: center;
+  color: #5f6670;
+}
+
+.product-variants > [data-variant-add-option],
+.attribute-pricing-fields > [data-attribute-pricing-add] {
+  justify-self: start;
+}
+
+/* Remove and Add share one row. */
+.product-variant-option-actions,
+.attribute-pricing-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.product-variant-option,
+.attribute-pricing-row {
+  gap: 8px;
+  padding: 10px 0;
+  border-top-color: #eef0f2;
+}
+
+.product-variant-option .form-grid {
+  gap: 8px;
+}
+
+.product-variant-value-prices {
+  gap: 6px;
+}
+
+.product-variant-value-prices > span:first-child {
+  color: #5f6670;
+  font-size: 0.76rem;
+  opacity: 1;
+}
+
+.product-variant-row {
+  gap: 8px;
+  padding: 8px 0;
+  border-top-color: #eef0f2;
+}
+
+.product-variant-row strong {
+  font-size: 0.85rem;
+}
+
+.attribute-pricing-value {
+  grid-template-columns: minmax(0, 1fr) minmax(80px, 110px) 32px;
+  gap: 6px;
+}
+
+@media (max-width: 420px) {
+  .attribute-pricing-value {
+    grid-template-columns: minmax(0, 1fr) minmax(76px, 96px) 32px;
+  }
+
+  .attribute-pricing-value > [data-priced-value-remove] {
+    grid-column: auto;
+  }
+}
+
+.product-variant-fields.product-variants > p[data-variant-status],
+.attribute-pricing-fields[data-attribute-pricing] > p[data-attribute-pricing-status] {
+  color: #5f6670;
+  font-size: 0.76rem;
+  opacity: 1;
+}
+
+.product-variants > p[data-variant-status]:empty,
+.attribute-pricing-fields > p[data-attribute-pricing-status]:empty {
+  display: none;
+}

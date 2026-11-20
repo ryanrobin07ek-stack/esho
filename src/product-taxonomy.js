@@ -162,13 +162,16 @@ export function createProductTaxonomyFields({
     data-initial-category-name="${escapeHtml(categoryName)}"
     data-initial-custom-category="${escapeHtml(customCategory)}"
     data-initial-attributes="${escapeHtml(JSON.stringify(attributes))}">
+    ${storeCategoryFieldName ? '<span class="product-category-heading">Category</span>' : ''}
     <div class="product-category-pill">
       ${storeCategoryFieldName ? `<label><select aria-label="Category" name="${escapeHtml(storeCategoryFieldName)}" data-store-category-select>
         <option value="">Choose a category</option>${categoryOptions}
       </select></label>` : ''}
       <button type="button" data-taxonomy-add-open>Add</button>
+      ${storeCategoryFieldName ? '<button type="button" data-taxonomy-type-open>Attributes</button>' : ''}
     </div>
     <div class="product-taxonomy-add-panel" data-taxonomy-add-panel hidden>
+      <strong data-taxonomy-type-title hidden>What type of product is this?</strong>
       <label><input type="search" data-taxonomy-search aria-label="Search all categories"
         autocomplete="off" maxlength="160" placeholder="Search, e.g. shoes"></label>
       <div class="product-taxonomy-add-actions">
@@ -294,6 +297,11 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
     const addOpen = widget.querySelector('[data-taxonomy-add-open]');
     const addClose = widget.querySelector('[data-taxonomy-add-close]');
     const addManually = widget.querySelector('[data-taxonomy-add-manually]');
+    // "Attributes": when the shop's own category ("Women") is not a product type, the owner may say
+    // what the product is ("Shoes") to get its attributes, and the shop category stays as it is.
+    const typeOpen = widget.querySelector('[data-taxonomy-type-open]');
+    const typeTitle = widget.querySelector('[data-taxonomy-type-title]');
+    let pickMode = 'add';
     if (!search || !categoryInput || !categoryNameInput || !customCategoryInput || !results || !customOffer || !selected || !attributeFields || !status) {
       throw new Error('The product category picker is missing required controls.');
     }
@@ -345,7 +353,41 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
       } else {
         status.textContent = 'No close match. You can add your own category.';
       }
+      if (pickMode === 'type') return;
       customOffer.innerHTML = `<button type="button" data-taxonomy-add-custom>Add “${escapeHtml(search.value.trim())}” as my category</button>`;
+    };
+
+    const openPanel = mode => {
+      if (!addPanel) return;
+      pickMode = mode;
+      if (typeTitle) typeTitle.hidden = mode !== 'type';
+      if (addManually) addManually.hidden = mode === 'type';
+      search.placeholder = mode === 'type' ? 'For example shoes, dresses or phones' : 'Search, e.g. shoes';
+      search.setAttribute('aria-label', mode === 'type' ? 'What type of product is this?' : 'Search all categories');
+      search.value = '';
+      results.innerHTML = '';
+      customOffer.innerHTML = '';
+      addPanel.hidden = false;
+      if (!taxonomy) loadData();
+      search.focus();
+    };
+
+    // Keeps the shop's own category name and takes the attributes of the product type picked.
+    const selectType = (category, customCategory = customCategoryInput.value) => {
+      categoryInput.value = category.id;
+      categoryNameInput.value = category.fullName;
+      customCategoryInput.value = customCategory;
+      search.value = '';
+      results.innerHTML = '';
+      customOffer.innerHTML = '';
+      if (addPanel) addPanel.hidden = true;
+      // The shop category is already in the Category field, so the chip only names the type.
+      selected.innerHTML = `<span>Type: ${escapeHtml(category.name)}</span><button type="button" data-taxonomy-clear aria-label="Clear the product type">Clear</button>`;
+      attributeFields.innerHTML = '';
+      renderAttributeFields(attributeFields, category, attributesById, initialAttributes);
+      initialAttributes = [];
+      status.textContent = 'Set any applicable attributes; they are optional.';
+      announceChange();
     };
 
     const selectCategory = category => {
@@ -365,7 +407,7 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
       announceChange();
     };
 
-    const selectCustomCategory = value => {
+    const selectCustomCategory = (value, { guess = true } = {}) => {
       const customCategory = String(value || '').trim().slice(0, 160);
       if (!customCategory) return;
       const matchedCategory = matchProductTaxonomyCategory(taxonomy?.categories, customCategory);
@@ -374,23 +416,25 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
         return;
       }
       // Keep the owner's own name for the shop, and borrow the closest standard category's
-      // attributes so the product page still shows size, colour and the rest.
-      const closest = findClosestProductTaxonomyCategory(taxonomy?.categories, customCategory);
+      // attributes so the product page still shows size, colour and the rest. A category picked from
+      // the shop's own list ("Women") is not guessed at: the owner says the type with Attributes.
+      const closest = guess ? findClosestProductTaxonomyCategory(taxonomy?.categories, customCategory) : null;
       categoryInput.value = closest?.id || '';
       categoryNameInput.value = closest?.fullName || '';
       customCategoryInput.value = customCategory;
       search.value = '';
       results.innerHTML = '';
       customOffer.innerHTML = '';
-      selected.innerHTML = `<span>Custom: ${escapeHtml(customCategory)}</span>${closest
+      // A shop category picked from the Category field needs no chip repeating its own name.
+      selected.innerHTML = !guess && typeOpen ? '' : `<span>Custom: ${escapeHtml(customCategory)}</span>${closest
         ? `<small>Attributes from ${escapeHtml(closest.fullName)}</small>`
         : ''}<button type="button" data-taxonomy-clear>Clear</button>`;
       attributeFields.innerHTML = '';
       if (closest) renderAttributeFields(attributeFields, closest, attributesById, initialAttributes);
       initialAttributes = [];
       status.textContent = closest
-        ? `Using the standard attributes for ${closest.name}. Search above to pick a different match.`
-        : 'This custom category will be saved with the product.';
+        ? `Using the standard attributes for ${closest.name}. Tap Attributes to pick a different type.`
+        : typeOpen ? 'Optional: tap Attributes and say what type of product this is.' : 'This custom category will be saved with the product.';
       announceChange();
     };
 
@@ -437,11 +481,13 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
         if (initialCategoryId) {
           const category = categoriesById.get(initialCategoryId);
           if (!category) throw new Error(`Saved product category ${initialCategoryId} is no longer available.`);
-          selectCategory(category);
+          // A shop category with a chosen type ("Women", type Shoes) reopens as both.
+          if (widget.dataset.initialCustomCategory) selectType(category, widget.dataset.initialCustomCategory);
+          else selectCategory(category);
         } else if (widget.dataset.initialCustomCategory) {
           selectCustomCategory(widget.dataset.initialCustomCategory);
         } else if (storeCategorySelect?.selectedOptions[0]?.value) {
-          selectCustomCategory(storeCategorySelect.selectedOptions[0].textContent);
+          selectCustomCategory(storeCategorySelect.selectedOptions[0].textContent, { guess: false });
         } else {
           status.textContent = 'Search by category name to choose a standard category.';
         }
@@ -455,12 +501,8 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
     };
 
     search.addEventListener('input', renderMatches);
-    addOpen?.addEventListener('click', () => {
-      if (!addPanel) return;
-      addPanel.hidden = false;
-      if (!taxonomy) loadData();
-      search.focus();
-    });
+    addOpen?.addEventListener('click', () => openPanel('add'));
+    typeOpen?.addEventListener('click', () => openPanel('type'));
     addClose?.addEventListener('click', () => {
       if (addPanel) addPanel.hidden = true;
     });
@@ -491,13 +533,15 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
         selectCategory(null);
         return;
       }
-      selectCustomCategory(label);
+      selectCustomCategory(label, { guess: false });
     });
     results.addEventListener('click', event => {
       const button = event.target.closest('[data-taxonomy-result]');
       if (!button) return;
       const category = categoriesById.get(button.dataset.taxonomyResult);
-      if (category) void addTaxonomyCategory(category);
+      if (!category) return;
+      if (pickMode === 'type') selectType(category);
+      else void addTaxonomyCategory(category);
     });
     customOffer.addEventListener('click', event => {
       if (!event.target.closest('[data-taxonomy-add-custom]')) return;
@@ -514,6 +558,14 @@ export function bindProductTaxonomyFields(root = document, taxonomyPromiseOverri
     });
     selected.addEventListener('click', event => {
       if (!event.target.closest('[data-taxonomy-clear]')) return;
+      // Clearing a chosen type goes back to the shop category alone, not to no category at all.
+      const shopCategory = typeOpen && storeCategorySelect?.value ? customCategoryInput.value : '';
+      if (shopCategory) {
+        categoryInput.value = '';
+        categoryNameInput.value = '';
+        selectCustomCategory(shopCategory, { guess: false });
+        return;
+      }
       selectCategory(null);
       search.value = '';
       search.focus();

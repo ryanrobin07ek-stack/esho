@@ -97,9 +97,24 @@ export function bindWizardProducts() {
         categoryId: product?.taxonomy_category_id || product?.taxonomyCategoryId || "",
         categoryName: product?.taxonomy_category_name || product?.taxonomyCategoryName || "",
         customCategory: product?.taxonomy_custom_category || product?.taxonomyCustomCategory || "",
-        attributes: product?.taxonomy_attributes || product?.taxonomyAttributes || []
+        attributes: product?.taxonomy_attributes || product?.taxonomyAttributes || [],
+        // One Category field: the shop's own categories, with Add to search the standard ones.
+        storeCategories: StudioRenderers.websiteBuilderDraft().categories.map(category => ({ value: category.id, name: category.name })),
+        storeCategoryFieldName: "category_id",
+        storeCategoryValue: product?.category_id ?? ""
       });
-      window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyHost);
+      window.EshopProductTaxonomy.bindProductTaxonomyFields(taxonomyHost, undefined, {
+        onCategoryCreate: name => {
+          const draft = StudioRenderers.websiteBuilderDraft();
+          let category = draft.categories.find(item => item.name.toLocaleLowerCase() === name.toLocaleLowerCase());
+          if (!category) {
+            category = { id: Date.now() + draft.categories.length, name };
+            draft.categories.push(category);
+            StudioRenderers.saveWebsiteBuilderDraft(draft);
+          }
+          return { value: category.id, name: category.name };
+        }
+      });
       variantsHost.innerHTML = window.EshopProductVariants.createProductVariantFields({
         // Without the saved options list, a third option and every per-value price reset to 0
         // the moment a product was reopened for editing.

@@ -29,21 +29,34 @@ export const newStoreScreen = {
       <header class="website-management-heading">
         <div><span class="studio-workspace-kicker">NEW WEBSITE · STEP 2 OF 2</span><h2>Website products</h2><p>${AppUtils.escapeHTML(draft.shop_name)} · ${AppUtils.escapeHTML(draft.shop_address)}.rrobin.co.ke. Choose Store products to add or create products just for this website.</p></div>
       </header>
+      <div class="website-wizard-top-builder">
+        <a id="website-wizard-go-builder" class="btn-primary website-wizard-go-builder" href="${AppUtils.escapeHTML(litrusBuilderRoute)}" data-route="${AppUtils.escapeHTML(litrusBuilderRoute)}">Go to web builder</a>
+      </div>
       <div class="studio-inline-actions"><button type="button" class="btn-secondary website-wizard-compact-action" id="website-wizard-edit-identity">Edit shop details</button></div>
       <div class="studio-inline-actions web-product-actions">
+        <button type="button" class="btn-primary web-product-action-card" id="website-wizard-create-product">Add product</button>
         <button type="button" class="btn-secondary web-product-action-card" id="website-wizard-load-store">Add from Store</button>
-        <button type="button" class="btn-primary web-product-action-card" id="website-wizard-create-product">Add web product</button>
+        <button type="button" class="btn-secondary web-product-action-card" data-wizard-add-category aria-controls="website-wizard-category-form" aria-expanded="false">Add category</button>
       </div>
-      <section class="studio-panel">
-        <div class="studio-panel-heading"><h3>Website categories</h3></div>
-        <form id="website-wizard-category-form" class="store-workspace-form">
-          <input type="hidden" name="id" value="">
-          <label>Category name<input name="name" maxlength="120" required></label>
-          <button type="submit" class="btn-secondary">Add category</button>
-        </form>
-        <div class="website-wizard-category-list" id="website-wizard-category-list">${draft.categories.map(category =>
-          `<div class="website-wizard-category-row"><span>${AppUtils.escapeHTML(category.name)}</span><button type="button" class="btn-secondary website-wizard-compact-action" data-edit-wizard-category="${AppUtils.escapeHTML(String(category.id))}">Edit</button><button type="button" class="btn-secondary website-wizard-compact-action" data-remove-wizard-category="${AppUtils.escapeHTML(String(category.id))}" aria-label="Remove ${AppUtils.escapeHTML(category.name)} from this website">Remove</button></div>`
-        ).join("") || `<p class="studio-panel-note">No categories yet. Add from Store or create a category to add web products.</p>`}</div>
+      <form id="website-wizard-category-form" class="wizard-category-picker" hidden>
+        <input type="hidden" name="id" value="">
+        <label class="wizard-category-picker-label">Category name<input name="name" maxlength="120" required autocomplete="off" placeholder="Search or type your own" data-category-search aria-controls="website-wizard-category-suggestions"></label>
+        <div class="wizard-category-suggestions" id="website-wizard-category-suggestions" data-category-suggestions role="listbox" aria-label="Suggested categories"></div>
+        <button type="submit" class="btn-secondary">Add category</button>
+      </form>
+      <div class="website-wizard-category-list wizard-category-chips" id="website-wizard-category-list">${draft.categories.map(category =>
+        `<div class="website-wizard-category-row"><button type="button" class="wizard-category-chip-name" data-edit-wizard-category="${AppUtils.escapeHTML(String(category.id))}" aria-label="Rename ${AppUtils.escapeHTML(category.name)}">${AppUtils.escapeHTML(category.name)}</button><button type="button" class="wizard-category-chip-remove" data-remove-wizard-category="${AppUtils.escapeHTML(String(category.id))}" aria-label="Remove ${AppUtils.escapeHTML(category.name)} from this website"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`
+      ).join("") || `<p class="studio-panel-note">No categories yet.</p>`}</div>
+      <section id="website-wizard-store-picker" class="studio-panel website-wizard-store-picker" hidden>
+        <div class="studio-panel-heading"><h3>Choose products from Store</h3><button type="button" class="btn-secondary" id="website-wizard-store-close">Close</button></div>
+        <div class="website-wizard-store-toolbar">
+          <label class="website-wizard-store-select-all"><input type="checkbox" id="website-wizard-store-select-all"> Select all</label>
+          <button type="button" class="btn-primary" id="website-wizard-import-store" disabled>Add selected</button>
+        </div>
+        <p class="studio-panel-note" id="website-wizard-store-count" role="status"></p>
+        <input class="form-input" id="website-wizard-store-search" type="search" placeholder="Search Store products" aria-label="Search Store products">
+        <select class="form-input" id="website-wizard-store-category" aria-label="Filter by Store category"><option value="all">All categories</option></select>
+        <div id="website-wizard-store-list" class="website-wizard-product-list website-wizard-store-list"></div>
       </section>
       <section class="studio-panel">
         <div class="studio-panel-heading"><h3>Products</h3></div>
@@ -55,9 +68,7 @@ export const newStoreScreen = {
         <h3>Add web product</h3>
         <input type="hidden" name="id" value="">
         <label>Product name<input name="name" maxlength="160" required></label>
-        <label>Category<select name="category_id" required><option value="">Choose a category</option>${draft.categories.map(category =>
-          `<option value="${AppUtils.escapeHTML(String(category.id))}">${AppUtils.escapeHTML(category.name)}</option>`
-        ).join("")}</select></label>
+        <div data-wizard-product-taxonomy></div>
         <div class="studio-form-grid">
           <label>Selling price<input name="price" type="number" min="0" step="0.01" required></label>
           <label>Cost price<input name="cost_price" type="number" min="0" step="0.01"></label>
@@ -65,7 +76,6 @@ export const newStoreScreen = {
           <label>SKU<input name="sku" maxlength="120"></label>
         </div>
         <label>Description<textarea name="description" rows="3"></textarea></label>
-        <div data-wizard-product-taxonomy></div>
         <div data-wizard-product-variants></div>
         <div class="web-product-attribute-pricing" data-wizard-product-attribute-pricing></div>
         <div class="web-product-media">
@@ -89,19 +99,6 @@ export const newStoreScreen = {
           <button type="submit" class="btn-primary">Add product</button>
         </div>
       </form>
-      <div class="website-wizard-sticky-footer has-bottom-nav"><div>
-        <a id="website-wizard-go-builder" class="btn-primary website-wizard-go-builder" href="${AppUtils.escapeHTML(litrusBuilderRoute)}" data-route="${AppUtils.escapeHTML(litrusBuilderRoute)}">Go to web builder</a>
-      </div></div>
-      <div style="height:190px" aria-hidden="true"></div>
-      <section id="website-wizard-store-picker" class="studio-panel" hidden>
-        <div class="studio-panel-heading"><h3>Choose products from Store</h3><button type="button" class="btn-secondary" id="website-wizard-store-close">Close</button></div>
-        <input class="form-input" id="website-wizard-store-search" type="search" placeholder="Search Store products" aria-label="Search Store products">
-        <select class="form-input" id="website-wizard-store-category" aria-label="Filter by Store category"><option value="all">All categories</option></select>
-        <label><input type="checkbox" id="website-wizard-store-select-all"> Select all shown</label>
-        <p class="studio-panel-note" id="website-wizard-store-count" role="status"></p>
-        <div id="website-wizard-store-list"></div>
-        <button type="button" class="btn-primary" id="website-wizard-import-store" disabled>Add selected from Store</button>
-      </section>
     </section>`;
   },
 };

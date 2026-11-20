@@ -24,12 +24,9 @@ export function createAttributePricingFields({ pricedAttributes = [] } = {}) {
   const saved = Array.isArray(pricedAttributes) ? pricedAttributes : [];
   return `<section class="attribute-pricing-fields" data-attribute-pricing
       data-initial-priced-attributes="${escapeHtml(JSON.stringify(saved))}">
-    <h3>Charge by attribute <span>(optional)</span></h3>
-    <p>Charge more or less for a choice, such as Leather instead of Canvas. The price on the website
-      and at the till changes as the choice is made. These choices do not hold stock; use Product
-      options for anything you count.</p>
+    <h3>Attribute prices <span>Optional</span></h3>
     <div data-attribute-pricing-rows></div>
-    <button type="button" class="btn-secondary" data-attribute-pricing-add>Add a priced attribute</button>
+    <button type="button" class="btn-secondary" data-attribute-pricing-add>+ Add price</button>
     <p data-attribute-pricing-status role="status" aria-live="polite"></p>
   </section>`;
 }
@@ -73,11 +70,12 @@ export function bindAttributePricingFields(widget, getAttributes) {
   ).join('');
 
   const render = () => {
+    rowsHost.after(addButton); // back out of the row it may sit in, before the rows are replaced
     const attributes = available();
     if (!attributes.length && !state.length) {
       rowsHost.innerHTML = '';
       addButton.disabled = true;
-      status.textContent = 'Choose a category above first, then its attributes can be priced.';
+      status.textContent = 'Choose a category first.';
       return;
     }
     addButton.disabled = state.length >= MAX_PRICED_ATTRIBUTES;
@@ -96,21 +94,23 @@ export function bindAttributePricingFields(widget, getAttributes) {
             <label><span>Choice</span><select data-priced-value-name>
               ${optionList(offered.length ? offered : [value.value], value.value)}
             </select></label>
-            <label><span>Price change</span><input type="number" step="0.01" data-priced-value-delta
+            <label><span>Price ±</span><input type="number" step="0.01" data-priced-value-delta
               value="${escapeHtml(String(value.priceDelta))}" inputmode="decimal"></label>
-            <button type="button" class="btn-secondary" data-priced-value-remove>Remove choice</button>
+            <button type="button" class="btn-secondary attribute-pricing-icon" data-priced-value-remove aria-label="Remove choice"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
           </div>`).join('')}
         </div>
         <div class="attribute-pricing-row-actions">
           <button type="button" class="btn-secondary" data-priced-value-add
-            ${entry.values.length >= MAX_PRICED_VALUES ? 'disabled' : ''}>Add a choice</button>
-          <button type="button" class="btn-secondary" data-priced-attribute-remove>Remove attribute</button>
+            ${entry.values.length >= MAX_PRICED_VALUES ? 'disabled' : ''}>+ Choice</button>
+          <button type="button" class="btn-secondary" data-priced-attribute-remove>Remove</button>
         </div>
       </div>`;
     }).join('');
-    status.textContent = state.length
-      ? 'The price changes by these amounts when the choice is made.'
-      : 'No attribute is priced. The product sells at its own price.';
+    status.textContent = '';
+    // Add price sits beside the last attribute's buttons, on one row; with none it stands alone.
+    const lastActions = rowsHost.querySelector('[data-priced-attribute]:last-child .attribute-pricing-row-actions');
+    if (lastActions) lastActions.append(addButton);
+    else rowsHost.after(addButton);
   };
 
   // Read the boxes back into state before any change that re-renders, so typed prices survive.
@@ -139,7 +139,7 @@ export function bindAttributePricingFields(widget, getAttributes) {
     const used = new Set(state.map(entry => entry.attributeName));
     const next = attributes.find(attribute => !used.has(attribute.attributeName));
     if (!next) {
-      status.textContent = 'Every attribute of this category is already priced.';
+      status.textContent = 'All attributes are priced.';
       return;
     }
     state.push({
@@ -180,7 +180,7 @@ export function bindAttributePricingFields(widget, getAttributes) {
       const used = new Set(entry.values.map(value => value.value));
       const next = (match?.values || []).find(value => !used.has(value.value));
       if (!next) {
-        status.textContent = `Every choice of ${entry.attributeName} is already listed.`;
+        status.textContent = `All ${entry.attributeName} choices are listed.`;
         return;
       }
       entry.values.push({ valueId: next.valueId, value: next.value, priceDelta: 0 });

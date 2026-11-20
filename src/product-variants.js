@@ -93,12 +93,9 @@ export function createProductVariantFields(saved = {}) {
   return `<section class="product-variant-fields product-variants" data-product-variants data-product-variant-fields
       data-initial-options="${escapeHtml(JSON.stringify(options))}"
       data-initial-variants="${escapeHtml(JSON.stringify(savedVariants))}">
-    <h3>Product options <span>(optional)</span></h3>
-    <p>Use any option that fits the product, such as size, colour, pack size, flavour or material.
-      Give a value its own price change and every combination with it follows. Leave this empty for a
-      product with no options.</p>
+    <h3>Options <span>Optional</span></h3>
     <div data-variant-options></div>
-    <button type="button" class="btn-secondary" data-variant-add-option>Add an option</button>
+    <button type="button" class="btn-secondary" data-variant-add-option>+ Add option</button>
     <p data-variant-status role="status" aria-live="polite"></p>
     <div data-variant-rows></div>
   </section>`;
@@ -165,7 +162,7 @@ export function bindProductVariantFields(widget) {
   };
 
   const valuePricesMarkup = option => (option.values.length ? `<div class="product-variant-value-prices">
-        <span>Price change per value (optional)</span>
+        <span>Extra price per value</span>
         ${option.values.map(value => `<label><span>${escapeHtml(value.value)}</span>
           <input type="number" step="0.01" data-variant-value-price="${escapeHtml(value.value)}"
             value="${escapeHtml(String(value.priceDelta || 0))}" inputmode="decimal"></label>`).join('')}
@@ -187,14 +184,18 @@ export function bindProductVariantFields(widget) {
     }
     optionsHost.innerHTML = options.map((option, index) => `<div class="product-variant-option" data-variant-option="${index}">
       <div class="form-grid">
-        <label>Option ${index + 1} name<input type="text" data-variant-option-name maxlength="80"
-          value="${escapeHtml(option.name)}" placeholder="e.g. Pack size"></label>
-        <label>Option ${index + 1} values<input type="text" data-variant-option-values maxlength="1000"
-          value="${escapeHtml(option.values.map(value => value.value).join(', '))}" placeholder="e.g. 250 g, 500 g"></label>
+        <label>Name<input type="text" data-variant-option-name maxlength="80"
+          value="${escapeHtml(option.name)}" placeholder="Size"></label>
+        <label>Values<input type="text" data-variant-option-values maxlength="1000"
+          value="${escapeHtml(option.values.map(value => value.value).join(', '))}" placeholder="S, M, L"></label>
       </div>
       ${valuePricesMarkup(option)}
-      <button type="button" class="btn-secondary" data-variant-remove-option>Remove this option</button>
+      <div class="product-variant-option-actions"><button type="button" class="btn-secondary" data-variant-remove-option>Remove</button></div>
     </div>`).join('');
+    // Add option sits beside the last option's Remove, on one row; with no options it stands alone.
+    const lastActions = optionsHost.querySelector('[data-variant-option]:last-child .product-variant-option-actions');
+    if (lastActions) lastActions.append(addOption);
+    else optionsHost.after(addOption);
     addOption.disabled = options.length >= MAX_OPTIONS;
   };
 
@@ -215,7 +216,7 @@ export function bindProductVariantFields(widget) {
       }
     }
     if (!usable.length) {
-      status.textContent = 'Add an option name and its values to create product variants.';
+      status.textContent = '';
       updateStockControl(false);
       return;
     }
@@ -225,7 +226,7 @@ export function bindProductVariantFields(widget) {
       combinations = combinations.flatMap(prefix => option.values.map(value => [...prefix, value.value]));
     }
     if (combinations.length > MAX_COMBINATIONS) {
-      status.textContent = `${combinations.length} combinations is more than the ${MAX_COMBINATIONS} allowed. Remove an option or some values.`;
+      status.textContent = `${combinations.length} variants; the limit is ${MAX_COMBINATIONS}.`;
       updateStockControl(false);
       return;
     }
@@ -256,7 +257,7 @@ export function bindProductVariantFields(widget) {
       rows.append(row);
     }
 
-    status.textContent = `${combinations.length} product variant${combinations.length === 1 ? '' : 's'}; price and stock can be set for each.`;
+    status.textContent = `${combinations.length} variant${combinations.length === 1 ? '' : 's'}`;
     updateStockControl(true);
   };
 

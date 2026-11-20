@@ -86,12 +86,18 @@ async function checkProducts(page, label, key) {
     }, null, { timeout: 5000 });
     return page.locator('#storePreviewFrame').evaluate(frame => {
     const store = frame.contentDocument.querySelector('.sole-store');
+    // A card clipped to nothing or faded to nothing is just as gone as one with display:none. The
+    // blob and wipe reveals start that way, and the preview never ran their trigger, so products
+    // vanished on shuffle for months while this check, which only looked at size, still passed.
+    const collapsedClip = /circle\(0%|inset\((?:100%|0(?:px)? 100%|0(?:px)? 50%)/;
     const isVisible = element => {
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
       return style.display !== 'none' && style.visibility !== 'hidden' &&
-        rect.width > 0 && rect.height > 0;
+        rect.width > 0 && rect.height > 0 && Number(style.opacity) > 0.05 &&
+        !collapsedClip.test(style.clipPath);
     };
+    const allProducts = store.querySelectorAll('.p-card').length;
     const products = [...store.querySelectorAll('.p-card')].filter(isVisible).length;
     const links = [...store.querySelectorAll('.litrus-categories .litrus-category-link')];
     const visibleCategories = new Set(links.filter(isVisible).map(link =>
@@ -122,7 +128,7 @@ async function checkProducts(page, label, key) {
     const claimPattern = /\u2605|\bfree returns\b|\beasy returns\b|\b\d[\d,.]*\+?\s+(?:reviews|happy customers|orders)\b|\bverified (?:buyer|review)\b|\bsarah johnson\b/i;
     const unverifiedClaims = (store.textContent.match(new RegExp(claimPattern.source, 'gi')) || []).slice(0, 5);
     return {
-      products, categories: categories.size, visibleCategories: visibleCategories.size, contrastFailures,
+      products, allProducts, categories: categories.size, visibleCategories: visibleCategories.size, contrastFailures,
       unverifiedClaims
     };
     });
@@ -140,8 +146,8 @@ async function checkProducts(page, label, key) {
   if (desktop.unverifiedClaims.length || tablet.unverifiedClaims.length) {
     failures.push(`${label}: preview shows invented reviews or trust claims: ${[...desktop.unverifiedClaims, ...tablet.unverifiedClaims].join(', ')}`);
   }
-  if (!desktop.products) failures.push(`${label} (desktop): all product cards are hidden`);
-  if (!tablet.products) failures.push(`${label} (tablet): all product cards are hidden`);
+  if (desktop.products < desktop.allProducts) failures.push(`${label} (desktop): ${desktop.allProducts - desktop.products} of ${desktop.allProducts} product cards are hidden`);
+  if (tablet.products < tablet.allProducts) failures.push(`${label} (tablet): ${tablet.allProducts - tablet.products} of ${tablet.allProducts} product cards are hidden`);
   if (desktop.categories < 4 || desktop.visibleCategories < desktop.categories) {
     failures.push(`${label} (desktop): category links are missing or hidden (${desktop.visibleCategories}/${desktop.categories})`);
   }
@@ -439,6 +445,21 @@ try {
   if (publishPayload.fabricatedSocialProof) {
     failures.push('published storefront contains invented reviews, ratings or trust claims');
   }
+  // On a phone the photo is what people tap. The published site opens a product from anywhere on
+  // its card; the builder's preview only reacted to the small name link, so products "would not open".
+  await page.evaluate(() => {
+    const select = document.getElementById('selPage');
+    if (select) { select.value = 'home'; select.dispatchEvent(new Event('change')); }
+  });
+  await waitForStablePreview(page);
+  await page.frameLocator('#storePreviewFrame').locator('.sole-product .sole-product-photo').first().click();
+  await page.waitForFunction(() => /^p\//.test(document.getElementById('selPage')?.value || ''), null, { timeout: 5000 })
+    .catch(() => {});
+  const openedPage = await page.evaluate(() => document.getElementById('selPage')?.value);
+  if (!/^p\//.test(openedPage || '')) {
+    failures.push(`tapping a product photo in the preview did not open the product (page: ${openedPage})`);
+  }
+
   failures.push(...pageErrors.map(error => `browser error: ${error}`));
   if (previewNavigations > 1) {
     failures.push(`preview iframe reloaded ${previewNavigations} times while exercising styles`);

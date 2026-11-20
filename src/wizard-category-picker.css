@@ -1,0 +1,188 @@
+/* New-website products step: web builder button, Add category search, category chips, Store picker. */
+.wizard-category-picker {
+  display: grid;
+  gap: 8px;
+  margin: 2px 0 0;
+}
+
+.wizard-category-picker[hidden] {
+  display: none;
+}
+
+.wizard-category-picker-label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.wizard-category-picker [data-category-search] {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--app-silver, #c7ccd2);
+  border-radius: var(--app-card-radius, 10px);
+  background: #fff;
+  color: #111;
+  font: inherit;
+  font-size: 1rem;
+}
+
+.wizard-category-suggestions {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid #dfe3e8;
+  border-radius: var(--app-card-radius, 10px);
+  background: #fff;
+}
+
+.wizard-category-suggestions:empty {
+  display: none;
+}
+
+.wizard-category-suggestion {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 14px;
+  border: 0;
+  border-top: 1px solid #eef0f2;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wizard-category-suggestion:first-child {
+  border-top: 0;
+}
+
+.wizard-category-suggestion:active,
+.wizard-category-suggestion:focus-visible {
+  background: #f2f4f6;
+}
+
+.wizard-category-suggestion strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.wizard-category-suggestion span {
+  color: #5f6670;
+  font-size: 0.75rem;
+}
+
+.wizard-category-suggestion.is-custom strong {
+  font-weight: 700;
+}
+
+.wizard-category-picker > button[type="submit"] {
+  min-height: 44px;
+}
+
+.wizard-category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 6px;
+}
+
+.wizard-category-chips .website-wizard-category-row {
+  gap: 0;
+  min-height: 44px;
+  padding: 0 2px 0 4px;
+}
+
+.wizard-category-chip-name,
+.wizard-category-chip-remove {
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  color: #111;
+  font: inherit;
+  cursor: pointer;
+}
+
+.wizard-category-chip-name {
+  overflow: hidden;
+  max-width: 180px;
+  padding: 0 6px 0 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wizard-category-chip-remove {
+  display: inline-grid;
+  width: 40px;
+  place-items: center;
+  border-radius: 999px;
+  color: #5f6670;
+}
+
+.wizard-category-chip-remove:active,
+.wizard-category-chip-remove:focus-visible {
+  background: #eef0f2;
+}
+
+.wizard-category-chips .studio-panel-note {
+  margin: 0;
+}
+
+/* Go to web builder sits on top of the step, full width. */
+.website-wizard-top-builder {
+  margin: 0 0 10px;
+}
+
+.website-wizard-top-builder a.website-wizard-go-builder {
+  width: 100%;
+  min-height: 48px !important;
+  height: 48px;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Store picker: Select all and Add selected stay on top while the list scrolls. */
+.website-wizard-store-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 6px;
+}
+
+.website-wizard-store-select-all {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.website-wizard-store-select-all input,
+.website-wizard-store-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+
+.website-wizard-store-toolbar .btn-primary {
+  min-height: 44px;
+}
+
+.website-wizard-store-picker .form-input {
+  margin: 0 0 8px;
+}
+
+.website-wizard-store-list.website-wizard-product-list {
+  max-height: 60vh;
+}
+
+.website-wizard-product-row.website-wizard-store-row {
+  grid-template-columns: 24px 40px minmax(0, 1fr) auto;
+  cursor: pointer;
+}
+
+.website-wizard-product-row.website-wizard-store-row > strong {
+  grid-column: auto;
+}

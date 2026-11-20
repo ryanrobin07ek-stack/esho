@@ -1217,7 +1217,7 @@ test('new-website workspace keeps Store import and web-product actions without r
   assert.match(websitesNavigation, /title: "New web", route: "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?title: "Add"[\s\S]*?title: "Website editor"/);
   assert.doesNotMatch(pageSource, /Theme Studio/, 'The website editor is Litrus Mixer; no screen should still be called Theme Studio.');
   assert.match(pageSource, /website-management-new" href="\/account\/web\/studio\/websites\/webmaker" data-start-new-website>\+ New web/);
-  assert.match(pageSource, /renderNewWebsiteProducts\(\)[\s\S]*?id="website-wizard-load-store">Add from Store[\s\S]*?id="website-wizard-create-product">Add web product[\s\S]*?id="website-wizard-product-form"[\s\S]*?id="website-wizard-store-picker"/);
+  assert.match(pageSource, /renderNewWebsiteProducts\(\)[\s\S]*?id="website-wizard-create-product">Add product[\s\S]*?id="website-wizard-load-store">Add from Store[\s\S]*?data-wizard-add-category[^>]*>Add category[\s\S]*?id="website-wizard-store-picker"[\s\S]*?id="website-wizard-product-form"/);
   assert.match(pageSource, /const litrusBuilderRoute = "\/account\/web\/site\?new=1&edit=1&theme=litrus-mixer";[\s\S]*?id="website-wizard-go-builder"[\s\S]*?Go to web builder[\s\S]*?Choose products from Store/);
   assert.match(pageSource, /postRenderSetup\(path, params\) \{[\s\S]*?path === "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?this\.bindWebsiteBuilderEvents\(\)/);
   assert.doesNotMatch(pageSource, /renderWebsiteBuilderCatalog|renderWebsiteThemes\(|renderWebsiteThemeChoices|NEW WEBSITE · STEP [12] OF 3|Use your Store catalog|Continue to choose a theme|Choose a storefront theme/);
@@ -1253,7 +1253,7 @@ test('new-website workspace keeps Store import and web-product actions without r
   assert.match(pageSource, /applyWebsiteBuilderDraft\(draft, themeId\)[\s\S]*?theme\.id === \(themeId \|\| draft\.selected_theme\)[\s\S]*?website_theme_id: selectedTheme\.id[\s\S]*?this\.cacheActiveTenantCatalog\(\)/);
   assert.doesNotMatch(pageSource, /previewWindow\.setBuilderCatalog\(\{\s*products: JSON\.parse\(JSON\.stringify\(websiteDraft\.products\)\),\s*categories: JSON\.parse\(JSON\.stringify\(websiteDraft\.categories\)\)/);
   assert.match(pageSource, /fillThemeForShop\(theme\.id, catalog/);
-  assert.match(pageSource, /async prepareWebsiteBuilderDraftTenant\(draft, themeId\)[\s\S]*?const sourceCatalog = await this\.websiteBuilderSourceCatalog\(\);[\s\S]*?draft\.products = sourceCatalog\.products;[\s\S]*?draft\.categories = sourceCatalog\.categories;[\s\S]*?this\.setActiveTenantCatalog\(draftTenant, draftCatalog\);[\s\S]*?window\.localStorage\.setItem\(WEBSITE_BUILDER_DRAFT_SYNC_KEY, signature\);/);
+  assert.match(pageSource, /async prepareWebsiteBuilderDraftTenant\(draft, themeId\)[\s\S]*?draft\.products = Array\.isArray\(draft\.products\) \? draft\.products : \[\];[\s\S]*?draft\.categories = Array\.isArray\(draft\.categories\) \? draft\.categories : \[\];[\s\S]*?this\.setActiveTenantCatalog\(draftTenant, draftCatalog\);[\s\S]*?window\.localStorage\.setItem\(WEBSITE_BUILDER_DRAFT_SYNC_KEY, signature\);/);
   assert.match(pageSource, /handleRoute\(fullPath, shouldScroll = true, draftPrepared = false\)[\s\S]*?if \(!draftPrepared\) \{[\s\S]*?Preparing your new website preview[\s\S]*?this\.prepareWebsiteBuilderDraftTenant\([\s\S]*?\.then\(\(\) => \{[\s\S]*?this\.currentRoute\(\) === fullPath[\s\S]*?this\.handleRoute\(fullPath, shouldScroll, true\);/);
   assert.match(pageSource, /removeItem\("ESHOP_NEW_WEBSITE_DRAFT_V1"\)[\s\S]*?Website created at/);
   assert.equal((pageSource.match(/cloudflareRequest\("\/api\/tenants", \{\s*method: "PUT"/g) || []).length, 1,
@@ -1408,8 +1408,11 @@ test('new website draft discards a stale Chapa catalog and rejects non-main them
 
   await runPreparation.call(controller, draft, 'chapa-theme');
 
-  assert.deepEqual(tables.categories.map(category => category.name), ['Main Store category']);
-  assert.deepEqual(tables.products.map(product => product.name), ['Main Store product']);
+  // The new store keeps the products and categories its owner added; the Main Store catalogue is
+  // never copied in (that filled every new website with all Store products and wiped the owner's).
+  assert.doesNotMatch(prepareDraft, /websiteBuilderSourceCatalog/);
+  assert.deepEqual(tables.categories.map(category => category.name), ['Draft category']);
+  assert.deepEqual(tables.products.map(product => product.name), ['Draft product']);
   assert.deepEqual(tables.inventory, []);
   assert.deepEqual(tables.pages, []);
   assert.equal(SQLiteEngine.getStore().name, 'New website draft');

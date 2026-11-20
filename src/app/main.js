@@ -7319,9 +7319,11 @@ export const AppController = {
 
   async prepareWebsiteBuilderDraftTenant(draft, themeId) {
     const activeTenant = this.getActiveTenant();
-    const sourceCatalog = await this.websiteBuilderSourceCatalog();
-    draft.products = sourceCatalog.products;
-    draft.categories = sourceCatalog.categories;
+    // A new store has the products and categories its owner added in the wizard (by hand or with
+    // Add from Store). Replacing them here with the whole Main Store/POS catalogue is what filled
+    // every new website with all Store products and wiped the owner's own on the way in.
+    draft.products = Array.isArray(draft.products) ? draft.products : [];
+    draft.categories = Array.isArray(draft.categories) ? draft.categories : [];
     StudioRenderers.saveWebsiteBuilderDraft(draft);
     if (activeTenant.id !== WEBSITE_BUILDER_DRAFT_TENANT_ID &&
         !window.localStorage.getItem(WEBSITE_BUILDER_DRAFT_PREVIOUS_TENANT_KEY)) {

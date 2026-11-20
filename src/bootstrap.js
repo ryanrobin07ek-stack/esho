@@ -45,6 +45,8 @@ import './styles/app-screens-3.css';
 import './app-visual-theme.css';
 import './product-variants.css';
 import './attribute-pricing.css';
+import './editor-cards.css';
+import './wizard-category-picker.js';
 import { WEBSITE_THEME_CATALOG } from './theme-catalog.js';
 import { renderLiquidStorefront } from './liquid-storefront-renderer.js';
 import './theme-web-editor.js';

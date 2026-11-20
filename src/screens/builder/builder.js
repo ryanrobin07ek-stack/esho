@@ -146,8 +146,16 @@ export function setupLitrusBuilder(params, path) {
       const sendCatalog = () => {
         try {
           const store = SQLiteEngine.getStore();
-          const categories = SQLiteEngine.getCategories();
-          const products = SQLiteEngine.select("products", product => product.status !== "archived")
+          // A new-store draft has its own products and categories. Sending the Main Store's
+          // catalogue here filled the new store with every Store product, and the first autosave
+          // then wrote that list over the draft, so the owner's own products vanished.
+          const draftSource = isDraftEditor ? StudioRenderers.websiteBuilderDraft() : null;
+          const categories = draftSource
+            ? (Array.isArray(draftSource.categories) ? draftSource.categories : [])
+            : SQLiteEngine.getCategories();
+          const products = (draftSource
+            ? (Array.isArray(draftSource.products) ? draftSource.products : [])
+            : SQLiteEngine.select("products", product => product.status !== "archived"))
             .map(product => {
               const productCategoryIds = Array.isArray(product.category_ids) &&
                   String(product.category_ids[0] ?? "") === String(product.category_id ?? "")
@@ -172,6 +180,14 @@ export function setupLitrusBuilder(params, path) {
                 // Only a service carries a duration. Defaulting every product to an hour made
                 // the builder treat the whole catalogue as bookable time.
                 duration_minutes: window.EshopServiceModel.serviceDuration(product) || null,
+                // The builder's product page shows these; without them a product's options and
+                // attributes were saved but never visible while designing the site.
+                options: Array.isArray(product.options) ? product.options : [],
+                option1_name: product.option1_name || "",
+                option2_name: product.option2_name || "",
+                variants: Array.isArray(product.variants) ? product.variants.slice(0, 100) : [],
+                priced_attributes: Array.isArray(product.priced_attributes) ? product.priced_attributes : [],
+                taxonomy_attributes: Array.isArray(product.taxonomy_attributes) ? product.taxonomy_attributes : [],
                 category_names: categories
                   .filter(category => productCategoryIds.some(id => String(category.id) === String(id)))
                   .map(category => category.name)

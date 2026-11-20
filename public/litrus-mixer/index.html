@@ -1632,7 +1632,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .cgw.litrus-categories>.sole-category-heading{margin:0 0 24px}
 .cgw>h2{font-family:var(--font-head);margin-bottom:30px;font-size:2rem}
 :root{ --reveal-hidden-transform: translate(0) scale(1); }
-html:not(.reveal-js) .reveal{ opacity: 1 !important; filter: none !important; transform: none !important; }
+html:not(.reveal-js) .reveal{ opacity: 1 !important; filter: none !important; transform: none !important; clip-path: none !important; }
 .reveal{ opacity: 0; transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform, opacity; }
 .rev-up{ transform: translateY(80px); }
 .rev-down{ transform: translateY(-80px); }
@@ -1849,6 +1849,11 @@ body.adv #advSide{display:block;position:sticky;top:0;height:100vh;overflow:auto
 .sp-pdp{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:clamp(24px,5vw,64px);align-items:start}
 .sp-gallery{background:var(--sp-soft);border-radius:18px;overflow:hidden;aspect-ratio:1/1}
 .sp-gallery img{width:100%;height:100%;object-fit:cover;display:block}
+.sp-choices{display:grid;gap:10px;margin:14px 0 4px}
+.sp-choices label{display:grid;gap:5px;font-size:.8rem;font-weight:600}
+.sp-choices select{min-height:44px;padding:0 12px;border:1px solid rgba(127,127,127,.4);border-radius:10px;background:transparent;color:inherit;font:inherit;font-size:.92rem}
+.sp-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;margin:14px 0 4px;font-size:.82rem}
+.sp-specs div{min-width:0}.sp-specs dt{opacity:.65}.sp-specs dd{margin:2px 0 0;font-weight:600;overflow-wrap:anywhere}
 .sp-kicker{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;opacity:.65;margin-bottom:10px}
 .sp-price{font-size:1.7rem;font-weight:700;margin-bottom:14px}
 .sp-desc{line-height:1.7;opacity:.82;margin-bottom:24px}
@@ -4754,7 +4759,7 @@ function pdesc(pr){return SHOP.custom?(pr[4]||((pr[5]&&pr[5][0])?'From our '+pr[
 function buildData(){
  const tup=shopProds();
  return {key:slugify(SHOP.name||'shop'),name:ns.value||SHOP.name,cur:SHOP.cur,wa:waNum(),email:SHOP.email||'',phone:SHOP.phone||'',addr:SHOP.addr||'',fee:numOf(SHOP.fee),free:numOf(SHOP.free),
-  cats:catList(),products:tup.map(pr=>({id:pr[7],name:pr[0],price:pr[1],num:numOf(pr[1]),desc:pdesc(pr),cats:pr[5]||[],img:pr[6]||art(pr[2],pr[3],false),media_type:pr[8]||'image',spin_frames:pr[9]||[],video_url:pr[10]||'',booking_enabled:pr[11]===true,stock:pr[12]||0}))};
+  cats:catList(),products:tup.map((pr,i)=>{const src=(SHOP.custom&&Array.isArray(SHOP.products)&&SHOP.products[i])||{};return {id:pr[7],name:pr[0],price:pr[1],num:numOf(pr[1]),desc:pdesc(pr),cats:pr[5]||[],img:pr[6]||art(pr[2],pr[3],false),media_type:pr[8]||'image',spin_frames:pr[9]||[],video_url:pr[10]||'',booking_enabled:pr[11]===true,stock:pr[12]||0,options:src.options||[],variants:src.variants||[],priced_attributes:src.priced_attributes||[],taxonomy_attributes:src.taxonomy_attributes||[]}})};
 }
 const tplEl=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
 function headHTML(){
@@ -4793,7 +4798,17 @@ function pageBody(r){
   const rel=tup.filter(y=>y!==x&&(y[5]||[]).some(c=>(x[5]||[]).includes(c))),more=(rel.length?rel:tup.filter(y=>y!==x)).slice(0,4);
   const media=p.media_type==='video'&&p.video_url?'<video src="'+escH(p.video_url)+'" controls playsinline preload="metadata" poster="'+escH(p.img)+'" aria-label="'+escH(p.name)+' product video"></video>':'<img src="'+escH(p.img)+'" alt="'+escH(p.name)+'"'+(p.media_type==='spin'&&p.spin_frames.length>1?' data-spin-frames="'+escH(JSON.stringify(p.spin_frames))+'"': '')+(p.media_type==='cutout'?' class="sp-cutout"':'')+'>';
   const holdForm=p.booking_enabled&&Number(p.stock)>0?'<form class="sp-hold-form" data-litrus-product-hold-form data-product-id="'+escH(p.id)+'"><h2>Reserve this product</h2><p>Reserve up to '+Number(p.stock)+' available.</p><label>Quantity<input name="quantity" type="number" min="1" max="'+Math.max(1,Number(p.stock)||1)+'" value="1" required></label><label>Your name<input name="customer_name" autocomplete="name" required></label><label>Email or phone<input name="contact" autocomplete="email tel" required></label><button type="submit" class="sp-btn">Reserve this product</button><p class="sp-hold-status" role="status"></p></form>':'';
-  return topHTML(p.name,'',(c0?' / <a href="#" data-go="c/'+c0.slug+'">'+escH(c0.name)+'</a>':''))+'<div class="sp-wrap sp-pdp"><div class="sp-gallery">'+media+'</div><div class="sp-info">'+(c0?'<div class="sp-kicker">'+escH(c0.name)+'</div>':'')+'<div class="sp-price">'+escH((SHOP.cur?SHOP.cur+' ':'')+p.price)+'</div><p class="sp-desc">'+escH(p.desc)+'</p><div class="sp-buy"><div class="sp-qty"><button type="button" data-act="qminus" aria-label="Less">\u2212</button><input class="sp-qtyv" value="1" inputmode="numeric" aria-label="Quantity"><button type="button" data-act="qplus" aria-label="More">+</button></div><button type="button" class="sp-btn" data-act="addqty" data-pid="'+escH(p.id)+'">Add to bag</button></div><button type="button" class="sp-btn ghost" data-act="buynow" data-pid="'+escH(p.id)+'">Buy now</button>'+holdForm+'<ul class="sp-points"><li>Confirmed by message before we send it</li><li><a href="#" data-go="page/delivery">Delivery and returns</a></li></ul></div></div>'+(more.length?'<div class="sp-wrap sp-reltitle"><h2>You may also like</h2></div>'+prodsOf(more):'');}
+  // The product's options (Size, Colour...) and attribute choices with their prices, and its
+  // other attributes as details. They were saved on the product but never shown while designing.
+  const delta=d=>{const n=Number(d)||0;return n?' ('+(n>0?'+':'−')+(SHOP.cur?SHOP.cur+' ':'')+Math.abs(n)+')':''};
+  const optionSets=(p.options||[]).filter(o=>o&&o.name&&Array.isArray(o.values)&&o.values.length).slice(0,4);
+  const optionsHTML=optionSets.length?'<div class="sp-choices" data-product-variant-picker="'+escH(p.id)+'">'+optionSets.map((o,k)=>'<label>'+escH(o.name)+'<select data-variant-option="option'+(k+1)+'" data-variant-option-position="'+(k+1)+'"><option value="">Choose '+escH(String(o.name).toLowerCase())+'</option>'+o.values.map(v=>'<option value="'+escH(v.value)+'" data-price-delta="'+(Number(v.priceDelta)||0)+'">'+escH(v.value)+delta(v.priceDelta)+'</option>').join('')+'</select></label>').join('')+'</div>':'';
+  const pricedSets=(p.priced_attributes||[]).filter(a=>a&&a.attributeName&&Array.isArray(a.values)&&a.values.length).slice(0,5);
+  const pricedHTML=pricedSets.length?'<div class="sp-choices sp-attr-choices">'+pricedSets.map(a=>'<label>'+escH(a.attributeName)+'<select data-priced-attribute data-attribute-name="'+escH(a.attributeName)+'"><option value="" data-price-delta="0">Standard</option>'+a.values.map(v=>'<option value="'+escH(v.value)+'" data-price-delta="'+(Number(v.priceDelta)||0)+'">'+escH(v.value)+delta(v.priceDelta)+'</option>').join('')+'</select></label>').join('')+'</div>':'';
+  const pricedNames=new Set(pricedSets.map(a=>a.attributeName));
+  const specs=(p.taxonomy_attributes||[]).filter(a=>a&&a.attributeName&&a.value&&!pricedNames.has(a.attributeName)).slice(0,12);
+  const specsHTML=specs.length?'<dl class="sp-specs">'+specs.map(a=>'<div><dt>'+escH(a.attributeName)+'</dt><dd>'+escH(a.value)+'</dd></div>').join('')+'</dl>':'';
+  return topHTML(p.name,'',(c0?' / <a href="#" data-go="c/'+c0.slug+'">'+escH(c0.name)+'</a>':''))+'<div class="sp-wrap sp-pdp"><div class="sp-gallery">'+media+'</div><div class="sp-info">'+(c0?'<div class="sp-kicker">'+escH(c0.name)+'</div>':'')+'<div class="sp-price" data-base-price="'+(Number(p.num)||0)+'">'+escH((SHOP.cur?SHOP.cur+' ':'')+p.price)+'</div>'+optionsHTML+pricedHTML+specsHTML+'<p class="sp-desc">'+escH(p.desc)+'</p><div class="sp-buy"><div class="sp-qty"><button type="button" data-act="qminus" aria-label="Less">\u2212</button><input class="sp-qtyv" value="1" inputmode="numeric" aria-label="Quantity"><button type="button" data-act="qplus" aria-label="More">+</button></div><button type="button" class="sp-btn" data-act="addqty" data-pid="'+escH(p.id)+'">Add to bag</button></div><button type="button" class="sp-btn ghost" data-act="buynow" data-pid="'+escH(p.id)+'">Buy now</button>'+holdForm+'<ul class="sp-points"><li>Confirmed by message before we send it</li><li><a href="#" data-go="page/delivery">Delivery and returns</a></li></ul></div></div>'+(more.length?'<div class="sp-wrap sp-reltitle"><h2>You may also like</h2></div>'+prodsOf(more):'');}
  if(m=r.match(/^page\/(about|contact|delivery|privacy|terms)$/))return infoBody(m[1]);
  if(r=='404')return topHTML('Page not found')+'<div class="sp-wrap sp-empty"><p>We could not find that page.</p><a class="sp-btn" href="#" data-go="home">Back to the shop</a></div>';
  return null;
@@ -6859,7 +6874,7 @@ function read(){
  SHOP.serviceDepositPercent=Number(g('wServiceDeposit').value)||0;
  SHOP.serviceCapacity=serviceIntegerField('wServiceCapacity',1);SHOP.serviceCancelCutoffHours=serviceIntegerField('wServiceCutoff',2);SHOP.serviceMaxReschedules=serviceIntegerField('wServiceReschedules',2);
  showServiceProblems();
- const ok=prods.filter(p=>p.name.trim()); SHOP.products=ok.length?ok.map(p=>{const img=(p.img||'').trim();const images=Array.isArray(p.images)?p.images.filter(value=>value!==img):[];if(img)images.unshift(img);return {craftId:p.craftId||'',name:p.name.trim(),price:(p.price||'').trim(),desc:(p.desc||'').trim(),img,images:images.slice(0,8),media_type:p.media_type||'image',spin_frames:Array.isArray(p.spin_frames)?p.spin_frames.slice():[],video_url:p.video_url||'',booking_enabled:p.booking_enabled===true||p.booking_enabled===1,duration_minutes:SHOP.offerType==='services'?(Number(p.duration_minutes)||60):undefined,stock:Number(p.stock)||0,cats:(p.ci||[]).map(i=>SHOP.cats[i]).filter(Boolean)}}):(craftIntegrated?[]:null);
+ const ok=prods.filter(p=>p.name.trim()); SHOP.products=ok.length?ok.map(p=>{const img=(p.img||'').trim();const images=Array.isArray(p.images)?p.images.filter(value=>value!==img):[];if(img)images.unshift(img);return {craftId:p.craftId||'',name:p.name.trim(),price:(p.price||'').trim(),desc:(p.desc||'').trim(),img,images:images.slice(0,8),media_type:p.media_type||'image',spin_frames:Array.isArray(p.spin_frames)?p.spin_frames.slice():[],video_url:p.video_url||'',booking_enabled:p.booking_enabled===true||p.booking_enabled===1,duration_minutes:SHOP.offerType==='services'?(Number(p.duration_minutes)||60):undefined,stock:Number(p.stock)||0,cats:(p.ci||[]).map(i=>SHOP.cats[i]).filter(Boolean),options:p.options||[],variants:p.variants||[],priced_attributes:p.priced_attributes||[],taxonomy_attributes:p.taxonomy_attributes||[]}}):(craftIntegrated?[]:null);
 }
 function fillShopWords(){
  const type=SHOP.type||g('wType').value,bank=SHOP_COPY[type];if(!bank)return;
@@ -7391,6 +7406,11 @@ window.litrusSetCraftCatalog=function(payload){
    booking_enabled:product.booking_enabled===true||product.booking_enabled===1,
    duration_minutes:Number(product.duration_minutes)||60,
    stock:Number(product.stock)||0,
+   // Shown on the product page while designing; Litrus never edits them, Craft keeps the originals.
+   options:Array.isArray(product.options)?product.options.slice(0,4):[],
+   variants:Array.isArray(product.variants)?product.variants.slice(0,100):[],
+   priced_attributes:Array.isArray(product.priced_attributes)?product.priced_attributes.slice(0,5):[],
+   taxonomy_attributes:Array.isArray(product.taxonomy_attributes)?product.taxonomy_attributes.slice(0,40):[],
    ci:names.map(name=>categoryIndex.get(String(name).toLocaleLowerCase())).filter(index=>Number.isInteger(index))
   };
  });
@@ -7741,6 +7761,22 @@ previewFrame.addEventListener('load',()=>{
   const keys=['data-action','data-act','data-product-id','data-pid','data-add'];
   const match=[...previewSource.querySelectorAll('[data-action],[data-act],[data-add]')].find(item=>keys.every(key=>item.getAttribute(key)===action.getAttribute(key)));
   if(match)match.click();
+ });
+ // Like the published site: a tap anywhere on a product card (its photo, most of all) opens the
+ // product. Only the small name link did before, so on a phone products would not open at all.
+ // Picking an option or attribute in the preview shows the price it would sell for.
+ doc.addEventListener('change',event=>{
+  const select=event.target;if(!select||!select.closest||!select.matches('select[data-variant-option],select[data-priced-attribute]'))return;
+  const info=select.closest('.sp-info'),price=info&&info.querySelector('.sp-price[data-base-price]');if(!price)return;
+  const total=Number(price.dataset.basePrice)+[...info.querySelectorAll('select[data-variant-option],select[data-priced-attribute]')].reduce((sum,field)=>sum+(Number(field.selectedOptions[0]&&field.selectedOptions[0].dataset.priceDelta)||0),0);
+  price.textContent=(SHOP.cur?SHOP.cur+' ':'')+total;
+ });
+ doc.addEventListener('click',event=>{
+  if(event.defaultPrevented||!RT)return;
+  const target=event.target;if(!target||!target.closest)return;
+  const card=target.closest('.sole-product[data-pid]');
+  if(!card||target.closest('button,input,select,textarea,[data-go],[data-action],[data-act],[data-add]'))return;
+  event.preventDefault();RT.go('p/'+card.dataset.pid);
  });
 });
 if(window.ResizeObserver)new ResizeObserver(layoutPreview).observe(previewViewport);else window.addEventListener('resize',layoutPreview);
