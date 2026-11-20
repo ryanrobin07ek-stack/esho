@@ -51,7 +51,7 @@ test("nested Web Studio routes dispatch through the workspace renderer", async (
 });
 
 test("CHESSER styling is limited to Craft app routes and excludes Theme Studio", async () => {
-  const [app, pos] = await Promise.all([readAppSource({ lf: true }), read("../src/pos.js")]);
+  const [app, pos] = await Promise.all([readAppSource({ lf: true }), readTillSource()]);
   const themeSetup = app.match(/setAppShellTheme\(path(?:,\s*params\s*=\s*new URLSearchParams\(\))?\) \{([\s\S]*?)\r?\n  \},\r?\n\r?\n  currentRoute/)?.[1];
   // The CHESSER section runs to the end of the app stylesheet (it used to end at </style>).
   const craftStyles = (await readAppStyles({ lf: true })).match(/\/\* CHESSER visual system for Craft app screens only\. \*\/([\s\S]*)$/)?.[1];
