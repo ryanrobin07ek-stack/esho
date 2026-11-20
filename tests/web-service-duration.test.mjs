@@ -20,6 +20,25 @@ test("the web product form asks what the item is and how long it takes", () => {
   assert.match(appHtml, /stock: sellsTime \? null : productVariants\.stock \?\? stock,/);
 });
 
+const serviceFields = await readFile(new URL("../src/screens/craft/service-fields.js", import.meta.url), "utf8");
+
+test("the new-website wizard asks what the item is and how long it takes", () => {
+  // The wizard form uses the same 15-240 minute list as the store form.
+  assert.match(serviceFields, /import \{ SQLiteEngine, webServiceDurationOptions \} from '\.\.\/\.\.\/app\/main\.js';/);
+  assert.match(serviceFields, /<label data-service-duration\$\{startAsService \? "" : " hidden"\}>Duration<select name="duration_minutes">\$\{webServiceDurationOptions\(\)\}<\/select>/);
+  assert.match(serviceFields, /if \(stockInput\) stockInput\.required = !service;/);
+  assert.match(appHtml, /<label data-wizard-product-stock>Starting website stock/);
+  assert.match(appHtml, /\$\{serviceFieldsHTML\(\)\}/);
+  assert.match(serviceFields, /serviceFieldsHTML\(offerType = SQLiteEngine\.getStore\(\)\?\.offer_type\)/);
+  // Saved, loaded back for editing, and carried into the real website products.
+  assert.match(appHtml, /stock: durationMinutes \? null : variants\.stock \?\? stock,\s*duration_minutes: durationMinutes/);
+  assert.match(appHtml, /serviceFields\.load\(editingProduct\);/);
+  assert.match(appHtml, /const durationMinutes = window\.EshopServiceModel\.serviceDuration\(product\) \|\| null;/);
+  assert.match(appHtml, /stock,\s*duration_minutes: durationMinutes,/);
+  assert.match(appHtml, /Number\(product\.stock\) \|\| 0,\s*Number\(product\.duration_minutes\) \|\| 0,/,
+    "changing only a duration must still refresh the published draft catalogue");
+});
+
 test("the builder is told the real duration and the real mix of what is sold", () => {
   assert.doesNotMatch(appHtml, /Number\(product\.duration_minutes\) \|\| 60/,
     "no product may be silently turned into an hour-long booking");

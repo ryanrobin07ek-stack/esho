@@ -4,6 +4,7 @@
 import { AppController, AppUtils, SQLiteEngine, StudioRenderers, WEBSITE_BUILDER_DRAFT_SYNC_KEY, WEBSITE_BUILDER_DRAFT_TENANT_ID } from '../../app/main.js';
 import { bindWizardCatalogRefresh, bindWizardCategories, bindWizardClearProducts, bindWizardIdentity } from './new-store-steps.js';
 import { bindWizardProducts } from './new-store-products.js';
+import { serviceFieldsHTML } from './service-fields.js';
 import { bindWizardStorePicker } from './new-store-store-picker.js';
 
 export const newStoreScreen = {
@@ -72,9 +73,10 @@ export const newStoreScreen = {
         <div class="studio-form-grid">
           <label>Selling price<input name="price" type="number" min="0" step="0.01" required></label>
           <label>Cost price<input name="cost_price" type="number" min="0" step="0.01"></label>
-          <label>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label>
+          <label data-wizard-product-stock>Starting website stock<input name="stock" type="number" min="0" step="1" value="0" required></label>
           <label>SKU<input name="sku" maxlength="120"></label>
         </div>
+        ${serviceFieldsHTML()}
         <label>Description<textarea name="description" rows="3"></textarea></label>
         <div data-wizard-product-variants></div>
         <div class="web-product-attribute-pricing" data-wizard-product-attribute-pricing></div>

@@ -138,7 +138,9 @@ test("a category opens to its products and moves them to another category", asyn
 });
 
 test("the new-website wizard asks for the shop identity before the catalogue", () => {
-  const render = draft => new Function("AppUtils", `return function () {${wizardRender}\n};`)(AppUtils)
+  // The product form's item type and duration fields come from src/screens/craft/service-fields.js.
+  const serviceFieldsHTML = () => '<div data-service-fields></div>';
+  const render = draft => new Function("AppUtils", "serviceFieldsHTML", `return function () {${wizardRender}\n};`)(AppUtils, serviceFieldsHTML)
     .call({ websiteBuilderDraft: () => draft });
   const empty = render({ categories: [], products: [], shop_name: "", shop_address: "", wizard_step: "identity" });
   assert.match(empty, /id="website-wizard-identity-form"/);
@@ -154,6 +156,7 @@ test("the new-website wizard asks for the shop identity before the catalogue", (
   assert.ok(go, "Go to web builder is rendered");
   assert.equal(go.closest("[hidden]"), null, "and is not inside a hidden container");
   assert.ok(catalogue.querySelector('[data-remove-wizard-category="1"]'), "categories can be removed");
+  assert.ok(catalogue.querySelector("#website-wizard-product-form [data-service-fields]"), "the product form asks product or service");
 });
 
 test("new-website categories are never preloaded from the Store or POS", () => {
