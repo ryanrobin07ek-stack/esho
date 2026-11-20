@@ -8127,6 +8127,8 @@ export const AppController = {
     const draftEditor = params.get("new") === "1" && params.get("edit") === "1";
     if (path === "/") {
       void this.loadHomeDashboard();
+      // First-run setup guide and the Get started checklist (src/onboarding).
+      void import("../onboarding/onboarding.js").then(module => module.onHomeShown());
     }
     if (path === "/account/web/studio/websites/webmaker") {
       this.bindWebsiteBuilderEvents();

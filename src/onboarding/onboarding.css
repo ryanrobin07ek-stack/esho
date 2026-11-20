@@ -1,0 +1,252 @@
+/* First-run setup guide and the Home "Get started" checklist: flat app style, 48px targets. */
+.onb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: #eceff2;
+  overflow-y: auto;
+}
+
+.onb-card {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  width: min(100%, 440px);
+  padding: 28px 20px 20px;
+  border: 1px solid #c7ccd2;
+  border-radius: 10px;
+  background: #fff;
+  color: #111;
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.onb-card h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.onb-lead {
+  margin: 0;
+  color: #5f6670;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.onb-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.onb-dots i {
+  width: 22px;
+  height: 4px;
+  border-radius: 999px;
+  background: #dfe3e8;
+}
+
+.onb-dots i.on {
+  background: #111;
+}
+
+.onb-skip {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: #5f6670;
+  font: inherit;
+  font-size: .9rem;
+}
+
+.onb-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.onb-field input {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #c7ccd2;
+  border-radius: 10px;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.onb-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 110px;
+  gap: 10px;
+}
+
+.onb-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.onb-choice,
+.onb-secondary {
+  min-height: 48px;
+  border: 1px solid #c7ccd2;
+  border-radius: 10px;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  font-weight: 600;
+}
+
+.onb-choice.on {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+}
+
+.onb-primary {
+  min-height: 52px;
+  border: 0;
+  border-radius: 10px;
+  background: #111;
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.onb-error {
+  margin: 0;
+  color: #b42318;
+  font-size: .85rem;
+}
+
+.onb-added,
+.onb-pay {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.onb-added li {
+  color: #146c2e;
+  font-weight: 600;
+}
+
+.onb-pay li {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid #e3e6ea;
+  border-radius: 10px;
+}
+
+.onb-pay span {
+  color: #5f6670;
+  font-size: .88rem;
+}
+
+/* Home checklist */
+.onb-checklist {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 14px;
+  border: 1px solid #c7ccd2;
+  border-radius: 10px;
+  background: #fff;
+  color: #111;
+}
+
+.onb-checklist header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.onb-checklist h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.onb-checklist header span {
+  color: #5f6670;
+  font-size: .8rem;
+}
+
+.onb-close {
+  margin-left: auto;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #5f6670;
+  font-size: 1.3rem;
+}
+
+.onb-checklist ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.onb-checklist a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: #111;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.onb-tick {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1.5px solid #c7ccd2;
+  border-radius: 999px;
+  font-size: .75rem;
+}
+
+.onb-checklist li.done a {
+  color: #5f6670;
+  text-decoration: line-through;
+}
+
+.onb-checklist li.done .onb-tick {
+  border-color: #146c2e;
+  background: #146c2e;
+  color: #fff;
+}
+
+.onb-link {
+  justify-self: start;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #111;
+  font: inherit;
+  font-size: .88rem;
+  text-decoration: underline;
+}
