@@ -30,12 +30,14 @@ const APP_SCRIPT_TAG = `<script type="module" src="/${APP_SCRIPT}"></script>`;
 export async function appScriptFiles() {
   const main = await read(APP_SCRIPT);
   const modules = [...main.matchAll(/^import \{[^}]*\} from '\.\.\/((?:screens|shell)\/[\w/-]+\.js)';/gm)].map(match => `src/${match[1]}`);
+  // Controller and studio modules next to main.js (src/app/controller-*.js, src/app/studio-*.js).
+  for (const match of main.matchAll(/^import \{[^}]*\} from '\.\/([\w-]+\.js)';/gm)) modules.push(`src/app/${match[1]}`);
   for (let index = 0; index < modules.length; index += 1) {
     const dir = modules[index].slice(0, modules[index].lastIndexOf("/") + 1);
     const source = await read(modules[index]);
     for (const match of source.matchAll(/^import \{[^}]*\} from '\.\/([\w/-]+\.js)';/gm)) {
       const file = `${dir}${match[1]}`;
-      if (!modules.includes(file)) modules.push(file);
+      if (file !== APP_SCRIPT && !modules.includes(file)) modules.push(file);
     }
   }
   return [APP_SCRIPT, ...modules];
@@ -49,38 +51,47 @@ export async function appScriptFiles() {
 export async function readAppScript({ lf = false } = {}) {
   const [mainFile, ...moduleFiles] = await appScriptFiles();
   const mainRaw = await read(mainFile);
-  let main = toLf(mainRaw);
-  const rest = [];
-  for (const file of moduleFiles) {
-    const source = toLf(await read(file)).replace(/^export const (\w+) = \{\n([\s\S]*?)^\};\n/gm, (block, name, methods) => {
-      const spread = `  ...${name},\n`;
-      if (!main.includes(spread)) return block;
-      main = main.replace(spread, () => methods);
-      return "";
-    }).replace(/^export function (\w+)\(\{[^}]*\}\) \{\n([\s\S]*?)^\}\n/gm, (block, name, body) => {
-      // A screen branch cut out of a method (e.g. StudioRenderers.renderMainShopContent): main.js
-      // calls it with `return name.call(this, { ... });` where the branch body was. Put the body back.
-      const call = new RegExp(`^ *return ${name}\\.call\\(this, \\{[^}]*\\}\\);\\n`, "m");
-      if (!call.test(main)) return block;
-      main = main.replace(call, () => body);
-      return "";
-    });
-    rest.push(source);
+  // Every file's text. A moved object, or function, is put back where its spread (or call) stands,
+  // which may be in main.js or in another moved module (a method that was itself split); repeat
+  // until nothing more can be put back.
+  const docs = [toLf(mainRaw), ...(await Promise.all(moduleFiles.map(async file => toLf(await read(file)))))];
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let index = 1; index < docs.length; index += 1) {
+      const holderOf = text => docs.findIndex((doc, at) => at !== index && doc.includes(text));
+      docs[index] = docs[index].replace(/^export const (\w+) = \{\n([\s\S]*?)^\};\n/gm, (block, name, methods) => {
+        const spread = `  ...${name},\n`;
+        const at = holderOf(spread);
+        if (at < 0) return block;
+        docs[at] = docs[at].replace(spread, () => methods);
+        changed = true;
+        return "";
+      }).replace(/^export function (\w+)\(\{[^}]*\}\) \{\n([\s\S]*?)^\}\n/gm, (block, name, body) => {
+        // A screen branch cut out of a method (e.g. StudioRenderers.renderMainShopContent): its host
+        // calls it with `return name.call(this, { ... });` where the branch body was. Put the body back.
+        const call = new RegExp(`^ *return ${name}\\.call\\(this, \\{[^}]*\\}\\);\\n`, "m");
+        const at = docs.findIndex((doc, other) => other !== index && call.test(doc));
+        if (at < 0) return block;
+        docs[at] = docs[at].replace(call, () => body);
+        changed = true;
+        return "";
+      }).replace(/^export function (\w+)\([^)]*\) \{\n([\s\S]*?)^\}\n/gm, (block, name, body) => {
+        // Statement blocks cut out of a big method live as `export function name(...) { ... }` (body at a
+        // two-space indent) and are called in place with `name.call(this, ...);` or
+        // `return name.call(this, ...);`. Put each body back at its call, at the call's indent.
+        const call = new RegExp(`^( *)(?:return )?${name}\\.call\\(this(?:, [\\w, ]+)?\\);\\n`, "m");
+        const at = docs.findIndex((doc, other) => other !== index && call.test(doc));
+        if (at < 0) return block;
+        const found = docs[at].match(call);
+        const shift = " ".repeat(found[1].length - 2);
+        docs[at] = docs[at].replace(call, () => body.replace(/^(?=.)/gm, shift));
+        changed = true;
+        return "";
+      });
+    }
   }
-  // Statement blocks cut out of a big method live as `export function name(...) { ... }` (body at a
-  // two-space indent) and are called in place with `name.call(this, ...);` or
-  // `return name.call(this, ...);`. Put each body back at its call, at the call's indent.
-  for (let index = 0; index < rest.length; index += 1) {
-    rest[index] = rest[index].replace(/^export function (\w+)\([^)]*\) \{\n([\s\S]*?)^\}\n/gm, (block, name, body) => {
-      const call = new RegExp(`^( *)(?:return )?${name}\\.call\\(this(?:, [\\w, ]+)?\\);\\n`, "m");
-      const found = main.match(call);
-      if (!found) return block;
-      const shift = " ".repeat(found[1].length - 2);
-      main = main.replace(call, () => body.replace(/^(?=.)/gm, shift));
-      return "";
-    });
-  }
-  const text = [main, ...rest].join("\n");
+  const text = docs.join("\n");
   return lf || !mainRaw.includes("\r\n") ? text : text.replace(/\n/g, "\r\n");
 }
 
