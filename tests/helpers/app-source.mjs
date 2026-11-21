@@ -30,6 +30,8 @@ const APP_SCRIPT_TAG = `<script type="module" src="/${APP_SCRIPT}"></script>`;
 export async function appScriptFiles() {
   const main = await read(APP_SCRIPT);
   const modules = [...main.matchAll(/^import \{[^}]*\} from '\.\.\/((?:screens|shell)\/[\w/-]+\.js)';/gm)].map(match => `src/${match[1]}`);
+  // Controller and studio modules next to main.js (src/app/controller-*.js, src/app/studio-*.js).
+  for (const match of main.matchAll(/^import \{[^}]*\} from '\.\/([\w-]+\.js)';/gm)) modules.push(`src/app/${match[1]}`);
   for (let index = 0; index < modules.length; index += 1) {
     const dir = modules[index].slice(0, modules[index].lastIndexOf("/") + 1);
     const source = await read(modules[index]);
