@@ -2823,6 +2823,26 @@ html #store .sole-store .sole-product-grid.sole-product-grid.shop-settings-grid:
 }
 .wz-words{display:flex;align-items:center;gap:10px;margin:2px 0 10px;flex-wrap:wrap}.wz-words button{padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.35);background:transparent;color:inherit;cursor:pointer;font:inherit}.wz-words small{opacity:.75;flex:1 1 180px}
 #wServiceSettings{margin:8px 0;padding:14px;border:1px solid rgba(127,127,127,.4);border-radius:8px}#wServiceSettings legend{padding:0 6px;font-weight:700}.service-days,.service-settings-grid{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0}.service-days>span{width:100%;font-weight:600}.service-days label{display:flex;align-items:center;gap:5px}.service-settings-grid label{flex:1 1 140px}
+/* Corner and radius normalisation
+   One radius scale for the whole storefront: --lr-0 / --lr-sm / --lr-md / --lr-full.
+   Card corners control (--sole-card-radius, set with --sole-ctl-radius in the builder): Square 0, Soft 8 (controls sm),
+   Round 16 (controls md), Extra round 28 (controls full). On "Card's own" cards are square and controls follow the look's
+   --btn-radius, capped at sm, so square cards never sit next to pill buttons. Photos that touch a card corner use the card
+   radius; inset photos use a smaller concentric radius (--lr-inset). Hairline gaps and one-sided corners are fixed here too. */
+.sole-store{--lr-0:0px;--lr-sm:6px;--lr-md:12px;--lr-full:999px;--lr-card:var(--sole-card-radius,0px);--lr-ctl:var(--sole-ctl-radius,min(var(--btn-radius,0px),var(--lr-sm)));--lr-inset:calc(var(--lr-card)*.6)}
+html .sole-store .sole-product .p-btn,html .sole-store .sole-product .sole-product-add,html .sole-store .sole-product .p-icon-btn,html .sole-store .sole-product .sole-favorite,html .sole-store .sole-product .p-badge,html .sole-store .sole-product .sole-product-tag,html .sole-store .p-badge,html .sole-store .hero-btn,html .sole-store .hero-section a[class*=btn]{border-radius:min(var(--lr-ctl),var(--lr-full))!important}
+html .sole-store .sp{--sp-r:var(--lr-ctl)}
+html .sole-store input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]):not(.sp-qtyv),html .sole-store select{border-radius:min(var(--lr-ctl),22px)!important}
+html .sole-store textarea{border-radius:min(var(--lr-ctl),var(--lr-md))!important}
+html .sole-store .sp-gallery,html .sole-store .sp-sum,html .sole-store .cgw .cat-neu-wrap,html .sole-store .cgw .cat-split-img,html .sole-store .layout-n-bento .bn-t,html .sole-store .f-bento .box,html .sole-store .f-glass .panel{border-radius:var(--lr-card)!important}
+html .sole-store .sp-form .sp-radio{border-radius:min(var(--lr-ctl),var(--lr-md))!important}
+html .sole-store .p-card.style-9 .sole-product-photo,html .sole-store .p-card.style-16 .sole-product-photo,html .sole-store .p-card.style-19 .sole-product-photo,html .sole-store .p-card.style-21 .sole-product-photo,html .sole-store .p-card.style-25 .sole-product-photo{border-radius:var(--lr-card) var(--lr-card) 0 0!important}
+html .sole-store .p-card.card-sneaker .sole-product-photo,html .sole-store .p-card.card-luxury .sole-product-photo,html .sole-store .p-card.style-7 .sole-product-photo{border-radius:var(--lr-inset)!important}
+html .sole-store .p-card.style-13 .sole-product-photo,html .sole-store .p-card.style-26 .sole-product-photo{border-radius:var(--lr-inset) var(--lr-inset) 0 0!important}
+html .sole-store .sole-product-photo .sole-product-add{max-width:calc(100% - 22px);box-sizing:border-box}
+html .sole-store .sole-product :is(a,button):focus-visible{outline-offset:-3px}
+html .sole-store .sp-qty button:focus-visible,html .sole-store .cgw .litrus-category-link:focus-visible{outline-offset:-3px}
+html .sole-store .cgw .cat-hex h3,html #store .sole-store .cgw .cat-hex h3{left:12%;width:76%;bottom:24%;line-height:1.15;overflow-wrap:anywhere;min-width:0!important;max-width:76%!important}
 </style>
 </head><body>
 <div id="app"><aside id="wz" aria-label="Shop builder">
@@ -5713,6 +5733,7 @@ function render(){
  const PV=applyPal(sourceHero,wrap);
  wrap.style.setProperty('--sole-hero-bg',PV&&PV['--accent']||'#061324');
  wrap.style.setProperty('--sole-card-radius',cRad.value?cRad.value+'px':'');
+ wrap.style.setProperty('--sole-ctl-radius',({0:'0px',8:'6px',16:'12px',28:'999px'})[cRad.value]||'');
  if(SHOP.bgfx){
   const bgStyle=realBg(SHOP.bgfx);
   if(bgStyle){wrap.classList.add('bgo','bgo-'+bgStyle.c);const tint=document.createElement('span');tint.className='bgo-tint';tint.setAttribute('aria-hidden','true');wrap.appendChild(tint)}
