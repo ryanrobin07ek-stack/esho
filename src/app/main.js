@@ -73,6 +73,8 @@ import { engineCart } from './engine-cart.js';
 import { engineStore } from './engine-store.js';
 import { storeInfo, heroSlides, categories, products, plans, demoAnalytics } from './seed-data.js';
 import { WEBSITE_BUSINESS_TYPE_GROUPS, WEBSITE_BUSINESS_TYPE_THEME_OVERRIDES, WEBSITE_THEME_BUSINESS_GROUPS, webServiceDurationOptions } from './website-business-types.js';
+import { LOCAL_PRODUCT_MEDIA_PREFIX, INDEXEDDB_PRODUCT_MEDIA_PREFIX, localProductMediaDatabasePromise, openLocalProductMediaDatabase } from './local-product-media.js';
+export { LOCAL_PRODUCT_MEDIA_PREFIX, INDEXEDDB_PRODUCT_MEDIA_PREFIX, openLocalProductMediaDatabase } from './local-product-media.js';
 export { webServiceDurationOptions } from './website-business-types.js';
 export { storeInfo, categories, products, plans, demoAnalytics } from './seed-data.js';
 
@@ -103,23 +105,6 @@ const SQLiteEngine = {
   ...engineStore,
 };
 
-export const LOCAL_PRODUCT_MEDIA_PREFIX = "craft-local-media:";
-export const INDEXEDDB_PRODUCT_MEDIA_PREFIX = "craft-indexeddb-media:";
-let localProductMediaDatabasePromise;
-export const openLocalProductMediaDatabase = () => {
-  if (!localProductMediaDatabasePromise) {
-    localProductMediaDatabasePromise = new Promise((resolve, reject) => {
-      const request = indexedDB.open("craft-product-media", 1);
-      request.onupgradeneeded = () => {
-        if (!request.result.objectStoreNames.contains("files")) request.result.createObjectStore("files");
-      };
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(new Error("Local video storage could not be opened."));
-      request.onblocked = () => reject(new Error("Local video storage is busy. Close other Craft tabs and try again."));
-    });
-  }
-  return localProductMediaDatabasePromise;
-};
 
   // Router, SEO, and Core Utilities for Craft
 const AppUtils = {
