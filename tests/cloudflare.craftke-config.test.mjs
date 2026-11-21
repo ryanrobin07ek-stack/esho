@@ -57,12 +57,13 @@ test('the craft.ke wrangler config targets craft.ke resources and a distinct Wor
   assert.equal(config.d1_databases.length, 1);
   assert.equal(config.d1_databases[0].binding, 'DB');
   assert.equal(config.d1_databases[0].database_name, 'craftke-catalog');
-  assert.equal(config.d1_databases[0].database_id, 'REPLACE_WITH_NEW_D1_ID');
+  // The id of the new account's own database (created 2026-11-21); never the production one.
+  assert.equal(config.d1_databases[0].database_id, 'fd15021f-0363-45f9-b936-f3cf34809843');
   assert.equal(config.d1_databases[0].migrations_dir, production.d1_databases[0].migrations_dir);
 
   assert.equal(config.kv_namespaces.length, 1);
   assert.equal(config.kv_namespaces[0].binding, 'TENANTS');
-  assert.equal(config.kv_namespaces[0].id, 'REPLACE_WITH_NEW_KV_ID');
+  assert.equal(config.kv_namespaces[0].id, '7999a2de4c614f2ebb1d6c35f16bf90c');
 
   assert.deepEqual(config.r2_buckets, [{ binding: 'BUSINESS_ARCHIVE', bucket_name: 'craftke-business-archive' }]);
 });
@@ -91,10 +92,10 @@ test('the craft.ke wrangler config holds no id, name or domain from the producti
   }
   assert.doesNotMatch(text, /rrobin/);
   assert.doesNotMatch(text, /eshop-/);
-  // The only placeholders are the new-account ids, and every one is still unfilled.
+  // Database and shop-list ids are filled in; these still wait for the zone move and a new Turnstile widget.
   assert.deepEqual(
     strings.filter(value => value.startsWith('REPLACE_WITH_')).sort(),
-    ['REPLACE_WITH_NEW_D1_ID', 'REPLACE_WITH_NEW_KV_ID', 'REPLACE_WITH_NEW_TURNSTILE_SITE_KEY', 'REPLACE_WITH_NEW_ZONE_ID']
+    ['REPLACE_WITH_NEW_TURNSTILE_SITE_KEY', 'REPLACE_WITH_NEW_ZONE_ID']
   );
 });
 
