@@ -37,7 +37,7 @@ export async function appScriptFiles() {
     const source = await read(modules[index]);
     for (const match of source.matchAll(/^import \{[^}]*\} from '\.\/([\w/-]+\.js)';/gm)) {
       const file = `${dir}${match[1]}`;
-      if (!modules.includes(file)) modules.push(file);
+      if (file !== APP_SCRIPT && !modules.includes(file)) modules.push(file);
     }
   }
   return [APP_SCRIPT, ...modules];
