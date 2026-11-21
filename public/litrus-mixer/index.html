@@ -4638,6 +4638,8 @@ function SPRT(D){
   return top('Your cart',n+(n==1?' item':' items'))+'<div class="sp-wrap sp-cartgrid"><div class="sp-lines">'+c.map(line).join('')+'</div><aside class="sp-sum"><h2>Summary</h2><div class="sp-row"><span>Subtotal</span><b>'+fmt(t.sub)+'</b></div><p class="sp-note">'+(s.fee>0?'Delivery is worked out at checkout'+(s.free>0?'. Free delivery over '+fmt(s.free):''):'Delivery is arranged when you order.')+'</p><a class="sp-btn" href="#" data-go="checkout">Checkout</a><a class="sp-link" href="#" data-go="shop">Continue shopping</a></aside></div>'};
 
  const sumHTML=(c,mode)=>{const t=totals(c,mode);return '<h2>Your order</h2>'+c.map(i=>{const p=P()[i.id],option=optionText(i);return '<div class="sp-row sp-mini"><span>'+i.q+' \u00d7 '+esc(p.name)+(option?' ('+esc(option)+')':'')+'</span><b>'+fmt(itemPrice(i)*i.q)+'</b></div>'}).join('')+'<div class="sp-row"><span>Subtotal</span><b>'+fmt(t.sub)+'</b></div><div class="sp-row"><span>Delivery</span><b>'+(mode==='pickup'?'Pick up':(t.fee?fmt(t.fee):'Free'))+'</b></div><div class="sp-row sp-total"><span>Total</span><b>'+fmt(t.total)+'</b></div>'};
+ // The shop's real ways to pay (Payments in Craft): Paystack is added by live-catalog.js on a live shop.
+ const payGroupHTML=s=>{const d=Array.isArray(s.directPayments)?s.directPayments:[];return '<div class="sp-radios" data-pay-group>'+d.map((c,i)=>'<label class="sp-radio"><input type="radio" name="pay" value="'+esc(c.value)+'"'+(i?'':' checked')+'><span>'+esc(c.title)+'<small>'+esc(c.detail)+'</small></span></label>').join('')+'</div>'+(d.length?'':'<p class="sp-pay-note" data-pay-template-note>'+esc(s.name||'The shop')+' will contact you to confirm your order and how to pay.</p>')};
  const checkoutPage=()=>{const c=cart(),s=S();
   if(!c.length)return top('Checkout','')+'<div class="sp-wrap sp-empty"><p>Your cart is empty, so there is nothing to check out yet.</p><a class="sp-btn" href="#" data-go="shop">Start shopping</a></div>';
   const via=[];if(s.wa)via.push(['wa','WhatsApp']);if(s.email)via.push(['mail','Email']);
@@ -4646,7 +4648,7 @@ function SPRT(D){
   +'<h2>Your details</h2><label>Full name<input name="name" autocomplete="name"></label><label>Phone number<input name="phone" type="tel" inputmode="tel" autocomplete="tel"></label><label>Email <small>(optional)</small><input name="email" type="email" autocomplete="email"></label>'
   +'<h2>Delivery</h2><div class="sp-radios"><label class="sp-radio"><input type="radio" name="dm" value="delivery" checked><span>Deliver to me<small>'+esc(feeTxt)+'</small></span></label><label class="sp-radio"><input type="radio" name="dm" value="pickup"><span>I will pick up<small>'+(s.addr?esc(s.addr):'Free')+'</small></span></label></div>'
   +'<div id="spAddr"><label>Town or area<input name="town" autocomplete="address-level2"></label><label>Address or landmark<textarea name="addr" rows="2" autocomplete="street-address"></textarea></label></div>'
-  +'<h2>Payment</h2><div class="sp-radios"><label class="sp-radio"><input type="radio" name="pay" value="Mobile money / M-Pesa" checked><span>Mobile money<small>We share payment details when we confirm</small></span></label><label class="sp-radio"><input type="radio" name="pay" value="Cash on delivery or pickup"><span>Cash<small>Pay when you receive your order</small></span></label><label class="sp-radio"><input type="radio" name="pay" value="Bank or card (send me a payment link)"><span>Bank or card<small>We send you a payment link</small></span></label></div>'
+  +'<h2>Payment</h2>'+payGroupHTML(s)
   +'<label>Note for us <small>(optional)</small><textarea name="note" rows="2"></textarea></label>'
   +(via.length>1?'<h2>Send my order by</h2><div class="sp-radios">'+via.map((v,i)=>'<label class="sp-radio"><input type="radio" name="via" value="'+v[0]+'"'+(i?'':' checked')+'><span>'+v[1]+'</span></label>').join('')+'</div>':'<input type="hidden" name="via" value="'+(via[0]?via[0][0]:'none')+'">')
   +(via.length?'':'<p class="sp-note">No WhatsApp number or email is set for this shop yet, so the order will only be saved on this device.</p>')
@@ -4786,6 +4788,7 @@ function pdesc(pr){return SHOP.custom?(pr[4]||((pr[5]&&pr[5][0])?'From our '+pr[
 function buildData(){
  const tup=shopProds();
  return {key:slugify(SHOP.name||'shop'),name:ns.value||SHOP.name,cur:SHOP.cur,wa:waNum(),email:SHOP.email||'',phone:SHOP.phone||'',addr:SHOP.addr||'',fee:numOf(SHOP.fee),free:numOf(SHOP.free),
+  directPayments:typeof window.litrusDirectPaymentChoices==='function'?window.litrusDirectPaymentChoices(SHOP.paymentOptions):[],
   cats:catList(),products:tup.map((pr,i)=>{const src=(SHOP.custom&&Array.isArray(SHOP.products)&&SHOP.products[i])||{};return {id:pr[7],name:pr[0],price:pr[1],num:numOf(pr[1]),desc:pdesc(pr),cats:pr[5]||[],img:pr[6]||art(pr[2],pr[3],false),media_type:pr[8]||'image',spin_frames:pr[9]||[],video_url:pr[10]||'',booking_enabled:pr[11]===true,stock:pr[12]||0,options:src.options||[],variants:src.variants||[],priced_attributes:src.priced_attributes||[],taxonomy_attributes:src.taxonomy_attributes||[]}})};
 }
 const tplEl=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
@@ -5302,7 +5305,11 @@ function exportPagesRuntime(){
   var delivery=choice('dm','delivery','Deliver to me',data.shop.fee?money(data.shop.fee):'Free',true);
   var pickup=choice('dm','pickup','I will pick up',data.shop.addr||'Free',false);
   form.append(delivery,pickup,field('Town or area','town','text'),field('Address or landmark','addr','text'));
-  form.append(element('h2','','Payment'),choice('pay','Mobile money / M-Pesa','Mobile money','We share payment details when we confirm',true),choice('pay','Cash on delivery or pickup','Cash','Pay when you receive your order',false),choice('pay','Bank or card (send me a payment link)','Bank or card','We send you a payment link',false));
+  // The shop's real ways to pay (Payments in Craft); the live shop also offers Paystack when connected.
+  form.append(element('h2','','Payment'));
+  var direct=Array.isArray(data.shop.directPayments)?data.shop.directPayments:[];
+  if(direct.length)direct.forEach(function(c,i){form.append(choice('pay',c.value,c.title,c.detail,i===0))});
+  else form.append(element('p','sp-pay-note',(data.shop.name||'The shop')+' will contact you to confirm your order and how to pay.'));
   form.append(field('Note for us (optional)','note','text'));
   var via=[];
   if(data.shop.wa)via.push(['wa','WhatsApp']);
@@ -7472,6 +7479,7 @@ window.litrusSetCraftCatalog=function(payload){
  SHOP.serviceOpenTime=String(shop.service_open_time||'09:00');SHOP.serviceCloseTime=String(shop.service_close_time||'17:00');
  SHOP.serviceTimezone=String(shop.service_timezone||'Africa/Nairobi');SHOP.serviceBufferMinutes=Number(shop.service_buffer_minutes)||0;
  SHOP.serviceDepositPercent=Number(shop.service_deposit_percent)||0;
+ SHOP.paymentOptions=shop.payment_options&&typeof shop.payment_options==='object'?shop.payment_options:null;
  const intSetting=(value,min,max,fallback)=>{if(value===undefined||value===null||value===''||typeof value==='boolean')return fallback;const number=Number(value);return Number.isInteger(number)&&number>=min&&number<=max?number:fallback};
  SHOP.serviceCapacity=intSetting(shop.service_capacity,1,20,1);SHOP.serviceCancelCutoffHours=intSetting(shop.service_cancel_cutoff_hours,0,168,2);SHOP.serviceMaxReschedules=intSetting(shop.service_max_reschedules,0,10,2);
  SHOP.tagline=String(shop.tagline||'');SHOP.email=String(shop.email||'');SHOP.phone=String(shop.phone||'');

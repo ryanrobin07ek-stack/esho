@@ -1,6 +1,7 @@
 // Craft payments screen (/account/payments).
 // Moved verbatim from the app script (index.html, then src/app/main.js).
 import { AppUtils, SQLiteEngine, StudioRenderers } from '../../app/main.js';
+import { renderDirectPayments } from './direct-payments.js';
 
 // Body of the `if (path === "/account/payments")` branch of StudioRenderers.renderMainShopContent(), moved verbatim.
 // It reads that method's locals, which the method passes in by name.
@@ -46,7 +47,7 @@ export function renderPayments({ activeTenant }) {
           <label style="display:flex;align-items:flex-start;gap:8px;"><input type="checkbox" name="confirm_reuse" required><span>Use this as the default payment account for my websites.</span></label>
           <button type="submit" class="btn-secondary" data-paystack-reuse-submit>Use this account</button><p role="status" data-paystack-reuse-status></p>
         </form>
-        </article></section>`;
+        </article>${renderDirectPayments()}</section>`;
 }
 
 // Screen entry points. StudioRenderers.renderMainShopContent() computes the workspace data this screen

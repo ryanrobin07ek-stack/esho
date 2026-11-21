@@ -93,6 +93,7 @@
       paystackConnected: store.paystack_connected === true || store.paystack_connected === 1 || store.paystack_connected === "1"
         ? true
         : store.paystack_connected === false || store.paystack_connected === 0 || store.paystack_connected === "0" ? false : null,
+      directPayments: directPaymentChoices(store.payment_options),
       wa: String(store.whatsapp || store.whatsapp_number || data.shop.wa || ""),
       email: String(store.email || ""),
       phone: String(store.phone || ""),
@@ -928,6 +929,33 @@
     if (note) note.textContent = paying ? "(required for your Paystack receipt)" : always ? "(required)" : "(optional)";
   }
 
+  // The ways to pay the shop directly that the owner switched on (Payments → "Ways customers can pay you
+  // directly", saved as store.payment_options). Same rules as src/screens/craft/direct-payments.js.
+  function directPaymentChoices(raw) {
+    const source = raw && typeof raw === "object" ? raw : {};
+    const clean = (value, max) => String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
+    const choices = [];
+    const mpesa = source.mpesa && typeof source.mpesa === "object" ? source.mpesa : {};
+    const kind = ["till", "paybill", "phone"].includes(mpesa.kind) ? mpesa.kind : "till";
+    const number = kind === "phone" ? clean(mpesa.number, 20).replace(/[^\d+ ]/g, "") : String(mpesa.number || "").replace(/\D/g, "").slice(0, 12);
+    if (mpesa.enabled === true && number) {
+      const account = clean(mpesa.account, 40);
+      choices.push(kind === "paybill"
+        ? { value: "M-Pesa", title: `M-Pesa Paybill ${number}`, detail: `Account: ${account || "your order number"}` }
+        : kind === "phone"
+          ? { value: "M-Pesa", title: `M-Pesa: send money to ${number}`, detail: "Use your order number as the message" }
+          : { value: "M-Pesa", title: `M-Pesa Buy Goods, Till ${number}`, detail: "Pay when the shop confirms your order" });
+    }
+    if (source.cash && source.cash.enabled === true) {
+      choices.push({ value: "Cash", title: "Cash on delivery or pickup", detail: "Pay when you receive your order" });
+    }
+    const bank = clean(source.bank && source.bank.details, 300);
+    if (source.bank && source.bank.enabled === true && bank) {
+      choices.push({ value: "Bank transfer", title: "Bank transfer", detail: bank });
+    }
+    return choices;
+  }
+
   function paymentChoice(value, title, detail, checked) {
     const option = document.createElement("label");
     option.className = "sp-radio";
@@ -955,12 +983,23 @@
     form.dataset.eshopPaystackOption = "true";
     const connected = data?.shop?.paystackConnected;
     if (connected === null || connected === undefined) form.dataset.eshopEmailRequired = "always";
-    const group = form.querySelector('input[name="pay"]')?.closest(".sp-radios");
+    // Pages built now mark the group; older published pages only have the radios inside it.
+    const group = form.querySelector("[data-pay-group]") || form.querySelector('input[name="pay"]')?.closest(".sp-radios");
     if (!group) {
       syncCheckoutEmail(form);
       return;
     }
+    // The page's own "will contact you" note is replaced by what this shop really offers.
+    form.querySelector("[data-pay-template-note]")?.remove();
     const shopName = String(data?.shop?.name || "").trim() || "The shop";
+    const direct = Array.isArray(data?.shop?.directPayments) ? data.shop.directPayments : [];
+    const directChoices = checkFirst => direct.map((choice, index) =>
+      paymentChoice(choice.value, choice.title, choice.detail, checkFirst && index === 0));
+    if (connected === false && direct.length) {
+      group.replaceChildren(...directChoices(true));
+      syncCheckoutEmail(form);
+      return;
+    }
     if (connected === false) {
       const note = document.createElement("p");
       note.className = "sp-pay-note";
@@ -972,8 +1011,8 @@
     }
     const paystack = paymentChoice("paystack", "Pay securely with Paystack", "M-Pesa or card", true);
     if (connected === true) {
-      group.replaceChildren(paystack, paymentChoice("Pay the shop directly", "Pay the shop directly",
-        `${shopName} confirms your order and how to pay`, false));
+      group.replaceChildren(paystack, ...(direct.length ? directChoices(false) : [paymentChoice("Pay the shop directly", "Pay the shop directly",
+        `${shopName} confirms your order and how to pay`, false)]));
     } else {
       group.prepend(paystack);
     }
@@ -2683,4 +2722,5 @@
   global.litrusDecorateCard = litrusDecorateCard;
   global.litrusInitCardPreview = litrusInitCardPreview;
   global.litrusStartLiveStore = litrusStartLiveStore;
+  global.litrusDirectPaymentChoices = directPaymentChoices;
 })(window);

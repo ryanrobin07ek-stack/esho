@@ -32,6 +32,7 @@ import { renderCrmPoints } from '../screens/craft/crm-points.js';
 import { renderCrmSubscribers } from '../screens/craft/crm-subscribers.js';
 import { renderCrmNotifications } from '../screens/craft/crm-notifications.js';
 import { renderPayments } from '../screens/craft/payments.js';
+import { bindDirectPayments } from '../screens/craft/direct-payments.js';
 import { newStoreScreen, newStoreDraft, newStoreDraftSave, newStoreEvents } from '../screens/craft/new-store.js';
 import { setupLitrusBuilder, builderScreen } from '../screens/builder/builder.js';
 import { builderCatalogBridge, litrusMixerCatalog } from '../screens/builder/builder-catalog.js';
@@ -1766,9 +1767,10 @@ export const StudioRenderers = {
             </div>
             <div class="website-management-actions">
               <button class="btn-primary" type="button" data-edit-website="${AppUtils.escapeHTML(website.id)}">Edit</button>
+              ${website.id === WEBSITE_BUILDER_DRAFT_TENANT_ID ? "" /* A draft has no domain, no visitors and nothing on the server to delete yet. */ : `
               <a class="btn-secondary" href="/account/profile/webs/${encodeURIComponent(website.id)}/domains" data-route="/account/profile/webs/${encodeURIComponent(website.id)}/domains">Domains</a>
               <a class="btn-secondary" href="/account/profile/webs/${encodeURIComponent(website.id)}/stats" data-route="/account/profile/webs/${encodeURIComponent(website.id)}/stats">Stats</a>
-              <button class="btn-secondary profile-website-delete" type="button" data-delete-website="${AppUtils.escapeHTML(website.id)}"${website.id === "main" ? ' disabled title="The main Craft domain cannot be deleted."' : ""}>${deleteLabel}</button>
+              <button class="btn-secondary profile-website-delete" type="button" data-delete-website="${AppUtils.escapeHTML(website.id)}"${website.id === "main" ? ' disabled title="The main Craft domain cannot be deleted."' : ""}>${deleteLabel}</button>`}
             </div>
             <button class="btn-primary website-management-manage" type="button" data-manage-website="${AppUtils.escapeHTML(website.id)}">Manage this web</button>
           </article>
@@ -3959,6 +3961,7 @@ export const StudioRenderers = {
   bindBusinessCloudActions(container, path, snapshot, tenantId = AppController.getActiveTenant().id) {
     if (["/account/payments", "/account/web/studio/payments"].includes(path)) {
       this.bindPaystackSetup(container, tenantId);
+      bindDirectPayments(container);
     }
     const websiteCurrencyForm = container.querySelector("[data-app-website-currency]");
     if (websiteCurrencyForm && window.Capacitor?.isNativePlatform?.() === true) {

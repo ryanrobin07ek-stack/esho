@@ -1,14 +1,29 @@
 // Craft home screen (/): the launchpad and its summary dashboard.
 // Moved verbatim from the app script (index.html, then src/app/main.js).
-import { AppController, AppUtils, StudioRenderers } from '../../app/main.js';
+import { AppController, AppUtils, SQLiteEngine, StudioRenderers } from '../../app/main.js';
+
+// Guest accounts get a made-up username such as "g-rrobinhq-18c339da": never greet anyone with that.
+const GENERATED_USERNAME = /^g-[a-z0-9]+-[0-9a-f]{6,}$/i;
+
+/** Who Home says hi to: the shop's name, else a real account username, else "there". */
+export function greetingName({ shopName = "", username = "", signedIn = false } = {}) {
+  const shop = String(shopName || "").trim();
+  // "Craft" is the name a new install starts with, not the owner's shop name.
+  if (shop && shop.toLowerCase() !== "craft") return shop;
+  const user = String(username || "").trim();
+  return signedIn && user && !GENERATED_USERNAME.test(user) ? user : "there";
+}
 
 export const homeScreen = {
   renderLaunchpad() {
     document.title = "Home — Craft";
-    const hasAccountSession = Boolean(window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1"));
-    const username = hasAccountSession
-      ? window.localStorage.getItem("ESHOP_ACCOUNT_USERNAME_V1")?.trim() || "there"
-      : "there";
+    let shopName = "";
+    try { shopName = SQLiteEngine.getStore()?.name || ""; } catch { shopName = ""; }
+    const username = greetingName({
+      shopName,
+      username: window.localStorage.getItem("ESHOP_ACCOUNT_USERNAME_V1"),
+      signedIn: Boolean(window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1"))
+    });
     return `
       <main class="home-screen" aria-label="Craft home">
         <header class="home-screen-header">

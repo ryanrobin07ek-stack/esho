@@ -869,7 +869,7 @@ const variantCartLine = {
   option1_name: "Size", option2_name: "Color", price: 2700
 };
 
-function mountCheckout({ cart = [variantCartLine], holds = [], products = [sneaker], handler, pay = undefined, paystackConnected = true, email = "sam@example.test" } = {}) {
+function mountCheckout({ cart = [variantCartLine], holds = [], products = [sneaker], handler, pay = undefined, paystackConnected = true, paymentOptions = undefined, email = "sam@example.test" } = {}) {
   const dom = new JSDOM('<div id="store"></div>', { url: "https://shop.example/#/checkout", runScripts: "outside-only" });
   const { window } = dom;
   const root = window.document.getElementById("store");
@@ -877,7 +877,7 @@ function mountCheckout({ cart = [variantCartLine], holds = [], products = [sneak
   const requests = [];
   const events = [];
   window.__ESHOP_THEME_CATALOG__ = {
-    store: { name: "Main shop", currency: "KES", delivery_fee: 0, ...(paystackConnected === null ? {} : { paystack_connected: paystackConnected ? 1 : 0 }) }, products, categories: []
+    store: { name: "Main shop", currency: "KES", delivery_fee: 0, ...(paymentOptions ? { payment_options: paymentOptions } : {}), ...(paystackConnected === null ? {} : { paystack_connected: paystackConnected ? 1 : 0 }) }, products, categories: []
   };
   window.__ESHOP_TRACK_STOREFRONT_EVENT__ = (id, type, count) => events.push({ id, type, count });
   window.SPD = { shop: { key: "main", name: "Main shop", products: [] }, pages: {}, shell: {}, templates: {} };
@@ -900,11 +900,13 @@ function mountCheckout({ cart = [variantCartLine], holds = [], products = [sneak
   window.eval(runtime);
   window.litrusStartLiveStore(window.SPD);
   const form = root.querySelector("#spco");
-  const choice = pay ?? (paystackConnected === null ? "Cash on delivery or pickup" : paystackConnected ? "Pay the shop directly" : null);
-  if (choice) form.querySelector(`input[name="pay"][value="${choice}"]`).checked = true;
-  form.querySelectorAll('input[name="pay"]').forEach(input => {
-    if (input.value !== choice) input.checked = false;
-  });
+  const choice = pay ?? (paystackConnected === null ? "Cash on delivery or pickup" : paystackConnected && !paymentOptions ? "Pay the shop directly" : null);
+  if (choice) {
+    form.querySelector(`input[name="pay"][value="${choice}"]`).checked = true;
+    form.querySelectorAll('input[name="pay"]').forEach(input => {
+      if (input.value !== choice) input.checked = false;
+    });
+  }
   return {
     window, root, form, requests, events,
     async submit() {
@@ -3096,4 +3098,35 @@ test("Litrus inside Craft saves only when asked, and knows when changes are unsa
 test("Litrus Publish inside Craft saves first and publishes only what was saved", () => {
   const publish = editor.slice(editor.indexOf(" publishButton.onclick=async()=>{"), editor.indexOf("window.parent.postMessage({type:'craft-litrus-ready'"));
   assert.match(publish, /const payload=await craftSave\(\{strict:true\}\);[\s\S]*?if\(!payload\)\{[\s\S]*?return\}[\s\S]*?type:'craft-litrus-publish',\.\.\.payload/);
+});
+
+test("Litrus checkout shows the shop's own ways to pay, with or without Paystack", async () => {
+  const paymentOptions = {
+    mpesa: { enabled: true, kind: "paybill", number: "247 247", account: "" },
+    cash: { enabled: true },
+    bank: { enabled: false, details: "Ignored while switched off" }
+  };
+  const direct = mountCheckout({ paystackConnected: false, paymentOptions, email: "", handler: () => orderResponse() });
+  try {
+    const choices = [...direct.form.querySelectorAll('input[name="pay"]')];
+    assert.deepEqual(choices.map(input => input.value), ["M-Pesa", "Cash"], "only what the owner switched on");
+    assert.equal(choices[0].checked, true, "the first way to pay is preselected");
+    assert.match(direct.form.textContent, /M-Pesa Paybill 247247/);
+    assert.match(direct.form.textContent, /Account: your order number/);
+    assert.equal(direct.form.querySelector("[data-eshop-pay-note]"), null);
+    await direct.submit();
+    assert.equal(direct.requests.length, 1);
+    assert.equal(direct.requests[0].body.payment_method, "manual", "the shop settles these orders itself");
+  } finally {
+    direct.window.close();
+  }
+
+  const both = mountCheckout({ paystackConnected: true, paymentOptions: { bank: { enabled: true, details: "Equity, Shop Ltd" } }, pay: "paystack", handler: () => orderResponse() });
+  try {
+    assert.deepEqual([...both.form.querySelectorAll('input[name="pay"]')].map(input => input.value), ["paystack", "Bank transfer"]);
+    assert.equal(both.form.querySelector('input[name="pay"][value="paystack"]').checked, true);
+    assert.match(both.form.textContent, /Equity, Shop Ltd/);
+  } finally {
+    both.window.close();
+  }
 });

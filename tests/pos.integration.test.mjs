@@ -755,7 +755,12 @@ test('M-Pesa workspace is removed and old deep links return to home', async () =
     readFile(new URL('../archive/mpesa-ui/index.html.snapshot', import.meta.url), 'utf8'),
     readFile(new URL('../archive/mpesa-ui/mpesa-tools.js', import.meta.url), 'utf8')
   ]);
-  assert.doesNotMatch(pageSource, /home-bento-mpesa|M-Pesa|mpesa-screen|renderMpesaScreen|ShopMpesaTools/);
+  assert.doesNotMatch(pageSource, /home-bento-mpesa|mpesa-screen|renderMpesaScreen|ShopMpesaTools/);
+  // "M-Pesa" may appear only as a way to pay on the Payments screen's "pay you directly" card
+  // (src/screens/craft/direct-payments.js), never as the removed workspace.
+  const mpesaLines = pageSource.split("\n").filter(line => /M-Pesa/.test(line));
+  assert.ok(mpesaLines.every(line => /Ways customers can pay you directly|Enter (the|your) M-Pesa|name="mpesa_enabled"/.test(line)),
+    `Unexpected M-Pesa mention: ${mpesaLines.find(line => !/Ways customers can pay you directly|Enter (the|your) M-Pesa|name="mpesa_enabled"/.test(line))}`);
   assert.match(pageSource, /if \(path === "\/mpesa" \|\| path\.startsWith\("\/mpesa\/"\)\)\s*\{\s*this\.navigate\("\/", true\)/);
   assert.doesNotMatch(bootstrap, /MpesaTools|mpesa-tools/);
   assert.match(archivedUi, /renderMpesaScreen/);

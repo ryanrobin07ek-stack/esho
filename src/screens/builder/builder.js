@@ -220,6 +220,7 @@ export function setupLitrusBuilder(params, path) {
                 service_timezone: store.service_timezone || "Africa/Nairobi",
                 service_buffer_minutes: Number(store.service_buffer_minutes) || 0,
                 service_deposit_percent: Number(store.service_deposit_percent) || 0,
+                payment_options: store.payment_options && typeof store.payment_options === "object" ? store.payment_options : null,
                 service_capacity: Math.min(20, Math.max(1, Math.round(Number(store.service_capacity)) || 1)),
                 service_cancel_cutoff_hours: store.service_cancel_cutoff_hours === undefined || store.service_cancel_cutoff_hours === "" || !Number.isFinite(Number(store.service_cancel_cutoff_hours)) ? 2 : Math.min(168, Math.max(0, Math.round(Number(store.service_cancel_cutoff_hours)))),
                 service_max_reschedules: store.service_max_reschedules === undefined || store.service_max_reschedules === "" || !Number.isFinite(Number(store.service_max_reschedules)) ? 2 : Math.min(10, Math.max(0, Math.round(Number(store.service_max_reschedules)))),
