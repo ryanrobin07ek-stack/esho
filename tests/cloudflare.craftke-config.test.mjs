@@ -101,9 +101,23 @@ test('the craft.ke wrangler config holds no id, name or domain from the producti
 
 test('package.json has craft.ke scripts that always pass the craft.ke config', async () => {
   const { scripts } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-  assert.equal(scripts['cf:craftke:deploy'], 'npm run build && wrangler deploy --config cloudflare/wrangler.craftke.jsonc');
-  assert.equal(scripts['cf:craftke:d1:migrate:remote'], 'wrangler d1 migrations apply craftke-catalog --remote --config cloudflare/wrangler.craftke.jsonc');
-  assert.equal(scripts['cf:craftke:d1:migrate:local'], 'wrangler d1 migrations apply craftke-catalog --local --config cloudflare/wrangler.craftke.jsonc');
+  // Each one also names the new account's login (--profile default); see the next test for why.
+  assert.equal(scripts['cf:craftke:deploy'], 'npm run build:craftke && wrangler deploy --config cloudflare/wrangler.craftke.jsonc --profile default');
+  assert.equal(scripts['cf:craftke:d1:migrate:remote'], 'wrangler d1 migrations apply craftke-catalog --remote --config cloudflare/wrangler.craftke.jsonc --profile default');
+  assert.equal(scripts['cf:craftke:d1:migrate:local'], 'wrangler d1 migrations apply craftke-catalog --local --config cloudflare/wrangler.craftke.jsonc --profile default');
   // The production scripts still target the production config.
   assert.match(scripts['cf:deploy'], /--config cloudflare\/wrangler\.jsonc$/);
+});
+
+test('every craft.ke script names the new account login and the deploy builds with the craft.ke domain', async () => {
+  const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  // This project folder is bound to the PRODUCTION login, so a script without --profile would act on production.
+  for (const name of ['cf:craftke:deploy', 'cf:craftke:d1:migrate:remote', 'cf:craftke:d1:migrate:local']) {
+    assert.match(pkg.scripts[name], /--config cloudflare\/wrangler\.craftke\.jsonc --profile default$/, `${name} must pass --profile default`);
+  }
+  assert.match(pkg.scripts['cf:craftke:deploy'], /^npm run build:craftke && /, 'the deploy builds the craft.ke app, not the default one');
+  assert.equal(pkg.scripts['build:craftke'], 'vite build --mode craftke');
+  assert.equal((await readFile(new URL('../.env.craftke', import.meta.url), 'utf8')).match(/^VITE_DOMAIN_ROOT=(.*)$/m)?.[1], 'craft.ke');
+  // The production scripts must not have changed.
+  assert.equal(pkg.scripts['cf:deploy'], 'npm run build && wrangler deploy --config cloudflare/wrangler.jsonc');
 });

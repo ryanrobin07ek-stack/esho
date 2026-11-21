@@ -20,9 +20,10 @@
     "cf:d1:migrate:remote": "wrangler d1 migrations apply eshop-catalog --remote --config cloudflare/wrangler.jsonc",
     "cf:link-main-owner": "node scripts/link-main-shop-owner.mjs",
     "cf:deploy": "npm run build && wrangler deploy --config cloudflare/wrangler.jsonc",
-    "cf:craftke:deploy": "npm run build && wrangler deploy --config cloudflare/wrangler.craftke.jsonc",
-    "cf:craftke:d1:migrate:remote": "wrangler d1 migrations apply craftke-catalog --remote --config cloudflare/wrangler.craftke.jsonc",
-    "cf:craftke:d1:migrate:local": "wrangler d1 migrations apply craftke-catalog --local --config cloudflare/wrangler.craftke.jsonc",
+    "build:craftke": "vite build --mode craftke",
+    "cf:craftke:deploy": "npm run build:craftke && wrangler deploy --config cloudflare/wrangler.craftke.jsonc --profile default",
+    "cf:craftke:d1:migrate:remote": "wrangler d1 migrations apply craftke-catalog --remote --config cloudflare/wrangler.craftke.jsonc --profile default",
+    "cf:craftke:d1:migrate:local": "wrangler d1 migrations apply craftke-catalog --local --config cloudflare/wrangler.craftke.jsonc --profile default",
     "test:litrus-audit":"node scripts/litrus-published-audit.mjs"
   },
   "dependencies": {
