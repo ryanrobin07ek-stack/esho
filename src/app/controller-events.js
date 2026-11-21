@@ -1,6 +1,7 @@
 // Global event wiring (bindEvents).
 // Moved verbatim out of src/app/main.js (the AppController object); main.js spreads these back in at the same spots.
 import { AppUtils, SQLiteEngine, StoreRenderers, StudioRenderers, categories, demoAnalytics, plans, products, storeInfo } from './main.js';
+import { DOMAIN } from './domain.js';
 
 export const eventsController = {
   bindEvents() {
@@ -228,13 +229,13 @@ export const eventsController = {
         }
         const website = this.tenantCatalogs().find(item => item.tenant_id === tenantId);
         const websiteName = website?.name || website?.store?.name || tenantId;
-        const hostname = website?.hostname || `${tenantId}.rrobin.co.ke`;
+        const hostname = website?.hostname || `${tenantId}.${DOMAIN.root}`;
         if (!confirm(`Permanently delete "${websiteName}" (${hostname}) and its live catalog? This cannot be undone.`)) return;
         deleteWebsite.disabled = true;
         deleteWebsite.textContent = "Deleting…";
         try {
           if (this.getActiveTenant().id === tenantId) {
-            await this.loadTenantCatalog({ id: "main", name: "Craft", hostname: "rrobin.co.ke" });
+            await this.loadTenantCatalog({ id: "main", name: "Craft", hostname: DOMAIN.apex });
           }
           await this.cloudflareRequest(`/api/tenants/${encodeURIComponent(tenantId)}`, {
             method: "DELETE"
@@ -265,7 +266,7 @@ export const eventsController = {
           this.setActiveTenantCatalog({
             id: website.tenant_id,
             name: website.name || website.store?.name || website.tenant_id,
-            hostname: website.hostname || (website.tenant_id === "main" ? "rrobin.co.ke" : `${website.tenant_id}.rrobin.co.ke`),
+            hostname: website.hostname || DOMAIN.shopHost(website.tenant_id),
             owner_token: website.owner_token || ""
           }, website);
           AppUtils.showToast(`Now managing ${website.name || website.store?.name || website.tenant_id}. Products, Inventory, and Categories now use this website.`);
@@ -288,7 +289,7 @@ export const eventsController = {
           this.setActiveTenantCatalog({
             id: website.tenant_id,
             name: website.name || website.tenant_id,
-            hostname: website.hostname || `${website.tenant_id}.rrobin.co.ke`,
+            hostname: website.hostname || `${website.tenant_id}.${DOMAIN.root}`,
             owner_token: website.owner_token || ""
           }, website);
           this.navigate(`/account/web/site?tenant=${encodeURIComponent(website.tenant_id)}`);
@@ -309,7 +310,7 @@ export const eventsController = {
           this.setActiveTenantCatalog({
             id: website.tenant_id,
             name: website.name || website.tenant_id,
-            hostname: website.hostname || `${website.tenant_id}.rrobin.co.ke`,
+            hostname: website.hostname || `${website.tenant_id}.${DOMAIN.root}`,
             owner_token: website.owner_token || ""
           }, website);
           this.navigate("/account/web/store");

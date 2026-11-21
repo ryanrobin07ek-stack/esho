@@ -6,6 +6,7 @@ import { bindWizardCatalogRefresh, bindWizardCategories, bindWizardClearProducts
 import { bindWizardProducts } from './new-store-products.js';
 import { serviceFieldsHTML } from './service-fields.js';
 import { bindWizardStorePicker } from './new-store-store-picker.js';
+import { DOMAIN } from '../../app/domain.js';
 
 export const newStoreScreen = {
   renderNewWebsiteProducts() {
@@ -20,7 +21,7 @@ export const newStoreScreen = {
       <form id="website-wizard-identity-form" class="store-workspace-form">
         <label>Shop / website name<input name="name" maxlength="120" required placeholder="My Shop" value="${AppUtils.escapeHTML(draft.shop_name || "")}"></label>
         <label>What do you sell?<input name="kind" maxlength="120" placeholder="For example clothes, groceries or haircuts" value="${AppUtils.escapeHTML(draft.shop_kind || "")}"></label>
-        <label>Website address<span style="display:flex;align-items:center;gap:5px;"><input name="address" maxlength="40" required placeholder="my-shop" value="${AppUtils.escapeHTML(draft.shop_address || "")}"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
+        <label>Website address<span style="display:flex;align-items:center;gap:5px;"><input name="address" maxlength="40" required placeholder="my-shop" value="${AppUtils.escapeHTML(draft.shop_address || "")}"><span style="white-space:nowrap;font-size:.8rem;">.${DOMAIN.root}</span></span></label>
         <p id="website-wizard-identity-error" role="alert" hidden style="margin:0;color:#b42318;"></p>
         <button type="submit" class="btn-primary" id="website-wizard-identity-continue">Continue to products</button>
       </form>
@@ -28,7 +29,7 @@ export const newStoreScreen = {
     }
     return `<section class="studio-workspace-section">
       <header class="website-management-heading">
-        <div><span class="studio-workspace-kicker">NEW WEBSITE · STEP 2 OF 2</span><h2>Website products</h2><p>${AppUtils.escapeHTML(draft.shop_name)} · ${AppUtils.escapeHTML(draft.shop_address)}.rrobin.co.ke. Choose Store products to add or create products just for this website.</p></div>
+        <div><span class="studio-workspace-kicker">NEW WEBSITE · STEP 2 OF 2</span><h2>Website products</h2><p>${AppUtils.escapeHTML(draft.shop_name)} · ${AppUtils.escapeHTML(draft.shop_address)}.${DOMAIN.root}. Choose Store products to add or create products just for this website.</p></div>
       </header>
       <div class="website-wizard-top-builder">
         <a id="website-wizard-go-builder" class="btn-primary website-wizard-go-builder" href="${AppUtils.escapeHTML(litrusBuilderRoute)}" data-route="${AppUtils.escapeHTML(litrusBuilderRoute)}">Go to web builder</a>

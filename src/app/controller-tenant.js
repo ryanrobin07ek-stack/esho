@@ -1,6 +1,7 @@
 // Active tenant, tenant catalogs and the studio appearance.
 // Moved verbatim out of src/app/main.js (the AppController object); main.js spreads these back in at the same spots.
 import { SQLiteEngine, StudioRenderers } from './main.js';
+import { DOMAIN } from './domain.js';
 
 export const activeTenantController = {
   getActiveTenant() {
@@ -10,13 +11,13 @@ export const activeTenantController = {
         return {
           id: active.id,
           name: active.name || active.id,
-          hostname: active.hostname || `${active.id}.rrobin.co.ke`
+          hostname: active.hostname || `${active.id}.${DOMAIN.root}`
         };
       }
     } catch (error) {
       console.warn("Saved active shop selection is invalid.", error);
     }
-    return { id: "main", name: "Main shop", hostname: "rrobin.co.ke" };
+    return { id: "main", name: "Main shop", hostname: DOMAIN.apex };
   },
 
   studioAppearanceKey() {

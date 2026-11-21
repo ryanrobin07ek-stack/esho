@@ -4,6 +4,7 @@ import test from "node:test";
 import { JSDOM } from "jsdom";
 import { readAppSource } from "./helpers/app-source.mjs";
 import * as ProductPricingFields from "../src/screens/main-store/product-pricing-fields.js";
+import { DOMAIN } from "../src/app/domain.js";
 
 const app = (await readAppSource()).replace(/\r\n/g, "\n");
 const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, character =>
@@ -143,7 +144,7 @@ test("a category opens to its products and moves them to another category", asyn
 test("the new-website wizard asks for the shop identity before the catalogue", () => {
   // The product form's item type and duration fields come from src/screens/craft/service-fields.js.
   const serviceFieldsHTML = () => '<div data-service-fields></div>';
-  const render = draft => new Function("AppUtils", "serviceFieldsHTML", `return function () {${wizardRender}\n};`)(AppUtils, serviceFieldsHTML)
+  const render = draft => new Function("AppUtils", "serviceFieldsHTML", "DOMAIN", `return function () {${wizardRender}\n};`)(AppUtils, serviceFieldsHTML, DOMAIN)
     .call({ websiteBuilderDraft: () => draft });
   const empty = render({ categories: [], products: [], shop_name: "", shop_address: "", wizard_step: "identity" });
   assert.match(empty, /id="website-wizard-identity-form"/);

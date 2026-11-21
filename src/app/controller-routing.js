@@ -1,6 +1,7 @@
 // Routing: current route, leave guard, navigate and handleRoute.
 // Moved verbatim out of src/app/main.js (the AppController object); main.js spreads these back in at the same spots.
 import { AppUtils, SQLiteEngine, StoreRenderers, StudioRenderers, WEBSITE_BUILDER_DRAFT_TENANT_ID } from './main.js';
+import { DOMAIN } from './domain.js';
 
 export const routingController = {
   currentRoute() {
@@ -58,7 +59,7 @@ export const routingController = {
         this.setActiveTenantCatalog({
           id: tenantId,
           name: catalog.name || catalog.store?.name || tenantId,
-          hostname: catalog.hostname || (tenantId === "main" ? "rrobin.co.ke" : `${tenantId}.rrobin.co.ke`),
+          hostname: catalog.hostname || DOMAIN.shopHost(tenantId),
           owner_token: catalog.owner_token || ""
         }, catalog);
       }

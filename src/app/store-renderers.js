@@ -1,6 +1,7 @@
 // StoreRenderers: navbar, storefront status loaders, product card and footer.
 // Moved verbatim out of src/app/main.js; main.js spreads these back in at the same spots.
 import { AppController, AppUtils, SQLiteEngine, categories } from './main.js';
+import { DOMAIN } from './domain.js';
 
 export const storeRendererMethods = {
   renderNavbar(activePath = "/", moduleTitle = "", options = {}) {
@@ -208,7 +209,7 @@ export const storeRendererMethods = {
           ? "Connected and secure."
           : `Waiting for DNS/TLS setup (hostname: ${AppUtils.escapeHTML(result.status || "pending")}; SSL: ${AppUtils.escapeHTML(result.ssl_status || "pending")}).`}
         <p>Add this DNS record with the domain provider:</p>
-        <p><code>CNAME ${AppUtils.escapeHTML(result.hostname)} → ${AppUtils.escapeHTML(result.cname_target || "customers.rrobin.co.ke")}</code></p>
+        <p><code>CNAME ${AppUtils.escapeHTML(result.hostname)} → ${AppUtils.escapeHTML(result.cname_target || DOMAIN.customersTarget)}</code></p>
         ${records ? "<p>Add the listed TXT validation record at your DNS provider as well.</p>" : ""}
         ${records}
         ${ready ? `<p><a href="https://${AppUtils.escapeHTML(result.hostname)}" target="_blank" rel="noopener">Open your shop on its custom domain</a></p>` : ""}`;

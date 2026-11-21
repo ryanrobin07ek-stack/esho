@@ -2,6 +2,7 @@
 // Moved verbatim out of src/app/main.js (the StudioRenderers object); main.js spreads these back in at the same spots.
 import { AppController, AppUtils, SQLiteEngine, StoreRenderers, WEBSITE_BUILDER_DRAFT_TENANT_ID } from './main.js';
 import { navIcon } from '../nav-icons.js';
+import { DOMAIN } from './domain.js';
 
 export const workspaceShells = {
   renderAccount() {
@@ -351,7 +352,7 @@ export const workspaceShells = {
       .map(website => ({
         id: website.tenant_id,
         name: website.name || website.store?.name || website.tenant_id,
-        hostname: website.hostname || (website.tenant_id === "main" ? "rrobin.co.ke" : `${website.tenant_id}.rrobin.co.ke`),
+        hostname: website.hostname || DOMAIN.shopHost(website.tenant_id),
         store: website.tenant_id === activeTenant.id ? activeStore : website.store || {},
         products: Array.isArray(website.products) ? website.products : [],
         categories: Array.isArray(website.categories) ? website.categories : []
@@ -360,7 +361,7 @@ export const workspaceShells = {
       websites.unshift({
         id: "main",
         name: "Craft",
-        hostname: "rrobin.co.ke",
+        hostname: DOMAIN.apex,
         store: activeTenant.id === "main" ? activeStore : {},
         products: [],
         categories: []
@@ -370,7 +371,7 @@ export const workspaceShells = {
       websites.push({
         id: activeTenant.id,
         name: activeTenant.name || activeStore.name || activeTenant.id,
-        hostname: activeTenant.hostname || `${activeTenant.id}.rrobin.co.ke`,
+        hostname: activeTenant.hostname || `${activeTenant.id}.${DOMAIN.root}`,
         store: activeStore,
         products: [],
         categories: []

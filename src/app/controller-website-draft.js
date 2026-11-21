@@ -1,6 +1,7 @@
 // New-website draft tenant handling.
 // Moved verbatim out of src/app/main.js (the AppController object); main.js spreads these back in at the same spots.
 import { AppUtils, SQLiteEngine, StudioRenderers, WEBSITE_BUILDER_DRAFT_PREVIOUS_TENANT_KEY, WEBSITE_BUILDER_DRAFT_SYNC_KEY, WEBSITE_BUILDER_DRAFT_TENANT_ID } from './main.js';
+import { DOMAIN } from './domain.js';
 
 export const websiteDraftTenantController = {
   isWebsiteBuilderDraftTenant(tenantId) {
@@ -246,7 +247,7 @@ export const websiteDraftTenantController = {
       console.warn("Previous shop selection for the website draft is invalid.", error);
     }
     if (!previousTenant?.id || this.isWebsiteBuilderDraftTenant(previousTenant.id)) {
-      previousTenant = { id: "main", name: "Main shop", hostname: "rrobin.co.ke" };
+      previousTenant = { id: "main", name: "Main shop", hostname: DOMAIN.apex };
     }
     const catalog = this.tenantCatalogs().find(item => item.tenant_id === previousTenant.id);
     if (!catalog) {

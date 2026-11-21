@@ -1,6 +1,7 @@
 import initSqlJs from 'sql.js';
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 import { createPosApp } from './pos.js';
+import { DOMAIN } from './app/domain.js';
 import './browser-register.css';
 
 if (new URLSearchParams(window.location.search).has('password')) {
@@ -19,7 +20,7 @@ function isAllowedEndpoint(value) {
   try {
     const endpoint = new URL(value);
     return endpoint.protocol === 'https:'
-      && (endpoint.hostname === 'rrobin.co.ke' || endpoint.hostname.endsWith('.workers.dev'));
+      && (endpoint.hostname === DOMAIN.apex || endpoint.hostname.endsWith('.workers.dev'));
   } catch {
     return false;
   }

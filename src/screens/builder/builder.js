@@ -4,6 +4,7 @@
 // called with this = AppController.
 // Moved verbatim from the app script (index.html, then src/app/main.js).
 import { AppController, AppUtils, SQLiteEngine, StoreRenderers, StudioRenderers } from '../../app/main.js';
+import { DOMAIN } from '../../app/domain.js';
 
 export const builderScreen = {
   renderWebsiteEditor(isNewWebsite = false) {
@@ -62,7 +63,7 @@ export const builderScreen = {
         </header>
         <form id="new-website-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:8px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-lg);">
           <label class="form-field"><span class="form-label">Shop / website name</span><input class="form-input" name="name" required maxlength="120" placeholder="My Shop" value="${AppUtils.escapeHTML(newWebsiteDraft.shop_name || "")}"></label>
-          <label class="form-field"><span class="form-label">Website address</span><span style="display:flex;align-items:center;gap:5px;"><input class="form-input" name="id" required maxlength="40" pattern="[A-Za-z0-9-]+" placeholder="my-store" value="${AppUtils.escapeHTML(newWebsiteDraft.shop_address || String(newWebsiteDraft.shop_name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40).replace(/-$/g, ""))}"><span style="white-space:nowrap;font-size:.8rem;">.rrobin.co.ke</span></span></label>
+          <label class="form-field"><span class="form-label">Website address</span><span style="display:flex;align-items:center;gap:5px;"><input class="form-input" name="id" required maxlength="40" pattern="[A-Za-z0-9-]+" placeholder="my-store" value="${AppUtils.escapeHTML(newWebsiteDraft.shop_address || String(newWebsiteDraft.shop_name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40).replace(/-$/g, ""))}"><span style="white-space:nowrap;font-size:.8rem;">.${DOMAIN.root}</span></span></label>
           <label style="grid-column:1/-1;display:flex;align-items:flex-start;gap:8px;font-size:.84rem;"><input type="checkbox" name="confirm_domain" required><span>I confirm this website address and domain before publishing.</span></label>
           <p class="studio-panel-note" style="grid-column:1/-1;">App-account Paystack payments are shared across your websites. Payment settings belong to your signed-in app account. Every website registered to your app account will use this account at checkout.</p>
           <p id="new-website-error" role="alert" hidden style="grid-column:1/-1;color:#b42318;margin:0;"></p>
