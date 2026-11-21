@@ -312,3 +312,75 @@ test('scheduled jobs configure the domain without throwing, even for a bad value
     await Promise.all(tasks);
   }
 });
+
+// ---- RESERVED_SUBDOMAINS: names that other sites already use under the root domain ----
+
+async function withOriginStub(run) {
+  const original = globalThis.fetch;
+  const seen = [];
+  globalThis.fetch = async request => {
+    seen.push(String(request.url ?? request));
+    return new Response('the origin answered', { status: 203, headers: { 'X-Origin': 'yes' } });
+  };
+  try { return await run(seen); } finally { globalThis.fetch = original; }
+}
+
+test('RESERVED_SUBDOMAINS: those hosts are handed on untouched, every other host is handled as before', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', RESERVED_SUBDOMAINS: 'pos, Matter ,bad_label,openschool' });
+  await withOriginStub(async seen => {
+    for (const host of ['pos.craft.ke', 'matter.craft.ke', 'openschool.craft.ke']) {
+      const response = await get(env, host, '/some/path?x=1');
+      assert.equal(response.status, 203, host);
+      assert.equal(await response.text(), 'the origin answered');
+      assert.equal(response.headers.get('X-Origin'), 'yes');
+    }
+    assert.deepEqual(seen, ['https://pos.craft.ke/some/path?x=1', 'https://matter.craft.ke/some/path?x=1', 'https://openschool.craft.ke/some/path?x=1']);
+    // A shop, the apex and a malformed label are not handed on.
+    const before = seen.length;
+    assert.equal((await catalogProducts(env, 'shop-a.craft.ke')).status, 200);
+    assert.equal((await catalogProducts(env, 'craft.ke')).status, 200);
+    assert.equal((await get(env, 'bad_label.craft.ke', '/api/catalog')).status === 203, false);
+    assert.equal(seen.length, before, 'no other host reached the origin');
+  });
+});
+
+test('RESERVED_SUBDOMAINS: nothing is handed on without the variable, and it never leaks between requests', async () => {
+  const withIt = (await createEnv({ DOMAIN_ROOT: 'craft.ke', RESERVED_SUBDOMAINS: 'pos' })).env;
+  const without = (await createEnv({ DOMAIN_ROOT: 'craft.ke' })).env;
+  await withOriginStub(async seen => {
+    assert.equal((await get(withIt, 'pos.craft.ke')).status, 203);
+    // The very next request is for a deployment without the variable: pos is an ordinary (unknown) shop name again.
+    const plain = await get(without, 'pos.craft.ke', '/api/catalog');
+    assert.notEqual(plain.status, 203);
+    assert.equal(seen.length, 1);
+  });
+  // The root domain still applies: pos.rrobin.co.ke is only handed on when rrobin.co.ke is the root.
+  const defaultRoot = (await createEnv({ RESERVED_SUBDOMAINS: 'pos' })).env;
+  await withOriginStub(async seen => {
+    assert.equal((await get(defaultRoot, 'pos.rrobin.co.ke')).status, 203);
+    assert.notEqual((await get(defaultRoot, 'pos.craft.ke', '/api/catalog')).status, 203);
+    assert.equal(seen.length, 1);
+  });
+});
+
+test('RESERVED_SUBDOMAINS: those names can never become shops, other names still can', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', RESERVED_SUBDOMAINS: 'pos,matter' });
+  const account = await registerAccount(env, 'reserved-owner');
+  const create = id => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${account.session_token}` },
+    body: JSON.stringify({ id, name: 'Some Shop' })
+  }), env);
+  for (const id of ['pos', 'matter', 'www', 'api']) assert.notEqual((await create(id)).status, 201, `${id} is reserved`);
+  assert.equal((await create('fresh-shop')).status, 201);
+
+  // Without the variable the same name is allowed (the default deployment is unchanged).
+  const plain = (await createEnv({ DOMAIN_ROOT: 'craft.ke' })).env;
+  const plainAccount = await registerAccount(plain, 'plain-owner');
+  const plainCreate = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${plainAccount.session_token}` },
+    body: JSON.stringify({ id: 'pos', name: 'Pos Shop' })
+  }), plain);
+  assert.equal(plainCreate.status, 201);
+});

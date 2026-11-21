@@ -23,7 +23,12 @@ const IMAGE_SEARCH_CACHE_SECONDS = 24 * 60 * 60;
 const MAX_RECORDS = 1000;
 const TENANT_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9_.-]{2,31}$/;
-const RESERVED_TENANT_IDS = new Set(["www", "api", "admin", "assets", "main"]);
+const BASE_RESERVED_TENANT_IDS = ["www", "api", "admin", "assets", "main"];
+const RESERVED_TENANT_IDS = new Set(BASE_RESERVED_TENANT_IDS);
+// Hostnames under the root domain that something ELSE already serves (the RESERVED_SUBDOMAINS variable,
+// see configureDomain). This Worker answers `*.root` through a route, and routes run before custom domains,
+// so for these hosts it hands the request on untouched instead of treating the label as a shop.
+let PASSTHROUGH_HOSTS = new Set();
 // Themes that can still be published. Litrus Mixer is the only website editor; craft-main-storefront
 // is the Craft platform's own storefront (main shop).
 const ACTIVE_THEME_IDS = new Set(["litrus-mixer", "craft-main-storefront"]);
@@ -60,6 +65,14 @@ function isValidDomainRoot(value) {
 function configureDomain(env) {
   const configured = typeof env?.DOMAIN_ROOT === "string" ? env.DOMAIN_ROOT.trim().toLowerCase() : "";
   DOMAIN_ROOT = isValidDomainRoot(configured) ? configured : DEFAULT_DOMAIN_ROOT;
+  // RESERVED_SUBDOMAINS: comma-separated labels (for example "pos,matter,openschool") that other sites already
+  // use under this root. They can never be shop ids, and requests for them are passed straight through.
+  const labels = typeof env?.RESERVED_SUBDOMAINS === "string"
+    ? env.RESERVED_SUBDOMAINS.split(",").map(label => label.trim().toLowerCase()).filter(label => DOMAIN_LABEL_PATTERN.test(label))
+    : [];
+  RESERVED_TENANT_IDS.clear();
+  for (const id of [...BASE_RESERVED_TENANT_IDS, ...labels]) RESERVED_TENANT_IDS.add(id);
+  PASSTHROUGH_HOSTS = new Set(labels.map(label => `${label}.${DOMAIN_ROOT}`));
 }
 const PASSWORD_ITERATIONS = 100_000;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
@@ -8705,6 +8718,8 @@ export default {
     configureDomain(env);
     let url = new URL(request.url);
     const requestHostname = url.hostname.toLowerCase();
+    // Something else serves this subdomain: hand the request on untouched (to its custom domain or origin).
+    if (PASSTHROUGH_HOSTS.has(requestHostname)) return fetch(request);
     const isWorkerPlatformHostname = requestHostname === "localhost" ||
       requestHostname.endsWith(".localhost") || requestHostname === "127.0.0.1" ||
       requestHostname === "[::1]" || requestHostname.endsWith(".workers.dev");
