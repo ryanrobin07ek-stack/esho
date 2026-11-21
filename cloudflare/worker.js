@@ -2233,8 +2233,14 @@ async function handleCatalog(request, env, tenantId) {
     } catch (error) {
       return jsonResponse({ error: error.message }, 400);
     }
-    const payload = (await encodeCatalogForStorage(JSON.stringify(cleaned.publicCatalog), cleaned.publicCatalog)).text;
-    const privatePayload = (await encodeCatalogForStorage(JSON.stringify(cleaned.privateCatalog), cleaned.privateCatalog)).text;
+    const patchedPublic = await encodeCatalogForStorage(JSON.stringify(cleaned.publicCatalog), cleaned.publicCatalog);
+    const patchedPrivate = await encodeCatalogForStorage(JSON.stringify(cleaned.privateCatalog), cleaned.privateCatalog);
+    // Both copies are written into ONE database row (about 2 MB at most), so the limit is on their sum.
+    if (patchedPublic.bytes + patchedPrivate.bytes > MAX_STORED_CATALOG_BYTES) {
+      return jsonResponse({ error: "Catalog is too large to store. Move uploaded photos to R2 before publishing." }, 413);
+    }
+    const payload = patchedPublic.text;
+    const privatePayload = patchedPrivate.text;
     const updatedAt = new Date().toISOString();
     const currentThemeId = publicCatalog.store?.website_theme_id || "classic";
     const nextThemeId = cleaned.publicCatalog.store?.website_theme_id || "classic";
@@ -2295,7 +2301,8 @@ async function handleCatalog(request, env, tenantId) {
 
   const storedPublic = await encodeCatalogForStorage(JSON.stringify(catalog.publicCatalog), catalog.publicCatalog);
   const storedPrivate = await encodeCatalogForStorage(JSON.stringify(catalog.privateCatalog), catalog.privateCatalog);
-  if (storedPublic.bytes > MAX_STORED_CATALOG_BYTES || storedPrivate.bytes > MAX_STORED_CATALOG_BYTES) {
+  // Both copies are written into ONE database row (about 2 MB at most), so the limit is on their sum.
+  if (storedPublic.bytes + storedPrivate.bytes > MAX_STORED_CATALOG_BYTES) {
     return jsonResponse({ error: "Catalog is too large to store. Move uploaded photos to R2 before publishing." }, 413);
   }
   const payload = storedPublic.text;

@@ -70,8 +70,10 @@ export async function startOnboarding({ prefill = false } = {}) {
     if (target.matches('[data-onb-offer]')) { data.offer = target.dataset.onbOffer; data.name = overlay.querySelector('[data-onb-name]')?.value || data.name; return draw(); }
     if (target.matches('[data-onb-add]')) {
       const name = overlay.querySelector('[data-onb-pname]').value.trim();
-      const price = Number(overlay.querySelector('[data-onb-pprice]').value);
-      if (!name || !Number.isFinite(price) || price < 0) return fail('Enter a product name and a price.');
+      const priceText = String(overlay.querySelector('[data-onb-pprice]').value ?? '').trim();
+      const price = Number(priceText);
+      // A blank price is not a price of 0: it would quietly save a free product.
+      if (!name || priceText === '' || !Number.isFinite(price) || price < 0) return fail('Enter a product name and a price.');
       try {
         const till = await pos();
         let category = (await till.listCategories()).find(item => item.name.toLowerCase() === 'general');
@@ -151,6 +153,13 @@ export async function onHomeShown(context = {}) {
   try {
     const till = await pos();
     if ((await till.listProducts()).length) { write(STATE_KEY, 'existing'); return; }
+    // A shop that already has its own name, or Main Store products, is an existing shop even when its
+    // till is empty: the guide would otherwise ask for a name and overwrite the saved one.
+    const shop = currentShop();
+    const named = shop.name.trim() && shop.name.trim().toLowerCase() !== 'craft';
+    let webProducts = 0;
+    try { webProducts = (appStore?.select?.('products') || []).length; } catch { webProducts = 0; }
+    if (named || webProducts) { write(STATE_KEY, 'existing'); return; }
   } catch { return; }
   startOnboarding();
 }

@@ -3263,6 +3263,29 @@ test('the ways a shop lets customers pay it directly survive publishing and reac
   assert.equal((await put({ payment_options: 'nonsense' })).status, 200, 'a broken value never breaks publishing');
 });
 
+test('the public and private copies of a catalogue are limited together, because they share one database row', async () => {
+  const { randomBytes } = await import('node:crypto');
+  const randomText = length => randomBytes(Math.ceil(length * 3 / 4)).toString('base64').slice(0, length);
+  // The server shortens long descriptions, so a big catalogue is many products with incompressible text.
+  const publish = async (method, totalLength) => {
+    const env = { DB: createDatabase(), TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
+    await env.TENANTS.put('tenant:main', JSON.stringify({ id: 'main', name: 'Main shop' }));
+    const products = Array.from({ length: Math.ceil(totalLength / 4000) }, (_, index) => ({
+      id: index + 1, name: `Bulk ${index + 1}`, price: 10, category_id: 1, stock: 1, description: randomText(4000)
+    }));
+    const body = { products, categories: [{ id: 1, name: 'All' }], store: { name: 'Big shop' } };
+    return worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog?tenant=main', {
+      method, headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    }), env);
+  };
+  // Incompressible text: about 0.8 MB stored per copy, 1.6 MB together: fits one row.
+  assert.equal((await publish('PUT', 800_000)).status, 200);
+  // About 1.4 MB per copy: each alone is under the old per-copy limit, but together they are too big for one row.
+  const tooBig = await publish('PUT', 1_400_000);
+  assert.equal(tooBig.status, 413, await tooBig.clone().text());
+  assert.match((await tooBig.json()).error, /too large to store/);
+});
+
 test('R2 media uploads require shop ownership and are publicly served from an isolated tenant prefix', async () => {
   const TENANTS = createTenantStore();
   const ownerToken = 'test-main-owner';

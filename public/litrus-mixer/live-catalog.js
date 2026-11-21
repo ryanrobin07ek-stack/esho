@@ -1430,8 +1430,13 @@
       field("customer_name")?.focus?.();
       return;
     }
-    if (!SERVICE_EMAIL_PATTERN.test(customer.customer_email)) {
-      say("Enter a valid email address so the shop can reach you.");
+    // Email is optional (the phone below is required), unless the shop takes a deposit, which is paid
+    // through Paystack and needs an email for the receipt. A typed email must always be valid.
+    const emailNeeded = (Number(data?.shop?.serviceDepositPercent) || 0) > 0;
+    if (customer.customer_email ? !SERVICE_EMAIL_PATTERN.test(customer.customer_email) : emailNeeded) {
+      say(customer.customer_email || !emailNeeded
+        ? "Enter a valid email address, or leave it blank."
+        : "Add your email address so the shop can send your deposit receipt.");
       field("customer_email")?.focus?.();
       return;
     }
