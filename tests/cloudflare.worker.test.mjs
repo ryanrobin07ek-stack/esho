@@ -3234,6 +3234,35 @@ test('a catalogue of 1,000 products publishes, is stored compressed, and reads b
   assert.equal(result.products[0].description, products[0].description);
 });
 
+test('the ways a shop lets customers pay it directly survive publishing and reach the storefront', async () => {
+  const DB = createDatabase();
+  const env = { DB, TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
+  await env.TENANTS.put('tenant:main', JSON.stringify({ id: 'main', name: 'Main shop' }));
+  const put = store => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/catalog?tenant=main', {
+    method: 'PUT', headers: { 'Authorization': 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ products: [], categories: [], store: { name: 'Mama Zawadi', ...store } })
+  }), env);
+  const read = async () => (await (await worker.fetch(new Request('https://rrobin.co.ke/api/catalog'), env)).json()).store;
+
+  assert.equal((await put({
+    payment_options: {
+      mpesa: { enabled: true, kind: 'paybill', number: '247 247', account: 'Zawadi' },
+      cash: { enabled: true },
+      bank: { enabled: true, details: 'Equity, Mama Zawadi Gifts' },
+      evil: '<script>'
+    }
+  })).status, 200);
+  assert.deepEqual((await read()).payment_options, {
+    mpesa: { enabled: true, kind: 'paybill', number: '247247', account: 'Zawadi' },
+    cash: { enabled: true },
+    bank: { enabled: true, details: 'Equity, Mama Zawadi Gifts' }
+  }, 'kept, cleaned, and in the shape the checkout reads');
+
+  assert.equal((await put({})).status, 200);
+  assert.equal((await read()).payment_options.mpesa.enabled, false, 'a shop that never set any has none switched on');
+  assert.equal((await put({ payment_options: 'nonsense' })).status, 200, 'a broken value never breaks publishing');
+});
+
 test('R2 media uploads require shop ownership and are publicly served from an isolated tenant prefix', async () => {
   const TENANTS = createTenantStore();
   const ownerToken = 'test-main-owner';

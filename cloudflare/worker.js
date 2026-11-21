@@ -10,6 +10,7 @@ import {
 import { renderLiquidStorefront } from "../src/liquid-storefront-renderer.js";
 import { CRAFT_AI_SCREEN_DIRECTORY } from "../src/craft-ai-screens.js";
 import { encodeCatalogForStorage, readStoredCatalog, MAX_STORED_CATALOG_BYTES } from "./catalog-storage.js";
+import { normalizePaymentOptions } from "./payment-options.js";
 
 // Largest catalogue request accepted. What is stored is compressed when large (catalog-storage.js).
 const MAX_CATALOG_BYTES = 12_000_000;
@@ -922,7 +923,10 @@ function cleanCatalog(input) {
     display_font_family: /^[a-z0-9 ]{1,50}$/i.test(storeInput.display_font_family || "") ? storeInput.display_font_family : "",
     mono_font_family: /^[a-z0-9 ]{1,50}$/i.test(storeInput.mono_font_family || "") ? storeInput.mono_font_family : "",
     element_edits: elementEdits,
-    section_layout: sectionLayout
+    section_layout: sectionLayout,
+    // The ways customers can pay the shop directly (display only). Without this line the store is rebuilt
+    // from this fixed list and the owner's payment options never reached the published checkout.
+    payment_options: normalizePaymentOptions(storeInput.payment_options)
   };
   // A shop sells services when it says so, or when its catalogue contains one. Being a service is a
   // property of the PRODUCT (it has a duration), so a salon can sell haircuts and shampoo side by side.
