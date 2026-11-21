@@ -1,6 +1,6 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 const liveReloadUrl = process.env.CAPACITOR_LIVE_RELOAD_URL;
-const appHostname = 'rrobin.co.ke';
+const appHostname = process.env.CAPACITOR_APP_HOSTNAME || 'rrobin.co.ke';
 const config: CapacitorConfig = {
   appId: 'com.eshop.atelier',
   appName: 'Craft',

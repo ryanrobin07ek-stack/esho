@@ -7,6 +7,7 @@ import test from 'node:test';
 import { JSDOM } from 'jsdom';
 import initSqlJs from 'sql.js';
 import { WEBSITE_THEME_CATALOG } from '../src/theme-catalog.js';
+import { DOMAIN } from '../src/app/domain.js';
 import { spawnSync } from 'node:child_process';
 import { APP_SCRIPT, appScriptFiles, readAppSource } from './helpers/app-source.mjs';
 import {
@@ -706,7 +707,7 @@ test('Studio payment setup captures the active tenant and allows retry after a t
   assert.match(pageSource, /bindBusinessCloudActions\(container, path, snapshot,[\s\S]*?\["\/account\/payments", "\/account\/web\/studio\/payments"\]\.includes\(path\)[\s\S]*?bindPaystackSetup\(container, tenantId\)/);
   assert.match(pageSource, /Promise\.allSettled\(\[[\s\S]*?getPaystackAccount\(tenantId\)[\s\S]*?getPaystackBanks\(tenantId\)/);
   assert.match(pageSource, /getPaystackBanks\(tenantId\)[\s\S]*?tenantId, \{\}, true/);
-  assert.match(capacitorConfig, /const appHostname = 'rrobin\.co\.ke';[\s\S]*?hostname: appHostname/);
+  assert.match(capacitorConfig, /const appHostname = process\.env\.CAPACITOR_APP_HOSTNAME \|\| 'rrobin\.co\.ke';[\s\S]*?hostname: appHostname/);
 });
 
 test('new websites inherit Paystack from the app account instead of collecting website-specific bank details', async () => {
@@ -914,7 +915,7 @@ test('product media saves locally before publishing and handles native gallery r
   assert.match(publishModal, /LOCAL_PRODUCT_MEDIA_PREFIX[\s\S]*?readLocalProductMedia[\s\S]*?uploadCatalogVideo/);
   assert.match(pageSource, /High detail — 36 frames, 720 px[\s\S]*?Balanced — 24 frames, 720 px[\s\S]*?Faster — 18 frames, 480 px/);
   assert.match(pageSource, /spinProfiles = \{[\s\S]*?high: \{ count: 36, width: 720 \}[\s\S]*?balanced: \{ count: 24, width: 720 \}[\s\S]*?fast: \{ count: 18, width: 480 \}[\s\S]*?\.\.\.spinProfile/);
-  assert.match(imageUpload, /new URL\(image\)[\s\S]*?isRrobinDomain[\s\S]*?mode: "cors"[\s\S]*?maxDimension: 1600, maxBytes: 2_800_000/);
+  assert.match(imageUpload, /new URL\(image\)[\s\S]*?isOwnDomain[\s\S]*?mode: "cors"[\s\S]*?maxDimension: 1600, maxBytes: 2_800_000/);
   assert.match(imageUpload, /crypto\.subtle\.digest\("SHA-256"[\s\S]*?ESHOP_CATALOG_MEDIA_UPLOADS_V1:\$\{tenant\.id\}[\s\S]*?cachedPublicUrl\.pathname\.startsWith\(`\/media\/\$\{tenant\.id\}\/`\)[\s\S]*?return cachedPublicUrl\.href/);
   assert.match(imageUpload, /compressImageFile[\s\S]*?\/api\/media[\s\S]*?method: "POST"[\s\S]*?publicUrl\.pathname\.startsWith\(`\/media\/\$\{tenant\.id\}\/`\)[\s\S]*?localStorage\.setItem\(cacheKey, JSON\.stringify\(uploadedMedia\)\)/);
   assert.match(publishModal, /async image => \{[\s\S]*?fallbackProductImageCount \+= 1[\s\S]*?keeping its original URL[\s\S]*?return image/);
@@ -967,6 +968,7 @@ test('product media saves locally before publishing and handles native gallery r
           headers: { 'Content-Type': 'application/json' }
         });
       },
+      DOMAIN,
       AppUtils: {
         async compressImageFile(file, options) {
           assert.equal(file.type, 'image/jpeg');

@@ -1,6 +1,7 @@
 // Publish-to-Craft modal.
 // Moved verbatim out of src/app/main.js (the AppController object); main.js spreads these back in at the same spots.
 import { AppUtils, INDEXEDDB_PRODUCT_MEDIA_PREFIX, LOCAL_PRODUCT_MEDIA_PREFIX, SQLiteEngine, StudioRenderers } from './main.js';
+import { DOMAIN } from './domain.js';
 
 export const publishModalController = {
   openCloudflarePublishModal(publishImmediately = false) {
@@ -136,8 +137,7 @@ export const publishModalController = {
           }
           if (!["http:", "https:"].includes(imageUrl.protocol)) return image;
           const ownHostname = String(tenant.hostname || "").toLowerCase();
-          if (imageUrl.hostname === "rrobin.co.ke" ||
-              imageUrl.hostname.endsWith(".rrobin.co.ke") ||
+          if (DOMAIN.isOwnHost(imageUrl.hostname) ||
               imageUrl.hostname === ownHostname) return image;
           if (!uploadedProductImages.has(image)) {
             imageCount += 1;

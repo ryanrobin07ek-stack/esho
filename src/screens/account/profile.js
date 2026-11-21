@@ -1,6 +1,7 @@
 // Profile screen (/account/profile and its sub-pages).
 // Moved verbatim from the app script (index.html, then src/app/main.js).
 import { AppController, AppUtils, SQLiteEngine, StoreRenderers, StudioRenderers } from '../../app/main.js';
+import { DOMAIN } from '../../app/domain.js';
 
 export const profileScreen = {
   renderProfileScreen(path = "/account/profile") {
@@ -38,7 +39,7 @@ export const profileScreen = {
         return {
           id,
           name: website.name || website.store?.name || (id === "main" ? "Craft" : id),
-          hostname: website.hostname || (id === "main" ? "rrobin.co.ke" : `${id}.rrobin.co.ke`),
+          hostname: website.hostname || DOMAIN.shopHost(id),
           store: id === activeTenant.id ? store : website.store || {},
           products: Array.isArray(website.products) ? website.products : [],
           categories: Array.isArray(website.categories) ? website.categories : []
@@ -48,7 +49,7 @@ export const profileScreen = {
       websites.unshift({
         id: "main",
         name: "Craft",
-        hostname: "rrobin.co.ke",
+        hostname: DOMAIN.apex,
         store: activeTenant.id === "main" ? store : {},
         products: [],
         categories: []

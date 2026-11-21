@@ -1,6 +1,7 @@
 // Craft cloud connection and requests.
 // Moved verbatim out of src/app/main.js (the AppController object); main.js spreads these back in at the same spots.
 import { SQLiteEngine, WEBSITE_BUILDER_DRAFT_TENANT_ID } from './main.js';
+import { DOMAIN } from './domain.js';
 
 export const cloudflareController = {
   cloudflareConnection(tenantId = this.getActiveTenant().id) {
@@ -43,7 +44,7 @@ export const cloudflareController = {
         this.tenantCatalogs().push({
           tenant_id: tenant.id,
           name: tenant.name || tenant.id,
-          hostname: tenant.hostname || `${tenant.id}.rrobin.co.ke`,
+          hostname: tenant.hostname || `${tenant.id}.${DOMAIN.root}`,
           owner_token: tenant.owner_token,
           products: Array.isArray(catalog.products) ? catalog.products : [],
           categories: Array.isArray(catalog.categories) ? catalog.categories : [],

@@ -1,6 +1,7 @@
 // Shops (tenants) screen (/account/tenants) and its live tenant list.
 // Moved verbatim from the app script (index.html, then src/app/main.js).
 import { AppController, AppUtils, StoreRenderers, StudioRenderers } from '../../app/main.js';
+import { DOMAIN } from '../../app/domain.js';
 
 export const tenantsScreen = {
   renderTenantsManager() {
@@ -15,7 +16,7 @@ export const tenantsScreen = {
           <div>
             <a href="/account" class="studio-back-link" data-route="/account" aria-label="Return to Studio">&larr;</a>
             <h1 class="section-heading" style="font-size:2rem;">My shops</h1>
-            <p style="color:var(--text-muted); font-size:.875rem;">Your main website is <code>rrobin.co.ke</code>. Other websites you create have separate products, categories, and addresses.</p>
+            <p style="color:var(--text-muted); font-size:.875rem;">Your main website is <code>${DOMAIN.apex}</code>. Other websites you create have separate products, categories, and addresses.</p>
           </div>
         </div>
         <section style="margin:20px 0; padding:18px; border:1px solid var(--border); border-radius:var(--radius);">
@@ -54,7 +55,7 @@ export const tenantsController = {
         ...tenant,
         id,
         name: tenant.name || saved?.name || id,
-        hostname: tenant.hostname || saved?.hostname || (id === "main" ? "rrobin.co.ke" : `${id}.rrobin.co.ke`)
+        hostname: tenant.hostname || saved?.hostname || DOMAIN.shopHost(id)
       });
     }
     const tenants = [...tenantsById.values()].sort((a, b) =>

@@ -1,6 +1,7 @@
 // Catalog image and video upload.
 // Moved verbatim out of src/app/main.js (the AppController object); main.js spreads these back in at the same spots.
 import { AppUtils } from './main.js';
+import { DOMAIN } from './domain.js';
 
 export const uploadsController = {
   async uploadCatalogImage(image, apiUrl, tenant, token, onStored) {
@@ -17,9 +18,8 @@ export const uploadsController = {
       }
       if (!["http:", "https:"].includes(sourceUrl.protocol)) return image;
       const tenantHostname = String(tenant.hostname || "").toLowerCase();
-      const isRrobinDomain = sourceUrl.hostname === "rrobin.co.ke" ||
-        sourceUrl.hostname.endsWith(".rrobin.co.ke");
-      if (isRrobinDomain || sourceUrl.hostname === tenantHostname) return image;
+      const isOwnDomain = DOMAIN.isOwnHost(sourceUrl.hostname);
+      if (isOwnDomain || sourceUrl.hostname === tenantHostname) return image;
       imageSource = sourceUrl.href;
     }
     const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(imageSource));
