@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
+import { readAppScript } from './helpers/app-source.mjs';
 
 // The two pure helpers, loaded without the app module they sit beside.
 async function loadHelpers() {
@@ -42,7 +43,7 @@ test('payment options that cannot work are refused with a reason', async () => {
 test('the Payments screen shows the card, saves it, and the builder and checkout receive it', async () => {
   const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
   assert.match(await read('src/screens/craft/payments.js'), /\$\{renderDirectPayments\(\)\}<\/section>/);
-  assert.match(await read('src/app/main.js'), /this\.bindPaystackSetup\(container, tenantId\);\s*bindDirectPayments\(container\);/);
+  assert.match(await readAppScript(), /this\.bindPaystackSetup\(container, tenantId\);\s*bindDirectPayments\(container\);/);
   assert.match(await read('src/screens/builder/builder.js'), /payment_options: store\.payment_options/);
   const mixer = await read('public/litrus-mixer/index.html');
   assert.match(mixer, /SHOP\.paymentOptions=shop\.payment_options/);

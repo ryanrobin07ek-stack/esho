@@ -4,6 +4,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { readAppScript } from "./helpers/app-source.mjs";
 import { createProductVariantFields } from "../src/product-variants.js";
 import { createAttributePricingFields } from "../src/attribute-pricing-fields.js";
 
@@ -22,7 +23,7 @@ test("each pricing card has one helper line under its heading", () => {
 test("every product form uses the shared cards, so the wording cannot drift", async () => {
   const read = path => readFile(new URL(`../${path}`, import.meta.url), "utf8");
   const forms = {
-    "src/app/main.js": await read("src/app/main.js"),
+    "src/app/main.js": await readAppScript(),
     "src/screens/craft/new-store-products.js": await read("src/screens/craft/new-store-products.js"),
     "src/screens/till/catalogue-inventory.js": await read("src/screens/till/catalogue-inventory.js")
   };

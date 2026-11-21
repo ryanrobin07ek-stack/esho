@@ -3,9 +3,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { readAppScript } from "./helpers/app-source.mjs";
 
 const lf = text => text.split(String.fromCharCode(13, 10)).join("\n");
-const main = lf(await readFile(new URL("../src/app/main.js", import.meta.url), "utf8"));
+const main = lf(await readAppScript());
 const builder = lf(await readFile(new URL("../src/screens/builder/builder.js", import.meta.url), "utf8"));
 
 function routerHarness(guard) {
