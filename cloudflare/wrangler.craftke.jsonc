@@ -1,0 +1,72 @@
+// Wrangler config for the SECOND deployment of this Worker: the craft.ke Cloudflare account.
+//
+// Every value that starts with REPLACE_WITH_ comes from the NEW account (zone id, D1 id, KV id, Turnstile site
+// key) and must be filled in by hand after those resources are created there. Nothing in this file has been
+// deployed: no Worker, database, bucket or namespace exists yet. No id or secret from the existing
+// production account is copied here, and secrets are never stored in this file; see CRAFTKE-SECRETS.md.
+//
+// Same code as production (worker.js); the DOMAIN_ROOT variable below is what makes it serve craft.ke.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "craftke-storefront",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-04",
+  "workers_dev": true,
+  "preview_urls": true,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.05,
+    "redact_query_string": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.01
+    }
+  },
+  "vars": {
+    "DOMAIN_ROOT": "craft.ke",
+    // Public Turnstile widget key; the widget must be created in the new account and allow craft.ke.
+    "TURNSTILE_SITE_KEY": "REPLACE_WITH_NEW_TURNSTILE_SITE_KEY",
+    "EMAIL_FROM": "Craft <noreply@craft.ke>",
+    "VAPID_SUBJECT": "mailto:admin@craft.ke",
+    "AI_MODEL": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "CLOUDFLARE_ZONE_ID": "REPLACE_WITH_NEW_ZONE_ID",
+    "CUSTOM_HOSTNAME_TARGET": "customers.craft.ke"
+  },
+  "triggers": {
+    "crons": ["17 3 * * *"]
+  },
+  "routes": [
+    { "pattern": "*.craft.ke/*", "zone_name": "craft.ke" },
+    { "pattern": "craft.ke/*", "zone_name": "craft.ke" }
+  ],
+  "assets": {
+    "directory": "../www",
+    "binding": "ASSETS",
+    "run_worker_first": ["/", "/robots.txt", "/sitemap.xml", "/sitemap-main.xml", "/manifest.webmanifest", "/shops", "/shops/", "/api/*", "/media/*", "/themes/*", "/theme-skeletons/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "craftke-catalog",
+      "database_id": "REPLACE_WITH_NEW_D1_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "TENANTS",
+      "id": "REPLACE_WITH_NEW_KV_ID"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUSINESS_ARCHIVE",
+      "bucket_name": "craftke-business-archive"
+    }
+  ]
+}

@@ -42,7 +42,25 @@ const LEGACY_THEME_IDS = new Set([
   "aurex-electronics"
 ]);
 const FILLED_THEME_IDS = new Set([...ACTIVE_THEME_IDS, ...LEGACY_THEME_IDS]);
-const DOMAIN_ROOT = "rrobin.co.ke";
+const DEFAULT_DOMAIN_ROOT = "rrobin.co.ke";
+// The public root domain of this deployment. Set per deployment with the DOMAIN_ROOT Worker variable
+// (see configureDomain); without a valid variable it stays the production default.
+let DOMAIN_ROOT = DEFAULT_DOMAIN_ROOT;
+const DOMAIN_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+
+function isValidDomainRoot(value) {
+  if (typeof value !== "string" || value.length > 253) return false;
+  const labels = value.split(".");
+  return labels.length >= 2 && labels.every(label => DOMAIN_LABEL_PATTERN.test(label)) &&
+    /^[a-z]{2,63}$/.test(labels[labels.length - 1]);
+}
+
+// Called first thing in every Worker entry point. The variable is constant for a deployment, so one isolate
+// never sees two different values. Absent or invalid values fall back to the default and never throw.
+function configureDomain(env) {
+  const configured = typeof env?.DOMAIN_ROOT === "string" ? env.DOMAIN_ROOT.trim().toLowerCase() : "";
+  DOMAIN_ROOT = isValidDomainRoot(configured) ? configured : DEFAULT_DOMAIN_ROOT;
+}
 const PASSWORD_ITERATIONS = 100_000;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 const PASSWORD_RESET_CODE_TTL_SECONDS = 10 * 60;
@@ -51,7 +69,9 @@ const PASSWORD_RESET_COOLDOWN_SECONDS = 60;
 const PASSWORD_RESET_MAX_ATTEMPTS = 5;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const GOOGLE_AUTH_SCOPE = "openid email";
-const GOOGLE_AUTH_REDIRECT_URI = `https://${DOMAIN_ROOT}/api/auth/google/callback`;
+function googleAuthRedirectUri() {
+  return `https://${DOMAIN_ROOT}/api/auth/google/callback`;
+}
 let googleJwksCache = null;
 let googleJwksExpiresAt = 0;
 const MAX_BUSINESS_SNAPSHOT_BYTES = 8_000_000;
@@ -1464,7 +1484,7 @@ async function startGoogleAccountAuth(request, env) {
   const authorization = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authorization.search = new URLSearchParams({
     client_id: env.GOOGLE_OAUTH_CLIENT_ID,
-    redirect_uri: GOOGLE_AUTH_REDIRECT_URI,
+    redirect_uri: googleAuthRedirectUri(),
     response_type: "code",
     scope: GOOGLE_AUTH_SCOPE,
     access_type: "online",
@@ -1574,7 +1594,7 @@ async function googleAuthCallback(request, env) {
         code,
         code_verifier: saved.verifier,
         grant_type: "authorization_code",
-        redirect_uri: GOOGLE_AUTH_REDIRECT_URI
+        redirect_uri: googleAuthRedirectUri()
       })
     });
     const tokens = await tokenResponse.json().catch(() => ({}));
@@ -8682,6 +8702,7 @@ async function hasPublishedCraftStorefront(env, tenantId) {
 
 export default {
   async fetch(request, env, ctx) {
+    configureDomain(env);
     let url = new URL(request.url);
     const requestHostname = url.hostname.toLowerCase();
     const isWorkerPlatformHostname = requestHostname === "localhost" ||
@@ -8946,6 +8967,13 @@ export default {
       const headers = new Headers(response.headers);
       headers.set("Cache-Control", "public, max-age=0, must-revalidate");
       headers.set("X-Content-Type-Options", "nosniff");
+      if (DOMAIN_ROOT !== DEFAULT_DOMAIN_ROOT) {
+        // The static homepage hard-codes the production origin; point it at this deployment's domain.
+        const html = await response.text();
+        headers.delete("Content-Length");
+        headers.delete("ETag");
+        return new Response(html.split(`https://${DEFAULT_DOMAIN_ROOT}/`).join(`https://${DOMAIN_ROOT}/`), { status: 200, headers });
+      }
       return new Response(response.body, { status: 200, headers });
     }
     if (request.method === "GET" && isMainDomainHost &&
@@ -9265,6 +9293,7 @@ export default {
   // Daily cron (see wrangler.jsonc "triggers"): prune unbounded analytics and expired counters, then send
   // best-effort booking reminders. Each job fails on its own and never blocks the other.
   async scheduled(controller, env, ctx) {
+    configureDomain(env);
     const task = Promise.all([
       runRetentionCleanup(env)
         .then(report => console.log("Retention cleanup finished.", JSON.stringify(report)))
