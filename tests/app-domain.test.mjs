@@ -51,3 +51,27 @@ test('an invalid root falls back to rrobin.co.ke', () => {
     assert.equal(createDomain(root).root, 'rrobin.co.ke', `root ${JSON.stringify(root)} must fall back`);
   }
 });
+
+test('a main host under the root moves only the main store; shops and own-host checks are unchanged', () => {
+  const domain = createDomain('craft.ke', 'app.craft.ke');
+  assert.equal(domain.root, 'craft.ke');
+  assert.equal(domain.apex, 'app.craft.ke');
+  assert.equal(domain.shopHost('main'), 'app.craft.ke');
+  assert.equal(domain.shopHost('glowmuse'), 'glowmuse.craft.ke');
+  assert.equal(domain.customersTarget, 'customers.craft.ke');
+  assert.equal(domain.isOwnHost('app.craft.ke'), true);
+  assert.equal(domain.isOwnHost('craft.ke'), true);
+  assert.equal(domain.isOwnHost('evil.com'), false);
+});
+
+test('an invalid main host is ignored and the main store stays on the root', () => {
+  const invalid = ['', ' ', 'evil.com', 'app.evil.com', 'a.b.craft.ke', 'bad_label.craft.ke', '.craft.ke', 'craft.ke', 'https://app.craft.ke', 'app.craft.ke/', null, 42, {}];
+  for (const value of invalid) {
+    const domain = createDomain('craft.ke', value);
+    assert.equal(domain.apex, 'craft.ke', String(value));
+    assert.equal(domain.shopHost('main'), 'craft.ke', String(value));
+  }
+  assert.equal(createDomain('craft.ke', ' App.Craft.KE ').apex, 'app.craft.ke');
+  assert.equal(createDomain(undefined, 'app.rrobin.co.ke').apex, 'app.rrobin.co.ke', 'the main host is checked against the root that is actually used');
+  assert.equal(createDomain('rrobin.co.ke', 'app.craft.ke').apex, 'rrobin.co.ke');
+});

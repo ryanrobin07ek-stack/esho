@@ -51,6 +51,9 @@ const DEFAULT_DOMAIN_ROOT = "rrobin.co.ke";
 // The public root domain of this deployment. Set per deployment with the DOMAIN_ROOT Worker variable
 // (see configureDomain); without a valid variable it stays the production default.
 let DOMAIN_ROOT = DEFAULT_DOMAIN_ROOT;
+// The address of the main store. Normally the root domain itself; a deployment whose root domain already hosts another
+// site (craft.ke) sets MAIN_HOST to one label under the root (app.craft.ke). Shops stay at <id>.<root>.
+let MAIN_HOST = DEFAULT_DOMAIN_ROOT;
 const DOMAIN_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 
 function isValidDomainRoot(value) {
@@ -70,9 +73,17 @@ function configureDomain(env) {
   const labels = typeof env?.RESERVED_SUBDOMAINS === "string"
     ? env.RESERVED_SUBDOMAINS.split(",").map(label => label.trim().toLowerCase()).filter(label => DOMAIN_LABEL_PATTERN.test(label))
     : [];
+  const configuredMain = typeof env?.MAIN_HOST === "string" ? env.MAIN_HOST.trim().toLowerCase() : "";
+  const mainLabel = configuredMain.endsWith(`.${DOMAIN_ROOT}`) ? configuredMain.slice(0, -(DOMAIN_ROOT.length + 1)) : "";
+  MAIN_HOST = mainLabel && DOMAIN_LABEL_PATTERN.test(mainLabel) ? configuredMain : DOMAIN_ROOT;
   RESERVED_TENANT_IDS.clear();
   for (const id of [...BASE_RESERVED_TENANT_IDS, ...labels]) RESERVED_TENANT_IDS.add(id);
+  // The main store's own label can never be a shop id.
+  if (MAIN_HOST !== DOMAIN_ROOT) RESERVED_TENANT_IDS.add(MAIN_HOST.slice(0, -(DOMAIN_ROOT.length + 1)));
   PASSTHROUGH_HOSTS = new Set(labels.map(label => `${label}.${DOMAIN_ROOT}`));
+}
+function tenantHostname(tenantId) {
+  return tenantId === "main" ? MAIN_HOST : `${tenantId}.${DOMAIN_ROOT}`;
 }
 const PASSWORD_ITERATIONS = 100_000;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
@@ -83,7 +94,7 @@ const PASSWORD_RESET_MAX_ATTEMPTS = 5;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const GOOGLE_AUTH_SCOPE = "openid email";
 function googleAuthRedirectUri() {
-  return `https://${DOMAIN_ROOT}/api/auth/google/callback`;
+  return `https://${MAIN_HOST}/api/auth/google/callback`;
 }
 let googleJwksCache = null;
 let googleJwksExpiresAt = 0;
@@ -197,7 +208,7 @@ async function provisionTenantOwnerKey(request, env, tenantId) {
 function tenantIdFromRequest(request) {
   const url = new URL(request.url);
   const hostname = url.hostname.toLowerCase();
-  if (hostname === DOMAIN_ROOT || hostname === `www.${DOMAIN_ROOT}`) return "main";
+  if (hostname === MAIN_HOST || hostname === DOMAIN_ROOT || hostname === `www.${DOMAIN_ROOT}`) return "main";
   if (hostname.endsWith(`.${DOMAIN_ROOT}`)) {
     const tenantId = hostname.slice(0, -(DOMAIN_ROOT.length + 1));
     return tenantId.includes(".") ? null : tenantId;
@@ -1434,7 +1445,7 @@ function googleAuthResultRedirect(native, result, value = "") {
       }
     });
   }
-  const url = new URL(`https://${DOMAIN_ROOT}/`);
+  const url = new URL(`https://${MAIN_HOST}/`);
   url.hash = `/app-account?${params}`;
   return new Response(null, {
     status: 303,
@@ -2408,7 +2419,7 @@ async function handleMediaUpload(request, env, tenantId) {
       customMetadata: { tenantId }
     });
   }
-  const hostname = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
+  const hostname = tenantHostname(tenantId);
   return jsonResponse({
     ok: true,
     url: `https://${hostname}/${key}`,
@@ -2713,7 +2724,7 @@ async function handleCraftImages(request, env, tenantId, { draft = false } = {})
           } : {})
         }
       });
-      const hostname = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
+      const hostname = tenantHostname(tenantId);
       return {
         slot,
         url: `https://${hostname}/${key}`,
@@ -3704,9 +3715,7 @@ async function handleNewsletter(request, env, tenantId, action) {
   const isOwner = tenantId === "main"
     ? await authorizeMainOwner(request, env)
     : await authorizeTenantOwner(request, env, tenantId);
-  const publicOrigin = tenantId === "main"
-    ? `https://${DOMAIN_ROOT}`
-    : `https://${tenantId}.${DOMAIN_ROOT}`;
+  const publicOrigin = `https://${tenantHostname(tenantId)}`;
 
   if (action === "confirm" || action === "unsubscribe") {
     const requestUrl = new URL(request.url);
@@ -4295,7 +4304,7 @@ function formatServiceLocalTime(iso, timeZone) {
 }
 
 function serviceManageUrl(tenantId, token) {
-  const host = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
+  const host = tenantHostname(tenantId);
   return `https://${host}/#/booking/${token}`;
 }
 
@@ -5764,7 +5773,7 @@ function paystackReference() {
 }
 
 function paystackCallbackUrl(tenantId, orderNumber, reference) {
-  const host = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
+  const host = tenantHostname(tenantId);
   const callback = new URL(`https://${host}/`);
   callback.hash = `/checkout/confirmation?${new URLSearchParams({
     orderId: orderNumber,
@@ -5775,7 +5784,7 @@ function paystackCallbackUrl(tenantId, orderNumber, reference) {
 }
 
 function paystackAppointmentCallbackUrl(tenantId, reference) {
-  const host = tenantId === "main" ? DOMAIN_ROOT : `${tenantId}.${DOMAIN_ROOT}`;
+  const host = tenantHostname(tenantId);
   const callback = new URL(`https://${host}/`);
   callback.hash = `/service-payment?${new URLSearchParams({ reference })}`;
   return callback.toString();
@@ -6614,7 +6623,7 @@ async function handleTenants(request, env) {
       tenants.push({
         id: tenant.id,
         name: cleanText(tenant.name || tenant.id, 120),
-        hostname: tenant.id === "main" ? DOMAIN_ROOT : `${tenant.id}.${DOMAIN_ROOT}`
+        hostname: tenantHostname(tenant.id)
       });
     }
     tenants.sort((a, b) => a.id === "main" ? -1 : b.id === "main" ? 1 : a.id.localeCompare(b.id));
@@ -7740,7 +7749,7 @@ async function handleAiAssistant(request, env, tenantId) {
         headers: {
           Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": `https://${DOMAIN_ROOT}`,
+          "HTTP-Referer": `https://${MAIN_HOST}`,
           "X-Title": "Craft AI"
         },
         body: JSON.stringify({
@@ -8966,7 +8975,7 @@ export default {
     }
 
     const hostTenantId = tenantIdFromRequest(request, env);
-    const isMainDomainHost = [DOMAIN_ROOT, `www.${DOMAIN_ROOT}`].includes(url.hostname.toLowerCase());
+    const isMainDomainHost = [MAIN_HOST, DOMAIN_ROOT, `www.${DOMAIN_ROOT}`].includes(url.hostname.toLowerCase());
     const mainCraftStorefrontPublished = request.method === "GET" && isMainDomainHost &&
       url.pathname === "/" && await hasPublishedCraftStorefront(env, "main");
     if (request.method === "GET" && isMainDomainHost && url.pathname === "/" &&
@@ -8987,7 +8996,7 @@ export default {
         const html = await response.text();
         headers.delete("Content-Length");
         headers.delete("ETag");
-        return new Response(html.split(`https://${DEFAULT_DOMAIN_ROOT}/`).join(`https://${DOMAIN_ROOT}/`), { status: 200, headers });
+        return new Response(html.split(`https://${DEFAULT_DOMAIN_ROOT}/`).join(`https://${MAIN_HOST}/`), { status: 200, headers });
       }
       return new Response(response.body, { status: 200, headers });
     }
@@ -9261,7 +9270,7 @@ export default {
               verificationToken: seoVerificationToken,
               poweredBy: hostTenantId === "main" ? null : {
                 name: "E-Shop",
-                url: `https://${DOMAIN_ROOT}/shops`
+                url: `https://${MAIN_HOST}/shops`
               }
             }),
             {

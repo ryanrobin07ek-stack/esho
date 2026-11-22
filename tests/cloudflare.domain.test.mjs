@@ -384,3 +384,63 @@ test('RESERVED_SUBDOMAINS: those names can never become shops, other names still
   }), plain);
   assert.equal(plainCreate.status, 201);
 });
+
+// ---- MAIN_HOST: the main store lives on one label under the root (app.craft.ke) while the bare domain hosts another site ----
+
+test('MAIN_HOST=app.craft.ke: app.craft.ke is the main store, shops stay at <id>.craft.ke', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', MAIN_HOST: 'app.craft.ke' });
+  const main = await catalogProducts(env, 'app.craft.ke');
+  assert.equal(main.status, 200);
+  assert.deepEqual(main.body.products, [], 'app.craft.ke answers as the main store, not as a shop called "app"');
+  const shop = await catalogProducts(env, 'shop-a.craft.ke');
+  assert.equal(shop.status, 200);
+  assert.equal(shop.body.products[0].name, 'Canvas Tote');
+  assert.equal((await catalogProducts(env, 'missing.craft.ke')).status, 404);
+  assert.equal(await googleRedirectUri(env), 'https://app.craft.ke/api/auth/google/callback');
+});
+
+test('MAIN_HOST=app.craft.ke: nobody can open a shop called "app", and shop hostnames are unchanged', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', MAIN_HOST: 'app.craft.ke' });
+  const account = await registerAccount(env);
+  const refused = await worker.fetch(new Request('https://app.craft.ke/api/tenants', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${account.session_token}` },
+    body: JSON.stringify({ id: 'app', name: 'Sneaky' })
+  }), env);
+  assert.notEqual(refused.status, 201);
+  const created = await createShop(env, account.session_token, 'new-shop');
+  assert.equal(created.tenant.hostname, 'new-shop.craft.ke');
+});
+
+test('MAIN_HOST=app.craft.ke: the main store address is used in the sitemap index and robots', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', MAIN_HOST: 'app.craft.ke' });
+  const index = await (await get(env, 'app.craft.ke', '/sitemap.xml')).text();
+  assert.match(index, /<loc>https:\/\/app\.craft\.ke\/sitemap-main\.xml<\/loc>/);
+  const robots = await (await get(env, 'app.craft.ke', '/robots.txt')).text();
+  assert.match(robots, /Sitemap: https:\/\/app\.craft\.ke\/sitemap\.xml/);
+});
+
+test('an invalid MAIN_HOST is ignored: the main store stays on the root domain', async () => {
+  for (const value of ['', '   ', 'evil.com', 'app.evil.com', 'a.b.craft.ke', 'bad_label.craft.ke', '.craft.ke', 'craft.ke', 'craft.ke.evil.com', 42, null]) {
+    const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', MAIN_HOST: value });
+    assert.equal(await googleRedirectUri(env), 'https://craft.ke/api/auth/google/callback', String(value));
+    assert.deepEqual((await catalogProducts(env, 'craft.ke')).body.products, [], String(value));
+  }
+});
+
+test('MAIN_HOST is read on every request, so it never leaks into a later request', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', MAIN_HOST: 'app.craft.ke' });
+  assert.equal(await googleRedirectUri(env), 'https://app.craft.ke/api/auth/google/callback');
+  const plain = { ...env };
+  delete plain.MAIN_HOST;
+  assert.equal(await googleRedirectUri(plain), 'https://craft.ke/api/auth/google/callback');
+  assert.equal(await googleRedirectUri(env), 'https://app.craft.ke/api/auth/google/callback');
+});
+
+test('without MAIN_HOST nothing changes: the default domain is still its own main store', async () => {
+  const { env } = await createEnv();
+  assert.equal(await googleRedirectUri(env), 'https://rrobin.co.ke/api/auth/google/callback');
+  assert.deepEqual((await catalogProducts(env, 'rrobin.co.ke')).body.products, []);
+  const app = await catalogProducts(env, 'app.rrobin.co.ke');
+  assert.equal(app.status, 404, 'with no MAIN_HOST, "app" is just an unknown shop name');
+});

@@ -49,10 +49,8 @@ test('the craft.ke wrangler config targets craft.ke resources and a distinct Wor
   assert.equal(config.vars.CUSTOM_HOSTNAME_TARGET, 'customers.craft.ke');
   assert.equal(config.vars.CLOUDFLARE_ZONE_ID, 'REPLACE_WITH_NEW_ZONE_ID');
 
-  assert.deepEqual(config.routes, [
-    { pattern: '*.craft.ke/*', zone_name: 'craft.ke' },
-    { pattern: 'craft.ke/*', zone_name: 'craft.ke' }
-  ]);
+  // Never craft.ke/* itself: that is the official website's.
+  assert.deepEqual(config.routes, [{ pattern: '*.craft.ke/*', zone_name: 'craft.ke' }]);
 
   assert.equal(config.d1_databases.length, 1);
   assert.equal(config.d1_databases[0].binding, 'DB');
@@ -117,7 +115,9 @@ test('every craft.ke script names the new account login and the deploy builds wi
   }
   assert.match(pkg.scripts['cf:craftke:deploy'], /^npm run build:craftke && /, 'the deploy builds the craft.ke app, not the default one');
   assert.equal(pkg.scripts['build:craftke'], 'vite build --mode craftke');
-  assert.equal((await readFile(new URL('../.env.craftke', import.meta.url), 'utf8')).match(/^VITE_DOMAIN_ROOT=(.*)$/m)?.[1], 'craft.ke');
+  const envFile = await readFile(new URL('../.env.craftke', import.meta.url), 'utf8');
+  assert.equal(envFile.match(/^VITE_DOMAIN_ROOT=(.*)$/m)?.[1], 'craft.ke');
+  assert.equal(envFile.match(/^VITE_MAIN_HOST=(.*)$/m)?.[1], 'app.craft.ke');
   // The production scripts must not have changed.
   assert.equal(pkg.scripts['cf:deploy'], 'npm run build && wrangler deploy --config cloudflare/wrangler.jsonc');
 });

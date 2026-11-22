@@ -29,6 +29,11 @@
   },
   "vars": {
     "DOMAIN_ROOT": "craft.ke",
+    // craft.ke itself hosts the official Craft website, so the Craft app (main store, sign-in, API) lives here.
+    "MAIN_HOST": "app.craft.ke",
+    // Names the official Craft website and the safiri site already use under craft.ke. They are never shop names and
+    // their traffic is handed straight on (the official site has its own, more specific routes).
+    "RESERVED_SUBDOMAINS": "www,pos,crafty,craf,webbuilding,webbuilderinkenya,webbuildercraftke,craftwebandposbuilder,safiri",
     // Public Turnstile widget key; the widget must be created in the new account and allow craft.ke.
     "TURNSTILE_SITE_KEY": "REPLACE_WITH_NEW_TURNSTILE_SITE_KEY",
     "EMAIL_FROM": "Craft <noreply@craft.ke>",
@@ -40,9 +45,10 @@
   "triggers": {
     "crons": ["17 3 * * *"]
   },
+  // craft.ke itself belongs to the official Craft website (its own Worker and routes), so this Worker only takes
+  // the subdomains: app.craft.ke (the Craft app) and every shop at <id>.craft.ke.
   "routes": [
-    { "pattern": "*.craft.ke/*", "zone_name": "craft.ke" },
-    { "pattern": "craft.ke/*", "zone_name": "craft.ke" }
+    { "pattern": "*.craft.ke/*", "zone_name": "craft.ke" }
   ],
   "assets": {
     "directory": "../www",
