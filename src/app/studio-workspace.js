@@ -401,9 +401,9 @@ export const webStudioShells = {
       return `<section class="studio-workspace-section"><form id="website-additions-form" class="studio-panel">
         <span class="studio-workspace-kicker">CONTACT &amp; DISCOVERY</span><h2>Add to your website</h2>
         <p class="studio-panel-note">Saved links, enabled contact buttons, and the location map are injected into the footer across published themes.</p>
-        <div class="studio-dashboard-grid">${field("phone", "Phone number", "tel", "+254…")}
+        <div class="studio-dashboard-grid">${field("phone", "Phone number", "tel", "+country code…")}
         <label class="form-field"><span class="form-label">WhatsApp button</span><span><input type="checkbox" name="whatsapp_enabled" ${store.whatsapp_enabled ? "checked" : ""}> Enabled</span></label>
-        ${field("whatsapp_url", "WhatsApp link", "url", "https://wa.me/254…")}
+        ${field("whatsapp_url", "WhatsApp link", "url", "https://wa.me/your-number")}
         <label class="form-field"><span class="form-label">Chatbot contact button</span><span><input type="checkbox" name="chatbot_enabled" ${store.chatbot_enabled ? "checked" : ""}> Enabled</span></label>
         ${field("chatbot_url", "Chatbot or chat-service URL", "url", "https://…")}
         ${field("instagram_url", "Instagram")}${field("facebook_url", "Facebook")}${field("tiktok_url", "TikTok")}${field("youtube_url", "YouTube")}${field("x_url", "X")}

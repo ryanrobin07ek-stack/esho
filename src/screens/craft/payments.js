@@ -9,7 +9,7 @@ export function renderPayments({ activeTenant }) {
       const storeCurrency = String(SQLiteEngine.getStore().currency || "KES").toUpperCase();
       const nativeCurrencySettings = window.Capacitor?.isNativePlatform?.() === true
         ? `<article class="studio-panel"><div class="studio-panel-heading"><h2>Website currency</h2><span>${AppUtils.escapeHTML(activeTenant.name || activeTenant.hostname)}</span></div>
-          <p class="studio-panel-note">Choose the currency for this website. Changing it does not convert prices. Online payments require KES.</p>
+          <p class="studio-panel-note">Choose the currency for this website. Changing it does not convert prices. Online payments work in KES (Kenya), NGN (Nigeria) and ZAR (South Africa).</p>
           <form class="store-workspace-form" data-app-website-currency><label>Website currency<select name="currency" required>
             ${[
               ["KES", "Kenyan shilling (KES)"],
@@ -33,7 +33,7 @@ export function renderPayments({ activeTenant }) {
         <p class="studio-panel-note">Connect or change the account used for payments across your websites.</p>
         ${nativeCurrencySettings}
         <p class="studio-panel-note">Test mode cannot confirm payouts. In Live mode, the bank must be verified before connection. Only a reference and masked account details are stored.</p>
-        <form class="store-workspace-form" data-paystack-setup autocomplete="off"><div class="studio-form-grid">
+        <form class="store-workspace-form" data-paystack-setup data-currency="${AppUtils.escapeHTML(storeCurrency)}" autocomplete="off"><div class="studio-form-grid">
           <label>Business name<input name="business_name" maxlength="120" autocomplete="organization" required></label>
           <label>Bank<select name="settlement_bank" required><option value="">Loading banks…</option></select></label><button type="button" class="btn-secondary" data-paystack-retry hidden>Retry</button>
           <label>Bank account number<input name="account_number" inputmode="numeric" autocomplete="off" minlength="5" maxlength="20" pattern="[0-9]{5,20}" required></label>

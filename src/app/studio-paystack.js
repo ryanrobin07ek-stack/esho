@@ -17,7 +17,7 @@ export const paystackSetupBindings = {
       if (bankSelect) bankSelect.innerHTML = `<option value="">Loading banks…</option>`;
       const [setupResult, banksResult, defaultResult] = await Promise.allSettled([
         window.EshopInventoryBridge.getPaystackAccount(tenantId),
-        window.EshopInventoryBridge.getPaystackBanks(tenantId),
+        window.EshopInventoryBridge.getPaystackBanks(tenantId, form.dataset.currency || "KES"),
         window.EshopInventoryBridge.getPaystackDefault(tenantId)
       ]);
       const setup = setupResult.status === "fulfilled" ? setupResult.value : null;

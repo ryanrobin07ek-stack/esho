@@ -138,7 +138,7 @@ export const ordersPanels = {
       slot_unavailable: "That time is not available (outside opening hours, in the past, or fully booked). Choose another time.",
       slot_unchanged: "That is already the time of this appointment. Choose a different time.",
       appointment_changed: "The appointment was changed while you were working (for example the customer moved it). The list has been reloaded. Check it, then try again.",
-      deposit_unavailable: "A deposit link cannot be created yet. Finish Paystack setup for this shop (KES, with a ready payout account) or set the deposit to 0%, then confirm again.",
+      deposit_unavailable: "A deposit link cannot be created yet. Finish Paystack setup for this shop (KES, NGN or ZAR, with a ready payout account) or set the deposit to 0%, then confirm again.",
       service_unavailable: "This service is no longer in your published catalogue.",
       invalid_request: "The request was not accepted. Reload the list and try again.",
       too_large: "The request was too large. Shorten the reason and try again.",

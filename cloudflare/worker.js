@@ -92,6 +92,10 @@ const PASSWORD_RESET_TOKEN_TTL_SECONDS = 10 * 60;
 const PASSWORD_RESET_COOLDOWN_SECONDS = 60;
 const PASSWORD_RESET_MAX_ATTEMPTS = 5;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Currencies Paystack can settle for a shop, with the country name its bank list is published under.
+const PAYSTACK_MARKETS = { KES: "kenya", NGN: "nigeria", ZAR: "south africa" };
+const PAYSTACK_CURRENCY_LABEL = "KES, NGN or ZAR";
+const paystackCurrency = currency => typeof currency === "string" && Object.hasOwn(PAYSTACK_MARKETS, currency);
 const GOOGLE_AUTH_SCOPE = "openid email";
 function googleAuthRedirectUri() {
   return `https://${MAIN_HOST}/api/auth/google/callback`;
@@ -999,8 +1003,8 @@ function cleanCatalog(input) {
     throw new TypeError("Every service needs a duration between 15 and 240 minutes in 15-minute increments.");
   }
   if (offersServices && store.service_deposit_percent > 0 &&
-      (store.currency !== "KES" || products.filter(isServiceProduct).some(product => product.price <= 0))) {
-    throw new TypeError("Service deposits require positive KES prices for every service.");
+      (!paystackCurrency(store.currency) || products.filter(isServiceProduct).some(product => product.price <= 0))) {
+    throw new TypeError(`Service deposits need the shop currency to be ${PAYSTACK_CURRENCY_LABEL} and a positive price for every service.`);
   }
 
   const privateProducts = products.map((product, index) => ({
@@ -5116,8 +5120,8 @@ async function patchOwnerServiceAppointment(request, env, tenantId, ctx) {
     if (!env.PAYSTACK_SECRET_KEY) {
       return appointmentError("Connect Paystack before confirming appointments that require a deposit.", 409, "deposit_unavailable");
     }
-    if (appointment.currency !== "KES" || Number(appointment.deposit_cents) < 1) {
-      return appointmentError("This appointment does not have a payable KES deposit configured.", 409, "deposit_unavailable");
+    if (!paystackCurrency(appointment.currency) || Number(appointment.deposit_cents) < 1) {
+      return appointmentError(`This appointment does not have a payable deposit configured (${PAYSTACK_CURRENCY_LABEL}).`, 409, "deposit_unavailable");
     }
     const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
     if (!mode) return appointmentError("Configure a Paystack test or live secret key before taking appointment deposits.", 503, "deposit_unavailable");
@@ -5264,7 +5268,7 @@ async function createServiceAppointment(request, env, tenantId, ctx) {
   const currency = cleanText(catalog.store?.currency, 8) || "KES";
   const priceCents = Math.round(Number(product.price) * 100);
   if (!Number.isSafeInteger(priceCents) || priceCents < 0 ||
-      (schedule.depositPercent > 0 && (currency !== "KES" || priceCents < 1))) {
+      (schedule.depositPercent > 0 && (!paystackCurrency(currency) || priceCents < 1))) {
     return appointmentError("The service price or deposit settings are invalid.", 409, "service_unavailable");
   }
   const depositCents = schedule.depositPercent > 0 ? Math.ceil(priceCents * schedule.depositPercent / 100) : 0;
@@ -5533,9 +5537,15 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: resource === "banks" ? "GET, OPTIONS" : "GET, POST, OPTIONS" });
   }
   if (resource === "banks") {
+    const wanted = (new URL(request.url).searchParams.get("currency") || "KES").toUpperCase();
+    if (!paystackCurrency(wanted)) {
+      return jsonResponse({ error: `Paystack bank lists are available for ${PAYSTACK_CURRENCY_LABEL}.` }, 400);
+    }
+    const bankListUrl = new URL("https://api.paystack.co/bank");
+    bankListUrl.search = new URLSearchParams({ country: PAYSTACK_MARKETS[wanted], currency: wanted, use_cursor: "false", perPage: "100" }).toString();
     let response;
     try {
-      response = await fetch("https://api.paystack.co/bank?country=kenya&currency=KES&use_cursor=false&perPage=100", {
+      response = await fetch(bankListUrl, {
         headers: env.PAYSTACK_SECRET_KEY ? paystackAuthorization(env.PAYSTACK_SECRET_KEY) : {},
         cf: { cacheEverything: true, cacheTtl: 3600 }
       });
@@ -6127,8 +6137,8 @@ async function handlePaystackPayment(request, env, tenantId, action, ctx) {
     if (!order) return jsonResponse({ error: "Order not found." }, 404);
     if (order.status === "cancelled") return jsonResponse({ error: "This order has been cancelled." }, 409);
     if (order.payment_status === "paid") return jsonResponse({ error: "This order is already paid." }, 409);
-    if (Number(order.total_cents) < 1 || order.currency !== "KES") {
-      return jsonResponse({ error: "Paystack checkout currently requires a positive KES order total." }, 409);
+    if (Number(order.total_cents) < 1 || !paystackCurrency(order.currency)) {
+      return jsonResponse({ error: `Paystack checkout requires a positive order total in ${PAYSTACK_CURRENCY_LABEL}.` }, 409);
     }
     if (order.payment_authorization_url && order.payment_status === "pending") {
       return jsonResponse({

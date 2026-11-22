@@ -705,8 +705,8 @@ test('Studio payment setup captures the active tenant and allows retry after a t
   assert.match(pageSource, /paystackSetupRequest\(path, tenantId, options = \{\}, anonymous = false\)[\s\S]*?setTimeout\(\(\) => controller\.abort\(\), 15000\)/);
   assert.match(pageSource, /data-paystack-retry hidden/);
   assert.match(pageSource, /bindBusinessCloudActions\(container, path, snapshot,[\s\S]*?\["\/account\/payments", "\/account\/web\/studio\/payments"\]\.includes\(path\)[\s\S]*?bindPaystackSetup\(container, tenantId\)/);
-  assert.match(pageSource, /Promise\.allSettled\(\[[\s\S]*?getPaystackAccount\(tenantId\)[\s\S]*?getPaystackBanks\(tenantId\)/);
-  assert.match(pageSource, /getPaystackBanks\(tenantId\)[\s\S]*?tenantId, \{\}, true/);
+  assert.match(pageSource, /Promise\.allSettled\(\[[\s\S]*?getPaystackAccount\(tenantId\)[\s\S]*?getPaystackBanks\(tenantId, form\.dataset\.currency/);
+  assert.match(pageSource, /getPaystackBanks\(tenantId, currency = "KES"\)[\s\S]*?tenantId, \{\}, true/);
   assert.match(capacitorConfig, /const appHostname = process\.env\.CAPACITOR_APP_HOSTNAME \|\| 'rrobin\.co\.ke';[\s\S]*?hostname: appHostname/);
 });
 

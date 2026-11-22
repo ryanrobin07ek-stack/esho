@@ -21,9 +21,9 @@ export const inventoryBridgeMethods = {
       throw error;
     }).finally(() => clearTimeout(timeout));
   },
-  getPaystackBanks(tenantId) {
+  getPaystackBanks(tenantId, currency = "KES") {
     return this.paystackSetupRequest(
-      `/api/payments/paystack/banks?tenant=${encodeURIComponent(tenantId)}`, tenantId, {}, true
+      `/api/payments/paystack/banks?tenant=${encodeURIComponent(tenantId)}&currency=${encodeURIComponent(currency)}`, tenantId, {}, true
     );
   },
   getPaystackAccount(tenantId) {

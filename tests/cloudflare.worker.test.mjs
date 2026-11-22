@@ -2078,6 +2078,20 @@ test('Paystack setup sends bank details only upstream and persists masked connec
     const banksResponse = await worker.fetch(new Request(`${baseUrl}/banks?tenant=main`), env);
     assert.equal(banksResponse.status, 200);
     assert.deepEqual((await banksResponse.json()).banks, [{ name: 'Example Bank', code: '001' }]);
+    assert.equal(calls.at(-1).url.searchParams.get('country'), 'kenya');
+    assert.equal(calls.at(-1).url.searchParams.get('currency'), 'KES');
+
+    // Nigeria and South Africa get their own country's bank list; anything else is refused without calling Paystack.
+    for (const [currency, country] of [['NGN', 'nigeria'], ['ZAR', 'south africa']]) {
+      const response = await worker.fetch(new Request(`${baseUrl}/banks?tenant=main&currency=${currency}`), env);
+      assert.equal(response.status, 200);
+      assert.equal(calls.at(-1).url.searchParams.get('country'), country);
+      assert.equal(calls.at(-1).url.searchParams.get('currency'), currency);
+    }
+    const callsBefore = calls.length;
+    const unsupported = await worker.fetch(new Request(`${baseUrl}/banks?tenant=main&currency=USD`), env);
+    assert.equal(unsupported.status, 400);
+    assert.equal(calls.length, callsBefore);
 
     const details = {
       business_name: 'Example Shop',
