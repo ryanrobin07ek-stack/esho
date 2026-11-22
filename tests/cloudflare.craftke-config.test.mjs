@@ -47,7 +47,10 @@ test('the craft.ke wrangler config targets craft.ke resources and a distinct Wor
   assert.equal(config.vars.EMAIL_FROM, 'Craft <noreply@craft.ke>');
   assert.equal(config.vars.VAPID_SUBJECT, 'mailto:admin@craft.ke');
   assert.equal(config.vars.CUSTOM_HOSTNAME_TARGET, 'customers.craft.ke');
-  assert.equal(config.vars.CLOUDFLARE_ZONE_ID, 'REPLACE_WITH_NEW_ZONE_ID');
+  // The craft.ke zone in the new account (created 2026-11-22). Zone ids are not secret.
+  assert.equal(config.vars.CLOUDFLARE_ZONE_ID, '646a2db58693a18ea4fca4272f23a4ca');
+  // The public key of the Turnstile widget created in the new account (public by design).
+  assert.equal(config.vars.TURNSTILE_SITE_KEY, '0x4AAAAAAGM-m_xyH0uuCDUn');
 
   // Never craft.ke/* itself: that is the official website's.
   assert.deepEqual(config.routes, [{ pattern: '*.craft.ke/*', zone_name: 'craft.ke' }]);
@@ -90,11 +93,8 @@ test('the craft.ke wrangler config holds no id, name or domain from the producti
   }
   assert.doesNotMatch(text, /rrobin/);
   assert.doesNotMatch(text, /eshop-/);
-  // Database and shop-list ids are filled in; these still wait for the zone move and a new Turnstile widget.
-  assert.deepEqual(
-    strings.filter(value => value.startsWith('REPLACE_WITH_')).sort(),
-    ['REPLACE_WITH_NEW_TURNSTILE_SITE_KEY', 'REPLACE_WITH_NEW_ZONE_ID']
-  );
+  // Every id and key is filled in now; nothing is left to replace.
+  assert.deepEqual(strings.filter(value => value.startsWith('REPLACE_WITH_')), []);
 });
 
 test('package.json has craft.ke scripts that always pass the craft.ke config', async () => {

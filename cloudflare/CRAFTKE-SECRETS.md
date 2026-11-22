@@ -30,7 +30,7 @@ Nothing here has been deployed or set yet.
 | `RATE_LIMIT_SALT` | Optional salt for hashing client IPs in rate-limit counters. Missing: falls back to `PUBLISH_TOKEN`. |
 | `TURNSTILE_SECRET_KEY` | Server side of Turnstile for sign-up. Missing: registration returns 503 ("Sign-up is unavailable"). |
 | `RESEND_API_KEY` | Resend key for outgoing email. Missing: recovery email returns 503, notification and booking-reminder emails are skipped. |
-| `GOOGLE_OAUTH_CLIENT_ID` | Google sign-in client id. Missing: Google sign-in returns 503. The OAuth client must list `https://craft.ke/api/auth/google/callback` as a redirect URI. |
+| `GOOGLE_OAUTH_CLIENT_ID` | Google sign-in client id. Missing: Google sign-in returns 503. The OAuth client must list `https://app.craft.ke/api/auth/google/callback` as a redirect URI. |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Google sign-in client secret. Missing: Google sign-in returns 503. |
 | `PAYSTACK_SECRET_KEY` | Platform Paystack key: shop payments, subaccounts, deposits and webhook checks. Missing: payment and deposit flows return 503 or 409 messages; ordering without online payment still works. |
 | `CLOUDFLARE_API_TOKEN` | API token (custom hostnames on the craft.ke zone) for custom domains. Missing: custom-domain management returns 503. Give it only the permission it needs, in the new account. |
