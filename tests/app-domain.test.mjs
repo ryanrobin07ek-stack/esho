@@ -75,3 +75,24 @@ test('an invalid main host is ignored and the main store stays on the root', () 
   assert.equal(createDomain(undefined, 'app.rrobin.co.ke').apex, 'app.rrobin.co.ke', 'the main host is checked against the root that is actually used');
   assert.equal(createDomain('rrobin.co.ke', 'app.craft.ke').apex, 'rrobin.co.ke');
 });
+
+test('the default server address: production for rrobin.co.ke, the main store itself for craft.ke', () => {
+  const production = 'https://eshop-storefront.ryanrobin07-ek.workers.dev';
+  assert.equal(createDomain().defaultApiOrigin, production);
+  assert.equal(createDomain('rrobin.co.ke').defaultApiOrigin, production);
+  assert.equal(createDomain('craft.ke', 'app.craft.ke').defaultApiOrigin, 'https://app.craft.ke');
+  assert.equal(createDomain('craft.ke').defaultApiOrigin, 'https://craft.ke');
+});
+
+test('no app file hard-codes the production server address any more (domain.js is the only place)', async () => {
+  const { readFile } = await import('node:fs/promises');
+  for (const file of [
+    '../src/app/controller-cloudflare.js',
+    '../src/browser-register.js',
+    '../src/app/post-render-theme-previews.js'
+  ]) {
+    const source = await readFile(new URL(file, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /ryanrobin07-ek\.workers\.dev/, file);
+    assert.match(source, /DOMAIN\.defaultApiOrigin/, file);
+  }
+});

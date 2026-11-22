@@ -1,6 +1,7 @@
 // Hosted theme previews (lazy-loaded storefront theme frames).
 // Moved verbatim out of AppController.postRenderSetup in src/app/main.js; it is called there with this = AppController.
 import { AppController, StudioRenderers } from './main.js';
+import { DOMAIN } from './domain.js';
 
 export function bindThemePreviews(draftEditor) {
   const loadHostedThemePreview = async (frame, theme, catalog, assetUrl = theme.preview_url) => {
@@ -313,7 +314,7 @@ export function bindThemePreviews(draftEditor) {
         ? source.replace(/<head\b[^>]*>/i, match => `${match}${base}${isolatedStorage}${srcdocUrlShim}`)
         : `${base}${isolatedStorage}${srcdocUrlShim}${source}`;
     }
-    if (themeUrl.origin !== "https://eshop-storefront.ryanrobin07-ek.workers.dev" ||
+    if (themeUrl.origin !== DOMAIN.defaultApiOrigin ||
         themeUrl.pathname !== `/themes/${theme.id}/index.html` ||
         !/^[a-z0-9][a-z0-9-]{0,63}$/.test(theme.id)) {
       throw new Error("The selected theme URL is invalid.");

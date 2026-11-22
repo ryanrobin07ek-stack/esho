@@ -13,7 +13,7 @@ export const cloudflareController = {
         : "") ||
       "";
     const endpoint = window.localStorage.getItem("ESHOP_CLOUDFLARE_PUBLISH_URL_V1") ||
-      "https://eshop-storefront.ryanrobin07-ek.workers.dev";
+      DOMAIN.defaultApiOrigin;
     let origin;
     try {
       const url = new URL(endpoint);

@@ -12,7 +12,7 @@ const DATABASE_NAME = 'eshop-browser-register';
 const DATABASE_STORE = 'databases';
 const DATABASE_KEY = 'pos';
 const CONNECTION_KEY = 'ESHOP_BROWSER_POS_CLOUD_V1';
-const DEFAULT_WORKER = 'https://eshop-storefront.ryanrobin07-ek.workers.dev';
+const DEFAULT_WORKER = DOMAIN.defaultApiOrigin;
 let cloudConnection = readConnection();
 let availableAccountShops = new Map();
 

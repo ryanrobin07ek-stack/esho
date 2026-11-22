@@ -1,6 +1,8 @@
 // The one place that knows which domain this build serves.
 // Default build: rrobin.co.ke. Another deployment sets VITE_DOMAIN_ROOT at build time (for example craft.ke).
 const DEFAULT_ROOT = "rrobin.co.ke";
+// The server the production app has always talked to by default.
+const PRODUCTION_WORKER = "https://eshop-storefront.ryanrobin07-ek.workers.dev";
 const ROOT_PATTERN = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/;
 
 function validRoot(root) {
@@ -22,6 +24,9 @@ export function createDomain(root, mainHost) {
   return {
     root: safeRoot,
     apex: safeMain,
+    // Where the app sends its server requests unless the user chose another address: the production server for
+    // rrobin.co.ke, the main store's own address for any other deployment (craft.ke -> https://app.craft.ke).
+    defaultApiOrigin: safeRoot === DEFAULT_ROOT ? PRODUCTION_WORKER : `https://${safeMain}`,
     shopHost(id) {
       return id === "main" ? safeMain : `${id}.${safeRoot}`;
     },
