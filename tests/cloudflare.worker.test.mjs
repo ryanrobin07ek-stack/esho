@@ -2018,7 +2018,7 @@ test('Paystack setup sends bank details only upstream and persists masked connec
   await TENANTS.put('tenant:main', JSON.stringify({
     id: 'main', owner_token_hash: await sha256HexForTest(ownerToken)
   }));
-  const env = { DB, TENANTS, PAYSTACK_SECRET_KEY: 'sk_live_paystack-secret' };
+  const env = { DB, TENANTS, PAYSTACK_SECRET_KEY: 'sk_live_paystack-secret', PAYSTACK_CURRENCIES: 'KES,NGN,ZAR' };
   const baseUrl = 'https://eshop-storefront.workers.dev/api/payments/paystack';
   const authorization = { Authorization: `Bearer ${ownerToken}` };
   const calls = [];
@@ -2088,6 +2088,14 @@ test('Paystack setup sends bank details only upstream and persists masked connec
       assert.equal(calls.at(-1).url.searchParams.get('country'), country);
       assert.equal(calls.at(-1).url.searchParams.get('currency'), currency);
     }
+    // Without PAYSTACK_CURRENCIES the default is Kenya only: NGN and ZAR are refused and Paystack is not called.
+    const kenyaOnlyBefore = calls.length;
+    for (const currency of ['NGN', 'ZAR']) {
+      const refused = await worker.fetch(new Request(`${baseUrl}/banks?tenant=main&currency=${currency}`), { ...env, PAYSTACK_CURRENCIES: undefined });
+      assert.equal(refused.status, 400);
+      assert.match((await refused.json()).error, /available for KES./);
+    }
+    assert.equal(calls.length, kenyaOnlyBefore);
     const callsBefore = calls.length;
     const unsupported = await worker.fetch(new Request(`${baseUrl}/banks?tenant=main&currency=USD`), env);
     assert.equal(unsupported.status, 400);

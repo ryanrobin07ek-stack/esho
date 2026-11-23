@@ -208,8 +208,8 @@ Craft supports Paystack online payments in these shop currencies:
 | Shop currency | Country | Bank list shown | Status |
 |---|---|---|---|
 | **KES** | Kenya | Kenyan banks | Supported |
-| **NGN** | Nigeria | Nigerian banks | Supported in code and live on the craft.ke server; needs NGN enabled on Craft's Paystack account for live payments |
-| **ZAR** | South Africa | South African banks | Same as NGN |
+| **NGN** | Nigeria | Nigerian banks | **Parked.** Code exists but cannot take real payments: a Kenyan Paystack account cannot take NGN. See `docs/expansion-nigeria-south-africa.md` |
+| **ZAR** | South Africa | South African banks | Parked, same reason as NGN |
 
 How it works:
 
@@ -217,7 +217,7 @@ How it works:
 - The bank list is loaded for the shop's own currency (`/api/payments/paystack/banks?currency=KES|NGN|ZAR`).
 - Checkout, service deposits and booking deposits accept **KES, NGN and ZAR**; any other currency is refused with a clear message and the shop falls back to paying the shop directly.
 - In Live mode the bank account is verified with Paystack before a subaccount is created; in Test mode it cannot be.
-- **Paystack settles in the currency of the account it sends to.** For live NGN/ZAR payments Craft's own Paystack business must have those currencies switched on.
+- **Paystack settles in the currency of the account it sends to, and a Paystack account only takes its own country's currencies.** Craft's Paystack account is Kenyan (KES, USD). Paystack support confirmed it cannot take NGN or ZAR, so Nigeria and South Africa need their own Paystack accounts (not built: the Worker holds one secret key). Decision 2026-11-23: launch Kenya-only; other countries use pay-the-shop-directly.
 - The app can show a website currency list (KES, USD, EUR, GBP, TZS, UGX, RWF, NGN, GHS, ZAR). Only KES, NGN and ZAR can take Paystack payments; others work with pay-the-shop-directly.
 
 ### 8.2 Manual and direct payments
@@ -277,14 +277,14 @@ Customers outside Paystack's countries cannot use Paystack. The planned route is
 
 1. **Google sign-in:** add redirect `https://app.craft.ke/api/auth/google/callback` in Google.
 2. **Paystack webhook:** set `https://app.craft.ke/api/payments/paystack/webhook`.
-3. **Paystack currencies:** have NGN and ZAR enabled on Craft's Paystack account.
-4. **Resend:** verify `craft.ke` so email sends from the domain.
+3. ~~Paystack currencies: enable NGN and ZAR~~ Not possible on a Kenyan account. Parked; see `docs/expansion-nigeria-south-africa.md`.
+4. **Resend:** ~~verify `craft.ke`~~ Done as of 2026-11-23: `RESEND_API_KEY` is set on the Worker, `EMAIL_FROM` is `Craft <noreply@craft.ke>`, and the DKIM, return-path MX and SPF records are published in DNS. Not checked: a DMARC record, and a real test email.
 5. **Real-phone test:** install the APK, create an account, build a shop, add a product, place a test order. Sign-up, payments and email on `app.craft.ke` have not been tested end to end by a person.
-6. **New Android build** so the app includes the NGN/ZAR change (the first craft.ke APK predates it).
+6. ~~New Android build~~ Done 2026-11-23: `release-apk/craftke-2026-11-23/` (debug build, `ke.craft.app`).
 7. **Signed release build** and store listing, icon and privacy policy for Google Play.
 8. **Plan pricing:** plan prices are shown in KES; decide what Nigerian and South African shops pay.
 9. **Copy for other countries:** some text is Kenya-flavoured (M-Pesa, `en-KE` price formatting).
-10. **D1 migrations `0025`–`0030`** exist as files and must be applied to each production database before the Worker code that needs them runs.
+10. **D1 migrations `0025`–`0031`:** ~~apply to production~~ Done for **craft.ke** (`craftke-catalog`), checked 2026-11-23: wrangler reports no migrations to apply. Not checked for the original rrobin.co.ke database (`eshop-catalog`); verify that one before deploying the Worker there.
 11. **Merge** `integrate/split-merge` (craft.ke support and the Paystack currencies) into `main`.
 12. Save the **publish token** that was shown once when craft.ke was set up.
 

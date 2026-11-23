@@ -94,8 +94,19 @@ const PASSWORD_RESET_MAX_ATTEMPTS = 5;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Currencies Paystack can settle for a shop, with the country name its bank list is published under.
 const PAYSTACK_MARKETS = { KES: "kenya", NGN: "nigeria", ZAR: "south africa" };
-const PAYSTACK_CURRENCY_LABEL = "KES, NGN or ZAR";
-const paystackCurrency = currency => typeof currency === "string" && Object.hasOwn(PAYSTACK_MARKETS, currency);
+// Which of those markets are switched on. A Paystack account only takes its own country's currency, so the default is
+// Kenya only. Set PAYSTACK_CURRENCIES (for example "KES,NGN,ZAR") once Paystack accounts exist for the other countries.
+// See docs/expansion-nigeria-south-africa.md.
+let enabledPaystackCurrencies = ["KES"];
+function configurePaystackMarkets(env) {
+  const wanted = String(env?.PAYSTACK_CURRENCIES || "KES").split(",")
+    .map(code => code.trim().toUpperCase()).filter(code => Object.hasOwn(PAYSTACK_MARKETS, code));
+  enabledPaystackCurrencies = wanted.length ? [...new Set(wanted)] : ["KES"];
+}
+const paystackCurrencyLabel = () => enabledPaystackCurrencies.length > 1
+  ? `${enabledPaystackCurrencies.slice(0, -1).join(", ")} or ${enabledPaystackCurrencies.at(-1)}`
+  : enabledPaystackCurrencies[0];
+const paystackCurrency = currency => typeof currency === "string" && enabledPaystackCurrencies.includes(currency);
 const GOOGLE_AUTH_SCOPE = "openid email";
 function googleAuthRedirectUri() {
   return `https://${MAIN_HOST}/api/auth/google/callback`;
@@ -1004,7 +1015,7 @@ function cleanCatalog(input) {
   }
   if (offersServices && store.service_deposit_percent > 0 &&
       (!paystackCurrency(store.currency) || products.filter(isServiceProduct).some(product => product.price <= 0))) {
-    throw new TypeError(`Service deposits need the shop currency to be ${PAYSTACK_CURRENCY_LABEL} and a positive price for every service.`);
+    throw new TypeError(`Service deposits need the shop currency to be ${paystackCurrencyLabel()} and a positive price for every service.`);
   }
 
   const privateProducts = products.map((product, index) => ({
@@ -5121,7 +5132,7 @@ async function patchOwnerServiceAppointment(request, env, tenantId, ctx) {
       return appointmentError("Connect Paystack before confirming appointments that require a deposit.", 409, "deposit_unavailable");
     }
     if (!paystackCurrency(appointment.currency) || Number(appointment.deposit_cents) < 1) {
-      return appointmentError(`This appointment does not have a payable deposit configured (${PAYSTACK_CURRENCY_LABEL}).`, 409, "deposit_unavailable");
+      return appointmentError(`This appointment does not have a payable deposit configured (${paystackCurrencyLabel()}).`, 409, "deposit_unavailable");
     }
     const mode = paystackAccountMode(env.PAYSTACK_SECRET_KEY);
     if (!mode) return appointmentError("Configure a Paystack test or live secret key before taking appointment deposits.", 503, "deposit_unavailable");
@@ -5539,7 +5550,7 @@ async function handlePaystackSetup(request, env, tenantId, resource) {
   if (resource === "banks") {
     const wanted = (new URL(request.url).searchParams.get("currency") || "KES").toUpperCase();
     if (!paystackCurrency(wanted)) {
-      return jsonResponse({ error: `Paystack bank lists are available for ${PAYSTACK_CURRENCY_LABEL}.` }, 400);
+      return jsonResponse({ error: `Paystack bank lists are available for ${paystackCurrencyLabel()}.` }, 400);
     }
     const bankListUrl = new URL("https://api.paystack.co/bank");
     bankListUrl.search = new URLSearchParams({ country: PAYSTACK_MARKETS[wanted], currency: wanted, use_cursor: "false", perPage: "100" }).toString();
@@ -6138,7 +6149,7 @@ async function handlePaystackPayment(request, env, tenantId, action, ctx) {
     if (order.status === "cancelled") return jsonResponse({ error: "This order has been cancelled." }, 409);
     if (order.payment_status === "paid") return jsonResponse({ error: "This order is already paid." }, 409);
     if (Number(order.total_cents) < 1 || !paystackCurrency(order.currency)) {
-      return jsonResponse({ error: `Paystack checkout requires a positive order total in ${PAYSTACK_CURRENCY_LABEL}.` }, 409);
+      return jsonResponse({ error: `Paystack checkout requires a positive order total in ${paystackCurrencyLabel()}.` }, 409);
     }
     if (order.payment_authorization_url && order.payment_status === "pending") {
       return jsonResponse({
@@ -8735,6 +8746,7 @@ async function hasPublishedCraftStorefront(env, tenantId) {
 export default {
   async fetch(request, env, ctx) {
     configureDomain(env);
+    configurePaystackMarkets(env);
     let url = new URL(request.url);
     const requestHostname = url.hostname.toLowerCase();
     // Something else serves this subdomain: hand the request on untouched (to its custom domain or origin).
@@ -9328,6 +9340,7 @@ export default {
   // best-effort booking reminders. Each job fails on its own and never blocks the other.
   async scheduled(controller, env, ctx) {
     configureDomain(env);
+    configurePaystackMarkets(env);
     const task = Promise.all([
       runRetentionCleanup(env)
         .then(report => console.log("Retention cleanup finished.", JSON.stringify(report)))
