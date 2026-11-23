@@ -399,6 +399,27 @@ test('MAIN_HOST=app.craft.ke: app.craft.ke is the main store, shops stay at <id>
   assert.equal(await googleRedirectUri(env), 'https://app.craft.ke/api/auth/google/callback');
 });
 
+test('MAIN_HOST=app.craft.ke: the app host honours ?tenant= on API paths, and still needs the shop owner key to change it', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', MAIN_HOST: 'app.craft.ke' });
+  const shop = await get(env, 'app.craft.ke', '/api/catalog?tenant=shop-a');
+  assert.equal(shop.status, 200);
+  assert.equal((await shop.json()).products[0].name, 'Canvas Tote', '?tenant=shop-a reaches shop-a, not the main store');
+  assert.equal((await get(env, 'app.craft.ke', '/api/catalog?tenant=missing')).status, 404, 'an unknown shop is not silently the main store');
+  const main = await get(env, 'app.craft.ke', '/api/catalog');
+  assert.deepEqual((await main.json()).products, [], 'no ?tenant= is still the main store');
+  const write = await worker.fetch(new Request('https://app.craft.ke/api/catalog?tenant=shop-a', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ products: [], categories: [], store: {} })
+  }), env);
+  assert.equal(write.status, 401, 'changing a shop without its owner key is refused');
+});
+
+test('default config: ?tenant= is still ignored on the main host (rrobin.co.ke)', async () => {
+  const { env } = await createEnv();
+  const response = await get(env, 'rrobin.co.ke', '/api/catalog?tenant=shop-a');
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).products, [], 'the main store, not shop-a');
+});
+
 test('MAIN_HOST=app.craft.ke: nobody can open a shop called "app", and shop hostnames are unchanged', async () => {
   const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', MAIN_HOST: 'app.craft.ke' });
   const account = await registerAccount(env);

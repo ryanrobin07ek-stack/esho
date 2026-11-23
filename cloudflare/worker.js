@@ -223,7 +223,13 @@ async function provisionTenantOwnerKey(request, env, tenantId) {
 function tenantIdFromRequest(request) {
   const url = new URL(request.url);
   const hostname = url.hostname.toLowerCase();
-  if (hostname === MAIN_HOST || hostname === DOMAIN_ROOT || hostname === `www.${DOMAIN_ROOT}`) return "main";
+  if (hostname === MAIN_HOST || hostname === DOMAIN_ROOT || hostname === `www.${DOMAIN_ROOT}`) {
+    // A dedicated app host (app.craft.ke) is where the app sends every shop's API calls, so there its API paths
+    // honour ?tenant= like the workers.dev address does. Per-shop owner checks still apply to the tenant it names.
+    const appHostTenant = hostname === MAIN_HOST && MAIN_HOST !== DOMAIN_ROOT && url.pathname.startsWith("/api/")
+      ? url.searchParams.get("tenant") : null;
+    return appHostTenant && TENANT_ID_PATTERN.test(appHostTenant) ? appHostTenant : "main";
+  }
   if (hostname.endsWith(`.${DOMAIN_ROOT}`)) {
     const tenantId = hostname.slice(0, -(DOMAIN_ROOT.length + 1));
     return tenantId.includes(".") ? null : tenantId;
