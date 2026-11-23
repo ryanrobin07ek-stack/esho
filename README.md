@@ -8,7 +8,7 @@ Craft is a mobile-first app for small shop owners in Kenya. It combines three th
 
 It is a Vite web app (vanilla JavaScript, one large `index.html`) wrapped for Android with Capacitor. The hosted backend is a Cloudflare Worker with D1 (SQL), KV (tenants and sessions) and R2 (media and published sites).
 
-Start here: [APP_OVERVIEW.md](APP_OVERVIEW.md) (what it does, for owners), [APP_GUIDE.md](APP_GUIDE.md) (screens), [APP_ARCHITECTURE.md](APP_ARCHITECTURE.md) (how it fits together), [cloudflare/STOREFRONT_COMMERCE.md](cloudflare/STOREFRONT_COMMERCE.md) (the storefront commerce API contract). When a document and the code disagree, the code is right; please fix the document.
+Start here: [ABOUT_CRAFT.md](ABOUT_CRAFT.md) (the full picture: what Craft is, how it is built, where it runs, payments, what is open), then [APP_OVERVIEW.md](APP_OVERVIEW.md) (what it does, for owners), [APP_GUIDE.md](APP_GUIDE.md) (screens), [APP_ARCHITECTURE.md](APP_ARCHITECTURE.md) (how it fits together), [cloudflare/STOREFRONT_COMMERCE.md](cloudflare/STOREFRONT_COMMERCE.md) (the storefront commerce API contract). When a document and the code disagree, the code is right; please fix the document.
 
 ## What was removed (do not restore)
 
