@@ -275,7 +275,7 @@ Customers outside Paystack's countries cannot use Paystack. The planned route is
 
 **Open before marketing**
 
-1. **Google sign-in:** add redirect `https://app.craft.ke/api/auth/google/callback` in Google.
+1. **Google sign-in:** ~~add the redirect~~ Done 2026-11-23: `https://app.craft.ke/api/auth/google/callback` is on the OAuth client "craft"; Google no longer returns redirect_uri_mismatch. A full sign-in on a phone is still untested.
 2. **Paystack webhook:** set `https://app.craft.ke/api/payments/paystack/webhook`.
 3. ~~Paystack currencies: enable NGN and ZAR~~ Not possible on a Kenyan account. Parked; see `docs/expansion-nigeria-south-africa.md`.
 4. **Resend:** ~~verify `craft.ke`~~ Done as of 2026-11-23: `RESEND_API_KEY` is set on the Worker, `EMAIL_FROM` is `Craft <noreply@craft.ke>`, and the DKIM, return-path MX and SPF records are published in DNS. Not checked: a DMARC record, and a real test email.
