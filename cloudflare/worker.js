@@ -525,7 +525,7 @@ function storefrontCacheKey(
   publishedThemeKey = "none"
 ) {
   const url = new URL(request.url);
-  url.pathname = `/__worker-cache/storefront/filled-v19/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(publishedThemeKey)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
+  url.pathname = `/__worker-cache/storefront/filled-v20/${encodeURIComponent(url.hostname)}/${encodeURIComponent(catalogUpdatedAt)}/${encodeURIComponent(publishedThemeKey)}/${encodeURIComponent(verificationVersion)}/${encodeURIComponent(url.pathname)}`;
   url.search = "";
   url.hash = "";
   return new Request(url, { method: "GET" });
