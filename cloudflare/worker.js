@@ -1000,8 +1000,10 @@ function cleanCatalog(input) {
   // An invalid duration is cleaned away to null above, so intent is read from what the owner sent:
   // a product that declared any duration is meant to be a service, and is still rejected when the
   // duration is not 15-240 in 15-minute steps rather than silently becoming an ordinary good.
+  // A zero (0 or "0") means "no duration", which is how the builder sends an ordinary good, so it is not a declaration.
   const declaresService = product => product?.duration_minutes !== undefined &&
-    product?.duration_minutes !== null && product?.duration_minutes !== "";
+    product?.duration_minutes !== null && product?.duration_minutes !== "" &&
+    !(Number(product.duration_minutes) === 0);
   const offersServices = ["services", "both"].includes(store.offer_type) ||
     activeProducts.some(declaresService);
   if (store.service_close_time <= store.service_open_time) {

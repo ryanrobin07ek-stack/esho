@@ -3150,6 +3150,20 @@ test('catalog publishing preserves service schedules and rejects invalid service
   assert.equal(invalid.status, 400);
 });
 
+test('catalog publishing accepts goods sent with a zero duration, and still rejects a bad real duration', async () => {
+  const env = { DB: createDatabase(), TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
+  const put = products => worker.fetch(new Request('https://rrobin.co.ke/api/catalog', {
+    method: 'PUT', headers: { Authorization: 'Bearer test-token', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ categories: [], products, store: { name: 'Goods Shop', currency: 'KES', offer_type: 'products' } })
+  }), env);
+  // The Litrus builder sends an ordinary good with duration_minutes 0 (a null becomes 0): that must not read as a service.
+  for (const zero of [0, '0']) {
+    const response = await put([{ id: 1, name: 'Phone Charger', price: 500, stock: 5, duration_minutes: zero }]);
+    assert.equal(response.status, 200, `duration_minutes ${JSON.stringify(zero)} must publish`);
+  }
+  assert.equal((await put([{ id: 1, name: 'Charger', price: 500, stock: 5, duration_minutes: 20 }])).status, 400, 'a real but invalid duration is still refused');
+});
+
 test('catalog publishing persists merchant-defined options and normalizes legacy variants', async () => {
   const env = { DB: createDatabase(), TENANTS: createTenantStore(), PUBLISH_TOKEN: 'test-token' };
   const response = await worker.fetch(new Request('https://rrobin.co.ke/api/catalog', {
