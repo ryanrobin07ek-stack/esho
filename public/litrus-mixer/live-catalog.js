@@ -94,7 +94,8 @@
         ? true
         : store.paystack_connected === false || store.paystack_connected === 0 || store.paystack_connected === "0" ? false : null,
       directPayments: directPaymentChoices(store.payment_options),
-      wa: String(store.whatsapp || store.whatsapp_number || data.shop.wa || ""),
+      wa: String(store.whatsapp || store.whatsapp_number || data.shop.wa ||
+        (store.whatsapp_enabled ? (String(store.whatsapp_url || "").match(/wa\.me\/\+?(\d{7,15})/i) || [])[1] || "" : "")),
       email: String(store.email || ""),
       phone: String(store.phone || ""),
       addr: String(store.location_address || store.address || ""),

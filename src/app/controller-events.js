@@ -47,6 +47,13 @@ export const eventsController = {
       if (startNewWebsite) {
         e.preventDefault();
         try {
+          // An unfinished draft is offered back instead of being thrown away without a word.
+          const unfinished = StudioRenderers.websiteBuilderDraft();
+          const hasWork = Boolean(unfinished.shop_name || unfinished.categories?.length || unfinished.products?.length);
+          if (hasWork && window.confirm(`You have an unfinished website${unfinished.shop_name ? ` (${unfinished.shop_name})` : ""}.\n\nOK continues it. Cancel starts a new one and discards it.`)) {
+            this.navigate("/account/web/studio/websites/webmaker");
+            return;
+          }
           await StudioRenderers.resetWebsiteBuilderDraft();
           this.navigate("/account/web/studio/websites/webmaker");
         } catch (error) {
@@ -256,6 +263,11 @@ export const eventsController = {
       }
 
       const manageWebsite = e.target.closest("[data-manage-website]");
+      if (manageWebsite && this.isWebsiteBuilderDraftTenant(manageWebsite.dataset.manageWebsite)) {
+        // A draft is not a shop yet: managing it means finishing its products in the wizard, not opening the main store.
+        this.navigate("/account/web/studio/websites/webmaker");
+        return;
+      }
       if (manageWebsite) {
         const website = this.tenantCatalogs().find(item => item.tenant_id === manageWebsite.dataset.manageWebsite);
         if (!website) {
@@ -279,6 +291,12 @@ export const eventsController = {
       }
 
       const editWebsite = e.target.closest("[data-edit-website]");
+      if (editWebsite && this.isWebsiteBuilderDraftTenant(editWebsite.dataset.editWebsite)) {
+        // Editing a draft opens the new-website editor. If the draft has no product or category yet, the editor sends the owner back to the wizard.
+        const draftTheme = StudioRenderers.websiteBuilderDraft().selected_theme || "litrus-mixer";
+        this.navigate(`/account/web/site?new=1&edit=1&theme=${encodeURIComponent(draftTheme)}`);
+        return;
+      }
       if (editWebsite) {
         const website = this.tenantCatalogs().find(item => item.tenant_id === editWebsite.dataset.editWebsite);
         if (!website) {

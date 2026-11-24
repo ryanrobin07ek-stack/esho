@@ -229,7 +229,9 @@ export function setupLitrusBuilder(params, path) {
                 description: store.description || "",
                 email: store.email || "",
                 phone: store.phone || "",
-                whatsapp: store.whatsapp || store.whatsapp_number || "",
+                // The Contact & socials page saves a wa.me link, so read the number from it while the button is switched on.
+                whatsapp: store.whatsapp || store.whatsapp_number ||
+                  (store.whatsapp_enabled ? (String(store.whatsapp_url || "").match(/wa\.me\/\+?(\d{7,15})/i) || [])[1] || "" : ""),
                 instagram_url: store.instagram_url || "",
                 facebook_url: store.facebook_url || "",
                 tiktok_url: store.tiktok_url || "",

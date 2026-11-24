@@ -206,12 +206,35 @@ export const mainShopWorkspaceLoader = {
               ...Object.fromEntries(["instagram_url", "facebook_url", "tiktok_url", "youtube_url", "x_url", "chatbot_url", "location_map_embed_url", "location_map_link"]
                 .map(name => [name, String(data.get(name) || "").trim()]))
             };
-            const result = await AppController.cloudflareRequest(
+            const sendSettings = settings => AppController.cloudflareRequest(
               `/api/catalog?tenant=${encodeURIComponent(tenantId)}`,
-              { method: "PATCH", body: JSON.stringify({ store }) },
+              { method: "PATCH", body: JSON.stringify({ store: settings }) },
               tenantId
             );
-            if (status) status.textContent = `Published contact and location settings. Existing ${result.product_count} products and ${result.category_count} categories were left unchanged.`;
+            let result;
+            let partial = false;
+            try {
+              result = await sendSettings(store);
+            } catch (error) {
+              if (!error.message?.includes("require a full publish")) throw error;
+              // The published page has the phone number and address built in, so those wait for a full publish.
+              // Everything else (the WhatsApp button, social and chat links, map links) goes live straight away.
+              const { phone: _phone, location_address: _address, ...liveSettings } = store;
+              result = await sendSettings(liveSettings);
+              partial = true;
+            }
+            if (status) {
+              if (!partial) {
+                status.textContent = `Published contact and location settings. Existing ${result.product_count} products and ${result.category_count} categories were left unchanged.`;
+              } else {
+                status.textContent = "Live now: your WhatsApp button and links. Your phone number, address and footer social icons show on your site after you publish it from the Website editor. ";
+                const openEditor = document.createElement("a");
+                openEditor.href = "/account/web/studio/websites/editor";
+                openEditor.setAttribute("data-route", "/account/web/studio/websites/editor");
+                openEditor.textContent = "Open Website editor";
+                status.appendChild(openEditor);
+              }
+            }
           } catch (error) {
             if (error.message?.includes("Publish the website catalog before publishing settings")) {
               if (status) status.textContent = "This site needs its first full catalog publish before settings can be published separately.";

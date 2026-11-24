@@ -175,6 +175,49 @@
     });
   }
 
+  // The WhatsApp chat button: bottom right, the real WhatsApp logo. It exists only while the owner has the
+  // WhatsApp button switched on and a usable number is saved, so a shop that never set it shows nothing.
+  function storefrontWhatsAppNumber(store) {
+    const link = String(store?.whatsapp_url || "").trim();
+    const fromLink = link.match(/wa\.me\/\+?(\d{7,15})/i) || link.match(/[?&]phone=\+?(\d{7,15})/i);
+    if (fromLink) return fromLink[1];
+    const typedNumber = /^\+?[\d\s().-]{7,22}$/.test(link) ? link.replace(/\D/g, "") : "";
+    if (typedNumber.length >= 7 && typedNumber.length <= 15) return typedNumber;
+    const saved = String(store?.whatsapp || store?.whatsapp_number || "").replace(/\D/g, "");
+    if (saved.length >= 7 && saved.length <= 15) return saved;
+    // A phone number is only trusted when it already carries its country code.
+    const phone = String(store?.phone || "").trim();
+    const phoneDigits = phone.startsWith("+") ? phone.replace(/\D/g, "") : "";
+    return phoneDigits.length >= 7 && phoneDigits.length <= 15 ? phoneDigits : "";
+  }
+
+  function installWhatsAppButton() {
+    const store = window.__ESHOP_THEME_CATALOG__?.store;
+    const existing = document.getElementById("craft-whatsapp-button");
+    const enabled = store && (store.whatsapp_enabled === 1 || store.whatsapp_enabled === true || store.whatsapp_enabled === "1");
+    const number = enabled ? storefrontWhatsAppNumber(store) : "";
+    if (!number) {
+      existing?.remove();
+      return;
+    }
+    const storeName = String(store.name || "").trim();
+    const message = storeName ? `Hello ${storeName}, I have a question.` : "Hello, I have a question.";
+    const href = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+    if (existing) {
+      existing.href = href;
+      return;
+    }
+    const link = document.createElement("a");
+    link.id = "craft-whatsapp-button";
+    link.href = href;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.setAttribute("aria-label", "Chat with us on WhatsApp");
+    link.style.cssText = "position:fixed;z-index:2147482000;right:calc(16px + env(safe-area-inset-right, 0px));bottom:calc(16px + env(safe-area-inset-bottom, 0px));width:56px;height:56px;border-radius:50%;background:#25D366;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,.28);text-decoration:none";
+    link.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="#fff" aria-hidden="true" focusable="false"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>';
+    (document.body || document.documentElement).append(link);
+  }
+
   function installStorefrontForms() {
     for (const form of document.querySelectorAll(newsletterFormSelector)) {
       installNewsletterConsent(form);
@@ -628,5 +671,7 @@
   window.addEventListener("hashchange", trackCurrentProductView);
   window.addEventListener("eshop:catalog-ready", installProductHoldForm);
   trackCurrentProductView();
+  installWhatsAppButton();
+  window.addEventListener("eshop:catalog-ready", installWhatsAppButton);
   void verifyPaymentReturn();
 })();
