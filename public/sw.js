@@ -20,6 +20,8 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // Video and audio are fetched in byte ranges. A partial (206) answer cannot be stored, so let the browser handle it.
+  if (request.headers.has('Range')) return;
   // The API answers with private data (orders, customers, owner settings). It is never kept in the cache, so a
   // shared device cannot show a previous owner's responses.
   if (url.pathname.startsWith('/api/') || request.headers.has('Authorization')) return;
@@ -28,7 +30,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith((async () => {
     try {
       const response = await fetch(request);
-      if (response.ok && !isAppShell) {
+      if (response.ok && response.status === 200 && !isAppShell) {
         const cache = await caches.open(CACHE_NAME);
         await cache.put(request, response.clone());
       }
