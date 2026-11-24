@@ -164,7 +164,7 @@ if (Capacitor.isNativePlatform()) {
     } catch {
       return;
     }
-    if (callback.protocol !== 'com.eshop.atelier:' ||
+    if (callback.protocol !== `${import.meta.env?.VITE_APP_URL_SCHEME || 'com.eshop.atelier'}:` ||
         callback.hostname !== 'auth' ||
         callback.pathname !== '/google' ||
         handledGoogleCallback === callback.href) return;

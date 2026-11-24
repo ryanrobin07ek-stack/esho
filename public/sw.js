@@ -1,4 +1,5 @@
-const CACHE_NAME = 'eshop-shell-v2';
+// v3 also clears the older cache, which could hold signed-in API responses.
+const CACHE_NAME = 'eshop-shell-v3';
 const SHELL_ASSETS = ['/manifest.webmanifest', '/icons/icon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -19,6 +20,9 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  // The API answers with private data (orders, customers, owner settings). It is never kept in the cache, so a
+  // shared device cannot show a previous owner's responses.
+  if (url.pathname.startsWith('/api/') || request.headers.has('Authorization')) return;
 
   const isAppShell = request.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html';
   event.respondWith((async () => {

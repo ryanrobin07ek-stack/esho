@@ -23,9 +23,10 @@ test("Capacitor account center starts and completes the shared Google account fl
 test("Capacitor handles Google OAuth callbacks from both resume and cold launch", () => {
   assert.match(bootstrap, /addListener\('appUrlOpen'/);
   assert.match(bootstrap, /App\.getLaunchUrl\(\)/);
-  assert.match(bootstrap, /com\.eshop\.atelier:/);
+  // The return link is per app id: the build sets VITE_APP_URL_SCHEME (craft.ke) and the manifest reads custom_url_scheme.
+  assert.match(bootstrap, /VITE_APP_URL_SCHEME \|\| 'com\.eshop\.atelier'/);
   assert.match(bootstrap, /window\.location\.hash = `\/app-account\?/);
-  assert.match(manifest, /android:scheme="com\.eshop\.atelier"/);
+  assert.match(manifest, /android:scheme="@string\/custom_url_scheme"/);
   assert.match(manifest, /android:host="auth"/);
   assert.match(manifest, /android:path="\/google"/);
 });

@@ -3324,6 +3324,9 @@ test('the public and private copies of a catalogue are limited together, because
 
 test('R2 media uploads require shop ownership and are publicly served from an isolated tenant prefix', async () => {
   const TENANTS = createTenantStore();
+  // Uploads must start with the real file signature of the type they claim (the Worker checks the first bytes).
+  const WEBP_BYTES = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50, 1, 2, 3]);
+  const MP4_BYTES = new Uint8Array([0, 0, 0, 0x18, 0x66, 0x74, 0x79, 0x70, 4, 5, 6]);
   const ownerToken = 'test-main-owner';
   await TENANTS.put('tenant:main', JSON.stringify({
     id: 'main',
@@ -3351,7 +3354,7 @@ test('R2 media uploads require shop ownership and are publicly served from an is
   const unauthorized = await worker.fetch(new Request('https://rrobin.co.ke/api/media?tenant=main', {
     method: 'POST',
     headers: { 'Content-Type': 'image/webp' },
-    body: new Uint8Array([1, 2, 3])
+    body: WEBP_BYTES
   }), env);
   assert.equal(unauthorized.status, 401);
 
@@ -3361,7 +3364,7 @@ test('R2 media uploads require shop ownership and are publicly served from an is
       Authorization: `Bearer ${ownerToken}`,
       'Content-Type': 'image/webp'
     },
-    body: new Uint8Array([1, 2, 3])
+    body: WEBP_BYTES
   }), env);
   assert.equal(uploaded.status, 200);
   const asset = await uploaded.json();
@@ -3374,7 +3377,7 @@ test('R2 media uploads require shop ownership and are publicly served from an is
       Authorization: `Bearer ${ownerToken}`,
       'Content-Type': 'image/webp'
     },
-    body: new Uint8Array([1, 2, 3])
+    body: WEBP_BYTES
   }), env);
   assert.equal(duplicateUpload.status, 200);
   assert.deepEqual(await duplicateUpload.json(), { ok: true, url: asset.url, reused: true });
@@ -3383,7 +3386,7 @@ test('R2 media uploads require shop ownership and are publicly served from an is
   assert.equal(publicImage.status, 200);
   assert.equal(publicImage.headers.get('Content-Type'), 'image/webp');
   assert.equal(publicImage.headers.get('Cache-Control'), 'public, max-age=31536000, immutable');
-  assert.deepEqual([...new Uint8Array(await publicImage.arrayBuffer())], [1, 2, 3]);
+  assert.deepEqual([...new Uint8Array(await publicImage.arrayBuffer())], [...WEBP_BYTES]);
 
   const uploadedVideo = await worker.fetch(new Request('https://rrobin.co.ke/api/media?tenant=main', {
     method: 'POST',
@@ -3391,7 +3394,7 @@ test('R2 media uploads require shop ownership and are publicly served from an is
       Authorization: `Bearer ${ownerToken}`,
       'Content-Type': 'video/mp4'
     },
-    body: new Uint8Array([4, 5, 6])
+    body: MP4_BYTES
   }), env);
   assert.equal(uploadedVideo.status, 200);
   const videoAsset = await uploadedVideo.json();
@@ -3399,7 +3402,7 @@ test('R2 media uploads require shop ownership and are publicly served from an is
   const publicVideo = await worker.fetch(new Request(videoAsset.url), env);
   assert.equal(publicVideo.status, 200);
   assert.equal(publicVideo.headers.get('Content-Type'), 'video/mp4');
-  assert.deepEqual([...new Uint8Array(await publicVideo.arrayBuffer())], [4, 5, 6]);
+  assert.deepEqual([...new Uint8Array(await publicVideo.arrayBuffer())], [...MP4_BYTES]);
 
   const privateArchivePath = await worker.fetch(new Request('https://rrobin.co.ke/media/main/not-a-media-key.jpg'), env);
   assert.equal(privateArchivePath.status, 404);
@@ -5980,6 +5983,8 @@ test('recovering a shop key by admin also revokes the owner tokens minted at sig
   await TENANTS.put('tenant:shop-a', JSON.stringify({
     ...tenant, owner_login_tokens: [{ hash: await sha256HexForTest('login-token'), username: 'owner-shop-a', session: 's', created_at: 'now' }]
   }));
+  // A sign-in token works only while the session that minted it is alive.
+  await TENANTS.put('session:s', JSON.stringify({ username: 'owner-shop-a' }));
   const asLoginToken = () => worker.fetch(new Request('https://eshop-storefront.workers.dev/api/store/notifications?tenant=shop-a', {
     headers: ownerHeaders('login-token')
   }), env);

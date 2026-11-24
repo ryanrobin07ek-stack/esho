@@ -15,7 +15,9 @@ import { normalizePaymentOptions } from "./payment-options.js";
 // Largest catalogue request accepted. What is stored is compressed when large (catalog-storage.js).
 const MAX_CATALOG_BYTES = 12_000_000;
 // The published page embeds the public catalogue; it is stored in R2, so it may be large for big shops.
-const MAX_PUBLISHED_THEME_BYTES = 16_000_000;
+// The editor refuses pages over 3,000,000 characters; the Worker allows room for the catalogue added on top, but no more,
+// because every cache miss reads the whole page and runs several passes over it.
+const MAX_PUBLISHED_THEME_BYTES = 6_000_000;
 const MAX_MEDIA_BYTES = 3_000_000;
 const MAX_VIDEO_BYTES = 50_000_000;
 const MAX_CRAFT_IMAGE_REQUESTS = 20;
@@ -25,6 +27,18 @@ const TENANT_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 const USERNAME_PATTERN = /^[a-z0-9][a-z0-9_.-]{2,31}$/;
 const BASE_RESERVED_TENANT_IDS = ["www", "api", "admin", "assets", "main"];
 const RESERVED_TENANT_IDS = new Set(BASE_RESERVED_TENANT_IDS);
+// Addresses nobody may NEW-register as a shop, because they read as the platform, a bank or a payment service and
+// would make a convincing phishing page on a genuine platform hostname. Checked only when a shop is created, so a
+// shop that already uses one of these keeps working.
+const BLOCKED_NEW_SHOP_LABELS = new Set([
+  "app", "login", "signin", "sign-in", "signup", "register", "account", "accounts", "auth", "oauth", "sso",
+  "support", "help", "helpdesk", "contact", "pay", "payment", "payments", "billing", "invoice", "checkout", "wallet",
+  "secure", "security", "verify", "verification", "official", "staff", "team", "root", "system", "dashboard",
+  "mail", "email", "smtp", "imap", "pop", "webmail", "ftp", "cpanel", "ns1", "ns2", "mx", "dns",
+  "status", "docs", "blog", "cdn", "static", "download", "downloads", "pos", "customers", "shops", "store", "stores",
+  "craft", "craftke", "craftapp", "eshop", "litrus", "paystack", "mpesa", "m-pesa", "safaricom", "airtel", "equity",
+  "kcb", "ncba", "coop", "stripe", "paypal", "google", "facebook", "instagram", "whatsapp", "apple", "microsoft"
+]);
 // Hostnames under the root domain that something ELSE already serves (the RESERVED_SUBDOMAINS variable,
 // see configureDomain). This Worker answers `*.root` through a route, and routes run before custom domains,
 // so for these hosts it hands the request on untouched instead of treating the label as a shop.
@@ -54,6 +68,10 @@ let DOMAIN_ROOT = DEFAULT_DOMAIN_ROOT;
 // The address of the main store. Normally the root domain itself; a deployment whose root domain already hosts another
 // site (craft.ke) sets MAIN_HOST to one label under the root (app.craft.ke). Shops stay at <id>.<root>.
 let MAIN_HOST = DEFAULT_DOMAIN_ROOT;
+// The link the Android app registers to receive the Google sign-in result. Each app id uses its own (APP_URL_SCHEME), so
+// two Craft apps on one phone never share a link. Without the variable it stays the original app's scheme.
+const DEFAULT_APP_URL_SCHEME = "com.eshop.atelier";
+let APP_URL_SCHEME = DEFAULT_APP_URL_SCHEME;
 const DOMAIN_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 
 function isValidDomainRoot(value) {
@@ -66,6 +84,8 @@ function isValidDomainRoot(value) {
 // Called first thing in every Worker entry point. The variable is constant for a deployment, so one isolate
 // never sees two different values. Absent or invalid values fall back to the default and never throw.
 function configureDomain(env) {
+  const scheme = typeof env?.APP_URL_SCHEME === "string" ? env.APP_URL_SCHEME.trim().toLowerCase() : "";
+  APP_URL_SCHEME = /^[a-z][a-z0-9.+-]{2,60}$/.test(scheme) ? scheme : DEFAULT_APP_URL_SCHEME;
   const configured = typeof env?.DOMAIN_ROOT === "string" ? env.DOMAIN_ROOT.trim().toLowerCase() : "";
   DOMAIN_ROOT = isValidDomainRoot(configured) ? configured : DEFAULT_DOMAIN_ROOT;
   // RESERVED_SUBDOMAINS: comma-separated labels (for example "pos,matter,openschool") that other sites already
@@ -87,6 +107,10 @@ function tenantHostname(tenantId) {
 }
 const PASSWORD_ITERATIONS = 100_000;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
+// A session is renewed while it is used, but never lives past this total age, so a stolen token cannot be kept alive for ever.
+const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30;
+// Most shops one account may own. Stops one sign-up from filling the platform with throwaway shops.
+const MAX_SHOPS_PER_ACCOUNT = 10;
 const PASSWORD_RESET_CODE_TTL_SECONDS = 10 * 60;
 const PASSWORD_RESET_TOKEN_TTL_SECONDS = 10 * 60;
 const PASSWORD_RESET_COOLDOWN_SECONDS = 60;
@@ -129,6 +153,8 @@ const AI_ASSISTANT_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
 // Public write-endpoint throttles (per client IP unless noted). Counters live in D1 when the
 // rate_limit_counters table exists (atomic) and fall back to a best-effort KV counter.
 const ORDER_IP_LIMIT = { limit: 20, windowSeconds: 10 * 60 };
+// Checking a payment can call Paystack with the platform key, so it is limited per network like the other public endpoints.
+const PAYMENT_VERIFY_IP_LIMIT = { limit: 60, windowSeconds: 10 * 60 };
 const ORDER_SHOP_LIMIT = { limit: 300, windowSeconds: 60 * 60 };
 const HOLD_IP_LIMIT = { limit: 12, windowSeconds: 10 * 60 };
 const PAYMENT_INIT_IP_LIMIT = { limit: 10, windowSeconds: 10 * 60 };
@@ -937,7 +963,8 @@ function cleanCatalog(input) {
     location_address: cleanText(storeInput.location_address, 500),
     location_map_embed_url: cleanSocialUrl(storeInput.location_map_embed_url),
     location_map_link: cleanSocialUrl(storeInput.location_map_link),
-    currency: cleanText(storeInput.currency, 8),
+    // A currency typed as 'usd' would otherwise fail the order-time check and be charged in KES.
+    currency: cleanText(storeInput.currency, 8).trim().toUpperCase(),
     currency_symbol: cleanText(storeInput.currency_symbol, 8),
     hold_duration_hours: Number.isSafeInteger(Number(storeInput.hold_duration_hours)) &&
       Number(storeInput.hold_duration_hours) >= 1 && Number(storeInput.hold_duration_hours) <= 720
@@ -1262,14 +1289,31 @@ async function verifyTurnstile(request, env, token) {
   };
 }
 
+// Sign-in, registration, reset and similar limits. They use the same atomic D1 counter as the public write
+// endpoints (a plain KV read-then-write let a burst of parallel requests all count as one), and an IPv6
+// address is grouped by its /64 so one network cannot rotate through billions of addresses.
 async function limitAuthRequests(request, env, action, limit, expirationTtl) {
   if (!env.TENANTS) return false;
-  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
-  const key = `auth-limit:${action}:${await sha256Hex(ip)}`;
-  const current = Number(await env.TENANTS.get(key) || 0);
-  if (current >= limit) return false;
-  await env.TENANTS.put(key, String(current + 1), { expirationTtl });
-  return true;
+  return consumeRateLimit(env, `auth-limit:${action}`, await clientIpHash(request, env), { limit, windowSeconds: expirationTtl });
+}
+
+function networkKey(ip) {
+  if (!ip.includes(":") || ip.includes(".")) return ip;
+  const [head, tail = ""] = ip.split("::");
+  const front = head ? head.split(":") : [];
+  const back = tail ? tail.split(":") : [];
+  const filler = ip.includes("::") ? Array(Math.max(0, 8 - front.length - back.length)).fill("0") : [];
+  return [...front, ...filler, ...back].slice(0, 4).map(group => group.padStart(4, "0")).join(":");
+}
+
+// Removes a counter, for example when a fresh reset code is issued and its attempts start again.
+async function clearRateLimit(env, scope, identity) {
+  if (!env.DB) return;
+  try {
+    await env.DB.prepare("DELETE FROM rate_limit_counters WHERE key = ?").bind(`${scope}:${identity}`).run();
+  } catch {
+    // Table not migrated yet: nothing to clear.
+  }
 }
 
 // Atomic fixed-window counter for public write endpoints. Returns true while the caller is
@@ -1311,7 +1355,7 @@ async function consumeRateLimit(env, scope, identity, { limit, windowSeconds }) 
 // admin key, is a Worker secret) so a stored value cannot be reversed by enumerating IPv4 addresses.
 async function clientIpHash(request, env) {
   const salt = env?.RATE_LIMIT_SALT || env?.PUBLISH_TOKEN || "";
-  return sha256Hex(`${salt}|${request.headers.get("CF-Connecting-IP") || "unknown"}`);
+  return sha256Hex(`${salt}|${networkKey(request.headers.get("CF-Connecting-IP") || "unknown")}`);
 }
 
 // Gives back one unit taken by consumeRateLimit (for work that turned out not to happen).
@@ -1462,7 +1506,7 @@ function googleAuthResultRedirect(native, result, value = "") {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: `com.eshop.atelier://auth/google?${params}`,
+        Location: `${APP_URL_SCHEME}://auth/google?${params}`,
         "Cache-Control": "no-store",
         "Referrer-Policy": "no-referrer"
       }
@@ -1648,6 +1692,7 @@ async function googleAuthCallback(request, env) {
     if (!tokenResponse.ok) throw new Error("Google authorization code could not be exchanged.");
     const identity = await verifyGoogleIdToken(tokens.id_token, env.GOOGLE_OAUTH_CLIENT_ID, saved.nonce);
     let username = saved.username;
+    let pendingLink = null;
     if (saved.mode === "link") {
       const existingIdentity = await env.DB.prepare(
         "SELECT username FROM account_google_identities WHERE google_sub = ?"
@@ -1655,11 +1700,10 @@ async function googleAuthCallback(request, env) {
       if (existingIdentity && existingIdentity.username !== username) {
         return googleAuthResultRedirect(saved.native, "google_error", "linked_elsewhere");
       }
-      if (!existingIdentity) {
-        await env.DB.prepare(
-          "INSERT INTO account_google_identities (google_sub, username, email, created_at) VALUES (?, ?, ?, ?)"
-        ).bind(identity.sub, username, identity.email, new Date().toISOString()).run();
-      }
+      // The identity is attached only when the browser that started this flow completes it (it alone holds the
+      // completion secret). Writing it here would let anyone send a link-flow URL to a victim and attach the
+      // victim's Google account to their own Craft account.
+      if (!existingIdentity) pendingLink = { sub: identity.sub, email: identity.email };
     } else {
       const existingIdentity = await env.DB.prepare(
         "SELECT username FROM account_google_identities WHERE google_sub = ?"
@@ -1700,6 +1744,7 @@ async function googleAuthCallback(request, env) {
     await env.TENANTS.put(`google-auth-ticket:${await sha256Hex(ticket)}`, JSON.stringify({
       username,
       mode: saved.mode,
+      pendingLink,
       completionSecretHash: saved.completionSecretHash,
       createdAt: Date.now()
     }), { expirationTtl: 120 });
@@ -1738,6 +1783,19 @@ async function completeGoogleAccountAuth(request, env) {
     return jsonResponse({ error: "Google sign-in verification failed. Please restart the sign-in flow." }, 401);
   }
   await env.TENANTS.delete(key);
+  if (saved.mode === "link" && saved.pendingLink?.sub) {
+    const taken = await env.DB.prepare(
+      "SELECT username FROM account_google_identities WHERE google_sub = ?"
+    ).bind(saved.pendingLink.sub).first();
+    if (taken && taken.username !== saved.username) {
+      return jsonResponse({ error: "That Google account is already linked to another Craft account." }, 409);
+    }
+    if (!taken) {
+      await env.DB.prepare(
+        "INSERT INTO account_google_identities (google_sub, username, email, created_at) VALUES (?, ?, ?, ?)"
+      ).bind(saved.pendingLink.sub, saved.username, saved.pendingLink.email, new Date().toISOString()).run();
+    }
+  }
   const session = await createAccountSessionResponse(env, saved.username);
   const result = await session.json();
   return jsonResponse({ ...result, google_linked: saved.mode === "link" });
@@ -1820,9 +1878,14 @@ async function refreshAccountSession(request, env) {
   const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
   const session = await accountSession(request, env);
   if (!token || !session) return jsonResponse({ error: "Your account session expired. Sign in again." }, 401);
+  const sessionKey = `session:${await sha256Hex(token)}`;
+  if (session.created_at && Date.now() - Number(session.created_at) > SESSION_MAX_AGE_MS) {
+    await env.TENANTS.delete(sessionKey);
+    return jsonResponse({ error: "Your account session expired. Sign in again." }, 401);
+  }
   await env.TENANTS.put(
-    `session:${await sha256Hex(token)}`,
-    JSON.stringify(session),
+    sessionKey,
+    JSON.stringify({ ...session, created_at: session.created_at || Date.now() }),
     { expirationTtl: SESSION_TTL_SECONDS }
   );
   const result = await env.DB.prepare(
@@ -1855,7 +1918,8 @@ async function authenticateAccount(request, env, input, isRegistration) {
   }
   if (isRegistration && !env.TURNSTILE_SECRET_KEY) {
     // Server misconfiguration, not the user's fault: don't burn their rate limit or blame the widget.
-    return jsonResponse({ error: "Sign-up is unavailable: TURNSTILE_SECRET_KEY is not set on the Worker." }, 503);
+    console.error("Sign-up is unavailable: TURNSTILE_SECRET_KEY is not set on the Worker.");
+    return jsonResponse({ error: "Sign-up is temporarily unavailable. Please try again later." }, 503);
   }
   if (!await limitAuthRequests(request, env, isRegistration ? "register" : "login", isRegistration ? 5 : 10, isRegistration ? 3600 : 900)) {
     return jsonResponse({ error: "Too many attempts. Please try again later." }, 429);
@@ -1909,7 +1973,7 @@ async function createAccountSessionResponse(env, username, fallbackEmail = "") {
   const passwordVersion = await env.TENANTS.get(`password-version:${username}`) || "";
   await env.TENANTS.put(
     `session:${sessionHash}`,
-    JSON.stringify({ username: account.username, password_version: passwordVersion }),
+    JSON.stringify({ username: account.username, password_version: passwordVersion, created_at: Date.now() }),
     { expirationTtl: SESSION_TTL_SECONDS }
   );
   const tenants = await env.DB.prepare(
@@ -1997,6 +2061,7 @@ async function requestPasswordResetCode(request, env, input) {
   if (!account) return jsonResponse(genericResponse);
   const code = generateRecoveryCode();
   const codeKey = `password-reset-code:${emailHash}`;
+  await clearRateLimit(env, "reset-verify", emailHash);
   const expiresAt = Date.now() + PASSWORD_RESET_CODE_TTL_SECONDS * 1000;
   await env.TENANTS.put(codeKey, JSON.stringify({
     username: account.username,
@@ -2013,32 +2078,35 @@ async function requestPasswordResetCode(request, env, input) {
   return jsonResponse(genericResponse);
 }
 
-async function verifyPasswordResetCode(env, input) {
+async function verifyPasswordResetCode(request, env, input) {
   if (!env.DB || !env.TENANTS) return jsonResponse({ error: "Account service is not configured." }, 503);
   const email = normalizeEmail(input.email);
   const code = typeof input.code === "string" ? input.code.trim() : "";
   if (!EMAIL_PATTERN.test(email) || email.length > 254 || !/^\d{6}$/.test(code)) {
     return jsonResponse({ error: "Enter the recovery email and its 6-digit code." }, 400);
   }
+  // Guesses are limited per network, and counted per account BEFORE the code is compared, with an atomic
+  // counter, so a burst of parallel guesses cannot all be checked against "zero attempts so far".
+  if (!await limitAuthRequests(request, env, "verify-reset-code", 30, 15 * 60)) {
+    return jsonResponse({ error: "Too many attempts. Try again later." }, 429);
+  }
   const emailHash = await sha256Hex(email);
   const codeKey = `password-reset-code:${emailHash}`;
   const rawRecord = await env.TENANTS.get(codeKey, "json");
   if (!rawRecord) return jsonResponse({ error: "That code has expired. Request a new one." }, 400);
-  if (rawRecord.attempts >= PASSWORD_RESET_MAX_ATTEMPTS) {
+  const withinAttempts = await consumeRateLimit(env, "reset-verify", emailHash, {
+    limit: PASSWORD_RESET_MAX_ATTEMPTS, windowSeconds: PASSWORD_RESET_CODE_TTL_SECONDS
+  });
+  if (!withinAttempts) {
     await env.TENANTS.delete(codeKey);
     return jsonResponse({ error: "Too many attempts. Request a new code." }, 429);
   }
   const candidateHash = await sha256Hex(`${email}:${code}`);
   if (!constantTimeEqual(candidateHash, rawRecord.code_hash)) {
-    rawRecord.attempts += 1;
-    const remainingSeconds = Math.max(
-      1,
-      Math.ceil((rawRecord.expires_at - Date.now()) / 1000)
-    );
-    await env.TENANTS.put(codeKey, JSON.stringify(rawRecord), { expirationTtl: remainingSeconds });
     return jsonResponse({ error: "The recovery code is incorrect." }, 400);
   }
   await env.TENANTS.delete(codeKey);
+  await clearRateLimit(env, "reset-verify", emailHash);
   const resetToken = generateTenantSecret();
   const resetTokenKey = `password-reset-token:${await sha256Hex(resetToken)}`;
   await env.TENANTS.put(resetTokenKey, rawRecord.username, {
@@ -2106,7 +2174,7 @@ async function handleAccountAuth(request, env, action) {
   }
   if (action === "set-recovery-email") return updateAccountRecoveryEmail(request, env, input);
   if (action === "request-reset-code") return requestPasswordResetCode(request, env, input);
-  if (action === "verify-reset-code") return verifyPasswordResetCode(env, input);
+  if (action === "verify-reset-code") return verifyPasswordResetCode(request, env, input);
   return resetAccountPassword(env, input);
 }
 
@@ -2130,13 +2198,19 @@ async function authorizeTenantOwnerToken(env, tenantId, supplied) {
   const tenant = await env.TENANTS.get(`tenant:${tenantId}`, "json");
   if (!tenant || typeof tenant.owner_token_hash !== "string") return false;
   const suppliedHash = await sha256Hex(supplied);
-  return [
+  const permanent = [
     tenant.owner_token_hash,
-    ...(Array.isArray(tenant.owner_token_hashes) ? tenant.owner_token_hashes : []),
-    ...(Array.isArray(tenant.owner_login_tokens) ? tenant.owner_login_tokens.map(entry => entry?.hash) : [])
-  ]
-    .filter(expected => typeof expected === "string" && expected)
-    .some(expected => constantTimeEqual(suppliedHash, expected));
+    ...(Array.isArray(tenant.owner_token_hashes) ? tenant.owner_token_hashes : [])
+  ].filter(expected => typeof expected === "string" && expected);
+  if (permanent.some(expected => constantTimeEqual(suppliedHash, expected))) return true;
+  // A token minted at sign-in works only while the session that minted it is still alive, so one that leaks
+  // from a lost phone stops working when that session expires or is signed out.
+  for (const entry of Array.isArray(tenant.owner_login_tokens) ? tenant.owner_login_tokens : []) {
+    if (typeof entry?.hash !== "string" || !constantTimeEqual(suppliedHash, entry.hash)) continue;
+    return typeof entry.session === "string" && entry.session.length > 0 &&
+      Boolean(await env.TENANTS.get(`session:${entry.session}`));
+  }
+  return false;
 }
 
 // Account sign-in mints a per-tenant owner token and records which session/user it belongs to so
@@ -2427,6 +2501,19 @@ async function handleMediaUpload(request, env, tenantId) {
     return jsonResponse({
       error: isVideo ? "Videos must be between 1 byte and 50 MB." : "Compressed images must be between 1 byte and 3 MB."
     }, body.byteLength ? 413 : 400);
+  }
+  // The declared type is only a claim. The first bytes must match it, so the storage cannot be used to host
+  // arbitrary files under an image or video name.
+  const lead = new Uint8Array(body.slice(0, 16));
+  const lettersAt = (start, length) => String.fromCharCode(...lead.slice(start, start + length));
+  const bytesMatchType = contentType === "image/webp" ? lettersAt(0, 4) === "RIFF" && lettersAt(8, 4) === "WEBP"
+    : contentType === "image/jpeg" ? lead[0] === 0xFF && lead[1] === 0xD8 && lead[2] === 0xFF
+    : contentType === "image/png" ? lead[0] === 0x89 && lettersAt(1, 3) === "PNG"
+    : contentType === "video/webm" ? lead[0] === 0x1A && lead[1] === 0x45 && lead[2] === 0xDF && lead[3] === 0xA3
+    : contentType === "video/quicktime" ? ["ftyp", "moov", "mdat", "free", "wide", "skip"].includes(lettersAt(4, 4))
+    : lettersAt(4, 4) === "ftyp";
+  if (!bytesMatchType) {
+    return jsonResponse({ error: "That file does not look like the type it was uploaded as." }, 415);
   }
   const digest = await crypto.subtle.digest("SHA-256", body);
   const fingerprint = [...new Uint8Array(digest)]
@@ -3839,7 +3926,14 @@ async function handleNewsletter(request, env, tenantId, action) {
     const existing = await env.DB.prepare(
       "SELECT id,status FROM newsletter_subscribers WHERE tenant_id=? AND email=?"
     ).bind(tenantId, email).first();
-    if (existing?.status === "subscribed") return jsonResponse({ ok: true, subscribed: true });
+    // An address that is already on the list gets the same answer as a new one, so this form cannot be used to find
+    // out who subscribes to a shop. No second email is sent to it.
+    if (existing?.status === "subscribed") return jsonResponse({ ok: true, confirmation_required: true });
+    // Confirmation emails go out from the platform's own sender, so one address may only receive a couple a day, from
+    // any number of shops. This stops the form being used to mail-bomb someone or to damage the sender's reputation.
+    if (!await consumeRateLimit(env, "newsletter-recipient", await sha256Hex(email), { limit: 2, windowSeconds: 24 * 3600 })) {
+      return jsonResponse({ ok: true, confirmation_required: true });
+    }
 
     const now = new Date().toISOString();
     const confirmationToken = encodeBase64Url(crypto.getRandomValues(new Uint8Array(32)));
@@ -4629,6 +4723,9 @@ async function sendServiceCustomerEmail(env, tenantId, row, kind, extra = {}, sc
   if (!EMAIL_PATTERN.test(email)) return false;
   const limit = scope === "service-reminder" ? SERVICE_REMINDER_HOURLY_LIMIT : SERVICE_EMAIL_HOURLY_LIMIT;
   if (!await consumeRateLimit(env, scope, tenantId, { limit, windowSeconds: 3600 })) return false;
+  // One address can only be sent a handful of booking emails a day from all shops together, so a shop cannot use a
+  // booking request to flood a stranger's inbox from the platform sender.
+  if (!await consumeRateLimit(env, "service-email-recipient", await sha256Hex(email), { limit: 6, windowSeconds: 24 * 3600 })) return false;
   const content = serviceCustomerEmailContent(kind, row, await serviceShopName(env, tenantId), extra);
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -5352,6 +5449,9 @@ async function handleServiceAppointments(request, env, tenantId, action = "appoi
   if (action === "payment") {
     if (request.method !== "GET") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, OPTIONS" });
     const reference = new URL(request.url).searchParams.get("reference") || "";
+    if (!await limitPublicWrite(request, env, tenantId, "verify-ip", PAYMENT_VERIFY_IP_LIMIT)) {
+      return jsonResponse({ error: "Too many payment checks. Try again in a few minutes." }, 429);
+    }
     return await verifyServiceAppointmentPayment(env, tenantId, reference, ctx);
   }
   if (action === "manage") return await handleServiceAppointmentManage(request, env, tenantId, ctx);
@@ -6260,6 +6360,9 @@ async function handlePaystackPayment(request, env, tenantId, action, ctx) {
     if (!/^ESHOP_[A-F0-9]{32}$/.test(reference)) {
       return jsonResponse({ error: "A valid payment reference is required." }, 400);
     }
+    if (!await limitPublicWrite(request, env, tenantId, "verify-ip", PAYMENT_VERIFY_IP_LIMIT)) {
+      return jsonResponse({ error: "Too many payment checks. Try again in a few minutes." }, 429);
+    }
     const found = await findOrderByPaymentReference(env, reference, tenantId);
     if (!found) return jsonResponse({ error: "Payment reference not found." }, 404);
     const { order, paymentOrder } = found;
@@ -6673,6 +6776,10 @@ async function handleTenants(request, env) {
   if (!TENANT_ID_PATTERN.test(id) || RESERVED_TENANT_IDS.has(id)) {
     return jsonResponse({ error: "Choose an available shop address using lowercase letters, numbers, and hyphens." }, 400);
   }
+  const customersLabel = String(env.CUSTOM_HOSTNAME_TARGET || "").split(".")[0].toLowerCase();
+  if (BLOCKED_NEW_SHOP_LABELS.has(id) || (customersLabel && id === customersLabel)) {
+    return jsonResponse({ error: "That shop address is reserved. Choose another address." }, 400);
+  }
   if (!name) return jsonResponse({ error: "Enter a name for the shop." }, 400);
   const account = await accountSession(request, env);
   if (!account) return jsonResponse({ error: "Sign in to an account to create a shop." }, 401);
@@ -6686,6 +6793,12 @@ async function handleTenants(request, env) {
   if (env.DEV_SKIP_SHOP_CREATE_LIMIT !== "true" &&
       !await limitAuthRequests(request, env, "shop-create", 5, 3600)) {
     return jsonResponse({ error: "Shop creation limit reached. Try again in an hour." }, 429);
+  }
+  const ownedShops = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM account_tenants WHERE username = ?"
+  ).bind(account.username).first();
+  if (env.DEV_SKIP_SHOP_CREATE_LIMIT !== "true" && Number(ownedShops?.n || 0) >= MAX_SHOPS_PER_ACCOUNT) {
+    return jsonResponse({ error: `An account can own up to ${MAX_SHOPS_PER_ACCOUNT} shops. Remove one you no longer use first.` }, 429);
   }
   const ownerToken = generateTenantSecret();
   const ownerTokenHash = await sha256Hex(ownerToken);
@@ -8751,8 +8864,33 @@ async function hasPublishedCraftStorefront(env, tenantId) {
     theme.customMetadata?.catalogUpdatedAt === publishedTheme.catalogUpdatedAt);
 }
 
-export default {
+// Every response leaves through here, so the protective headers are set in one place. The app and the editor
+// (the main host) may only be framed by themselves, which stops another site from overlaying them with a decoy
+// page and tricking a signed-in owner into clicking. Shop pages are left framable because the owner's own
+// preview needs it.
+function withSecurityHeaders(request, response) {
+  try {
+    if (!response || response.status === 101 || response.webSocket) return response;
+    const headers = new Headers(response.headers);
+    headers.set("X-Content-Type-Options", "nosniff");
+    if (!headers.has("Referrer-Policy")) headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    headers.set("Strict-Transport-Security", "max-age=15552000");
+    const host = new URL(request.url).hostname.toLowerCase();
+    if (host === MAIN_HOST && /^text\/html/i.test(headers.get("Content-Type") || "")) {
+      headers.set("Content-Security-Policy", "frame-ancestors 'self'; object-src 'none'; base-uri 'self'");
+    }
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+  } catch {
+    return response;
+  }
+}
+
+const workerEntry = {
   async fetch(request, env, ctx) {
+    return withSecurityHeaders(request, await workerEntry.fetchInner(request, env, ctx));
+  },
+
+  async fetchInner(request, env, ctx) {
     configureDomain(env);
     configurePaystackMarkets(env);
     let url = new URL(request.url);
@@ -9361,3 +9499,5 @@ export default {
     return task;
   }
 };
+
+export default workerEntry;

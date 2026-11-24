@@ -33,6 +33,7 @@ npm run build:craftke
 # 2. Swap the id in the two files (restore them afterwards)
 sed -i 's/applicationId "com.eshop.atelier"/applicationId "ke.craft.app"/' android/app/build.gradle
 sed -i "s/appId: 'com.eshop.atelier'/appId: 'ke.craft.app'/" capacitor.config.ts
+sed -i 's|<string name="custom_url_scheme">com.eshop.atelier</string>|<string name="custom_url_scheme">ke.craft.app</string>|' android/app/src/main/res/values/strings.xml
 
 # 3. Sync and build (the WebView host must be craft.ke)
 export JAVA_HOME="C:Program FilesMicrosoftjdk-21.0.12.101-hotspot"
@@ -41,6 +42,7 @@ cd android && ./gradlew.bat assembleDebug
 
 # 4. Restore android/app/build.gradle and capacitor.config.ts, then discard the www/ build
 git checkout -- android/app/build.gradle capacitor.config.ts www && git clean -fdq -- www
+sed -i 's|<string name="custom_url_scheme">ke.craft.app</string>|<string name="custom_url_scheme">com.eshop.atelier</string>|' android/app/src/main/res/values/strings.xml   # strings.xml is not tracked in git
 ```
 
 The APKs are in `android/app/build/outputs/apk/debug/` (`app-arm64-v8a-debug.apk` for most phones, `app-universal-debug.apk` for any). Check the id with `aapt dump badging <apk>`: it must say `ke.craft.app`. These are debug builds; a signed release build (your keystore) is needed for the Play Store.
@@ -49,7 +51,7 @@ Install over adb: `adb install -r --user 0 CraftKe-arm64.apk`. On Xiaomi phones 
 
 Notes:
 - `www/` is tracked in git but generated. After any build, restore it (`git checkout -- www && git clean -fdq -- www`) and never commit a craft.ke build of it to the rrobin line.
-- Both apps use the sign-in return link `com.eshop.atelier://auth/google`. With both installed on one phone, Google sign-in could return to either one.
+- The Google sign-in result returns to the app on its own link: `com.eshop.atelier://auth/google` for the original app and `ke.craft.app://auth/google` for craft.ke. The Worker reads it from the `APP_URL_SCHEME` variable (set in `wrangler.craftke.jsonc`), the web build from `VITE_APP_URL_SCHEME` (set in `.env.craftke`), and the Android manifest from the `custom_url_scheme` string, so the three must agree. The build above swaps that string with the app id.
 - Deploy the Worker with `npm run cf:craftke:deploy` (it builds first). Always the craft.ke account profile.
 
 ## Not covered by this setting

@@ -380,7 +380,7 @@ test('RESERVED_SUBDOMAINS: those names can never become shops, other names still
   const plainCreate = await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/tenants', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${plainAccount.session_token}` },
-    body: JSON.stringify({ id: 'pos', name: 'Pos Shop' })
+    body: JSON.stringify({ id: 'matter', name: 'Matter Shop' })
   }), plain);
   assert.equal(plainCreate.status, 201);
 });
