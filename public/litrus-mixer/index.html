@@ -2907,7 +2907,7 @@ html .sole-store .cgw .cat-hex h3,html #store .sole-store .cgw .cat-hex h3{left:
 <label>Delivery fee <small>(number only, empty means free)</small><input id="wFee" inputmode="decimal" placeholder="300" autocomplete="off"></label>
 <label>Free delivery over <small>(optional amount)</small><input id="wFree" inputmode="decimal" placeholder="5000" autocomplete="off"></label>
 <label class="chk"><input type="checkbox" id="wDeliv" checked> Offer delivery <small>(customers can ask for it to be delivered; switch off if you do not deliver)</small></label>
-<label class="chk"><input type="checkbox" id="wPick" checked> Offer pickup <small>(customers collect from your address, no delivery fee)</small></label>
+<label class="chk"><input type="checkbox" id="wPick" checked> Offer pickup <small>(customers collect from the address below, no delivery fee, so fill in your address)</small></label>
 <label>Your address or area<input id="wAddr" placeholder="e.g. Westlands, Nairobi" autocomplete="off"></label>
 <label>About your shop <small>(shown on the About page, optional)</small><textarea id="wAbout" rows="4" placeholder="Tell your story in a few lines"></textarea></label></details></section>
 <section class="wz-sec" data-step="2" hidden><h2 id="wCatalogHeading">Products &amp; categories</h2><p class="hint">Set up what you sell. Your changes appear in the storefront preview.</p>
@@ -4706,7 +4706,7 @@ function SPRT(D){
   const canDel=defMode()==='delivery',canPick=s.pickup!==false;
   return top('Checkout','Fill in your details and we will confirm your order.')+'<div class="sp-wrap sp-cogrid"><form id="spco" class="sp-form" novalidate>'
   +'<h2>Your details</h2><label>Full name<input name="name" autocomplete="name"></label><label>Phone number<input name="phone" type="tel" inputmode="tel" autocomplete="tel"></label><label>Email <small>(optional)</small><input name="email" type="email" autocomplete="email"></label>'
-  +'<h2>'+(canDel?'Delivery':'Pickup')+'</h2><div class="sp-radios">'+(canDel?'<label class="sp-radio"><input type="radio" name="dm" value="delivery" checked><span>Deliver to me<small>'+esc(feeTxt)+'</small></span></label>':'')+(canPick?'<label class="sp-radio"><input type="radio" name="dm" value="pickup"'+(canDel?'':' checked')+'><span>I will pick up<small>'+(s.addr?esc(s.addr):'Free')+'</small></span></label>':'')+'</div>'
+  +'<h2>'+(canDel?'Delivery':'Pickup')+'</h2><div class="sp-radios">'+(canDel?'<label class="sp-radio"><input type="radio" name="dm" value="delivery" checked><span>Deliver to me<small>'+esc(feeTxt)+'</small></span></label>':'')+(canPick?'<label class="sp-radio"><input type="radio" name="dm" value="pickup"'+(canDel?'':' checked')+'><span>I will pick up<small>'+(s.addr?'Free · collect from '+esc(s.addr):'Free · the shop will tell you where')+'</small></span></label>':'')+'</div>'
   +(canDel?'<div id="spAddr"><label>Town or area<input name="town" autocomplete="address-level2"></label><label>Address or landmark<textarea name="addr" rows="2" autocomplete="street-address"></textarea></label></div>':'')
   +'<h2>Payment</h2>'+payGroupHTML(s)
   +'<label>Note for us <small>(optional)</small><textarea name="note" rows="2"></textarea></label>'
@@ -5427,7 +5427,7 @@ function exportPagesRuntime(){
   form.append(element('h2','','Delivery'));
   var canDel=data.shop.delivery!==false||data.shop.pickup===false,canPick=data.shop.pickup!==false;
   var delivery=choice('dm','delivery','Deliver to me',data.shop.fee?money(data.shop.fee):'Free',true);
-  var pickup=choice('dm','pickup','I will pick up',data.shop.addr||'Free',!canDel);
+  var pickup=choice('dm','pickup','I will pick up',data.shop.addr?'Free · collect from '+data.shop.addr:'Free · the shop will tell you where',!canDel);
   if(canDel)form.append(delivery);
   if(canPick)form.append(pickup);
   if(canDel)form.append(field('Town or area','town','text'),field('Address or landmark','addr','text'));
