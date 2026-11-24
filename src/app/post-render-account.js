@@ -446,25 +446,39 @@ export function bindAccountSignIn() {
       const status = document.getElementById("app-account-recovery-email-status");
       const errorMessage = document.getElementById("app-account-recovery-email-error");
       const formData = new FormData(recoveryEmailForm);
+      const codeField = document.getElementById("app-account-recovery-code-field");
+      const code = String(formData.get("code") || "").trim();
+      // Second step: the code that was emailed to the new address.
+      const confirming = Boolean(codeField && !codeField.hidden && code);
       status.hidden = true;
       errorMessage.hidden = true;
       button.disabled = true;
       try {
-        const response = await fetch(new URL("/api/auth/set-recovery-email", this.cloudflareConnection("main").origin), {
+        const response = await fetch(new URL(confirming ? "/api/auth/verify-recovery-email" : "/api/auth/set-recovery-email", this.cloudflareConnection("main").origin), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${window.localStorage.getItem("ESHOP_ACCOUNT_SESSION_V1") || ""}`
           },
-          body: JSON.stringify({
+          body: JSON.stringify(confirming ? { code } : {
             email: String(formData.get("email") || "").trim(),
             password: String(formData.get("password") || "")
           })
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || `Account service returned HTTP ${response.status}.`);
+        if (result.verification_required) {
+          // The address is not saved yet: ask for the code that was sent to it.
+          if (codeField) codeField.hidden = false;
+          button.textContent = "Confirm recovery email";
+          status.textContent = `We sent a 6-digit code to ${result.email}. Enter it above to save this address.`;
+          status.hidden = false;
+          return;
+        }
         window.localStorage.setItem("ESHOP_ACCOUNT_EMAIL_V1", result.email || "");
         recoveryEmailForm.elements.namedItem("password").value = "";
+        if (codeField) { codeField.hidden = true; recoveryEmailForm.elements.namedItem("code").value = ""; }
+        button.textContent = "Save recovery email";
         status.textContent = "Recovery email saved. Use an address you can access to receive password reset codes.";
         status.hidden = false;
       } catch (error) {

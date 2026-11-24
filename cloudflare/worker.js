@@ -1250,6 +1250,25 @@ async function sendRecoveryCode(env, email, code) {
   return null;
 }
 
+async function sendRecoveryEmailVerification(env, email, code) {
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: env.EMAIL_FROM,
+      to: [email],
+      subject: "Confirm your Craft recovery email",
+      text: `Your Craft code to confirm this recovery email is ${code}. It expires in 10 minutes. If you did not ask for this, you can ignore this email.`,
+      html: `<p>Your Craft code to confirm this recovery email is <strong>${code}</strong>.</p><p>It expires in 10 minutes. If you did not ask for this, you can ignore this email.</p>`
+    })
+  });
+  if (!response.ok) {
+    console.error("Recovery email verification delivery failed.", response.status);
+    return jsonResponse({ error: "Could not send the code. Please try again later." }, 502);
+  }
+  return null;
+}
+
 async function passwordHash(password, salt) {
   const padding = "=".repeat((4 - salt.length % 4) % 4);
   const key = await crypto.subtle.importKey(
@@ -1963,15 +1982,15 @@ async function authenticateAccount(request, env, input, isRegistration) {
     const existingEmail = await env.DB.prepare(
       "SELECT username FROM accounts WHERE email = ?"
     ).bind(email).first();
-    if (existingEmail) return jsonResponse({ error: "That recovery email is already in use." }, 409);
+    // One answer for both cases, so the form cannot be used to find out whether an email address already has an account.
+    const taken = () => jsonResponse({ error: "That username or recovery email can't be used. Try a different one, or sign in if you already have an account." }, 409);
+    if (existingEmail) return taken();
     const salt = encodeBase64Url(crypto.getRandomValues(new Uint8Array(16)));
     const hash = await passwordHash(password, salt);
     const result = await env.DB.prepare(
       "INSERT OR IGNORE INTO accounts (username, password_salt, password_hash, email, created_at) VALUES (?, ?, ?, ?, ?)"
     ).bind(username, salt, hash, email, new Date().toISOString()).run();
-    if (!result.meta?.changes) {
-      return jsonResponse({ error: "That username is already registered. Sign in instead." }, 409);
-    }
+    if (!result.meta?.changes) return taken();
     user = { username };
   } else {
     user = await env.DB.prepare(
@@ -2049,14 +2068,58 @@ async function updateAccountRecoveryEmail(request, env, input) {
   if (!account || !constantTimeEqual(candidateHash, account.password_hash)) {
     return jsonResponse({ error: "Your current password is incorrect." }, 401);
   }
-  const existingEmail = await env.DB.prepare(
-    "SELECT username FROM accounts WHERE email = ? AND username != ?"
-  ).bind(email, session.username).first();
-  if (existingEmail) return jsonResponse({ error: "That recovery email is already in use." }, 409);
-  await env.DB.prepare(
-    "UPDATE accounts SET email = ? WHERE username = ?"
-  ).bind(email, session.username).run();
-  return jsonResponse({ ok: true, email });
+  // The new address is not saved yet. A code goes to it, and it becomes the recovery email only once the code is
+  // entered, so a typo cannot send password reset codes to a stranger and nobody can learn whether an address is taken.
+  const current = await env.DB.prepare("SELECT email FROM accounts WHERE username = ?").bind(session.username).first();
+  if (current?.email === email) return jsonResponse({ ok: true, email, unchanged: true });
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) {
+    return jsonResponse({ error: "Recovery email verification is not configured. Contact support." }, 503);
+  }
+  if (!await consumeRateLimit(env, "recovery-email-code", session.username, { limit: 3, windowSeconds: 3600 })) {
+    return jsonResponse({ error: "Too many codes requested. Try again in an hour." }, 429);
+  }
+  const code = String(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000);
+  await env.TENANTS.put(`recovery-email-pending:${session.username}`, JSON.stringify({
+    email,
+    code_hash: await sha256Hex(`${session.username}:${email}:${code}`),
+    expires_at: Date.now() + 10 * 60 * 1000
+  }), { expirationTtl: 10 * 60 });
+  await clearRateLimit(env, "recovery-email-verify", session.username);
+  const deliveryError = await sendRecoveryEmailVerification(env, email, code);
+  if (deliveryError) return deliveryError;
+  return jsonResponse({ ok: true, verification_required: true, email });
+}
+
+async function verifyAccountRecoveryEmail(request, env, input) {
+  if (!env.DB || !env.TENANTS) return jsonResponse({ error: "Account service is not configured." }, 503);
+  const session = await accountSession(request, env);
+  if (!session) return jsonResponse({ error: "Your account session expired. Sign in again." }, 401);
+  const code = typeof input.code === "string" ? input.code.trim() : "";
+  if (!/^[0-9]{6}$/.test(code)) return jsonResponse({ error: "Enter the 6-digit code from the email." }, 400);
+  const pendingKey = `recovery-email-pending:${session.username}`;
+  const pending = await env.TENANTS.get(pendingKey, "json");
+  if (!pending || !pending.email || !(Number(pending.expires_at) > Date.now())) {
+    return jsonResponse({ error: "That code has expired. Request a new one." }, 400);
+  }
+  // Counted before the comparison, so parallel guesses cannot beat the limit; the code is burned when it is exceeded.
+  if (!await consumeRateLimit(env, "recovery-email-verify", session.username, { limit: 5, windowSeconds: 10 * 60 })) {
+    await env.TENANTS.delete(pendingKey);
+    return jsonResponse({ error: "Too many wrong codes. Request a new one." }, 429);
+  }
+  const expected = await sha256Hex(`${session.username}:${pending.email}:${code}`);
+  if (!constantTimeEqual(expected, String(pending.code_hash || ""))) {
+    return jsonResponse({ error: "That code is not correct." }, 400);
+  }
+  try {
+    await env.DB.prepare("UPDATE accounts SET email = ? WHERE username = ?").bind(pending.email, session.username).run();
+  } catch {
+    // Another account already uses this address. Only someone who can read that mailbox gets this far.
+    await env.TENANTS.delete(pendingKey);
+    return jsonResponse({ error: "This email address can't be used for this account." }, 409);
+  }
+  await env.TENANTS.delete(pendingKey);
+  await clearRateLimit(env, "recovery-email-verify", session.username);
+  return jsonResponse({ ok: true, email: pending.email });
 }
 
 async function requestPasswordResetCode(request, env, input) {
@@ -2179,7 +2242,7 @@ async function handleAccountAuth(request, env, action) {
     return refreshAccountSession(request, env);
   }
   if (request.method !== "POST" || ![
-    "register", "login", "set-recovery-email", "request-reset-code", "verify-reset-code", "reset-password"
+    "register", "login", "set-recovery-email", "verify-recovery-email", "request-reset-code", "verify-reset-code", "reset-password"
   ].includes(action)) {
     return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "GET, POST, OPTIONS" });
   }
@@ -2197,6 +2260,7 @@ async function handleAccountAuth(request, env, action) {
     return authenticateAccount(request, env, input, action === "register");
   }
   if (action === "set-recovery-email") return updateAccountRecoveryEmail(request, env, input);
+  if (action === "verify-recovery-email") return verifyAccountRecoveryEmail(request, env, input);
   if (action === "request-reset-code") return requestPasswordResetCode(request, env, input);
   if (action === "verify-reset-code") return verifyPasswordResetCode(request, env, input);
   return resetAccountPassword(env, input);
@@ -3350,6 +3414,7 @@ function evaluateDiscountCode(row, subtotalCents, nowIso) {
 }
 
 async function loadDiscountCode(env, tenantId, code) {
+  await releaseAbandonedDiscountUses(env, tenantId, code);
   try {
     return await env.DB.prepare(
       "SELECT * FROM discount_codes WHERE tenant_id=? AND code=?"
@@ -3357,6 +3422,31 @@ async function loadDiscountCode(env, tenantId, code) {
   } catch (error) {
     console.error("Discount code lookup failed.", error?.message || error);
     return null;
+  }
+}
+
+// An online checkout that was started (it has a Paystack reference) and never paid within a day no longer holds one
+// use of its discount code. Orders the shop settles itself (no reference) are never touched, because the owner
+// may still be waiting for the customer to pay.
+const ABANDONED_CHECKOUT_MS = 24 * 60 * 60 * 1000;
+async function releaseAbandonedDiscountUses(env, tenantId, code) {
+  try {
+    const now = new Date();
+    const cutoff = new Date(now.getTime() - ABANDONED_CHECKOUT_MS).toISOString();
+    const released = await env.DB.prepare(
+      `UPDATE storefront_orders SET discount_released=1,updated_at=?
+       WHERE tenant_id=? AND discount_code=? AND COALESCE(discount_released,0)=0 AND status!='cancelled'
+         AND payment_status IN ('initializing','pending','failed') AND COALESCE(payment_reference,'')!=''
+         AND COALESCE(paid_at,'')='' AND created_at<?`
+    ).bind(now.toISOString(), tenantId, code, cutoff).run();
+    const count = Number(released.meta?.changes || 0);
+    if (count > 0) {
+      await env.DB.prepare(
+        "UPDATE discount_codes SET used_count=CASE WHEN used_count>=? THEN used_count-? ELSE 0 END WHERE tenant_id=? AND code=?"
+      ).bind(count, count, tenantId, code).run();
+    }
+  } catch (error) {
+    console.error("Abandoned discount release failed.", error?.message || error);
   }
 }
 
@@ -4289,6 +4379,15 @@ async function handleStorefrontHoldRequests(request, env, tenantId, ctx) {
   })) {
     return jsonResponse({ error: "You already have the maximum number of holds with this shop for now. Place an order for them or try again once they expire." }, 429);
   }
+  // The same email or phone number can only hold a few things per shop, however many addresses it comes from.
+  const holdContactKey = EMAIL_PATTERN.test(contact) ? contact.toLowerCase() : contact.replace(/[^0-9]/g, "").slice(-9);
+  const holdContactScope = `hold-contact:${tenantId}`;
+  const holdContactIdentity = await sha256Hex(holdContactKey);
+  if (!await consumeRateLimit(env, holdContactScope, holdContactIdentity, {
+    limit: MAX_ANON_ACTIVE_HOLDS_PER_IP, windowSeconds: holdHours * 60 * 60
+  })) {
+    return jsonResponse({ error: "This contact already has the maximum number of holds with this shop for now. Place an order for them or try again once they expire." }, 429);
+  }
   const expiresAt = new Date(Date.now() + holdHours * 60 * 60 * 1000).toISOString();
   const id = crypto.randomUUID();
   await env.DB.batch([
@@ -4313,7 +4412,10 @@ async function handleStorefrontHoldRequests(request, env, tenantId, ctx) {
   const saved = await env.DB.prepare(
     "SELECT * FROM storefront_hold_requests WHERE tenant_id=? AND idempotency_key=?"
   ).bind(tenantId, idempotencyKey).first();
-  if (!saved || saved.id !== id) await releaseRateLimit(env, activeHoldScope, activeHoldIdentity);
+  if (!saved || saved.id !== id) {
+    await releaseRateLimit(env, activeHoldScope, activeHoldIdentity);
+    await releaseRateLimit(env, holdContactScope, holdContactIdentity);
+  }
   if (!saved) {
     return jsonResponse({ error: "There is not enough unreserved stock to hold this quantity." }, 409);
   }
@@ -5431,6 +5533,14 @@ async function createServiceAppointment(request, env, tenantId, ctx) {
   // A deposit is charged through Paystack, which needs the customer's email for the receipt.
   if (depositCents > 0 && !customerEmail) {
     return appointmentError("This service takes a deposit, so add your email for the payment receipt.", 400, "email_required");
+  }
+  // One person cannot fill a shop's calendar with requests that each hold a seat for a day: the same phone number
+  // (or email) is limited per day however many addresses the requests come from.
+  const phoneDigits = customerPhone.replace(/[^0-9]/g, "").slice(-9);
+  for (const contactKey of [phoneDigits, customerEmail].filter(Boolean)) {
+    if (!await consumeRateLimit(env, `booking-contact:${tenantId}`, await sha256Hex(contactKey), { limit: 6, windowSeconds: 24 * 60 * 60 })) {
+      return appointmentError("There are already several booking requests for this contact. Please wait for the shop to reply.", 429, "rate_limited");
+    }
   }
   const now = new Date().toISOString();
   const requestExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -9022,7 +9132,7 @@ const workerEntry = {
           const tenantId = url.searchParams.get("tenant_id") || "";
           return await handleCustomHostnames(request, env, tenantId);
         }
-        const authMatch = url.pathname.match(/^\/api\/auth\/(config|session|register|login|set-recovery-email|request-reset-code|verify-reset-code|reset-password)$/);
+        const authMatch = url.pathname.match(/^\/api\/auth\/(config|session|register|login|set-recovery-email|verify-recovery-email|request-reset-code|verify-reset-code|reset-password)$/);
         if (authMatch) return await handleAccountAuth(request, env, authMatch[1]);
         if (url.pathname === "/api/auth/logout" && request.method === "POST") {
           const authorization = request.headers.get("Authorization") || "";

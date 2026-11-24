@@ -37,6 +37,7 @@ export const signInScreen = {
               <form id="app-account-recovery-email-form" class="app-account-form">
                 <label class="form-field"><span class="form-label">Recovery email</span><input class="form-input" name="email" type="email" required maxlength="254" autocomplete="email" value="${AppUtils.escapeHTML(recoveryEmail)}" placeholder="you@example.com"></label>
                 <label class="form-field"><span class="form-label">Current password</span><input class="form-input" name="password" type="password" required minlength="12" maxlength="128" autocomplete="current-password" placeholder="Confirm your password"></label>
+                <label class="form-field" id="app-account-recovery-code-field" hidden><span class="form-label">Code from the email</span><input class="form-input" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" placeholder="6-digit code"></label>
                 <p id="app-account-recovery-email-status" role="status" hidden style="color:var(--text-muted);margin:0;"></p>
                 <p id="app-account-recovery-email-error" role="alert" hidden style="color:#b42318;margin:0;"></p>
                 <button class="btn-secondary" type="submit">Save recovery email</button>

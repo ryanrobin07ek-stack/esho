@@ -494,3 +494,58 @@ test('editing an invoice after the link went out keeps the link and changes what
   assert.equal(db.exec('SELECT COUNT(*) FROM invoice_payments')[0].values[0][0], 1, 'one row per invoice');
   assert.match(await (await worker.fetch(new Request(edited.url), env)).text(), /KES 2,000\.00/);
 });
+
+test('sign-up gives the same answer whether the username or the email is the one already used', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke' });
+  await registerAccount(env, 'first-user');
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init) => {
+    if (String(input).includes('/turnstile/v0/siteverify')) return Response.json({ success: true });
+    return originalFetch(input, init);
+  };
+  try {
+    const register = (username, email) => worker.fetch(new Request(API + '/api/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password: 'correct-horse-battery-staple', turnstile_token: 'token' })
+    }), env);
+    const emailTaken = await register('second-user', 'first-user@example.com');
+    const nameTaken = await register('first-user', 'someone-else@example.com');
+    assert.equal(emailTaken.status, 409);
+    assert.equal(nameTaken.status, 409);
+    assert.equal((await emailTaken.json()).error, (await nameTaken.json()).error,
+      'the form must not reveal which of the two is already in use');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('an abandoned online checkout gives its discount use back, but a shop-settled order keeps it', async () => {
+  const { env, db } = await createEnv({ DOMAIN_ROOT: 'craft.ke' });
+  const longAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+  db.run(
+    'INSERT INTO discount_codes (tenant_id,code,type,value,usage_limit,used_count,active,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)',
+    ['shop-a', 'SAVE', 'percent', 10, 2, 2, 1, longAgo, longAgo]
+  );
+  const insertOrder = (number, key, paymentStatus, reference) => db.run(
+    `INSERT INTO storefront_orders (tenant_id,order_number,idempotency_key,customer_name,customer_email,customer_phone,shipping_address,
+       city,postal_code,country,currency,subtotal_cents,discount_cents,shipping_cents,total_cents,items_json,created_at,updated_at,
+       payment_status,payment_reference,discount_code,discount_released)
+     VALUES ('shop-a',?,?, 'Sam','sam@example.test','+254700000001','Street','Nairobi','','KE','KES',1250,125,0,1125,'[]',?,?,?,?,'SAVE',0)`,
+    [number, key, longAgo, longAgo, paymentStatus, reference]
+  );
+  insertOrder('ORD-ABANDONED00001', 'k1000000-0000-4000-8000-000000000001', 'pending', 'ESHOP_' + 'A'.repeat(32));
+  insertOrder('ORD-SHOPSETTLES0001', 'k2000000-0000-4000-8000-000000000002', 'unpaid', null);
+
+  const order = key => worker.fetch(post('/api/orders?tenant=shop-a', {
+    idempotency_key: key, customer_name: 'Buyer', customer_email: 'buyer@example.test', customer_phone: '+254700000009',
+    shipping_address: 'Street', city: 'Nairobi', country: 'KE', delivery_method: 'delivery', discount_code: 'SAVE',
+    items: [{ product_id: 7, quantity: 1 }]
+  }), env);
+  const first = await order('a1a2b153-4af0-4c64-8b58-0e7d45005b14');
+  assert.equal(first.status, 201, 'the use held by the abandoned online checkout is available again');
+  const second = await order('a2a2b153-4af0-4c64-8b58-0e7d45005b14');
+  assert.equal(second.status, 409, 'the order the shop settles itself still holds its use, so the limit is reached');
+  assert.equal(db.exec("SELECT used_count FROM discount_codes WHERE code='SAVE'")[0].values[0][0], 2);
+  assert.equal(db.exec("SELECT discount_released FROM storefront_orders WHERE order_number='ORD-ABANDONED00001'")[0].values[0][0], 1);
+  assert.equal(db.exec("SELECT discount_released FROM storefront_orders WHERE order_number='ORD-SHOPSETTLES0001'")[0].values[0][0], 0);
+});

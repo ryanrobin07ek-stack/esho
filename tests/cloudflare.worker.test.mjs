@@ -4092,36 +4092,66 @@ test('account recovery emails a short-lived code and allows one password reset',
   }
 });
 
-test('signed-in accounts can update their recovery email after confirming the password', async () => {
+test('a new recovery email is saved only after the code sent to it is entered', async () => {
   const env = {
     DB: createDatabase(),
     TENANTS: createTenantStore(),
     PUBLISH_TOKEN: 'test-token',
     TURNSTILE_SITE_KEY: 'test-site-key',
-    TURNSTILE_SECRET_KEY: 'test-turnstile-secret'
+    TURNSTILE_SECRET_KEY: 'test-turnstile-secret',
+    RESEND_API_KEY: 'test-resend',
+    EMAIL_FROM: 'Craft <noreply@craft.test>'
   };
   const registered = await registerTestAccount(env, 'email-update-user');
-  const updated = await worker.fetch(new Request(
-    'https://eshop-storefront.workers.dev/api/auth/set-recovery-email',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${registered.session_token}`
-      },
-      body: JSON.stringify({
-        email: '  RECOVERY@example.com ',
-        password: 'correct-horse-battery-staple'
-      })
+  const sent = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input, init) => {
+    if (String(input).includes('api.resend.com')) {
+      sent.push(JSON.parse(init.body));
+      return Response.json({ id: 'email-1' });
     }
-  ), env);
-  assert.equal(updated.status, 200);
-  assert.equal((await updated.json()).email, 'recovery@example.com');
-  const refreshed = await worker.fetch(new Request(
-    'https://eshop-storefront.workers.dev/api/auth/session',
-    { headers: { Authorization: `Bearer ${registered.session_token}` } }
-  ), env);
-  assert.equal((await refreshed.json()).email, 'recovery@example.com');
+    return originalFetch(input, init);
+  };
+  try {
+    const auth = { 'Content-Type': 'application/json', Authorization: `Bearer ${registered.session_token}` };
+    const call = (action, body) => worker.fetch(new Request(`https://eshop-storefront.workers.dev/api/auth/${action}`, {
+      method: 'POST', headers: auth, body: JSON.stringify(body)
+    }), env);
+    const sessionEmail = async () => (await (await worker.fetch(new Request('https://eshop-storefront.workers.dev/api/auth/session', {
+      headers: { Authorization: `Bearer ${registered.session_token}` }
+    }), env)).json()).email;
+    const before = await sessionEmail();
+
+    const asked = await call('set-recovery-email', { email: '  RECOVERY@example.com ', password: 'correct-horse-battery-staple' });
+    assert.equal(asked.status, 200);
+    const askedBody = await asked.json();
+    assert.equal(askedBody.verification_required, true);
+    assert.equal(askedBody.email, 'recovery@example.com');
+    assert.equal(sent.length, 1, 'a code goes to the new address');
+    assert.deepEqual(sent[0].to, ['recovery@example.com']);
+    assert.equal(await sessionEmail(), before, 'nothing changes until the code is entered');
+    const code = sent[0].text.match(/ ([0-9]{6})\./)[1];
+
+    const wrong = await call('verify-recovery-email', { code: code === '000000' ? '111111' : '000000' });
+    assert.equal(wrong.status, 400);
+    assert.equal(await sessionEmail(), before);
+
+    const confirmed = await call('verify-recovery-email', { code });
+    assert.equal(confirmed.status, 200);
+    assert.equal((await confirmed.json()).email, 'recovery@example.com');
+    assert.equal(await sessionEmail(), 'recovery@example.com');
+    assert.equal((await call('verify-recovery-email', { code })).status, 400, 'a code works once');
+
+    // The code is not a way to try many guesses.
+    await call('set-recovery-email', { email: 'other@example.com', password: 'correct-horse-battery-staple' });
+    const statuses = [];
+    for (let guess = 0; guess < 7; guess += 1) statuses.push((await call('verify-recovery-email', { code: String(100000 + guess) })).status);
+    assert.ok(statuses.includes(429), `wrong codes are cut off, saw ${statuses}`);
+    assert.equal(statuses.at(-1), 400, 'and the code is burned, so nothing more can be tried against it');
+    assert.equal(await sessionEmail(), 'recovery@example.com');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test('account recovery migration adds nullable, unique email addresses without breaking existing accounts', async () => {
@@ -4643,13 +4673,14 @@ test('anonymous holds are capped per request, per connection and per product sha
     store: HARDENING_STORE
   };
   const { env, rows } = await createHardeningEnv({ catalog });
-  const hold = (quantity, ip, key = crypto.randomUUID()) => worker.fetch(new Request(
+  // Each connection is a different visitor with their own contact, except where a test says otherwise.
+  const hold = (quantity, ip, key = crypto.randomUUID(), contact = `visitor-${ip}@example.test`) => worker.fetch(new Request(
     'https://eshop-storefront.workers.dev/api/product-holds?tenant=shop-a',
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip },
       body: JSON.stringify({
-        idempotency_key: key, product_id: 7, quantity, customer_name: 'Hold Visitor', contact: 'visitor@example.test'
+        idempotency_key: key, product_id: 7, quantity, customer_name: 'Hold Visitor', contact
       })
     }
   ), env);
@@ -4671,6 +4702,30 @@ test('anonymous holds are capped per request, per connection and per product sha
   const overShare = await hold(1, '198.51.100.2');
   assert.equal(overShare.status, 409);
   assert.equal(rows("SELECT COALESCE(SUM(quantity),0) AS n FROM storefront_hold_requests WHERE status='approved'")[0].n, 7);
+});
+
+test('one contact cannot hold more by changing connection', async () => {
+  const catalog = {
+    products: [{ id: 7, name: 'Canvas Tote', sku: 'TOTE-7', price: 12.5, stock: 100, booking_enabled: true }],
+    categories: [],
+    store: HARDENING_STORE
+  };
+  const { env, rows } = await createHardeningEnv({ catalog });
+  const hold = ip => worker.fetch(new Request(
+    'https://eshop-storefront.workers.dev/api/product-holds?tenant=shop-a',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip },
+      body: JSON.stringify({
+        idempotency_key: crypto.randomUUID(), product_id: 7, quantity: 1, customer_name: 'Rotating', contact: 'Rotating@Example.test'
+      })
+    }
+  ), env);
+  for (const ip of ['203.0.113.10', '203.0.113.11', '203.0.113.12']) assert.equal((await hold(ip)).status, 201);
+  const fourth = await hold('203.0.113.13');
+  assert.equal(fourth.status, 429, 'a new address does not reset the limit for the same email');
+  assert.match((await fourth.json()).error, /This contact already has/);
+  assert.equal(rows('SELECT COUNT(*) AS n FROM storefront_hold_requests')[0].n, 3);
 });
 
 test('payment initialization is rate limited per connection before any Paystack work', async () => {
