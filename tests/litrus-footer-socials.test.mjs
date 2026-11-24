@@ -39,4 +39,5 @@ test('the category pills stay readable and are not cloned four times in the live
   const live = readFileSync(new URL('../public/litrus-mixer/live-catalog.js', import.meta.url), 'utf8');
   assert.ok(!live.includes('"cat-marquee") ? 4 : 1'), 'a one-category shop must not show it four times');
   assert.match(html, /\.cgw \.cat-marquee-item\{[^}]*background: var\(--text\); color: var\(--bg, #fff\);/, 'the pill text uses the page background colour, so it is never the same colour as the pill');
+  assert.match(html, /#store \.litrus-categories a\.cat-marquee-item[^{]*\{ color: var\(--bg, #fff\); \}/, 'the pill text colour must win over the inherited band colour');
 });
