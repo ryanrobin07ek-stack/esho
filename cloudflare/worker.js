@@ -1717,26 +1717,41 @@ async function googleAuthCallback(request, env) {
         if (emailAccount) {
           return googleAuthResultRedirect(saved.native, "google_error", "existing_account");
         }
-        const usernameBase = `g-${identity.email.split("@")[0].toLowerCase()
-          .replace(/[^a-z0-9._-]/g, "-").replace(/^[._-]+|[._-]+$/g, "").slice(0, 20) || "user"}`;
-        const suffix = (await sha256Hex(identity.sub)).slice(0, 8);
-        username = `${usernameBase}-${suffix}`.slice(0, 32);
+        // A readable username from the Gmail name (alonglilo9). A number is added only when someone already has it
+        // (alonglilo92, alonglilo93...). Names that read like the platform or staff get "-user" added.
+        let usernameBase = identity.email.split("@")[0].toLowerCase()
+          .replace(/[^a-z0-9._-]/g, "-").replace(/^[._-]+|[._-]+$/g, "").slice(0, 24);
+        if (usernameBase.length < 3) usernameBase = `${usernameBase}user`.slice(0, 24);
+        if (BLOCKED_NEW_SHOP_LABELS.has(usernameBase) || ["admin", "administrator", "root", "owner", "craft"].includes(usernameBase)) {
+          usernameBase = `${usernameBase}-user`;
+        }
         const salt = encodeBase64Url(crypto.getRandomValues(new Uint8Array(16)));
         const password = generateTenantSecret();
         const hash = await passwordHash(password, salt);
-        const created = await env.DB.prepare(
-          "INSERT OR IGNORE INTO accounts (username, password_salt, password_hash, email, created_at) VALUES (?, ?, ?, ?, ?)"
-        ).bind(username, salt, hash, identity.email, new Date().toISOString()).run();
-        if (!created.meta?.changes) {
+        let created = null;
+        for (let attempt = 0; attempt < 30; attempt += 1) {
+          username = (attempt === 0 ? usernameBase : `${usernameBase}${attempt + 1}`).slice(0, 32);
+          created = await env.DB.prepare(
+            "INSERT OR IGNORE INTO accounts (username, password_salt, password_hash, email, created_at) VALUES (?, ?, ?, ?, ?)"
+          ).bind(username, salt, hash, identity.email, new Date().toISOString()).run();
+          if (created.meta?.changes) break;
+          // The insert was ignored: either that username is taken, or this same Google identity was created a
+          // moment ago by a parallel request. In the second case use that account instead of making another.
           const racedIdentity = await env.DB.prepare(
             "SELECT username FROM account_google_identities WHERE google_sub = ?"
           ).bind(identity.sub).first();
-          if (!racedIdentity) throw new Error("Craft could not create an account for this Google identity.");
-          username = racedIdentity.username;
-        } else {
+          if (racedIdentity) {
+            username = racedIdentity.username;
+            created = null;
+            break;
+          }
+        }
+        if (created?.meta?.changes) {
           await env.DB.prepare(
             "INSERT INTO account_google_identities (google_sub, username, email, created_at) VALUES (?, ?, ?, ?)"
           ).bind(identity.sub, username, identity.email, new Date().toISOString()).run();
+        } else if (created) {
+          throw new Error("Craft could not create an account for this Google identity.");
         }
       }
     }

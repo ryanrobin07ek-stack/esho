@@ -290,3 +290,11 @@ test('linking a Google account is attached only when the browser that started th
   const afterSecretCheck = complete.slice(complete.indexOf('constantTimeEqual(await sha256Hex(completionSecret)'));
   assert.ok(afterSecretCheck.includes('INSERT INTO account_google_identities'), 'the identity is attached only after the completion secret is proven');
 });
+
+test('a new Google account gets a readable username, and a number is added only on a clash', () => {
+  const source = readFileSync(new URL('../cloudflare/worker.js', import.meta.url), 'utf8');
+  const callback = source.slice(source.indexOf('async function googleAuthCallback'), source.indexOf('async function completeGoogleAccountAuth'));
+  assert.ok(!callback.includes('g-${'), 'no more "g-" prefix with random letters');
+  assert.ok(!callback.includes('sha256Hex(identity.sub)).slice(0, 8)'), 'no random suffix from the Google id');
+  assert.ok(callback.includes('`${usernameBase}${attempt + 1}`'), 'a clash adds a plain number');
+});

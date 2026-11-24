@@ -165,7 +165,8 @@ test("Google OAuth creates and signs in a Craft account after validating Google'
     assert.equal(env.DB.accounts.size, 1);
     assert.equal(env.DB.identities.size, 1);
     const username = env.DB.identities.get("google-subject-123").username;
-    assert.match(username, /^g-owner-/);
+    // A readable name from the Gmail name, not random letters. "owner" reads like a role, so it gets "-user" added.
+    assert.equal(username, "owner-user");
     assert.equal(env.DB.accounts.get(username).email, "owner@example.com");
 
     const rejectedSecret = await worker.fetch(new Request("https://rrobin.co.ke/api/auth/google/complete", {
