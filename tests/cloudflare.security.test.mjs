@@ -334,3 +334,163 @@ test('the delivery charge and the delivery or pickup switches a shop publishes a
   assert.equal((await order(id(5), 'pickup')).status, 201);
   assert.equal((await order(id(6), 'delivery')).status, 201);
 });
+
+// ---- online payment of POS invoices -------------------------------------------------------------------------------
+
+async function invoiceEnv() {
+  const { env, db } = await createEnv({ DOMAIN_ROOT: 'craft.ke', PAYSTACK_SECRET_KEY: 'sk_test_invoice', PAYSTACK_CURRENCIES: 'KES' });
+  const now = new Date().toISOString();
+  db.run(
+    "INSERT INTO paystack_subaccounts (tenant_id,subaccount_code,status,bank_name,account_last4,account_mode,is_verified,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
+    ['shop-a', 'ACCT_test', 'connected', 'Bank', '1234', 'test', 1, now, now]
+  );
+  return { env, db };
+}
+
+function mockPaystack(handlers = {}) {
+  const originalFetch = globalThis.fetch;
+  const seen = { initialize: null };
+  globalThis.fetch = async (input, init) => {
+    const url = String(input);
+    if (url.includes('/transaction/initialize')) {
+      seen.initialize = JSON.parse(init.body);
+      return Response.json({ status: true, data: { authorization_url: 'https://checkout.paystack.com/abc123', reference: seen.initialize.reference } });
+    }
+    if (url.includes('/transaction/verify/')) {
+      const reference = decodeURIComponent(url.split('/verify/')[1]);
+      return Response.json({ status: true, data: {
+        status: handlers.verifyStatus || 'success', reference, amount: seen.initialize?.amount, currency: seen.initialize?.currency,
+        domain: 'test', subaccount: { subaccount_code: 'ACCT_test' }
+      } });
+    }
+    return originalFetch(input, init);
+  };
+  return { seen, restore: () => { globalThis.fetch = originalFetch; } };
+}
+
+const INVOICE = { invoice_number: 'INV-ABC123-XY12', amount: 1500.5, currency: 'KES', customer_name: 'Wanjiru' };
+const asOwner = (path, body, method = 'POST') => new Request(API + path, {
+  method, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner-key-a' },
+  ...(body ? { body: JSON.stringify(body) } : {})
+});
+const startPaying = (env, url) => worker.fetch(new Request(`${url}/start`, {
+  method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'email=buyer%40example.test'
+}), env);
+const listPayments = env => worker.fetch(asOwner('/api/invoices/payments?tenant=shop-a', null, 'GET'), env).then(response => response.json());
+
+async function webhookRequest(secret, payload) {
+  const raw = JSON.stringify(payload);
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-512' }, false, ['sign']);
+  const digest = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(raw));
+  const signature = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  return new Request(API + '/api/payments/paystack/webhook', { method: 'POST', headers: { 'x-paystack-signature': signature }, body: raw });
+}
+
+test('an invoice pay link: owner creates it, the customer pays through Paystack, the owner sees it paid', async () => {
+  const { env } = await invoiceEnv();
+  const paystack = mockPaystack();
+  try {
+    const denied = await worker.fetch(new Request(API + '/api/invoices/payment-link?tenant=shop-a', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(INVOICE)
+    }), env);
+    assert.equal(denied.status, 401, 'only the owner can create a pay link');
+
+    const created = await worker.fetch(asOwner('/api/invoices/payment-link?tenant=shop-a', INVOICE), env);
+    assert.equal(created.status, 201);
+    const { url } = await created.json();
+    assert.match(url, /^https:\/\/shop-a\.craft\.ke\/pay\/[A-Za-z0-9_-]{24}$/);
+
+    const view = await worker.fetch(new Request(url), env);
+    assert.equal(view.status, 200);
+    const html = await view.text();
+    assert.match(html, /KES 1,500\.50/);
+    assert.match(html, /INV-ABC123-XY12/);
+    assert.match(view.headers.get('X-Robots-Tag') || '', /noindex/);
+    assert.ok((view.headers.get('Content-Security-Policy') || '').includes('https://checkout.paystack.com'));
+
+    const start = await startPaying(env, url);
+    assert.equal(start.status, 303);
+    assert.equal(start.headers.get('Location'), 'https://checkout.paystack.com/abc123');
+    assert.equal(paystack.seen.initialize.amount, 150050, 'the amount is the invoice total in cents');
+    assert.equal(paystack.seen.initialize.currency, 'KES');
+    assert.equal(paystack.seen.initialize.subaccount, 'ACCT_test', 'the money goes to the shop, not the platform');
+    assert.equal(paystack.seen.initialize.email, 'buyer@example.test');
+
+    const returned = await worker.fetch(new Request(`${url}/return?reference=${paystack.seen.initialize.reference}`), env);
+    assert.equal(returned.status, 200);
+    assert.match(await returned.text(), /Payment received/);
+
+    const listed = await listPayments(env);
+    assert.equal(listed.payments.length, 1);
+    assert.equal(listed.payments[0].invoice_number, 'INV-ABC123-XY12');
+    assert.equal(listed.payments[0].status, 'paid');
+    assert.equal(listed.payments[0].amount_cents, 150050);
+
+    const again = await (await worker.fetch(asOwner('/api/invoices/payment-link?tenant=shop-a', INVOICE), env)).json();
+    assert.equal(again.status, 'paid', 'a paid invoice is never charged twice');
+  } finally {
+    paystack.restore();
+  }
+});
+
+test('the Paystack webhook marks an invoice paid, and only for the right amount', async () => {
+  const { env, db } = await invoiceEnv();
+  const storedStatus = () => db.exec('SELECT status FROM invoice_payments')[0].values[0][0];
+  const paystack = mockPaystack();
+  try {
+    const { url } = await (await worker.fetch(asOwner('/api/invoices/payment-link?tenant=shop-a', INVOICE), env)).json();
+    await startPaying(env, url);
+    const reference = paystack.seen.initialize.reference;
+    const charge = overrides => ({
+      event: 'charge.success',
+      data: { status: 'success', reference, amount: 150050, currency: 'KES', domain: 'test',
+        subaccount: { subaccount_code: 'ACCT_test' }, ...overrides }
+    });
+
+    const forged = await worker.fetch(new Request(API + '/api/payments/paystack/webhook', {
+      method: 'POST', headers: { 'x-paystack-signature': 'a'.repeat(128) }, body: JSON.stringify(charge({}))
+    }), env);
+    assert.equal(forged.status, 401, 'an unsigned webhook is refused');
+
+    const wrongAmount = await worker.fetch(await webhookRequest('sk_test_invoice', charge({ amount: 100 })), env);
+    assert.equal(wrongAmount.status, 409, 'a payment of the wrong amount does not settle the invoice');
+    assert.notEqual(storedStatus(), 'paid', 'a payload for the wrong amount is not believed');
+
+    const accepted = await worker.fetch(await webhookRequest('sk_test_invoice', charge({})), env);
+    assert.equal(accepted.status, 200);
+    assert.equal(storedStatus(), 'paid');
+    assert.equal((await listPayments(env)).payments[0].status, 'paid');
+  } finally {
+    paystack.restore();
+  }
+});
+
+test('invoice pay links refuse what they should: no Paystack account, a bad invoice, an unknown link, another shop', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke', PAYSTACK_SECRET_KEY: 'sk_test_invoice', PAYSTACK_CURRENCIES: 'KES' });
+  const noAccount = await worker.fetch(asOwner('/api/invoices/payment-link?tenant=shop-a', INVOICE), env);
+  assert.equal(noAccount.status, 409);
+  assert.equal((await noAccount.json()).error_code, 'paystack_not_ready');
+
+  const { env: ready } = await invoiceEnv();
+  const bad = body => worker.fetch(asOwner('/api/invoices/payment-link?tenant=shop-a', { ...INVOICE, ...body }), ready);
+  assert.equal((await bad({ invoice_number: 'not-an-invoice' })).status, 400);
+  assert.equal((await bad({ amount: 0 })).status, 400);
+  assert.equal((await bad({ amount: -5 })).status, 400);
+  assert.equal((await bad({ amount: 'lots' })).status, 400);
+  assert.equal((await bad({ currency: 'USD' })).status, 409, 'only the currency the shop can be paid in');
+
+  const unknown = await worker.fetch(new Request('https://shop-a.craft.ke/pay/' + 'A'.repeat(24)), ready);
+  assert.equal(unknown.status, 404);
+  const other = await worker.fetch(asOwner('/api/invoices/payments?tenant=shop-b', null, 'GET'), ready);
+  assert.ok([401, 404].includes(other.status), 'the owner key of shop A is no use for another shop');
+});
+
+test('editing an invoice after the link went out keeps the link and changes what it asks for', async () => {
+  const { env, db } = await invoiceEnv();
+  const first = await (await worker.fetch(asOwner('/api/invoices/payment-link?tenant=shop-a', INVOICE), env)).json();
+  const edited = await (await worker.fetch(asOwner('/api/invoices/payment-link?tenant=shop-a', { ...INVOICE, amount: 2000 }), env)).json();
+  assert.equal(edited.url, first.url, 'the customer keeps the same link');
+  assert.equal(edited.amount_cents, 200000);
+  assert.equal(db.exec('SELECT COUNT(*) FROM invoice_payments')[0].values[0][0], 1, 'one row per invoice');
+  assert.match(await (await worker.fetch(new Request(edited.url), env)).text(), /KES 2,000\.00/);
+});

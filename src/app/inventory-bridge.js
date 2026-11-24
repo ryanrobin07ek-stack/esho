@@ -191,6 +191,18 @@ export const inventoryBridgeMethods = {
       { method: "POST", body: JSON.stringify({ subject, message }) }, tenantId
     );
   },
+  createInvoicePaymentLink(tenantId, payload) {
+    return AppController.cloudflareRequest(
+      `/api/invoices/payment-link?tenant=${encodeURIComponent(tenantId)}`,
+      { method: "POST", body: JSON.stringify(payload) },
+      tenantId
+    );
+  },
+  listInvoicePayments(tenantId) {
+    return AppController.cloudflareRequest(
+      `/api/invoices/payments?tenant=${encodeURIComponent(tenantId)}`, {}, tenantId
+    );
+  },
   async syncPosRecords(tenantId, method, data = {}) {
     const query = method === "GET"
       ? `&after=${encodeURIComponent(data.after || 0)}&limit=${encodeURIComponent(data.limit || 200)}`

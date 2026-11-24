@@ -2551,6 +2551,42 @@ test('POS persists products, manual payments, invoices and business instances in
       dueDate: '', notes: ''
     });
     assert.equal(queryRows('SELECT COUNT(*) AS count FROM pos_invoices')[0].count, 1);
+    // Online payment of an invoice: a pay link is requested, kept for the invoice, and a payment the customer
+    // made through Paystack is recorded as an ordinary sale with the way they paid.
+    const payLinkRequests = [];
+    const invoiceToPay = queryRows('SELECT id,invoice_number FROM pos_invoices')[0];
+    window.EshopInventoryBridge.activeWebsiteId = () => 'main';
+    window.EshopInventoryBridge.createInvoicePaymentLink = async (tenantId, payload) => {
+      payLinkRequests.push({ tenantId, payload });
+      return { status: 'unpaid', url: `https://main.example.test/pay/${'T'.repeat(24)}` };
+    };
+    window.EshopInventoryBridge.listInvoicePayments = async () => ({
+      payments: payLinkRequests.length
+        ? [{ invoice_number: invoiceToPay.invoice_number, status: 'paid', channel: 'mobile_money', reference: 'ESHOP_ABC' }]
+        : []
+    });
+    window.prompt = () => null;
+    await app.refresh();
+    await click('sync-invoice-payments');
+    assert.equal(queryRows('SELECT status FROM pos_invoices WHERE id=?', [invoiceToPay.id])[0].status, 'unpaid',
+      'an invoice with no pay link is not looked up or settled');
+    await click('invoice-pay-link', { id: String(invoiceToPay.id) });
+    assert.equal(payLinkRequests.length, 1);
+    assert.equal(payLinkRequests[0].tenantId, 'main');
+    assert.equal(payLinkRequests[0].payload.invoice_number, invoiceToPay.invoice_number);
+    assert.equal(payLinkRequests[0].payload.amount, 18.5);
+    assert.equal(queryRows('SELECT value FROM pos_settings WHERE key=?', [`invoice_pay_link:${invoiceToPay.invoice_number}`])[0].value,
+      `https://main.example.test/pay/${'T'.repeat(24)}`);
+    await click('sync-invoice-payments');
+    const settledInvoice = queryRows('SELECT status,sale_receipt FROM pos_invoices WHERE id=?', [invoiceToPay.id])[0];
+    assert.equal(settledInvoice.status, 'paid', 'a payment made online marks the invoice paid');
+    assert.equal(queryRows('SELECT payment_method FROM pos_sales WHERE receipt_number=?', [settledInvoice.sale_receipt])[0].payment_method,
+      'Mobile money', 'the sale records how the customer paid');
+    // The rest of this test works in the local scope, so take the online-payment stand-ins away again.
+    delete window.EshopInventoryBridge.activeWebsiteId;
+    delete window.EshopInventoryBridge.createInvoicePaymentLink;
+    delete window.EshopInventoryBridge.listInvoicePayments;
+    await app.refresh();
 
     const date = new Date();
     const dateValue = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;

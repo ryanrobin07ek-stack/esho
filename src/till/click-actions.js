@@ -4,7 +4,7 @@ import { run, stmt, transaction } from './db.js';
 import { listExpenses } from './expenses.js';
 import { PAYMENT_METHODS, escapeHtml, nowIso } from './format.js';
 import { updateInstance } from './instances.js';
-import { markInvoicePaid } from './payments.js';
+import { createInvoicePay } from './invoice-pay.js';
 import { suggestImageCategories } from './product-matching.js';
 import { listCategories, listProducts } from './products.js';
 import { convertQuotationToInvoice, deleteQuotation } from './quotations.js';
@@ -19,6 +19,8 @@ export function createClickActions({
   renderCurrent, queueCategory, renderKeepingForm, syncInventorySales, printDocument,
   quotationHtml, queueExpense, receiptHtml, invoiceHtml, exportInventory, syncSharedStock
 }) {
+  const invoicePay = createInvoicePay({ state, toast, refresh, queueCloudRecord, queueProduct, syncInventorySales });
+
   async function handleClick(event) {
     const target = event.target.closest('[data-pos-action]');
     if (!target) return;
@@ -396,23 +398,19 @@ export function createClickActions({
           if (entered === null) return;
           mpesaRef = entered;
         }
-        const result = await markInvoicePaid(id, method, { mpesaRef });
-        try {
-          const savedSale = (await listSales()).find((item) => item.id === result.id);
-          if (savedSale) await queueCloudRecord('sale', savedSale.receipt_number, savedSale);
-          const productsAfter = await listProducts();
-          for (const productId of result.productIds) {
-            const product = productsAfter.find((item) => item.id === productId);
-            if (product) await queueProduct(product);
-          }
-          await syncInventorySales();
-        } catch (error) {
-          await refresh();
-          toast(`Invoice ${result.invoiceNumber} paid as receipt ${result.receiptNumber}, but sync failed: ${error instanceof Error ? error.message : 'unknown error'}`, true);
+        await invoicePay.settleInvoice(id, method, mpesaRef);
+      } else if (action === 'invoice-pay-link') {
+        const invoice = state.invoices.find((item) => item.id === id);
+        if (!invoice || invoice.status === 'paid') return;
+        const link = await invoicePay.createLink(invoice);
+        if (link.status === 'paid') {
+          toast('This invoice was already paid online. Recording it now.');
+          await invoicePay.syncOnlinePayments({ manual: true });
           return;
         }
-        toast(`Invoice ${result.invoiceNumber} marked paid · receipt ${result.receiptNumber}.`);
-        await refresh();
+        await invoicePay.shareLink(invoice, link.url);
+      } else if (action === 'sync-invoice-payments') {
+        await invoicePay.syncOnlinePayments({ manual: true });
       } else if (action === 'convert-quotation') {
         const invoiceId = await convertQuotationToInvoice(id);
         toast('Invoice created from the quotation.');
@@ -494,5 +492,5 @@ export function createClickActions({
     }
   }
 
-  return { handleClick };
+  return { handleClick, syncInvoicePayments: invoicePay.syncOnlinePayments };
 }

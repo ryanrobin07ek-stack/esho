@@ -11,6 +11,7 @@ import { renderLiquidStorefront } from "../src/liquid-storefront-renderer.js";
 import { CRAFT_AI_SCREEN_DIRECTORY } from "../src/craft-ai-screens.js";
 import { encodeCatalogForStorage, readStoredCatalog, MAX_STORED_CATALOG_BYTES } from "./catalog-storage.js";
 import { normalizePaymentOptions } from "./payment-options.js";
+import { createInvoicePayments } from "./invoice-payments.js";
 
 // Largest catalogue request accepted. What is stored is compressed when large (catalog-storage.js).
 const MAX_CATALOG_BYTES = 12_000_000;
@@ -6486,6 +6487,18 @@ async function alertUnmatchedPayment(env, ctx, data, reference) {
   }
 }
 
+// Online payment of POS invoices (pay link, customer page, owner list). Built on first use.
+let invoicePaymentsModule;
+function invoicePayments() {
+  invoicePaymentsModule ||= createInvoicePayments({
+    jsonResponse, cleanText, EMAIL_PATTERN, paystackAuthorization, paystackAccountMode, paystackSubaccountReady,
+    getEffectivePaystackSubaccount, paystackCurrency, paystackCurrencyLabel, paystackReference,
+    transactionMatchesSubaccount, tenantHostname, authorizeOwner: authorizeShopOwnerOrAdmin, limitPublicWrite,
+    notifyShopOwner, formatMoneyCents, startLimit: PAYMENT_INIT_IP_LIMIT, verifyLimit: PAYMENT_VERIFY_IP_LIMIT
+  });
+  return invoicePaymentsModule;
+}
+
 async function handlePaystackWebhook(request, env, ctx) {
   if (request.method !== "POST") return jsonResponse({ error: "Method not allowed." }, 405, { Allow: "POST, OPTIONS" });
   if (!env.DB || !env.PAYSTACK_SECRET_KEY) return jsonResponse({ error: "Paystack webhook is not configured." }, 503);
@@ -6519,6 +6532,11 @@ async function handlePaystackWebhook(request, env, ctx) {
       "SELECT * FROM storefront_service_appointments WHERE payment_reference=?"
     ).bind(reference).first();
     if (!appointment) {
+      const invoiceResult = await invoicePayments().settleFromWebhook(env, ctx, event.data, reference);
+      if (invoiceResult) return invoiceResult;
+      if (await invoicePayments().alertUnmatched(env, ctx, event.data)) {
+        return jsonResponse({ error: "Payment reference not found." }, 404);
+      }
       await alertUnmatchedPayment(env, ctx, event.data, reference);
       return jsonResponse({ error: "Payment reference not found." }, 404);
     }
@@ -8980,6 +8998,10 @@ const workerEntry = {
     }
     const mediaMatch = url.pathname.match(/^\/media\/([a-z0-9-]+)\/([^/]+)$/i);
     if (mediaMatch) return await handlePublicMedia(request, env, mediaMatch[1].toLowerCase(), mediaMatch[2]);
+    const payPageMatch = url.pathname.match(/^\/pay\/([A-Za-z0-9_-]{24})(?:\/(start|return))?$/);
+    if (payPageMatch) {
+      return await invoicePayments().handlePayPage(request, env, ctx, payPageMatch[1], payPageMatch[2] || "view");
+    }
     if (url.pathname.startsWith("/api/")) {
       if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
       if (url.pathname === "/api/auth/google/callback") {
@@ -9095,6 +9117,12 @@ const workerEntry = {
         }
         if (url.pathname === "/api/payments/paystack/webhook") {
           return await handlePaystackWebhook(request, env, ctx);
+        }
+        const invoicePaymentMatch = url.pathname.match(/^\/api\/invoices\/(payment-link|payments)$/);
+        if (invoicePaymentMatch) {
+          const tenantId = tenantIdFromRequest(request, env);
+          if (!tenantId) return jsonResponse({ error: "Invalid shop hostname." }, 400);
+          return await invoicePayments().handleApi(request, env, tenantId, invoicePaymentMatch[1], ctx);
         }
         const paystackMatch = url.pathname.match(/^\/api\/payments\/paystack\/(banks|subaccount|link|default|initialize|verify)$/);
         if (paystackMatch) {

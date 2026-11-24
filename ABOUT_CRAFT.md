@@ -68,6 +68,7 @@ The one-line pitch: **“Build your business website in minutes. Run your busine
 ### 2.5 Point of sale (POS)
 
 - Offline-first register: products, categories, prices, stock, sales, receipts, invoices, expenses, till in/out, till closing, customer balances and part-payments.
+- Quotations turn into invoices with one tap. An unpaid invoice has a **Pay link**: the Worker (`cloudflare/invoice-payments.js`, table `invoice_payments`) makes a page at `https://<shop>/pay/<token>` where the customer enters an email and pays through the shop's connected Paystack account (money goes to the shop, not the platform). The Paystack webhook, or the customer coming back to the page, confirms it, and the till then records the invoice as a normal sale with the way the customer paid. The invoice itself stays on the device; only its number, amount and customer name go to the cloud. Needs the till linked to a shop with a connected Paystack account, and an invoice in a Paystack currency (KES).
 - Barcode and text scanning on Android (ML Kit).
 - Reports: sales over time, expenses, product and category performance, stock, payment mix, customers, alerts (low stock, overdue balances). Profit needs product costs entered correctly.
 - **POS and website catalogues are separate.** Editing one does not change the other unless the owner uses the explicit shared-inventory and import features. An in-person sale is not a web order.

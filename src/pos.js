@@ -157,7 +157,7 @@ export function createPosApp() {
     updateCartPanel
   });
   const {
-    handleClick
+    handleClick, syncInvoicePayments
   } = createClickActions({
     openBarcodeScanner: (...args) => openBarcodeScanner(...args), toast, refresh,
     captureProductPhoto, readImageFile, prepareImageForVision, getProductVision, state,
@@ -198,6 +198,8 @@ export function createPosApp() {
     if (!path.startsWith('/pos')) return;
     await loadState();
     renderCurrent();
+    // A customer may have paid an invoice's pay link since the screen was last open.
+    if (path.startsWith('/pos/orders/invoices') || path.startsWith('/pos/invoices')) void syncInvoicePayments();
   }
 
   // Re-rendering a form to show a changed line item must not throw away what was already typed in it.

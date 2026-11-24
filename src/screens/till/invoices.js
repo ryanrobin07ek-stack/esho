@@ -15,7 +15,7 @@ export function createInvoicesScreen({ state, tabsTitle, card, field, empty, but
     const tax = Math.round(subtotal * state.settings.taxRate / 100);
     return `<section class="pos-content">
       ${tabsTitle('Invoices', 'Create, edit, print and share customer invoices.',
-        `<a href="/pos/invoices?new=1" data-route="/pos/invoices?new=1" class="btn-primary">New invoice</a>`)}
+        `<a href="/pos/invoices?new=1" data-route="/pos/invoices?new=1" class="btn-primary">New invoice</a>${button('Check online payments', 'sync-invoice-payments', '', true)}`)}
       ${(id && invoice?.status !== 'paid') || params.get('new') === '1' ? card(`<h3>${id ? 'Edit invoice' : 'New invoice'}</h3>
         <form class="pos-form" data-pos-form="invoice">
           <input type="hidden" name="id" value="${id}">
@@ -42,7 +42,8 @@ export function createInvoicesScreen({ state, tabsTitle, card, field, empty, but
         ${statusTag(item.status === 'paid' ? 'Paid' : 'Unpaid', item.status === 'paid' ? 'is-good' : '')}
         ${item.status === 'paid' ? '' : `<a href="/pos/invoices?edit=${item.id}" data-route="/pos/invoices?edit=${item.id}" class="btn-secondary">Edit</a>
         <select data-invoice-pay-method aria-label="Payment method">${PAYMENT_METHODS.map((method) => `<option value="${method}">${method}</option>`).join('')}</select>
-        ${button('Mark paid', 'mark-invoice-paid', `data-id="${item.id}"`)}`}
+        ${button('Mark paid', 'mark-invoice-paid', `data-id="${item.id}"`)}
+        ${button('Pay link', 'invoice-pay-link', `data-id="${item.id}"`, true)}`}
         ${button('Print / PDF', 'print-invoice', `data-id="${item.id}"`, true)}
       </article>`).join('') || empty('No invoices yet', 'Create an invoice from the button above.')}
     </section>`;
