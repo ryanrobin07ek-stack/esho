@@ -391,9 +391,13 @@ export const AppController = {
     if (path.startsWith("/account/web/themes/") ||
         (path === "/account/web/site" && params.get("new") === "1")) {
       const draft = StudioRenderers.websiteBuilderDraft();
-      if (!draft.categories.length) {
-        AppUtils.showToast("Add a category before choosing a theme.", "danger");
-        this.navigate("/account/web/studio/websites/list");
+      // Final setup needs both, so ask for both here and send the owner back to step 2 of the wizard.
+      if (!draft.categories.length || !draft.products.length) {
+        AppUtils.showToast(!draft.categories.length && !draft.products.length
+          ? "Add at least one category and one product before opening the web builder."
+          : !draft.categories.length ? "Add at least one category before opening the web builder."
+          : "Add at least one product before opening the web builder.", "danger");
+        this.navigate("/account/web/studio/websites/webmaker");
       } else if (path === "/account/web/site" && params.get("new") === "1" &&
           !StudioRenderers.websiteThemesForPicker().some(theme =>
             theme.id === (params.get("theme") || draft.selected_theme))) {
