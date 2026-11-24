@@ -30,28 +30,33 @@ export const cloudflareController = {
   async restoreAccountWebsites(tenants, origin) {
     for (const tenant of tenants || []) {
       if (!tenant.owner_token || !tenant.id) continue;
-      const response = await fetch(new URL(`/api/catalog?tenant=${encodeURIComponent(tenant.id)}&private=1`, origin), {
-        headers: { Authorization: `Bearer ${tenant.owner_token}` }
-      });
-      const catalog = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(catalog.error || `Could not restore ${tenant.name || tenant.id}.`);
-      const existing = this.tenantCatalogs().find(item => item.tenant_id === tenant.id);
-      if (existing) {
-        existing.owner_token = tenant.owner_token;
-        existing.name = tenant.name || existing.name;
-        existing.hostname = tenant.hostname || existing.hostname;
-      } else {
-        this.tenantCatalogs().push({
-          tenant_id: tenant.id,
-          name: tenant.name || tenant.id,
-          hostname: tenant.hostname || `${tenant.id}.${DOMAIN.root}`,
-          owner_token: tenant.owner_token,
-          products: Array.isArray(catalog.products) ? catalog.products : [],
-          categories: Array.isArray(catalog.categories) ? catalog.categories : [],
-          inventory: Array.isArray(catalog.inventory) ? catalog.inventory : [],
-          store: catalog.store && typeof catalog.store === "object" ? catalog.store : {},
-          pages: Array.isArray(catalog.pages) ? catalog.pages : []
+      // One shop that cannot be loaded must not make a finished sign-in look like it failed, nor stop the others.
+      try {
+        const response = await fetch(new URL(`/api/catalog?tenant=${encodeURIComponent(tenant.id)}&private=1`, origin), {
+          headers: { Authorization: `Bearer ${tenant.owner_token}` }
         });
+        const catalog = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(catalog.error || `Could not restore ${tenant.name || tenant.id}.`);
+        const existing = this.tenantCatalogs().find(item => item.tenant_id === tenant.id);
+        if (existing) {
+          existing.owner_token = tenant.owner_token;
+          existing.name = tenant.name || existing.name;
+          existing.hostname = tenant.hostname || existing.hostname;
+        } else {
+          this.tenantCatalogs().push({
+            tenant_id: tenant.id,
+            name: tenant.name || tenant.id,
+            hostname: tenant.hostname || `${tenant.id}.${DOMAIN.root}`,
+            owner_token: tenant.owner_token,
+            products: Array.isArray(catalog.products) ? catalog.products : [],
+            categories: Array.isArray(catalog.categories) ? catalog.categories : [],
+            inventory: Array.isArray(catalog.inventory) ? catalog.inventory : [],
+            store: catalog.store && typeof catalog.store === "object" ? catalog.store : {},
+            pages: Array.isArray(catalog.pages) ? catalog.pages : []
+          });
+        }
+      } catch (error) {
+        console.warn(`Could not restore ${tenant.id} after sign-in.`, error);
       }
     }
     SQLiteEngine.save();
