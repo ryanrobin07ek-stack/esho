@@ -5,7 +5,11 @@ import { AppUtils } from './main.js';
 export function bindAccountSignIn() {
   const googleAuthParams = new URLSearchParams(this.currentRoute().split("?")[1] || "");
   const googleTicket = googleAuthParams.get("google_ticket");
-  if (googleTicket && !this.googleAuthCompleting) {
+  // A ticket is good for one use. The page can render twice while it is still in the address, and the second pass
+  // would try the used ticket, fail, and show an error on top of a sign-in that had just worked.
+  this.handledGoogleTickets = this.handledGoogleTickets || new Set();
+  if (googleTicket && !this.googleAuthCompleting && !this.handledGoogleTickets.has(googleTicket)) {
+    this.handledGoogleTickets.add(googleTicket);
     this.googleAuthCompleting = true;
     void (async () => {
       try {
