@@ -34,3 +34,9 @@ test('storefront notification controls show only the button that fits, and nothi
   assert.match(storefront, /const showState = on => \{ enable\.hidden = on; disable\.hidden = !on; \};/);
   assert.match(storefront, /!\("Notification" in window\)\) return;/);
 });
+
+test('the category pills stay readable and are not cloned four times in the live shop', () => {
+  const live = readFileSync(new URL('../public/litrus-mixer/live-catalog.js', import.meta.url), 'utf8');
+  assert.ok(!live.includes('"cat-marquee") ? 4 : 1'), 'a one-category shop must not show it four times');
+  assert.match(html, /\.cgw \.cat-marquee-item\{[^}]*background: var\(--text\); color: var\(--bg, #fff\);/, 'the pill text uses the page background colour, so it is never the same colour as the pill');
+});

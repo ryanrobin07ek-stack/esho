@@ -644,7 +644,8 @@
       if (styledTemplate) {
         const categoryContainer = styledTemplate.parentElement;
         const items = categories.flatMap(category => {
-          const copies = categoryContainer.classList.contains("cat-marquee") ? 4 : 1;
+          // The strip is swiped by hand, so every category appears once (cloning it four times made a one-category shop repeat it).
+          const copies = 1;
           return Array.from({ length: copies }, () => {
             const item = styledTemplate.cloneNode(true);
             item.href = "#";
