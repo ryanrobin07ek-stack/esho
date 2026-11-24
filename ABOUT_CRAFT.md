@@ -271,6 +271,7 @@ Customers outside Paystack's countries cannot use Paystack. The planned route is
 - Storefront commerce on the Worker: server-side pricing, holds, discount codes, manual and Paystack payments, owner alerts, bookings with deposits and self-service.
 - POS with offline operation, scanning, reports, cloud backup and nearby sync.
 - craft.ke live: official site on `craft.ke` and `www.craft.ke`; Craft app on `app.craft.ke`; shops on `<shop>.craft.ke`; craft.ke Android APK built.
+- Shop creation verified on a phone (2026-11-24): a signed-in owner created a shop with a category and a product, and it went live at its own `<shop>.craft.ke` address with its catalogue. This needed two fixes: the app host now honours `?tenant=` on API paths (`7aaeb91`), and the new-website wizard now asks for both a category and a product before the builder (`cd957e1`). Known wizard rough edges: "+ New web" starts a blank draft instead of resuming, and "Manage this web" on a draft opens the main store's products.
 - Paystack for **KES, NGN and ZAR**: committed (`7d6f754`) and the Worker deployed to craft.ke.
 
 **Open before marketing**
