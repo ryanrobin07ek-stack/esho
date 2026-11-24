@@ -314,7 +314,7 @@ export const workspaceShells = {
           { title: "Websites", route: "/account/web/studio/websites/list", contentPath: "/account/web/studio/websites/list" },
           { title: "Domains", route: domainsRoute, contentPath: domainsRoute },
           { title: "New web", route: "/account/web/studio/websites/webmaker", contentPath: "/account/web/studio/websites/webmaker" },
-          { title: "Add", route: "/account/web/studio/websites/add", contentPath: "/account/web/studio/websites/add" },
+          { title: "Contact & socials", route: "/account/web/studio/websites/add", contentPath: "/account/web/studio/websites/add" },
           { title: "Website editor", route: "/account/web/studio/websites/editor", contentPath: "/account/web/studio/websites/editor" }
         ]
       },
@@ -399,8 +399,8 @@ export const webStudioShells = {
       const store = SQLiteEngine.getStore();
       const field = (name, label, type = "url", placeholder = "") => `<label class="form-field"><span class="form-label">${label}</span><input class="form-input" name="${name}" type="${type}" maxlength="500" value="${AppUtils.escapeHTML(store[name] || "")}" placeholder="${placeholder}" ${type === "url" ? 'inputmode="url"' : ""}></label>`;
       return `<section class="studio-workspace-section"><form id="website-additions-form" class="studio-panel">
-        <span class="studio-workspace-kicker">CONTACT &amp; DISCOVERY</span><h2>Add to your website</h2>
-        <p class="studio-panel-note">Saved links, enabled contact buttons, and the location map are injected into the footer across published themes.</p>
+        <span class="studio-workspace-kicker">CONTACT &amp; DISCOVERY</span><h2>Contact &amp; socials</h2>
+        <p class="studio-panel-note">Phone, WhatsApp, social links and your location show in your website footer. After you save, publish from the Website editor to put them on your live site.</p>
         <div class="studio-dashboard-grid">${field("phone", "Phone number", "tel", "+country code…")}
         <label class="form-field"><span class="form-label">WhatsApp button</span><span><input type="checkbox" name="whatsapp_enabled" ${store.whatsapp_enabled ? "checked" : ""}> Enabled</span></label>
         ${field("whatsapp_url", "WhatsApp link", "url", "https://wa.me/your-number")}

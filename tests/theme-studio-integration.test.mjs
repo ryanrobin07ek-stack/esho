@@ -637,6 +637,9 @@ test("Roles5 experimental footers remain usable when the catalog has no categori
   const mixer = await read("../public/litrus-mixer/index.html");
   const footerSource = mixer.match(/function expFoot\(id,name\)\{[\s\S]*?\n\}/)?.[0];
   assert.ok(footerSource);
+  // expFoot cleans fake social links through these helpers, which live just above it in the page.
+  const socialHelpers = mixer.match(/function litrusSocialList\(\)[\s\S]*?(?=function expFoot)/)?.[0];
+  assert.ok(socialHelpers);
 
   const dom = new JSDOM("<!doctype html><html><body></body></html>");
   try {
@@ -645,7 +648,8 @@ test("Roles5 experimental footers remain usable when the catalog has no categori
       "escH",
       "SHOP",
       "document",
-      `return (${footerSource});`
+      `${socialHelpers}
+return (${footerSource});`
     )(
       () => [],
       value => String(value),
@@ -659,6 +663,8 @@ test("Roles5 experimental footers remain usable when the catalog has no categori
       const footer = renderFooter(id, "Test shop");
       assert.doesNotMatch(footer.innerHTML, /undefined/);
       assert.ok(footer.querySelector('a[data-go="shop"]'), `${id} should link to the shop without categories`);
+      assert.equal(footer.querySelectorAll(".socials").length, 0, `${id} must not draw social icons when none are saved`);
+      assert.equal([...footer.querySelectorAll("a")].filter(link => /^(instagram|tiktok|facebook|youtube|x|twitter)$/i.test(link.textContent.trim())).length, 0, `${id} must not link to a social network the owner has not filled in`);
     }
   } finally {
     dom.window.close();

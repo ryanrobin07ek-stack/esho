@@ -500,17 +500,17 @@ async function requireTenant(request, env, tenantId) {
   if (hostname === DOMAIN_ROOT || hostname === `www.${DOMAIN_ROOT}` ||
       hostname.endsWith(`.${DOMAIN_ROOT}`)) {
     if (tenantId === "main") {
-      return await env.TENANTS?.get("tenant:main", "json") || { id: "main", name: "E-Shop" };
+      return await env.TENANTS?.get("tenant:main", "json") || { id: "main", name: "Craft" };
     }
     if (!TENANT_ID_PATTERN.test(tenantId) || RESERVED_TENANT_IDS.has(tenantId)) return null;
     return await env.TENANTS.get(`tenant:${tenantId}`, "json");
   }
   if (tenantId === "main") {
     if (request.method === "GET" && url.searchParams.get("private") !== "1") {
-      return { id: "main", name: "E-Shop" };
+      return { id: "main", name: "Craft" };
     }
     if (await authorizeAdmin(request, env) || await authorizeMainOwner(request, env)) {
-      return { id: "main", name: "E-Shop" };
+      return { id: "main", name: "Craft" };
     }
     return null;
   }
@@ -6182,7 +6182,7 @@ async function handlePaystackPayment(request, env, tenantId, action, ctx) {
       return jsonResponse({
         error: mode === "live"
           ? "Connect a verified live Paystack subaccount in Craft before accepting payments."
-          : "Connect or choose an active test Paystack account in Payments in the E-Shop app."
+          : "Connect or choose an active test Paystack account in Payments in the Craft app."
       }, 409);
     }
 
@@ -9299,7 +9299,7 @@ export default {
               themeId,
               verificationToken: seoVerificationToken,
               poweredBy: hostTenantId === "main" ? null : {
-                name: "E-Shop",
+                name: "Craft",
                 url: `https://${MAIN_HOST}/shops`
               }
             }),

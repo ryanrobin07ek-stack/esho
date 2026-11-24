@@ -216,6 +216,16 @@ export const mainShopWorkspaceLoader = {
             if (error.message?.includes("Publish the website catalog before publishing settings")) {
               if (status) status.textContent = "This site needs its first full catalog publish before settings can be published separately.";
               AppController.openCloudflarePublishModal();
+            } else if (error.message?.includes("require a full publish")) {
+              // The published page has these details built in, so they only show after a full publish from the editor.
+              if (status) {
+                status.textContent = "Saved. Your live website shows these details after you publish it from the Website editor. ";
+                const openEditor = document.createElement("a");
+                openEditor.href = "/account/web/studio/websites/editor";
+                openEditor.setAttribute("data-route", "/account/web/studio/websites/editor");
+                openEditor.textContent = "Open Website editor";
+                status.appendChild(openEditor);
+              }
             } else {
               console.error("Website settings could not be published.", error);
               if (status) status.textContent = error.message || "Could not publish website settings.";

@@ -1222,7 +1222,7 @@ test('new-website workspace keeps Store import and web-product actions without r
   const posSource = await readTillSource();
   const websitesNavigation = pageSource.match(/title: "Websites",([\s\S]*?)\n      \},\n      \{\n        title: "Payments"/)?.[1];
   assert.ok(websitesNavigation, 'Websites tabs should have a bounded navigation entry.');
-  assert.match(websitesNavigation, /title: "New web", route: "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?title: "Add"[\s\S]*?title: "Website editor"/);
+  assert.match(websitesNavigation, /title: "New web", route: "\/account\/web\/studio\/websites\/webmaker"[\s\S]*?title: "Contact & socials"[\s\S]*?title: "Website editor"/);
   assert.doesNotMatch(pageSource, /Theme Studio/, 'The website editor is Litrus Mixer; no screen should still be called Theme Studio.');
   assert.match(pageSource, /website-management-new" href="\/account\/web\/studio\/websites\/webmaker" data-start-new-website>\+ New web/);
   assert.match(pageSource, /renderNewWebsiteProducts\(\)[\s\S]*?id="website-wizard-create-product">Add product[\s\S]*?id="website-wizard-load-store">Add from Store[\s\S]*?data-wizard-add-category[^>]*>Add category[\s\S]*?id="website-wizard-store-picker"[\s\S]*?id="website-wizard-product-form"/);

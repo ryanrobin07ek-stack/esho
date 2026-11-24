@@ -142,7 +142,7 @@ test('shop directory page escapes merchant content and emits crawlable shop link
     productCount: 2,
     url: 'https://mama.rrobin.co.ke/'
   }], 'https://rrobin.co.ke');
-  assert.match(html, /<title>Browse online shops \| E-Shop<\/title>/);
+  assert.match(html, /<title>Browse online shops \| Craft<\/title>/);
   assert.match(html, /<link rel="canonical" href="https:\/\/rrobin\.co\.ke\/shops">/);
   assert.match(html, /<a href="https:\/\/mama\.rrobin\.co\.ke\/">/);
   assert.match(html, /Mama &lt;b&gt;Shoes&lt;\/b&gt;/);
@@ -342,9 +342,9 @@ test('worker returns different SEO for different URLs of the same shop', async (
   assert.match(product, /<title>Red Shoe \| Mama Shoes<\/title>/);
   assert.match(home, /<title>Mama Shoes – Shoes for every step<\/title>/);
   assert.match(product, /window\.__ESHOP_CLOUDFLARE_STOREFRONT__/, 'existing storefront bootstrap is preserved');
-  assert.match(product, /href="https:\/\/rrobin\.co\.ke\/shops"[^>]*>Powered by E-Shop/);
+  assert.match(product, /href="https:\/\/rrobin\.co\.ke\/shops"[^>]*>Powered by Craft/);
   const cart = await (await get(env, '/cart')).text();
-  assert.doesNotMatch(cart, /Powered by E-Shop/);
+  assert.doesNotMatch(cart, /Powered by Craft/);
 });
 
 test('worker answers unknown product URLs with a real 404 and hidden shops with a closed sitemap', async () => {
@@ -373,7 +373,7 @@ test('shop directory lists eligible shops and main sitemap includes its crawlabl
   const directory = await getRoot(env, '/shops');
   assert.equal(directory.status, 200);
   const html = await directory.text();
-  assert.match(html, /<title>Browse online shops \| E-Shop<\/title>/);
+  assert.match(html, /<title>Browse online shops \| Craft<\/title>/);
   assert.match(html, /<a href="https:\/\/mama\.rrobin\.co\.ke\/">/);
   assert.match(html, /<a href="https:\/\/kamau\.rrobin\.co\.ke\/">/);
   assert.doesNotMatch(html, /Hidden Shop|Empty Shop|Draft Shop/);

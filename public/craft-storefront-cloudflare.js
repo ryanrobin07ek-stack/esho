@@ -79,6 +79,8 @@
 
   function installPushControls(form) {
     if (form.querySelector("[data-enable-notifications], [data-storefront-push-controls]")) return;
+    // A browser that cannot do push would only ever show an error, so it gets no notification controls at all.
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
     const controls = document.createElement("div");
     controls.dataset.storefrontPushControls = "true";
     controls.style.cssText = "display:grid;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid #ddd";
@@ -104,6 +106,11 @@
     actions.append(enable, disable);
     controls.append(description, actions, status);
     form.append(controls);
+    // Show only the button that makes sense: Enable until this device is subscribed, then Turn off.
+    const showState = on => { enable.hidden = on; disable.hidden = !on; };
+    showState(false);
+    navigator.serviceWorker.getRegistration().then(registration => registration?.pushManager.getSubscription())
+      .then(subscription => showState(Boolean(subscription))).catch(() => {});
 
     enable.addEventListener("click", async () => {
       enable.disabled = true;
@@ -132,6 +139,7 @@
         });
         await requestPushJson("/api/push/subscriptions", "POST", subscription.toJSON());
         status.textContent = "Notifications enabled on this device.";
+        showState(true);
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : "Could not enable notifications.";
       } finally {
@@ -147,6 +155,7 @@
         const subscription = await registration?.pushManager.getSubscription();
         if (!subscription) {
           status.textContent = "Notifications are already off on this device.";
+          showState(false);
           return;
         }
         const saved = subscription.toJSON();
@@ -157,6 +166,7 @@
           throw new Error(`Notifications are off on this device, but cloud cleanup failed: ${error instanceof Error ? error.message : "service unavailable"}`);
         }
         status.textContent = "Notifications turned off on this device.";
+        showState(false);
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : "Could not turn off notifications.";
       } finally {

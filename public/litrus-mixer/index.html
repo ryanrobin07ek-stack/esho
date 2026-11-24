@@ -2430,6 +2430,7 @@ html.craft-integrated #litrus-sections-panel input,html.craft-integrated #litrus
 .sole-footer-brand .sole-wordmark { display: inline-block; font-size: 24px; }
 .sole-footer-brand p { font-size: 10px; color: #76716a; line-height: 1.65; margin: 13px 0; }
 .sole-footer-social { display: inline-grid; place-items: center; width: 29px; height: 29px; border: 1px solid #d2cdc5; border-radius: 50%; }
+.sole-footer-socials { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }.sole-footer-social { font-size: 10px; font-weight: 700; letter-spacing: .02em; text-decoration: none; color: inherit; }
 .sole-footer-column { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .sole-footer-column h3 { font-size: 9px; margin: 3px 0 6px; text-transform: uppercase; letter-spacing: .1em; }
 .sole-footer-column a { color: #77726b; font-size: 9px; }
@@ -5086,6 +5087,12 @@ litrusTabs();
 // ---- Experimental footers ----
 const XF=[['xf-mega','Exp: Mega menu'],['xf-bento','Exp: Bento grid'],['xf-neon','Exp: Neon terminal'],['xf-stair','Exp: Staircase'],['xf-accordion','Exp: Accordion'],['xf-glass','Exp: Floating glass'],['xf-massive','Exp: Giant name'],['xf-brutal','Exp: Brutalist blocks'],['xf-clock','Exp: Clock'],['xf-marquee','Exp: Moving words']];
 XF.forEach(([v,t])=>fs.add(new Option(t,v)));
+/* Social links come only from the owner's saved URLs. Nothing is drawn for a network they have not filled in, so a footer never shows a dead icon. */
+function litrusSocialList(){const s=SHOP.socials||{};return [['instagram','Instagram','IG'],['facebook','Facebook','FB'],['tiktok','TikTok','TT'],['youtube','YouTube','YT'],['x','X','X']].filter(function(r){return /^https?:[/][/]/i.test(s[r[0]]||'')}).map(function(r){return {name:r[1],short:r[2],url:s[r[0]]}})}
+function litrusSocialHtml(cls){return litrusSocialList().map(function(l){return '<a class="'+cls+'" href="'+escH(l.url)+'" target="_blank" rel="noopener noreferrer" aria-label="'+escH(l.name)+'">'+l.short+'</a>'}).join('')}
+function litrusFixSocials(root){const list=litrusSocialList(),by={};list.forEach(function(l){by[l.name.toLowerCase()]=l});
+ root.querySelectorAll('.socials').forEach(function(box){if(!list.length){box.remove();return}box.innerHTML=list.map(function(l){return '<a href="'+escH(l.url)+'" target="_blank" rel="noopener noreferrer" aria-label="'+escH(l.name)+'"><span>'+l.short+'</span></a>'}).join('')});
+ root.querySelectorAll('a').forEach(function(a){let n=a.textContent.trim().toLowerCase();if(n==='twitter')n='x';if(['instagram','tiktok','facebook','youtube','x'].indexOf(n)<0)return;const l=by[n];if(l){a.setAttribute('href',l.url);a.setAttribute('target','_blank');a.setAttribute('rel','noopener noreferrer')}else a.remove()})}
 function expFoot(id,name){
  const E=escH,cl=catList(),N=E(name),U=E(name.toUpperCase()),k=id.slice(3);
  const cats=cl.slice(0,4),firstCat=cats[0]||{name:'All products',slug:''},firstCatRoute=firstCat.slug?'c/'+firstCat.slug:'shop';
@@ -5107,7 +5114,7 @@ function expFoot(id,name){
   clock:'<div class="time">12:00<span>:</span>00</div><div class="links"><a href="#" data-go="home">Home</a><a href="#" data-go="shop">Shop</a>'+lnk(firstCat)+contact+'<a href="#" data-go="cart">Cart</a></div><div class="copyright">\u00a9 2026 '+U+'</div>',
   marquee:'<div class="marquee-row"><div class="marquee-inner"><span>'+TG+'</span><span>'+TG+'</span><span>'+TG+'</span></div></div><div class="marquee-row"><div class="marquee-inner"><span>'+U+'</span><span>'+U+'</span><span>'+U+'</span></div></div><div class="bottom-info"><div>\u00a9 2026 '+U+'</div><a href="#" data-go="'+firstCatRoute+'">SHOP '+E(firstCat.name.toUpperCase())+'</a></div>'
  };
- const box=document.createElement('div');box.className='xf f-'+k;box.dataset.part='foot';box.innerHTML=H[k];return box;
+ const box=document.createElement('div');box.className='xf f-'+k;box.dataset.part='foot';box.innerHTML=H[k];litrusFixSocials(box);return box;
 }
 function litrusFooter(){
  if(window.__ft)return;window.__ft=1;
@@ -5882,7 +5889,7 @@ function render(){
  };
  const footer=document.createElement('footer');footer.className='sole-footer ft '+fs.value;
  const footerCategories=categories.slice(0,12).map(category=>'<a href="#" data-go="c/'+category.slug+'">'+escH(category.name)+'</a>').join('');
- footer.innerHTML='<div class="sole-footer-main cols '+(fs.value==='split'?'sp':'')+'"><div class="sole-footer-brand"><a class="sole-wordmark" href="#" data-go="home">'+escH(name)+'</a><p>'+escH(SHOP.tagline||'Thoughtful everyday style, made to move with you.')+'</p><a class="sole-footer-social" href="#" aria-label="Social profile">◎</a></div><div class="sole-footer-column"><h3>Shop</h3>'+footerCategories+'<a href="#" data-go="shop">All products</a></div><div class="sole-footer-column"><h3>Good to know</h3><a href="#" data-go="page/about">Our story</a><a href="#" data-go="page/delivery">Delivery &amp; returns</a><a href="#" data-go="page/privacy">Privacy</a><a href="#" data-go="page/terms">Terms</a></div><div class="sole-footer-column"><h3>Here to help</h3><a href="#" data-go="page/contact">Contact us</a>'+(SHOP.email?'<a href="mailto:'+escH(SHOP.email)+'">'+escH(SHOP.email)+'</a>':'')+(SHOP.phone?'<a href="tel:'+escH(SHOP.phone)+'">'+escH(SHOP.phone)+'</a>':'')+'</div><div class="sole-footer-note"><span>Move your way.</span><small>'+escH(SHOP.tagline||'Everyday comfort. Thoughtfully chosen.')+'</small></div></div><div class="sole-legal"><span>&copy; '+new Date().getFullYear()+' '+escH(name)+'</span><div><a href="#" data-go="page/privacy">Privacy</a><a href="#" data-go="page/terms">Terms</a></div><span>Made for every step</span></div>';
+ footer.innerHTML='<div class="sole-footer-main cols '+(fs.value==='split'?'sp':'')+'"><div class="sole-footer-brand"><a class="sole-wordmark" href="#" data-go="home">'+escH(name)+'</a>'+(SHOP.tagline?'<p>'+escH(SHOP.tagline)+'</p>':'')+(litrusSocialList().length?'<div class="sole-footer-socials">'+litrusSocialHtml('sole-footer-social')+'</div>':'')+'</div><div class="sole-footer-column"><h3>Shop</h3>'+footerCategories+'<a href="#" data-go="shop">All products</a></div><div class="sole-footer-column"><h3>Good to know</h3><a href="#" data-go="page/about">Our story</a><a href="#" data-go="page/delivery">Delivery &amp; returns</a><a href="#" data-go="page/privacy">Privacy</a><a href="#" data-go="page/terms">Terms</a></div><div class="sole-footer-column"><h3>Here to help</h3><a href="#" data-go="page/contact">Contact us</a>'+(SHOP.email?'<a href="mailto:'+escH(SHOP.email)+'">'+escH(SHOP.email)+'</a>':'')+(SHOP.phone?'<a href="tel:'+escH(SHOP.phone)+'">'+escH(SHOP.phone)+'</a>':'')+'</div></div><div class="sole-legal"><span>&copy; '+new Date().getFullYear()+' '+escH(name)+'</span><div><a href="#" data-go="page/privacy">Privacy</a><a href="#" data-go="page/terms">Terms</a></div></div>';
  const experimentalFooter=fs.value.startsWith('xf-')?expFoot(fs.value,name):null;
  if(experimentalFooter){footer.className='sole-footer ft '+experimentalFooter.className;footer.dataset.part='foot';footer.innerHTML=experimentalFooter.innerHTML}
  CTX={wrap:wrap,name:name,PV:PV,mkProds:mkProds,footEl:footer,fxHome:false,data:null,template:'footwear'};
@@ -7591,7 +7598,7 @@ window.litrusSetCraftCatalog=function(payload){
  SHOP.paymentOptions=shop.payment_options&&typeof shop.payment_options==='object'?shop.payment_options:null;
  const intSetting=(value,min,max,fallback)=>{if(value===undefined||value===null||value===''||typeof value==='boolean')return fallback;const number=Number(value);return Number.isInteger(number)&&number>=min&&number<=max?number:fallback};
  SHOP.serviceCapacity=intSetting(shop.service_capacity,1,20,1);SHOP.serviceCancelCutoffHours=intSetting(shop.service_cancel_cutoff_hours,0,168,2);SHOP.serviceMaxReschedules=intSetting(shop.service_max_reschedules,0,10,2);
- SHOP.tagline=String(shop.tagline||'');SHOP.email=String(shop.email||'');SHOP.phone=String(shop.phone||'');
+ SHOP.tagline=String(shop.tagline||'');SHOP.email=String(shop.email||'');SHOP.phone=String(shop.phone||'');SHOP.socials={instagram:String(shop.instagram_url||''),facebook:String(shop.facebook_url||''),tiktok:String(shop.tiktok_url||''),youtube:String(shop.youtube_url||''),x:String(shop.x_url||'')};
  SHOP.wa=String(shop.whatsapp||'');SHOP.addr=String(shop.address||'');SHOP.fee=String(shop.delivery_fee||'');SHOP.free=String(shop.free_delivery_over||'');
  SHOP.cats=categories;SHOP.products=[];
  g('wName').value=SHOP.name;g('wType').value=SHOP.type||'';g('wWhat').value=String(shop.description||'');
