@@ -157,6 +157,7 @@ window.ShopPOSReady = window.ShopSQLiteReady.then(() => withStartupTimeout(windo
 if (Capacitor.isNativePlatform()) {
   document.body.classList.add('native-app-shell');
   let handledGoogleCallback = '';
+  let lastGoogleTicketAt = 0;
   const handleGoogleAuthUrl = async url => {
     let callback;
     try {
@@ -175,6 +176,10 @@ if (Capacitor.isNativePlatform()) {
       if (value) params.set(key, value);
     }
     if (!params.size) return;
+    // Google's redirect can reach the app a second time after the first one has already signed the owner in; that
+    // repeat arrives as an error. An error right after a ticket was accepted is that repeat, so it is not shown.
+    if (params.has('google_ticket')) lastGoogleTicketAt = Date.now();
+    else if (Date.now() - lastGoogleTicketAt < 120000) return;
     await Browser.close().catch(error => {
       console.warn('Could not close the Google sign-in browser.', error);
     });
