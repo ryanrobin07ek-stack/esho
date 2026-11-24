@@ -1804,6 +1804,24 @@ test('storefront orders are idempotent, priced from the published catalogue, and
     })
   }), env);
   assert.equal((await pickupOrder.json()).order.shipping, 0);
+  // A way of getting the order that the shop has switched off is refused, so pickup cannot skip the delivery charge.
+  const orderWith = (key, method) => worker.fetch(new Request(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...order, idempotency_key: key, delivery_method: method })
+  }), env);
+  DB.catalog.store.pickup_enabled = 0;
+  const pickupRefused = await orderWith("c1a2b153-4af0-4c64-8b58-0e7d45005b14", "pickup");
+  assert.equal(pickupRefused.status, 409);
+  assert.equal((await pickupRefused.json()).error_code, "delivery_method_unavailable");
+  assert.equal((await orderWith("c2a2b153-4af0-4c64-8b58-0e7d45005b14", "delivery")).status, 201);
+  DB.catalog.store.pickup_enabled = 1;
+  DB.catalog.store.delivery_enabled = 0;
+  const deliveryRefused = await orderWith("c3a2b153-4af0-4c64-8b58-0e7d45005b14", "delivery");
+  assert.equal(deliveryRefused.status, 409);
+  assert.equal((await orderWith("c4a2b153-4af0-4c64-8b58-0e7d45005b14", "pickup")).status, 201);
+  delete DB.catalog.store.delivery_enabled;
+  delete DB.catalog.store.pickup_enabled;
   const freeDeliveryOrder = await worker.fetch(new Request(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

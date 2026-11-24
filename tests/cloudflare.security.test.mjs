@@ -298,3 +298,39 @@ test('a new Google account gets a readable username, and a number is added only 
   assert.ok(!callback.includes('sha256Hex(identity.sub)).slice(0, 8)'), 'no random suffix from the Google id');
   assert.ok(callback.includes('`${usernameBase}${attempt + 1}`'), 'a clash adds a plain number');
 });
+
+test('the delivery charge and the delivery or pickup switches a shop publishes are kept and enforced at order time', async () => {
+  const { env } = await createEnv({ DOMAIN_ROOT: 'craft.ke' });
+  const publish = store => worker.fetch(new Request(API + '/api/catalog?tenant=shop-a', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer owner-key-a' },
+    body: JSON.stringify({ ...CATALOG, store: { ...CATALOG.store, ...store } })
+  }), env);
+  const order = (key, method) => worker.fetch(post('/api/orders?tenant=shop-a', {
+    idempotency_key: key, customer_name: 'Sam', customer_email: 'sam@example.test', customer_phone: '+254700000001',
+    shipping_address: '12 Market Street', city: 'Nairobi', country: 'KE', delivery_method: method,
+    items: [{ product_id: 7, quantity: 1 }]
+  }), env);
+  const id = n => `d${n}a2b153-4af0-4c64-8b58-0e7d45005b14`;
+
+  // Delivery costs 300, and the shop does not offer pickup.
+  assert.equal((await publish({ delivery_fee: 300, pickup_enabled: false })).status, 200);
+  const delivered = await order(id(1), 'delivery');
+  assert.equal(delivered.status, 201);
+  assert.equal((await delivered.json()).order.shipping, 300, 'the published delivery fee is charged');
+  const refused = await order(id(2), 'pickup');
+  assert.equal(refused.status, 409, 'pickup is refused when the shop switched it off');
+  assert.equal((await refused.json()).error_code, 'delivery_method_unavailable');
+
+  // A shop that does not deliver: delivery is refused, pickup costs nothing.
+  assert.equal((await publish({ delivery_fee: 300, delivery_enabled: false })).status, 200);
+  assert.equal((await order(id(3), 'delivery')).status, 409);
+  const collected = await order(id(4), 'pickup');
+  assert.equal(collected.status, 201);
+  assert.equal((await collected.json()).order.shipping, 0);
+
+  // A shop that published nothing about it keeps offering both ways of getting an order.
+  assert.equal((await publish({})).status, 200);
+  assert.equal((await order(id(5), 'pickup')).status, 201);
+  assert.equal((await order(id(6), 'delivery')).status, 201);
+});

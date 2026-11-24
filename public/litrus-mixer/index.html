@@ -2906,6 +2906,8 @@ html .sole-store .cgw .cat-hex h3,html #store .sole-store .cgw .cat-hex h3{left:
 <label>WhatsApp number for orders <small>(country code first, numbers only, e.g. 254700000000)</small><input id="wWa" inputmode="numeric" placeholder="254700000000" autocomplete="off"></label>
 <label>Delivery fee <small>(number only, empty means free)</small><input id="wFee" inputmode="decimal" placeholder="300" autocomplete="off"></label>
 <label>Free delivery over <small>(optional amount)</small><input id="wFree" inputmode="decimal" placeholder="5000" autocomplete="off"></label>
+<label class="chk"><input type="checkbox" id="wDeliv" checked> Offer delivery <small>(customers can ask for it to be delivered; switch off if you do not deliver)</small></label>
+<label class="chk"><input type="checkbox" id="wPick" checked> Offer pickup <small>(customers collect from your address, no delivery fee)</small></label>
 <label>Your address or area<input id="wAddr" placeholder="e.g. Westlands, Nairobi" autocomplete="off"></label>
 <label>About your shop <small>(shown on the About page, optional)</small><textarea id="wAbout" rows="4" placeholder="Tell your story in a few lines"></textarea></label></details></section>
 <section class="wz-sec" data-step="2" hidden><h2 id="wCatalogHeading">Products &amp; categories</h2><p class="hint">Set up what you sell. Your changes appear in the storefront preview.</p>
@@ -4663,6 +4665,7 @@ function SPRT(D){
  const root=D.root;
  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const S=()=>D.shop();
+ const defMode=()=>{const s=S();return s.delivery===false&&s.pickup!==false?'pickup':'delivery'};
  let _s=null,_p={};
  const P=()=>{const s=S();if(s!==_s){_s=s;_p={};s.products.forEach(p=>{_p[p.id]=p})}return _p};
  const K=()=>'sp:'+S().key+':';
@@ -4690,7 +4693,7 @@ function SPRT(D){
  const line=i=>{const p=P()[i.id],option=optionText(i),variantAttr=i.variantId?' data-variant-id="'+esc(i.variantId)+'"':'';return '<div class="sp-line"><img src="'+esc(p.img)+'" alt="" width="76" height="76" loading="lazy" decoding="async"><div class="sp-lname"><a href="#" data-go="p/'+esc(p.id)+'">'+esc(p.name)+'</a><span>'+esc(option||fmt(itemPrice(i)))+'</span></div><div class="sp-qty"><button type="button" data-act="dec" data-pid="'+esc(p.id)+'"'+variantAttr+' aria-label="Decrease quantity of '+esc(p.name)+'">\u2212</button><span>'+i.q+'</span><button type="button" data-act="inc" data-pid="'+esc(p.id)+'"'+variantAttr+' aria-label="Increase quantity of '+esc(p.name)+'">+</button></div><div class="sp-lt">'+fmt(itemPrice(i)*i.q)+'</div><button type="button" class="sp-x" data-act="rm" data-pid="'+esc(p.id)+'"'+variantAttr+' aria-label="Remove '+esc(p.name)+' from cart">\u00d7</button></div>'};
  const cartPage=()=>{const c=cart();
   if(!c.length)return top('Your cart','')+'<div class="sp-wrap sp-empty"><p>Your cart is empty.</p><a class="sp-btn" href="#" data-go="shop">Start shopping</a></div>';
-  const t=totals(c,'delivery'),n=c.reduce((a,i)=>a+i.q,0),s=S();
+  const t=totals(c,defMode()),n=c.reduce((a,i)=>a+i.q,0),s=S();
   return top('Your cart',n+(n==1?' item':' items'))+'<div class="sp-wrap sp-cartgrid"><div class="sp-lines">'+c.map(line).join('')+'</div><aside class="sp-sum"><h2>Summary</h2><div class="sp-row"><span>Subtotal</span><b>'+fmt(t.sub)+'</b></div><p class="sp-note">'+(s.fee>0?'Delivery is worked out at checkout'+(s.free>0?'. Free delivery over '+fmt(s.free):''):'Delivery is arranged when you order.')+'</p><a class="sp-btn" href="#" data-go="checkout">Checkout</a><a class="sp-link" href="#" data-go="shop">Continue shopping</a></aside></div>'};
 
  const sumHTML=(c,mode)=>{const t=totals(c,mode);return '<h2>Your order</h2>'+c.map(i=>{const p=P()[i.id],option=optionText(i);return '<div class="sp-row sp-mini"><span>'+i.q+' \u00d7 '+esc(p.name)+(option?' ('+esc(option)+')':'')+'</span><b>'+fmt(itemPrice(i)*i.q)+'</b></div>'}).join('')+'<div class="sp-row"><span>Subtotal</span><b>'+fmt(t.sub)+'</b></div><div class="sp-row"><span>Delivery</span><b>'+(mode==='pickup'?'Pick up':(t.fee?fmt(t.fee):'Free'))+'</b></div><div class="sp-row sp-total"><span>Total</span><b>'+fmt(t.total)+'</b></div>'};
@@ -4700,15 +4703,16 @@ function SPRT(D){
   if(!c.length)return top('Checkout','')+'<div class="sp-wrap sp-empty"><p>Your cart is empty, so there is nothing to check out yet.</p><a class="sp-btn" href="#" data-go="shop">Start shopping</a></div>';
   const via=[];if(s.wa)via.push(['wa','WhatsApp']);if(s.email)via.push(['mail','Email']);
   const feeTxt=s.fee>0?fmt(s.fee)+(s.free>0?' (free over '+fmt(s.free)+')':''):'Free';
+  const canDel=defMode()==='delivery',canPick=s.pickup!==false;
   return top('Checkout','Fill in your details and we will confirm your order.')+'<div class="sp-wrap sp-cogrid"><form id="spco" class="sp-form" novalidate>'
   +'<h2>Your details</h2><label>Full name<input name="name" autocomplete="name"></label><label>Phone number<input name="phone" type="tel" inputmode="tel" autocomplete="tel"></label><label>Email <small>(optional)</small><input name="email" type="email" autocomplete="email"></label>'
-  +'<h2>Delivery</h2><div class="sp-radios"><label class="sp-radio"><input type="radio" name="dm" value="delivery" checked><span>Deliver to me<small>'+esc(feeTxt)+'</small></span></label><label class="sp-radio"><input type="radio" name="dm" value="pickup"><span>I will pick up<small>'+(s.addr?esc(s.addr):'Free')+'</small></span></label></div>'
-  +'<div id="spAddr"><label>Town or area<input name="town" autocomplete="address-level2"></label><label>Address or landmark<textarea name="addr" rows="2" autocomplete="street-address"></textarea></label></div>'
+  +'<h2>'+(canDel?'Delivery':'Pickup')+'</h2><div class="sp-radios">'+(canDel?'<label class="sp-radio"><input type="radio" name="dm" value="delivery" checked><span>Deliver to me<small>'+esc(feeTxt)+'</small></span></label>':'')+(canPick?'<label class="sp-radio"><input type="radio" name="dm" value="pickup"'+(canDel?'':' checked')+'><span>I will pick up<small>'+(s.addr?esc(s.addr):'Free')+'</small></span></label>':'')+'</div>'
+  +(canDel?'<div id="spAddr"><label>Town or area<input name="town" autocomplete="address-level2"></label><label>Address or landmark<textarea name="addr" rows="2" autocomplete="street-address"></textarea></label></div>':'')
   +'<h2>Payment</h2>'+payGroupHTML(s)
   +'<label>Note for us <small>(optional)</small><textarea name="note" rows="2"></textarea></label>'
   +(via.length>1?'<h2>Send my order by</h2><div class="sp-radios">'+via.map((v,i)=>'<label class="sp-radio"><input type="radio" name="via" value="'+v[0]+'"'+(i?'':' checked')+'><span>'+v[1]+'</span></label>').join('')+'</div>':'<input type="hidden" name="via" value="'+(via[0]?via[0][0]:'none')+'">')
   +(via.length?'':'<p class="sp-note">No WhatsApp number or email is set for this shop yet, so the order will only be saved on this device.</p>')
-  +'<p class="sp-err" role="alert"></p><button class="sp-btn" type="submit" data-act="place">Place order</button></form><aside class="sp-sum" id="spSum">'+sumHTML(c,'delivery')+'</aside></div>'};
+  +'<p class="sp-err" role="alert"></p><button class="sp-btn" type="submit" data-act="place">Place order</button></form><aside class="sp-sum" id="spSum">'+sumHTML(c,defMode())+'</aside></div>'};
 
  const orderMsg=o=>{const s=S();const L=['New order '+o.id+' for '+s.name,'','Name: '+o.name,'Phone: '+o.phone];if(o.email)L.push('Email: '+o.email);
   L.push('Delivery: '+(o.mode==='pickup'?'I will pick up':'Deliver to '+[o.addr,o.town].filter(Boolean).join(', ')));L.push('Payment: '+o.pay,'','Items:');
@@ -4756,7 +4760,7 @@ function SPRT(D){
  }
  function place(f){
   const q=n=>(f.querySelector('[name='+n+']')||{}).value||'',qc=n=>{const e=f.querySelector('[name='+n+']:checked');return e?e.value:''},er=f.querySelector('.sp-err');
-  const mode=qc('dm')||'delivery',name=q('name').trim(),phone=q('phone').trim();
+  const mode=qc('dm')||defMode(),name=q('name').trim(),phone=q('phone').trim();
   const bad=m=>{er.textContent=m;er.scrollIntoView({block:'center',behavior:'smooth'})};
   if(!name)return bad('Please enter your name.');
   if(phone.replace(/\D/g,'').length<7)return bad('Please enter a phone number we can reach you on.');
@@ -4899,7 +4903,7 @@ function waNum(){const w=String(SHOP.wa||'').replace(/\D/g,'');if(w.length>=8)re
 function pdesc(pr){return SHOP.custom?(pr[4]||((pr[5]&&pr[5][0])?'From our '+pr[5][0]+' range.':'Available now at '+(SHOP.name||'our shop')+'.')):(pr[4]||(pr[2]=='bag'?'Roomy, light and easy to clean.':'Soft inside, grippy sole, made to last.'))}
 function buildData(){
  const tup=shopProds();
- return {key:slugify(SHOP.name||'shop'),name:ns.value||SHOP.name,cur:SHOP.cur,wa:waNum(),email:SHOP.email||'',phone:SHOP.phone||'',addr:SHOP.addr||'',fee:numOf(SHOP.fee),free:numOf(SHOP.free),
+ return {key:slugify(SHOP.name||'shop'),name:ns.value||SHOP.name,cur:SHOP.cur,wa:waNum(),email:SHOP.email||'',phone:SHOP.phone||'',addr:SHOP.addr||'',fee:numOf(SHOP.fee),free:numOf(SHOP.free),delivery:SHOP.delivery!==false,pickup:SHOP.pickup!==false,
   directPayments:typeof window.litrusDirectPaymentChoices==='function'?window.litrusDirectPaymentChoices(SHOP.paymentOptions):[],
   cats:catList(),products:tup.map((pr,i)=>{const src=(SHOP.custom&&Array.isArray(SHOP.products)&&SHOP.products[i])||{};return {id:pr[7],name:pr[0],price:pr[1],num:numOf(pr[1]),desc:pdesc(pr),cats:pr[5]||[],img:pr[6]||art(pr[2],pr[3],false),media_type:pr[8]||'image',spin_frames:pr[9]||[],video_url:pr[10]||'',booking_enabled:pr[11]===true,stock:pr[12]||0,options:src.options||[],variants:src.variants||[],priced_attributes:src.priced_attributes||[],taxonomy_attributes:src.taxonomy_attributes||[]}})};
 }
@@ -4924,7 +4928,7 @@ function infoBody(k){
   const rows=[];if(d.wa)rows.push('<li><b>WhatsApp</b><a href="#" data-act="contactsend" class="sp-inlink">Message us</a></li>');if(ph)rows.push('<li><b>Phone</b>'+ph+'</li>');if(em)rows.push('<li><b>Email</b>'+em+'</li>');if(SHOP.addr)rows.push('<li><b>Find us</b>'+escH(SHOP.addr)+'</li>');
   return topHTML('Contact us','Send the shop a message or use the details below.')+'<div class="sp-wrap sp-cogrid"><div class="sp-prose">'+(rows.length?'<ul class="sp-contact">'+rows.join('')+'</ul>':'<p>Add your phone, email or WhatsApp number in the shop details and they will show here.</p>')+'</div><div class="sp-form"><h2>Send us a message</h2><label>Your name<input name="cn" autocomplete="name"></label><label>Message<textarea name="cm" rows="4"></textarea></label><button type="button" class="sp-btn" data-act="contactsend">Send message</button></div></div>';
  }
- if(k=='delivery')return topHTML('Delivery & returns')+body('<h2>Delivery</h2><ul><li>'+(d.fee>0?'Delivery fee: <b>'+cur+d.fee.toLocaleString('en-US')+'</b>.':'Delivery details are agreed with the shop when you order.')+'</li>'+(d.free>0?'<li>Orders over <b>'+cur+d.free.toLocaleString('en-US')+'</b> get free delivery.</li>':'')+'<li>We confirm every order by message before we send it.</li>'+(SHOP.addr?'<li>Pick up from: '+escH(SHOP.addr)+'.</li>':'')+'</ul><h2>Problems with an order</h2><p>If something arrives damaged or is not what you ordered, message us as soon as you can with your order number and a photo.</p><h2>Payment</h2><p>The payment options available are shown at checkout.</p>');
+ if(k=='delivery')return topHTML('Delivery & returns')+body('<h2>Delivery</h2><ul><li>'+(d.delivery===false&&d.pickup!==false?'This shop does not deliver. Orders are collected from the shop.':d.fee>0?'Delivery fee: <b>'+cur+d.fee.toLocaleString('en-US')+'</b>.':'Delivery details are agreed with the shop when you order.')+'</li>'+(d.free>0?'<li>Orders over <b>'+cur+d.free.toLocaleString('en-US')+'</b> get free delivery.</li>':'')+'<li>We confirm every order by message before we send it.</li>'+(SHOP.addr?'<li>Pick up from: '+escH(SHOP.addr)+'.</li>':'')+'</ul><h2>Problems with an order</h2><p>If something arrives damaged or is not what you ordered, message us as soon as you can with your order number and a photo.</p><h2>Payment</h2><p>The payment options available are shown at checkout.</p>');
  if(k=='privacy')return topHTML('Privacy policy')+body('<p>This page explains what '+n+' does with your information.</p><h2>What we collect</h2><p>Only what you give us when you order or write to us: your name, phone number, delivery address and, if you choose, your email.</p><h2>How we use it</h2><p>To prepare, deliver and confirm your order and to answer your messages. Your cart is saved on your own device so it is there when you come back. We do not collect card details on this website.</p><h2>Sharing</h2><p>We do not sell your information. We only share what a delivery needs.</p><h2>Your choices</h2><p>You can ask us to delete your details at any time'+(em||ph?' by contacting us at '+(em||ph):'')+'.</p>');
  if(k=='terms')return topHTML('Terms of service')+body('<p>By ordering from '+n+' you agree to these terms.</p><h2>Orders</h2><p>An order is confirmed only when we message you to confirm it. We may contact you if an item is out of stock.</p><h2>Prices</h2><p>Prices are shown in '+escH(SHOP.cur||'the shop currency')+' and may change without notice. The price you see when we confirm your order is the price you pay.</p><h2>Delivery and returns</h2><p>Please read our <a href="#" data-go="page/delivery">delivery and returns</a> page.</p><h2>Contact</h2><p>Questions? <a href="#" data-go="page/contact">Contact us</a>.</p>');
  return null;
@@ -5192,7 +5196,7 @@ function litrusRefreshPublishedCatalog(data,catalog){
   ...data.shop,name:String(store.name||data.shop.name),cur:String(store.currency||data.shop.cur||'KES'),
   wa:String(store.whatsapp||store.whatsapp_number||data.shop.wa||''),
   email:String(store.email||''),phone:String(store.phone||''),addr:String(store.location_address||store.address||''),
-  fee:Number(store.delivery_fee)||0,free:Number(store.free_delivery_over)||0,
+  fee:Number(store.delivery_fee)||0,free:Number(store.free_delivery_over)||0,delivery:!(store.delivery_enabled===false||store.delivery_enabled===0||store.delivery_enabled==='0'),pickup:!(store.pickup_enabled===false||store.pickup_enabled===0||store.pickup_enabled==='0'),
   cats:categories.map(category=>({name:category.name,slug:category.slug})),products:products
  };
  const parse=html=>{const container=document.createElement('div');container.innerHTML=String(html||'');return container};
@@ -5421,9 +5425,12 @@ function exportPagesRuntime(){
   form.append(element('h2','','Your details'));
   form.append(field('Full name','name','text'),field('Phone number','phone','tel'),field('Email (optional)','email','email'));
   form.append(element('h2','','Delivery'));
+  var canDel=data.shop.delivery!==false||data.shop.pickup===false,canPick=data.shop.pickup!==false;
   var delivery=choice('dm','delivery','Deliver to me',data.shop.fee?money(data.shop.fee):'Free',true);
-  var pickup=choice('dm','pickup','I will pick up',data.shop.addr||'Free',false);
-  form.append(delivery,pickup,field('Town or area','town','text'),field('Address or landmark','addr','text'));
+  var pickup=choice('dm','pickup','I will pick up',data.shop.addr||'Free',!canDel);
+  if(canDel)form.append(delivery);
+  if(canPick)form.append(pickup);
+  if(canDel)form.append(field('Town or area','town','text'),field('Address or landmark','addr','text'));
   // The shop's real ways to pay (Payments in Craft); the live shop also offers Paystack when connected.
   form.append(element('h2','','Payment'));
   var direct=Array.isArray(data.shop.directPayments)?data.shop.directPayments:[];
@@ -5439,12 +5446,12 @@ function exportPagesRuntime(){
   var error=element('p','sp-err');error.setAttribute('role','alert');form.append(error);
   var submit=element('button','sp-btn','Place order');submit.type='submit';form.append(submit);
   function summary(mode){sumBox.textContent='';var total=totals(items,mode);sumBox.append(element('h2','','Your order'));items.forEach(function(item){var p=product(item.id),option=optionText(item);if(p)sumBox.append(rowText(item.q+' × '+p.name+(option?' ('+option+')':''),money(itemPrice(item)*item.q),'sp-row sp-mini'))});sumBox.append(rowText('Subtotal',money(total.sub),'sp-row'),rowText('Delivery',mode==='pickup'?'Pick up':(total.fee?money(total.fee):'Free'),'sp-row'),rowText('Total',money(total.total),'sp-row sp-total'))}
-  summary('delivery');
-  form.addEventListener('change',function(event){if(event.target.name==='dm'){var addr=form.querySelector('[name=addr]').parentNode;addr.hidden=event.target.value==='pickup';summary(event.target.value)}});
+  summary(canDel?'delivery':'pickup');
+  form.addEventListener('change',function(event){if(event.target.name==='dm'){var addrField=form.querySelector('[name=addr]');if(addrField)addrField.parentNode.hidden=event.target.value==='pickup';summary(event.target.value)}});
   form.addEventListener('submit',function(event){
    event.preventDefault();var value=function(name){var input=form.elements[name];return input?String(input.value||'').trim():''};
    var selected=function(name){var input=form.querySelector('[name=\"'+name+'\"]:checked');return input?input.value:''};
-   var mode=selected('dm')||'delivery',name=value('name'),phone=value('phone');
+   var mode=selected('dm')||(canDel?'delivery':'pickup'),name=value('name'),phone=value('phone');
    error.textContent='';
    if(!name){error.textContent='Please enter your name.';return}
    if(phone.replace(/\D/g,'').length<7){error.textContent='Please enter a phone number we can reach you on.';return}
@@ -5708,7 +5715,7 @@ function exportPagesShop(){
  try{
   const data=JSON.parse(JSON.stringify(CTX.data));
   (data.products||[]).forEach(product=>{if(product.img)product.img=imagePath(product.img,false);if(product.image)product.image=imagePath(product.image,false)});
-  data.shop={key:data.key||slug,name:data.name||SHOP.name,cur:data.cur||SHOP.cur,wa:data.wa||'',email:data.email||'',phone:data.phone||'',addr:data.addr||'',fee:Number(data.fee)||0,free:Number(data.free)||0};
+  data.shop={key:data.key||slug,name:data.name||SHOP.name,cur:data.cur||SHOP.cur,wa:data.wa||'',email:data.email||'',phone:data.phone||'',addr:data.addr||'',fee:Number(data.fee)||0,free:Number(data.free)||0,delivery:data.delivery!==false,pickup:data.pickup!==false};
   routes.forEach(route=>{
    const file=pathForRoute(route),doc=snapshot(route);prepareDocument(doc,route,file);
    files.push({path:slug+'/'+file,text:'<!doctype html>\n'+doc.documentElement.outerHTML})
@@ -7092,7 +7099,7 @@ function read(){
  const c=[...new Set(getCategoryNames())].slice(0,MAX_CATEGORIES);
  SHOP.cats=c.length?c:(craftIntegrated?[]:DEF_CATS.slice(0,4));
  SHOP.nav=['Shop',SHOP.cats[0],'About','Contact'];
- SHOP.wa=g('wWa').value.trim();SHOP.fee=g('wFee').value.trim();SHOP.free=g('wFree').value.trim();SHOP.addr=g('wAddr').value.trim();SHOP.about=g('wAbout').value.trim();
+ SHOP.wa=g('wWa').value.trim();SHOP.fee=g('wFee').value.trim();SHOP.free=g('wFree').value.trim();SHOP.delivery=g('wDeliv').checked;SHOP.pickup=g('wPick').checked;if(!SHOP.delivery&&!SHOP.pickup){SHOP.delivery=true;g('wDeliv').checked=true}SHOP.addr=g('wAddr').value.trim();SHOP.about=g('wAbout').value.trim();
  SHOP.serviceDays=[...document.querySelectorAll('[data-service-day]:checked')].map(input=>Number(input.dataset.serviceDay));
  SHOP.serviceOpenTime=g('wServiceOpen').value||'09:00';SHOP.serviceCloseTime=g('wServiceClose').value||'17:00';
  SHOP.serviceTimezone=g('wServiceTimezone').value.trim()||'Africa/Nairobi';SHOP.serviceBufferMinutes=Number(g('wServiceBuffer').value)||0;
@@ -7215,7 +7222,7 @@ window.wizFill=function(){
  g('wName').value=SHOP.name==='Your Shop'?'':SHOP.name;
  SHOP.offerType=SHOP.offerType==='services'?'services':SHOP.offerType==='products'?'products':'';
  g('wOfferType').value=SHOP.offerType;applyOfferTypeUI(SHOP.offerType);g('wType').value=SHOP.type||'';g('wWhat').value=SHOP.what||'';g('wTag').value=SHOP.tagline||'';g('wCur').value=SHOP.cur||'';
- g('wHead').value=SHOP.headline||'';g('wSub').value=SHOP.sub||'';g('wCta').value=SHOP.cta||'';g('wEmail').value=SHOP.email||'';g('wPhone').value=SHOP.phone||'';g('wWa').value=SHOP.wa||'';g('wFee').value=SHOP.fee||'';g('wFree').value=SHOP.free||'';g('wAddr').value=SHOP.addr||'';g('wAbout').value=SHOP.about||'';
+ g('wHead').value=SHOP.headline||'';g('wSub').value=SHOP.sub||'';g('wCta').value=SHOP.cta||'';g('wEmail').value=SHOP.email||'';g('wPhone').value=SHOP.phone||'';g('wWa').value=SHOP.wa||'';g('wFee').value=SHOP.fee||'';g('wFree').value=SHOP.free||'';g('wDeliv').checked=SHOP.delivery!==false;g('wPick').checked=SHOP.pickup!==false;g('wAddr').value=SHOP.addr||'';g('wAbout').value=SHOP.about||'';
  [...document.querySelectorAll('[data-service-day]')].forEach(input=>{input.checked=(SHOP.serviceDays||[1,2,3,4,5,6]).includes(Number(input.dataset.serviceDay))});
  g('wServiceOpen').value=SHOP.serviceOpenTime||'09:00';g('wServiceClose').value=SHOP.serviceCloseTime||'17:00';g('wServiceTimezone').value=SHOP.serviceTimezone||'Africa/Nairobi';
  g('wServiceBuffer').value=String(SHOP.serviceBufferMinutes||0);g('wServiceDeposit').value=String(SHOP.serviceDepositPercent||0);
@@ -7605,14 +7612,14 @@ window.litrusSetCraftCatalog=function(payload){
  const intSetting=(value,min,max,fallback)=>{if(value===undefined||value===null||value===''||typeof value==='boolean')return fallback;const number=Number(value);return Number.isInteger(number)&&number>=min&&number<=max?number:fallback};
  SHOP.serviceCapacity=intSetting(shop.service_capacity,1,20,1);SHOP.serviceCancelCutoffHours=intSetting(shop.service_cancel_cutoff_hours,0,168,2);SHOP.serviceMaxReschedules=intSetting(shop.service_max_reschedules,0,10,2);
  SHOP.tagline=String(shop.tagline||'');SHOP.email=String(shop.email||'');SHOP.phone=String(shop.phone||'');SHOP.socials={instagram:String(shop.instagram_url||''),facebook:String(shop.facebook_url||''),tiktok:String(shop.tiktok_url||''),youtube:String(shop.youtube_url||''),x:String(shop.x_url||'')};
- SHOP.wa=String(shop.whatsapp||'');SHOP.addr=String(shop.address||'');SHOP.fee=String(shop.delivery_fee||'');SHOP.free=String(shop.free_delivery_over||'');
+ SHOP.wa=String(shop.whatsapp||'');SHOP.addr=String(shop.address||'');SHOP.fee=String(shop.delivery_fee||'');SHOP.free=String(shop.free_delivery_over||'');SHOP.delivery=!(shop.delivery_enabled===false||shop.delivery_enabled===0||shop.delivery_enabled==='0');SHOP.pickup=!(shop.pickup_enabled===false||shop.pickup_enabled===0||shop.pickup_enabled==='0');
  SHOP.cats=categories;SHOP.products=[];
  /* The own-picture slots are drawn from SHOP.cats, so redraw them for the shop's real categories instead of the demo shop's. */
  if(typeof drawOwnPhotos==='function')drawOwnPhotos();
  g('wName').value=SHOP.name;g('wType').value=SHOP.type||'';g('wWhat').value=String(shop.description||'');
  g('wTag').value=SHOP.tagline;g('wCur').value=SHOP.cur;setCategoryNames(categories);
  g('wEmail').value=SHOP.email;g('wPhone').value=SHOP.phone;g('wWa').value=SHOP.wa;
- g('wAddr').value=SHOP.addr;g('wFee').value=SHOP.fee;g('wFree').value=SHOP.free;g('wAbout').value=String(shop.about||'');
+ g('wAddr').value=SHOP.addr;g('wFee').value=SHOP.fee;g('wFree').value=SHOP.free;g('wDeliv').checked=SHOP.delivery!==false;g('wPick').checked=SHOP.pickup!==false;g('wAbout').value=String(shop.about||'');
  [...document.querySelectorAll('[data-service-day]')].forEach(input=>{input.checked=SHOP.serviceDays.includes(Number(input.dataset.serviceDay))});
  g('wServiceOpen').value=SHOP.serviceOpenTime;g('wServiceClose').value=SHOP.serviceCloseTime;g('wServiceTimezone').value=SHOP.serviceTimezone;
  g('wServiceBuffer').value=String(SHOP.serviceBufferMinutes);g('wServiceDeposit').value=String(SHOP.serviceDepositPercent);
@@ -7667,7 +7674,7 @@ window.litrusGetCraftPublishPayload=function(){
  const recipe=getCraftDesignRecipe();
  const catalog={
   shop:{name:SHOP.name,currency:SHOP.cur,offer_type:SHOP.offerType,tagline:SHOP.tagline,description:SHOP.what,email:SHOP.email,
-   phone:SHOP.phone,whatsapp:SHOP.wa,address:SHOP.addr,delivery_fee:SHOP.fee,free_delivery_over:SHOP.free,about:SHOP.about,
+   phone:SHOP.phone,whatsapp:SHOP.wa,address:SHOP.addr,delivery_fee:SHOP.fee,free_delivery_over:SHOP.free,delivery_enabled:SHOP.delivery!==false,pickup_enabled:SHOP.pickup!==false,about:SHOP.about,
    service_days:SHOP.serviceDays,service_open_time:SHOP.serviceOpenTime,service_close_time:SHOP.serviceCloseTime,
    service_timezone:SHOP.serviceTimezone,service_buffer_minutes:SHOP.serviceBufferMinutes,service_deposit_percent:SHOP.serviceDepositPercent,
    service_capacity:SHOP.serviceCapacity,service_cancel_cutoff_hours:SHOP.serviceCancelCutoffHours,service_max_reschedules:SHOP.serviceMaxReschedules},

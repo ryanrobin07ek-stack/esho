@@ -39,7 +39,7 @@ The one-line pitch: **“Build your business website in minutes. Run your busine
 
 ### 2.2 Selling products online
 
-- Customers get a **cart and checkout** (name, contact, delivery address or pickup). The owner sets a delivery fee and a free-delivery threshold.
+- Customers get a **cart and checkout** (name, contact, delivery address or pickup). The owner sets a delivery fee and a free-delivery threshold, and switches **Offer delivery** and **Offer pickup** on or off in the shop details. Checkout shows only the ways the shop offers, and the Worker refuses an order that uses a way the shop switched off (a shop that never set them offers both). The fee is saved with the published store and charged at order time.
 - **The server works out prices, stock and discounts itself.** Nothing the browser says about prices is trusted.
 - Two ways to pay:
   - **Online with Paystack** (card, bank and mobile options Paystack offers in the shop's country), or

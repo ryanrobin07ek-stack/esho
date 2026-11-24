@@ -240,6 +240,8 @@ export function setupLitrusBuilder(params, path) {
                 address: store.location_address || store.address || "",
                 delivery_fee: store.delivery_fee || "",
                 free_delivery_over: store.free_delivery_over || "",
+                delivery_enabled: ![0, false, "0"].includes(store.delivery_enabled),
+                pickup_enabled: ![0, false, "0"].includes(store.pickup_enabled),
                 about: store.about || ""
               },
               categories: categories.map(category => ({ id: category.id, name: category.name })),

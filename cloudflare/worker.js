@@ -963,6 +963,14 @@ function cleanCatalog(input) {
     location_address: cleanText(storeInput.location_address, 500),
     location_map_embed_url: cleanSocialUrl(storeInput.location_map_embed_url),
     location_map_link: cleanSocialUrl(storeInput.location_map_link),
+    // What delivery costs and which ways of getting an order the shop offers. These were never kept, so the
+    // order total at checkout had no delivery charge even when the shop set one.
+    delivery_fee: boundedFee(storeInput.delivery_fee),
+    free_delivery_over: boundedFee(storeInput.free_delivery_over),
+    delivery_enabled: storeInput.delivery_enabled === false || storeInput.delivery_enabled === 0 ||
+      storeInput.delivery_enabled === "0" ? 0 : 1,
+    pickup_enabled: storeInput.pickup_enabled === false || storeInput.pickup_enabled === 0 ||
+      storeInput.pickup_enabled === "0" ? 0 : 1,
     // A currency typed as 'usd' would otherwise fail the order-time check and be charged in KES.
     currency: cleanText(storeInput.currency, 8).trim().toUpperCase(),
     currency_symbol: cleanText(storeInput.currency_symbol, 8),
@@ -3695,6 +3703,16 @@ async function handleStorefrontOrders(request, env, tenantId, ctx) {
     discountCents = evaluation.discountCents;
     discountCode = code;
   }
+  // The shop decides how customers get an order. A method the shop has switched off is refused here, so a
+  // customer cannot pick "pickup" to skip the delivery charge on a shop that only delivers (or the reverse).
+  const offersPickup = ![0, false, "0"].includes(catalog.store?.pickup_enabled);
+  const offersDelivery = ![0, false, "0"].includes(catalog.store?.delivery_enabled) || !offersPickup;
+  if (deliveryMethod === "pickup" && !offersPickup) {
+    return jsonResponse({ error: "This shop does not offer pickup. Choose delivery.", error_code: "delivery_method_unavailable" }, 409);
+  }
+  if (deliveryMethod === "delivery" && !offersDelivery) {
+    return jsonResponse({ error: "This shop does not deliver. Choose pickup.", error_code: "delivery_method_unavailable" }, 409);
+  }
   const deliveryFeeCents = Math.round(Number(catalog.store?.delivery_fee) * 100);
   const freeDeliveryCents = Math.round(Number(catalog.store?.free_delivery_over) * 100);
   const shippingCents = deliveryMethod === "delivery" &&
@@ -4386,6 +4404,12 @@ function serviceSchedule(catalog) {
 }
 
 // Whole-number setting inside [min, max]; anything else (absent, blank, fractional, out of range) is the default.
+// A delivery charge or free-delivery threshold: a plain amount in the shop's currency, never negative or absurd.
+function boundedFee(value) {
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount > 0 ? Math.min(Math.round(amount * 100) / 100, 10_000_000) : 0;
+}
+
 function boundedServiceSetting(value, min, max, fallback) {
   if (value === undefined || value === null || value === "" || typeof value === "boolean") return fallback;
   const number = Number(value);

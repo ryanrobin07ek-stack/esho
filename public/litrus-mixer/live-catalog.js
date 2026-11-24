@@ -101,6 +101,8 @@
       addr: String(store.location_address || store.address || ""),
       fee: Number(store.delivery_fee) || 0,
       free: Number(store.free_delivery_over) || 0,
+      delivery: ![0, false, "0"].includes(store.delivery_enabled),
+      pickup: ![0, false, "0"].includes(store.pickup_enabled),
       cats: categories.map(category => ({ name: category.name, slug: category.slug })),
       products
     };

@@ -204,6 +204,8 @@ export const litrusMixerCatalog = {
       location_address: String(shop.address || "").slice(0, 200),
       delivery_fee: Number(shop.delivery_fee) || 0,
       free_delivery_over: Number(shop.free_delivery_over) || 0,
+      delivery_enabled: shop.delivery_enabled === false ? 0 : 1,
+      pickup_enabled: shop.pickup_enabled === false ? 0 : 1,
       about: String(shop.about || "").slice(0, 4000),
       // Saving from the builder must not flatten a shop that sells goods and time side by side.
       offer_type: window.EshopServiceModel.offerTypeForCatalogue(products, shop.offer_type),
