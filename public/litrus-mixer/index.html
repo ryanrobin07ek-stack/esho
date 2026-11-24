@@ -2307,6 +2307,8 @@ html.craft-integrated #litrus-sections-panel input,html.craft-integrated #litrus
 #store .hero-section .hero-content h1 { font-size: min(var(--head-size, 4rem), clamp(1.6rem, 10.5vw, 4rem)); }
 /* The category pill is drawn in the page text colour, so its words use the page background colour. Without this they inherited the band colour and vanished on a dark band. */
 #store .litrus-categories a.cat-marquee-item, #store .litrus-categories a.cat-marquee-item span { color: var(--bg, #fff); }
+/* On a phone the shop name in the top bar wraps to two lines and scales a little instead of being cut off with an ellipsis. */
+@media (max-width: 480px) { #store .sole-header .sole-wordmark { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.05; font-size: min(1em, 5.2vw); text-align: center; } }
 .sole-button { display: inline-flex; align-items: center; justify-content: center; gap: 18px; padding: 13px 17px; min-height: 44px; font-size: 10px; font-weight: 700; letter-spacing: .015em; transition: background .2s ease, color .2s ease; }
 .sole-button-light { color: #20211f !important; background: #f4f0ea; }
 .sole-button-light:hover { background: #d8c6b6; }
@@ -7453,7 +7455,7 @@ if(craftIntegrated){
  const contentHint=g('wCatalogHeading').nextElementSibling;
  if(contentHint)contentHint.textContent='Set promos and FAQs.';
  const faqHint=g('wFaqScreen').querySelector('.hint');
- if(faqHint)faqHint.textContent='Edit starter answers to fit your shop.';
+ if(faqHint)faqHint.textContent='Answer what customers ask most, such as delivery, returns and payment.';
  const showContentScreen=name=>{
   const promo=name==='promo';
   g('wPromoScreen').hidden=!promo;
@@ -7605,6 +7607,8 @@ window.litrusSetCraftCatalog=function(payload){
  SHOP.tagline=String(shop.tagline||'');SHOP.email=String(shop.email||'');SHOP.phone=String(shop.phone||'');SHOP.socials={instagram:String(shop.instagram_url||''),facebook:String(shop.facebook_url||''),tiktok:String(shop.tiktok_url||''),youtube:String(shop.youtube_url||''),x:String(shop.x_url||'')};
  SHOP.wa=String(shop.whatsapp||'');SHOP.addr=String(shop.address||'');SHOP.fee=String(shop.delivery_fee||'');SHOP.free=String(shop.free_delivery_over||'');
  SHOP.cats=categories;SHOP.products=[];
+ /* The own-picture slots are drawn from SHOP.cats, so redraw them for the shop's real categories instead of the demo shop's. */
+ if(typeof drawOwnPhotos==='function')drawOwnPhotos();
  g('wName').value=SHOP.name;g('wType').value=SHOP.type||'';g('wWhat').value=String(shop.description||'');
  g('wTag').value=SHOP.tagline;g('wCur').value=SHOP.cur;setCategoryNames(categories);
  g('wEmail').value=SHOP.email;g('wPhone').value=SHOP.phone;g('wWa').value=SHOP.wa;
